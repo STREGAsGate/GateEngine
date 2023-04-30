@@ -1,0 +1,5 @@
+#include "codec.h"
+#include "ogg.h"
+#include "os_types.h"
+#include "vorbisenc.h"
+#include "vorbisfile.h"

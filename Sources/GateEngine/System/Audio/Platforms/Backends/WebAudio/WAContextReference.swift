@@ -1,0 +1,44 @@
+/*
+ * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
+#if os(WASI) || (GATEENGINE_WASI_IDE_SUPPORT && (DEBUG && (os(macOS) || os(Linux))))
+import Foundation
+import JavaScriptKit
+import DOM
+import WebAudio
+
+internal class WAContextReference: AudioContextBackend {
+    let ctx: WebAudio.AudioContext
+    
+    init() {
+        ctx = WebAudio.AudioContext()
+    }
+    
+    @inlinable
+    func createSpacialMixerReference() -> SpacialAudioMixerReference {
+        return WASpacialMixerReference(self)
+    }
+    @inlinable
+    func createAudioMixerReference() -> AudioMixerReference {
+        return WAAudioMixerReference(self)
+    }
+    
+    @inlinable
+    var endianness: Endianness {
+        return .native
+    }
+    
+    @inlinable
+    func supportsBitRate(_ bitRate: AudioBuffer.Format.BitRate) -> Bool {
+        switch bitRate {
+        case .int8, .int16:
+            return true
+        default:
+            return false
+        }
+    }
+}
+#endif

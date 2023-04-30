@@ -1,0 +1,5 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Don't calculate the GateEngineDependencies source when determining project languages
+GateEngineDependencies/** linguist-vendored

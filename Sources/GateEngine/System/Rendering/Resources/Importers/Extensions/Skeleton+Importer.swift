@@ -1,0 +1,78 @@
+/*
+ * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
+
+import Foundation
+
+extension ResourceManager {
+    public func addSkeletonImporter(_ type: SkeletonImporter.Type) {
+        guard importers.skeletonImporters.contains(where: {$0 == type}) == false else {return}
+        importers.skeletonImporters.insert(type, at: 0)
+    }
+    
+    internal func importerForFileType(_ file: String) -> SkeletonImporter? {
+        for type in self.importers.skeletonImporters {
+            if type.supportedFileExtensions().contains(where: {$0.caseInsensitiveCompare(file) == .orderedSame}) {
+                return type.init()
+            }
+        }
+        return nil
+    }
+}
+
+public struct SkeletonImporterOptions: Equatable, Hashable {
+    public var subobjectName: String? = nil
+
+    public static func named(_ name: String) -> Self {
+        return SkeletonImporterOptions(subobjectName: name)
+    }
+
+    public static var none: SkeletonImporterOptions {
+        return SkeletonImporterOptions()
+    }
+}
+
+public protocol SkeletonImporter: AnyObject {
+    init()
+    
+    func loadData(path: String, options: SkeletonImporterOptions) async throws -> Data
+    func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) async throws -> Skeleton.Joint
+
+    static func supportedFileExtensions() -> [String]
+}
+
+public extension SkeletonImporter {
+    func loadData(path: String, options: SkeletonImporterOptions) async throws -> Data {
+        return try await Game.shared.internalPlatform.loadResource(from: path)
+    }
+}
+
+extension Skeleton {
+    public convenience init(path: String, options: SkeletonImporterOptions = .none) async throws {
+        guard let fileExtension = path.components(separatedBy: ".").last else {
+            throw "Unknown file type."
+        }
+        guard let importer = await Game.shared.resourceManager.importerForFileType(fileExtension) else {
+            throw "No importer for \(fileExtension)."
+        }
+        
+        do {
+            let data = try await importer.loadData(path: path, options: options)
+            let rootJoint = try await importer.process(data: data, baseURL: URL(string: path)!.deletingLastPathComponent(), options: options)
+            self.init(rootJoint: rootJoint)
+        }catch let DecodingError.dataCorrupted(context) {
+            throw "Failed to load \(Swift.type(of: self)): \(context)"
+        }catch let DecodingError.keyNotFound(key, context) {
+            throw "Failed to load \(Swift.type(of: self)): Key '\(key)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
+        }catch let DecodingError.valueNotFound(value, context) {
+            throw "Failed to load \(Swift.type(of: self)): Value '\(value)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
+        }catch let DecodingError.typeMismatch(type, context)  {
+            throw "Failed to load \(Swift.type(of: self)): Type '\(type)' mismatch: \(context.debugDescription), codingPath: \(context.codingPath)"
+        }catch {
+            throw "Failed to load \(Swift.type(of: self)): \(error)"
+        }
+    }
+}

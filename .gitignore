@@ -1,0 +1,25 @@
+
+#Swift
+.build
+.swiftpm
+Package.resolved
+
+#Apple
+.DS_Store
+.icloud
+
+#Xcode
+*.xcuserdatad
+*.xcworkspace
+
+#Visual Studio
+.vs
+
+#Visual Studio Code
+.vscode
+
+#CLion
+.idea
+
+#Blender
+.blend1

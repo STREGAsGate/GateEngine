@@ -1,0 +1,445 @@
+/*
+ * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
+#if os(WASI) || (GATEENGINE_WASI_IDE_SUPPORT && (DEBUG && (os(macOS) || os(Linux))))
+import WebAPIBase
+import DOM
+import WebGL1
+import WebGL2
+import GameMath
+import Shaders
+
+public typealias GL = WebGL2RenderingContext
+
+class WebGL2Renderer: RendererBackend {
+    #if DEBUG
+    var singleWarnings: Set<String> = []
+    func printOnce(_ string: String) {
+        guard singleWarnings.contains(string) == false else {return}
+        singleWarnings.insert(string)
+        print(string)
+    }
+    #endif
+    
+    lazy private var instanceMatriciesVBO: WebGLBuffer = WebGL2Renderer.context.createBuffer()!
+    let generator = GLSLCodeGenerator(version: .v300es)
+    
+    var _shaders: [ShaderKey:WebGLShader] = [:]
+    struct ShaderKey: Hashable {
+        let vshID: ObjectIdentifier
+        let fshID: ObjectIdentifier
+        let attributes: [CodeGenerator.InputAttribute]
+        init(vsh: VertexShader, fsh: FragmentShader, attributes: [CodeGenerator.InputAttribute]) {
+            self.vshID = ObjectIdentifier(vsh)
+            self.fshID = ObjectIdentifier(fsh)
+            self.attributes = attributes
+        }
+    }
+    struct WebGLShader {
+        let program: WebGLProgram
+        let vertexShader: VertexShader
+        let fragmentShader: FragmentShader
+    }
+    func webGLShader(vsh: VertexShader, fsh: FragmentShader, attributes: [CodeGenerator.InputAttribute]) -> WebGLShader {
+        let key = ShaderKey(vsh: vsh, fsh: fsh, attributes: attributes)
+        if let existing = _shaders[key] {
+            return existing
+        }
+        let program = program(vsh: vsh, fsh: fsh, attributes: attributes)
+        let shader = WebGLShader(program: program, vertexShader: vsh, fragmentShader: fsh)
+        _shaders[key] = shader
+        return shader
+    }
+    
+    func program(vsh: VertexShader, fsh: FragmentShader, attributes: [CodeGenerator.InputAttribute]) -> WebGLProgram {
+        do {
+            let gl = WebGL2Renderer.context
+                        
+            let sources = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: attributes)
+            
+            #if DEBUG
+            print("[GateEngine] Generated OpenGL ES Vertex Shader:\n\n\(generator.addingLineNumbers(sources.vertexSource))\n")
+            #endif
+            let _vsh = gl.createShader(type: WebGL2RenderingContext.VERTEX_SHADER)!
+            gl.shaderSource(shader: _vsh, source: sources.vertexSource)
+            gl.compileShader(shader: _vsh)
+            if let error = Self.context.getShaderInfoLog(shader: _vsh), error.isEmpty == false {
+                print("[GateEngine] Error \(self.self).\(#function):\(#line), WebGL Error:\n\(error)")
+            }
+            
+            #if DEBUG
+            print("[GateEngine] Generated OpenGL ES Fragment Shader:\n\n\(generator.addingLineNumbers(sources.fragmentSource))\n")
+            #endif
+            let _fsh = gl.createShader(type: WebGL2RenderingContext.FRAGMENT_SHADER)!
+            gl.shaderSource(shader: _fsh, source: sources.fragmentSource)
+            gl.compileShader(shader: _fsh)
+            if let error = Self.context.getShaderInfoLog(shader: _fsh), error.isEmpty == false {
+                print("[GateEngine] Error \(self.self).\(#function):\(#line), WebGL Error:\n\(error)")
+            }
+            
+            let program = gl.createProgram()!
+            gl.attachShader(program: program, shader: _vsh)
+            gl.attachShader(program: program, shader: _fsh)
+            gl.linkProgram(program: program)
+            gl.validateProgram(program: program)
+            if gl.getProgramParameter(program: program, pname: GL.VALIDATE_STATUS).boolean == false {
+                if let error = gl.getProgramInfoLog(program: program), error.isEmpty == false {
+                    print("[GateEngine] Error \(self.self).\(#function):\(#line), WebGL Error:\n\(error)")
+                }else{
+                    print("[GateEngine] GL Error: Link Failed")
+                }
+            }
+            #if DEBUG
+            checkError()
+            #endif
+            return program
+        }catch{
+            fatalError("\(error)")
+        }
+    }
+    
+    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: RenderTarget) {
+        let gl = WebGL2Renderer.context
+        let geometries = drawCommand.geometries as! Array<WebGL2Geometry>
+        
+        let program = webGLShader(vsh: drawCommand.material.vertexShader, fsh: drawCommand.material.fragmentShader, attributes: drawCommand.geometries.shaderAttributes).program
+        
+        gl.useProgram(program: program)
+        checkError()
+        
+        setFlags(drawCommand.flags, in: gl)
+        setWinding(drawCommand.flags.winding, in: gl)
+        setUniforms(matrices, program: program, generator: generator, in: gl)
+        setMaterial(drawCommand.material, generator: generator, program: program, in: gl)
+        checkError()
+        
+        let vao: WebGLVertexArrayObject! = gl.createVertexArray()
+        gl.bindVertexArray(array: vao)
+        var vertexIndex: Int = 0
+        setGeometries(geometries, at: &vertexIndex, in: gl)
+        setTransforms(drawCommand.transforms, at: &vertexIndex, in: gl)
+        
+        gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: geometries[0].buffers.last!)
+        checkError()
+        
+        gl.drawElementsInstanced(mode: primitive(from: drawCommand.flags.primitive),
+                                 count: geometries[0].indiciesCount,
+                                 type: GL.UNSIGNED_SHORT,
+                                 offset: 0,
+                                 instanceCount: GLsizei(drawCommand.transforms.count))
+        gl.deleteVertexArray(vertexArray: vao)
+        #if DEBUG
+        checkError()
+        #endif
+    }
+}
+
+extension WebGL2Renderer {
+    @inline(__always)
+    private func setFlags(_ flags: DrawFlags, in gl: WebGL2RenderingContext) {
+        switch flags.cull {
+        case .disabled:
+            gl.disable(cap: GL.CULL_FACE)
+        case .back:
+            gl.enable(cap: GL.CULL_FACE)
+            gl.cullFace(mode: GL.BACK)
+        case .front:
+            gl.enable(cap: GL.CULL_FACE)
+            gl.cullFace(mode: GL.FRONT)
+        }
+        
+        gl.enable(cap: GL.DEPTH_TEST)
+        switch flags.depthTest {
+        case .always:
+            gl.depthFunc(func: GL.ALWAYS)
+        case .greaterThan:
+            gl.depthFunc(func: GL.GREATER)
+        case .lessThan:
+            gl.depthFunc(func: GL.LESS)
+        case .never:
+            gl.depthFunc(func: GL.NEVER)
+        }
+        
+        switch flags.depthWrite {
+        case .enabled:
+            gl.depthMask(flag: true)
+        case .disabled:
+            gl.depthMask(flag: false)
+        }
+        
+        switch flags.blendMode {
+        case .none:
+            gl.disable(cap: GL.BLEND)
+        case .normal:
+            gl.enable(cap: GL.BLEND)
+            gl.blendEquation(mode: GL.FUNC_ADD)
+            gl.blendFuncSeparate(srcRGB: GL.SRC_ALPHA, dstRGB: GL.ONE_MINUS_SRC_ALPHA, srcAlpha: GL.ONE, dstAlpha: GL.ONE_MINUS_SRC_ALPHA)
+        }
+    }
+    
+    @inline(__always)
+    private func setWinding(_ winding: DrawFlags.Winding, in gl: WebGL2RenderingContext) {
+        switch winding {
+        case .clockwise:
+            gl.frontFace(mode: GL.CW)
+        case .counterClockwise:
+            gl.frontFace(mode: GL.CCW)
+        }
+    }
+    
+    @inline(__always)
+    private func setUniforms(_ matrices: Matrices, program: WebGLProgram, generator: GLSLCodeGenerator, in gl: WebGL2RenderingContext) {
+        if let vMatrixLocation = gl.getUniformLocation(program: program, name: generator.variable(for: .uniformViewMatrix)) {
+            let vMtx = Float32List.float32Array(Float32Array(matrices.view.transposedArray()))
+            gl.uniformMatrix4fv(location: vMatrixLocation, transpose: false, data: vMtx)
+            checkError()
+        }
+        if let pMatrixLocation = gl.getUniformLocation(program: program, name: generator.variable(for: .uniformProjectionMatrix)) {
+            let pMtx = Float32List.float32Array(Float32Array(matrices.projection.transposedArray()))
+            gl.uniformMatrix4fv(location: pMatrixLocation, transpose: false, data: pMtx)
+            checkError()
+        }
+        #if DEBUG
+        checkError()
+        #endif
+    }
+    
+    @inline(__always)
+    private func primitive(from primitive: DrawFlags.Primitive) -> GLenum {
+        switch primitive {
+        case .point:
+            return GL.POINTS
+        case .line:
+            return GL.LINES
+        case .lineStrip:
+            return GL.LINE_STRIP
+        case .triangle:
+            return GL.TRIANGLES
+        case .triangleStrip:
+            return GL.TRIANGLE_STRIP
+        }
+    }
+    
+    @inline(__always)
+    private func setTransforms(_ transforms: [Transform3], at index: inout Int, in gl: WebGL2RenderingContext) {
+        var data: [Float] = []
+        data.reserveCapacity(16 * transforms.count)
+        for transform in transforms {
+            data.append(contentsOf: transform.createMatrix().transposedArray())
+        }
+        let floats = BufferSource.arrayBuffer(Float32Array(data).buffer)
+        gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: instanceMatriciesVBO)
+        gl.bufferData(target: GL.ARRAY_BUFFER, srcData: floats, usage: GL.STATIC_DRAW)
+        
+        let atributeLocation = index
+        for index in 0 ..< 4 {
+            let atrributeLocation = GLuint(atributeLocation + index)
+            gl.enableVertexAttribArray(index: atrributeLocation)
+            let stride = MemoryLayout<SIMD16<Float>>.stride
+            let offset = MemoryLayout<SIMD4<Float>>.stride * index
+            gl.vertexAttribPointer(index: atrributeLocation, size: 4, type: GL.FLOAT, normalized: false, stride: GLsizei(stride), offset: GLintptr(offset))
+            gl.vertexAttribDivisor(index: atrributeLocation, divisor: 1)
+        }
+        index += 4
+        #if DEBUG
+        checkError()
+        #endif
+    }
+    
+    @inline(__always)
+    private func setMaterial(_ material: Material, generator: GLSLCodeGenerator, program: WebGLProgram, in gl: WebGL2RenderingContext) {
+        for index in material.channels.indices {
+            let channel = material.channels[index]
+            if let texture = channel.texture?.textureBackend as? WebGL2Texture {
+                let textureName = generator.variable(for: .channelAttachment(UInt8(index)))
+                if let location = gl.getUniformLocation(program: program, name: textureName) {
+                    gl.activeTexture(texture: GL.TEXTURE0 + UInt32(index))
+                    gl.bindTexture(target: GL.TEXTURE_2D, texture: texture.textureId)
+                    gl.uniform1i(location: location, x: GLint(index))
+                }else{
+#if DEBUG
+                    printOnce("[GateEngine] Warning: OpenGL attribute [\(textureName)] not found.")
+#endif
+                }
+            }
+            
+            let scaleName = generator.variable(for: .channelScale(UInt8(index)))
+            if let location = gl.getUniformLocation(program: program, name: scaleName) {
+                gl.uniform2f(location: location, x: channel.scale.x, y: channel.scale.y)
+            }else{
+#if DEBUG
+                printOnce("[GateEngine] Warning: OpenGL attribute [\(scaleName)] not found.")
+#endif
+            }
+            let offsetName = generator.variable(for: .channelOffset(UInt8(index)))
+            if let location = gl.getUniformLocation(program: program, name: offsetName) {
+                gl.uniform2f(location: location, x: channel.offset.x, y: channel.offset.y)
+            }else{
+#if DEBUG
+                printOnce("[GateEngine] Warning: OpenGL attribute [\(offsetName)] not found.")
+#endif
+            }
+            let colorName = generator.variable(for: .channelColor(UInt8(index)))
+            if let location = gl.getUniformLocation(program: program, name: colorName) {
+                gl.uniform4f(location: location, x: channel.color.red, y: channel.color.green, z: channel.color.blue, w: channel.color.alpha)
+            }else{
+#if DEBUG
+                printOnce("[GateEngine] Warning: OpenGL attribute [\(colorName)] not found.")
+#endif
+            }
+        }
+        let customValues = material.sortedCustomUniforms()
+        if customValues.isEmpty == false {
+            for index in customValues.indices {
+                let value = customValues[index]
+                let name = generator.variable(for: .uniformCustom(UInt8(index), type: .bool))
+                switch value {
+                case let value as Bool:
+                    if let location = gl.getUniformLocation(program: program, name: name) {
+                        gl.uniform1i(location: location, x: value ? 1 : 0)
+                    }else{
+#if DEBUG
+                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+#endif
+                    }
+                case let value as Int:
+                    if let location = gl.getUniformLocation(program: program, name: name) {
+                        gl.uniform1i(location: location, x: GLint(value))
+                    }else{
+#if DEBUG
+                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+#endif
+                    }
+                case let value as Float:
+                    if let location = gl.getUniformLocation(program: program, name: name) {
+                        gl.uniform1f(location: location, x: value)
+                    }else{
+#if DEBUG
+                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+#endif
+                    }
+                case let value as any Vector2:
+                    if let location = gl.getUniformLocation(program: program, name: name) {
+                        gl.uniform2f(location: location, x: value.x, y: value.y)
+                    }else{
+#if DEBUG
+                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+#endif
+                    }
+                case let value as any Vector3:
+                    if let location = gl.getUniformLocation(program: program, name: name) {
+                        gl.uniform3f(location: location, x: value.x, y: value.y, z: value.z)
+                    }else{
+#if DEBUG
+                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+#endif
+                    }
+                case let value as Matrix3x3:
+                    if let location = gl.getUniformLocation(program: program, name: name) {
+                        let data = Float32List.float32Array(Float32Array(value.transposedArray()))
+                        gl.uniformMatrix3fv(location: location, transpose: false, data: data)
+                    }else{
+#if DEBUG
+                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+#endif
+                    }
+                case let value as Matrix4x4:
+                    if let location = gl.getUniformLocation(program: program, name: name) {
+                        let data = Float32List.float32Array(Float32Array(value.transposedArray()))
+                        gl.uniformMatrix4fv(location: location, transpose: false, data: data)
+                    }else{
+#if DEBUG
+                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+#endif
+                    }
+                default:
+                    fatalError()
+                }
+            }
+        }
+        
+#if DEBUG
+        checkError()
+#endif
+    }
+    
+    @inline(__always)
+    private func setGeometries(_ geometries: [WebGL2Geometry], at index: inout Int, in gl: WebGL2RenderingContext) {
+        for geometry in geometries {
+            for attributeIndex in geometry.attributes.indices {
+                let attribute = geometry.attributes[attributeIndex]
+                gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: geometry.buffers[attributeIndex])
+                switch attribute.type {
+                case .float:
+                    gl.vertexAttribPointer(index: GLuint(index), size: GLint(attribute.componentLength), type: GL.FLOAT, normalized: false, stride: 0, offset: 0)
+                case .uInt16:
+                    gl.vertexAttribPointer(index: GLuint(index), size: GLint(attribute.componentLength), type: GL.UNSIGNED_SHORT, normalized: false, stride: 0, offset: 0)
+                case .uInt32:
+                    gl.vertexAttribPointer(index: GLuint(index), size: GLint(attribute.componentLength), type: GL.UNSIGNED_INT, normalized: false, stride: 0, offset: 0)
+                }
+                gl.enableVertexAttribArray(index: GLuint(index))
+                index += 1
+            }
+        }
+#if DEBUG
+        checkError()
+#endif
+    }
+}
+
+extension WebGL2Renderer {
+    @_transparent
+    var context: WebGL2RenderingContext {
+        return Self.context
+    }
+    static let context: WebGL2RenderingContext = {
+        let element = globalThis.document.getElementById(elementId: "mainCanvas")!
+        let canvas = HTMLCanvasElement(from: element)!
+        let context = canvas.getContext(WebGL2RenderingContext.self, options: ["high-performance":true].jsValue)!
+        return context
+    }()
+    
+    @_transparent
+    func checkError(_ function: String = #function, _ line: Int = #line) {
+        #if DEBUG
+        var error = Self.context.checkFramebufferStatus(target: WebGL2RenderingContext.FRAMEBUFFER)
+        if error == GL.FRAMEBUFFER_COMPLETE {
+            error = Self.context.getError()
+        }
+        switch error {
+        case GL.FRAMEBUFFER_COMPLETE:
+            return
+        case GL.FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+            printOnce("GL Error \(function):\(line): FRAMEBUFFER_INCOMPLETE_ATTACHMENT")
+        case GL.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+            printOnce("GL Error \(function):\(line): FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT")
+        case GL.FRAMEBUFFER_UNSUPPORTED:
+            printOnce("GL Error \(function):\(line): FRAMEBUFFER_UNSUPPORTED")
+        case GL.INVALID_OPERATION:
+            printOnce("GL Error \(function):\(line): INVALID_OPERATION")
+        case GL.INVALID_VALUE:
+            printOnce("GL Error \(function):\(line): INVALID_VALUE")
+        case GL.INVALID_ENUM:
+            printOnce("GL Error \(function):\(line): INVALID_ENUM")
+        case GL.OUT_OF_MEMORY:
+            printOnce("GL Error \(function):\(line): OUT_OF_MEMORY")
+        case GL.NO_ERROR:
+            return
+        default:
+            printOnce("GL Error \(function):\(line): \(error)")
+        }
+        #endif
+    }
+}
+
+extension Renderer {
+    @_transparent
+    func checkError(_ function: String = #function, _ line: Int = #line) {
+        (self.backend as! WebGL2Renderer).checkError(function, line)
+    }
+}
+
+#endif

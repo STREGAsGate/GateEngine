@@ -1,0 +1,20 @@
+name: HTML5
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-WASI:
+
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/swiftwasm/carton:latest
+      
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test
+      run: carton test
