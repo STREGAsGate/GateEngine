@@ -24,7 +24,7 @@ struct ImageFont: FontBackend {
         self.fontData = fontData
     }
     
-    mutating func characterData(forKey key: Font.Key, character: Character) -> CharacterData {
+    @MainActor mutating func characterData(forKey key: Font.Key, character: Character) -> CharacterData {
         let textureSize = textures[key.style]!.size
         let pixelsHigh = textureSize.width / 16
         let pixelsWide = textureSize.height / 16
@@ -50,7 +50,7 @@ struct ImageFont: FontBackend {
                              xAdvance: xAdvance)
     }
     
-    mutating func alignedCharacter(forKey key: Font.Key, character: Character, origin: GameMath.Position2, xAdvance: inout Float) -> AlignedCharacter {
+    @MainActor mutating func alignedCharacter(forKey key: Font.Key, character: Character, origin: GameMath.Position2, xAdvance: inout Float) -> AlignedCharacter {
         
         let nativePointSize = nativePointSizes[key.style]!
         let scaledPointSize = Float(key.pointSize - (key.pointSize % nativePointSize))
@@ -75,7 +75,7 @@ struct ImageFont: FontBackend {
         return textures[key.style]!
     }
     
-    private mutating func populate(style: Font.Style) {
+    @MainActor private mutating func populate(style: Font.Style) {
         let fontData = fontData[style]!
         let (data, size) = try! PNGImporter().process(data: fontData.data, size: fontData.size, options: .none)
         

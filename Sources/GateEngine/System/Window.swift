@@ -214,6 +214,17 @@ public enum KeyboardKey: Hashable {
     case right
 }
 
+extension KeyboardKey: ExpressibleByStringLiteral {
+    public typealias StringLiteralType = String
+    
+    public init(stringLiteral value: String) {
+        if (value.hasPrefix("f") || value.hasPrefix("F")), let value = Int(value[value.index(after: value.startIndex)...]) {
+            self = .function(value)
+        }
+        self = .character(value.first!)
+    }
+}
+
 public enum KeyboardEvent {
     case keyDown
     case keyUp

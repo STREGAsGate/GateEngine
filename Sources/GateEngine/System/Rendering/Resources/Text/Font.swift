@@ -22,14 +22,14 @@ struct AlignedCharacter {
     let texturePosition: FontQuad
 }
 
-@MainActor protocol FontBackend {
+protocol FontBackend {
     var preferredSampleFilter: Text.SampleFilter {get}
-    mutating func texture(forKey key: Font.Key) -> Texture
+    @MainActor mutating func texture(forKey key: Font.Key) -> Texture
     mutating func characterData(forKey key: Font.Key, character: Character) -> CharacterData
     mutating func alignedCharacter(forKey key: Font.Key, character: Character, origin: Position2, xAdvance: inout Float) -> AlignedCharacter
 }
 
-@MainActor public class Font: OldResource {
+public class Font: OldResource {
     @RequiresState(.ready)
     var backend: FontBackend! = nil
     
@@ -87,7 +87,7 @@ struct AlignedCharacter {
         return backend.alignedCharacter(forKey: key, character: character, origin: origin, xAdvance: &xAdvance)
     }
     
-    func texture(forPointSize pointSize: UInt, style: Font.Style) -> Texture {
+    @MainActor func texture(forPointSize pointSize: UInt, style: Font.Style) -> Texture {
         let key = Key(style: style, pointSize: pointSize)
         return backend.texture(forKey: key)
     }

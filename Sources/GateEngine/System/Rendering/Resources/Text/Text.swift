@@ -9,7 +9,7 @@ import Foundation
 import GameMath
 import TrueType
 
-@MainActor public final class Text {
+public final class Text {
     public enum SampleFilter {
         case nearest
         case linear
@@ -27,15 +27,15 @@ import TrueType
     }
     
     private var _texture: Texture! = nil
-    internal var texture: Texture {
+    @MainActor internal var texture: Texture {
         if needsUpdateTexture {
             needsUpdateTexture = false
             _texture = font.texture(forPointSize: UInt(actualPointSize.rounded()), style: style)
         }
         return _texture
     }
-    private var _geometry: MutableGeometry = MutableGeometry()
-    internal var geometry: Geometry {
+    @MainActor private var _geometry: MutableGeometry = MutableGeometry()
+    @MainActor internal var geometry: Geometry {
         if needsUpdateGeometry {
             needsUpdateGeometry = false
             updateGeometry()
@@ -44,14 +44,17 @@ import TrueType
     }
     private var _size: Size2 = .zero
     public var size: Size2 {
-        if needsUpdateGeometry {
+        if needsUpdateGeometry, font.state == .ready {
             needsUpdateGeometry = false
-            updateGeometry()
+            Task(priority: .high) {@MainActor in
+                self.updateGeometry()
+            }
         }
         return _size / Float(interfaceScale)
     }
     
-    private func updateGeometry() {
+    @MainActor private func updateGeometry() {
+        guard string.isEmpty == false else {return}
         let values = Self.rawGeometry(fromString: string, font: font, pointSize: actualPointSize, style: style, paragraphWidth: paragraphWidth, interfaceScale: interfaceScale)
         _geometry.rawGeometry = values.0
         _size = values.1
@@ -230,7 +233,7 @@ import TrueType
 }
 
 extension Text {
-    var isReady: Bool {
+    @MainActor var isReady: Bool {
         #if DEBUG
         let font = font.state == .ready
         let texture = font && texture.state == .ready
