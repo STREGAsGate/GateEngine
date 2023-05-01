@@ -10,7 +10,11 @@ import Foundation
 public final class SpriteSystem: System {
     public override func update(withTimePassed deltaTime: Float) {
         for entity in game.entities {
-            entity.component(ofType: SpriteComponent.self)?.activeAnimation?.appendTime(deltaTime)
+            if let spriteComponet = entity.component(ofType: SpriteComponent.self) {
+                if spriteComponet.activeAnimationIndex < spriteComponet.animations.count {
+                    spriteComponet.animations[spriteComponet.activeAnimationIndex].appendTime(deltaTime)
+                }
+            }
         }
     }
 

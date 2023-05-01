@@ -11,18 +11,20 @@ import GameMath
     public let texture: Texture
     public var sampleFilter: Sprite.SampleFilter
     public var tintColor: Color
+    
     public init(texture: Texture, sampleFilter: Sprite.SampleFilter = .nearest, tintColor: Color = .white) {
         self.texture = texture
         self.sampleFilter = sampleFilter
         self.tintColor = tintColor
     }
+    
+    public convenience init(path: String, mipMapping: MipMapping = .none, options: TextureImporterOptions = .none, sampleFilter: Sprite.SampleFilter = .nearest, tintColor: Color = .white) {
+        let texture = Texture(path: path, mipMapping: mipMapping, options: options)
+        self.init(texture: texture, sampleFilter: sampleFilter, tintColor: tintColor)
+    }
 
     public func sprite(at coord: Position2, withSpriteSize spriteSize: Size2) -> Sprite {
-        var position = Position2(spriteSize)
-        position.x *= Float(coord.x)
-        position.y *= Float(coord.y)
-        let size = Size2(spriteSize)
-        let rect: Rect = Rect(position: position, size: size)
+        let rect: Rect = Rect(position: coord * spriteSize, size: spriteSize)
         return Sprite(texture: texture, bounds: rect, sampleFilter: sampleFilter, tintColor: tintColor)
     }
     
