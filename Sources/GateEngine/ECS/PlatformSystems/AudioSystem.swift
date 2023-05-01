@@ -31,12 +31,12 @@ internal class AudioSystem: PlatformSystem {
         cache[path] = new
         return new
     }
-    override func setup() {
+    override func setup(game: Game) {
         
     }
     
-    override func update(withTimePassed deltaTime: Float) {
-        updateSounds(withTimePassed: deltaTime)
+    override func update(game: Game, input: HID, layout: WindowLayout, withTimePassed deltaTime: Float) {
+        updateSounds(game: game, withTimePassed: deltaTime)
         updateMusic(withTimePassed: deltaTime)
     }
 
@@ -213,8 +213,8 @@ extension AudioSystem {
 // MARK: - Sounds
 extension AudioSystem {
     @inlinable
-    func updateSounds(withTimePassed deltaTime: Float) {
-        updateListener()
+    func updateSounds(game: Game, withTimePassed deltaTime: Float) {
+        updateListener(game: game)
         for index in soundsPlaying.indices.reversed() {
             let sound = soundsPlaying[index]
             
@@ -398,7 +398,7 @@ extension AudioSystem {
         soundsWaitingToPlay.append(waiting)
     }
 
-    func updateListener() {
+    func updateListener(game: Game) {
         var entity: Entity? = nil
         if let listenerID {
             entity = game.entity(withID: listenerID)

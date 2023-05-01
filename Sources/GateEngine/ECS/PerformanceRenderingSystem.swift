@@ -9,7 +9,7 @@ import GameMath
 import Foundation
 
 public final class PerformanceRenderingSystem: RenderingSystem {
-    public override func setup() {
+    public override func setup(game: Game) {
         game.ecs.recordPerformance()
     }
     
@@ -40,7 +40,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         
     let tickDuration: Float = 3
     var cumulativeTime: Float = 0
-    public override func render(window: Window, into framebuffer: RenderTarget, withTimePassed deltaTime: Float) {
+    public override func render(game: Game, framebuffer: RenderTarget, layout: WindowLayout, withTimePassed deltaTime: Float) {
         cumulativeTime += deltaTime
         if cumulativeTime > tickDuration {
             rebuildText()
@@ -49,7 +49,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         
         guard text.isReady else {return}
         
-        var canvas: Canvas = Canvas(interfaceScale: window.interfaceScale)
+        var canvas: Canvas = Canvas(interfaceScale: layout.interfaceScale)
         let position = Position2(.maximum(Float(text.pointSize), safeAreaInsets.leading), .maximum(Float(text.pointSize), safeAreaInsets.top))
         canvas.insert(Rect(size: text.size), color: Color(0, 0, 0, 0.5), at: position)
         canvas.insert(text, at: position)

@@ -213,9 +213,28 @@ internal extension Game {
     }
 }
 
+
+public struct WindowLayout {
+    /// The unscaled backing size of the window
+    public let windowSize: Size2
+    /// The user interface scale of the window
+    public let interfaceScale: Float
+    /// The scaled insets for content to be unobscured by notches and system UI clutter
+    public let safeAreaInsets: Insets
+}
 //MARK: Update
 extension ECSContext {
+    @_transparent
+    private func createLayout() -> WindowLayout {
+        return WindowLayout(windowSize: game.mainWindow?.backing.backingSize ?? .zero,
+                            interfaceScale: game.mainWindow?.interfaceScale ?? 1,
+                            safeAreaInsets: game.mainWindow?.backing.safeAreaInsets ?? .zero)
+    }
     func shouldRenderAfterUpdate(withTimePassed deltaTime: Float) -> Bool {
+        let game = game
+        let input = game.hid
+        let layout = createLayout()
+        
         //Discard spiked times
         guard deltaTime < 1.0 else {game.ecs.performance?.totalDroppedFrames += 1; return false}
         if let performance = performance {
@@ -225,18 +244,18 @@ extension ECSContext {
         for system in self.platformSystems {
             guard type(of: system).phase == .preUpdating else {continue}
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(withTimePassed: deltaTime)
+            system.willUpdate(game: game, input: input, layout: layout, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         for system in self.systems {
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(withTimePassed: deltaTime)
+            system.willUpdate(game: game, input: input, layout: layout, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         for system in self.platformSystems {
             guard type(of: system).phase == .postDeffered else {continue}
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(withTimePassed: deltaTime)
+            system.willUpdate(game: game, input: input, layout: layout, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         
@@ -268,9 +287,20 @@ extension ECSContext {
         if let performance = performance {
             performance.startRenderingSystems()
         }
+        defer {
+            if let performance = performance {
+                performance.endSystems()
+                performance.finalizeSystemsFrameTime()
+            }
+        }
+        guard let framebuffer = game.mainWindow?.framebuffer else {return}
+        let game = game
+        let input = game.hid
+        let layout = createLayout()
+        
         for system in self.renderingSystems {
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(withTimePassed: deltaTime)
+            system.willUpdate(game: game, framebuffer: framebuffer, layout: layout, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         if let performance = performance {
@@ -281,12 +311,8 @@ extension ECSContext {
         for system in self.platformSystems {
             guard type(of: system).phase == .postRendering else {continue}
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(withTimePassed: deltaTime)
+            system.willUpdate(game: game, input: input, layout: layout, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
-        }
-        if let performance = performance {
-            performance.endSystems()
-            performance.finalizeSystemsFrameTime()
         }
     }
 }
@@ -361,7 +387,6 @@ extension ECSContext {
         let systemType = type(of: newSystem)
         guard _systems.contains(where: {type(of: $0) == systemType}) == false else {return}
         var systems = self._systems
-        newSystem.context = self
         systems.append(newSystem)
         _systems = systems
         systemsNeedSorting = true
@@ -380,7 +405,6 @@ extension ECSContext {
         let systemType = type(of: newSystem)
         guard _platformSystems.contains(where: {type(of: $0) == systemType}) == false else {return}
         var platformSystems = self._platformSystems
-        newSystem.context = self
         platformSystems.append(newSystem)
         _platformSystems = platformSystems
         platformSystemsNeedSorting = true
@@ -406,26 +430,26 @@ extension ECSContext {
     @usableFromInline
     func removeSystem(_ system: System) {
         if let index = self._systems.firstIndex(where: {$0 === system}) {
-            self._systems.remove(at: index).teardown()
+            self._systems.remove(at: index).teardown(game: game)
         }
     }
     @usableFromInline
     func removeSystem(_ system: RenderingSystem) {
         if let index = self._renderingSystems.firstIndex(where: {$0 === system}) {
-            self._renderingSystems.remove(at: index).teardown()
+            self._renderingSystems.remove(at: index).teardown(game: game)
         }
     }
     @_transparent
     func removeSystem(_ system: PlatformSystem) {
         if let index = self._platformSystems.firstIndex(where: {$0 === system}) {
-            self._platformSystems.remove(at: index).teardown()
+            self._platformSystems.remove(at: index).teardown(game: game)
         }
     }
     @usableFromInline @discardableResult
     func removeSystem<T: System>(_ system: T.Type) -> System? {
         if let index = self._systems.firstIndex(where: {type(of: $0) == system}) {
             let system = self._systems.remove(at: index)
-            system.teardown()
+            system.teardown(game: game)
             return system
         }
         return nil
@@ -434,7 +458,7 @@ extension ECSContext {
     func removeSystem<T: RenderingSystem>(_ system: T.Type) -> RenderingSystem? {
         if let index = self._renderingSystems.firstIndex(where: {type(of: $0) == system}) {
             let system = self._renderingSystems.remove(at: index)
-            system.teardown()
+            system.teardown(game: game)
             return system
         }
         return nil
@@ -443,7 +467,7 @@ extension ECSContext {
     func removeSystem<T: PlatformSystem>(_ system: T.Type) -> PlatformSystem? {
         if let index = self._platformSystems.firstIndex(where: {type(of: $0) == system}) {
             let system = self._platformSystems.remove(at: index)
-            system.teardown()
+            system.teardown(game: game)
             return system
         }
         return nil

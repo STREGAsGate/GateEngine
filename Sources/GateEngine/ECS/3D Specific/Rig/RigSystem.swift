@@ -27,8 +27,8 @@ public class RigSystem: System {
         }
         return nil
     }
-
-    public override func update(withTimePassed deltaTime: Float) {
+    
+    public override func update(game: Game, input: HID, layout: WindowLayout, withTimePassed deltaTime: Float) {
         func shouldAccumulate(entity: Entity) -> Bool {
             guard let cameraTransform = game.cameraEntity?.component(ofType: Transform3Component.self) else {return false}
             guard let transform = entity.component(ofType: Transform3Component.self) else {return false}

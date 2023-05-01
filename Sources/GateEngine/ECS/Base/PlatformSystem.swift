@@ -17,17 +17,7 @@ extension PlatformSystem {
 
 /// PlaformSystems are private and reserved for internal use by the engine.
 @MainActor internal class PlatformSystem {
-    var context: ECSContext! = nil
-
-    /// The current Game.
-    @inline(__always)
-    public var game: Game {
-        return context.game
-    }
-    
-    required init() {
-        
-    }
+    required init() {}
     
     private(set) lazy var backgroundTask = BackgroundTask(system: self)
     class BackgroundTask {
@@ -60,13 +50,13 @@ extension PlatformSystem {
         }
     }
         
-    internal final func willUpdate(withTimePassed deltaTime: Float) {
+    internal final func willUpdate(game: Game, input: HID, layout: WindowLayout, withTimePassed deltaTime: Float) {
         if didSetup == false {
             didSetup = true
-            setup()
+            setup(game: game)
         }
         if shouldUpdate(withTimePassed: deltaTime) {
-            update(withTimePassed: deltaTime)
+            update(game: game, input: input, layout: layout, withTimePassed: deltaTime)
         }
     }
 
@@ -78,7 +68,7 @@ extension PlatformSystem {
      Use `setup()` to create any system specific data and add it to the game.
      - note: The call to `setup()` is deffered until the next update frame after the system has been inserted and will be called immediatled before `update(withTimePassed:)`.
      */
-    open func setup() {
+    open func setup(game: Game) {
         
     }
     
@@ -94,7 +84,7 @@ extension PlatformSystem {
      Called every update frame.
      - parameter deltaTime: The duration of time since the last update frame.
      */
-    open func update(withTimePassed deltaTime: Float) {
+    open func update(game: Game, input: HID, layout: WindowLayout, withTimePassed deltaTime: Float) {
         preconditionFailure("Must Override \"\(#function)\" in \(type(of: Self.self))")
     }
     
@@ -104,7 +94,7 @@ extension PlatformSystem {
      Use teardown to cleanup any system specific data within the game.
      - note: The call to `teardown()` happens immediatley updon removal from the game.
      */
-    open func teardown() {
+    open func teardown(game: Game) {
         
     }
 

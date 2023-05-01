@@ -25,38 +25,7 @@ public extension System {
 }
 
 @MainActor open class System {
-    @usableFromInline
-    internal var context: ECSContext! = nil
-    
-    /// The current Game.
-    @inlinable
-    public final var game: Game {
-        return context.game
-    }
-    /// Human Input Device access
-    @inlinable
-    public final var hid: HID {
-        return game.hid
-    }
-    /// The user interface scale of the window
-    @inlinable
-    public final var interfaceScale: Float {
-        return game.mainWindow?.interfaceScale ?? 1
-    }
-    /// The unscaled backing size of the window
-    @inlinable
-    public final var framebufferSize: Size2 {
-        return game.mainWindow?.framebuffer.size ?? Size2(2)
-    }
-    /// The scaled insets for content to be unobscured by notches and system UI clutter
-    @inlinable
-    public final var safeAreaInsets: Insets {
-        return game.mainWindow?.backing.safeAreaInsets ?? .zero
-    }
-    
-    required public init() {
-        
-    }
+    required public init() {}
     
     public private(set) lazy var backgroundTask = BackgroundTask(system: self)
     public class BackgroundTask {
@@ -89,13 +58,13 @@ public extension System {
         }
     }
         
-    internal final func willUpdate(withTimePassed deltaTime: Float) {
+    internal final func willUpdate(game: Game, input: HID, layout: WindowLayout, withTimePassed deltaTime: Float) {
         if didSetup == false {
             didSetup = true
-            setup()
+            setup(game: game)
         }
         if shouldUpdate(withTimePassed: deltaTime) {
-            update(withTimePassed: deltaTime)
+            update(game: game, input: input, layout: layout, withTimePassed: deltaTime)
         }
     }
 
@@ -107,7 +76,7 @@ public extension System {
      Use `setup()` to create any system specific data and add it to the game.
      - note: The call to `setup()` is deffered until the next update frame after the system has been inserted and will be called immediatled before `update(withTimePassed:)`.
      */
-    open func setup() {
+    open func setup(game: Game) {
         
     }
     
@@ -123,7 +92,7 @@ public extension System {
      Called every update frame.
      - parameter deltaTime: The duration of time since the last update frame.
      */
-    open func update(withTimePassed deltaTime: Float) {
+    open func update(game: Game, input: HID, layout: WindowLayout, withTimePassed deltaTime: Float) {
         
     }
     
@@ -133,7 +102,7 @@ public extension System {
      Use teardown to cleanup any system specific data within the game.
      - note: The call to `teardown()` happens immediatley updon removal from the game.
      */
-    open func teardown() {
+    open func teardown(game: Game) {
         
     }
 

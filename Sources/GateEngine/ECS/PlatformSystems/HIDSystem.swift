@@ -7,9 +7,9 @@
 
 internal class HIDSystem: PlatformSystem {
     @inlinable
-    override func update(withTimePassed deltaTime: Float) {
-        game.hid.gamePads.update()
-        game.hid.screen.update()
+    override func update(game: Game, input: HID, layout: WindowLayout, withTimePassed deltaTime: Float) {
+        input.gamePads.update()
+        input.screen.update()
     }
     
     override class var phase: PlatformSystem.Phase {return .preUpdating}

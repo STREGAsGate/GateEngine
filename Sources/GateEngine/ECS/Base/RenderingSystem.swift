@@ -29,18 +29,18 @@
         
     }
     
-    internal final func willUpdate(withTimePassed deltaTime: Float) {
+    internal final func willUpdate(game: Game, framebuffer: RenderTarget, layout: WindowLayout, withTimePassed deltaTime: Float) {
         if didSetup == false {
             didSetup = true
-            setup()
+            setup(game: game)
         }
         if shouldRender(withTimePassed: deltaTime) {
-            render(window: game.mainWindow!, into: game.mainWindow!.framebuffer, withTimePassed: deltaTime)
+            render(game: game, framebuffer: framebuffer, layout: layout, withTimePassed: deltaTime)
         }
     }
 
     private var didSetup = false
-    open func setup() {
+    open func setup(game: Game) {
         
     }
     
@@ -48,11 +48,11 @@
         return true
     }
     
-    open func render(window: Window, into framebuffer: RenderTarget, withTimePassed deltaTime: Float) {
+    open func render(game: Game, framebuffer: RenderTarget, layout: WindowLayout, withTimePassed deltaTime: Float) {
         preconditionFailure("Must Override \"\(#function)\" in \(type(of: Self.self))")
     }
         
-    open func teardown() {
+    open func teardown(game: Game) {
         
     }
 

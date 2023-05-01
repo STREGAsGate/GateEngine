@@ -7,7 +7,7 @@
 
 internal class CacheSystem: PlatformSystem {
     @inlinable
-    override func update(withTimePassed deltaTime: Float) {
+    override func update(game: Game, input: HID, layout: WindowLayout, withTimePassed deltaTime: Float) {
         game.resourceManager.update(withTimePassed: deltaTime)
     }
     
