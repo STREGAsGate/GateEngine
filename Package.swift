@@ -23,7 +23,7 @@ let package = Package(
     ],
     targets: {
         var targets: [Target] = []
-        targets.append(
+        targets.append(contentsOf: [
             .target(name: "GateEngine",
                     dependencies: {
                         var dependencies: [Target.Dependency] = []
@@ -55,16 +55,14 @@ let package = Package(
                     ],
                     swiftSettings: [
                         .define("SUPPORTS_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
-//                        .define("GATEENGINE_WASI_IDE_SUPPORT"),
+                        //.define("GATEENGINE_WASI_IDE_SUPPORT"),
                     ],
                     linkerSettings: [
                         .linkedLibrary("GameMath", .when(platforms: [.windows])),
-                    ])
-        )
-        
-        targets.append(
-            .target(name: "Shaders", dependencies: ["GameMath"])
-        )
+                    ]),
+            
+            .target(name: "Shaders", dependencies: ["GameMath"]),
+        ])
         
         // MARK: - GateEngineDependencies
         
@@ -82,7 +80,7 @@ let package = Package(
         #endif
         
         // Vorbis
-        targets.append(
+        targets.append(contentsOf: [
             .target(name: "Vorbis",
                     path: "Sources/GateEngineDependencies/Vorbis",
                     publicHeadersPath: "include",
@@ -93,11 +91,9 @@ let package = Package(
                     linkerSettings: [
                         // SR-14728
                         .linkedLibrary("swiftCore", .when(platforms: [.windows])),
-                    ])
-        )
-        
-        // libspng
-        targets.append(
+                    ]),
+            
+            // libspng
             .target(name: "LibSPNG",
                     path: "Sources/GateEngineDependencies/LibSPNG",
                     cSettings: [
@@ -109,11 +105,9 @@ let package = Package(
                     linkerSettings: [
                         // SR-14728
                         .linkedLibrary("swiftCore", .when(platforms: [.windows])),
-                    ])
-        )
-        
-        // TrueType
-        targets.append(
+                    ]),
+            
+            // TrueType
             .target(name: "TrueType",
                     path: "Sources/GateEngineDependencies/TrueType",
                     cSettings: [
@@ -125,13 +119,13 @@ let package = Package(
                     linkerSettings: [
                         // SR-14728
                         .linkedLibrary("swiftCore", .when(platforms: [.windows])),
-                    ])
-            )
+                    ]),
+        ])
         
         // MARK: - Tests
-        targets.append(
-            .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"])
-        )
+        targets.append(contentsOf: [
+            .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"]),
+        ])
         
         return targets
     }()
