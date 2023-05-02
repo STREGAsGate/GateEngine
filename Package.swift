@@ -28,6 +28,9 @@ let package = Package(
                     .byNameItem(name: "Vorbis", condition: .when(platforms: [
                         .macOS, .windows, .linux, .iOS, .tvOS, .android
                     ])),
+                    .byNameItem(name: "LinuxSupport", condition: .when(platforms: [
+                        .linux
+                    ])),
                     
                     .product(name: "Atomics", package: "swift-atomics"),
                     .product(name: "Collections", package: "swift-collections"),
@@ -43,7 +46,7 @@ let package = Package(
                     .copy("System/HID/GamePad/GamePadInterpreter/Interpreters/HID/Mapping/SDL2/SDL2 Game Controller DB.txt"),
                 ],
                 swiftSettings: [
-                    .define("SUPPORTS_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
+                    .define("SUPPORTS_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
                     //.define("GATEENGINE_WASI_IDE_SUPPORT"),
                 ],
                 linkerSettings: [
