@@ -23,24 +23,28 @@ let package = Package(
     ],
     targets: [
         .target(name: "GateEngine",
-                dependencies: [
-                    .byNameItem(name: "Vorbis", condition: .when(platforms: [
-                    "GameMath", "Shaders", "TrueType", "LibSPNG",
-                        .macOS, .windows, .linux, .iOS, .tvOS, .android
-                    ])),
-                    .byNameItem(name: "LinuxSupport", condition: .when(platforms: [
-                        .linux
-                    ])),
+                dependencies: {
+                    var array: [Target.Dependency] = []
+                    array.append(contentsOf: ["GameMath", "Shaders", "TrueType", "LibSPNG"])
+                    array.append(.target(name: "Vorbis", condition: .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])))
                     
-                    .product(name: "Atomics", package: "swift-atomics"),
-                    .product(name: "Collections", package: "swift-collections"),
+                    #if os(Linux)
+                    array.append(.target(name: "LinuxSupport", condition: .when(platforms: [.linux])))
+                    #endif
+
+                    array.append(.product(name: "Atomics", package: "swift-atomics"))
+                    array.append(.product(name: "Collections", package: "swift-collections"))
                     
-                    .product(name: "JavaScriptEventLoop", package: "JavaScriptKit", condition: .when(platforms: [.wasi])),
-                    .product(name: "DOM", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
-                    .product(name: "WebAudio", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
-                    .product(name: "Gamepad", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
-                    .product(name: "WebGL2", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
-                ],
+                    #if os(macOS) || os(Linux)
+                    array.append(.product(name: "JavaScriptEventLoop", package: "JavaScriptKit", condition: .when(platforms: [.wasi])))
+                    array.append(.product(name: "DOM", package: "WebAPIKit", condition: .when(platforms: [.wasi])))
+                    array.append(.product(name: "WebAudio", package: "WebAPIKit", condition: .when(platforms: [.wasi])))
+                    array.append(.product(name: "Gamepad", package: "WebAPIKit", condition: .when(platforms: [.wasi])))
+                    array.append(.product(name: "WebGL2", package: "WebAPIKit", condition: .when(platforms: [.wasi])))
+                    #endif
+                    
+                    return array
+                }(),
                 resources: [
                     .copy("_Resources/GateEngine"),
                     .copy("System/HID/GamePad/GamePadInterpreter/Interpreters/HID/Mapping/SDL2/SDL2 Game Controller DB.txt"),
