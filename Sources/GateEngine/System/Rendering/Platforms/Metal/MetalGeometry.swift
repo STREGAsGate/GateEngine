@@ -7,6 +7,7 @@
 #if canImport(MetalKit)
 
 import MetalKit
+import Collections
 
 class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
     let primitive: DrawFlags.Primitive

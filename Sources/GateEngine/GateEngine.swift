@@ -6,8 +6,6 @@
  */
 
 @_exported import GameMath
-@_exported import Atomics
-@_exported import Collections
 
 extension String: Error {}
 
