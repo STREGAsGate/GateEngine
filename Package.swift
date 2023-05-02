@@ -31,7 +31,7 @@ let package = Package(
                         dependencies.append(.target(name: "Vorbis", condition: .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])))
                         
                         #if os(Linux)
-                        array.append(.target(name: "LinuxSupport", condition: .when(platforms: [.linux])))
+                        dependencies.append(.target(name: "LinuxSupport", condition: .when(platforms: [.linux])))
                         #endif
                         
                         dependencies.append(.product(name: "Atomics", package: "swift-atomics"))
