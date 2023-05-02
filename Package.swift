@@ -68,7 +68,7 @@ let package = Package(
         
         // LinuxSupport
         #if os(Linux)
-        array.append(contentsOf: [
+        targets.append(contentsOf: [
             .target(name: "LinuxSupport",
                     dependencies: ["LinuxImports", "LinuxExtensions"],
                     path: "Sources/GateEngineDependencies/LinuxSupport/LinuxSupport"),
