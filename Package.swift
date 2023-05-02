@@ -11,7 +11,6 @@ let package = Package(
     ],
     dependencies: [
         // GateEngine
-        .package(url: "https://github.com/STREGAsGate/GateEngineDependencies.git", branch: "main"),
         .package(url: "https://github.com/STREGAsGate/GameMath.git", branch: "master"),
         
         // Official
@@ -25,11 +24,8 @@ let package = Package(
     targets: [
         .target(name: "GateEngine",
                 dependencies: [
-                    "GameMath",
-                    .product(name: "Shaders", package: "GateEngineDependencies"),
-                    .product(name: "TrueType", package: "GateEngineDependencies"),
-                    .product(name: "libspng", package: "GateEngineDependencies"),
-                    .product(name: "Vorbis", package: "GateEngineDependencies", condition: .when(platforms: [
+                    "GameMath", "Shaders", "TrueType", "libspng",
+                    .byNameItem(name: "Vorbis", condition: .when(platforms: [
                         .macOS, .windows, .linux, .iOS, .tvOS, .android
                     ])),
                     
@@ -53,6 +49,62 @@ let package = Package(
                 linkerSettings: [
                     .linkedLibrary("GameMath", .when(platforms: [.windows])),
                 ]),
+        
+        .target(name: "Shaders", dependencies: ["GameMath"]),
+        
+        // MARK: - GateEngineDependencies
+        
+        // LinuxSupport
+        .target(name: "LinuxSupport",
+                dependencies: ["LinuxImports", "LinuxExtensions"],
+                path: "Sources/GateEngineDependencies/LinuxSupport/LinuxSupport"),
+        .target(name: "LinuxExtensions",
+                path: "Sources/GateEngineDependencies/LinuxSupport/LinuxExtensions"),
+        .systemLibrary(name: "LinuxImports",
+                       path: "Sources/GateEngineDependencies/LinuxSupport/LinuxImports"),
+        
+        // Vorbis
+        .target(name: "Vorbis",
+                path: "Sources/GateEngineDependencies/Vorbis",
+                publicHeadersPath: "include",
+                cSettings: [
+                    .unsafeFlags(["-Wno-everything"]),
+                    .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows]))
+                ],
+                linkerSettings: [
+                    // SR-14728
+                    .linkedLibrary("swiftCore", .when(platforms: [.windows])),
+                ]),
+        
+        // libspng
+        .target(name: "libspng",
+                path: "Sources/GateEngineDependencies/libspng",
+                cSettings: [
+                    .unsafeFlags(["-Wno-everything"]),
+                    .define("SPNG_USE_MINIZ"),
+                    .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows])),
+                    .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])), // Silence warnings
+                ],
+                linkerSettings: [
+                    // SR-14728\
+                    .linkedLibrary("swiftCore", .when(platforms: [.windows])),
+                ]),
+        
+        // TrueType
+        .target(name: "TrueType",
+                path: "Sources/GateEngineDependencies/TrueType",
+                cSettings: [
+                    .unsafeFlags(["-Wno-everything"]),
+                    .define("STB_TRUETYPE_IMPLEMENTATION"), .define("STB_RECT_PACK_IMPLEMENTATION"),
+                    .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows])),
+                    .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])), // Silence warnings
+                ],
+                linkerSettings: [
+                    // SR-14728
+                    .linkedLibrary("swiftCore", .when(platforms: [.windows])),
+                ]),
+        
+        // MARK: - Tests
         .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"]),
     ]
 )

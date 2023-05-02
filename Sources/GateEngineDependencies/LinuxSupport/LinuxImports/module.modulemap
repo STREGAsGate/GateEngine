@@ -1,0 +1,6 @@
+module LinuxImportsGFX [system] {
+    header "shim.h"
+    link "X11"
+    link "GLX"
+    export *
+}
