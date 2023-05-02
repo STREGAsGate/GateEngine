@@ -23,10 +23,10 @@ struct AlignedCharacter {
 }
 
 protocol FontBackend {
-    var preferredSampleFilter: Text.SampleFilter {get}
+    nonisolated var preferredSampleFilter: Text.SampleFilter {get}
     @MainActor mutating func texture(forKey key: Font.Key) -> Texture
-    mutating func characterData(forKey key: Font.Key, character: Character) -> CharacterData
-    mutating func alignedCharacter(forKey key: Font.Key, character: Character, origin: Position2, xAdvance: inout Float) -> AlignedCharacter
+    @MainActor mutating func characterData(forKey key: Font.Key, character: Character) -> CharacterData
+    @MainActor mutating func alignedCharacter(forKey key: Font.Key, character: Character, origin: Position2, xAdvance: inout Float) -> AlignedCharacter
 }
 
 public class Font: OldResource {
@@ -77,12 +77,12 @@ public class Font: OldResource {
         }
     }
     
-    func characterData(forCharacter character: Character, pointSize: UInt, style: Font.Style) -> CharacterData {
+    @MainActor func characterData(forCharacter character: Character, pointSize: UInt, style: Font.Style) -> CharacterData {
         let key = Key(style: style, pointSize: pointSize)
         return backend.characterData(forKey: key, character: character)
     }
     
-    func alignedCharacter(forCharacter character: Character, pointSize: UInt, style: Font.Style, origin: Position2, xAdvance: inout Float) -> AlignedCharacter {
+    @MainActor func alignedCharacter(forCharacter character: Character, pointSize: UInt, style: Font.Style, origin: Position2, xAdvance: inout Float) -> AlignedCharacter {
         let key = Key(style: style, pointSize: pointSize)
         return backend.alignedCharacter(forKey: key, character: character, origin: origin, xAdvance: &xAdvance)
     }

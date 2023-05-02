@@ -132,7 +132,7 @@ public final class Text {
         #endif
     }
 
-    private static func rawGeometry(fromString string: String, font: Font, pointSize: Float, style: Font.Style, paragraphWidth: Float?, interfaceScale: Float) -> (RawGeometry, Size2) {
+    @MainActor private static func rawGeometry(fromString string: String, font: Font, pointSize: Float, style: Font.Style, paragraphWidth: Float?, interfaceScale: Float) -> (RawGeometry, Size2) {
         let roundedPointSize = UInt(pointSize.rounded())
         
         var triangles: [Triangle] = []

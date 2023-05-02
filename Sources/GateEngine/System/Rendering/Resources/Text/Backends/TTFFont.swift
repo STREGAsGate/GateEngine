@@ -132,7 +132,7 @@ fileprivate func getBakedQuad(characterData: [CharData], pixelsWidth: Int32, pix
         self.characterDatas[key] = charData
     }
     
-    var preferredSampleFilter: Text.SampleFilter {.linear}
+    nonisolated var preferredSampleFilter: Text.SampleFilter {.linear}
 }
 
 #endif
