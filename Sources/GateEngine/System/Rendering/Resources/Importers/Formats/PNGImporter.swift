@@ -50,7 +50,7 @@
 
 import Foundation
 import GameMath
-import libspng
+import LibSPNG
 
 public class PNGImporter: TextureImporter {
     public required init() {}

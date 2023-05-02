@@ -24,8 +24,8 @@ let package = Package(
     targets: [
         .target(name: "GateEngine",
                 dependencies: [
-                    "GameMath", "Shaders", "TrueType", "libspng",
                     .byNameItem(name: "Vorbis", condition: .when(platforms: [
+                    "GameMath", "Shaders", "TrueType", "LibSPNG",
                         .macOS, .windows, .linux, .iOS, .tvOS, .android
                     ])),
                     .byNameItem(name: "LinuxSupport", condition: .when(platforms: [
@@ -80,8 +80,8 @@ let package = Package(
                 ]),
         
         // libspng
-        .target(name: "libspng",
-                path: "Sources/GateEngineDependencies/libspng",
+        .target(name: "LibSPNG",
+                path: "Sources/GateEngineDependencies/LibSPNG",
                 cSettings: [
                     .unsafeFlags(["-Wno-everything"]),
                     .define("SPNG_USE_MINIZ"),
