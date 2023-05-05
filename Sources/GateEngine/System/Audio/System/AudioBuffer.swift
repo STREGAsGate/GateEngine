@@ -6,7 +6,7 @@
  */
 
 import Foundation
-#if os(WASI)
+#if os(WASI) || GATEENGINE_WASI_IDE_SUPPORT
 import WebAudio
 import JavaScriptKit
 import DOM

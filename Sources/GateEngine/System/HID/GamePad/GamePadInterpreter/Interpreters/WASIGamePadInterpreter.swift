@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if os(WASI)// || (DEBUG && (os(macOS) || os(Linux)))
+#if os(WASI) || GATEENGINE_WASI_IDE_SUPPORT
 
 import JavaScriptKit
 import DOM
