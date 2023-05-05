@@ -20,6 +20,7 @@ extension Direction3: CustomUniformType {}
 extension Size3: CustomUniformType {}
 extension Matrix3x3: CustomUniformType {}
 extension Matrix4x4: CustomUniformType {}
+extension Array: CustomUniformType where Element == Matrix4x4 {}
 
 public struct Material {
     public var vertexShader: VertexShader = SystemShaders.standardVertexShader

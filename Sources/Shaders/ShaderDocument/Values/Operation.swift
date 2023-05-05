@@ -34,11 +34,35 @@ public final class Operation: ShaderElement {
         case sampler2D(filter: Sampler2D.Filter)
         case lerp(factor: Scalar)
     }
-    let lhs: ShaderValue
+    let lhs: any ShaderValue
     let `operator`: Operator
-    let rhs: ShaderValue
+    let rhs: any ShaderValue
         
     public init(lhs: Scalar, operator: Operator, rhs: Scalar) {
+        self.lhs = lhs
+        self.operator = `operator`
+        self.rhs = rhs
+    }
+    
+    public init(lhs: Vec2, operator: Operator, rhs: Scalar) {
+        self.lhs = lhs
+        self.operator = `operator`
+        self.rhs = rhs
+    }
+    
+    public init(lhs: Vec3, operator: Operator, rhs: Scalar) {
+        self.lhs = lhs
+        self.operator = `operator`
+        self.rhs = rhs
+    }
+    
+    public init(lhs: Vec4, operator: Operator, rhs: Scalar) {
+        self.lhs = lhs
+        self.operator = `operator`
+        self.rhs = rhs
+    }
+    
+    public init(lhs: UVec4, operator: Operator, rhs: Scalar) {
         self.lhs = lhs
         self.operator = `operator`
         self.rhs = rhs
@@ -57,6 +81,12 @@ public final class Operation: ShaderElement {
     }
     
     public init(lhs: Vec4, operator: Operator, rhs: Vec4) {
+        self.lhs = lhs
+        self.operator = `operator`
+        self.rhs = rhs
+    }
+    
+    public init(lhs: UVec4, operator: Operator, rhs: UVec4) {
         self.lhs = lhs
         self.operator = `operator`
         self.rhs = rhs

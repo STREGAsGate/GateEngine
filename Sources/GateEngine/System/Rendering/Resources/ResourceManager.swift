@@ -114,21 +114,8 @@ public class ResourceManager {
 
 extension ResourceManager {
     class Cache {
-        // Texture
         var textures: [TextureKey : TextureCache] = [:]
-        
-        // Geometry
         var geometries: [GeometryKey : GeometryCache] = [:]
-        
-        // SkinnedGeometry
-        struct SkinnedGeometryKey: Hashable {
-            let path: String
-            let geometryOptions: GeometryImporterOptions
-            let skinOptions: SkinImporterOptions
-        }
-        struct SkinnedGeometryCache {
-            weak var skinnedGeometry: SkinnedGeometryBackend? = nil
-        }
         var skinnedGeometries: [SkinnedGeometryKey : SkinnedGeometryCache] = [:]
         
         // Skeleton
@@ -251,7 +238,7 @@ internal extension ResourceManager {
     func geometryNeedsReload(key: Cache.GeometryKey) -> Bool {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else {return false}
-        #if SUPPORTS_HOTRELOADING
+        #if GATEENGINE_SUPPORTS_HOTRELOADING
         guard let cache = cache.geometries[key] else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)
@@ -274,6 +261,143 @@ internal extension ResourceManager {
         return await MetalGeometry(geometry: raw)
 #elseif canImport(WebGL2)
         return await WebGL2Geometry(geometry: raw)
+#endif
+    }
+}
+
+// MARK: - SkinnedGeometry
+internal extension ResourceManager.Cache {
+    struct SkinnedGeometryKey: Hashable {
+        let requestedPath: String
+        let geometryOptions: GeometryImporterOptions
+        let skinOptions: SkinImporterOptions
+    }
+    
+    class SkinnedGeometryCache {
+        var geometryBackend: GeometryBackend?
+        var skinJoints: [Skin.Joint]?
+        var lastLoaded: Date
+        var state: ResourceState
+        var referenceCount: UInt
+        var minutesDead: UInt
+        var cacheHint: CacheHint
+        init() {
+            self.geometryBackend = nil
+            self.skinJoints = nil
+            self.lastLoaded = Date()
+            self.state = .pending
+            self.referenceCount = 0
+            self.minutesDead = 0
+            self.cacheHint = .until(minutes: 5)
+        }
+    }
+}
+internal extension ResourceManager {
+    func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.SkinnedGeometryKey) {
+        cache.skinnedGeometries[key]?.cacheHint = cacheHint
+        cache.skinnedGeometries[key]?.minutesDead = 0
+    }
+    
+    func skinnedGeometryCacheKey(path: String, geometryOptions: GeometryImporterOptions, skinOptions: SkinImporterOptions) -> Cache.SkinnedGeometryKey {
+        let key = Cache.SkinnedGeometryKey(requestedPath: path, geometryOptions: geometryOptions, skinOptions: skinOptions)
+        if cache.skinnedGeometries[key] == nil {
+            cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
+            Task {
+                do {
+                    let geometry = try await RawGeometry(path: path, options: geometryOptions)
+                    let skin = try await Skin(path: key.requestedPath, options: skinOptions)
+                    let backend = await geometryBackend(from: geometry, skin: skin)
+                    Task {@MainActor in
+                        if let cache = self.cache.skinnedGeometries[key] {
+                            cache.geometryBackend = backend
+                            cache.skinJoints = skin.joints
+                            cache.state = .ready
+                        }
+                    }
+                }catch{
+                    Task {@MainActor in
+                        cache.skinnedGeometries[key]!.state = .failed(reason: "\(error)")
+                    }
+                }
+            }
+        }
+        return key
+    }
+    
+    func skinnedGeometryCacheKey(rawGeometry geometry: RawGeometry?, skin: Skin) -> Cache.SkinnedGeometryKey {
+        let path = "$\(rawCacheID.wrappingIncrementThenLoad(ordering: .sequentiallyConsistent))"
+        let key = Cache.SkinnedGeometryKey(requestedPath: path, geometryOptions: .none, skinOptions: .none)
+        if cache.skinnedGeometries[key] == nil {
+            cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
+            if let geometry = geometry {
+                Task {
+                    let backend = await geometryBackend(from: geometry, skin: skin)
+                    Task {@MainActor in
+                        if let cache = self.cache.skinnedGeometries[key] {
+                            cache.geometryBackend = backend
+                            cache.state = .ready
+                        }
+                    }
+                }
+            }
+        }
+        return key
+    }
+    
+    func skinnedGeometryCache(for key: Cache.SkinnedGeometryKey) -> Cache.SkinnedGeometryCache? {
+        return cache.skinnedGeometries[key]
+    }
+    
+    func incrementReference(_ key: Cache.SkinnedGeometryKey) {
+        self.skinnedGeometryCache(for: key)?.referenceCount += 1
+    }
+    func decrementReference(_ key: Cache.SkinnedGeometryKey) {
+        self.skinnedGeometryCache(for: key)?.referenceCount -= 1
+    }
+    
+    func reloadSkinnedGeometryIfNeeded(key: Cache.SkinnedGeometryKey) {
+        // Skip if made from RawGeometry
+        guard key.requestedPath[key.requestedPath.startIndex] != "$" else {return}
+        Task {
+            guard self.skinnedGeometryNeedsReload(key: key) else {return}
+            let geometry = try await RawGeometry(path: key.requestedPath, options: key.geometryOptions)
+            let skin = try await Skin(path: key.requestedPath, options: key.skinOptions)
+            let backend = await geometryBackend(from: geometry, skin: skin)
+            Task {@MainActor in
+                if let cache = self.cache.skinnedGeometries[key] {
+                    cache.geometryBackend = backend
+                    cache.skinJoints = skin.joints
+                }
+            }
+        }
+    }
+    
+    func skinnedGeometryNeedsReload(key: Cache.SkinnedGeometryKey) -> Bool {
+        // Skip if made from RawGeometry
+        guard key.requestedPath[key.requestedPath.startIndex] != "$" else {return false}
+        #if GATEENGINE_SUPPORTS_HOTRELOADING
+        guard let cache = cache.skinnedGeometries[key] else {return false}
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)
+            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date {
+                return modified > cache.lastLoaded
+            }else{
+                return false
+            }
+        }catch{
+            print(error.localizedDescription)
+            return false
+        }
+        #else
+        return false
+        #endif
+    }
+    
+    func geometryBackend(from raw: RawGeometry, skin: Skin) async -> GeometryBackend {
+#if canImport(MetalKit)
+        return await MetalGeometry(geometry: raw, skin: skin)
+#elseif canImport(WebGL2)
+        return await WebGL2Geometry(geometry: raw, skin: skin)
 #endif
     }
 }
@@ -464,7 +588,7 @@ internal extension ResourceManager {
     func textureNeedsReload(key: Cache.TextureKey) -> Bool {
         // Skip if made from rawCacheID
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else {return false}
-        #if SUPPORTS_HOTRELOADING
+        #if GATEENGINE_SUPPORTS_HOTRELOADING
         guard let cache = cache.textures[key] else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)

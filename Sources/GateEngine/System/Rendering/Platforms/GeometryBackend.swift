@@ -61,9 +61,9 @@ extension Array where Element == GeometryBackend {
                 case .color:
                     attributes.append(.vertexInColor(geoemtryIndex: geometryIndex))
                 case .jointIndicies:
-                    fatalError()
+                    attributes.append(.vertexInJointIndices(geoemtryIndex: geometryIndex))
                 case .jointWeights:
-                    fatalError()
+                    attributes.append(.vertexInJointWeights(geoemtryIndex: geometryIndex))
                 }
             }
         }

@@ -60,7 +60,6 @@ import GameMath
     */
     @inline(__always)
     public mutating func insert(_ geometry: Geometry, withMaterial material: Material, at transforms: [Transform3], flags: SceneElementFlags = .default) {
-        guard flags.shouldSkipDrawing == false else {return}
         guard geometry.state == .ready else {return}
         guard material.isReady else {return}
         guard let geometryBackend = geometry.backend else {return}
@@ -98,12 +97,15 @@ import GameMath
     */
     @inline(__always)
     public mutating func insert(_ geometry: SkinnedGeometry, withPose pose: Skeleton.Pose, material: Material, at transforms: [Transform3], flags: SceneElementFlags = .default) {
-        guard flags.shouldSkipDrawing == false else {return}
         guard geometry.state == .ready else {return}
         guard material.isReady else {return}
-        
-//        let skinnedGeometry = DrawableSkinnedGeometry(geometry: geometry, pose: pose, material: material, transforms: transforms, flags: flags)
-//        self.drawableOrder.append(.skinnedGeometry(skinnedGeometry))
+        var material = material
+        material.vertexShader = SystemShaders.standardSkinnedVertexShader
+        material.setCustomUniformValue(pose.shaderMatrixArray(orderedFromSkinJoints: geometry.skinJoints!), forUniform: "bones")
+        guard let geometryBackend = geometry.backend else {return}
+
+        let command = DrawCommand(geometries: [geometryBackend], transforms: transforms, material: material, flags: flags.drawFlags)
+        self.drawCommands.append(command)
     }
     
     @inline(__always)
@@ -112,16 +114,11 @@ import GameMath
                                 interpolationFactors factor: Float,
                                 at transforms: [Transform3],
                                 flags: SceneElementFlags = .default) {
-        guard flags.shouldSkipDrawing == false else {return}
         guard source.state == .ready && destination.state == .ready else {return}
         guard sourceMaterial.isReady && destinationMaterial.isReady else {return}
         guard let sourceGeometryBackend = Game.shared.resourceManager.geometryCache(for: source.cacheKey)?.geometryBackend else {return}
         guard let destinationGeometryBackend = Game.shared.resourceManager.geometryCache(for: destination.cacheKey)?.geometryBackend else {return}
 
-
-//        let morph = DrawableMorphGeometry(src: source, srcMaterial: sourceMaterial, dst: destination, dstMaterial: destinationMaterial, transforms: transforms, factors: factors, flags: flags)
-//        self.drawableOrder.append(.morphGepmetry(morph))
-        
         let command = DrawCommand(geometries: [sourceGeometryBackend, destinationGeometryBackend], transforms: transforms, material: sourceMaterial, flags: flags.drawFlags)
         self.drawCommands.append(command)
     }
@@ -285,11 +282,6 @@ public struct SceneElementFlags: OptionSet, Hashable {
     
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
-    }
-    
-    @_transparent
-    internal var shouldSkipDrawing: Bool {
-        return false
     }
     
     @_transparent

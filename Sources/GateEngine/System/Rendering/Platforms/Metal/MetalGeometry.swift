@@ -66,7 +66,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 3, shaderAttribute: .normal),
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
             .init(type: .uInt32, componentLength: 4, shaderAttribute: .jointIndicies),
-            .init(type: .uInt32, componentLength: 4, shaderAttribute: .jointWeights),
+            .init(type: .float, componentLength: 4, shaderAttribute: .jointWeights),
         ]
         
         let sharedBuffers: [MTLBuffer] = [

@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if os(WASI) || (GATEENGINE_WASI_IDE_SUPPORT && (DEBUG && (os(macOS) || os(Linux))))
+#if os(WASI) || GATEENGINE_WASI_IDE_SUPPORT
 import WebAPIBase
 import DOM
 import WebGL1
@@ -15,7 +15,7 @@ import Shaders
 public typealias GL = WebGL2RenderingContext
 
 class WebGL2Renderer: RendererBackend {
-    #if DEBUG
+    #if GATEENGINE_SHOW_DEBUG
     var singleWarnings: Set<String> = []
     func printOnce(_ string: String) {
         guard singleWarnings.contains(string) == false else {return}
@@ -60,7 +60,7 @@ class WebGL2Renderer: RendererBackend {
                         
             let sources = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: attributes)
             
-            #if DEBUG
+            #if GATEENGINE_SHOW_SHADERS
             print("[GateEngine] Generated OpenGL ES Vertex Shader:\n\n\(generator.addingLineNumbers(sources.vertexSource))\n")
             #endif
             let _vsh = gl.createShader(type: WebGL2RenderingContext.VERTEX_SHADER)!
@@ -70,7 +70,7 @@ class WebGL2Renderer: RendererBackend {
                 print("[GateEngine] Error \(self.self).\(#function):\(#line), WebGL Error:\n\(error)")
             }
             
-            #if DEBUG
+            #if GATEENGINE_SHOW_SHADERS
             print("[GateEngine] Generated OpenGL ES Fragment Shader:\n\n\(generator.addingLineNumbers(sources.fragmentSource))\n")
             #endif
             let _fsh = gl.createShader(type: WebGL2RenderingContext.FRAGMENT_SHADER)!
@@ -92,7 +92,7 @@ class WebGL2Renderer: RendererBackend {
                     print("[GateEngine] GL Error: Link Failed")
                 }
             }
-            #if DEBUG
+            #if GATEENGINE_SHOW_DEBUG
             checkError()
             #endif
             return program
@@ -108,13 +108,19 @@ class WebGL2Renderer: RendererBackend {
         let program = webGLShader(vsh: drawCommand.material.vertexShader, fsh: drawCommand.material.fragmentShader, attributes: drawCommand.geometries.shaderAttributes).program
         
         gl.useProgram(program: program)
+        
+        #if GATEENGINE_SHOW_DEBUG
         checkError()
+        #endif
         
         setFlags(drawCommand.flags, in: gl)
         setWinding(drawCommand.flags.winding, in: gl)
         setUniforms(matrices, program: program, generator: generator, in: gl)
         setMaterial(drawCommand.material, generator: generator, program: program, in: gl)
+        
+        #if GATEENGINE_SHOW_DEBUG
         checkError()
+        #endif
         
         let vao: WebGLVertexArrayObject! = gl.createVertexArray()
         gl.bindVertexArray(array: vao)
@@ -123,7 +129,10 @@ class WebGL2Renderer: RendererBackend {
         setTransforms(drawCommand.transforms, at: &vertexIndex, in: gl)
         
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: geometries[0].buffers.last!)
+        
+        #if GATEENGINE_SHOW_DEBUG
         checkError()
+        #endif
         
         gl.drawElementsInstanced(mode: primitive(from: drawCommand.flags.primitive),
                                  count: geometries[0].indiciesCount,
@@ -131,7 +140,8 @@ class WebGL2Renderer: RendererBackend {
                                  offset: 0,
                                  instanceCount: GLsizei(drawCommand.transforms.count))
         gl.deleteVertexArray(vertexArray: vao)
-        #if DEBUG
+        
+        #if GATEENGINE_SHOW_DEBUG
         checkError()
         #endif
     }
@@ -202,7 +212,7 @@ extension WebGL2Renderer {
             gl.uniformMatrix4fv(location: pMatrixLocation, transpose: false, data: pMtx)
             checkError()
         }
-        #if DEBUG
+        #if GATEENGINE_SHOW_DEBUG
         checkError()
         #endif
     }
@@ -244,7 +254,7 @@ extension WebGL2Renderer {
             gl.vertexAttribDivisor(index: atrributeLocation, divisor: 1)
         }
         index += 4
-        #if DEBUG
+        #if GATEENGINE_SHOW_DEBUG
         checkError()
         #endif
     }
@@ -260,7 +270,7 @@ extension WebGL2Renderer {
                     gl.bindTexture(target: GL.TEXTURE_2D, texture: texture.textureId)
                     gl.uniform1i(location: location, x: GLint(index))
                 }else{
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
                     printOnce("[GateEngine] Warning: OpenGL attribute [\(textureName)] not found.")
 #endif
                 }
@@ -270,7 +280,7 @@ extension WebGL2Renderer {
             if let location = gl.getUniformLocation(program: program, name: scaleName) {
                 gl.uniform2f(location: location, x: channel.scale.x, y: channel.scale.y)
             }else{
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
                 printOnce("[GateEngine] Warning: OpenGL attribute [\(scaleName)] not found.")
 #endif
             }
@@ -278,7 +288,7 @@ extension WebGL2Renderer {
             if let location = gl.getUniformLocation(program: program, name: offsetName) {
                 gl.uniform2f(location: location, x: channel.offset.x, y: channel.offset.y)
             }else{
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
                 printOnce("[GateEngine] Warning: OpenGL attribute [\(offsetName)] not found.")
 #endif
             }
@@ -286,7 +296,7 @@ extension WebGL2Renderer {
             if let location = gl.getUniformLocation(program: program, name: colorName) {
                 gl.uniform4f(location: location, x: channel.color.red, y: channel.color.green, z: channel.color.blue, w: channel.color.alpha)
             }else{
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
                 printOnce("[GateEngine] Warning: OpenGL attribute [\(colorName)] not found.")
 #endif
             }
@@ -301,7 +311,7 @@ extension WebGL2Renderer {
                     if let location = gl.getUniformLocation(program: program, name: name) {
                         gl.uniform1i(location: location, x: value ? 1 : 0)
                     }else{
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
                         printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
 #endif
                     }
@@ -309,7 +319,7 @@ extension WebGL2Renderer {
                     if let location = gl.getUniformLocation(program: program, name: name) {
                         gl.uniform1i(location: location, x: GLint(value))
                     }else{
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
                         printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
 #endif
                     }
@@ -317,7 +327,7 @@ extension WebGL2Renderer {
                     if let location = gl.getUniformLocation(program: program, name: name) {
                         gl.uniform1f(location: location, x: value)
                     }else{
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
                         printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
 #endif
                     }
@@ -325,7 +335,7 @@ extension WebGL2Renderer {
                     if let location = gl.getUniformLocation(program: program, name: name) {
                         gl.uniform2f(location: location, x: value.x, y: value.y)
                     }else{
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
                         printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
 #endif
                     }
@@ -333,7 +343,7 @@ extension WebGL2Renderer {
                     if let location = gl.getUniformLocation(program: program, name: name) {
                         gl.uniform3f(location: location, x: value.x, y: value.y, z: value.z)
                     }else{
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
                         printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
 #endif
                     }
@@ -342,7 +352,7 @@ extension WebGL2Renderer {
                         let data = Float32List.float32Array(Float32Array(value.transposedArray()))
                         gl.uniformMatrix3fv(location: location, transpose: false, data: data)
                     }else{
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
                         printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
 #endif
                     }
@@ -351,7 +361,24 @@ extension WebGL2Renderer {
                         let data = Float32List.float32Array(Float32Array(value.transposedArray()))
                         gl.uniformMatrix4fv(location: location, transpose: false, data: data)
                     }else{
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
+                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+#endif
+                    }
+                case let value as Array<Matrix4x4>:
+                    if let location = gl.getUniformLocation(program: program, name: name) {
+                        var floats: [Float] = []
+                        floats.reserveCapacity(value.count * 16 * 60)
+                        for mtx in value {
+                            floats.append(contentsOf: mtx.transposedArray())
+                        }
+//                        while floats.count < 16 * 60 {
+//                            floats.append(0)
+//                        }
+                        let data = Float32List.float32Array(Float32Array(floats))
+                        gl.uniformMatrix4fv(location: location, transpose: false, data: data)
+                    }else{
+#if GATEENGINE_SHOW_DEBUG
                         printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
 #endif
                     }
@@ -361,7 +388,7 @@ extension WebGL2Renderer {
             }
         }
         
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
         checkError()
 #endif
     }
@@ -372,19 +399,24 @@ extension WebGL2Renderer {
             for attributeIndex in geometry.attributes.indices {
                 let attribute = geometry.attributes[attributeIndex]
                 gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: geometry.buffers[attributeIndex])
+                gl.enableVertexAttribArray(index: GLuint(index))
+
+                let type: GLenum
                 switch attribute.type {
                 case .float:
-                    gl.vertexAttribPointer(index: GLuint(index), size: GLint(attribute.componentLength), type: GL.FLOAT, normalized: false, stride: 0, offset: 0)
+                    type = GL.FLOAT
                 case .uInt16:
-                    gl.vertexAttribPointer(index: GLuint(index), size: GLint(attribute.componentLength), type: GL.UNSIGNED_SHORT, normalized: false, stride: 0, offset: 0)
+                    type = GL.UNSIGNED_SHORT
                 case .uInt32:
-                    gl.vertexAttribPointer(index: GLuint(index), size: GLint(attribute.componentLength), type: GL.UNSIGNED_INT, normalized: false, stride: 0, offset: 0)
+                    type = GL.UNSIGNED_INT
                 }
-                gl.enableVertexAttribArray(index: GLuint(index))
+                
+                gl.vertexAttribPointer(index: GLuint(index), size: GLint(attribute.componentLength), type: type, normalized: false, stride: 0, offset: 0)
+                
                 index += 1
             }
         }
-#if DEBUG
+#if GATEENGINE_SHOW_DEBUG
         checkError()
 #endif
     }
@@ -398,13 +430,20 @@ extension WebGL2Renderer {
     static let context: WebGL2RenderingContext = {
         let element = globalThis.document.getElementById(elementId: "mainCanvas")!
         let canvas = HTMLCanvasElement(from: element)!
-        let context = canvas.getContext(WebGL2RenderingContext.self, options: ["high-performance":true].jsValue)!
+        let options = [
+            "powerPreference": "high-performance",
+            "preserveDrawingBuffer": true,
+            "desynchronized": true,
+            "antialias": false,
+            "failIfMajorPerformanceCaveat": false,
+        ].jsValue
+        let context = canvas.getContext(WebGL2RenderingContext.self, options: options)!
         return context
     }()
     
     @_transparent
     func checkError(_ function: String = #function, _ line: Int = #line) {
-        #if DEBUG
+        #if GATEENGINE_SHOW_DEBUG
         var error = Self.context.checkFramebufferStatus(target: WebGL2RenderingContext.FRAMEBUFFER)
         if error == GL.FRAMEBUFFER_COMPLETE {
             error = Self.context.getError()

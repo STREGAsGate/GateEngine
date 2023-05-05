@@ -15,12 +15,20 @@ public final class Vec2: ShaderValue {
     internal var _y: Scalar?
     
     public var x: Scalar {
-        get {Scalar(representation: .vec2X(self), type: .float1)}
+        get {Scalar(representation: .vec2Value(self, 0), type: .float)}
         set {self._x = newValue}
     }
     public var y: Scalar {
-        get {Scalar(representation: .vec2Y(self), type: .float1)}
+        get {Scalar(representation: .vec2Value(self, 1), type: .float)}
         set {self._y = newValue}
+    }
+    
+    public subscript (index: Int) -> Scalar {
+        switch index {
+        case 0: return self.x
+        case 1: return self.y
+        default: fatalError("Index out of range.")
+        }
     }
     
     internal init(representation: ValueRepresentation, type: ValueType) {
@@ -59,6 +67,19 @@ public final class Vec2: ShaderValue {
         return Vec2(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
     }
     
+    public static func +(lhs: Vec2, rhs: Scalar) -> Vec2 {
+        return Vec2(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    public static func -(lhs: Vec2, rhs: Scalar) -> Vec2 {
+        return Vec2(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
+    }
+    public static func *(lhs: Vec2, rhs: Scalar) -> Vec2 {
+        return Vec2(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    public static func /(lhs: Vec2, rhs: Scalar) -> Vec2 {
+        return Vec2(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    
     public static func +(lhs: Vec2, rhs: Vec2) -> Vec2 {
         return Vec2(Operation(lhs: lhs, operator: .add, rhs: rhs))
     }
@@ -70,5 +91,18 @@ public final class Vec2: ShaderValue {
     }
     public static func /(lhs: Vec2, rhs: Vec2) -> Vec2 {
         return Vec2(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    
+    public static func +=(lhs: inout Vec2, rhs: Vec2) {
+        lhs = Vec2(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    public static func -=(lhs: inout Vec2, rhs: Vec2) {
+        lhs = Vec2(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
+    }
+    public static func *=(lhs: inout Vec2, rhs: Vec2) {
+        lhs = Vec2(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    public static func /=(lhs: inout Vec2, rhs: Vec2) {
+        lhs = Vec2(Operation(lhs: lhs, operator: .divide, rhs: rhs))
     }
 }

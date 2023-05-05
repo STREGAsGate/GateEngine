@@ -35,9 +35,15 @@ public final class Scalar: ShaderValue {
         self.operation = nil
     }
     
+    public init(_ uint: UInt) {
+        self.valueRepresentation = .scalarUInt(uint)
+        self.valueType = .uint
+        self.operation = nil
+    }
+    
     public init(_ float: Float) {
         self.valueRepresentation = .scalarFloat(float)
-        self.valueType = .float1
+        self.valueType = .float
         self.operation = nil
     }
     
@@ -56,6 +62,19 @@ public final class Scalar: ShaderValue {
     }
     public static func /(lhs: Scalar, rhs: Scalar) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    
+    public static func +=(lhs: inout Scalar, rhs: Scalar) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    public static func -=(lhs: inout Scalar, rhs: Scalar) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
+    }
+    public static func *=(lhs: inout Scalar, rhs: Scalar) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    public static func /=(lhs: inout Scalar, rhs: Scalar) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .divide, rhs: rhs))
     }
 }
 

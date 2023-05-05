@@ -30,7 +30,9 @@ public class GLSLCodeGenerator: CodeGenerator {
             return "bool"
         case .int:
             return "int"
-        case .float1:
+        case .uint:
+            return "uint"
+        case .float:
             return "float"
         case .float2:
             return "vec2"
@@ -38,18 +40,19 @@ public class GLSLCodeGenerator: CodeGenerator {
             return "vec3"
         case .float4:
             return "vec4"
+        case .uint4:
+            return "uvec4"
         case .float3x3:
             return "mat3"
         case .float4x4:
+            return "mat4"
+        case .float4x4Array(_):
             return "mat4"
         }
     }
     
     public override func variable(for representation: ValueRepresentation) -> String {
         switch representation {
-        case .operation, .vec2, .vec3, .vec4, .mat4:
-            fatalError("Shouldn't be asking for a name")
-            
         case .vertexInstanceID:
             return "iid"
         case let .vertexInPosition(index):
@@ -64,6 +67,10 @@ public class GLSLCodeGenerator: CodeGenerator {
             return "iTan\(index)"
         case let .vertexInColor(index):
             return "iClr\(index)"
+        case let .vertexInJointIndicies(index):
+            return "iJtIdx\(index)"
+        case let .vertexInJointWeights(index):
+            return "iJtWeit\(index)"
         case .vertexOutPosition:
             return "gl_Position"
         case .vertexOutPointSize:
@@ -91,29 +98,22 @@ public class GLSLCodeGenerator: CodeGenerator {
             return "\(bool)"
         case let .scalarInt(int):
             return "\(int)"
+        case let .scalarUInt(uint):
+            return "\(uint)"
         case let .scalarFloat(float):
             return "\(float)"
             
-        case let .vec2X(vec):
-            return variable(for: vec) + ".x"
-        case let .vec2Y(vec):
-            return variable(for: vec) + ".y"
+        case let .vec2Value(vec, index):
+            return variable(for: vec) + "[" + variable(for: index) + "]"
+        case let .vec3Value(vec, index):
+            return variable(for: vec) + "[" + variable(for: index) + "]"
+        case let .vec4Value(vec, index):
+            return variable(for: vec) + "[" + variable(for: index) + "]"
+        case let .uvec4Value(vec, index):
+            return variable(for: vec) + "[" + variable(for: index) + "]"
             
-        case let .vec3X(vec):
-            return variable(for: vec) + ".x"
-        case let .vec3Y(vec):
-            return variable(for: vec) + ".y"
-        case let .vec3Z(vec):
-            return variable(for: vec) + ".z"
-            
-        case let .vec4W(vec):
-            return variable(for: vec) + ".w"
-        case let .vec4X(vec):
-            return variable(for: vec) + ".x"
-        case let .vec4Y(vec):
-            return variable(for: vec) + ".y"
-        case let .vec4Z(vec):
-            return variable(for: vec) + ".z"
+        case let .mat4ArrayValue(array, index):
+            return variable(for: array) + "[" + variable(for: index) + "]"
             
         case let .channelAttachment(index: index):
             return "materials[\(index)].texture"
@@ -123,26 +123,38 @@ public class GLSLCodeGenerator: CodeGenerator {
             return "materials[\(index)].offset"
         case let .channelColor(index):
             return "materials[\(index)].color"
+            
+        #if DEBUG
+        case .operation, .vec2, .vec3, .vec4, .uvec4, .mat4, .mat4Array(_):
+            fatalError("Shouldn't be asking for a name")
+        #else
+        default:
+            fatalError()
+        #endif
         }
     }
     
     override func function(for operation: Operation) -> String {
         switch operation.operator {
         case .add, .subtract, .multiply, .divide, .compare(_):
-            return "\(variable(for: operation.lhs)) \(symbol(for: operation.operator)) \(variable(for: operation.rhs))"
+            return variable(for: operation.lhs) + " " + symbol(for: operation.operator) + " " + variable(for: operation.rhs)
         case .branch(comparing: _):
             fatalError()
         case .sampler2D(filter: _):
-            return "texture(\(variable(for: operation.lhs)),\(variable(for: operation.rhs)))"
+            return "texture(" + variable(for: operation.lhs) + "," + variable(for: operation.rhs) + ")"
         case let .lerp(factor: factor):
-            return "mix(\(variable(for: operation.lhs)), \(variable(for: operation.rhs)), \(variable(for: factor)))"
+            return "mix(" + variable(for: operation.lhs) + "," + variable(for: operation.rhs) + "," + variable(for: factor) + ")"
         }
     }
     
     private func generateShaderCode(from vertexShader: VertexShader, attributes: [InputAttribute]) throws -> String {
         var customUniformDefine: String = ""
         for value in vertexShader.sortedCustomUniforms() {
-            customUniformDefine += "\nuniform \(type(for: value.valueType)) \(variable(for: value));"
+            if case let .float4x4Array(capacity) = value.valueType {
+                customUniformDefine += "\nuniform \(type(for: value.valueType)) \(variable(for: value))[\(capacity)];"
+            }else{
+                customUniformDefine += "\nuniform \(type(for: value.valueType)) \(variable(for: value));"
+            }
         }
         
         var vertexGeometryDefine: String = ""
@@ -161,6 +173,10 @@ public class GLSLCodeGenerator: CodeGenerator {
                 vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float3)) \(variable(for: .vertexInTangent(geometryIndex)));"
             case .vertexInColor(geoemtryIndex: let geometryIndex):
                 vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float4)) \(variable(for: .vertexInColor(geometryIndex)));"
+            case .vertexInJointIndices(geoemtryIndex: let geometryIndex):
+                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .uint4)) \(variable(for: .vertexInJointIndicies(geometryIndex)));"
+            case .vertexInJointWeights(geoemtryIndex: let geometryIndex):
+                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float4)) \(variable(for: .vertexInJointWeights(geometryIndex)));"
             }
         }
         vertexGeometryDefine += "\nlayout(location = \(attributes.count)) in \(type(for: .float4x4)) \(variable(for: .uniformModelMatrix));"
@@ -182,7 +198,7 @@ public class GLSLCodeGenerator: CodeGenerator {
         self.prepareForReuse()
         return """
 \(version)
-precision highp \(type(for: .float1));
+precision highp \(type(for: .float));
 
 uniform \(type(for: .float4x4)) \(variable(for: .uniformViewMatrix));
 uniform \(type(for: .float4x4)) \(variable(for: .uniformProjectionMatrix));\(customUniformDefine)
@@ -206,7 +222,11 @@ void main() {
     private func generateShaderCode(from fragmentShader: FragmentShader) throws -> String {
         var customUniformDefine: String = ""
         for value in fragmentShader.sortedCustomUniforms() {
-            customUniformDefine += "\nuniform \(type(for: value)) \(variable(for: value));"
+            if case let .float4x4Array(capacity) = value.valueType {
+                customUniformDefine += "\nuniform \(type(for: value)) \(variable(for: value))[\(capacity)];"
+            }else{
+                customUniformDefine += "\nuniform \(type(for: value)) \(variable(for: value));"
+            }
         }
         
         var inVariables: String = ""
@@ -227,7 +247,7 @@ void main() {
         self.prepareForReuse()
         return """
 \(version)
-precision highp \(type(for: .float1));
+precision highp \(type(for: .float));
 \(customUniformDefine)
 \(inVariables)
 

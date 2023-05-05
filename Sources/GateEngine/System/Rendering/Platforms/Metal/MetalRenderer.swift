@@ -16,11 +16,11 @@ class MetalRenderer: RendererBackend {
     
     private var _shaders: [ShaderKey:MetalShader] = [:]
     struct ShaderKey: Hashable {
-        let vshID: ObjectIdentifier
-        let fshID: ObjectIdentifier
+        let vshID: VertexShader.ID
+        let fshID: FragmentShader.ID
         init(vsh: VertexShader, fsh: FragmentShader) {
-            self.vshID = ObjectIdentifier(vsh)
-            self.fshID = ObjectIdentifier(fsh)
+            self.vshID = vsh.id
+            self.fshID = fsh.id
         }
     }
     struct MetalShader {
@@ -205,8 +205,8 @@ class MetalRenderer: RendererBackend {
 
             pipelineDescriptor.vertexDescriptor = vertexDescriptor
             
-            pipelineDescriptor.vertexFunction = library.makeFunction(name: "vertex\(abs(ObjectIdentifier(vsh).hashValue))")
-            pipelineDescriptor.fragmentFunction = library.makeFunction(name: "fragment\(abs(ObjectIdentifier(fsh).hashValue))")
+            pipelineDescriptor.vertexFunction = library.makeFunction(name: "vertex\(UInt(bitPattern: vsh.id.hashValue))")
+            pipelineDescriptor.fragmentFunction = library.makeFunction(name: "fragment\(UInt(bitPattern: fsh.id.hashValue))")
             
             pipelineDescriptor.colorAttachments[0] = {
                 let descriptor = MTLRenderPipelineColorAttachmentDescriptor()
@@ -290,7 +290,7 @@ extension MetalRenderer {
         do {
             let generator = MSLCodeGenerator()
             let source = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: geometries.shaderAttributes)
-            #if DEBUG
+            #if GATEENGINE_SHOW_SHADERS
             print("Generated Metal Shaders:\n\n\(source)\n")
             #endif
             let library = try self.device.makeLibrary(source: source, options: nil)
@@ -335,10 +335,16 @@ extension MetalRenderer {
         let length = MemoryLayout<UInt8>.stride * uniforms.count
         uniforms.withUnsafeBytes { uniforms in
             let uniforms = uniforms.baseAddress!
-            encoder.setVertexBytes(uniforms, length: length, index: vertexIndex)
+            if length < 4096 {// Let Metal manage our data if it's small
+                encoder.setVertexBytes(uniforms, length: length, index: vertexIndex)
+                encoder.setFragmentBytes(uniforms, length: length, index: fragmentIndex)
+            }else if let instancedBuffer = device.makeBuffer(bytes: uniforms, length: length, options: .storageModeShared) {
+                encoder.setVertexBuffer(instancedBuffer, offset: 0, index: vertexIndex)
+                encoder.setFragmentBuffer(instancedBuffer, offset: 0, index: fragmentIndex)
+            }else{
+                print("[GateEngine]: \(type(of: self)) Failed to attach uniforms to shader.")
+            }
             vertexIndex += 1
-            
-            encoder.setFragmentBytes(uniforms, length: length, index: fragmentIndex)
             fragmentIndex += 1
         }
     }
@@ -408,6 +414,18 @@ extension MetalRenderer {
                     value.transposedArray().withUnsafeBytes { pointer in
                         uniforms.append(contentsOf: pointer)
                     }
+                case let value as Array<Matrix4x4>:
+                    var floats: [Float] = []
+                    floats.reserveCapacity(value.count * 16 * 60)
+                    for mtx in value {
+                        floats.append(contentsOf: mtx.transposedArray())
+                    }
+                    while floats.count < 16 * 60 {
+                        floats.append(0)
+                    }
+                    floats.withUnsafeBytes { pointer in
+                        uniforms.append(contentsOf: pointer)
+                    }
                 default:
                     fatalError()
                 }
@@ -454,9 +472,9 @@ extension MetalRenderer {
         
         let instanceUniformsSize = MemoryLayout<InstancedUniforms>.stride * instancedUniforms.count
         instancedUniforms.withUnsafeBufferPointer { instancedUniforms in
-            if instanceUniformsSize < 4000 {// Let Metal manage our data if it's small
+            if instanceUniformsSize < 4096 {// Let Metal manage our data if it's small
                 encoder.setVertexBytes(instancedUniforms.baseAddress!, length: instanceUniformsSize, index: vertexIndex)
-            }else if let instancedBuffer = device.makeBuffer(length: instanceUniformsSize, options: .storageModeShared) {
+            }else if let instancedBuffer = device.makeBuffer(bytes: instancedUniforms.baseAddress!, length: instanceUniformsSize, options: .storageModeShared) {
                 encoder.setVertexBuffer(instancedBuffer, offset: 0, index: vertexIndex)
             }else{
                 print("GateEngine: \(type(of: self)) Failed to attach modelMatrix(s) to shader.")
@@ -470,7 +488,7 @@ extension MetalRenderer {
         let materialsSize = MemoryLayout<ShaderMaterial>.stride * materials.count
         materials.withUnsafeBufferPointer { materials in
             let materials = materials.baseAddress!
-            if materialsSize < 4000 {// Let Metal manage our data if it's small
+            if materialsSize < 4096 {// Let Metal manage our data if it's small
                 encoder.setVertexBytes(materials, length: materialsSize, index: vertexIndex)
                 encoder.setFragmentBytes(materials, length: materialsSize, index: fragmentIndex)
             }else if let instancedBuffer = device.makeBuffer(bytes: materials, length: materialsSize, options: .storageModeShared) {

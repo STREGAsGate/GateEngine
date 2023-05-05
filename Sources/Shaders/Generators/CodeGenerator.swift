@@ -31,15 +31,52 @@ public class CodeGenerator {
         }
     }
     
-    final func declareVariableIfNeeded(_ value: ShaderValue, declarations: inout String) {
-        let objectID = ObjectIdentifier(value)
+    final func declareVariableIfNeeded(_ value: any ShaderValue, declarations: inout String) {
+        let objectID = value.id
         guard _declaredValues.contains(objectID) == false else {return}
         _declaredValues.insert(objectID)
         
         switch value.valueRepresentation {
-        case .operation, .vec2, .vec3, .vec4, .mat4, .scalarBool(_), .scalarInt(_), .scalarFloat(_):
-            break
-        case .vertexInPosition, .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_):
+        case .operation:
+            #if false
+            let operation = value.operation!
+            self.declareVariableIfNeeded(operation.lhs, declarations: &declarations)
+            self.declareVariableIfNeeded(operation.rhs, declarations: &declarations)
+            switch operation.operator {
+            case .add, .subtract, .multiply, .divide, .compare(_):
+                break
+            case .branch(comparing: _):
+                break
+            case .sampler2D(filter: _):
+                break
+            case let .lerp(factor: factor):
+                self.declareVariableIfNeeded(factor, declarations: &declarations)
+            }
+            declarations += "\t\(type(for: value)) \(variable(for: value)) = " + function(for: operation) + ";\n"
+            #else
+            self.declareVariable(value, declarations: &declarations)
+            #endif
+        case .vec2, .vec3, .vec4, .uvec4, .mat4, .mat4Array:
+            self.declareVariable(value, declarations: &declarations)
+        case let .vec2Value(vec, index):
+            self.declareVariableIfNeeded(vec, declarations: &declarations)
+            self.declareVariableIfNeeded(index, declarations: &declarations)
+        case let .vec3Value(vec, index):
+            self.declareVariableIfNeeded(vec, declarations: &declarations)
+            self.declareVariableIfNeeded(index, declarations: &declarations)
+        case let .vec4Value(vec, index):
+            self.declareVariableIfNeeded(vec, declarations: &declarations)
+            self.declareVariableIfNeeded(index, declarations: &declarations)
+        case let .uvec4Value(vec, index):
+            self.declareVariableIfNeeded(vec, declarations: &declarations)
+            self.declareVariableIfNeeded(index, declarations: &declarations)
+        case let .mat4ArrayValue(array, index):
+            self.declareVariableIfNeeded(array, declarations: &declarations)
+            self.declareVariableIfNeeded(index, declarations: &declarations)
+        #if DEBUG
+        case .scalarBool(_), .scalarInt(_), .scalarUInt(_), .scalarFloat(_):
+            return
+        case .vertexInPosition, .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_), .vertexInJointIndicies(_), .vertexInJointWeights(_):
             return
         case .vertexOutPosition, .vertexOutPointSize, .vertexOut(_), .vertexInstanceID:
             return
@@ -49,44 +86,20 @@ public class CodeGenerator {
             return
         case .channelScale(_), .channelOffset(_), .channelAttachment(_), .channelColor(_):
             return
-        case let .vec2X(vec):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
+        #else
+        default:
             return
-        case let .vec2Y(vec):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            return
-        case let .vec3X(vec):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            return
-        case let .vec3Y(vec):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            return
-        case let .vec3Z(vec):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            return
-        case let .vec4X(vec):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            return
-        case let .vec4Y(vec):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            return
-        case let .vec4Z(vec):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            return
-        case let .vec4W(vec):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            return
+        #endif
         }
-        self.declareVariable(value, declarations: &declarations)
     }
     
-    final func declareVariable(_ value: ShaderValue, declarations: inout String) {
+    private final func declareVariable(_ value: any ShaderValue, declarations: inout String) {
         var out = "\t\(type(for: value)) \(variable(for: value)) = "
         switch value.valueType {
         case .operation:
             let operation = value.operation!
-            self.declareVariableIfNeeded(value.operation!.lhs, declarations: &declarations)
-            self.declareVariableIfNeeded(value.operation!.rhs, declarations: &declarations)
+            self.declareVariableIfNeeded(operation.lhs, declarations: &declarations)
+            self.declareVariableIfNeeded(operation.rhs, declarations: &declarations)
             switch operation.operator {
             case .add, .subtract, .multiply, .divide, .compare(_):
                 break
@@ -95,41 +108,56 @@ public class CodeGenerator {
             case .sampler2D(filter: _):
                 break
             case let .lerp(factor: factor):
-                declareVariableIfNeeded(factor, declarations: &declarations)
+                self.declareVariableIfNeeded(factor, declarations: &declarations)
             }
             out += function(for: operation)
-        case .bool, .int, .float1:
+        case .bool, .int, .uint, .float:
+            print(value.valueType)
             switch value.valueRepresentation {
             case let .scalarBool(value):
                 out += "\(value)"
             case let .scalarInt(value):
                 out += "\(value)"
+            case let .scalarUInt(value):
+                out += "\(value)"
             case let .scalarFloat(value):
                 out += "\(value)"
             default:
-                fatalError()
+                fatalError("\(value.valueRepresentation) not implemented")
             }
         case .float2:
+            print(value.valueType)
             let vec2 = value as! Vec2
             self.declareVariableIfNeeded(vec2._x!, declarations: &declarations)
             self.declareVariableIfNeeded(vec2._y!, declarations: &declarations)
             out += "\(type(for: .float2))(\(variable(for: vec2._x!)),\(variable(for: vec2._y!)))"
         case .float3:
+            print(value.valueType)
             let vec3 = value as! Vec3
             self.declareVariableIfNeeded(vec3._x!, declarations: &declarations)
             self.declareVariableIfNeeded(vec3._y!, declarations: &declarations)
             self.declareVariableIfNeeded(vec3._z!, declarations: &declarations)
             out += "\(type(for: .float3))(\(variable(for: vec3._x!)),\(variable(for: vec3._y!)),\(variable(for: vec3._z!)))"
         case .float4:
+            print(value.valueType)
             let vec4 = value as! Vec4
             self.declareVariableIfNeeded(vec4._x!, declarations: &declarations)
             self.declareVariableIfNeeded(vec4._y!, declarations: &declarations)
             self.declareVariableIfNeeded(vec4._z!, declarations: &declarations)
             self.declareVariableIfNeeded(vec4._w!, declarations: &declarations)
             out += "\(type(for: .float4))(\(variable(for: vec4._x!)),\(variable(for: vec4._y!)),\(variable(for: vec4._z!)),\(variable(for: vec4._w!)))"
+        case .uint4:
+            print(value.valueType)
+            let uvec4 = value as! UVec4
+            self.declareVariableIfNeeded(uvec4._x!, declarations: &declarations)
+            self.declareVariableIfNeeded(uvec4._y!, declarations: &declarations)
+            self.declareVariableIfNeeded(uvec4._z!, declarations: &declarations)
+            self.declareVariableIfNeeded(uvec4._w!, declarations: &declarations)
+            out += "\(type(for: .uint4))(\(variable(for: uvec4._x!)),\(variable(for: uvec4._y!)),\(variable(for: uvec4._z!)),\(variable(for: uvec4._w!)))"
         case .float3x3:
-            fatalError()
+            fatalError("Not implemented")
         case .float4x4:
+            print(value.valueType)
             let mat4 = value as! Mat4
             let mtx = mat4.valueMatrix4x4!.transposedArray()
             let c0 = "\(type(for: .float4))(\(mtx[00]),\(mtx[01]),\(mtx[02]),\(mtx[03]))"
@@ -137,16 +165,26 @@ public class CodeGenerator {
             let c2 = "\(type(for: .float4))(\(mtx[08]),\(mtx[09]),\(mtx[10]),\(mtx[11]))"
             let c3 = "\(type(for: .float4))(\(mtx[12]),\(mtx[13]),\(mtx[14]),\(mtx[15]))"
             out += "\(type(for: .float4x4))(\(c0),\(c1),\(c2),\(c3))"
+        case .float4x4Array:
+            fatalError("Not implemented")
         case .texture2D:
             fatalError()
         }
         declarations += out + ";\n"
     }
     
-    final func variable(for value: ShaderValue) -> String {
+    final func variable(for value: any ShaderValue) -> String {
         switch value.valueRepresentation {
-        case .vec2, .vec3, .vec4, .mat4, .scalarBool(_), .scalarInt(_), .scalarFloat(_), .operation:
-            let objectID = ObjectIdentifier(value)
+        case let .scalarBool(bool):
+            return "\(bool)"
+        case let .scalarInt(int):
+            return "\(int)"
+        case let.scalarUInt(uint):
+            return "\(uint)"
+        case let .scalarFloat(float):
+            return "\(float)"
+        case .vec2, .vec3, .vec4, .mat4, .operation:
+            let objectID = value.id
             if let existing = _varNames[objectID] {
                 return existing
             }
@@ -205,11 +243,11 @@ public class CodeGenerator {
         preconditionFailure("Must override")
     }
     
-    final func type(for value: ShaderValue) -> String {
+    final func type(for value: any ShaderValue) -> String {
         return type(for: valueType(for: value))
     }
     
-    final func valueType(for value: ShaderValue) -> ValueType {
+    final func valueType(for value: any ShaderValue) -> ValueType {
         switch value.self {
         case is Scalar:
             switch value.valueRepresentation {
@@ -217,28 +255,40 @@ public class CodeGenerator {
                 return .bool
             case .scalarInt(_):
                 return .int
+            case .scalarUInt(_):
+                return .uint
             case .scalarFloat(_):
-                return .float1
-            case .vec2X(_), .vec2Y(_), .vec3X(_), .vec3Y(_), .vec3Z(_), .vec4X(_), .vec4Y(_), .vec4Z(_), .vec4W(_):
-                return .float1
+                return .float
+            case .vec2Value(_, _), .vec3Value(_, _), .vec4Value(_, _):
+                return .float
+            case .uvec4Value(_, _):
+                return .uint
+            case .mat4ArrayValue(_, _):
+                return .float4x4
             case let .uniformCustom(_, type: valueType):
                 switch valueType {
                 case .bool:
                     return .bool
                 case .int:
                     return .int
+                case .uint:
+                    return .uint
                 case .float:
-                    return .float1
+                    return .float
                 case .vec2:
                     return .float2
                 case .vec3:
                     return .float3
                 case .vec4:
                     return .float4
+                case .uvec4:
+                    return .uint4
                 case .mat3:
                     return .float3x3
                 case .mat4:
                     return .float4x4
+                case let .mat4Array(capacity):
+                    return .float4x4Array(capacity)
                 }
             case .operation:
                 return valueType(for: value.operation!.lhs)
@@ -253,6 +303,13 @@ public class CodeGenerator {
             return .float4
         case is Mat4:
             return .float4x4
+        case is Mat4Array:
+            if case let .uniformCustom(_, type: type) = value.valueRepresentation {
+                if case let .mat4Array(capacity) = type {
+                    return .float4x4Array(capacity)
+                }
+            }
+            fatalError()
         default:
             fatalError("Unhandled value \(Swift.type(of: value))")
         }
@@ -309,5 +366,7 @@ public class CodeGenerator {
         case vertexInNormal(geoemtryIndex: UInt8)
         case vertexInTangent(geoemtryIndex: UInt8)
         case vertexInColor(geoemtryIndex: UInt8)
+        case vertexInJointIndices(geoemtryIndex: UInt8)
+        case vertexInJointWeights(geoemtryIndex: UInt8)
     }
 }

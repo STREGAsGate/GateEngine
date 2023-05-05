@@ -54,8 +54,10 @@ let package = Package(
                         .copy("System/HID/GamePad/GamePadInterpreter/Interpreters/HID/Mapping/SDL2/SDL2 Game Controller DB.txt"),
                     ],
                     swiftSettings: [
-                        .define("SUPPORTS_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
-                        //.define("GATEENGINE_WASI_IDE_SUPPORT"),
+                        .define("GATEENGINE_SUPPORTS_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
+                        .define("GATEENGINE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
+                        .define("GATEENGINE_SHOW_DEBUG"),
+                        .define("GATEENGINE_SHOW_SHADERS", .when(configuration: .debug)),
                     ],
                     linkerSettings: [
                         .linkedLibrary("GameMath", .when(platforms: [.windows])),

@@ -16,7 +16,9 @@ public class MSLCodeGenerator: CodeGenerator {
             return "bool"
         case .int:
             return "int"
-        case .float1:
+        case .uint:
+            return "uint"
+        case .float:
             return "float"
         case .float2:
             return "float2"
@@ -24,16 +26,20 @@ public class MSLCodeGenerator: CodeGenerator {
             return "float3"
         case .float4:
             return "float4"
+        case .uint4:
+            return "uint4"
         case .float3x3:
             return "float3x3"
         case .float4x4:
+            return "float4x4"
+        case .float4x4Array(_):
             return "float4x4"
         }
     }
     
     override func variable(for representation: ValueRepresentation) -> String {
         switch representation {
-        case .operation, .vec2, .vec3, .vec4, .mat4:
+        case .operation, .vec2, .vec3, .vec4, .uvec4, .mat4, .mat4Array:
             fatalError("Should be declared.")
         case .vertexInstanceID:
             return "iid"
@@ -49,6 +55,10 @@ public class MSLCodeGenerator: CodeGenerator {
             return "in.tan\(index)"
         case let .vertexInColor(index):
             return "in.clr\(index)"
+        case let .vertexInJointIndicies(index):
+            return "in.jtIdx\(index)"
+        case let .vertexInJointWeights(index):
+            return "in.jtWeit\(index)"
         case .vertexOutPosition:
             return "out.pos"
         case .vertexOutPointSize:
@@ -76,29 +86,22 @@ public class MSLCodeGenerator: CodeGenerator {
             return "\(bool)"
         case let .scalarInt(int):
             return "\(int)"
+        case let .scalarUInt(uint):
+            return "\(uint)"
         case let .scalarFloat(float):
             return "\(float)"
             
-        case let .vec2X(vec):
-            return variable(for: vec) + ".x"
-        case let .vec2Y(vec):
-            return variable(for: vec) + ".y"
-            
-        case let .vec3X(vec):
-            return variable(for: vec) + ".x"
-        case let .vec3Y(vec):
-            return variable(for: vec) + ".y"
-        case let .vec3Z(vec):
-            return variable(for: vec) + ".z"
-            
-        case let .vec4W(vec):
-            return variable(for: vec) + ".w"
-        case let .vec4X(vec):
-            return variable(for: vec) + ".x"
-        case let .vec4Y(vec):
-            return variable(for: vec) + ".y"
-        case let .vec4Z(vec):
-            return variable(for: vec) + ".z"
+        case let .vec2Value(vec, index):
+            return variable(for: vec) + "[\(variable(for: index))]"
+        case let .vec3Value(vec, index):
+            return variable(for: vec) + "[\(variable(for: index))]"
+        case let .vec4Value(vec, index):
+            return variable(for: vec) + "[\(variable(for: index))]"
+        case let .uvec4Value(vec, index):
+            return variable(for: vec) + "[\(variable(for: index))]"
+       
+        case let .mat4ArrayValue(array, index):
+            return "\(variable(for: array))[\(variable(for: index))]"
             
         case let .channelAttachment(index: index):
             return "tex\(index)"
@@ -133,7 +136,11 @@ public class MSLCodeGenerator: CodeGenerator {
         var customUniformDefine: String = ""
         for value in vertexShader.sortedCustomUniforms() {
             if case let .uniformCustom(index, type: _) = value.valueRepresentation {
-                customUniformDefine += "\n    \(type(for: value)) u\(index);"
+                if case let .float4x4Array(capacity) = value.valueType {
+                    customUniformDefine += "\n    \(type(for: value)) u\(index)[\(capacity)];"
+                }else{
+                    customUniformDefine += "\n    \(type(for: value)) u\(index);"
+                }
             }
         }
         
@@ -153,6 +160,10 @@ public class MSLCodeGenerator: CodeGenerator {
                 vertexGeometryDefine += "\n    \(type(for: .float3)) tan\(geometryIndex) [[attribute(\(attributeIndex))]];"
             case .vertexInColor(geoemtryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float4)) clr\(geometryIndex) [[attribute(\(attributeIndex))]];"
+            case .vertexInJointIndices(geoemtryIndex: let geometryIndex):
+                vertexGeometryDefine += "\n    \(type(for: .uint4)) jtIdx\(geometryIndex) [[attribute(\(attributeIndex))]];"
+            case .vertexInJointWeights(geoemtryIndex: let geometryIndex):
+                vertexGeometryDefine += "\n    \(type(for: .float4)) jtWeit\(geometryIndex) [[attribute(\(attributeIndex))]];"
             }
         }
         
@@ -166,7 +177,7 @@ public class MSLCodeGenerator: CodeGenerator {
             if fragmentTextureList.isEmpty == false {
                 fragmentTextureList += ",\n"
             }
-            fragmentTextureList += "                                            texture2d<float> tex\(index) [[ texture(\(index)) ]]"
+            fragmentTextureList += "                                            texture2d<float> tex\(index) [[texture(\(index))]]"
         }
         
         return """
@@ -191,17 +202,17 @@ typedef struct {\(vertexGeometryDefine)
 } Vertex;
 typedef struct {
     \(type(for: .float4)) pos [[position]];
-    \(type(for: .float1)) ptSz [[point_size]];
+    \(type(for: .float)) ptSz [[point_size]];
 \(vertexOut)
     int iid [[flat]];
 } Fragment;
 
-vertex Fragment vertex\(abs(ObjectIdentifier(vertexShader).hashValue))(Vertex in [[stage_in]],
-                                          constant Uniforms & uniforms [[ buffer(\(attributes.count + 0)) ]],
-                                          constant InstanceUniforms *instances [[ buffer(\(attributes.count + 1)) ]],
-                                          constant Material *materials [[ buffer(\(attributes.count + 2)) ]],
-                                          sampler linearSampler [[ sampler(0) ]],
-                                          sampler nearestSampler [[ sampler(1) ]],
+vertex Fragment vertex\(UInt(bitPattern: vertexShader.id.hashValue))(Vertex in [[stage_in]],
+                                          constant Uniforms & uniforms [[buffer(\(attributes.count + 0))]],
+                                          constant InstanceUniforms *instances [[buffer(\(attributes.count + 1))]],
+                                          constant Material *materials [[buffer(\(attributes.count + 2))]],
+                                          sampler linearSampler [[sampler(0)]],
+                                          sampler nearestSampler [[sampler(1)]],
                                           ushort uiid [[instance_id]]) {
     \(type(for: .int)) iid = uiid;
     Fragment out;
@@ -209,11 +220,11 @@ vertex Fragment vertex\(abs(ObjectIdentifier(vertexShader).hashValue))(Vertex in
 \(vertexMain)
     return out;
 }
-fragment \(type(for: .float4)) fragment\(abs(ObjectIdentifier(fragmentShader).hashValue))(Fragment in [[stage_in]],
-                                            constant Uniforms & uniforms [[ buffer(0) ]],
-                                            constant Material *materials [[ buffer(1) ]],
-                                            sampler linearSampler [[ sampler(0) ]],
-                                            sampler nearestSampler [[ sampler(1) ]],
+fragment \(type(for: .float4)) fragment\(UInt(bitPattern: fragmentShader.id.hashValue))(Fragment in [[stage_in]],
+                                            constant Uniforms & uniforms [[buffer(0)]],
+                                            constant Material *materials [[buffer(1)]],
+                                            sampler linearSampler [[sampler(0)]],
+                                            sampler nearestSampler [[sampler(1)]],
 \(fragmentTextureList)) {
     \(type(for: .float4)) \(variable(for: .fragmentOutColor));
 \(fragmentMain)

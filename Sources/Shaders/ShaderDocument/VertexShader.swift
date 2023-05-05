@@ -31,12 +31,20 @@ public final class VertexShader: ShaderDocument {
             public let textureCoordinate0: Vec2
             public let textureCoordinate1: Vec2
             public let color: Vec4
+            public let normal: Vec3
+            public let tangent: Vec3
+            public let jointIndicies: UVec4
+            public let jointWeights: Vec4
             
             init(_ index: UInt8) {
                 self.position = Vec3(representation: .vertexInPosition(index), type: .float3)
                 self.textureCoordinate0 = Vec2(representation: .vertexInTexCoord0(index), type: .float2)
                 self.textureCoordinate1 = Vec2(representation: .vertexInTexCoord1(index), type: .float2)
                 self.color = Vec4(representation: .vertexInColor(index), type: .float4)
+                self.normal = Vec3(representation: .vertexInNormal(index), type: .float4)
+                self.tangent = Vec3(representation: .vertexInTangent(index), type: .float4)
+                self.jointIndicies = UVec4(representation: .vertexInJointIndicies(index), type: .uint4)
+                self.jointWeights = Vec4(representation: .vertexInJointWeights(index), type: .float4)
             }
         }
         
@@ -57,7 +65,7 @@ public final class VertexShader: ShaderDocument {
         public var position: Vec4? = nil
         public var pointSize: Scalar? = nil
         
-        public var _values: [String:ShaderValue] = [:]
+        public var _values: [String: any ShaderValue] = [:]
         public subscript<T: ShaderValue>(key: String, interpolated: Bool = true) -> T? {
             get {_values[key] as? T}
             set {_values[key] = newValue}

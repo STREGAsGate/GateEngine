@@ -19,26 +19,26 @@ public final class Vec4: ShaderValue {
     internal var _w: Scalar?
     
     public var x: Scalar {
-        get {Scalar(representation: .vec4X(self), type: .float1)}
+        get {Scalar(representation: .vec4Value(self, 0), type: .float)}
         set {self._x = newValue}
     }
     public var y: Scalar {
-        get {Scalar(representation: .vec4Y(self), type: .float1)}
+        get {Scalar(representation: .vec4Value(self, 1), type: .float)}
         set {self._y = newValue}
     }
     public var z: Scalar {
-        get {Scalar(representation: .vec4Z(self), type: .float1)}
+        get {Scalar(representation: .vec4Value(self, 2), type: .float)}
         set {self._z = newValue}
     }
     public var w: Scalar {
-        get {Scalar(representation: .vec4W(self), type: .float1)}
+        get {Scalar(representation: .vec4Value(self, 3), type: .float)}
         set {self._w = newValue}
     }
     
     public func xyz() -> Vec3 {
-        return Vec3(x: Scalar(representation: .vec4X(self), type: .float1),
-                    y: Scalar(representation: .vec4Y(self), type: .float1),
-                    z: Scalar(representation: .vec4Z(self), type: .float1))
+        return Vec3(x: Scalar(representation: .vec4Value(self, 0), type: .float),
+                    y: Scalar(representation: .vec4Value(self, 1), type: .float),
+                    z: Scalar(representation: .vec4Value(self, 2), type: .float))
     }
     
     public var r: Scalar {return x}
@@ -48,6 +48,16 @@ public final class Vec4: ShaderValue {
     
     public func rgb() -> Vec3 {
         return xyz()
+    }
+    
+    public subscript (index: Int) -> Scalar {
+        switch index {
+        case 0: return self.x
+        case 1: return self.y
+        case 2: return self.z
+        case 3: return self.w
+        default: fatalError("Index out of range.")
+        }
     }
     
     internal init(representation: ValueRepresentation, type: ValueType) {
@@ -96,9 +106,9 @@ public final class Vec4: ShaderValue {
         self.valueRepresentation = .vec4
         self.valueType = .float4
         self.operation = nil
-        self._x = Scalar(representation: .vec3X(vec3), type: .float1)
-        self._y = Scalar(representation: .vec3Y(vec3), type: .float1)
-        self._z = Scalar(representation: .vec3Z(vec3), type: .float1)
+        self._x = Scalar(representation: .vec3Value(vec3, 0), type: .float)
+        self._y = Scalar(representation: .vec3Value(vec3, 1), type: .float)
+        self._z = Scalar(representation: .vec3Value(vec3, 2), type: .float)
         self._w = Scalar(w)
     }
     
@@ -109,6 +119,19 @@ public final class Vec4: ShaderValue {
     
     public func lerp(to dst: Vec4, factor: Scalar) -> Vec4 {
         return Vec4(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
+    }
+    
+    public static func +(lhs: Vec4, rhs: Scalar) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    public static func -(lhs: Vec4, rhs: Scalar) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
+    }
+    public static func *(lhs: Vec4, rhs: Scalar) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    public static func /(lhs: Vec4, rhs: Scalar) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
     }
     
     public static func +(lhs: Vec4, rhs: Vec4) -> Vec4 {
@@ -122,6 +145,19 @@ public final class Vec4: ShaderValue {
     }
     public static func /(lhs: Vec4, rhs: Vec4) -> Vec4 {
         return Vec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    
+    public static func +=(lhs: inout Vec4, rhs: Vec4) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    public static func -=(lhs: inout Vec4, rhs: Vec4) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
+    }
+    public static func *=(lhs: inout Vec4, rhs: Vec4) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    public static func /=(lhs: inout Vec4, rhs: Vec4) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
     }
     
     public static func *(lhs: Mat4, rhs: Vec4) -> Vec4 {

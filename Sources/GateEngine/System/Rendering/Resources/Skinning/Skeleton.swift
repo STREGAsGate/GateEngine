@@ -53,6 +53,11 @@ public final class Skeleton: OldResource {
         self.bindPose = Pose(joint)
         super.init()
         self.state = .ready
+        
+        #if DEBUG
+        self._bindPose.configure(withOwner: self)
+        self._rootJoint.configure(withOwner: self)
+        #endif
     }
     
     @usableFromInline

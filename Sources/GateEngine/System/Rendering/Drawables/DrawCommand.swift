@@ -62,25 +62,12 @@ struct DrawFlags: Hashable {
 
 internal struct DrawCommand {
     let geometries: [GeometryBackend]
-    let joints: [Skin.Joint]?
-    let pose: Skeleton.Pose?
     let transforms: [Transform3]
     let material: Material
     let flags: DrawFlags
-    
-    init(geometries: [GeometryBackend], joints: [Skin.Joint], pose: Skeleton.Pose, transforms: [Transform3], material: Material, flags: DrawFlags) {
-        self.geometries = geometries
-        self.joints = joints
-        self.pose = pose
-        self.transforms = transforms
-        self.material = material
-        self.flags = flags
-    }
-    
+
     init(geometries: [GeometryBackend], transforms: [Transform3], material: Material, flags: DrawFlags) {
         self.geometries = geometries
-        self.joints = nil
-        self.pose = nil
         self.transforms = transforms
         self.material = material
         self.flags = flags

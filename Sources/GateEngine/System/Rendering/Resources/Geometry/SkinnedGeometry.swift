@@ -15,124 +15,53 @@ internal protocol SkinnedGeometryBackend: AnyObject {
 It's contents are stored within GPU accessible memory and this object represents a reference to that memory.
 When this object deinitializes it's contents will also be removed from GPU memory.
 */
-@MainActor public class SkinnedGeometry: OldResource {
-    private var path: String?
-    private var geometryOptions: GeometryImporterOptions?
-    private var skinOptions: SkinImporterOptions?
-    private var lastLoaded: Date?
+@MainActor public class SkinnedGeometry: Resource {
+    let cacheKey: ResourceManager.Cache.SkinnedGeometryKey
     
-    @RequiresState(.ready)
-    internal var backend: SkinnedGeometryBackend! = nil
-    
-    @RequiresState(.ready)
-    internal var skinJoints: [Skin.Joint]! = nil
-    
-    /// - returns: `true` if calling `reload()` will work
-    /// - note: Only a resource created form a URL can be reloaded
-    public var needsReload: Bool {
-        #if SUPPORTS_HOTRELOADING
-        guard let path = path else {return false}
-        guard let lastLoaded = lastLoaded else {return false}
-
-        do {
-            let attributes = try FileManager.default.attributesOfItem(atPath: path)
-            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date {
-                return modified > lastLoaded
-            }else{
-                return false
-            }
-        }catch{
-            print(error.localizedDescription)
-            return false
-        }
-        #else
-        return false
-        #endif
+    internal var backend: GeometryBackend? {
+        return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)?.geometryBackend
     }
     
-    /// - note: Only a resource created form a URL can be reloaded
-    /// - returns: `true` if the resource will be reloaded
-    @discardableResult
-    public func reload() -> Bool {
-        #if SUPPORTS_HOTRELOADING
-        guard self.needsReload else {return false}
-        self.load()
-        return true
-        #else
-        return false
-        #endif
+    internal var skinJoints: [Skin.Joint]? {
+        return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)?.skinJoints
     }
-        
-    public init(geometry: RawGeometry, skin: Skin) {
-        self.path = nil
-        self.geometryOptions = nil
-        self.skinOptions = nil
-        self.skinJoints = skin.joints
-        super.init()
-        
-        #if DEBUG
-        self._backend.configure(withOwner: self)
-        self._skinJoints.configure(withOwner: self)
-        #endif
-        
-        Task {
-            let backend =  Self.createBackend(with: geometry, skin: skin)
-            Task { @MainActor in
-                self.backend = backend
-                self.state = .ready
-            }
-        }
+    
+    public var cacheHint: CacheHint {
+        get {Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!.cacheHint}
+        set {Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey)}
+    }
+    
+    public var state: ResourceState {
+        return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!.state
     }
     
     public init(path: String, geometryOptions: GeometryImporterOptions = .none, skinOptions: SkinImporterOptions = .none) {
-        self.path = path
-        self.geometryOptions = geometryOptions
-        self.skinOptions = skinOptions
-        super.init()
-        
-        #if DEBUG
-        self._backend.configure(withOwner: self)
-        self._skinJoints.configure(withOwner: self)
-        #endif
-        
-        self.load()
+        let resourceManager = Game.shared.resourceManager
+        self.cacheKey = resourceManager.skinnedGeometryCacheKey(path: path, geometryOptions: geometryOptions, skinOptions: skinOptions)
+        self.cacheHint = .until(minutes: 5)
+        resourceManager.incrementReference(self.cacheKey)
     }
     
-    private func load() {
-        guard let path = path else {return}
-        guard let geometryOptions = geometryOptions else {return}
-        guard let skinOptions = skinOptions else {return}
-
-        Task {
-            do {
-                let geometry = try await RawGeometry(path: path, options: geometryOptions)
-                let skin = try await Skin(path: path, options: skinOptions)
-                let backend =  Self.createBackend(with: geometry, skin: skin)
-                Task { @MainActor in
-                    self.skinJoints = skin.joints
-                    self.backend = backend
-                    self.state = .ready
-                }
-            }catch{
-                Task { @MainActor in
-                    #if DEBUG
-                    print(error)
-                    #endif
-                    self.state = .failed(reason: "\(error)")
-                }
-            }
+    public init(rawGeometry: RawGeometry, skin: Skin) {
+        let resourceManager = Game.shared.resourceManager
+        self.cacheKey = resourceManager.skinnedGeometryCacheKey(rawGeometry: rawGeometry, skin: skin)
+        self.cacheHint = .whileReferenced
+        resourceManager.incrementReference(self.cacheKey)
+    }
+    
+    deinit {
+        let cacheKey = self.cacheKey
+        Task(priority: .low) {@MainActor in
+            Game.shared.resourceManager.decrementReference(cacheKey)
         }
     }
 }
-
-internal extension SkinnedGeometry {
-    class func createBackend(with geometry: RawGeometry, skin: Skin) -> SkinnedGeometryBackend {
-        #if canImport(MetalKit)
-        return MetalGeometry(geometry: geometry, skin: skin)
-        #elseif canImport(WebGL2)
-        return WebGL2Geometry(geometry: geometry, skin: skin)
-        #else
-        #error("Not implemented.")
-        #endif
+extension SkinnedGeometry: Equatable, Hashable {
+    nonisolated public static func == (lhs: SkinnedGeometry, rhs: SkinnedGeometry) -> Bool {
+        return lhs.cacheKey == rhs.cacheKey
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(cacheKey)
     }
 }

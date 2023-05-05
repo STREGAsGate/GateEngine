@@ -26,6 +26,20 @@ public enum SystemShaders {
         vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
         return vsh
     }()
+    public static let standardSkinnedVertexShader: VertexShader = {
+        let vsh = VertexShader()
+        let bones = vsh.uniform(named: "bones", as: Mat4Array.self, arrayCapacity: 60)
+        let jointIndicies = vsh.input.geometry(0).jointIndicies
+        let jointWeights = vsh.input.geometry(0).jointWeights
+        var position = Vec4(vsh.input.geometry(0).position, 1)
+        position += bones[jointIndicies[0]] * position * jointWeights[0]
+        position += bones[jointIndicies[1]] * position * jointWeights[1]
+        position += bones[jointIndicies[2]] * position * jointWeights[2]
+        position += bones[jointIndicies[3]] * position * jointWeights[3]
+        vsh.output.position = vsh.modelViewProjectionMatrix * position
+        vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
+        return vsh
+    }()
     public static let pointSizeAndColorVertexShader: VertexShader = {
         let vsh = VertexShader()
         vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)

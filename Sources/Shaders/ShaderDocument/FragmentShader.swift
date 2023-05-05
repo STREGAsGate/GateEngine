@@ -18,7 +18,7 @@ public final class FragmentShader: ShaderDocument {
     }
     
     public struct Input {
-        public var _values: [String:ShaderValue] = [:]
+        public var _values: [String: any ShaderValue] = [:]
         public subscript<T: ShaderValue>(key: String, scalarType: CustomUniformScalarType = .float) -> T {
             mutating get {
                 if let existing = _values[key] as? T {
