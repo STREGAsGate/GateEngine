@@ -5,49 +5,6 @@
  * http://stregasgate.com
  */
 
-//#if os(WASI)
-//
-//import Foundation
-//import GameMath
-//import JavaScriptKit
-//import DOM
-//import WebAPIBase
-//
-//public class PNGImporter: TextureImporter {
-//    public required init() {}
-//    public func loadData(path: String, options: TextureImporterOptions) async throws -> (data: Data, size: Size2?) {
-//        let document: Document = globalThis.document
-//        let image = HTMLImageElement(from: document.createElement(localName: "img"))!
-//        let newPath = await Game.shared.platform.locateResource(from: path) ?? path
-//        image.src = newPath
-//        let tagID = UUID().uuidString
-//        image.id = tagID
-//
-//        await withCheckedContinuation { continuation in
-//            image.onload = { event -> JSValue in
-//                #if DEBUG
-//                print("[GateEngine] Loading Resource: \"\(newPath)\"")
-//                #endif
-//                continuation.resume()
-//                return nil
-//            }
-//        }
-//        image.hidden = .bool(true)
-//        _ = document.body!.appendChild(node: image)
-//        print("size:", path)
-//        return (tagID.data(using: .utf8)!, Size2(Float(image.width), Float(image.height)))
-//    }
-//    public func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (data: Data, size: Size2) {
-//        print("size:", size)
-//        return (data, size!)
-//    }
-//    public class func supportedFileExtensions() -> [String] {
-//        return ["png"]
-//    }
-//}
-//#else
-//#if canImport(spng)
-
 import Foundation
 import GameMath
 import LibSPNG
@@ -100,5 +57,3 @@ public class PNGImporter: TextureImporter {
         return ["png"]
     }
 }
-
-//#endif
