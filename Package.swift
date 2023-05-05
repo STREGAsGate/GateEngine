@@ -55,7 +55,7 @@ let package = Package(
                     ],
                     swiftSettings: [
                         .define("GATEENGINE_SUPPORTS_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
-                        .define("GATEENGINE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
+                        .define("GATEENGINE_WASI_IDE_SUPPORT", .when(platforms: [.macOS], configuration: .debug)),
                         .define("GATEENGINE_SHOW_DEBUG"),
                         .define("GATEENGINE_SHOW_SHADERS", .when(configuration: .debug)),
                     ],
