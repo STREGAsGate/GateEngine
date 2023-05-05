@@ -38,7 +38,7 @@ public class CodeGenerator {
         
         switch value.valueRepresentation {
         case .operation:
-            #if false
+            #if true
             let operation = value.operation!
             self.declareVariableIfNeeded(operation.lhs, declarations: &declarations)
             self.declareVariableIfNeeded(operation.rhs, declarations: &declarations)
