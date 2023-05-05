@@ -41,7 +41,7 @@ class WASIWindow: WindowBacking {
 
     var frame: Rect {
         get {
-            return Rect(size: backingSize)
+            return Rect(size: Size2(Float(globalThis.window.innerWidth), Float(globalThis.window.innerHeight)))
         }
         set {
             // can't
@@ -49,18 +49,20 @@ class WASIWindow: WindowBacking {
     }
 
     var backingSize: Size2 {
-        return Size2(Float(globalThis.window.innerWidth), Float(globalThis.window.innerHeight))
+        var size = Size2(Float(globalThis.window.innerWidth), Float(globalThis.window.innerHeight))
+        if let pxRatio = globalThis.document.defaultView?.devicePixelRatio {
+            size *= Float(pxRatio)
+        }
+        return size
     }
 
     var safeAreaInsets: Insets = .zero
 
+    @MainActor func vSync(_ deltaTime: Double) {
+        self.window.vSyncCalled()
+        _ = globalThis.window.requestAnimationFrame(callback: vSync(_:))
+    }
     @MainActor func show() {
-        let jsWindow = globalThis.window
-        @_transparent
-        @MainActor func vSync(_ deltaTime: Double) {
-            self.window.vSyncCalled()
-            _ = jsWindow.requestAnimationFrame(callback: vSync(_:))
-        }
         vSync(0)
         addListeners()
     }
