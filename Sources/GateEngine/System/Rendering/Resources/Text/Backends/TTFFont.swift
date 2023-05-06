@@ -91,17 +91,8 @@ fileprivate func getBakedQuad(characterData: [CharData], pixelsWidth: Int32, pix
     }
     
     private func textureSize(forPointSize pointSize: UInt, style: Font.Style) -> Size2 {
-        let size: Int32 = {
-            switch pointSize {
-            case 0 ..< 32:
-                return 512
-            case 32 ..< 128:
-                return 1024
-            default:
-                return 2048
-            }
-        }()
-        return Size2(Float(size), Float(size))
+        let size = Float((pointSize + 1) * 10)
+        return Size2(size, size)
     }
     
     private mutating func populate(forPointSize pointSize: UInt, style: Font.Style) {
@@ -118,13 +109,13 @@ fileprivate func getBakedQuad(characterData: [CharData], pixelsWidth: Int32, pix
         var image: [UInt8] = []
         image.reserveCapacity(Int(width * height * 4))
         for pixel in pixels {
-            image.append(255)
-            image.append(255)
-            image.append(255)
+            image.append(pixel)
+            image.append(pixel)
+            image.append(pixel)
             image.append(pixel)
         }
         
-        let texture = Texture(data: Data(image), size: size, mipMapping: .auto())
+        let texture = Texture(data: Data(image), size: size, mipMapping: .none)
         
         let key = Font.Key(style: style, pointSize: pointSize)
         self.textures[key] = texture
@@ -132,7 +123,7 @@ fileprivate func getBakedQuad(characterData: [CharData], pixelsWidth: Int32, pix
         self.characterDatas[key] = charData
     }
     
-    nonisolated var preferredSampleFilter: Text.SampleFilter {.linear}
+    nonisolated var preferredSampleFilter: Text.SampleFilter {.nearest}
 }
 
 #endif
