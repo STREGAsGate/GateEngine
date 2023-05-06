@@ -30,22 +30,18 @@ let package = Package(
                         dependencies.append(contentsOf: ["GameMath", "Shaders", "TrueType", "LibSPNG"])
                         dependencies.append(.target(name: "Vorbis", condition: .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])))
                         
-                        #if os(Linux)
                         dependencies.append(.target(name: "LinuxSupport", condition: .when(platforms: [.linux])))
-                        #endif
                         
                         dependencies.append(.product(name: "Atomics", package: "swift-atomics"))
                         dependencies.append(.product(name: "Collections", package: "swift-collections"))
-                        
-                        #if os(macOS) || os(Linux)
+
                         dependencies.append(contentsOf: [
-                            .product(name: "JavaScriptEventLoop", package: "JavaScriptKit", condition: .when(platforms: [.wasi, .macOS, .linux])),
-                            .product(name: "DOM", package: "WebAPIKit", condition: .when(platforms: [.wasi, .macOS, .linux])),
-                            .product(name: "WebAudio", package: "WebAPIKit", condition: .when(platforms: [.wasi, .macOS, .linux])),
-                            .product(name: "Gamepad", package: "WebAPIKit", condition: .when(platforms: [.wasi, .macOS, .linux])),
-                            .product(name: "WebGL2", package: "WebAPIKit", condition: .when(platforms: [.wasi, .macOS, .linux])),
+                            .product(name: "JavaScriptEventLoop", package: "JavaScriptKit", condition: .when(platforms: [.wasi])),
+                            .product(name: "DOM", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
+                            .product(name: "WebAudio", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
+                            .product(name: "Gamepad", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
+                            .product(name: "WebGL2", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
                         ])
-                        #endif
                         
                         return dependencies
                     }(),
@@ -69,17 +65,16 @@ let package = Package(
         // MARK: - GateEngineDependencies
         
         // LinuxSupport
-        #if os(Linux)
         targets.append(contentsOf: [
             .target(name: "LinuxSupport",
-                    dependencies: ["LinuxImports", "LinuxExtensions"],
+                    dependencies: [.targetItem(name: "LinuxImports", condition: .when(platforms: [.linux])),
+                                   .targetItem(name: "LinuxExtensions", condition: .when(platforms: [.linux]))],
                     path: "Sources/GateEngineDependencies/LinuxSupport/LinuxSupport"),
             .target(name: "LinuxExtensions",
                     path: "Sources/GateEngineDependencies/LinuxSupport/LinuxExtensions"),
             .systemLibrary(name: "LinuxImports",
                            path: "Sources/GateEngineDependencies/LinuxSupport/LinuxImports"),
         ])
-        #endif
         
         // Vorbis
         targets.append(contentsOf: [
