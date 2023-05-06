@@ -38,7 +38,8 @@ public class CodeGenerator {
         
         switch value.valueRepresentation {
         case .operation:
-            #if true
+            // TODO: Change swift version to version with the fix once there's a fix
+            #if swift(<6.0) && os(WASI) // Workaround for stack overflow on WASI
             let operation = value.operation!
             self.declareVariableIfNeeded(operation.lhs, declarations: &declarations)
             self.declareVariableIfNeeded(operation.rhs, declarations: &declarations)
