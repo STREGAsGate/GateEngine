@@ -100,18 +100,17 @@ class WASIWindow: WindowBacking {
             return .null
         }
         
-        canvas.onkeydown = { event -> JSValue in
+        globalThis.addEventListener(type: "keydown") { event in
             let event = DOM.KeyboardEvent(unsafelyWrapping: event.jsObject)
-            guard event.repeat == false else {return .null}
+            guard event.repeat == false else {return}
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
             Task {@MainActor in
                 _ = self.window.delegate?.keyboardRequestedHandling(key: key, modifiers: modifiers, event: .keyDown)
             }
             event.preventDefault()
-            return .null
         }
-        canvas.onkeyup = { event -> JSValue in
+        globalThis.addEventListener(type: "keyup") { event in
             let event = DOM.KeyboardEvent(unsafelyWrapping: event.jsObject)
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
@@ -119,36 +118,32 @@ class WASIWindow: WindowBacking {
                 _ = self.window.delegate?.keyboardRequestedHandling(key: key, modifiers: modifiers, event: .keyUp)
             }
             event.preventDefault()
-            return .null
         }
-        canvas.onmouseenter = { event -> JSValue in
+        canvas.addEventListener(type: "mouseenter") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
             Task {@MainActor in
                 self.window.delegate?.mouseChange(event: .entered, position: position)
             }
             event.preventDefault()
-            return .null
         }
-        canvas.onmousemove = { event -> JSValue in
+        canvas.addEventListener(type: "mousemove") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
             Task {@MainActor in
                 self.window.delegate?.mouseChange(event: .moved, position: position)
             }
             event.preventDefault()
-            return .null
         }
-        canvas.onmouseleave = { event -> JSValue in
+        canvas.addEventListener(type: "mouseleave") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
             Task {@MainActor in
                 self.window.delegate?.mouseChange(event: .exited, position: position)
             }
             event.preventDefault()
-            return .null
         }
-        canvas.onmousedown = { event -> JSValue in
+        canvas.addEventListener(type: "mousedown") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
             let button: MouseButton = self.mouseButton(fromEvent: event)
@@ -156,9 +151,8 @@ class WASIWindow: WindowBacking {
                 self.window.delegate?.mouseClick(event: .buttonDown, button: button, count: nil, position: position)
             }
             event.preventDefault()
-            return .null
         }
-        canvas.onmouseup = { event -> JSValue in
+        canvas.addEventListener(type: "mouseup") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
             let button: MouseButton = self.mouseButton(fromEvent: event)
@@ -166,12 +160,11 @@ class WASIWindow: WindowBacking {
                 self.window.delegate?.mouseClick(event: .buttonUp, button: button, count: nil ,position: position)
             }
             event.preventDefault()
-            return .null
         }
-        canvas.oncontextmenu = { event -> JSValue in
-            return .boolean(false)
+        canvas.addEventListener(type: "contextmenu") { event in
+            event.preventDefault()
         }
-        canvas.ontouchstart = { event -> JSValue in
+        canvas.addEventListener(type: "touchstart") { event in
             let event = DOM.TouchEvent(unsafelyWrapping: event.jsObject)
             Task {@MainActor in
                 for index in 0 ..< event.changedTouches.length {
@@ -182,9 +175,8 @@ class WASIWindow: WindowBacking {
                 }
             }
             event.preventDefault()
-            return .null
         }
-        canvas.ontouchmove = { event -> JSValue in
+        canvas.addEventListener(type: "touchmove") { event in
             let event = DOM.TouchEvent(unsafelyWrapping: event.jsObject)
             Task {@MainActor in
                 for index in 0 ..< event.changedTouches.length {
@@ -194,9 +186,8 @@ class WASIWindow: WindowBacking {
                 }
             }
             event.preventDefault()
-            return .null
         }
-        canvas.ontouchend = { event -> JSValue in
+        canvas.addEventListener(type: "touchend") { event in
             let event = DOM.TouchEvent(unsafelyWrapping: event.jsObject)
             Task {@MainActor in
                 for index in 0 ..< event.changedTouches.length {
@@ -207,9 +198,8 @@ class WASIWindow: WindowBacking {
                 }
             }
             event.preventDefault()
-            return .null
         }
-        canvas.ontouchcancel = { event -> JSValue in
+        canvas.addEventListener(type: "touchcancel") { event in
             let event = DOM.TouchEvent(unsafelyWrapping: event.jsObject)
             Task {@MainActor in
                 for index in 0 ..< event.changedTouches.length {
@@ -219,7 +209,6 @@ class WASIWindow: WindowBacking {
                 }
             }
             event.preventDefault()
-            return .null
         }
     }
     
