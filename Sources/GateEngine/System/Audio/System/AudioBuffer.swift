@@ -6,11 +6,6 @@
  */
 
 import Foundation
-#if os(WASI) || GATEENGINE_WASI_IDE_SUPPORT
-import WebAudio
-import JavaScriptKit
-import DOM
-#endif
 
 internal protocol AudioBufferBackend: AnyObject {
     var duration: Double {get}
