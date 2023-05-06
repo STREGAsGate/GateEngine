@@ -39,11 +39,11 @@ let package = Package(
                         
                         #if os(macOS) || os(Linux)
                         dependencies.append(contentsOf: [
-                            .product(name: "JavaScriptEventLoop", package: "JavaScriptKit", condition: .when(platforms: [.wasi])),
-                            .product(name: "DOM", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
-                            .product(name: "WebAudio", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
-                            .product(name: "Gamepad", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
-                            .product(name: "WebGL2", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
+                            .product(name: "JavaScriptEventLoop", package: "JavaScriptKit", condition: .when(platforms: [.wasi, .macOS, .linux])),
+                            .product(name: "DOM", package: "WebAPIKit", condition: .when(platforms: [.wasi, .macOS, .linux])),
+                            .product(name: "WebAudio", package: "WebAPIKit", condition: .when(platforms: [.wasi, .macOS, .linux])),
+                            .product(name: "Gamepad", package: "WebAPIKit", condition: .when(platforms: [.wasi, .macOS, .linux])),
+                            .product(name: "WebGL2", package: "WebAPIKit", condition: .when(platforms: [.wasi, .macOS, .linux])),
                         ])
                         #endif
                         
@@ -54,8 +54,8 @@ let package = Package(
                         .copy("System/HID/GamePad/GamePadInterpreter/Interpreters/HID/Mapping/SDL2/SDL2 Game Controller DB.txt"),
                     ],
                     swiftSettings: [
-                        .define("GATEENGINE_SUPPORTS_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
-                        .define("GATEENGINE_WASI_IDE_SUPPORT", .when(platforms: [.macOS], configuration: .debug)),
+                        .define("GATEENGINE_SUPPORTS_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
+                        .define("GATEENGINE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
                         .define("GATEENGINE_SHOW_DEBUG"),
                         .define("GATEENGINE_SHOW_SHADERS", .when(configuration: .debug)),
                     ],
