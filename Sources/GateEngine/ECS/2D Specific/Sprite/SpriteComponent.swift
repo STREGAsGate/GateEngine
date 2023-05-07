@@ -17,8 +17,22 @@ public final class SpriteComponent: Component {
     public var spriteSheet: SpriteSheet? = nil
     public var spriteRect: Rect = .zero
     public var spriteSize: Size2 {
-        get {return spriteRect.size}
-        set {self.spriteRect.size = newValue}
+        get {
+            return self.spriteRect.size
+        }
+        set {
+            self.spriteRect.size = newValue
+        }
+    }
+    
+    public var spriteCoordinate: Position2 {
+        get {
+            return Position2(self.spriteRect.position.x / self.spriteSize.width, self.spriteRect.position.y / self.spriteSize.height)
+        }
+        set {
+            precondition(spriteSize != .zero, "spriteSize must be set first!")
+            self.spriteRect.position = Position2(self.spriteSize.width * newValue.x, self.spriteSize.height * newValue.y)
+        }
     }
     
     public var animations: [SpriteAnimation] = []
