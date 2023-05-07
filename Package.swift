@@ -54,9 +54,9 @@ let package = Package(
                         .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
                         
                         // MARK: Options for development of GateEngine. These should be commented out for a tagged version releases.
-                        .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
-                        .define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
-                        .define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
+                        //.define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
+                        //.define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
+                        //.define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
                     ],
                     linkerSettings: [
                         .linkedLibrary("GameMath", .when(platforms: [.windows])),
