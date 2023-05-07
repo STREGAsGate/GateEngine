@@ -10,8 +10,9 @@ import Foundation
 import GameMath
 
 public final class SpriteComponent: Component {
-    public var opacity: Float = 1
     public var depth: Float = 0
+    public var opacity: Float = 1
+    public var tintColor: Color = .white
 
     public var spriteSheet: SpriteSheet? = nil
     public var spriteRect: Rect = .zero
