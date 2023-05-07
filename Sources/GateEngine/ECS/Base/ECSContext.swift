@@ -7,7 +7,7 @@
 
 public extension Game {
     @inlinable
-    var entities: [Entity] {
+    var entities: ContiguousArray<Entity> {
         return ecs.sortedEntities()
     }
     @inlinable
@@ -191,12 +191,12 @@ internal extension Game {
         }
     }
     
-    private var _sortedEntites: [Entity] = []
+    private var _sortedEntites: ContiguousArray<Entity> = []
     @usableFromInline
-    func sortedEntities() -> [Entity] {
+    func sortedEntities() -> ContiguousArray<Entity> {
         if entitesDidChange {
             entitesDidChange = false
-            _sortedEntites = self.entities.sorted(by: {$0.priority.rawValue > $1.priority.rawValue})
+            _sortedEntites = ContiguousArray(self.entities.sorted(by: {$0.priority.rawValue > $1.priority.rawValue}))
         }
         return _sortedEntites
     }

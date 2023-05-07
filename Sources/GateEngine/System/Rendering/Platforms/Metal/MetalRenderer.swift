@@ -5,14 +5,17 @@
  * http://stregasgate.com
  */
 #if canImport(MetalKit)
-
+#if os(macOS)
+// Make sure CoreGraphics gets linked on macOS for MTLCreateSystemDefaultDevice()
+import CoreGraphics
+#endif
 import MetalKit
 import GameMath
 import Shaders
 
 class MetalRenderer: RendererBackend {
-    var device: MTLDevice! = MTLCreateSystemDefaultDevice()
-    lazy private(set) var commandQueue: MTLCommandQueue = self.device.makeCommandQueue()!
+    var device: MTLDevice = MTLCreateSystemDefaultDevice()!
+    lazy var commandQueue: MTLCommandQueue = self.device.makeCommandQueue()!
     
     private var _shaders: [ShaderKey:MetalShader] = [:]
     struct ShaderKey: Hashable {
@@ -33,8 +36,14 @@ class MetalRenderer: RendererBackend {
     func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: RenderTarget) {
         let renderTarget = renderTarget.backend as! MetalRenderTarget
         let encoder = renderTarget.commandEncoder!
-        let geometries: [MetalGeometry] = drawCommand.geometries as! [MetalGeometry]
+        let geometries = ContiguousArray(drawCommand.geometries.map({$0 as! MetalGeometry}))
         let data = createUniforms(drawCommand.material, camera, matrices)
+        
+#if GATEENGINE_DEBUG_RENDERING
+        for geometry in geometries {
+            assert(drawCommand.flags.primitive == geometry.primitive)
+        }
+#endif
         
         self.setWinding(drawCommand.flags.winding, encoder: encoder)
         self.setFlags(drawCommand.flags, vsh: drawCommand.material.vertexShader, fsh: drawCommand.material.fragmentShader, geometries: drawCommand.geometries, encoder: encoder)
@@ -54,10 +63,10 @@ class MetalRenderer: RendererBackend {
         encoder.setFragmentSamplerState(nearestSamplerState, index: 1)
 
         let firstGeometry = geometries[0]
-        let indexCount: Int = firstGeometry.indexCount
+        let indiciesCount: Int = firstGeometry.indiciesCount
         let indexBuffer: MTLBuffer = firstGeometry.indexBuffer
         encoder.drawIndexedPrimitives(type: primitive(from: drawCommand.flags.primitive),
-                                      indexCount: indexCount,
+                                      indexCount: indiciesCount,
                                       indexType: .uint16,
                                       indexBuffer: indexBuffer,
                                       indexBufferOffset: 0,
@@ -136,7 +145,7 @@ class MetalRenderer: RendererBackend {
     }
     var _storedRenderPipelineStates: [RenderPipelineStateKey:MTLRenderPipelineState] = [:]
     @inline(__always)
-    func getRenderPipelineState(vsh: VertexShader, fsh: FragmentShader, flags: DrawFlags, geometries: [GeometryBackend], library: MTLLibrary) -> MTLRenderPipelineState {
+    func getRenderPipelineState(vsh: VertexShader, fsh: FragmentShader, flags: DrawFlags, geometries: ContiguousArray<GeometryBackend>, library: MTLLibrary) -> MTLRenderPipelineState {
         let key = RenderPipelineStateKey(vertexShader: vsh.id, fragmentShader: fsh.id, blendMode: flags.blendMode)
         if let existing = _storedRenderPipelineStates[key] {
             return existing
@@ -145,7 +154,7 @@ class MetalRenderer: RendererBackend {
         _storedRenderPipelineStates[key] = new
         return new
         
-//        @_transparent
+        @inline(__always)
         func buildRenderPipeline() -> MTLRenderPipelineState {
             let pipelineDescriptor = MTLRenderPipelineDescriptor()
             
@@ -282,15 +291,16 @@ extension MetalRenderer {
 
 extension MetalRenderer {
     @inline(__always)
-    func metalShader(vsh: VertexShader, fsh: FragmentShader, geometries: [GeometryBackend], flags: DrawFlags) -> MetalShader {
+    func metalShader(vsh: VertexShader, fsh: FragmentShader, geometries: ContiguousArray<GeometryBackend>, flags: DrawFlags) -> MetalShader {
         let key = ShaderKey(vsh: vsh, fsh: fsh)
         if let existing = _shaders[key] {
             return existing
         }
         do {
             let generator = MSLCodeGenerator()
-            let source = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: geometries.shaderAttributes)
-            #if GATEENGINE_SHOW_SHADERS
+            let attributes = geometries.shaderAttributes
+            let source = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: attributes)
+            #if GATEENGINE_LOG_SHADERS
             print("Generated Metal Shaders:\n\n\(source)\n")
             #endif
             let library = try self.device.makeLibrary(source: source, options: nil)
@@ -305,7 +315,7 @@ extension MetalRenderer {
     }
     
     @inline(__always)
-    private func setFlags(_ flags: DrawFlags, vsh: VertexShader, fsh: FragmentShader, geometries: [GeometryBackend], encoder: MTLRenderCommandEncoder) {
+    private func setFlags(_ flags: DrawFlags, vsh: VertexShader, fsh: FragmentShader, geometries: ContiguousArray<GeometryBackend>, encoder: MTLRenderCommandEncoder) {
         switch flags.cull {
         case .disabled:
             encoder.setCullMode(.none)
@@ -461,7 +471,7 @@ extension MetalRenderer {
     }
     
     @inline(__always)
-    private func setTransforms(_ transforms: [Transform3], on encoder: MTLRenderCommandEncoder, at vertexIndex: inout Int) {
+    private func setTransforms(_ transforms: ContiguousArray<Transform3>, on encoder: MTLRenderCommandEncoder, at vertexIndex: inout Int) {
         var instancedUniforms: ContiguousArray<InstancedUniforms> = []
         instancedUniforms.reserveCapacity(transforms.count)
         for transform in transforms {
@@ -503,7 +513,7 @@ extension MetalRenderer {
     }
     
     @inline(__always)
-    private func setGeometries(_ geometries: [MetalGeometry], on encoder: MTLRenderCommandEncoder, at index: inout Int) {
+    private func setGeometries(_ geometries: ContiguousArray<MetalGeometry>, on encoder: MTLRenderCommandEncoder, at index: inout Int) {
         for geometry in geometries {
             for attributeIndex in geometry.attributes.indices {
                 encoder.setVertexBuffer(geometry.buffers[attributeIndex], offset: 0, index: index)
@@ -523,6 +533,7 @@ extension Renderer {
         set {
             let renderer = backend as! MetalRenderer
             renderer.device = newValue
+            renderer.commandQueue = newValue.makeCommandQueue()!
         }
     }
     @_transparent

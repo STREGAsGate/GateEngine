@@ -28,7 +28,7 @@ public struct Material {
     
     private var customUniformValues: [String:any CustomUniformType] = [:]
     internal func sortedCustomUniforms() -> [any CustomUniformType] {
-        return customUniformValues.values.map({$0})
+        return customUniformValues.sorted(by: {$0.key.compare($1.key) == .orderedAscending}).map({$0.value})
     }
     public mutating func setCustomUniformValue(_ value: any CustomUniformType, forUniform name: String) {
         customUniformValues[name] = value

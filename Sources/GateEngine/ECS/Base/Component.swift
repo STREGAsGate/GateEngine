@@ -13,7 +13,7 @@ import class Foundation.NSLock
 
 public protocol Component {
     init()
-    static var componentID: ComponentID {get}
+    nonisolated static var componentID: ComponentID {get}
 }
 
 public struct ComponentID: Equatable, Hashable {
@@ -24,7 +24,7 @@ public struct ComponentID: Equatable, Hashable {
 }
 
 private extension ComponentID {
-    class Generator {
+    final class Generator {
         #if canImport(Atomics.ManagedAtomic)
         var value: ManagedAtomic<UInt16> = ManagedAtomic<UInt16>(0)
         #elseif canImport(Foundation.NSLock)

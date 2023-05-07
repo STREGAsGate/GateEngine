@@ -113,7 +113,6 @@ public class CodeGenerator {
             }
             out += function(for: operation)
         case .bool, .int, .uint, .float:
-            print(value.valueType)
             switch value.valueRepresentation {
             case let .scalarBool(value):
                 out += "\(value)"
@@ -127,20 +126,17 @@ public class CodeGenerator {
                 fatalError("\(value.valueRepresentation) not implemented")
             }
         case .float2:
-            print(value.valueType)
             let vec2 = value as! Vec2
             self.declareVariableIfNeeded(vec2._x!, declarations: &declarations)
             self.declareVariableIfNeeded(vec2._y!, declarations: &declarations)
             out += "\(type(for: .float2))(\(variable(for: vec2._x!)),\(variable(for: vec2._y!)))"
         case .float3:
-            print(value.valueType)
             let vec3 = value as! Vec3
             self.declareVariableIfNeeded(vec3._x!, declarations: &declarations)
             self.declareVariableIfNeeded(vec3._y!, declarations: &declarations)
             self.declareVariableIfNeeded(vec3._z!, declarations: &declarations)
             out += "\(type(for: .float3))(\(variable(for: vec3._x!)),\(variable(for: vec3._y!)),\(variable(for: vec3._z!)))"
         case .float4:
-            print(value.valueType)
             let vec4 = value as! Vec4
             self.declareVariableIfNeeded(vec4._x!, declarations: &declarations)
             self.declareVariableIfNeeded(vec4._y!, declarations: &declarations)
@@ -148,7 +144,6 @@ public class CodeGenerator {
             self.declareVariableIfNeeded(vec4._w!, declarations: &declarations)
             out += "\(type(for: .float4))(\(variable(for: vec4._x!)),\(variable(for: vec4._y!)),\(variable(for: vec4._z!)),\(variable(for: vec4._w!)))"
         case .uint4:
-            print(value.valueType)
             let uvec4 = value as! UVec4
             self.declareVariableIfNeeded(uvec4._x!, declarations: &declarations)
             self.declareVariableIfNeeded(uvec4._y!, declarations: &declarations)
@@ -158,7 +153,6 @@ public class CodeGenerator {
         case .float3x3:
             fatalError("Not implemented")
         case .float4x4:
-            print(value.valueType)
             let mat4 = value as! Mat4
             let mtx = mat4.valueMatrix4x4!.transposedArray()
             let c0 = "\(type(for: .float4))(\(mtx[00]),\(mtx[01]),\(mtx[02]),\(mtx[03]))"

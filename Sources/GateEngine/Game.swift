@@ -22,7 +22,7 @@ import GameMath
         if isHeadless {
             mainWindow = nil
         }else{
-            mainWindow = Window(identifier: "main", style: .bestForGames)
+            mainWindow = Window(identifier: "main", style: .system)
         }
     }
     

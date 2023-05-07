@@ -11,9 +11,9 @@ import Collections
 
 class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
     let primitive: DrawFlags.Primitive
-    let attributes: OrderedSet<GeometryAttribute>
-    let buffers: [MTLBuffer]
-    let indexCount: Int
+    let attributes: ContiguousArray<GeometryAttribute>
+    let buffers: ContiguousArray<MTLBuffer>
+    let indiciesCount: Int
     var indexBuffer: MTLBuffer {
         return buffers.last!
     }
@@ -30,7 +30,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
         ]
         
-        let sharedBuffers: [MTLBuffer] = [
+        let sharedBuffers: ContiguousArray<MTLBuffer> = [
             device.makeBuffer(bytes: geometry.positions, length: MemoryLayout<Float>.stride * geometry.positions.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.uvSet1, length: MemoryLayout<Float>.stride * geometry.uvSet1.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.uvSet2, length: MemoryLayout<Float>.stride * geometry.uvSet2.count, options: .storageModeShared)!,
@@ -49,7 +49,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             device.makeBuffer(length: MemoryLayout<Float>.stride * geometry.colors.count, options: .storageModePrivate)!,
             device.makeBuffer(length: MemoryLayout<UInt16>.stride * geometry.indicies.count, options: .storageModePrivate)!
         ]
-        self.indexCount = geometry.indicies.count
+        self.indiciesCount = geometry.indicies.count
         
         self.blit(sharedBuffers, buffers)
     }
@@ -69,7 +69,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 4, shaderAttribute: .jointWeights),
         ]
         
-        let sharedBuffers: [MTLBuffer] = [
+        let sharedBuffers: ContiguousArray<MTLBuffer> = [
             device.makeBuffer(bytes: geometry.positions, length: MemoryLayout<Float>.stride * geometry.positions.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.uvSet1, length: MemoryLayout<Float>.stride * geometry.uvSet1.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.uvSet2, length: MemoryLayout<Float>.stride * geometry.uvSet2.count, options: .storageModeShared)!,
@@ -92,7 +92,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             device.makeBuffer(length: MemoryLayout<Float>.stride * skin.jointWeights.count, options: .storageModePrivate)!,
             device.makeBuffer(length: MemoryLayout<UInt16>.stride * geometry.indicies.count, options: .storageModePrivate)!
         ]
-        self.indexCount = geometry.indicies.count
+        self.indiciesCount = geometry.indicies.count
         self.blit(sharedBuffers, buffers)
     }
     
@@ -105,7 +105,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
         ]
         
-        let sharedBuffers: [MTLBuffer] = [
+        let sharedBuffers: ContiguousArray<MTLBuffer> = [
             device.makeBuffer(bytes: lines.positions, length: MemoryLayout<Float>.stride * lines.positions.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: lines.colors, length: MemoryLayout<Float>.stride * lines.colors.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: lines.indicies, length: MemoryLayout<UInt16>.stride * lines.indicies.count, options: .storageModeShared)!
@@ -116,7 +116,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             device.makeBuffer(length: MemoryLayout<Float>.stride * lines.colors.count, options: .storageModePrivate)!,
             device.makeBuffer(length: MemoryLayout<UInt16>.stride * lines.indicies.count, options: .storageModePrivate)!
         ]
-        self.indexCount = lines.indicies.count
+        self.indiciesCount = lines.indicies.count
         self.blit(sharedBuffers, buffers)
     }
     
@@ -130,7 +130,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
         ]
         
-        let sharedBuffers: [MTLBuffer] = [
+        let sharedBuffers: ContiguousArray<MTLBuffer> = [
             device.makeBuffer(bytes: points.positions, length: MemoryLayout<Float>.stride * points.positions.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: points.colors, length: MemoryLayout<Float>.stride * points.colors.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: points.indicies, length: MemoryLayout<UInt16>.stride * points.indicies.count, options: .storageModeShared)!
@@ -141,11 +141,11 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             device.makeBuffer(length: MemoryLayout<Float>.stride * points.colors.count, options: .storageModePrivate)!,
             device.makeBuffer(length: MemoryLayout<UInt16>.stride * points.indicies.count, options: .storageModePrivate)!
         ]
-        self.indexCount = points.indicies.count
+        self.indiciesCount = points.indicies.count
         self.blit(sharedBuffers, buffers)
     }
     
-    private func blit(_ source: [MTLBuffer], _ destination: [MTLBuffer]) {
+    private func blit(_ source: ContiguousArray<MTLBuffer>, _ destination: ContiguousArray<MTLBuffer>) {
         assert(source.count == destination.count)
         
         let buffer = Game.shared.renderer.commandQueue.makeCommandBuffer()!
@@ -158,5 +158,18 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
         buffer.commit()
         buffer.waitUntilCompleted()
     }
+    
+#if GATEENGINE_DEBUG_RENDERING
+    func isDrawCommandValid(sharedWith backend: GeometryBackend) -> Bool {
+        let backend = backend as! Self
+        if indiciesCount != backend.indiciesCount {
+            return false
+        }
+        if self.primitive != backend.primitive {
+            return false
+        }
+        return true
+    }
+#endif
 }
 #endif

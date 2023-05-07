@@ -147,7 +147,7 @@ public class GLSLCodeGenerator: CodeGenerator {
         }
     }
     
-    private func generateShaderCode(from vertexShader: VertexShader, attributes: [InputAttribute]) throws -> String {
+    private func generateShaderCode(from vertexShader: VertexShader, attributes: ContiguousArray<InputAttribute>) throws -> String {
         var customUniformDefine: String = ""
         for value in vertexShader.sortedCustomUniforms() {
             if case let .float4x4Array(capacity) = value.valueType {
@@ -272,7 +272,7 @@ void main() {
     }
     
     
-    public func generateShaderCode(vertexShader: VertexShader, fragmentShader: FragmentShader, attributes: [InputAttribute]) throws -> (vertexSource: String, fragmentSource: String) {
+    public func generateShaderCode(vertexShader: VertexShader, fragmentShader: FragmentShader, attributes: ContiguousArray<InputAttribute>) throws -> (vertexSource: String, fragmentSource: String) {
         try validate(vsh: vertexShader, fsh: fragmentShader)
         let vsh = try generateShaderCode(from: vertexShader, attributes: attributes)
         let fsh = try generateShaderCode(from: fragmentShader)

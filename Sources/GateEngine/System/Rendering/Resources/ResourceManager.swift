@@ -238,7 +238,7 @@ internal extension ResourceManager {
     func geometryNeedsReload(key: Cache.GeometryKey) -> Bool {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else {return false}
-        #if GATEENGINE_SUPPORTS_HOTRELOADING
+        #if GATEENGINE_ENABLE_HOTRELOADING
         guard let cache = cache.geometries[key] else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)
@@ -375,7 +375,7 @@ internal extension ResourceManager {
     func skinnedGeometryNeedsReload(key: Cache.SkinnedGeometryKey) -> Bool {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else {return false}
-        #if GATEENGINE_SUPPORTS_HOTRELOADING
+        #if GATEENGINE_ENABLE_HOTRELOADING
         guard let cache = cache.skinnedGeometries[key] else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)
@@ -588,7 +588,7 @@ internal extension ResourceManager {
     func textureNeedsReload(key: Cache.TextureKey) -> Bool {
         // Skip if made from rawCacheID
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else {return false}
-        #if GATEENGINE_SUPPORTS_HOTRELOADING
+        #if GATEENGINE_ENABLE_HOTRELOADING
         guard let cache = cache.textures[key] else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)

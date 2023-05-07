@@ -127,7 +127,7 @@ public class MSLCodeGenerator: CodeGenerator {
         }
     }
     
-    public func generateShaderCode(vertexShader: VertexShader, fragmentShader: FragmentShader, attributes: [InputAttribute]) throws -> String {
+    public func generateShaderCode(vertexShader: VertexShader, fragmentShader: FragmentShader, attributes: ContiguousArray<InputAttribute>) throws -> String {
         try validate(vsh: vertexShader, fsh: fragmentShader)
                 
         let vertexMain = generateMain(from: vertexShader)

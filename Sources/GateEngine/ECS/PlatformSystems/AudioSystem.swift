@@ -12,14 +12,14 @@ internal class AudioSystem: PlatformSystem {
     var listenerID: ObjectIdentifier? = nil
     
     var musicMixers: [Music.Kind:AudioMixer] = [:]
-    var musicPlaying: [PlayingMusic] = []
-    var musicWaitingToPlay: [WaitingMusic] = []
-    var unusedMusicMixers: [AudioMixer] = []
+    var musicPlaying: ContiguousArray<PlayingMusic> = []
+    var musicWaitingToPlay: ContiguousArray<WaitingMusic> = []
+    var unusedMusicMixers: ContiguousArray<AudioMixer> = []
     var unusedMusicTracks: [ObjectIdentifier:[AudioTrack]] = [:]
 
     var spatialMixers: [Sound.Kind:SpatialAudioMixer] = [:]
-    var soundsPlaying: [PlayingSound] = []
-    var soundsWaitingToPlay: [WaitingSound] = []
+    var soundsPlaying: ContiguousArray<PlayingSound> = []
+    var soundsWaitingToPlay: ContiguousArray<WaitingSound> = []
     var unusedSpatialSources: [ObjectIdentifier:[SpatialAudioSource]] = [:]
     
     var cache: [String:AudioBuffer] = [:]
@@ -40,7 +40,7 @@ internal class AudioSystem: PlatformSystem {
         updateMusic(withTimePassed: deltaTime)
     }
 
-    override class var phase: PlatformSystem.Phase {return .postDeffered}
+    override class var phase: PlatformSystem.Phase {.postDeffered}
 }
 
 // MARK: - Music

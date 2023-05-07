@@ -7,7 +7,7 @@
 
 import GameMath
 
-struct DrawFlags: Hashable {
+public struct DrawFlags: Hashable {
     enum Cull: Hashable {
         case disabled
         case back
@@ -60,19 +60,56 @@ struct DrawFlags: Hashable {
     }
 }
 
-internal struct DrawCommand {
-    let geometries: [GeometryBackend]
-    let transforms: [Transform3]
+public struct DrawCommand {
+    let geometries: ContiguousArray<GeometryBackend>
+    let transforms: ContiguousArray<Transform3>
     let material: Material
     let flags: DrawFlags
 
-    init(geometries: [GeometryBackend], transforms: [Transform3], material: Material, flags: DrawFlags) {
-        self.geometries = geometries
+    internal init(backends: ContiguousArray<GeometryBackend>, transforms: ContiguousArray<Transform3>, material: Material, flags: DrawFlags) {
+        self.geometries = backends
         self.transforms = transforms
         self.material = material
         self.flags = flags
+        
+#if GATEENGINE_DEBUG_RENDERING || DEBUG
+        for backend1 in backends {
+            for backend2 in backends {
+                assert(backend1.isDrawCommandValid(sharedWith: backend2), "[GateEngine] Error: Multiple geometries in the same DrawCommand must have similar topology.")
+            }
+        }
+#endif
     }
     
+    @inline(__always)
+    @MainActor public init(lines geometries: [Lines], transforms: [Transform3], material: Material, flags: DrawFlags) {
+        let backends = ContiguousArray(geometries.map({$0.backend!}))
+        let transforms = ContiguousArray(transforms)
+        self.init(backends: backends, transforms: transforms, material: material, flags: flags)
+    }
+    
+    @inline(__always)
+    @MainActor public init(points geometries: [Points], transforms: [Transform3], material: Material, flags: DrawFlags) {
+        let backends = ContiguousArray(geometries.map({$0.backend!}))
+        let transforms = ContiguousArray(transforms)
+        self.init(backends: backends, transforms: transforms, material: material, flags: flags)
+    }
+    
+    @inline(__always)
+    @MainActor public init(geometries: [Geometry], transforms: [Transform3], material: Material, flags: DrawFlags) {
+        let backends = ContiguousArray(geometries.map({$0.backend!}))
+        let transforms = ContiguousArray(transforms)
+        self.init(backends: backends, transforms: transforms, material: material, flags: flags)
+    }
+    
+    @inline(__always)
+    @MainActor public init(geometries: [SkinnedGeometry], transforms: [Transform3], material: Material, flags: DrawFlags) {
+        let backends = ContiguousArray(geometries.map({$0.backend!}))
+        let transforms = ContiguousArray(transforms)
+        self.init(backends: backends, transforms: transforms, material: material, flags: flags)
+    }
+    
+    @inline(__always)
     @MainActor var renderTargets: Set<RenderTarget> {
         var renderTargets: Set<RenderTarget> = []
         for channel in material.channels {

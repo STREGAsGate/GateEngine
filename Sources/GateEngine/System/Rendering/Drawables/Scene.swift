@@ -19,7 +19,7 @@ import GameMath
     internal var spotLights: Set<SceneSpotLight> = []
     internal var directionalLight: SceneDirectionalLight? = nil
 
-    internal var drawCommands: [DrawCommand] = []
+    internal var drawCommands: ContiguousArray<DrawCommand> = []
     
     /** Adds the camera to the scene
     Each scene can have a single camera. Only the most recent camera is kept.
@@ -64,7 +64,7 @@ import GameMath
         guard material.isReady else {return}
         guard let geometryBackend = geometry.backend else {return}
 
-        let command = DrawCommand(geometries: [geometryBackend], transforms: transforms, material: material, flags: flags.drawFlags)
+        let command = DrawCommand(backends: [geometryBackend], transforms: ContiguousArray(transforms), material: material, flags: flags.drawFlags)
         self.drawCommands.append(command)
     }
     
@@ -104,7 +104,7 @@ import GameMath
         material.setCustomUniformValue(pose.shaderMatrixArray(orderedFromSkinJoints: geometry.skinJoints!), forUniform: "bones")
         guard let geometryBackend = geometry.backend else {return}
 
-        let command = DrawCommand(geometries: [geometryBackend], transforms: transforms, material: material, flags: flags.drawFlags)
+        let command = DrawCommand(backends: [geometryBackend], transforms: ContiguousArray(transforms), material: material, flags: flags.drawFlags)
         self.drawCommands.append(command)
     }
     
@@ -119,7 +119,7 @@ import GameMath
         guard let sourceGeometryBackend = Game.shared.resourceManager.geometryCache(for: source.cacheKey)?.geometryBackend else {return}
         guard let destinationGeometryBackend = Game.shared.resourceManager.geometryCache(for: destination.cacheKey)?.geometryBackend else {return}
 
-        let command = DrawCommand(geometries: [sourceGeometryBackend, destinationGeometryBackend], transforms: transforms, material: sourceMaterial, flags: flags.drawFlags)
+        let command = DrawCommand(backends: [sourceGeometryBackend, destinationGeometryBackend], transforms: ContiguousArray(transforms), material: sourceMaterial, flags: flags.drawFlags)
         self.drawCommands.append(command)
     }
     
@@ -190,9 +190,11 @@ import GameMath
         return renderTargets
     }
     
-    public init(camera: Camera, viewport: Rect? = nil) {
+    public init(camera: Camera, viewport: Rect? = nil, estimatedCommandCount: Int = 10) {
         self.camera = camera
         self.viewport = viewport
+        
+        self.drawCommands.reserveCapacity(estimatedCommandCount)
     }
 }
 

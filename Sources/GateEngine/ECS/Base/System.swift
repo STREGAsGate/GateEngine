@@ -41,11 +41,11 @@ public extension System {
         }
         public private(set) var state: State = .initial
         @inline(__always)
-        public var isRunning: Bool {
+        nonisolated public var isRunning: Bool {
             return state == .running
         }
         
-        public func run(_ block: @escaping ()->Void) {
+        @MainActor public func run(_ block: @escaping ()->Void) {
             assert(self.isRunning == false, "A Task cannot be run when it's running.")
             self.state = .running
             Task(priority: .background) {

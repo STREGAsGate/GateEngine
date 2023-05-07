@@ -20,24 +20,24 @@ extension PlatformSystem {
     required init() {}
     
     private(set) lazy var backgroundTask = BackgroundTask(system: self)
-    class BackgroundTask {
+    public class BackgroundTask {
         unowned let system: PlatformSystem
         init(system: PlatformSystem) {
             self.system = system
         }
-        enum State {
+        public enum State {
             ///Not running and never finished
             case initial
             case running
             case finished
         }
-        private(set) var state: State = .initial
-        @inlinable
-        var isRunning: Bool {
+        public private(set) var state: State = .initial
+        @inline(__always)
+        nonisolated public var isRunning: Bool {
             return state == .running
         }
         
-        public func run(_ block: @escaping ()->Void) {
+        @MainActor public func run(_ block: @escaping ()->Void) {
             assert(self.isRunning == false, "A Task cannot be run when it's running.")
             self.state = .running
             Task(priority: .background) {

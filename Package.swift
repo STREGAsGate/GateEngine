@@ -50,10 +50,13 @@ let package = Package(
                         .copy("System/HID/GamePad/GamePadInterpreter/Interpreters/HID/Mapping/SDL2/SDL2 Game Controller DB.txt"),
                     ],
                     swiftSettings: [
-                        .define("GATEENGINE_SUPPORTS_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
-                        .define("GATEENGINE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
-                        .define("GATEENGINE_SHOW_DEBUG"),
-                        .define("GATEENGINE_SHOW_SHADERS", .when(configuration: .debug)),
+                        // MARK: Gate Engine options for parent targets to impliment.
+                        .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
+                        
+                        // MARK: Options for development of GateEngine. These should be commented out for a tagged version releases.
+                        .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
+                        .define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
+                        .define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
                     ],
                     linkerSettings: [
                         .linkedLibrary("GameMath", .when(platforms: [.windows])),

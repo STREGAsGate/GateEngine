@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if os(WASI) || GATEENGINE_WASI_IDE_SUPPORT
+#if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 
 import JavaScriptKit
 import DOM
@@ -34,36 +34,12 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
                 self.hid.gamePads.removedDisconnectedGamePad(controller)
             }
         }
-        
-        let browser = globalThis.navigator.browser
-        
-        if browser == .chrome {
-            print("[GateEngine] Chrome doesn't support window gamepad callbacks, using event listeners")
-            globalThis.addEventListener(type: "gamepadconnected") { event in
-                addGamepad(event)
-            }
-            globalThis.addEventListener(type: "gamepaddisconnected") { event in
-                removeGamepad(event)
-            }
-        }else{
-            globalThis.ongamepadconnected = { (event: Event) -> JSValue in
-                addGamepad(event)
-                return .null
-            }
-            globalThis.ongamepaddisconnected = { (event: Event) -> JSValue in
-                removeGamepad(event)
-                return .null
-            }
+                
+        globalThis.addEventListener(type: "gamepadconnected") { event in
+            addGamepad(event)
         }
-
-        for gamepad in globalThis.navigator.getGamepads() {
-            guard let gamepad = gamepad else {continue}
-            if gamepad.mapping == .standard {
-                let controller = GamePad(interpreter: self, identifier: gamepad.id)
-                self.hid.gamePads.addNewlyConnectedGamePad(controller)
-            }else{
-                print("[GateEngine] Ignoring non-standard gamepad:", gamepad.id)
-            }
+        globalThis.addEventListener(type: "gamepaddisconnected") { event in
+            removeGamepad(event)
         }
     }
     

@@ -22,7 +22,7 @@ extension ECSContext {
         private var _renderingSystemsFrameTime: Double = 0
         var renderingSystemsFrameTime: Double = 0
         
-        private var cumulatedStatistics: Array<Array<Statistic>> = Array(repeating: [], count: 15)
+        private var cumulatedStatistics: ContiguousArray<ContiguousArray<Statistic>> = ContiguousArray(repeating: ContiguousArray(), count: 15)
         var currentIndex: Int = 0
 
         public func averageSortedStatistics() -> [Dictionary<String,Double>.Element] {

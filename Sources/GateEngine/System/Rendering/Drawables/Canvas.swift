@@ -18,7 +18,7 @@ import GameMath
     @usableFromInline internal var size: Size2? = nil
     @usableFromInline internal var camera: Camera? = nil
     
-    internal var drawCommands: [DrawCommand] = []
+    internal var drawCommands: ContiguousArray<DrawCommand> = []
     
     @inlinable
     public mutating func setCamera(_ camera: Camera, size: Size2) {
@@ -29,6 +29,11 @@ import GameMath
     @inlinable
     public mutating func setViewport(_ viewport: Rect?) {
         self.viewport = viewport
+    }
+    
+    @inline(__always)
+    public mutating func insert(_ drawCommand: DrawCommand) {
+        self.drawCommands.append(drawCommand)
     }
     
     @inline(__always)
@@ -47,7 +52,7 @@ import GameMath
             material.setCustomUniformValue(pointSize, forUniform: "pointSize")
         }
         let flags = DrawFlags(cull: .back, depthTest: .lessThan, depthWrite: .enabled, primitive: .point, winding: .clockwise, blendMode: .normal)
-        let command = DrawCommand(geometries: [geometryBackend], transforms: [transform], material: material, flags: flags)
+        let command = DrawCommand(backends: [geometryBackend], transforms: [transform], material: material, flags: flags)
         drawCommands.append(command)
     }
 
@@ -66,7 +71,7 @@ import GameMath
             material.fragmentShader = SystemShaders.vertexColorFragmentShader
         }
         let flags = DrawFlags(cull: .back, depthTest: .lessThan, depthWrite: .enabled, primitive: .line, winding: .clockwise, blendMode: .normal)
-        let command = DrawCommand(geometries: [geometryBackend], transforms: [transform], material: material, flags: flags)
+        let command = DrawCommand(backends: [geometryBackend], transforms: [transform], material: material, flags: flags)
         drawCommands.append(command)
     }
     
@@ -82,7 +87,7 @@ import GameMath
         
         let material = Material(color: color)
         let flags = DrawFlags(cull: .disabled, depthTest: .always, depthWrite: .disabled, primitive: .triangle, winding: .clockwise, blendMode: .normal)
-        let command = DrawCommand(geometries: [geometryBackend], transforms: [transform], material: material, flags: flags)
+        let command = DrawCommand(backends: [geometryBackend], transforms: [transform], material: material, flags: flags)
         drawCommands.append(command)
     }
     
@@ -105,7 +110,7 @@ import GameMath
         }
 
         let flags = DrawFlags(cull: .disabled, depthTest: .always, depthWrite: .disabled, primitive: .triangle, winding: .clockwise, blendMode: .normal)
-        let command = DrawCommand(geometries: [geometryBackend], transforms: [transform], material: material, flags: flags)
+        let command = DrawCommand(backends: [geometryBackend], transforms: [transform], material: material, flags: flags)
         drawCommands.append(command)
     }
     
@@ -124,7 +129,7 @@ import GameMath
         let material = Material(texture: text.texture)
         
         let flags = DrawFlags(cull: .disabled, depthTest: .always, depthWrite: .disabled, primitive: .triangle, winding: .clockwise, blendMode: .normal)
-        let command = DrawCommand(geometries: [geometryBackend], transforms: [transform], material: material, flags: flags)
+        let command = DrawCommand(backends: [geometryBackend], transforms: [transform], material: material, flags: flags)
         drawCommands.append(command)
     }
     
@@ -139,7 +144,7 @@ import GameMath
         let rotation = Quaternion(rotation, axis: .forward)
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
 
-        let command = DrawCommand(geometries: [geometryBackend], transforms: [transform], material: material, flags: flags.drawFlags)
+        let command = DrawCommand(backends: [geometryBackend], transforms: [transform], material: material, flags: flags.drawFlags)
         drawCommands.append(command)
     }
     
@@ -174,12 +179,15 @@ import GameMath
      - parameter camera: An optional Scene camera, which is required for 3D space convertions.
      - parameter size: The exact size of the canvas, this should be the saizxe of your renderTarget.
      - parameter interfaceScale: The userInterface scale. Sometimes called HiDPI. This setting changes how some drawable items are layed out. Use `1` for traditional gaming style drawing.
+     - parameter estimatedCommandCount: A performance hint of how many commands will be added.
      */
-    public init(camera: Camera? = nil, size: Size2? = nil, interfaceScale: Float = 1) {
+    public init(camera: Camera? = nil, size: Size2? = nil, interfaceScale: Float = 1, estimatedCommandCount: Int = 10) {
         self.interfaceScale = interfaceScale
         self.drawCommands.reserveCapacity(10)
         self.size = size
         self.camera = camera
+        
+        self.drawCommands.reserveCapacity(estimatedCommandCount)
     }
     
     @_transparent

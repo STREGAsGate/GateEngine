@@ -9,7 +9,7 @@ import Foundation
 
 public class RigSystem: System {
     var checkedIDs: Set<ObjectIdentifier> = []
-    func getFarAway(from entites: [Entity]) -> Entity? {
+    func getFarAway(from entites: ContiguousArray<Entity>) -> Entity? {
         func filter(_ entity: Entity) -> Bool {
             if let rig = entity.component(ofType: RigComponent.self) {
                 return rig.disabled == false && rig.deltaAccumulator > 0 && checkedIDs.contains(entity.id) == false

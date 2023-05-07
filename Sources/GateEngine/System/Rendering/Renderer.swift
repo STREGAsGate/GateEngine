@@ -84,7 +84,7 @@ import GameMath
         let flags = DrawFlags(depthTest: .always, depthWrite: .disabled, winding: .clockwise)
         
         if let geometryBackend = Game.shared.resourceManager.geometryCache(for: rectOriginCentered.cacheKey)?.geometryBackend {
-            let command = DrawCommand(geometries: [geometryBackend], transforms: [transform], material: material, flags: flags)
+            let command = DrawCommand(backends: [geometryBackend], transforms: [transform], material: material, flags: flags)
             backend.draw(command, camera: nil, matrices: matrices, renderTarget: destinationRenderTarget)
         }
     }

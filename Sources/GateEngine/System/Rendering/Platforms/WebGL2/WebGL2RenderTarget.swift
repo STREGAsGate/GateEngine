@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if os(WASI) || GATEENGINE_WASI_IDE_SUPPORT
+#if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 import DOM
 import WebGL1
 import WebGL2
@@ -33,20 +33,20 @@ class WebGL2RenderTarget: RenderTargetBackend {
             context.texParameteri(target: GL.TEXTURE_2D, pname: GL.TEXTURE_MIN_FILTER, param: GLint(GL.LINEAR))
             context.texParameteri(target: GL.TEXTURE_2D, pname: GL.TEXTURE_WRAP_S, param: GLint(GL.CLAMP_TO_EDGE))
             context.texParameteri(target: GL.TEXTURE_2D, pname: GL.TEXTURE_WRAP_T, param: GLint(GL.CLAMP_TO_EDGE))
-            #if DEBUG
+#if GATEENGINE_DEBUG_RENDERING
             Game.shared.renderer.checkError()
-            #endif
+#endif
             context.bindTexture(target: GL.TEXTURE_2D, texture: depthTexture)
             context.texImage2D(target: GL.TEXTURE_2D, level: 0, internalformat: GLint(GL.DEPTH_COMPONENT24), width: GLsizei(size.width), height: GLsizei(size.height), border: 0, format: GL.DEPTH_COMPONENT, type: GL.UNSIGNED_INT, pixels: nil)
-            #if DEBUG
+#if GATEENGINE_DEBUG_RENDERING
             Game.shared.renderer.checkError()
-            #endif
+#endif
         }
     }
     let isWindow: Bool
     init(isWindow: Bool) {
         self.isWindow = isWindow
-
+        
         self.context = WebGL2Renderer.context
         
         if isWindow {
@@ -80,9 +80,9 @@ class WebGL2RenderTarget: RenderTargetBackend {
             context.framebufferTexture2D(target: GL.FRAMEBUFFER, attachment: GL.COLOR_ATTACHMENT0, textarget: GL.TEXTURE_2D, texture: colorTexture, level: 0)
             context.framebufferTexture2D(target: GL.FRAMEBUFFER, attachment: GL.DEPTH_ATTACHMENT, textarget: GL.TEXTURE_2D, texture: depthTexture, level: 0)
             
-            #if DEBUG
+#if GATEENGINE_DEBUG_RENDERING
             Game.shared.renderer.checkError()
-            #endif
+#endif
         }
     }
     
