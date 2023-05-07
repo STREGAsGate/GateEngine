@@ -4,8 +4,9 @@
  *
  * http://stregasgate.com
  */
+#if DEBUG || os(WASI)
 
-public class GLSLCodeGenerator: CodeGenerator {
+public final class GLSLCodeGenerator: CodeGenerator {
     public enum GLSLVersion: CustomStringConvertible {
         case v300es
         case v300core
@@ -300,3 +301,5 @@ void main() {
         return string
     }
 }
+
+#endif

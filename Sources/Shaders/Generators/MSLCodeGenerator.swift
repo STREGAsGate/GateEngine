@@ -4,8 +4,9 @@
  *
  * http://stregasgate.com
  */
+#if DEBUG || canImport(MetalKit)
 
-public class MSLCodeGenerator: CodeGenerator {
+public final class MSLCodeGenerator: CodeGenerator {
     override func type(for valueType: ValueType) -> String {
         switch valueType {
         case .texture2D:
@@ -237,3 +238,5 @@ fragment \(type(for: .float4)) fragment\(UInt(bitPattern: fragmentShader.id.hash
         
     }
 }
+
+#endif
