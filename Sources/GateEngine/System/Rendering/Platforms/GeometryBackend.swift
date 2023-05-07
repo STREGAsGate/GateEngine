@@ -15,9 +15,9 @@ import Shaders
     init(geometry: RawGeometry, skin: Skin)
     init(lines: RawLines)
     init(points: RawPoints)
-    #if GATEENGINE_DEBUG_RENDERING
+#if GATEENGINE_DEBUG_RENDERING || DEBUG
     nonisolated func isDrawCommandValid(sharedWith backend: GeometryBackend) -> Bool
-    #endif
+#endif
 }
 
 internal struct GeometryAttribute: Hashable {

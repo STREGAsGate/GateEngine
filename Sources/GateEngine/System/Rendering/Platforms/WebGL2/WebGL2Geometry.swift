@@ -219,7 +219,7 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
 #endif
     }
     
-#if GATEENGINE_DEBUG_RENDERING
+#if GATEENGINE_DEBUG_RENDERING || DEBUG
     func isDrawCommandValid(sharedWith backend: GeometryBackend) -> Bool {
         let backend = backend as! Self
         if indiciesCount != backend.indiciesCount {
