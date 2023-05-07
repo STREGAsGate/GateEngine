@@ -61,7 +61,7 @@ public extension System {
     internal final func willUpdate(game: Game, input: HID, layout: WindowLayout, withTimePassed deltaTime: Float) {
         if didSetup == false {
             didSetup = true
-            setup(game: game)
+            setup(game: game, input: input, layout: layout)
         }
         if shouldUpdate(withTimePassed: deltaTime) {
             update(game: game, input: input, layout: layout, withTimePassed: deltaTime)
@@ -76,7 +76,7 @@ public extension System {
      Use `setup()` to create any system specific data and add it to the game.
      - note: The call to `setup()` is deffered until the next update frame after the system has been inserted and will be called immediatled before `update(withTimePassed:)`.
      */
-    open func setup(game: Game) {
+    open func setup(game: Game, input: HID, layout: WindowLayout) {
         
     }
     

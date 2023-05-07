@@ -31,7 +31,7 @@ internal class AudioSystem: PlatformSystem {
         cache[path] = new
         return new
     }
-    override func setup(game: Game) {
+    override func setup(game: Game, input: HID, layout: WindowLayout) {
         
     }
     
