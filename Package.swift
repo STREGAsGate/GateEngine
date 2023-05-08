@@ -67,16 +67,26 @@ let package = Package(
                         .copy("_Resources/GateEngine"),
                         .copy("System/HID/GamePad/GamePadInterpreter/Interpreters/HID/Mapping/SDL2/SDL2 Game Controller DB.txt"),
                     ],
-                    swiftSettings: [
-                        // MARK: Gate Engine options.
-                        .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
-                        .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
+                    swiftSettings: {
+                        var settings: [SwiftSetting] = []
                         
-                        // MARK: Options for development of GateEngine. These should be commented out for a tagged version releases.
-                        //.define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
-                        //.define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
-                        //.define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
-                    ],
+                        settings.append(contentsOf: [
+                            // MARK: Gate Engine options.
+                            .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
+                            .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
+                        ])
+                        
+                        #if false
+                        #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
+                        settings.append(contentsOf: [
+                            // MARK: Options for development of GateEngine. These should be commented out for a tagged version releases.
+                            .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
+                            .define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
+                            .define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
+                        ])
+                        #endif
+                        return settings
+                    }(),
                     linkerSettings: [
                         // .linkedLibrary("GameMath", .when(platforms: [.windows])),
                     ]),
