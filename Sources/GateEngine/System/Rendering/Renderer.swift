@@ -101,7 +101,7 @@ import GameMath
 
 @_transparent
 @MainActor fileprivate func getDefaultBackend() -> RendererBackend {
-#if canImport(Metal)
+#if canImport(MetalKit)
     return MetalRenderer()
 #elseif canImport(WebGL2)
     return WebGL2Renderer()
