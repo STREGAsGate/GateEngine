@@ -9,18 +9,28 @@ let package = Package(
     products: [
         .library(name: "GateEngine", targets: ["GateEngine"]),
     ],
-    dependencies: [
-        // GateEngine
-        .package(url: "https://github.com/STREGAsGate/GameMath.git", branch: "master"),
+    dependencies: {
+        var packageDependencies: [Package.Dependency] = []
+
+        packageDependencies.append(contentsOf: [
+            // GateEngine
+            .package(url: "https://github.com/STREGAsGate/GameMath.git", branch: "master"),
         
-        // Official
-        .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.1.0")),
-        .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0")),
-        
+            // Official
+            .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.1.0")),
+            .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0")),
+        ])
+
         // SwiftWASM
-        .package(url: "https://github.com/swiftwasm/WebAPIKit.git", branch: "main"),
-        .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
-    ],
+        #if os(macOS) || os(Linux)
+        packageDependencies.append(contentsOf: [
+            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", branch: "main"),
+            .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
+        ])
+        #endif
+        
+        return packageDependencies
+    }(),
     targets: {
         var targets: [Target] = []
         targets.append(contentsOf: [
@@ -58,13 +68,14 @@ let package = Package(
                         .copy("System/HID/GamePad/GamePadInterpreter/Interpreters/HID/Mapping/SDL2/SDL2 Game Controller DB.txt"),
                     ],
                     swiftSettings: [
-                        // MARK: Gate Engine options for parent targets to impliment.
+                        // MARK: Gate Engine options.
                         .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
+                        .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
                         
                         // MARK: Options for development of GateEngine. These should be commented out for a tagged version releases.
-                        .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
-                        .define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
-                        .define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
+                        //.define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
+                        //.define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
+                        //.define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
                     ],
                     linkerSettings: [
                         // .linkedLibrary("GameMath", .when(platforms: [.windows])),
@@ -76,6 +87,7 @@ let package = Package(
         // MARK: - GateEngineDependencies
         
         // LinuxSupport
+        #if os(Linux)
         targets.append(contentsOf: [
             .target(name: "LinuxSupport",
                     dependencies: [.targetItem(name: "LinuxImports", condition: .when(platforms: [.linux])),
@@ -86,6 +98,7 @@ let package = Package(
             .systemLibrary(name: "LinuxImports",
                            path: "Sources/GateEngineDependencies/LinuxSupport/LinuxImports"),
         ])
+        #endif
         
         targets.append(contentsOf: [
             // Vorbis
@@ -111,7 +124,7 @@ let package = Package(
                         // miniz.h crashes the Swift compiler on Windows, when public, as of Swift 5.8.0
                         .headerSearchPath("src/"),
                         // Silence warnings
-                        .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])), 
+                        .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                     ],
                     linkerSettings: [
                         // SR-14728
@@ -131,8 +144,11 @@ let package = Package(
                         // SR-14728
                         .linkedLibrary("swiftCore", .when(platforms: [.windows])),
                     ]),
-            
-            // Direct3D12
+        ])
+        
+        // Direct3D12
+        #if os(Windows)
+        targets.append(
             .target(name: "Direct3D12",
                     path: "Sources/GateEngineDependencies/Direct3D12",
                     swiftSettings: [
@@ -146,8 +162,8 @@ let package = Package(
                         .linkedLibrary("D3D12"),
                         .linkedLibrary("D3DCompiler"),
                     ])
-        ])
-        
+        )
+        #endif
   
         
         // MARK: - Tests
