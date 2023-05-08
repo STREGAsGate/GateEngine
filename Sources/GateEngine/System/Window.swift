@@ -30,12 +30,12 @@ public enum WindowStyle {
     private var previousTime: Double = 0
 
     internal func vSyncCalled() {
-        let now = Game.shared.internalPlatform.systemTime()
-        let delta = now - previousTime
+        let now: Double = Game.shared.internalPlatform.systemTime()
+        let delta: Double = now - previousTime
         self.previousTime = now
         // Positive time change and miniumum of 10 fps
         guard delta > 0 && delta < 0.1 else {return}
-        if let delegate = self.delegate {
+        if let delegate: WindowDelegate = self.delegate {
             self.framebuffer.size = self.backing.backingSize
             delegate.window(self, wantsUpdateForTimePassed: Float(delta))
             self.framebuffer.draw()

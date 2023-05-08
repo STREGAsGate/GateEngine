@@ -14,6 +14,10 @@ extension String: Error {}
 #error("macCatalyst is not a supported platform.")
 #endif
 
+#if GATEENGINE_WASI_UNSUPPORTED_HOST && os(WASI)
+#error("HTML5 builds are not supported on this platform host.")
+#endif
+
 public extension GameMath.Color {
     static let vertexColors = Color(red: -1001, green: -2002, blue: -3003, alpha: -4004)
     static let defaultDiffuseMapColor = Color(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)

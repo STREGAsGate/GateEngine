@@ -8,7 +8,7 @@
 import GameMath
 
 @MainActor public final class Renderer {
-    let backend: RendererBackend = getDefaultBackend()
+    let _backend: RendererBackend = getDefaultBackend()
     
     lazy var rectOriginCentered: Geometry = {
         let positions: [Float] = [-0.5, -0.5, 0.0,
@@ -85,13 +85,13 @@ import GameMath
         
         if let geometryBackend = Game.shared.resourceManager.geometryCache(for: rectOriginCentered.cacheKey)?.geometryBackend {
             let command = DrawCommand(backends: [geometryBackend], transforms: [transform], material: material, flags: flags)
-            backend.draw(command, camera: nil, matrices: matrices, renderTarget: destinationRenderTarget)
+            _backend.draw(command, camera: nil, matrices: matrices, renderTarget: destinationRenderTarget)
         }
     }
     
     @inline(__always)
     func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: RenderTarget) {
-        self.backend.draw(drawCommand, camera: camera, matrices: matrices, renderTarget: renderTarget)
+        self._backend.draw(drawCommand, camera: camera, matrices: matrices, renderTarget: renderTarget)
     }
 }
 
