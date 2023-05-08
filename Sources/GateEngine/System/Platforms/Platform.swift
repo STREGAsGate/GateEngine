@@ -26,7 +26,7 @@ public protocol Platform {
     return UIKitPlatform()
 #elseif canImport(AppKit)
     return AppKitPlatform()
-#elseif os(Windows)
+#elseif canImport(WinSDK)
     return Win32Platform()
 #elseif os(Linux)
     return LinuxPlatform()

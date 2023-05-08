@@ -11,9 +11,9 @@ import GameMath
 import WinSDK.DirectX.XInput14
 
 internal class XInputGamePadInterpreter: GamePadInterpreter {
-    unowned let manager: GamePadManager
-    required init(manager: GamePadManager) {
-        self.manager = manager
+    unowned let hid: HID
+    required init(hid: HID) {
+        self.hid = hid
     }
     
     func beginInterpreting() {
@@ -51,25 +51,21 @@ internal class XInputGamePadInterpreter: GamePadInterpreter {
         guard updateInterval > 100 else {updateInterval += 1; return}
         updateInterval = 0
         for userIndex in 0 ..< UInt32(XUSER_MAX_COUNT) {
-            let id = XInputIdentifier(userIndex: userIndex)
+            let id: XInputGamePadInterpreter.XInputIdentifier = XInputIdentifier(userIndex: userIndex)
             id.previousPacket = id.state.dwPacketNumber
             id.state = XINPUT_STATE()
             id.stateUpdated = true
             if XInputGetState(userIndex, &id.state) == ERROR_SUCCESS {
                 if self.connectedGamePads.contains(id) == false {
                     self.connectedGamePads.insert(id)
-                    self.manager.queue.async {
-                        let controller = GamePad(interpreter: self, identifier: id as AnyObject)
-                        self.manager.addNewlyConnectedGamePad(controller)
-                    }
+                    let controller = GamePad(interpreter: self, identifier: id as AnyObject)
+                    self.hid.gamePads.addNewlyConnectedGamePad(controller)
                 }
             }else if self.connectedGamePads.contains(id) {
-                self.manager.queue.async {
-                    if let controller = self.manager.gamePads.first(where: {$0.identifier as? XInputIdentifier == id}) {
-                        self.manager.removedDisconnectedGamePad(controller)
-                    }
-                    self.connectedGamePads.remove(id)
+                if let controller = self.hid.gamePads.all.first(where: {$0.identifier as? XInputIdentifier == id}) {
+                    self.hid.gamePads.removedDisconnectedGamePad(controller)
                 }
+                self.connectedGamePads.remove(id)
             }
         }
     }

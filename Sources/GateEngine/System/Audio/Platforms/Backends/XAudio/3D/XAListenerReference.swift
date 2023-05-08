@@ -10,17 +10,14 @@ import Foundation
 import WinSDK
 
 internal class XAListenerReference: SpatialAudioListenerBackend {
+    init() {}
     
-    init() {
-
+    func setPosition(_ position: Position3) {
+        fatalError()
     }
-    
-    func setPosition(x: Float, y: Float, z: Float) {
 
-    }
-    
-    func setOrientation(forward: (x: Float, y: Float, z: Float), up: (x: Float, y: Float, z: Float)) {
-
+    func setOrientation(forward: Direction3, up: Direction3) {
+        fatalError()
     }
 }
 #endif

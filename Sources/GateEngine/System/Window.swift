@@ -111,14 +111,16 @@ internal extension Window {
         return UIKitWindow(identifier: identifier, style: style, window: self)
         #elseif canImport(AppKit)
         return AppKitWindow(identifier: identifier, style: style, window: self)
-        #elseif os(Windows)
-        
+        #elseif canImport(WinSDK)
+        return Win32Window(identifier: identifier, style: style, window: self)
         #elseif os(Linux)
-        
+        #error("Not implemented")
         #elseif os(WASI)
         return WASIWindow(identifier: identifier, style: style, window: self)
         #elseif os(Android)
-        
+       #error("Not implemented")
+        #else
+        #error("Not implemented")
         #endif
     }
 }

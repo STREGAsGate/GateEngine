@@ -6,11 +6,38 @@
  */
 
 import Foundation
-import Atomics
+#if canImport(Atomics.ManagedAtomic)
+import class Atomics.ManagedAtomic
+#else 
+struct ManagedAtomic<T: BinaryInteger> {
+    private let lock = NSLock()
+    private var value: T
+    enum Ordering {
+        case sequentiallyConsistent
+    }
+    public init(_ value: T) {
+        self.value = value
+    }
+    public mutating func wrappingIncrementThenLoad(ordering: Ordering) -> T {
+        lock.lock()
+        value += 1
+        defer {
+            lock.unlock()
+        }
+        return value
+    }
+}
+#endif
 
 extension ResourceManager {
     struct Importers {
-        internal var textureImporters: [TextureImporter.Type] = [PNGImporter.self]
+        internal var textureImporters: [TextureImporter.Type] = {
+            var array: [TextureImporter.Type] = []
+            #if canImport(LibSPNG)
+            // array.append(PNGImporter.self)
+            #endif
+            return array
+        }()
         
         internal var geometryImporters: [GeometryImporter.Type] = [GLTransmissionFormat.self, WavefrontOBJImporter.self]
         internal var skeletonImporters: [SkeletonImporter.Type] = [GLTransmissionFormat.self]
@@ -261,6 +288,10 @@ internal extension ResourceManager {
         return await MetalGeometry(geometry: raw)
 #elseif canImport(WebGL2)
         return await WebGL2Geometry(geometry: raw)
+#elseif canImport(WinSDK)
+        return await DX12Geometry(geometry: raw)
+#else
+        #error("Not implemented")
 #endif
     }
 }
@@ -398,6 +429,10 @@ internal extension ResourceManager {
         return await MetalGeometry(geometry: raw, skin: skin)
 #elseif canImport(WebGL2)
         return await WebGL2Geometry(geometry: raw, skin: skin)
+#elseif canImport(WinSDK)        
+        return await DX12Geometry(geometry: raw, skin: skin)
+#else
+        #error("Not implemented")
 #endif
     }
 }
@@ -427,6 +462,10 @@ internal extension ResourceManager {
         return await MetalGeometry(lines: raw)
         #elseif canImport(WebGL2)
         return await WebGL2Geometry(lines: raw)
+        #elseif canImport(WinSDK)
+        return await DX12Geometry(lines: raw)
+        #else
+        #error("Not implemented")
         #endif
     }
 }
@@ -456,6 +495,10 @@ internal extension ResourceManager {
         return await MetalGeometry(points: raw)
         #elseif canImport(WebGL2)
         return await WebGL2Geometry(points: raw)
+        #elseif canImport(WinSDK)       
+        return await DX12Geometry(points: raw)
+        #else
+        #error("Not implemented")
         #endif
     }
 }
@@ -611,6 +654,10 @@ internal extension ResourceManager {
         return await MetalTexture(data: data, size: size, mipMapping: mipMapping)
 #elseif canImport(WebGL2)
         return await WebGL2Texture(data: data, size: size, mipMapping: mipMapping)
+#elseif canImport(WinSDK)
+        return await DX12Texture(data: data, size: size, mipMapping: mipMapping)
+#else
+        #error("Not implemented")
 #endif
     }
     func textureBackend(renderTargetBackend: RenderTargetBackend) async -> TextureBackend {
@@ -618,6 +665,10 @@ internal extension ResourceManager {
         return await MetalTexture(renderTargetBackend: renderTargetBackend)
 #elseif canImport(WebGL2)
         return await WebGL2Texture(renderTargetBackend: renderTargetBackend)
+#elseif canImport(WinSDK)
+        return await DX12Texture(renderTargetBackend: renderTargetBackend)
+#else
+        #error("Not implemented")
 #endif
     }
 }

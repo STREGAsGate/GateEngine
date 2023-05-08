@@ -16,4 +16,7 @@ jobs:
           tag: 5.7.1-RELEASE
 
       - uses: actions/checkout@v2
-      - run: swift build
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test

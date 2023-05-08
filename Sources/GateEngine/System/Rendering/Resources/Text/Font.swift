@@ -42,6 +42,7 @@ public class Font: OldResource {
         #if DEBUG
         self._backend.configure(withOwner: self)
         #endif
+        #if canImport(TrueType)
         Task(priority: .utility) {
             do {
                 let backend = try await TTFFont(regular: regular)
@@ -55,6 +56,11 @@ public class Font: OldResource {
                 }
             }
         }
+        #else
+        Task { @MainActor in
+            self.state = .failed(reason: "Cannot load ttf fonts on this platform.")
+        }
+        #endif
     }
     
     public init(pngRegualar regular: String) {

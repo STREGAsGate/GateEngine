@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-import Collections
 import Shaders
 
 @MainActor internal protocol GeometryBackend: AnyObject {

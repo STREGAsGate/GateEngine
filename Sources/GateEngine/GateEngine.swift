@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 
+import GameMath
 @_exported import GameMath
 
 extension String: Error {}

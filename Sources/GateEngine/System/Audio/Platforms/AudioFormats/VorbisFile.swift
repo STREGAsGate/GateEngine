@@ -21,10 +21,18 @@ func oggCallbackSeek(dataSource: UnsafeMutableRawPointer!, offset: ogg_int64_t, 
 func oggCallbackClose(dataSource: UnsafeMutableRawPointer?) -> Int32 {
     fatalError()
 }
+
+#if os(Windows)
+func oggCallbackTell(dataSource: UnsafeMutableRawPointer!) -> Int32 {
+    let stream = dataSource.assumingMemoryBound(to: Stream.self).pointee
+    return Int32(stream.tell())
+}
+#else
 func oggCallbackTell(dataSource: UnsafeMutableRawPointer!) -> Int {
     let stream = dataSource.assumingMemoryBound(to: Stream.self).pointee
     return stream.tell()
 }
+#endif
 
 fileprivate final class Stream {
     var position: Int = 0

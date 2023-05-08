@@ -31,12 +31,7 @@ public class AudioContext {
             self.reference = OAContextReference()
         }
         #elseif os(Windows)
-        switch backend {
-        case .openAL:
-            self.reference = OAContextReference()
-        case .xAudio:
-            self.reference = XAContextReference()
-        }
+        self.reference = XAContextReference()
         #endif
     }
     

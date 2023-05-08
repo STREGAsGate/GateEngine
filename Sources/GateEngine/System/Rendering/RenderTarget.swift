@@ -193,6 +193,8 @@ extension RenderTarget: Hashable {
     return MetalRenderTarget(windowBacking: windowBacking)
 #elseif canImport(WebGL2)
     return WebGL2RenderTarget(isWindow: windowBacking != nil)
+#elseif canImport(WinSDK)
+    return DX12RenderTarget(windowBacking: windowBacking)
 #else
     #error("Not implemented.")
 #endif

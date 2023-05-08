@@ -105,6 +105,8 @@ import GameMath
     return MetalRenderer()
 #elseif canImport(WebGL2)
     return WebGL2Renderer()
+#elseif canImport(WinSDK)
+    return DX12Renderer()
 #else
     #error("Not implemented.")
 #endif

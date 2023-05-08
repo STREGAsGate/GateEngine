@@ -10,19 +10,25 @@ import Foundation
 import WinSDK
 
 internal class XABufferReference: AudioBufferBackend {
-    
-    required convenience init?(url: URL, context: AudioContext) {
-        if let ogg = VorbisFile(url, context: context) {
-            self.init(data: ogg.audio, format: ogg.format())
-        }else if let wav = WaveFile(url, context: context) {
-            self.init(data: wav.audio, format: wav.format())
-        }else{
-            return nil
-        }
+    var duration: Double {
+        fatalError()
     }
-    
-    required init(data: Data, format: AudioBuffer.Format) {
-        
+
+    required init(path: String, context: AudioContext, audioBuffer: AudioBuffer) {
+        // let data = try await Game.shared.internalPlatform.loadResource(from: path)
+        // #if canImport(Vorbis)
+        // if let ogg = VorbisFile(data, context: context) {
+        //     self.load(data: ogg.audio, format: ogg.format())
+        //     self.audioBuffer.state = .ready
+        //     return
+        // }
+        // #endif
+        // if let wav = WaveFile(data, context: context) {
+        //     self.load(data: wav.audio, format: wav.format())
+        //     self.audioBuffer.state = .ready
+        //     return
+        // }
+        // throw "Audio format not supported for resource: \(path)"
     }
 }
 

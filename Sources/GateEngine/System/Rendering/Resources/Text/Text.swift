@@ -7,7 +7,6 @@
 
 import Foundation
 import GameMath
-import TrueType
 
 public final class Text {
     public enum SampleFilter {

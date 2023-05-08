@@ -11,7 +11,6 @@ import JavaScriptKit
 import typealias WebGL1.GLsizei
 import class WebGL1.WebGLBuffer
 import WebGL2
-import Collections
 
 class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
     let primitive: DrawFlags.Primitive

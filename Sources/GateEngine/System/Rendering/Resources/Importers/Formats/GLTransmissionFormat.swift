@@ -49,19 +49,19 @@ fileprivate class GLTF: Decodable {
         let translation: Array<Float>?
 
         var gameMathPosition: Position3? {
-            if let array = self.translation, array.count == 3 {
+            if let array: [Float] = self.translation, array.count == 3 {
                 return Position3(array)
             }
             return nil
         }
         var gameMathRotation: Quaternion? {
-            if let array = self.rotation, array.count == 4 {
+            if let array: [Float] = self.rotation, array.count == 4 {
                 return Quaternion(w: array[3], x: array[0], y: array[1], z: array[2])
             }
             return nil
         }
         var gameMathScale: Size3? {
-            if let array = self.scale, array.count == 3 {
+            if let array: [Float] = self.scale, array.count == 3 {
                 return Size3(array)
             }
             return nil

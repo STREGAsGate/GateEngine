@@ -108,13 +108,8 @@ fileprivate func getBackend(path: String, context: AudioContext, audioBuffer: Au
     #elseif os(Linux)
     #error("Not implemented")
     #elseif os(Windows)
-    switch backend {
-    case .openAL:
-        bufferReference = OABufferReference(url: url, context: self)
-    case .xAudio:
-        bufferReference = XABufferReference(url: url, context: self)
-    }
+    return XABufferReference(path: path, context: context, audioBuffer: audioBuffer)
     #else
-    fatalError()
+    #error("Not implemented")
     #endif
 }

@@ -53,17 +53,19 @@ internal class CABufferReference: AudioBufferBackend {
                 }
                 
                 let data = try await Game.shared.internalPlatform.loadResource(from: path)
+                #if canImport(Vorbis)
                 if let ogg = VorbisFile(data, context: context) {
                     self.load(data: ogg.audio, format: ogg.format())
                     self.audioBuffer.state = .ready
                     return
-                }else if let wav = WaveFile(data, context: context) {
+                }
+                #endif
+                if let wav = WaveFile(data, context: context) {
                     self.load(data: wav.audio, format: wav.format())
                     self.audioBuffer.state = .ready
                     return
-                }else{
-                    throw "Audio format not supported for resource: \(path)"
                 }
+                throw "Audio format not supported for resource: \(path)"
             }catch{
                 self.audioBuffer.state = .failed(reason: error.localizedDescription)
             }

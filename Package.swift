@@ -32,9 +32,10 @@ let package = Package(
                         
                         dependencies.append(.target(name: "LinuxSupport", condition: .when(platforms: [.linux])))
                         
-                        dependencies.append(.product(name: "Atomics", package: "swift-atomics"))
+                        dependencies.append(.product(name: "Atomics", package: "swift-atomics", condition: .when(platforms: [.macOS, .linux, .iOS, .tvOS, .android, .wasi])))
                         dependencies.append(.product(name: "Collections", package: "swift-collections"))
 
+                        #if os(macOS) || os(Linux)
                         dependencies.append(contentsOf: [
                             .product(name: "JavaScriptEventLoop", package: "JavaScriptKit", condition: .when(platforms: [.wasi])),
                             .product(name: "DOM", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
@@ -42,6 +43,7 @@ let package = Package(
                             .product(name: "Gamepad", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
                             .product(name: "WebGL2", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
                         ])
+                        #endif
                         
                         return dependencies
                     }(),
@@ -59,7 +61,7 @@ let package = Package(
                         //.define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
                     ],
                     linkerSettings: [
-                        .linkedLibrary("GameMath", .when(platforms: [.windows])),
+                        // .linkedLibrary("GameMath", .when(platforms: [.windows])),
                     ]),
             
             .target(name: "Shaders", dependencies: ["GameMath"]),
@@ -98,9 +100,12 @@ let package = Package(
                     path: "Sources/GateEngineDependencies/LibSPNG",
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
+                        .define("SPNG_STATIC"),
                         .define("SPNG_USE_MINIZ"),
-                        .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows])),
-                        .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])), // Silence warnings
+                        // miniz.h crashes the Swift compiler on Windows, when public, as of Swift 5.8.0
+                        .headerSearchPath("src/"),
+                        // Silence warnings
+                        .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])), 
                     ],
                     linkerSettings: [
                         // SR-14728

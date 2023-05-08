@@ -23,7 +23,7 @@ internal class XASourceReference: SpatialAudioSourceReference {
             return 0
         }
         set {
-
+            fatalError()
         }
     }
     var pitch: Float {
@@ -31,22 +31,22 @@ internal class XASourceReference: SpatialAudioSourceReference {
             return 0
         }
         set {
-
+            fatalError()
         }
     }
     
     func play() {
-
+        fatalError()
     }
     func pause() {
-
+        fatalError()
     }
     func stop() {
-
+        fatalError()
     }
     
-    func setPosition(x: Float, y: Float, z: Float) {
-
+    func setPosition(_ position: Position3) {
+        fatalError()
     }
     
     private weak var buffer: XABufferReference?

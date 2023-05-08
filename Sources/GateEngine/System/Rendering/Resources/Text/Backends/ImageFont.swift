@@ -15,6 +15,7 @@ struct ImageFont: FontBackend {
     internal var characterXAdvances: [Font.Style:[Float]] = [:]
     
     init(regular: String) async throws {
+        #warning("TODO: Remove explicit PNGImporter and use textureImporter")
         let regular = try await PNGImporter().loadData(path: regular, options: .none)
         
         let fontData: [Font.Style:(data: Data, size: Size2?)] = [.regular : regular]
@@ -77,6 +78,7 @@ struct ImageFont: FontBackend {
     
     @MainActor private mutating func populate(style: Font.Style) {
         let fontData = fontData[style]!
+        #warning("TODO: Remove explicit PNGImporter and use textureImporter")
         let (data, size) = try! PNGImporter().process(data: fontData.data, size: fontData.size, options: .none)
         
         let width: Int = Int(size.width)
