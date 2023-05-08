@@ -31,13 +31,7 @@ struct ManagedAtomic<T: BinaryInteger> {
 
 extension ResourceManager {
     struct Importers {
-        internal var textureImporters: [TextureImporter.Type] = {
-            var array: [TextureImporter.Type] = []
-            #if canImport(LibSPNG)
-            // array.append(PNGImporter.self)
-            #endif
-            return array
-        }()
+        internal var textureImporters: [TextureImporter.Type] = [PNGImporter.self]
         
         internal var geometryImporters: [GeometryImporter.Type] = [GLTransmissionFormat.self, WavefrontOBJImporter.self]
         internal var skeletonImporters: [SkeletonImporter.Type] = [GLTransmissionFormat.self]

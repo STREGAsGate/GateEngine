@@ -4,15 +4,28 @@
  *
  * http://stregasgate.com
  */
-#if canImport(LibSPNG)
+
 import Foundation
 import GameMath
-import LibSPNG
 
 public class PNGImporter: TextureImporter {
     public required init() {}
     
     public func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (data: Data, size: Size2) {
+        return try decode(data: data, size: size, options: options)
+    }
+
+    public class func supportedFileExtensions() -> [String] {
+        return ["png"]
+    }
+}
+
+#if canImport(LibSPNG)
+import LibSPNG
+
+extension PNGImporter {
+    @_transparent
+    func decode(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (data: Data, size: Size2) {
         return try data.withUnsafeBytes { data in
             /* Create a context */
             let ctx: OpaquePointer? = spng_ctx_new(0)
@@ -52,10 +65,5 @@ public class PNGImporter: TextureImporter {
             return (Data(out), Size2(width: Float(header.width), height: Float(header.height)))
         }
     }
-
-    public class func supportedFileExtensions() -> [String] {
-        return ["png"]
-    }
 }
-
 #endif
