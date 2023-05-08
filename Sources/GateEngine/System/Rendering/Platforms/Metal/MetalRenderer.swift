@@ -525,21 +525,22 @@ extension MetalRenderer {
 
 extension Renderer {
     @_transparent
+    var backend: MetalRenderer {
+        return _backend as! MetalRenderer
+    }
+    @_transparent
     var device: MTLDevice {
         get {
-            let renderer = backend as! MetalRenderer
-            return renderer.device
+            return backend.device
         }
         set {
-            let renderer = backend as! MetalRenderer
-            renderer.device = newValue
-            renderer.commandQueue = newValue.makeCommandQueue()!
+            backend.device = newValue
+            backend.commandQueue = newValue.makeCommandQueue()!
         }
     }
     @_transparent
     var commandQueue: MTLCommandQueue {
-        let renderer = backend as! MetalRenderer
-        return renderer.commandQueue
+        return backend.commandQueue
     }
 }
 #endif
