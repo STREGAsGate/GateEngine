@@ -30,7 +30,13 @@ let package = Package(
                         dependencies.append(contentsOf: ["GameMath", "Shaders", "TrueType", "LibSPNG"])
                         dependencies.append(.target(name: "Vorbis", condition: .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])))
                         
+                        #if os(Windows)
+                        dependencies.append(.target(name: "Direct3D12", condition: .when(platforms: [.windows])))
+                        #endif
+                        
+                        #if os(Linux)
                         dependencies.append(.target(name: "LinuxSupport", condition: .when(platforms: [.linux])))
+                        #endif
                         
                         dependencies.append(.product(name: "Atomics", package: "swift-atomics", condition: .when(platforms: [.macOS, .linux, .iOS, .tvOS, .android, .wasi])))
                         dependencies.append(.product(name: "Collections", package: "swift-collections"))
@@ -56,9 +62,9 @@ let package = Package(
                         .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
                         
                         // MARK: Options for development of GateEngine. These should be commented out for a tagged version releases.
-                        //.define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
-                        //.define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
-                        //.define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
+                        .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
+                        .define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
+                        .define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
                     ],
                     linkerSettings: [
                         // .linkedLibrary("GameMath", .when(platforms: [.windows])),
@@ -81,8 +87,8 @@ let package = Package(
                            path: "Sources/GateEngineDependencies/LinuxSupport/LinuxImports"),
         ])
         
-        // Vorbis
         targets.append(contentsOf: [
+            // Vorbis
             .target(name: "Vorbis",
                     path: "Sources/GateEngineDependencies/Vorbis",
                     publicHeadersPath: "include",
@@ -125,7 +131,24 @@ let package = Package(
                         // SR-14728
                         .linkedLibrary("swiftCore", .when(platforms: [.windows])),
                     ]),
+            
+            // Direct3D12
+            .target(name: "Direct3D12",
+                    path: "Sources/GateEngineDependencies/Direct3D12",
+                    swiftSettings: [
+                        .define("Direct3D12ExcludeOriginalStyleAPI", .when(configuration: .release)),
+                    ],
+                    linkerSettings: [
+                        .linkedLibrary("User32"),
+                        .linkedLibrary("Ole32"),
+                        .linkedLibrary("PortableDeviceGuids"),
+                        .linkedLibrary("DXGI"),
+                        .linkedLibrary("D3D12"),
+                        .linkedLibrary("D3DCompiler"),
+                    ])
         ])
+        
+  
         
         // MARK: - Tests
         targets.append(contentsOf: [
