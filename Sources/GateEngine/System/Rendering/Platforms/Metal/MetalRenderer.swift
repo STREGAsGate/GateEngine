@@ -250,16 +250,6 @@ class MetalRenderer: RendererBackend {
 }
 
 extension MetalRenderer {
-    struct ShaderUniforms {
-        let projectionMatrix: SIMD16<Float>
-        let viewMatrix: SIMD16<Float>
-        let u0: Float = 0
-        init(projectionMatrix: Matrix4x4, viewMatrix: Matrix4x4) {
-            self.projectionMatrix = projectionMatrix.transposedSIMD
-            self.viewMatrix = viewMatrix.transposedSIMD
-        }
-    }
-    
     struct InstancedUniforms {
         let modelMatrix: SIMD16<Float>
         let inverseModelMatrix: SIMD16<Float>
