@@ -31,6 +31,9 @@ internal class WABufferReference: AudioBufferBackend {
             }, errorCallback: { error in
                 print("[GateEngine] Failed audio decode for", path, error)
                 Task {@MainActor in
+                    #if DEBUG
+                    print("[GateEngine] Resource \(path) failed:", error)
+                    #endif
                     self.audioBuffer.state = .failed(reason: "\(error)")
                 }
             })

@@ -205,6 +205,9 @@ internal extension ResourceManager {
                     }
                 }catch{
                     Task {@MainActor in
+                        #if DEBUG
+                        print("[GateEngine] Resource \(path) failed:", error)
+                        #endif
                         cache.geometries[key]!.state = .failed(reason: "\(error)")
                     }
                 }
@@ -341,6 +344,9 @@ internal extension ResourceManager {
                     }
                 }catch{
                     Task {@MainActor in
+                        #if DEBUG
+                        print("[GateEngine] Resource \(path) failed:", error)
+                        #endif
                         cache.skinnedGeometries[key]!.state = .failed(reason: "\(error)")
                     }
                 }
@@ -616,6 +622,9 @@ internal extension ResourceManager {
                 }
             }catch{
                 Task {@MainActor in
+                    #if DEBUG
+                    print("[GateEngine] Resource \(key.requestedPath) failed:", error)
+                    #endif
                     cache.textures[key]!.state = .failed(reason: "\(error)")
                 }
             }

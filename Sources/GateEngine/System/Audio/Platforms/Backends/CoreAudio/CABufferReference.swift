@@ -67,6 +67,9 @@ internal class CABufferReference: AudioBufferBackend {
                 }
                 throw "Audio format not supported for resource: \(path)"
             }catch{
+                #if DEBUG
+                print("[GateEngine] Resource \(path) failed:", error)
+                #endif
                 self.audioBuffer.state = .failed(reason: error.localizedDescription)
             }
         }
