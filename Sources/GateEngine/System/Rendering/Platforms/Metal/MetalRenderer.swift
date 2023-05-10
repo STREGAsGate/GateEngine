@@ -46,7 +46,7 @@ class MetalRenderer: RendererBackend {
 #endif
         
         self.setWinding(drawCommand.flags.winding, encoder: encoder)
-        self.setFlags(drawCommand.flags, vsh: drawCommand.material.vertexShader, fsh: drawCommand.material.fragmentShader, geometries: drawCommand.geometries, encoder: encoder)
+        self.setFlags(drawCommand.flags, vsh: drawCommand.material.vertexShader, fsh: drawCommand.material.fragmentShader, geometries: geometries, encoder: encoder)
 
         var vertexIndex: Int = 0
         var fragmentIndex: Int = 0
@@ -145,7 +145,7 @@ class MetalRenderer: RendererBackend {
     }
     var _storedRenderPipelineStates: [RenderPipelineStateKey:MTLRenderPipelineState] = [:]
     @inline(__always)
-    func getRenderPipelineState(vsh: VertexShader, fsh: FragmentShader, flags: DrawFlags, geometries: ContiguousArray<GeometryBackend>, library: MTLLibrary) -> MTLRenderPipelineState {
+    func getRenderPipelineState(vsh: VertexShader, fsh: FragmentShader, flags: DrawFlags, geometries: ContiguousArray<MetalGeometry>, library: MTLLibrary) -> MTLRenderPipelineState {
         let key = RenderPipelineStateKey(vertexShader: vsh.id, fragmentShader: fsh.id, blendMode: flags.blendMode)
         if let existing = _storedRenderPipelineStates[key] {
             return existing
@@ -281,14 +281,14 @@ extension MetalRenderer {
 
 extension MetalRenderer {
     @inline(__always)
-    func metalShader(vsh: VertexShader, fsh: FragmentShader, geometries: ContiguousArray<GeometryBackend>, flags: DrawFlags) -> MetalShader {
+    func metalShader(vsh: VertexShader, fsh: FragmentShader, geometries: ContiguousArray<MetalGeometry>, flags: DrawFlags) -> MetalShader {
         let key = ShaderKey(vsh: vsh, fsh: fsh)
         if let existing = _shaders[key] {
             return existing
         }
         do {
             let generator = MSLCodeGenerator()
-            let attributes = geometries.shaderAttributes
+            let attributes = MetalGeometry.shaderAttributes(from: geometries)
             let source = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: attributes)
             #if GATEENGINE_LOG_SHADERS
             print("Generated Metal Shaders:\n\n\(source)\n")
@@ -305,7 +305,7 @@ extension MetalRenderer {
     }
     
     @inline(__always)
-    private func setFlags(_ flags: DrawFlags, vsh: VertexShader, fsh: FragmentShader, geometries: ContiguousArray<GeometryBackend>, encoder: MTLRenderCommandEncoder) {
+    private func setFlags(_ flags: DrawFlags, vsh: VertexShader, fsh: FragmentShader, geometries: ContiguousArray<MetalGeometry>, encoder: MTLRenderCommandEncoder) {
         switch flags.cull {
         case .disabled:
             encoder.setCullMode(.none)

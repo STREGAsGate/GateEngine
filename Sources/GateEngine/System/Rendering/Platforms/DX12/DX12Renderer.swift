@@ -370,7 +370,7 @@ extension DX12Renderer {
 
 extension DX12Renderer {
     func getShader(vsh: VertexShader, fsh: FragmentShader, flags: DrawFlags, geometries: ContiguousArray<DX12Geometry>, textureCount srvCount: UInt32) -> DXShader {
-        let key: DX12Renderer.ShaderKey = ShaderKey(vsh: vsh, fsh: fsh, flags: flags, attributes: geometries.shaderAttributes)
+        let key: DX12Renderer.ShaderKey = ShaderKey(vsh: vsh, fsh: fsh, flags: flags, attributes: DX12Geometry.shaderAttributes(from: geometries))
         if let existing: DX12Renderer.DXShader = _shaders[key] {
             return existing
         }

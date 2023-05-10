@@ -114,7 +114,7 @@ class WebGL2Renderer: RendererBackend {
         }
 #endif
       
-        let attributes = drawCommand.geometries.shaderAttributes
+        let attributes = WebGL2Geometry.shaderAttributes(from: geometries)
         let program = webGLShader(vsh: drawCommand.material.vertexShader, fsh: drawCommand.material.fragmentShader, attributes: attributes).program
         
         gl.useProgram(program: program)
