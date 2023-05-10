@@ -8,7 +8,7 @@
 import WinSDK
 
 /// Represents a fence, an object used for synchronization of the CPU and one or more GPUs.
-public class D3DFence: D3DPageable {
+public final class D3DFence: D3DPageable {
     
     /// Gets the current value of the fence.
     public var value: UInt64 {

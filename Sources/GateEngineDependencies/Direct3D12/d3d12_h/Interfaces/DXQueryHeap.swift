@@ -7,7 +7,7 @@
 
 import WinSDK
 
-public class D3DQueryHeap: D3DPageable {
+public final class D3DQueryHeap: D3DPageable {
 
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }

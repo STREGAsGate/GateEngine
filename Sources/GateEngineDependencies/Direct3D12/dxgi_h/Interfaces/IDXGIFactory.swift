@@ -7,7 +7,7 @@
 
 import WinSDK
 
-public class DGIFactory: DGIObject {
+public final class DGIFactory: DGIObject {
     
     /** Enumerates the adapters (video cards).
     - parameter index: The index of the adapter to enumerate.
@@ -61,6 +61,10 @@ public class DGIFactory: DGIObject {
         try WinSDK.CreateDXGIFactory2(flags, &riid, &ppFactory).checkResult(Self.self, #function)
         guard let p = ppFactory else {throw Error(.invalidArgument)}
         super.init(winSDKPointer: p)!
+    }
+
+    required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: MemoryManagment = .alreadyRetained) {
+        super.init(winSDKPointer: pointer, memoryManagment: memoryManagment)
     }
 
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}

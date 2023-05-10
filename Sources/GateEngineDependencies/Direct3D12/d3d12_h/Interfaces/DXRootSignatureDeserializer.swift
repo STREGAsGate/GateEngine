@@ -7,7 +7,7 @@
 
 import WinSDK
 
-public class D3DRootSignatureDeserializer: IUnknown {
+public final class D3DRootSignatureDeserializer: IUnknown {
         
     public var rootSignatureDescription: D3DRootSignatureDescription {
         return performFatally(as: RawValue.self) {pThis in

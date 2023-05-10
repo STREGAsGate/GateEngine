@@ -8,7 +8,7 @@
 import WinSDK
 
 /// An interface used to turn on the debug layer. See EnableDebugLayer for more information.
-public class D3DDebug: IUnknown {
+public final class D3DDebug: IUnknown {
 
     /// Enables the debug layer.
     public func enableDebugLayer() {
@@ -23,6 +23,10 @@ public class D3DDebug: IUnknown {
         var ppvDebug: UnsafeMutableRawPointer?
         try WinSDK.D3D12GetDebugInterface(&riid, &ppvDebug).checkResult(Self.self, #function)
         super.init(winSDKPointer: ppvDebug!)!
+    }
+
+    required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: MemoryManagment = .alreadyRetained) {
+        super.init(winSDKPointer: pointer, memoryManagment: memoryManagment)
     }
 
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}

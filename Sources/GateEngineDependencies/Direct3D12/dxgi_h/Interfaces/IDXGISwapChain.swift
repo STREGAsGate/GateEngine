@@ -7,7 +7,7 @@
 
 import WinSDK
 
-public class DGISwapChain: DGIDeviceSubObject {
+public final class DGISwapChain: DGIDeviceSubObject {
 
     /** Accesses one of the swap-chain's back buffers.
     - parameter index: A zero-based buffer index.

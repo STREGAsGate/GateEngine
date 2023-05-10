@@ -8,7 +8,7 @@
 import WinSDK
 
 /// Encapsulates a list of graphics commands for rendering. Includes APIs for instrumenting the command list execution, and for setting and clearing the pipeline state.
-public class D3DGraphicsCommandList: D3DCommandList {
+public final class D3DGraphicsCommandList: D3DCommandList {
 
     /** Starts a query running.
     - parameter type: Specifies one member of D3D12_QUERY_TYPE.

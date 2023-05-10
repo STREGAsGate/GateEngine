@@ -7,7 +7,7 @@
 
 import WinSDK
 
-public class D3DResource: D3DPageable {
+public final class D3DResource: D3DPageable {
     
     /// Gets the resource description.
     public var resourceDescription: D3DResourceDescription {

@@ -7,7 +7,7 @@
 
 import WinSDK
 
-public class D3DCommandQueue: D3DPageable {
+public final class D3DCommandQueue: D3DPageable {
 
     /** Copies mappings from a source reserved resource to a destination reserved resource.
     - parameter srcResource: A pointer to the source reserved resource.

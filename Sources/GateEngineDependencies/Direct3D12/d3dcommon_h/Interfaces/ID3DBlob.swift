@@ -9,7 +9,7 @@ import Foundation
 import WinSDK
 
 /// This interface is used to return arbitrary-length data.
-public class D3DBlob: IUnknown {
+public final class D3DBlob: IUnknown {
 
     /// Gets a pointer to the data.
     public var bufferPointer: LPVOID? {

@@ -8,7 +8,7 @@
 import WinSDK
 
 /// Represents the state of all currently set shaders as well as certain fixed function state objects.
-public class D3DPipelineState: D3DPageable {
+public final class D3DPipelineState: D3DPageable {
     
     /// Gets the cached blob representing the pipeline state.
     public func cachedBlob() throws -> D3DBlob {

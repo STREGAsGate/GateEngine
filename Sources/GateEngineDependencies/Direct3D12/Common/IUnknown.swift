@@ -31,7 +31,7 @@ public class IUnknown {
         case retain
     }
 
-    internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: MemoryManagment = .alreadyRetained) {
+    required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: MemoryManagment = .alreadyRetained) {
         guard let pointer = pointer else {return nil}
         self.pUnk = pointer
         if memoryManagment == .retain {
@@ -54,6 +54,20 @@ public class IUnknown {
     public func fullRelease() {
         self.performFatally(as: WinSDK.IUnknown.self) {pThis in
             while pThis.pointee.lpVtbl.pointee.Release(pThis) > 0 {}
+        }
+    }
+
+    public func queryInterface<T: IUnknown>(_ type: T.Type) -> T? {
+        return self.perform(as: WinSDK.IUnknown.self) { pThis in
+            
+            var pointer: UnsafeMutableRawPointer? = nil
+            var iid: IID = type.interfaceID
+            let result: HRESULT = pThis.pointee.lpVtbl.pointee.QueryInterface(pThis, &iid, &pointer)
+            
+            if result.isSuccess, let pointer: UnsafeMutableRawPointer = pointer {
+                return type.init(winSDKPointer: pointer, memoryManagment: .retain)
+            }
+            return nil
         }
     }
 

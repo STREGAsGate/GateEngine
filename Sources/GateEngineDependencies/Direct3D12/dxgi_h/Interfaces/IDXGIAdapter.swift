@@ -7,7 +7,7 @@
 
 import WinSDK
 
-public class DGIAdapter: DGIObject {
+public final class DGIAdapter: DGIObject {
 
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }

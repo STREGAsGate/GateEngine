@@ -12,14 +12,36 @@ import Foundation
 @MainActor struct Win32Platform: InternalPlatform {
     let searchPaths: [URL] = {
         let url: URL = Bundle.module.bundleURL.deletingLastPathComponent()
+
         do {
-            var files: [String] = try FileManager.default.contentsOfDirectory(atPath: url.path)
+            var files: [URL] = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
             files = files.filter({$0.pathExtension.caseInsensitiveCompare("resources") == .orderedSame})
-            return files.map({url.appendingPathComponent($0)})//files.compactMap({Bundle(url: $0)?.resourceURL})
+            files = files//.compactMap({Bundle(url: $0)?.resourceURL})
+            if files.isEmpty == false {
+                return files
+            }
         }catch{
             print("[GateEngine] Error: Failed to load resource bundles!\n", error)
         }
-        return [Bundle.main, Bundle.module].compactMap({$0.resourceURL})
+
+        do {
+            var files: [String] = try FileManager.default.contentsOfDirectory(atPath: url.path)
+            files = files.filter({$0.pathExtension.caseInsensitiveCompare("resources") == .orderedSame})
+            let urls: [URL] = files.map({url.appendingPathComponent($0)})
+            if urls.isEmpty == false {
+                return urls
+            }
+        }catch{
+            print("[GateEngine] Error: Failed to load resource bundles!\n", error)
+        }
+
+        let correct: [URL] = [Bundle.main, Bundle.module].compactMap({$0.resourceURL})
+        if correct.isEmpty == false {
+            return correct
+        }
+        
+        // Last resort
+        return [Bundle.main.bundleURL, Bundle.module.bundleURL]
     }()
     
     var pathCache: [String:String] = [:]
@@ -84,12 +106,13 @@ extension Win32Platform {
 
         Game.shared.didFinishLaunching()
         
-        let window = Game.shared.mainWindow?.backing as? Win32Window
+        let window: Win32Window? = Game.shared.mainWindow?.backing as? Win32Window
         mainLoop: while true {
             // Process all messages in thread's message queue; for GUI applications UI
             // events must have high priority.
-            
-            while PeekMessageW(&msg, window?.hWnd, 0, 0, UINT(PM_REMOVE)) {
+            window?.window.vSyncCalled()
+
+            while PeekMessageW(&msg, nil, 0, 0, UINT(PM_REMOVE)) {
                 if msg.message == UINT(WM_QUIT) {
                     nExitCode = Int32(msg.wParam)
                     break mainLoop
@@ -97,10 +120,6 @@ extension Win32Platform {
 
                 TranslateMessage(&msg)
                 DispatchMessageW(&msg)
-
-                if msg.message == WM_PAINT {
-                    break
-                }
             }
 
             var time: Date? = nil
@@ -117,9 +136,11 @@ extension Win32Platform {
 
             // Yield control to the system until the earlier of a requisite timer
             // expiration or a message is posted to the runloop.
-            _ = MsgWaitForMultipleObjects(0, nil, false,
-                                        DWORD(exactly: time?.timeIntervalSinceNow ?? -1) ?? INFINITE,
-                                        DWORD(QS_ALLINPUT) | DWORD(QS_KEY) | DWORD(QS_MOUSE) | DWORD(QS_RAWINPUT))
+            if let time: Date = time, let exactly: UInt32 = DWORD(exactly: time.timeIntervalSinceNow) {
+                _ = MsgWaitForMultipleObjects(0, nil, false,
+                                            exactly,
+                                            DWORD(QS_ALLINPUT) | DWORD(QS_KEY) | DWORD(QS_MOUSE) | DWORD(QS_RAWINPUT))
+            }
         }
 
         Game.shared.willTerminate()

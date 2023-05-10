@@ -56,23 +56,23 @@ final class DX12Renderer: RendererBackend {
                                                       textureCount: UInt32(data.textures.count))
 
         #if GATEENGINE_DEBUG_RENDERING
-        for geometry in geometries {
+        for geometry: DX12Geometry in geometries {
             assert(drawCommand.flags.primitive == geometry.primitive)
         }
         #endif
         
-        commandList.setDescriptorHeaps([shader.descriptorHeap])
         commandList.setGraphicsRootSignature(shader.rootSignature)
         commandList.setPipelineState(shader.pipelineState)
+        commandList.setDescriptorHeaps([shader.descriptorHeap])
         
-        var vertexIndex: UInt32 = 0
-        self.setGeometries(geometries, on: commandList, at: &vertexIndex)
-        self.setTransforms(drawCommand.transforms, on: commandList, at: &vertexIndex)
-
         var uniformsIndex: UInt32 = 0
         self.setUniforms(data.uniforms, commandList: commandList, at: &uniformsIndex, heap: shader.descriptorHeap)
         self.setMaterials(data.materials, commandList: commandList, at: &uniformsIndex, heap: shader.descriptorHeap)
         self.setTextures(data.textures, commandList: commandList, at: &uniformsIndex, heap: shader.descriptorHeap)
+
+        var vertexIndex: UInt32 = 0
+        self.setGeometries(geometries, on: commandList, at: &vertexIndex)
+        self.setTransforms(drawCommand.transforms, on: commandList, at: &vertexIndex)
 
         switch drawCommand.flags.primitive {
         case .point:
@@ -202,8 +202,12 @@ extension DX12Renderer {
             blockDestination.pointer += UInt64(cbvIncrementSize * index)
             device.createConstantBufferView(description: description, destination: blockDestination)  
             
-            self.cachedContent.append(buffer)
-            self.cachedContent.append(value)
+            self.cachedContent.append(buffer as Any)
+            self.cachedContent.append(value as Any)
+           
+            let blockDestinationGPU: D3DGPUDescriptorHandle = heap.gpuDescriptorHandleForHeapStart
+            blockDestination.pointer += UInt64(cbvIncrementSize * index)
+            commandList.setGraphicsRootDescriptorTable(parameterIndex: index, baseDescriptor: blockDestinationGPU)
             index += 1
         }catch{
             DX12Renderer.checkError(error)
@@ -222,8 +226,12 @@ extension DX12Renderer {
             blockDestination.pointer += UInt64(cbvIncrementSize * index)
             device.createConstantBufferView(description: description, destination: blockDestination)  
             
-            self.cachedContent.append(buffer)
-            self.cachedContent.append(value)
+            self.cachedContent.append(buffer as Any)
+            self.cachedContent.append(value as Any)
+
+            let blockDestinationGPU: D3DGPUDescriptorHandle = heap.gpuDescriptorHandleForHeapStart
+            blockDestination.pointer += UInt64(cbvIncrementSize * index)
+            commandList.setGraphicsRootDescriptorTable(parameterIndex: index, baseDescriptor: blockDestinationGPU)
             index += 1
         }catch{
             DX12Renderer.checkError(error)
@@ -378,7 +386,7 @@ extension DX12Renderer {
         do {
             let cbvCount: UInt32 = 2
             let rootSignature: D3DRootSignature = rootSignature(cbvCount: cbvCount, srvCount: srvCount)
-            let pipelineState: D3DPipelineState = createPipelineState(vsh: vsh, fsh: fsh, flags: flags, geometries: geometries)
+            let pipelineState: D3DPipelineState = createPipelineState(vsh: vsh, fsh: fsh, flags: flags, geometries: geometries, rootSignature: rootSignature)
 
             let descriptorHeapDesc: D3DDescriptorHeapDescription = D3DDescriptorHeapDescription(type: .constantBufferShaderResourceAndUnordererAccess, count: cbvCount + srvCount, flags: .shaderVisible)
             let descriptorHeap: D3DDescriptorHeap = try device.createDescriptorHeap(description: descriptorHeapDesc)
@@ -391,7 +399,7 @@ extension DX12Renderer {
         }
     }
 
-    private func createPipelineState(vsh: VertexShader, fsh: FragmentShader, flags: DrawFlags, geometries: ContiguousArray<DX12Geometry>) -> D3DPipelineState {
+    private func createPipelineState(vsh: VertexShader, fsh: FragmentShader, flags: DrawFlags, geometries: ContiguousArray<DX12Geometry>, rootSignature: D3DRootSignature) -> D3DPipelineState {
         do {
             @_transparent
             var primitive: D3DPrimitiveTopologyType {
@@ -411,7 +419,7 @@ extension DX12Renderer {
                 var elementDescriptions: [D3DInputElementDescription] = []
                 var index: UInt32 = 0
               
-                for geometry in geometries {
+                for geometry: DX12Geometry in geometries {
                     for attribute: GeometryAttribute in geometry.attributes {
                         let format: Direct3D12.DGIFormat
                         switch attribute.type {
@@ -457,23 +465,34 @@ extension DX12Renderer {
                         }
 
                         let sematic: String
+                        let semanticIndex: UInt32
                         switch attribute.shaderAttribute {
                         case .position:
                             sematic = "POSITION"
-                        case .texCoord0, .texCoord1:
+                            semanticIndex = 0
+                        case .texCoord0:
                             sematic = "TEXCOORD"
+                            semanticIndex = 0
+                        case .texCoord1:
+                            sematic = "TEXCOORD"
+                            semanticIndex = 1
                         case .normal:
                             sematic = "NORMAL"
+                            semanticIndex = 0
                         case .tangent:
                             sematic = "TANGENT"
+                            semanticIndex = 0
                         case .color:
                             sematic = "COLOR"
+                            semanticIndex = 0
                         case .jointIndicies:
                             sematic = "BONEINDEX"
+                            semanticIndex = 0
                         case .jointWeights:
                             sematic = "BONEWEIGHT"
+                            semanticIndex = 0
                         }
-                        let element: D3DInputElementDescription = D3DInputElementDescription(semanticName: sematic, format: format, inputSlot: index, alignedByteOffset: 0, inputSlotClassification: .perVertexData)
+                        let element: D3DInputElementDescription = D3DInputElementDescription(semanticName: sematic, semanticIndex: semanticIndex, format: format, inputSlot: index, alignedByteOffset: 0, inputSlotClassification: .perVertexData)
                         elementDescriptions.append(element)
                         index += 1
                     }
@@ -490,7 +509,8 @@ extension DX12Renderer {
             }
 
             let generator: HLSLCodeGenerator = HLSLCodeGenerator()
-            let shaders: (vsh: String, fsh: String) = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: geometries.shaderAttributes)
+            let shaderAttributes: ContiguousArray<CodeGenerator.InputAttribute> = DX12Geometry.shaderAttributes(from: geometries)
+            let shaders: (vsh: String, fsh: String) = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: shaderAttributes)
             #if GATEENGINE_LOG_SHADERS
             print("[GateEngine] Generated DirectX Vertex Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.vsh))\n")
             print("[GateEngine] Generated DirectX Fragment Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.fsh))\n")
@@ -502,7 +522,7 @@ extension DX12Renderer {
             #endif
 
             var description: D3DGraphicsPipelineStateDescription = D3DGraphicsPipelineStateDescription(
-                rootSignature: self.rootSignature(cbvCount: 1, srvCount: 1),
+                rootSignature: rootSignature,
                 vertexShader: D3DShaderBytecode(byteCodeBlob: try Direct3D12.compileFromSource(shaders.vsh, functionName: "VSMain", target: "vs_5_0", forDebug: debug)),
                 pixelShader: D3DShaderBytecode(byteCodeBlob: try Direct3D12.compileFromSource(shaders.fsh, functionName: "PSMain", target: "ps_5_0", forDebug: debug)),
                 blendState: .additive,
@@ -632,16 +652,31 @@ extension DX12Renderer {
         srvDesc.componentMapping = .default
         srvDesc.format = format
         srvDesc.dimension = .texture2D
-        srvDesc.texture2D.mipLevels = 1
+        srvDesc.texture2D.mipLevels = 2
         device.createShaderResourceView(resource: resource, description: srvDesc, destination: blockDestination)
     }
 
     static func checkError(_ error: Swift.Error, function: String = #function, line: Int = #line) -> Never {
-        print("[GateEngine] Error: \(Self.self).\(#function)\n", error)
+        print("[GateEngine] Error:", error)
+        var error: String = "\(error)"
+        #if GATEENGINE_DEBUG_RENDERING
+        if let infoQueue: D3DInfoQueue = Game.shared.renderer.device.queryInterface(D3DInfoQueue.self) {
+            for index: UInt64 in 0 ..< infoQueue.storedMessageCount {
+                infoQueue.getMessage(messageIndex: index) { message in
+                    if let message {
+                        print(message)
+                    }else{
+                       print("---failed to load error message---")
+                    }
+                }
+            }
+        }
+        #endif
+        
         do {
             try Game.shared.renderer.device.checkDeviceRemovedReason()
         }catch{
-            print("[GateEngine] Device Removed Reason:\n", error)
+            print("[GateEngine] Device Removed Reason:", error)
         }
         fatalError()
     }

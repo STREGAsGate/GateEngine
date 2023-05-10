@@ -237,12 +237,15 @@ fileprivate extension Win32Window {
 //These are the notifation calls
 fileprivate extension Win32Window {
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _msgPaint() {
-        Task(priority: .high) {@MainActor in
-            self.render()
-        }
+        self.render()
     }
+    
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _msgResized() {
         Task(priority: .high) {@MainActor in
             self.window.framebuffer.size = self.frame.size
@@ -250,154 +253,163 @@ fileprivate extension Win32Window {
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _msgShow() {
         self.performShowOperations()
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _msgRestore() {
         self.state = .shown
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _msgHide() {
         self.state = .hidden
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _msgClose() {
-        print("close recieved")
         self.performCloseOperations()
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _msgDestroy() {
         self.state = .destroyed
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _msgMouseMoved(lpParam: LPARAM) {
-        Task(priority: .high) {@MainActor in
-            if let windowDelegate: WindowDelegate = window.delegate {
-                var event: MouseChangeEvent = .moved
-                if mouseState.state == .outside {
-                    event = .entered
-                }
-                mouseState.mouseMoved(lpParam)
-                windowDelegate.mouseChange(event: event, position: mouseState.position)        
+        if let windowDelegate: WindowDelegate = window.delegate {
+            var event: MouseChangeEvent = .moved
+            if mouseState.state == .outside {
+                event = .entered
             }
+            mouseState.mouseMoved(lpParam)
+            windowDelegate.mouseChange(event: event, position: mouseState.position)        
         }
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _msgMouseExited() {
-        Task(priority: .high) {@MainActor in
-            if let windowDelegate: WindowDelegate = window.delegate {
-                mouseState.mouseExited()
-                windowDelegate.mouseChange(event: .exited, position: mouseState.position)        
-            }
+        if let windowDelegate: WindowDelegate = window.delegate {
+            mouseState.mouseExited()
+            windowDelegate.mouseChange(event: .exited, position: mouseState.position)        
         }
     }
 
     //return true if input was used
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _msgKeyDown(_ key: WPARAM) -> Bool {
-        Task(priority: .high) {@MainActor in
-            if let modifiers: KeyboardModifierMask = self.modifierKeyFromWPARAM(key) {
-                pressedModifiers.insert(modifiers)
-            }else if let windowDelegate: WindowDelegate = window.delegate {
-                let key: KeyboardKey = self.keyFromWPARAM(key)
-                _ = windowDelegate.keyboardRequestedHandling(key: key, modifiers: pressedModifiers, event: .keyDown)
-            }
+        if let modifiers: KeyboardModifierMask = self.modifierKeyFromWPARAM(key) {
+            pressedModifiers.insert(modifiers)
+        }else if let windowDelegate: WindowDelegate = window.delegate {
+            let key: KeyboardKey = self.keyFromWPARAM(key)
+            return windowDelegate.keyboardRequestedHandling(key: key, modifiers: pressedModifiers, event: .keyDown)
         }
         return true
     }
 
     //return true if input was used
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _msgKeyUp(_ key: WPARAM) -> Bool {
-        Task(priority: .high) {@MainActor in
-            if let modifiers: KeyboardModifierMask = self.modifierKeyFromWPARAM(key) {
-                pressedModifiers.remove(modifiers)
-            }else if let windowDelegate: WindowDelegate = window.delegate {
-                let key: KeyboardKey = self.keyFromWPARAM(key)
-                _ = windowDelegate.keyboardRequestedHandling(key: key, modifiers: pressedModifiers, event: .keyUp)
-            }
+        if let modifiers: KeyboardModifierMask = self.modifierKeyFromWPARAM(key) {
+            pressedModifiers.remove(modifiers)
+        }else if let windowDelegate: WindowDelegate = window.delegate {
+            let key: KeyboardKey = self.keyFromWPARAM(key)
+            return windowDelegate.keyboardRequestedHandling(key: key, modifiers: pressedModifiers, event: .keyUp)
         }
         return true
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _mouseDownLeft(_ lparam: LPARAM) {
-        Task(priority: .high) {@MainActor in
-            let position: Position2 = positionFrom(lparam)
-            window.delegate?.mouseClick(event: .buttonDown, button: .button1, count: nil, position: position)
-        }
+        let position: Position2 = positionFrom(lparam)
+        window.delegate?.mouseClick(event: .buttonDown, button: .button1, count: nil, position: position)
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _mouseUpLeft(_ lparam: LPARAM) {
-        Task(priority: .high) {@MainActor in
-            let position: Position2 = positionFrom(lparam)
-            window.delegate?.mouseClick(event: .buttonUp, button: .button1, count: nil, position: position)
-        }
+        let position: Position2 = positionFrom(lparam)
+        window.delegate?.mouseClick(event: .buttonUp, button: .button1, count: nil, position: position)
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _mouseDownRight(_ lparam: LPARAM) {
-        Task(priority: .high) {@MainActor in
-            let position = positionFrom(lparam)
-            window.delegate?.mouseClick(event: .buttonDown, button: .button2, count: nil, position: position)
-        }
+        let position = positionFrom(lparam)
+        window.delegate?.mouseClick(event: .buttonDown, button: .button2, count: nil, position: position)
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _mouseUpRight(_ lparam: LPARAM) {
-        Task(priority: .high) {@MainActor in
-            let position: Position2 = positionFrom(lparam)
-            window.delegate?.mouseClick(event: .buttonUp, button: .button2, count: nil, position: position)
-        }
+        let position: Position2 = positionFrom(lparam)
+        window.delegate?.mouseClick(event: .buttonUp, button: .button2, count: nil, position: position)
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _mouseDownMiddle(_ lparam: LPARAM) {
-        Task(priority: .high) {@MainActor in
-            let position: Position2 = positionFrom(lparam)
-            window.delegate?.mouseClick(event: .buttonDown, button: .button3, count: nil, position: position)
-        }
+        let position: Position2 = positionFrom(lparam)
+        window.delegate?.mouseClick(event: .buttonDown, button: .button3, count: nil, position: position)
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _mouseUpMiddle(_ lparam: LPARAM) {
-        Task(priority: .high) {@MainActor in
-            let position: Position2 = positionFrom(lparam)
-            window.delegate?.mouseClick(event: .buttonUp, button: .button3, count: nil, position: position)
-        }
+        let position: Position2 = positionFrom(lparam)
+        window.delegate?.mouseClick(event: .buttonUp, button: .button3, count: nil, position: position)
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor 
     func _mouseDownX(_ lparam: LPARAM, _ wparam: WPARAM) {
-        Task(priority: .high) {@MainActor in
-            let wparam: Int32 = Int32(wparam)
-            let position: Position2 = positionFrom(lparam)
-            if wparam & XBUTTON1 == XBUTTON1 {
-                window.delegate?.mouseClick(event: .buttonDown, button: .button4, count: nil, position: position)
-            }else if wparam & XBUTTON2 == XBUTTON2 {
-                window.delegate?.mouseClick(event: .buttonDown, button: .button5, count: nil, position: position)
-            }
+        let wparam: Int32 = Int32(wparam)
+        let position: Position2 = positionFrom(lparam)
+        if wparam & XBUTTON1 == XBUTTON1 {
+            window.delegate?.mouseClick(event: .buttonDown, button: .button4, count: nil, position: position)
+        }else if wparam & XBUTTON2 == XBUTTON2 {
+            window.delegate?.mouseClick(event: .buttonDown, button: .button5, count: nil, position: position)
         }
     }
 
     @inline(__always)
+    @preconcurrency 
+    @MainActor
     func _mouseUpX(_ lparam: LPARAM, _ wparam: WPARAM) {
-        Task(priority: .high) {@MainActor in
-            let wparam: Int32 = Int32(wparam)
-            let position: Position2 = positionFrom(lparam)
-            if wparam & XBUTTON1 == XBUTTON1 {
-                window.delegate?.mouseClick(event: .buttonUp, button: .button4, count: nil, position: position)
-            }else if wparam & XBUTTON2 == XBUTTON2 {
-                window.delegate?.mouseClick(event: .buttonUp, button: .button5, count: nil, position: position)
-            }
+        let wparam: Int32 = Int32(wparam)
+        let position: Position2 = positionFrom(lparam)
+        if wparam & XBUTTON1 == XBUTTON1 {
+            window.delegate?.mouseClick(event: .buttonUp, button: .button4, count: nil, position: position)
+        }else if wparam & XBUTTON2 == XBUTTON2 {
+            window.delegate?.mouseClick(event: .buttonUp, button: .button5, count: nil, position: position)
         }
     }
 }
@@ -514,7 +526,7 @@ extension Win32Window {
 
 fileprivate typealias WindowProc = @MainActor @convention(c) (HWND?, UINT, WPARAM, LPARAM) -> LRESULT
 
-fileprivate func WindowProcedure(_ hWnd: HWND?, _ uMsg: UINT, _ wParam: WPARAM, _ lParam: LPARAM) -> LRESULT {
+@preconcurrency fileprivate func WindowProcedure(_ hWnd: HWND?, _ uMsg: UINT, _ wParam: WPARAM, _ lParam: LPARAM) -> LRESULT {
     let lpUserData: LONG_PTR = GetWindowLongPtrW(hWnd, GWLP_USERDATA)
     guard lpUserData != 0, let window: Win32Window = unsafeBitCast(lpUserData, to: AnyObject.self) as? Win32Window else {
         return DefWindowProcW(hWnd, uMsg, wParam, lParam)
@@ -522,8 +534,7 @@ fileprivate func WindowProcedure(_ hWnd: HWND?, _ uMsg: UINT, _ wParam: WPARAM, 
     
     switch Int32(uMsg) {
     case WM_PAINT:
-        window._msgPaint()
-        return 0
+        break
     case WM_SIZE:
         switch Int32(wParam) {
         case SIZE_RESTORED:

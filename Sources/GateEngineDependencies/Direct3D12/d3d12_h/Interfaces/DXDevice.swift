@@ -8,7 +8,7 @@
 import WinSDK
 import WinSDK.DirectX
 
-public class D3DDevice: D3DObject {
+public final class D3DDevice: D3DObject {
 
     /// Gets the reason that the device was removed.
     public func checkDeviceRemovedReason() throws {
@@ -688,7 +688,7 @@ public class D3DDevice: D3DObject {
         super.init(winSDKPointer: p)!
     }
 
-    override init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: IUnknown.MemoryManagment = .alreadyRetained) {
+    required init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: IUnknown.MemoryManagment = .alreadyRetained) {
         super.init(winSDKPointer: pointer, memoryManagment: memoryManagment)
     }
 }
