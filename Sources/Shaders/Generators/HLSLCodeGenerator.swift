@@ -45,43 +45,43 @@ public final class HLSLCodeGenerator: CodeGenerator {
         case .vertexInstanceID:
             return "iid"
         case let .vertexInPosition(index):
-            return "in.pos\(index)"
+            return "input.pos\(index)"
         case let .vertexInTexCoord0(index):
-            return "in.uv\(index)_0"
+            return "input.uv\(index)_0"
         case let .vertexInTexCoord1(index):
-            return "in.uv\(index)_1"
+            return "input.uv\(index)_1"
         case let .vertexInNormal(index):
-            return "in.nml\(index)"
+            return "input.nml\(index)"
         case let .vertexInTangent(index):
-            return "in.tan\(index)"
+            return "input.tan\(index)"
         case let .vertexInColor(index):
-            return "in.clr\(index)"
+            return "input.clr\(index)"
         case let .vertexInJointIndicies(index):
-            return "in.jtIdx\(index)"
+            return "input.jtIdx\(index)"
         case let .vertexInJointWeights(index):
-            return "in.jtWeit\(index)"
+            return "input.jtWeit\(index)"
         case .vertexOutPosition:
-            return "out.pos"
+            return "output.pos"
         case .vertexOutPointSize:
-            return "out.ptSz"
+            return "output.ptSz"
         case let .vertexOut(name):
-            return "out.\(name)"
+            return "output.\(name)"
             
         case .fragmentInstanceID:
-            return "in.iid"
+            return "input.iid"
         case let .fragmentIn(name):
-            return "in.\(name)"
+            return "input.\(name)"
         case .fragmentOutColor:
             return "fClr"
             
         case .uniformModelMatrix:
-            return "instances[iid].mMtx"
+            return "mMtx"
         case .uniformViewMatrix:
-            return "uniforms.vMtx"
+            return "vMtx"
         case .uniformProjectionMatrix:
-            return "uniforms.pMtx"
+            return "pMtx"
         case let .uniformCustom(index, type: _):
-            return "uniforms.u\(index)"
+            return "u\(index)"
             
         case let .scalarBool(bool):
             return "\(bool)"
@@ -172,7 +172,7 @@ public final class HLSLCodeGenerator: CodeGenerator {
         
         var vertexOut: String = ""
         for pair in vertexShader.output._values {
-            vertexOut += "    \(type(for: pair.value)) \(pair.key);"
+            vertexOut += "    \(type(for: pair.value)) \(pair.key) : \(pair.key.uppercased());"
         }
         
         var fragmentTextureList: String = ""
@@ -184,7 +184,7 @@ public final class HLSLCodeGenerator: CodeGenerator {
         }
         
         let vsh = """
-struct Uniforms : register(b0) {
+cbuffer Uniforms : register(b0) {
     \(type(for: .float4x4)) pMtx;
     \(type(for: .float4x4)) vMtx;
 };
@@ -194,34 +194,31 @@ struct Material {
     \(type(for: .float4)) color;
     \(type(for: .int)) sampleFilter;
 };
-struct Materials : register(b1) {
+cbuffer Materials : register(b1) {
     Material materials[16];
 };
 
-struct struct VSInput {\(vertexGeometryDefine)
+struct VSInput {\(vertexGeometryDefine)
     float4 modelMatrix1 : ModelMatrixA;
     float4 modelMatrix2 : ModelMatrixB;
     float4 modelMatrix3 : ModelMatrixC;
     float4 modelMatrix4 : ModelMatrixD;
 };
-typedef PSInput {
-    \(type(for: .float4)) pos SV_POSITION;
-    \(type(for: .float)) ptSz PSIZE;
+struct PSInput {
+    \(type(for: .float4)) pos : SV_POSITION;
+    \(type(for: .float)) ptSz : PSIZE;
 \(vertexOut)
-    int iid SV_InstanceID;
 };
 
-PSInput VSMain(VSInput in) {
-    float4x4 mMtx = float4x4(in.modelMatrix1, in.modelMatrix2, in.modelMatrix3, in.modelMatrix4);
-    \(type(for: .int)) iid = uiid;
-    PSInput out;
-    out.iid = iid;
+PSInput VSMain(VSInput input) {
+    float4x4 mMtx = float4x4(input.modelMatrix1,input.modelMatrix2,input.modelMatrix3,input.modelMatrix4);
+    PSInput output;
 \(vertexMain)
-    return out;
+    return output;
 }
 """
         let fsh = """
-struct Uniforms : register(b0) {
+cbuffer Uniforms : register(b0) {
     \(type(for: .float4x4)) pMtx;
     \(type(for: .float4x4)) vMtx;
 };
@@ -231,15 +228,14 @@ struct Material {
     \(type(for: .float4)) color;
     \(type(for: .int)) sampleFilter;
 };
-struct Materials : register(b1) {
+cbuffer Materials : register(b1) {
     Material materials[16];
 };
 
-typedef PSInput {
-    \(type(for: .float4)) pos SV_POSITION;
-    \(type(for: .float)) ptSz PSIZE;
+struct PSInput {
+    \(type(for: .float4)) pos : SV_POSITION;
+    \(type(for: .float)) ptSz : PSIZE;
 \(vertexOut)
-    int iid SV_InstanceID;
 };
 
 \(fragmentTextureList)

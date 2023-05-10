@@ -163,6 +163,8 @@ class DX12RenderTarget: RenderTargetBackend {
         }catch{
             DX12Renderer.checkError(error)
         }
+
+        renderer.cachedContent.removeAll(keepingCapacity: true)
     }
     
     func willBeginContent(matrices: Matrices?, viewport: GameMath.Rect?) {

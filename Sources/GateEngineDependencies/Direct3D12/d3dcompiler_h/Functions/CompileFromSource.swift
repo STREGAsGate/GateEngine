@@ -9,7 +9,7 @@ import Foundation
 import WinSDK
 
 public func compileFromSource(_ source: String, functionName: String, target: String, forDebug: Bool) throws -> D3DBlob {
-    let source: [WCHAR] = source.windowsUTF16
+    let source: [CChar] = source.cString(using: .ascii)!
 
     let pDefines: [D3D_SHADER_MACRO] = [D3D_SHADER_MACRO(Name: nil, Definition: nil)]
     let D3D_COMPILE_STANDARD_FILE_INCLUDE: UnsafeMutablePointer<ID3DInclude>? = UnsafeMutablePointer<WinSDK.ID3DInclude>(bitPattern: UInt(1))
@@ -22,7 +22,7 @@ public func compileFromSource(_ source: String, functionName: String, target: St
     var ppCode: UnsafeMutablePointer<WinSDK.ID3DBlob>?
     var ppErrorMsgs: UnsafeMutablePointer<WinSDK.ID3DBlob>?
 
-    let hresult = WinSDK.D3DCompile(source, SIZE_T(source.count * 2), nil, pDefines, pInclude, pEntrypoint, pTarget, flags, 0, &ppCode, &ppErrorMsgs)
+    let hresult = WinSDK.D3DCompile(source, SIZE_T(source.count), nil, pDefines, pInclude, pEntrypoint, pTarget, flags, 0, &ppCode, &ppErrorMsgs)
     if hresult.isSuccess == false {
         if let error = D3DBlob(winSDKPointer: ppErrorMsgs) {
             if let string = error.stringValue {

@@ -40,7 +40,7 @@ internal struct GeometryAttribute: Hashable {
     }
 }
 
-extension ContiguousArray where Element == any GeometryBackend, Index == Int {
+extension ContiguousArray where Element: GeometryBackend, Index == Int {
     @inline(__always)
     var shaderAttributes: ContiguousArray<Shaders.CodeGenerator.InputAttribute> {
         var attributes: ContiguousArray<Shaders.CodeGenerator.InputAttribute> = []

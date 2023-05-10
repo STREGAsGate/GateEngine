@@ -62,7 +62,7 @@ class WebGL2Renderer: RendererBackend {
             let sources = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: attributes)
             
 #if GATEENGINE_LOG_SHADERS
-            print("[GateEngine] Generated OpenGL ES Vertex Shader:\n\n\(generator.addingLineNumbers(sources.vertexSource))\n")
+            print("[GateEngine] Generated OpenGL ES Vertex Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.vertexSource))\n")
 #endif
             let _vsh = gl.createShader(type: WebGL2RenderingContext.VERTEX_SHADER)!
             gl.shaderSource(shader: _vsh, source: sources.vertexSource)
@@ -72,7 +72,7 @@ class WebGL2Renderer: RendererBackend {
             }
             
 #if GATEENGINE_LOG_SHADERS
-            print("[GateEngine] Generated OpenGL ES Fragment Shader:\n\n\(generator.addingLineNumbers(sources.fragmentSource))\n")
+            print("[GateEngine] Generated OpenGL ES Fragment Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.fragmentSource))\n")
 #endif
             let _fsh = gl.createShader(type: WebGL2RenderingContext.FRAGMENT_SHADER)!
             gl.shaderSource(shader: _fsh, source: sources.fragmentSource)

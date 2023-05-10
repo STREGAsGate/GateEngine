@@ -279,27 +279,6 @@ void main() {
         let fsh = try generateShaderCode(from: fragmentShader)
         return (vsh, fsh)
     }
-    
-    public func addingLineNumbers(_ string: String) -> String {
-        var string = string
-        var count = 0
-        for index in string.indices {
-            if string[index] == "\n" {
-                count += 1
-            }
-        }
-        for index in string.indices.reversed() {
-            if string[index] == "\n" || index == string.startIndex {
-                var countS = "\(count) "
-                while countS.count < 4 {
-                    countS = " " + countS
-                }
-                string.insert(contentsOf: countS, at: index == string.startIndex ? index : string.index(after: index))
-                count -= 1
-            }
-        }
-        return string
-    }
 }
 
 #endif

@@ -13,9 +13,9 @@ import Foundation
     let searchPaths: [URL] = {
         let url: URL = Bundle.module.bundleURL.deletingLastPathComponent()
         do {
-            var files: [URL] = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
-            files = files.filter({$0.pathExtension.caseInsensitiveCompare("bundle") == .orderedSame})
-            return files.compactMap({Bundle(url: $0)?.resourceURL})
+            var files: [String] = try FileManager.default.contentsOfDirectory(atPath: url.path)
+            files = files.filter({$0.pathExtension.caseInsensitiveCompare("resources") == .orderedSame})
+            return files.map({url.appendingPathComponent($0)})//files.compactMap({Bundle(url: $0)?.resourceURL})
         }catch{
             print("[GateEngine] Error: Failed to load resource bundles!\n", error)
         }
@@ -30,9 +30,9 @@ import Foundation
         let searchPaths: [URL] = Game.shared.delegate.resourceSearchPaths() + searchPaths
         for searchPath: URL in searchPaths {
             let file: URL = searchPath.appendingPathComponent(path)
-            let path: String = file.path
-            if FileManager.default.fileExists(atPath: path) {
-                return path
+            let filePath: String = file.path
+            if FileManager.default.fileExists(atPath: filePath) {
+                return filePath
             }
         }
         return nil
@@ -84,10 +84,12 @@ extension Win32Platform {
 
         Game.shared.didFinishLaunching()
         
+        let window = Game.shared.mainWindow?.backing as? Win32Window
         mainLoop: while true {
             // Process all messages in thread's message queue; for GUI applications UI
             // events must have high priority.
-            while PeekMessageW(&msg, nil, 0, 0, UINT(PM_REMOVE)) {
+            
+            while PeekMessageW(&msg, window?.hWnd, 0, 0, UINT(PM_REMOVE)) {
                 if msg.message == UINT(WM_QUIT) {
                     nExitCode = Int32(msg.wParam)
                     break mainLoop
@@ -95,6 +97,10 @@ extension Win32Platform {
 
                 TranslateMessage(&msg)
                 DispatchMessageW(&msg)
+
+                if msg.message == WM_PAINT {
+                    break
+                }
             }
 
             var time: Date? = nil

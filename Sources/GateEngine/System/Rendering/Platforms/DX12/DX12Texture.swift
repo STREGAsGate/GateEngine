@@ -14,7 +14,10 @@ final class DX12Texture: TextureBackend {
     var dxTexture: D3DResource?
 
     var size: Size2 {
-        fatalError()
+        if let desc: D3DResourceDescription = dxTexture?.resourceDescription {
+            return Size2(Float(desc.width), Float(desc.height))
+        }
+        return .zero
     }
     
     required init(renderTargetBackend: RenderTargetBackend) {
@@ -27,7 +30,7 @@ final class DX12Texture: TextureBackend {
         do {
             let textureResourceDesc: D3DResourceDescription = Self.textureResourceDesc(size: size, mipMapping: mipMapping)
             self.dxTexture = try device.createCommittedResource(description: textureResourceDesc, properties: .forTexture, state: .copyDestination)
-            try self.processTexture(data: data, textureResourceDesc: textureResourceDesc)
+            try self.processTexture(data: data, size: size, textureResourceDesc: textureResourceDesc)
         }catch{
             DX12Renderer.checkError(error)
         }
@@ -38,7 +41,7 @@ final class DX12Texture: TextureBackend {
         do {
             let textureResourceDesc: D3DResourceDescription = Self.textureResourceDesc(size: size, mipMapping: mipMapping)
             self.dxTexture = try device.createCommittedResource(description: textureResourceDesc, properties: .forTexture, state: .copyDestination)
-            try self.processTexture(data: data, textureResourceDesc: textureResourceDesc)
+            try self.processTexture(data: data, size: size, textureResourceDesc: textureResourceDesc)
         }catch{
             DX12Renderer.checkError(error)
         }
@@ -68,7 +71,7 @@ final class DX12Texture: TextureBackend {
         return textureResourceDesc
     }
 
-    private func processTexture(data: Data, textureResourceDesc: D3DResourceDescription) throws {
+    private func processTexture(data: Data, size: Size2, textureResourceDesc: D3DResourceDescription) throws {
         let renderer: DX12Renderer = Game.shared.renderer.backend
         let device: D3DDevice = renderer.device
         let fence: D3DFence = try device.createFence()
