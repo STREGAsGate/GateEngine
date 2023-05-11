@@ -30,12 +30,15 @@ public enum MipMapping: Hashable {
     internal let cacheKey: ResourceManager.Cache.TextureKey
     internal var renderTarget: RenderTarget?
     private let sizeHint: Size2?
-    /// The dimensions of the texture. Will be `nil` until the resource state is `ready`.
+    
+    /** The dimensions of the texture.
+     Guaranteed accurate when state is .ready, otherwise fails or returns the provided hint placeholder.
+     */
     public var size: Size2 {
         if state == .ready {
             return textureBackend!.size
         }
-        if let sizeHint {
+        if let sizeHint: Size2 = sizeHint {
             return sizeHint
         }
         fatalError("The state must be \(ResourceState.ready), or a sizeHint must be provided during init, before accessing this property.")

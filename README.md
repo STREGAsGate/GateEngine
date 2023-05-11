@@ -1,8 +1,9 @@
 # Gate Engine
+
+[![Windows](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml/badge.svg)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml)
 [![macOS](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml/badge.svg)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml)
+[![Linux](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml/badge.svg)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml)
 [![HTML5](https://github.com/STREGAsGate/GateEngine/actions/workflows/HTML5.yml/badge.svg)](https://github.com/STREGAsGate/GateEngine/actions/workflows/HTML5.yml)
-<!--- [![Windows](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml/badge.svg)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) --->
-<!--- [![Linux](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml/badge.svg)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml) --->
 
 ## What is Gate Engine?
 Gate Engine is a cross platform game engine for Swift that allows you to build 2D and 3D games. 

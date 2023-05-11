@@ -12,7 +12,7 @@ public final class D3DResource: D3DPageable {
     /// Gets the resource description.
     public var resourceDescription: D3DResourceDescription {
         return performFatally(as: RawValue.self) {pThis in
-            let v = pThis.pointee.lpVtbl.pointee.GetDesc(pThis)
+            let v: WinSDK.D3D12_RESOURCE_DESC = pThis.pointee.lpVtbl.pointee.GetDesc(pThis)
             return D3DResourceDescription(v)
         }
     }

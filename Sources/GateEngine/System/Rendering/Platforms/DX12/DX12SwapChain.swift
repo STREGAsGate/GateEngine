@@ -58,6 +58,10 @@ import Direct3D12
         return try! swapChain.backBuffer(at: UInt32(current))
     }
 
+    func setBackgroundColor(_ color: D3DColor) {
+        swapChain.setBackgroundColor(color)
+    }
+
     func reshape(renderTarget: DX12RenderTarget) {
         do {
             try self.swapChain.resizeBuffers(flags: [.allowTearing])

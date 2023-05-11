@@ -16,6 +16,7 @@ import GameMath
     internal init(windowBacking: WindowBacking?) {
         self.isWindow = windowBacking != nil
         self.backend = getBackend(windowBacking: windowBacking)
+        self.clearColor = .black
     }
     public convenience init() {
         self.init(windowBacking: nil)
@@ -57,9 +58,10 @@ import GameMath
     
     var previousSize: Size2? = nil
     private func reshapeIfNeeded() {
-        guard previousSize != backend.size else {return}
-        previousSize = backend.size
-        backend.reshape()
+        if backend.wantsReshape || previousSize != backend.size {
+            previousSize = backend.size
+            backend.reshape()
+        }
     }
     
     internal func draw() {
@@ -178,6 +180,7 @@ extension RenderTarget: Hashable {
 @MainActor internal protocol RenderTargetBackend {
     var size: Size2 {get set}
     var clearColor: Color {get set}
+    var wantsReshape: Bool {get}
     func reshape()
     
     func willBeginFrame()
@@ -185,6 +188,10 @@ extension RenderTarget: Hashable {
     
     func willBeginContent(matrices: Matrices?, viewport: Rect?)
     func didEndContent()
+}
+
+extension RenderTargetBackend {
+    var wantsReshape: Bool {false}
 }
 
 @_transparent

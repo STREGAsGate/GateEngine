@@ -195,20 +195,20 @@ internal extension ResourceManager {
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: options)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
-            Task {
+            Task.detached(priority: .low) {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
-                    let backend = await geometryBackend(from: geometry)
+                    let backend = await self.geometryBackend(from: geometry)
                     Task {@MainActor in
-                        cache.geometries[key]!.geometryBackend = backend
-                        cache.geometries[key]!.state = .ready
+                        self.cache.geometries[key]!.geometryBackend = backend
+                        self.cache.geometries[key]!.state = .ready
                     }
                 }catch{
                     Task {@MainActor in
                         #if DEBUG
                         print("[GateEngine] Resource \(path) failed:", error)
                         #endif
-                        cache.geometries[key]!.state = .failed(reason: "\(error)")
+                        self.cache.geometries[key]!.state = .failed(reason: "\(error)")
                     }
                 }
             }
@@ -222,11 +222,11 @@ internal extension ResourceManager {
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             if let geometry = geometry {
-                Task {
-                    let backend = await geometryBackend(from: geometry)
+                Task.detached(priority: .low) {
+                    let backend = await self.geometryBackend(from: geometry)
                     Task {@MainActor in
-                        cache.geometries[key]!.geometryBackend = backend
-                        cache.geometries[key]!.state = .ready
+                        self.cache.geometries[key]!.geometryBackend = backend
+                        self.cache.geometries[key]!.state = .ready
                     }
                 }
             }
@@ -248,11 +248,11 @@ internal extension ResourceManager {
     func reloadGeometryIfNeeded(key: Cache.GeometryKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else {return}
-        Task {
+        Task.detached(priority: .low) {
             guard self.geometryNeedsReload(key: key) else {return}
             guard let cache = self.geometryCache(for: key) else {return}
             let geometry = try await RawGeometry(path: key.requestedPath, options: key.geometryOptions)
-            let backend = await geometryBackend(from: geometry)
+            let backend = await self.geometryBackend(from: geometry)
             Task {@MainActor in
                 cache.geometryBackend = backend
             }
@@ -330,11 +330,11 @@ internal extension ResourceManager {
         let key = Cache.SkinnedGeometryKey(requestedPath: path, geometryOptions: geometryOptions, skinOptions: skinOptions)
         if cache.skinnedGeometries[key] == nil {
             cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
-            Task {
+            Task.detached(priority: .low) {
                 do {
                     let geometry = try await RawGeometry(path: path, options: geometryOptions)
                     let skin = try await Skin(path: key.requestedPath, options: skinOptions)
-                    let backend = await geometryBackend(from: geometry, skin: skin)
+                    let backend = await self.geometryBackend(from: geometry, skin: skin)
                     Task {@MainActor in
                         if let cache = self.cache.skinnedGeometries[key] {
                             cache.geometryBackend = backend
@@ -347,7 +347,7 @@ internal extension ResourceManager {
                         #if DEBUG
                         print("[GateEngine] Resource \(path) failed:", error)
                         #endif
-                        cache.skinnedGeometries[key]!.state = .failed(reason: "\(error)")
+                        self.cache.skinnedGeometries[key]!.state = .failed(reason: "\(error)")
                     }
                 }
             }
@@ -361,8 +361,8 @@ internal extension ResourceManager {
         if cache.skinnedGeometries[key] == nil {
             cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
             if let geometry = geometry {
-                Task {
-                    let backend = await geometryBackend(from: geometry, skin: skin)
+                Task.detached(priority: .low) {
+                    let backend = await self.geometryBackend(from: geometry, skin: skin)
                     Task {@MainActor in
                         if let cache = self.cache.skinnedGeometries[key] {
                             cache.geometryBackend = backend
@@ -389,11 +389,11 @@ internal extension ResourceManager {
     func reloadSkinnedGeometryIfNeeded(key: Cache.SkinnedGeometryKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else {return}
-        Task {
+        Task.detached(priority: .low) {
             guard self.skinnedGeometryNeedsReload(key: key) else {return}
             let geometry = try await RawGeometry(path: key.requestedPath, options: key.geometryOptions)
             let skin = try await Skin(path: key.requestedPath, options: key.skinOptions)
-            let backend = await geometryBackend(from: geometry, skin: skin)
+            let backend = await self.geometryBackend(from: geometry, skin: skin)
             Task {@MainActor in
                 if let cache = self.cache.skinnedGeometries[key] {
                     cache.geometryBackend = backend
@@ -445,11 +445,11 @@ internal extension ResourceManager {
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             if let lines = lines {
-                Task {
-                    let backend = await geometryBackend(from: lines)
+                Task.detached(priority: .low) {
+                    let backend = await self.geometryBackend(from: lines)
                     Task {@MainActor in
-                        cache.geometries[key]!.geometryBackend = backend
-                        cache.geometries[key]!.state = .ready
+                        self.cache.geometries[key]!.geometryBackend = backend
+                        self.cache.geometries[key]!.state = .ready
                     }
                 }
             }
@@ -478,11 +478,11 @@ internal extension ResourceManager {
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             if let points {
-                Task {
-                    let backend = await geometryBackend(from: points)
+                Task.detached(priority: .low) {
+                    let backend = await self.geometryBackend(from: points)
                     Task {@MainActor in
-                        cache.geometries[key]!.geometryBackend = backend
-                        cache.geometries[key]!.state = .ready
+                        self.cache.geometries[key]!.geometryBackend = backend
+                        self.cache.geometries[key]!.state = .ready
                     }
                 }
             }
@@ -550,11 +550,11 @@ internal extension ResourceManager {
         let key = Cache.TextureKey(requestedPath: path, mipMapping: mipMapping, textureOptions: .none)
         if cache.textures[key] == nil {
             cache.textures[key] = Cache.TextureCache()
-            Task {
-                let backend = await textureBackend(data:data, size: size, mipMapping: mipMapping)
+            Task.detached(priority: .low) {
+                let backend = await self.textureBackend(data:data, size: size, mipMapping: mipMapping)
                 Task {@MainActor in
-                    cache.textures[key]!.textureBackend = backend
-                    cache.textures[key]!.state = .ready
+                    self.cache.textures[key]!.textureBackend = backend
+                    self.cache.textures[key]!.state = .ready
                 }
             }
         }
@@ -568,11 +568,11 @@ internal extension ResourceManager {
             let newCache = Cache.TextureCache()
             newCache.isRenderTarget = true
             cache.textures[key] = newCache
-            Task {
-                let backend = await textureBackend(renderTargetBackend: renderTargetBackend)
+            Task.detached(priority: .low) {
+                let backend = await self.textureBackend(renderTargetBackend: renderTargetBackend)
                 Task {@MainActor in
-                    cache.textures[key]!.textureBackend = backend
-                    cache.textures[key]!.state = .ready
+                    self.cache.textures[key]!.textureBackend = backend
+                    self.cache.textures[key]!.state = .ready
                 }
             }
         }
@@ -592,16 +592,18 @@ internal extension ResourceManager {
     
     func reloadTextureIfNeeded(key: Cache.TextureKey) {
         // Skip if made from rawCacheID
-        guard key.requestedPath[key.requestedPath.startIndex] != "$" else {return}
-        Task {
-            guard self.textureNeedsReload(key: key) else {return}
-            _reloadTexture(key: key)
+        if key.requestedPath[key.requestedPath.startIndex] != "$" {
+            Task.detached(priority: .low) {
+                if self.textureNeedsReload(key: key) {
+                    self._reloadTexture(key: key)
+                }
+            }
         }
     }
     
     @inline(__always)
     private func _reloadTexture(key: Cache.TextureKey) {
-        Task {
+        Task.detached(priority: .low) {
             do {
                 let path = key.requestedPath
                 guard let fileExtension = path.components(separatedBy: ".").last else {
@@ -615,17 +617,17 @@ internal extension ResourceManager {
                 guard v.data.isEmpty == false else {throw "No data found at " + path}
                 let texture = try importer.process(data: v.data, size: v.size, options: key.textureOptions)
                 
-                let backend = await textureBackend(data: texture.data, size: texture.size, mipMapping: key.mipMapping)
+                let backend = await self.textureBackend(data: texture.data, size: texture.size, mipMapping: key.mipMapping)
                 Task {@MainActor in
-                    cache.textures[key]!.textureBackend = backend
-                    cache.textures[key]!.state = .ready
+                    self.cache.textures[key]!.textureBackend = backend
+                    self.cache.textures[key]!.state = .ready
                 }
             }catch{
                 Task {@MainActor in
                     #if DEBUG
                     print("[GateEngine] Resource \(key.requestedPath) failed:", error)
                     #endif
-                    cache.textures[key]!.state = .failed(reason: "\(error)")
+                    self.cache.textures[key]!.state = .failed(reason: "\(error)")
                 }
             }
         }

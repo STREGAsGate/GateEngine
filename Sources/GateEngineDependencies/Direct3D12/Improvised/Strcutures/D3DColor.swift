@@ -7,7 +7,7 @@
 
 import WinSDK
 
-public struct D3DColor {
+public struct D3DColor: Equatable {
     public typealias RawValue = Array<Float>
     internal var rawValue: RawValue
 

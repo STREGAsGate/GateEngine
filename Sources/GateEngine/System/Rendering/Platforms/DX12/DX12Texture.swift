@@ -11,25 +11,43 @@ import GameMath
 import Foundation
 
 final class DX12Texture: TextureBackend {
-    var dxTexture: D3DResource?
+    let renderTarget: DX12RenderTarget?
+    var _dxTexture: D3DResource?
 
+    var _size: Size2?
     var size: Size2 {
-        if let desc: D3DResourceDescription = dxTexture?.resourceDescription {
+        if let renderTarget {
+            return renderTarget.size
+        }
+        if let size: Size2 = _size {
+            return size
+        }
+        if let desc: D3DResourceDescription = _dxTexture?.resourceDescription {
             return Size2(Float(desc.width), Float(desc.height))
         }
-        return .zero
+        fatalError()
+    }
+
+     var dxTexture: D3DResource {
+        if let _dxTexture {
+            return _dxTexture
+        }
+        return renderTarget!.colorTexture!
     }
     
     required init(renderTargetBackend: RenderTargetBackend) {
-        let renderTarget: DX12RenderTarget = renderTargetBackend as! DX12RenderTarget
-        dxTexture = renderTarget.colorTexture
+        renderTarget = renderTargetBackend as! DX12RenderTarget
+        _dxTexture = nil
+        _size = nil
     }
     
     required init(data: Data, size: Size2, mipMapping: MipMapping) {
         let device: D3DDevice =  Game.shared.renderer.device
         do {
             let textureResourceDesc: D3DResourceDescription = Self.textureResourceDesc(size: size, mipMapping: mipMapping)
-            self.dxTexture = try device.createCommittedResource(description: textureResourceDesc, properties: .forTexture, state: .copyDestination)
+            self._dxTexture = try device.createCommittedResource(description: textureResourceDesc, properties: .forTexture, state: .copyDestination)
+            self._size = size
+            self.renderTarget = nil
             try self.processTexture(data: data, size: size, textureResourceDesc: textureResourceDesc)
         }catch{
             DX12Renderer.checkError(error)
@@ -37,10 +55,12 @@ final class DX12Texture: TextureBackend {
     }
 
     func replaceData(with data: Data, size: Size2, mipMapping: MipMapping) {
+        assert(renderTarget == nil, "Cannot manipulate a renderTarget through a texture. You must draw to the renderTarget.")
         let device: D3DDevice =  Game.shared.renderer.device
         do {
             let textureResourceDesc: D3DResourceDescription = Self.textureResourceDesc(size: size, mipMapping: mipMapping)
-            self.dxTexture = try device.createCommittedResource(description: textureResourceDesc, properties: .forTexture, state: .copyDestination)
+            self._dxTexture = try device.createCommittedResource(description: textureResourceDesc, properties: .forTexture, state: .copyDestination)
+            self._size = size
             try self.processTexture(data: data, size: size, textureResourceDesc: textureResourceDesc)
         }catch{
             DX12Renderer.checkError(error)

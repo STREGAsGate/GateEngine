@@ -86,12 +86,11 @@ public struct D3DHeapProperties {
                 memoryPoolPreference: D3DMemoryPool = .unknown,
                 multiAdapterCreationNodeMask: UInt32 = 1,
                 visibleNodeMask: UInt32 = 1) {
-        self.rawValue = RawValue()
-        self.type = type
-        self.cpuPageProperty = cpuPageProperty
-        self.memoryPoolPreference = memoryPoolPreference
-        self.multiAdapterCreationNodeMask = multiAdapterCreationNodeMask
-        self.multiAdapterVisibleNodeMask = multiAdapterVisibleNodeMask
+        self.rawValue = RawValue(Type: type.rawValue, 
+                                 CPUPageProperty: cpuPageProperty.rawValue, 
+                                 MemoryPoolPreference: memoryPoolPreference.rawValue, 
+                                 CreationNodeMask: multiAdapterCreationNodeMask, 
+                                 VisibleNodeMask: visibleNodeMask)
     }
 
     internal init(_ rawValue: RawValue) {

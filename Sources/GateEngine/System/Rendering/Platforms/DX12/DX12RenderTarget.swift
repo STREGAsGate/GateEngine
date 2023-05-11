@@ -8,6 +8,7 @@
 import WinSDK
 import Direct3D12
 import GameMath
+import struct Foundation.Date
 
 class DX12RenderTarget: RenderTargetBackend {
     var size: Size2 = Size2(2)
@@ -16,13 +17,23 @@ class DX12RenderTarget: RenderTargetBackend {
     var colorTexture: D3DResource? = nil
     var depthStencilTexture: D3DResource! = nil
 
-    private var dxClearColor: D3DColor = D3DColor(red: 0, green: 0, blue: 0, alpha: 1)
+    var wantsReshape: Bool = true
+    private var dxClearValue: D3DClearValue = D3DClearValue(format: .r8g8b8a8Unorm, color: .black, depthStencil: D3DDepthStencilValue(depth: 1, stencil: 0))
+    private var lastColorChange = Date.distantPast
     var clearColor: Color {
         get {
-            return Color(dxClearColor.red, dxClearColor.green, dxClearColor.blue, dxClearColor.alpha)
+            return Color(dxClearValue.color.red, dxClearValue.color.green, dxClearValue.color.blue, dxClearValue.color.alpha)
         }
         set {
-            dxClearColor = D3DColor(red: newValue.red, green: newValue.green, blue: newValue.blue, alpha: newValue.alpha)
+            let new: D3DColor = D3DColor(red: newValue.red, green: newValue.green, blue: newValue.blue, alpha: newValue.alpha)
+            if dxClearValue.color != new {
+                if lastColorChange.timeIntervalSinceNow < -0.5 {
+                    // Redraw for optimized clear if the color is changed infrequently
+                    wantsReshape = true
+                }
+                lastColorChange = Date()
+                dxClearValue.color = new
+            }
         }
     }
 
@@ -67,14 +78,15 @@ class DX12RenderTarget: RenderTargetBackend {
     }
     
     func reshape() {
+        wantsReshape = false
+        
         do {
+            // Buffers must be released before reshape
             self.colorTexture = nil
             self.depthStencilTexture = nil
 
             let desc: D3DDescriptorHeapDescription = D3DDescriptorHeapDescription(type: .renderTargetView, count: UInt32(swapChain?.bufferCount ?? 1), flags: [])
             self.renderTargetViewHeap = try renderer.device.createDescriptorHeap(description: desc)
-
-            var clearValue: D3DClearValue = D3DClearValue(format: .r8g8b8a8Unorm, color: dxClearColor, depthStencil: D3DDepthStencilValue(depth: 1, stencil: 0))
 
             var resourceDesciption: D3DResourceDescription = D3DResourceDescription()
             resourceDesciption.dimension = .texture2D
@@ -88,21 +100,20 @@ class DX12RenderTarget: RenderTargetBackend {
             if let swapChain: DX12SwapChain = swapChain {
                 swapChain.reshape(renderTarget: self)
             }else{
-                resourceDesciption.format = .r8g8b8a8Unorm
+                resourceDesciption.format = dxClearValue.format
                 resourceDesciption.flags = .allowRenderTarget
-                self.colorTexture = try renderer.device.createCommittedResource(description: resourceDesciption, properties: .forTexture, state: .renderTarget, clearValue: clearValue)
+                self.colorTexture = try renderer.device.createCommittedResource(description: resourceDesciption, properties: .forTexture, state: .renderTarget, clearValue: dxClearValue)
             
                 let targetLocation: D3DCPUDescriptorHandle = renderTargetViewHeap.cpuDescriptorHandleForHeapStart
                 renderer.device.createRenderTargetView(resource: colorTexture!, description: nil, destination: targetLocation)
             }
             
             // Reshape depthStencil
-
-            clearValue.format = .d32Float
-            resourceDesciption.format = .r32Typeless
+            let depthClearValue: D3DClearValue = D3DClearValue(format: .d32Float, color: dxClearValue.color, depthStencil: dxClearValue.depthStencil)
+            resourceDesciption.format = depthClearValue.format
             resourceDesciption.flags = .allowDepthStencil
 
-            self.depthStencilTexture = try renderer.device.createCommittedResource(description: resourceDesciption, properties: .forTexture, state: .depthWrite, clearValue: clearValue)
+            self.depthStencilTexture = try renderer.device.createCommittedResource(description: resourceDesciption, properties: .forTexture, state: .depthWrite, clearValue: depthClearValue)
 
             var depthDescription: D3DDepthStencilViewDescription = D3DDepthStencilViewDescription()
             depthDescription.format = .d32Float
@@ -132,8 +143,8 @@ class DX12RenderTarget: RenderTargetBackend {
             let dsvLocation: D3DCPUDescriptorHandle = depthStencilViewHeap.cpuDescriptorHandleForHeapStart
             self.commandList.setRenderTargets([rtvLocation], depthStencil: dsvLocation)
 
-            self.commandList.clearRenderTargetView(rtvLocation, withColor: dxClearColor)
-            self.commandList.clearDepthStencilView(dsvLocation)
+            self.commandList.clearRenderTargetView(rtvLocation, withColor: dxClearValue.color)
+            self.commandList.clearDepthStencilView(dsvLocation, flags: [.depth], depthValue: dxClearValue.depthStencil.depth, stencilValue: dxClearValue.depthStencil.stencil)
             try self.commandList.close()
             renderer.commandQueue.executeCommandLists([self.commandList])
             try renderer.wait()

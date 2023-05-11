@@ -654,7 +654,7 @@ extension DX12Renderer {
 
     static func checkError(_ error: Swift.Error, function: String = #function, line: Int = #line) -> Never {
         print("[GateEngine] Error:", error)
-        var error: String = "\(error)"
+
         #if GATEENGINE_DEBUG_RENDERING
         if let infoQueue: D3DInfoQueue = Game.shared.renderer.device.queryInterface(D3DInfoQueue.self) {
             for index: UInt64 in 0 ..< infoQueue.storedMessageCount {

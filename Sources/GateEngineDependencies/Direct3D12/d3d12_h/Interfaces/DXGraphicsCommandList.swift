@@ -32,9 +32,9 @@ public final class D3DGraphicsCommandList: D3DCommandList {
     - parameter regions: An array of D3D12_RECT structures for the rectangles in the resource view to clear. If NULL, ClearDepthStencilView clears the entire resource view.
     */
     public func clearDepthStencilView(_ view: D3DCPUDescriptorHandle,
-                                      flags: D3DClearFlags = [.depth, .stencil],
-                                      depthValue: Float = 1,
-                                      stencilValue: UInt8 = 0,
+                                      flags: D3DClearFlags,
+                                      depthValue: Float,
+                                      stencilValue: UInt8,
                                       regions: [D3DRect]? = nil) {
         performFatally(as: RawValue.self) {pThis in
             let DepthStencilView = view.rawValue

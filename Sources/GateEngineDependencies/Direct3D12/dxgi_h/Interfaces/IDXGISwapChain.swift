@@ -42,6 +42,15 @@ public final class DGISwapChain: DGIDeviceSubObject {
         }
     }
 
+    /// Changes the background color of the swap chain.
+    @discardableResult
+    public func setBackgroundColor(_ pColor: D3DColor) -> Bool {
+        return perform(as: RawValue.self) {pThis in
+            var pColor = WinSDK.DXGI_RGBA(r: pColor.red, g: pColor.green, b: pColor.blue, a: pColor.alpha)
+            return pThis.pointee.lpVtbl.pointee.SetBackgroundColor(pThis, &pColor).isSuccess
+        }
+    }
+
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
