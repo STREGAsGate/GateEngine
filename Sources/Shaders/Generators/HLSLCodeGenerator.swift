@@ -120,7 +120,35 @@ public final class HLSLCodeGenerator: CodeGenerator {
         case .add, .subtract, .divide, .compare(_):
             return "\(variable(for: operation.lhs)) \(symbol(for: operation.operator)) \(variable(for: operation.rhs))"
         case .multiply:
-            return "mul(\(variable(for: operation.lhs)),\(variable(for: operation.rhs)))"
+            let mul: Bool = shouldUseMul(operation: operation)
+
+            func shouldUseMul(operation: Operation) -> Bool {
+                switch operation.lhs.valueType {
+                case .float3x3, .float4x4:
+                    return true
+                case .operation:
+                    if shouldUseMul(operation: operation.lhs.operation!) {
+                        return true
+                    }
+                default:
+                    switch operation.rhs.valueType {
+                    case .float3x3, .float4x4:
+                        return true
+                    case .operation:
+                        if shouldUseMul(operation: operation.rhs.operation!) {
+                            return true
+                        }
+                    default:
+                        return false
+                    }
+                }
+                return false
+            }
+
+            if mul {
+                return "mul(\(variable(for: operation.lhs)),\(variable(for: operation.rhs)))"
+            }
+            return "\(variable(for: operation.lhs)) \(symbol(for: .multiply)) \(variable(for: operation.rhs))"
         case .branch(comparing: _):
             fatalError()
         case let .sampler2D(filter: filter):
@@ -186,7 +214,7 @@ public final class HLSLCodeGenerator: CodeGenerator {
         let vsh = """
 cbuffer Uniforms : register(b0) {
     \(type(for: .float4x4)) pMtx;
-    \(type(for: .float4x4)) vMtx;
+    \(type(for: .float4x4)) vMtx;\(customUniformDefine)
 };
 struct Material {
     \(type(for: .float2)) scale;
@@ -220,7 +248,7 @@ PSInput VSMain(VSInput input) {
         let fsh = """
 cbuffer Uniforms : register(b0) {
     \(type(for: .float4x4)) pMtx;
-    \(type(for: .float4x4)) vMtx;
+    \(type(for: .float4x4)) vMtx;\(customUniformDefine)
 };
 struct Material {
     \(type(for: .float2)) scale;

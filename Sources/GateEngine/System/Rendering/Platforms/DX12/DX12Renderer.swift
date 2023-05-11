@@ -74,6 +74,11 @@ final class DX12Renderer: RendererBackend {
         self.setGeometries(geometries, on: commandList, at: &vertexIndex)
         self.setTransforms(drawCommand.transforms, on: commandList, at: &vertexIndex)
 
+        var location: D3DGPUDescriptorHandle = shader.descriptorHeap.gpuDescriptorHandleForHeapStart
+        commandList.setGraphicsRootDescriptorTable(parameterIndex: 0, baseDescriptor: location)
+        location.pointer += UInt64(cbvIncrementSize * (uniformsIndex - 1))
+        commandList.setGraphicsRootDescriptorTable(parameterIndex: 1, baseDescriptor: location)
+
         switch drawCommand.flags.primitive {
         case .point:
             commandList.setPrimitiveTopology(.pointList)
@@ -204,10 +209,6 @@ extension DX12Renderer {
             
             self.cachedContent.append(buffer as Any)
             self.cachedContent.append(value as Any)
-           
-            let blockDestinationGPU: D3DGPUDescriptorHandle = heap.gpuDescriptorHandleForHeapStart
-            blockDestination.pointer += UInt64(cbvIncrementSize * index)
-            commandList.setGraphicsRootDescriptorTable(parameterIndex: index, baseDescriptor: blockDestinationGPU)
             index += 1
         }catch{
             DX12Renderer.checkError(error)
@@ -225,13 +226,9 @@ extension DX12Renderer {
             var blockDestination: D3DCPUDescriptorHandle = heap.cpuDescriptorHandleForHeapStart
             blockDestination.pointer += UInt64(cbvIncrementSize * index)
             device.createConstantBufferView(description: description, destination: blockDestination)  
-            
+           
             self.cachedContent.append(buffer as Any)
             self.cachedContent.append(value as Any)
-
-            let blockDestinationGPU: D3DGPUDescriptorHandle = heap.gpuDescriptorHandleForHeapStart
-            blockDestination.pointer += UInt64(cbvIncrementSize * index)
-            commandList.setGraphicsRootDescriptorTable(parameterIndex: index, baseDescriptor: blockDestinationGPU)
             index += 1
         }catch{
             DX12Renderer.checkError(error)
@@ -243,13 +240,13 @@ extension DX12Renderer {
         var blockDestination: D3DCPUDescriptorHandle = heap.cpuDescriptorHandleForHeapStart
         blockDestination.pointer += UInt64(cbvIncrementSize * index)
   
-        var srvDesc: D3DShaderResourceViewDescription = D3DShaderResourceViewDescription()
-        srvDesc.componentMapping = .default
-        srvDesc.format = .r8g8b8a8Unorm
-        srvDesc.dimension = .texture2D
-        srvDesc.texture2D.mipLevels = 1
         for dxTexture: D3DResource? in textures {
             if let dxTexture: D3DResource = dxTexture {
+                var srvDesc: D3DShaderResourceViewDescription = D3DShaderResourceViewDescription()
+                srvDesc.componentMapping = .default
+                srvDesc.format = .r8g8b8a8Unorm
+                srvDesc.dimension = .texture2D
+                srvDesc.texture2D.mipLevels = 1
                 device.createShaderResourceView(resource: dxTexture, description: srvDesc, destination: blockDestination)
             }
             blockDestination.pointer += UInt64(cbvIncrementSize)
@@ -539,8 +536,6 @@ extension DX12Renderer {
                 description.rasterizerState.windingDirection = .counterClockwise
             }
             
-            description.depthStencilState.stencilTestingEnabled = false
-
             switch flags.cull {
             case .disabled:
                 description.rasterizerState.cullMode = .disabled
@@ -550,7 +545,8 @@ extension DX12Renderer {
                 description.rasterizerState.cullMode = .front
             }
 
-            description.depthStencilState.depthTestingEnabled = false
+            description.depthStencilState.stencilTestingEnabled = false
+            description.depthStencilState.depthTestingEnabled = true
             switch flags.depthTest {
             case .always:
                 description.depthStencilState.depthFunction = .alwaysSucceed
@@ -625,7 +621,7 @@ extension DX12Renderer {
         resourceDesciption.dimension = .buffer
         resourceDesciption.format = .unknown
         resourceDesciption.layout = .rowMajor
-        resourceDesciption.width = UInt64(((MemoryLayout<UInt8>.stride * count) + 255) & ~255)
+        resourceDesciption.width = UInt64(((MemoryLayout<UInt8>.size * count) + 255) & ~255)
         resourceDesciption.height = 1
         resourceDesciption.depthOrArraySize = 1
         resourceDesciption.mipLevels = 1
