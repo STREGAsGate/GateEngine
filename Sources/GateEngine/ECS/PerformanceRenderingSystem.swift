@@ -50,7 +50,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         guard text.isReady else {return}
         
         var canvas: Canvas = Canvas(interfaceScale: layout.interfaceScale)
-        let position = Position2(.maximum(Float(text.pointSize), safeAreaInsets.leading), .maximum(Float(text.pointSize), safeAreaInsets.top))
+        let position = Position2(.maximum(Float(text.pointSize), layout.safeAreaInsets.leading), .maximum(Float(text.pointSize), layout.safeAreaInsets.top))
         canvas.insert(Rect(size: text.size), color: Color(0, 0, 0, 0.5), at: position)
         canvas.insert(text, at: position)
         framebuffer.insert(canvas)

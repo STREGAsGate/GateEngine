@@ -106,8 +106,12 @@ extension Win32Platform {
 
         Game.shared.didFinishLaunching()
         
-        let window: Win32Window? = Game.shared.mainWindow?.backing as? Win32Window
+        var window: Win32Window? = Game.shared.windowManager.mainWindow?.backing as? Win32Window
         mainLoop: while true {
+            if Game.shared.windowManager.windows.isEmpty {
+                window = nil
+                WinSDK.PostQuitMessage(WinSDK.EXIT_SUCCESS)
+            }
             // Process all messages in thread's message queue; for GUI applications UI
             // events must have high priority.
             window?.window.vSyncCalled()

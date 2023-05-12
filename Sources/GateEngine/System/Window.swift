@@ -22,6 +22,18 @@ public enum WindowStyle {
 
     weak var delegate: WindowDelegate? = nil
     
+    public enum State {
+        ///The window exists but isn't on screen
+        case hidden
+        ///The window is on screen
+        case shown
+        ///The window isn't visible and can never be shown again.
+        case destroyed
+    }
+    public var state: State {
+        return backing.state
+    }
+
     internal init(identifier: String, style: WindowStyle) {
         self.identifier = identifier
         self.style = style
@@ -65,8 +77,9 @@ internal protocol WindowBacking: AnyObject {
     var frame: Rect {get set}
     var safeAreaInsets: Insets {get}
     var backingSize: Size2 {get}
+    var state: Window.State {get}
     
-    init(identifier: String?, style: WindowStyle, window: Window)
+    init(identifier: String, style: WindowStyle, window: Window)
     
     func show()
     func close()

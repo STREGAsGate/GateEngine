@@ -6,75 +6,75 @@
  */
 
 public extension Game {
-    @inlinable
+    @inlinable @inline(__always)
     var entities: ContiguousArray<Entity> {
         return ecs.sortedEntities()
     }
-    @inlinable
+    @inlinable @inline(__always)
     func insertEntity(_ entity: Entity) {
         ecs.insertEntity(entity)
     }
-    @inlinable
+    @inlinable @inline(__always)
     func removeEntity(_ entity: Entity) {
         ecs.removeEntity(entity)
     }
-    @inlinable @discardableResult
+    @inlinable @inline(__always) @discardableResult
     func removeEntity(named name: String) -> Entity? {
         return ecs.removeEntity(named: name)
     }
-    @inlinable @discardableResult
+    @inlinable @inline(__always) @discardableResult
     func removeEntity(where block: (Entity)->(Bool)) -> Entity? {
         return ecs.removeEntity(where: block)
     }
-    @inlinable
+    @inlinable @inline(__always)
     func entity(named name: String) -> Entity? {
         return ecs.entity(named: name)
     }
-    @inlinable
+    @inlinable @inline(__always)
     func entity(withID id: ObjectIdentifier) -> Entity? {
         return ecs.entity(withID: id)
     }
-    @inlinable
+    @inlinable @inline(__always)
     func firstEntity(withComponent component: Component.Type) -> Entity? {
         return ecs.firstEntity(withComponent: component)
     }
-    @inlinable
+    @inlinable @inline(__always)
     func system<T: System>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType) as! T
     }
-    @inlinable
+    @inlinable @inline(__always)
     func system<T: RenderingSystem>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType) as! T
     }
-    @inlinable
+    @inlinable @inline(__always)
     func insertSystem(_ newSystem: System) {
         ecs.insertSystem(newSystem)
     }
-    @inlinable
+    @inlinable @inline(__always)
     func insertSystem(_ newSystem: RenderingSystem) {
         ecs.insertSystem(newSystem)
     }
-    @inlinable @discardableResult
+    @inlinable @inline(__always) @discardableResult
     func insertSystem<T: System>(_ system: T.Type) -> T {
         return ecs.insertSystem(system) as! T
     }
-    @inlinable @discardableResult
+    @inlinable @inline(__always) @discardableResult
     func insertSystem<T: RenderingSystem>(_ system: T.Type) -> T {
         return ecs.insertSystem(system) as! T
     }
-    @inlinable
+    @inlinable @inline(__always)
     func removeSystem(_ system: System) {
         ecs.removeSystem(system)
     }
-    @inlinable
+    @inlinable @inline(__always)
     func removeSystem(_ system: RenderingSystem) {
         ecs.removeSystem(system)
     }
-    @inlinable @discardableResult
+    @inlinable @inline(__always) @discardableResult
     func removeSystem<T: System>(_ system: T.Type) -> T? {
         return ecs.removeSystem(system) as? T
     }
-    @inlinable @discardableResult
+    @inlinable @inline(__always) @discardableResult
     func removeSystem<T: RenderingSystem>(_ system: T.Type) -> T? {
         return ecs.removeSystem(system) as? T
     }
@@ -226,9 +226,9 @@ public struct WindowLayout {
 extension ECSContext {
     @_transparent
     private func createLayout() -> WindowLayout {
-        return WindowLayout(windowSize: game.mainWindow?.backing.backingSize ?? .zero,
-                            interfaceScale: game.mainWindow?.interfaceScale ?? 1,
-                            safeAreaInsets: game.mainWindow?.backing.safeAreaInsets ?? .zero)
+        return WindowLayout(windowSize: game.windowManager.mainWindow?.backing.backingSize ?? .zero,
+                            interfaceScale: game.windowManager.mainWindow?.interfaceScale ?? 1,
+                            safeAreaInsets: game.windowManager.mainWindow?.backing.safeAreaInsets ?? .zero)
     }
     func shouldRenderAfterUpdate(withTimePassed deltaTime: Float) -> Bool {
         let game = game
@@ -279,7 +279,7 @@ extension ECSContext {
                 }
             }
         }
-        
+
         return shouldRender
     }
     
@@ -293,7 +293,7 @@ extension ECSContext {
                 performance.finalizeSystemsFrameTime()
             }
         }
-        guard let framebuffer = game.mainWindow?.framebuffer else {return}
+        guard let framebuffer = game.windowManager.mainWindow?.framebuffer else {return}
         let game = game
         let input = game.hid
         let layout = createLayout()
@@ -319,20 +319,20 @@ extension ECSContext {
 
 //MARK: Entity Managment
 extension ECSContext {
-    @inlinable
+    @inlinable @inline(__always)
     func insertEntity(_ entity: Entity) {
         guard self.entities.contains(entity) == false else {return}
         self.entities.insert(entity)
     }
-    @inlinable @discardableResult
+    @inlinable @inline(__always) @discardableResult
     func removeEntity(_ entity: Entity) -> Entity? {
         return self.entities.remove(entity)
     }
-    @inlinable @discardableResult
+    @inlinable @inline(__always) @discardableResult
     func removeEntity(named name: String) -> Entity? {
         self.removeEntity(where: {$0.name == name})
     }
-    @inlinable @discardableResult
+    @inlinable @inline(__always) @discardableResult
     func removeEntity(where block: (Entity)->(Bool)) -> Entity? {
         if let removed = self.entities.first(where: block) {
             self.entities.remove(removed)
@@ -340,15 +340,15 @@ extension ECSContext {
         }
         return nil
     }
-    @inlinable
+    @inlinable @inline(__always)
     func entity(named name: String) -> Entity? {
         return entities.first(where: {$0.name == name})
     }
-    @inlinable
+    @inlinable @inline(__always)
     func entity(withID id: ObjectIdentifier) -> Entity? {
         return entities.first(where: {$0.id == id})
     }
-    @inlinable
+    @inlinable @inline(__always)
     func firstEntity(withComponent type: Component.Type) -> Entity? {
         return entities.first(where: {$0.hasComponent(type)})
     }

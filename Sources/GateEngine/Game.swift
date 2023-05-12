@@ -19,28 +19,26 @@ import GameMath
     internal init(delegate: GameDelegate) {
         self.delegate = delegate
         self.isHeadless = delegate.isHeadless()
-        if isHeadless {
-            mainWindow = nil
-        }else{
-            mainWindow = Window(identifier: "main", style: .system)
-        }
     }
     
-    @usableFromInline
-    let mainWindow: Window?
     let renderer: Renderer = Renderer()
+    @usableFromInline lazy private(set) var windowManager: WindowManager = WindowManager(self)
     @usableFromInline lazy private(set) var ecs: ECSContext = ECSContext(game: self)
     @usableFromInline lazy private(set) var hid: HID = HID()
     @usableFromInline lazy private(set) var resourceManager: ResourceManager = ResourceManager(game: self)
     
     func didFinishLaunching() {
         if isHeadless == false {
-            mainWindow!.framebuffer.clearColor = .black
-            mainWindow!.delegate = self
-            mainWindow!.show()
+            do {
+            // Create the main window
+                try windowManager.createWindow(identifier: windowManager.mainWindowIdentifier, style: .system)
+            }catch{
+                fatalError("[GateEngine] Failed to create main window. \(error)")
+            }
         }
         self.addPlatformSystems()
         self.delegate.didFinishLaunching(game: self, options: [])
+        self.gameLoop()
     }
     func willTerminate() {
         self.delegate.willTerminate(game: self)
@@ -51,15 +49,30 @@ import GameMath
         self.insertSystem(AudioSystem.self)
         self.insertSystem(CacheSystem.self)
     }
+
+    internal var windowsThatRequestedDraw: [(window: Window, deltaTime: Float)] = []
+    private var previousTime: Double = 0
+    internal func gameLoop() {
+        Task(priority: .high) {@MainActor in
+            let now: Double = Game.shared.internalPlatform.systemTime()
+            let deltaTime: Double = now - previousTime
+            self.previousTime = now
+            if self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
+                for pair: (window: Window, deltaTime: Float) in windowsThatRequestedDraw {
+                    self.ecs.updateRendering(withTimePassed: pair.deltaTime)
+                }
+                windowsThatRequestedDraw.removeAll(keepingCapacity: true)
+            }
+            gameLoop()
+        }
+    }
     
     static var shared: Game! = nil
 }
 
 extension Game: WindowDelegate {
     func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float) {
-        if self.ecs.shouldRenderAfterUpdate(withTimePassed: deltaTime) {
-            self.ecs.updateRendering(withTimePassed: deltaTime)
-        }
+        windowsThatRequestedDraw.append((window, deltaTime))
     }
     
     func mouseChange(event: MouseChangeEvent, position: Position2) {

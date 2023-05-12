@@ -14,17 +14,6 @@
         return context.game
     }
     
-    /// The user interface scale of the window
-    @inlinable
-    public final var interfaceScale: Float {
-        return game.mainWindow?.interfaceScale ?? 1
-    }
-    /// The scaled insets for content to be unobscured by notches and system UI clutter
-    @inlinable
-    public final var safeAreaInsets: Insets {
-        return game.mainWindow?.backing.safeAreaInsets ?? .zero
-    }
-    
     required public init() {
         
     }

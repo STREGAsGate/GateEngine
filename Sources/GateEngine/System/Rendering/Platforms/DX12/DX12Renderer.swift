@@ -143,8 +143,8 @@ extension DX12Renderer {
     @inline(__always)
     private func setGeometries(_ geometries: ContiguousArray<DX12Geometry>, on commandList: D3DGraphicsCommandList, at index: inout UInt32) {
         var bufferViews: [D3DVertexBufferView] = []
+        bufferViews.reserveCapacity(geometries[0].attributes.count * geometries.count)
         for geometry: DX12Geometry in geometries {
-            bufferViews.reserveCapacity(bufferViews.capacity + geometry.attributes.count)
             for attributeIndex: Range<ContiguousArray<GeometryAttribute>.Index>.Element in geometry.attributes.indices {
                 let attribute: GeometryAttribute = geometry.attributes[attributeIndex]
                 let stride: Int

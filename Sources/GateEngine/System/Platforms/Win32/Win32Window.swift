@@ -13,7 +13,7 @@ import GameMath
 final class Win32Window: WindowBacking {
     unowned let window: Window
     let style: WindowStyle
-    let identifier: String?
+    let identifier: String
 
     internal let hWnd: WinSDK.HWND
     private let hwndStyle: Win32WindowStyle
@@ -22,7 +22,7 @@ final class Win32Window: WindowBacking {
     private var pressedModifiers: KeyboardModifierMask = []
     private static let windowClass: Win32WindowClass = Win32WindowClass()
 
-    required init(identifier: String?, style: WindowStyle, window: Window) {
+    required init(identifier: String, style: WindowStyle, window: Window) {
         self.window = window
         self.style = style
         self.identifier = identifier
@@ -83,20 +83,13 @@ final class Win32Window: WindowBacking {
 
     let safeAreaInsets: Insets = .zero
 
-    private enum State {
-        ///The window exists but isn't on screen
-        case hidden
-        ///The window is on screen
-        case shown
-        ///The window isn't visible and can never be shown again.
-        case destroyed
-    }
-
-    private var state: State = .hidden
+    var state: Window.State = .hidden
     /// If possible, shows the window on screen.
     func show() {
         guard state == .hidden else {return}
         _ = ShowWindow(self.hWnd, SW_SHOWDEFAULT)
+        _ = UpdateWindow(self.hWnd)
+        self.state = .shown
     }
 
     @MainActor func render() {
@@ -105,9 +98,14 @@ final class Win32Window: WindowBacking {
     }
 
     /// Makes the window hidden. To destroy the window via code allow the Win32Window to deallocate.
-    func close() {
-        guard state == .shown else {return}
+    @MainActor func hide() {
+        guard self.state == .shown else {return}
         WinSDK.CloseWindow(self.hWnd)
+    }
+
+    @MainActor func close() {
+        guard self.state != .destroyed else {return}
+        Game.shared.windowManager.removeWindow(self.identifier)
     }
 
     deinit {
@@ -220,20 +218,6 @@ fileprivate class Win32WindowClass {
     var meodifierKeys: KeyboardModifierMask = []
 }
 
-// Common tasks shared by manual calls and notifications
-fileprivate extension Win32Window {
-    @_transparent
-    func performShowOperations() {
-        // Win32WindowManager.shared.incrementWindowCount()
-        _ = UpdateWindow(self.hWnd)
-    }
-
-    @_transparent
-    func performCloseOperations() {
-        // Win32WindowManager.shared.decrementWindowCount()
-    }
-}
-
 //These are the notifation calls
 fileprivate extension Win32Window {
     @inline(__always)
@@ -256,7 +240,7 @@ fileprivate extension Win32Window {
     @preconcurrency 
     @MainActor
     func _msgShow() {
-        self.performShowOperations()
+        self.show()
     }
 
     @inline(__always)
@@ -270,14 +254,14 @@ fileprivate extension Win32Window {
     @preconcurrency 
     @MainActor
     func _msgHide() {
-        self.state = .hidden
+        self.hide()
     }
 
     @inline(__always)
     @preconcurrency 
     @MainActor
     func _msgClose() {
-        self.performCloseOperations()
+        self.close()
     }
 
     @inline(__always)
