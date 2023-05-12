@@ -14,10 +14,10 @@ import DOM
 class WASIWindow: WindowBacking {
     unowned let window: Window
     let style: WindowStyle
-    let identifier: String?
-
+    let identifier: String
+    var state: Window.State = .hidden
     let canvas: HTMLCanvasElement
-    required init(identifier: String?, style: WindowStyle, window: Window) {
+    required init(identifier: String, style: WindowStyle, window: Window) {
         self.window = window
         self.style = style
         self.identifier = identifier
@@ -65,6 +65,7 @@ class WASIWindow: WindowBacking {
     @MainActor func show() {
         vSync(0)
         addListeners()
+        self.state = .shown
     }
     
     func addListeners() {
@@ -274,7 +275,7 @@ class WASIWindow: WindowBacking {
     }
 
     func close() {
-        
+        self.state = .destroyed
     }
 }
 

@@ -15,8 +15,11 @@ class AppKitWindow: WindowBacking {
     unowned let window: Window
     let nsWindowController: NSWindowController
     let style: WindowStyle
-    let identifier: String?
-    required init(identifier: String?, style: WindowStyle, window: Window) {
+    let identifier: String
+    
+    var state: Window.State = .hidden
+    
+    required init(identifier: String, style: WindowStyle, window: Window) {
         self.window = window
         self.style = style
         self.identifier = identifier
@@ -46,58 +49,63 @@ class AppKitWindow: WindowBacking {
         nsWindow.contentViewController = AppKitViewController(window: self, size: size)
 
         nsWindow.center()
-        if let identifier = identifier {
-            nsWindow.setFrameAutosaveName(identifier)
-        }
+        nsWindow.setFrameAutosaveName(identifier)
         if #available(macOS 10.12, *) {
             nsWindow.tabbingMode = .disallowed
         }
         
-        if let name = identifier {
-            nsWindow.title = name
-        }
+        nsWindow.title = identifier
         
         self.setupNotifications()
     }
         
     private func restoreSizeAndPosition(ofWindow nsWindow: NSWindow) {
-        if let identifier = identifier {
-            //restore size and relative position
-            nsWindow.setFrameUsingName(identifier)
-            
-            //restore screen position
-            let screenID = CGDirectDisplayID(UserDefaults.standard.integer(forKey: "ScreenID_\(identifier)"))
-            for screen in NSScreen.screens {
-                if screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID == screenID {
-                    var frame = nsWindow.frame
-                    frame.origin.x += screen.frame.origin.x
-                    frame.origin.y += screen.frame.origin.y
-                    nsWindow.setFrame(frame, display: true)
-                    break
-                }
+        //restore size and relative position
+        nsWindow.setFrameUsingName(identifier)
+        
+        //restore screen position
+        let screenID = CGDirectDisplayID(UserDefaults.standard.integer(forKey: "ScreenID_\(identifier)"))
+        for screen in NSScreen.screens {
+            if screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID == screenID {
+                var frame = nsWindow.frame
+                frame.origin.x += screen.frame.origin.x
+                frame.origin.y += screen.frame.origin.y
+                nsWindow.setFrame(frame, display: true)
+                break
             }
+        }
 
-            // Enter full screen if no preference, otherwise restore user preference
-            if UserDefaults.standard.value(forKey: "\(identifier)-WasFullScreen") == nil || UserDefaults.standard.bool(forKey: "\(identifier)-WasFullScreen") {
-                nsWindowController.window?.toggleFullScreen(nil)
-            }
+        // Enter full screen if no preference, otherwise restore user preference
+        if UserDefaults.standard.value(forKey: "\(identifier)-WasFullScreen") == nil || UserDefaults.standard.bool(forKey: "\(identifier)-WasFullScreen") {
+            nsWindowController.window?.toggleFullScreen(nil)
         }
     }
     
     func setupNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(windowWillClose(_:)), name: NSWindow.willCloseNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(windowDidChangeScreen(_:)), name: NSWindow.didChangeScreenNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(windowWillMiniaturize(_:)), name: NSWindow.willMiniaturizeNotification, object: nsWindowController.window)
+        NotificationCenter.default.addObserver(self, selector: #selector(windowDidDeminiaturize(_:)), name: NSWindow.didDeminiaturizeNotification, object: nsWindowController.window)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(windowWillClose(_:)), name: NSWindow.willCloseNotification, object: nsWindowController.window)
+        NotificationCenter.default.addObserver(self, selector: #selector(windowDidChangeScreen(_:)), name: NSWindow.didChangeScreenNotification, object: nsWindowController.window)
     }
     
-    @objc func windowWillClose(_ notification: Notification) {
-        if let identifier = identifier {
-            UserDefaults.standard.set(nsWindowController.window?.styleMask.contains(.fullScreen) == true, forKey: "\(identifier)-WasFullScreen")
-            UserDefaults.standard.synchronize()
-        }
+    @MainActor @objc func windowDidDeminiaturize(_ notification: Notification) {
+        self.state = .shown
+    }
+
+    @MainActor @objc func windowWillMiniaturize(_ notification: Notification) {
+        self.state = .hidden
+    }
+    
+    @MainActor @objc func windowWillClose(_ notification: Notification) {
+        UserDefaults.standard.set(nsWindowController.window?.styleMask.contains(.fullScreen) == true, forKey: "\(identifier)-WasFullScreen")
+        UserDefaults.standard.synchronize()
+        self.state = .destroyed
+        Game.shared.windowManager.removeWindow(self.identifier)
     }
     
     @MainActor @objc func windowDidChangeScreen(_ notification: Notification) {
-        if let identifier = identifier, let screenID = self.nsWindowController.window?.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID {
+        if let screenID = self.nsWindowController.window?.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID {
             UserDefaults.standard.set(screenID, forKey: "ScreenID_\(identifier)")
             UserDefaults.standard.synchronize()
         }
@@ -146,7 +154,7 @@ class AppKitWindow: WindowBacking {
         self.nsWindowController.window?.makeKeyAndOrderFront(nil)
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(30)) {
             self.restoreSizeAndPosition(ofWindow: self.nsWindowController.window!)
-            if let identifier = self.identifier, UserDefaults.standard.bool(forKey: "\(identifier)-WasFullScreen") {
+            if UserDefaults.standard.bool(forKey: "\(self.identifier)-WasFullScreen") {
                 self.nsWindowController.window!.toggleFullScreen(NSApp)
             }
         }
@@ -155,6 +163,7 @@ class AppKitWindow: WindowBacking {
         }
         
         NSApplication.shared.activate(ignoringOtherApps: true)
+        self.state = .shown
     }
     
     var backingSize: Size2 {
@@ -167,6 +176,7 @@ class AppKitWindow: WindowBacking {
             CVDisplayLinkStop(self.displayLink)
         }
         nsWindowController.close()
+        self.state = .destroyed
     }
     
     deinit {
