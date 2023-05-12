@@ -416,11 +416,11 @@ extension MetalRenderer {
                     }
                 case let value as Array<Matrix4x4>:
                     var floats: [Float] = []
-                    floats.reserveCapacity(value.count * 16 * 60)
+                    floats.reserveCapacity(value.count * 16 * 24)
                     for mtx in value {
                         floats.append(contentsOf: mtx.transposedArray())
                     }
-                    while floats.count < 16 * 60 {
+                    while floats.count < 16 * 24 {
                         floats.append(0)
                     }
                     floats.withUnsafeBytes { pointer in

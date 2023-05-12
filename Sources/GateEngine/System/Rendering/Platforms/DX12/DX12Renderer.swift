@@ -328,11 +328,11 @@ extension DX12Renderer {
                     }
                 case let value as Array<Matrix4x4>:
                     var floats: [Float] = []
-                    floats.reserveCapacity(value.count * 16 * 60)
+                    floats.reserveCapacity(value.count * 16 * 24)
                     for mtx in value {
                         floats.append(contentsOf: mtx.transposedArray())
                     }
-                    while floats.count < 16 * 60 {
+                    while floats.count < 16 * 24 {
                         floats.append(0)
                     }
                     floats.withUnsafeBytes { pointer in
@@ -598,25 +598,25 @@ extension DX12Renderer {
 
 extension DX12Renderer {
     @inline(__always)
-    static func createBuffer<T>(withData data: Array<T>, heapProperties: D3DHeapProperties, state: D3DResourceStates) -> D3DResource {
+    static func createBuffer<T>(withData data: Array<T>, heapProperties: D3DHeapProperties, state: D3DResourceStates, function: String = #function) -> D3DResource {
         return data.withUnsafeBytes {
-            createBuffer(withStart: $0.baseAddress!, count: $0.count, heapProperties: heapProperties, state: state)
+            createBuffer(withStart: $0.baseAddress!, count: $0.count, heapProperties: heapProperties, state: state, function: function)
         }
     }
 
     @inline(__always)
-    static func createBuffer<T>(withData data: ContiguousArray<T>, heapProperties: D3DHeapProperties, state: D3DResourceStates) -> D3DResource {
+    static func createBuffer<T>(withData data: ContiguousArray<T>, heapProperties: D3DHeapProperties, state: D3DResourceStates, function: String = #function) -> D3DResource {
         return data.withUnsafeBytes {
-            createBuffer(withStart: $0.baseAddress!, count: $0.count, heapProperties: heapProperties, state: state)
+            createBuffer(withStart: $0.baseAddress!, count: $0.count, heapProperties: heapProperties, state: state, function: function)
         }
     }
 
     @_transparent
-    static func createBuffer<T>(withData data: UnsafeBufferPointer<T>, heapProperties: D3DHeapProperties, state: D3DResourceStates) -> D3DResource {
-        createBuffer(withStart: data.baseAddress!, count: data.count, heapProperties: heapProperties, state: state)
+    static func createBuffer<T>(withData data: UnsafeBufferPointer<T>, heapProperties: D3DHeapProperties, state: D3DResourceStates, function: String = #function) -> D3DResource {
+        createBuffer(withStart: data.baseAddress!, count: data.count, heapProperties: heapProperties, state: state, function: function)
     }
 
-    static func createBuffer(withStart start: UnsafeRawPointer, count: Int, heapProperties: D3DHeapProperties, state: D3DResourceStates) -> D3DResource {
+    static func createBuffer(withStart start: UnsafeRawPointer, count: Int, heapProperties: D3DHeapProperties, state: D3DResourceStates, function: String = #function) -> D3DResource {
         var resourceDesciption: D3DResourceDescription = D3DResourceDescription()
         resourceDesciption.dimension = .buffer
         resourceDesciption.format = .unknown
@@ -630,7 +630,7 @@ extension DX12Renderer {
         do {
             let resource: D3DResource = try Game.shared.renderer.device.createCommittedResource(description: resourceDesciption, properties: heapProperties, state: state)
             #if GATEENGINE_DEBUG_RENDERING
-            try resource.setDebugName("\(type(of: self)).\(#function)")
+            try resource.setDebugName("\(type(of: self)).\(function)")
             #endif
 
             let buffer: UnsafeMutableRawPointer? = try resource.map()

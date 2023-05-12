@@ -384,11 +384,11 @@ extension WebGL2Renderer {
                 case let value as Array<Matrix4x4>:
                     if let location = gl.getUniformLocation(program: program, name: name) {
                         var floats: [Float] = []
-                        floats.reserveCapacity(value.count * 16 * 60)
+                        floats.reserveCapacity(value.count * 16 * 24)
                         for mtx in value {
                             floats.append(contentsOf: mtx.transposedArray())
                         }
-                        while floats.count < 16 * 60 {
+                        while floats.count < 16 * 24 {
                             floats.append(0)
                         }
                         let data = Float32List.float32Array(Float32Array(floats))
