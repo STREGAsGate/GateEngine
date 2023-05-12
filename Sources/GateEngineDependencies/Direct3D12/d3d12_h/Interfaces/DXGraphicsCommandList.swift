@@ -33,8 +33,8 @@ public final class D3DGraphicsCommandList: D3DCommandList {
     */
     public func clearDepthStencilView(_ view: D3DCPUDescriptorHandle,
                                       flags: D3DClearFlags,
-                                      depthValue: Float,
-                                      stencilValue: UInt8,
+                                      depthValue: Float = 1,
+                                      stencilValue: UInt8 = 0,
                                       regions: [D3DRect]? = nil) {
         performFatally(as: RawValue.self) {pThis in
             let DepthStencilView = view.rawValue

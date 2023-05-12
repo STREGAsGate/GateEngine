@@ -47,7 +47,7 @@ public struct D3DClearValue {
     - parameter color: Specifies a 4-entry array of float values, determining the RGBA value. The order of RGBA matches the order used with ClearRenderTargetView.
     - parameter depthStencil: Specifies one member of D3D12_DEPTH_STENCIL_VALUE. These values match the semantics of Depth and Stencil in ClearDepthStencilView.
     */
-    public init(format: DGIFormat, color: D3DColor, depthStencil: D3DDepthStencilValue) {
+    public init(format: DGIFormat, color: D3DColor, depthStencil: D3DDepthStencilValue = .init(depth: 1, stencil: 0)) {
         self.rawValue = RawValue()
         self.format = format
         self.color = color

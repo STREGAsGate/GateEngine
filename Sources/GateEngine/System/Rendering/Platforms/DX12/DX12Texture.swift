@@ -36,7 +36,7 @@ final class DX12Texture: TextureBackend {
     }
     
     required init(renderTargetBackend: RenderTargetBackend) {
-        renderTarget = renderTargetBackend as! DX12RenderTarget
+        renderTarget = (renderTargetBackend as! DX12RenderTarget)
         _dxTexture = nil
         _size = nil
     }
@@ -92,6 +92,7 @@ final class DX12Texture: TextureBackend {
     }
 
     private func processTexture(data: Data, size: Size2, textureResourceDesc: D3DResourceDescription) throws {
+        guard let dxTexture: D3DResource = _dxTexture else {return}
         let renderer: DX12Renderer = Game.shared.renderer.backend
         let device: D3DDevice = renderer.device
         let fence: D3DFence = try device.createFence()

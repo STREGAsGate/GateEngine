@@ -18,7 +18,7 @@ class DX12RenderTarget: RenderTargetBackend {
     var depthStencilTexture: D3DResource! = nil
 
     var wantsReshape: Bool = true
-    private var dxClearValue: D3DClearValue = D3DClearValue(format: .r8g8b8a8Unorm, color: .black, depthStencil: D3DDepthStencilValue(depth: 1, stencil: 0))
+    private var dxClearValue: D3DClearValue = D3DClearValue(format: .r8g8b8a8Unorm, color: .black)
     private var lastColorChange = Date.distantPast
     var clearColor: Color {
         get {
@@ -109,7 +109,7 @@ class DX12RenderTarget: RenderTargetBackend {
             }
             
             // Reshape depthStencil
-            let depthClearValue: D3DClearValue = D3DClearValue(format: .d32Float, color: dxClearValue.color, depthStencil: dxClearValue.depthStencil)
+            let depthClearValue: D3DClearValue = D3DClearValue(format: .d32Float, color: dxClearValue.color)
             resourceDesciption.format = depthClearValue.format
             resourceDesciption.flags = .allowDepthStencil
 
@@ -144,7 +144,7 @@ class DX12RenderTarget: RenderTargetBackend {
             self.commandList.setRenderTargets([rtvLocation], depthStencil: dsvLocation)
 
             self.commandList.clearRenderTargetView(rtvLocation, withColor: dxClearValue.color)
-            self.commandList.clearDepthStencilView(dsvLocation, flags: [.depth], depthValue: dxClearValue.depthStencil.depth, stencilValue: dxClearValue.depthStencil.stencil)
+            self.commandList.clearDepthStencilView(dsvLocation, flags: [.depth, .stencil])
             try self.commandList.close()
             renderer.commandQueue.executeCommandLists([self.commandList])
             try renderer.wait()
