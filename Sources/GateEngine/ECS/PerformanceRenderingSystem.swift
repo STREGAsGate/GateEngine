@@ -40,7 +40,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         
     let tickDuration: Float = 3
     var cumulativeTime: Float = 0
-    public override func render(game: Game, framebuffer: RenderTarget, layout: WindowLayout, withTimePassed deltaTime: Float) {
+    public override func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
         cumulativeTime += deltaTime
         if cumulativeTime > tickDuration {
             rebuildText()
@@ -49,11 +49,11 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         
         guard text.isReady else {return}
         
-        var canvas: Canvas = Canvas(interfaceScale: layout.interfaceScale)
-        let position = Position2(.maximum(Float(text.pointSize), layout.safeAreaInsets.leading), .maximum(Float(text.pointSize), layout.safeAreaInsets.top))
+        var canvas: Canvas = Canvas(interfaceScale: window.interfaceScale)
+        let position = Position2(.maximum(Float(text.pointSize), window.safeAreaInsets.leading), .maximum(Float(text.pointSize), window.safeAreaInsets.top))
         canvas.insert(Rect(size: text.size), color: Color(0, 0, 0, 0.5), at: position)
         canvas.insert(text, at: position)
-        framebuffer.insert(canvas)
+        window.insert(canvas)
     }
     
     required public init() {

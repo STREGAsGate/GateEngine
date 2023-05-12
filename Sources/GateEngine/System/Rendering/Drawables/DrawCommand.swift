@@ -110,11 +110,11 @@ public struct DrawCommand {
     }
     
     @inline(__always)
-    @MainActor var renderTargets: Set<RenderTarget> {
-        var renderTargets: Set<RenderTarget> = []
+    @MainActor var renderTargets: [any _RenderTargetProtocol] {
+        var renderTargets: [any _RenderTargetProtocol] = []
         for channel in material.channels {
             if let texture = channel.texture, let renderTarget = texture.renderTarget {
-                renderTargets.insert(renderTarget)
+                renderTargets.append(renderTarget)
             }
         }
         return renderTargets

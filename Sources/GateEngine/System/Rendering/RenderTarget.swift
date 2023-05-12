@@ -7,35 +7,95 @@
 
 import GameMath
 
-@MainActor public final class RenderTarget {
-    let isWindow: Bool
+@MainActor public protocol RenderTargetProtocol: AnyObject, Equatable, Hashable {
+    var size: Size2 {get}
+    var clearColor: Color {get set}
+    func insert(_ scene: Scene)
+    func insert(_ canvas: Canvas)
+    func insert(_ target: any RenderTargetProtocol, withOptions options: RenderTargetFillOptions, sampleFilter: RenderTargetFillSampleFilter)
+}
+
+@MainActor protocol _RenderTargetProtocol: RenderTargetProtocol {
+    var texture: Texture {get}
+    var backend: RenderTargetBackend {get set}
+    var drawables: [Any] {get set}
+    var size: Size2 {get set}
+    var previousSize: Size2? {get set}
+    
+    func reshapeIfNeeded()
+    func draw()
+}
+
+extension RenderTargetProtocol {
+    @_transparent
+    var isWindow: Bool {
+        return self is Window
+    }
+}
+
+extension _RenderTargetProtocol {
+    public func insert(_ scene: Scene) {
+        self.drawables.append(scene)
+    }
+    
+    public func insert(_ canvas: Canvas) {
+        if let size = canvas.size {
+            precondition(size == self.size, "Canvas size must match the render targets size.")
+        }
+        self.drawables.append(canvas)
+    }
+    
+    @inline(__always)
+    internal var renderTargets: [any _RenderTargetProtocol] {
+        var allDrawCommands: [DrawCommand] = []
+        for drawable in drawables {
+            if let scene = drawable as? Scene {
+                allDrawCommands.append(contentsOf: scene.drawCommands)
+            }else if let canvas = drawable as? Canvas {
+                allDrawCommands.append(contentsOf: canvas.drawCommands)
+            }else if let command = drawable as? DrawCommand {
+                allDrawCommands.append(command)
+            }
+        }
+        
+        var uniqueRenderTargets: [any _RenderTargetProtocol] = []
+        for drawCommand in allDrawCommands {
+            for renderTarget in drawCommand.renderTargets {
+                if uniqueRenderTargets.contains(where: {$0 === renderTarget}) == false {
+                    uniqueRenderTargets.append(renderTarget)
+                }
+            }
+        }
+
+        return uniqueRenderTargets
+    }
+}
+
+@MainActor public final class RenderTarget: RenderTargetProtocol, _RenderTargetProtocol {
     @usableFromInline
     var backend: RenderTargetBackend
-    private var drawables: [Any] = []
+    var drawables: [Any] = []
+    var previousSize: Size2? = nil
     
-    internal init(windowBacking: WindowBacking?) {
-        self.isWindow = windowBacking != nil
-        self.backend = getBackend(windowBacking: windowBacking)
-        self.clearColor = .black
+    @inlinable
+    public var size: Size2 {
+        get {
+            return backend.size
+        }
+        set {
+            backend.size = newValue
+        }
     }
-    public convenience init() {
-        self.init(windowBacking: nil)
+    
+    public init() {
+        self.backend = getRenderTargetBackend(windowBacking: nil)
+        self.clearColor = .black
     }
     
     public private(set) lazy var texture: Texture = Texture(renderTarget: self)
-    
-    internal var renderTargets: Set<RenderTarget> {
-        var renderTargets:  Set<RenderTarget> = []
-        for drawable in drawables {
-            if let scene = drawable as? Scene {
-                renderTargets.formUnion(scene.renderTargets)
-            }else if let canvas = drawable as? Canvas {
-                renderTargets.formUnion(canvas.renderTargets)
-            }
-        }
-        return renderTargets
-    }
-    
+}
+
+extension _RenderTargetProtocol {
     @inlinable
     public var size: Size2 {
         get {
@@ -56,8 +116,7 @@ import GameMath
         }
     }
     
-    var previousSize: Size2? = nil
-    private func reshapeIfNeeded() {
+    func reshapeIfNeeded() {
         if backend.wantsReshape || previousSize != backend.size {
             previousSize = backend.size
             backend.reshape()
@@ -120,58 +179,44 @@ import GameMath
     }
 }
 
-public extension RenderTarget {
-    func insert(_ scene: Scene) {
-        self.drawables.append(scene)
-    }
+public struct RenderTargetFillOptions: OptionSet {
+    public typealias RawValue = Int
+    public let rawValue: RawValue
     
-    func insert(_ canvas: Canvas) {
-        if let size = canvas.size {
-            precondition(size == self.size, "Canvas size must match the render targets size.")
-        }
-        self.drawables.append(canvas)
+    /// Discards the texel if the destination depth is greater then or equal to the target depth
+    public static let depthFailDiscard = Self(rawValue: 1 << 1)
+    
+    public static let flipHorizontal = Self(rawValue: 1 << 2)
+    public static let flipVertical = Self(rawValue: 1 << 3)
+    
+    public init(rawValue: RawValue) {
+        self.rawValue = rawValue
     }
 }
-
-public extension RenderTarget {
-    struct RenderTargetFillOptions: OptionSet {
-        public typealias RawValue = Int
-        public let rawValue: RawValue
-        
-        /// Discards the texel if the destination depth is greater then or equal to the target depth
-        public static let depthFailDiscard = Self(rawValue: 1 << 1)
-        
-        public static let flipHorizontal = Self(rawValue: 1 << 2)
-        public static let flipVertical = Self(rawValue: 1 << 3)
-        
-        public init(rawValue: RawValue) {
-            self.rawValue = rawValue
-        }
-    }
-    enum RenderTargetFillSampleFilter {
-        case nearest
-        case linear
-    }
-    func insert(_ target: RenderTarget,
+public enum RenderTargetFillSampleFilter {
+    case nearest
+    case linear
+}
+struct RenderTargetFillContainer {
+    let renderTarget: any _RenderTargetProtocol
+    let options: RenderTargetFillOptions
+    let filter: RenderTargetFillSampleFilter
+}
+extension RenderTargetProtocol {
+    public func insert(_ target: any RenderTargetProtocol,
                 withOptions options: RenderTargetFillOptions = [],
                 sampleFilter: RenderTargetFillSampleFilter = .nearest) {
         guard target.size.width > 1, target.size.height > 1 else {return}
         guard target.isWindow == false else {fatalError("Window.framebuffer cannot be used as a render target. Find another solution.")}
-        drawables.append(RenderTargetFillContainer(renderTarget: target, options: options, filter: sampleFilter))
-    }
-    
-    struct RenderTargetFillContainer {
-        let renderTarget: RenderTarget
-        let options: RenderTargetFillOptions
-        let filter: RenderTargetFillSampleFilter
+        (self as! any _RenderTargetProtocol).drawables.append(RenderTargetFillContainer(renderTarget: target as! any _RenderTargetProtocol, options: options, filter: sampleFilter))
     }
 }
 
-extension RenderTarget: Hashable {
-    public static func ==(lhs: RenderTarget, rhs: RenderTarget) -> Bool {
+extension RenderTargetProtocol {
+    nonisolated public static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs === rhs
     }
-    public func hash(into hasher: inout Hasher) {
+    nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(self))
     }
 }
@@ -195,7 +240,7 @@ extension RenderTargetBackend {
 }
 
 @_transparent
-@MainActor fileprivate func getBackend(windowBacking: WindowBacking?) -> RenderTargetBackend {
+@MainActor func getRenderTargetBackend(windowBacking: WindowBacking?) -> RenderTargetBackend {
 #if canImport(MetalKit)
     return MetalRenderTarget(windowBacking: windowBacking)
 #elseif canImport(WebGL2)

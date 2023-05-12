@@ -215,6 +215,8 @@ internal extension Game {
 
 
 public struct WindowLayout {
+    /// The windows identifier
+    public let identifier: String
     /// The unscaled backing size of the window
     public let windowSize: Size2
     /// The user interface scale of the window
@@ -224,16 +226,9 @@ public struct WindowLayout {
 }
 //MARK: Update
 extension ECSContext {
-    @_transparent
-    private func createLayout() -> WindowLayout {
-        return WindowLayout(windowSize: game.windowManager.mainWindow?.backing.backingSize ?? .zero,
-                            interfaceScale: game.windowManager.mainWindow?.interfaceScale ?? 1,
-                            safeAreaInsets: game.windowManager.mainWindow?.backing.safeAreaInsets ?? .zero)
-    }
     func shouldRenderAfterUpdate(withTimePassed deltaTime: Float) -> Bool {
         let game = game
         let input = game.hid
-        let layout = createLayout()
         
         //Discard spiked times
         guard deltaTime < 1.0 else {game.ecs.performance?.totalDroppedFrames += 1; return false}
@@ -244,18 +239,18 @@ extension ECSContext {
         for system in self.platformSystems {
             guard type(of: system).phase == .preUpdating else {continue}
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(game: game, input: input, layout: layout, withTimePassed: deltaTime)
+            system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         for system in self.systems {
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(game: game, input: input, layout: layout, withTimePassed: deltaTime)
+            system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         for system in self.platformSystems {
             guard type(of: system).phase == .postDeffered else {continue}
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(game: game, input: input, layout: layout, withTimePassed: deltaTime)
+            system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         
@@ -283,7 +278,7 @@ extension ECSContext {
         return shouldRender
     }
     
-    func updateRendering(withTimePassed deltaTime: Float) {
+    func updateRendering(withTimePassed deltaTime: Float, window: Window) {
         if let performance = performance {
             performance.startRenderingSystems()
         }
@@ -293,14 +288,13 @@ extension ECSContext {
                 performance.finalizeSystemsFrameTime()
             }
         }
-        guard let framebuffer = game.windowManager.mainWindow?.framebuffer else {return}
+
         let game = game
         let input = game.hid
-        let layout = createLayout()
         
         for system in self.renderingSystems {
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(game: game, framebuffer: framebuffer, layout: layout, withTimePassed: deltaTime)
+            system.willUpdate(game: game, window: window, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         if let performance = performance {
@@ -311,7 +305,7 @@ extension ECSContext {
         for system in self.platformSystems {
             guard type(of: system).phase == .postRendering else {continue}
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(game: game, input: input, layout: layout, withTimePassed: deltaTime)
+            system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
     }

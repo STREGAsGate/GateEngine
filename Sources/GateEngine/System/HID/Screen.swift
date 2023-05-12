@@ -82,7 +82,7 @@ public extension HID {
         }
         #endif
         var p = position
-        if let bounds = window?.framebuffer.size {
+        if let bounds = window?.size {
             p.x = (1 / bounds.width) * p.x
             p.y = (1 / bounds.height) * p.y
         }

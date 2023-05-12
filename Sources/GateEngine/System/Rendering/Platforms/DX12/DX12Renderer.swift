@@ -44,7 +44,7 @@ final class DX12Renderer: RendererBackend {
         let fragmentShader: FragmentShader
     }
 
-    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: RenderTarget) {
+    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: _RenderTargetProtocol) {
         let renderTarget: DX12RenderTarget = renderTarget.backend as! DX12RenderTarget
         let geometries: ContiguousArray<DX12Geometry> = ContiguousArray(drawCommand.geometries.map({$0 as! DX12Geometry}))
         let commandList: D3DGraphicsCommandList = renderTarget.commandList

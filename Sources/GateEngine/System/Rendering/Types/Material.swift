@@ -82,11 +82,14 @@ public struct Material {
         return true
     }
     
-    @MainActor internal var renderTargets: Set<RenderTarget> {
-        var renderTargets: Set<RenderTarget> = []
+    @MainActor internal var renderTargets: [any _RenderTargetProtocol] {
+        var renderTargets: [any _RenderTargetProtocol] = []
         for channel in channels {
             if let texture = channel.texture, let renderTarget = texture.renderTarget {
-                renderTargets.insert(renderTarget)
+                #if DEBUG
+                assert(renderTargets.contains(where: {$0 === renderTarget}) == false)
+                #endif
+                renderTargets.append(renderTarget)
             }
         }
         return renderTargets

@@ -45,10 +45,7 @@ import GameMath
         return Geometry(raw)
     }()
     
-    func draw(_ renderTarget: RenderTarget,
-              into destinationRenderTarget: RenderTarget,
-              options: RenderTarget.RenderTargetFillOptions,
-              sampler: RenderTarget.RenderTargetFillSampleFilter) {
+    func draw(_ renderTarget: any _RenderTargetProtocol, into destinationRenderTarget: any _RenderTargetProtocol, options: RenderTargetFillOptions, sampler: RenderTargetFillSampleFilter) {
         guard rectOriginCentered.state == .ready else {return}
         
         @_transparent
@@ -90,13 +87,13 @@ import GameMath
     }
     
     @inline(__always)
-    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: RenderTarget) {
+    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: any _RenderTargetProtocol) {
         self._backend.draw(drawCommand, camera: camera, matrices: matrices, renderTarget: renderTarget)
     }
 }
 
 @MainActor internal protocol RendererBackend {
-    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: RenderTarget)
+    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: any _RenderTargetProtocol)
 }
 
 @_transparent

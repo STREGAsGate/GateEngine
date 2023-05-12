@@ -14,6 +14,10 @@ extension String: Error {}
 #error("macCatalyst is not a supported platform.")
 #endif
 
+#if os(watchOS)
+#error("watchOS is not a supported platform.")
+#endif
+
 #if GATEENGINE_WASI_UNSUPPORTED_HOST && os(WASI)
 #error("HTML5 builds are not supported on this platform host.")
 #endif

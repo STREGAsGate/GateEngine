@@ -28,7 +28,7 @@ public enum MipMapping: Hashable {
  */
 @MainActor public class Texture: Resource {
     internal let cacheKey: ResourceManager.Cache.TextureKey
-    internal var renderTarget: RenderTarget?
+    internal var renderTarget: (any _RenderTargetProtocol)?
     private let sizeHint: Size2?
     
     /** The dimensions of the texture.
@@ -87,7 +87,7 @@ public enum MipMapping: Hashable {
         resourceManager.incrementReference(self.cacheKey)
     }
     
-    public init(renderTarget: RenderTarget) {
+    init(renderTarget: any _RenderTargetProtocol) {
         let resourceManager = Game.shared.resourceManager
         self.renderTarget = renderTarget
         self.cacheKey = resourceManager.texureCacheKey(renderTargetBackend: renderTarget.backend)

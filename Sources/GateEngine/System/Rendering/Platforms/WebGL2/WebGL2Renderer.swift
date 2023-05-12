@@ -104,7 +104,7 @@ class WebGL2Renderer: RendererBackend {
         }
     }
     
-    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: RenderTarget) {
+    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: any _RenderTargetProtocol) {
         let gl = WebGL2Renderer.context
         let geometries = ContiguousArray(drawCommand.geometries.map({$0 as! WebGL2Geometry}))
         
@@ -500,7 +500,7 @@ extension WebGL2Renderer {
 extension Renderer {
     @_transparent
     func checkError(_ function: String = #function, _ line: Int = #line) {
-        (self.backend as! WebGL2Renderer).checkError(function, line)
+        (self._backend as! WebGL2Renderer).checkError(function, line)
     }
 }
 #endif

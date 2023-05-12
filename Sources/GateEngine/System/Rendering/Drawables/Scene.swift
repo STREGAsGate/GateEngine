@@ -181,15 +181,6 @@ import GameMath
         return false
     }
     
-    @_transparent
-    internal var renderTargets: Set<RenderTarget> {
-        var renderTargets: Set<RenderTarget> = []
-        for command in drawCommands {
-            renderTargets.formUnion(command.renderTargets)
-        }
-        return renderTargets
-    }
-    
     public init(camera: Camera, viewport: Rect? = nil, estimatedCommandCount: Int = 10) {
         self.camera = camera
         self.viewport = viewport

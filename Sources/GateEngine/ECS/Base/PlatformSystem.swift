@@ -50,13 +50,13 @@ extension PlatformSystem {
         }
     }
         
-    internal final func willUpdate(game: Game, input: HID, layout: WindowLayout, withTimePassed deltaTime: Float) {
+    internal final func willUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) {
         if didSetup == false {
             didSetup = true
-            setup(game: game, input: input, layout: layout)
+            setup(game: game, input: input)
         }
         if shouldUpdate(withTimePassed: deltaTime) {
-            update(game: game, input: input, layout: layout, withTimePassed: deltaTime)
+            update(game: game, input: input, withTimePassed: deltaTime)
         }
     }
 
@@ -68,7 +68,7 @@ extension PlatformSystem {
      Use `setup()` to create any system specific data and add it to the game.
      - note: The call to `setup()` is deffered until the next update frame after the system has been inserted and will be called immediatled before `update(withTimePassed:)`.
      */
-    open func setup(game: Game, input: HID, layout: WindowLayout) {
+    open func setup(game: Game, input: HID) {
         
     }
     
@@ -84,7 +84,7 @@ extension PlatformSystem {
      Called every update frame.
      - parameter deltaTime: The duration of time since the last update frame.
      */
-    open func update(game: Game, input: HID, layout: WindowLayout, withTimePassed deltaTime: Float) {
+    open func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
         preconditionFailure("Must Override \"\(#function)\" in \(type(of: Self.self))")
     }
     

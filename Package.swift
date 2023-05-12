@@ -72,6 +72,7 @@ let package = Package(
                         
                         settings.append(contentsOf: [
                             // MARK: Gate Engine options.
+                            .define("GATEENGINE_SUPPORTS_MULTIWINDOW", .when(platforms: [.macOS, .windows, .linux])),
                             .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
                             .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
                         ])

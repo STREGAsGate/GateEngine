@@ -22,7 +22,7 @@ import GameMath
     }
     
     let renderer: Renderer = Renderer()
-    @usableFromInline lazy private(set) var windowManager: WindowManager = WindowManager(self)
+    lazy public private(set) var windowManager: WindowManager = WindowManager(self)
     @usableFromInline lazy private(set) var ecs: ECSContext = ECSContext(game: self)
     @usableFromInline lazy private(set) var hid: HID = HID()
     @usableFromInline lazy private(set) var resourceManager: ResourceManager = ResourceManager(game: self)
@@ -38,7 +38,9 @@ import GameMath
         }
         self.addPlatformSystems()
         self.delegate.didFinishLaunching(game: self, options: [])
+        #if GATEENGINE_SUPPORTS_MULTIWINDOW
         self.gameLoop()
+        #endif
     }
     func willTerminate() {
         self.delegate.willTerminate(game: self)
@@ -50,6 +52,7 @@ import GameMath
         self.insertSystem(CacheSystem.self)
     }
 
+    #if GATEENGINE_SUPPORTS_MULTIWINDOW
     internal var windowsThatRequestedDraw: [(window: Window, deltaTime: Float)] = []
     private var previousTime: Double = 0
     internal func gameLoop() {
@@ -59,20 +62,27 @@ import GameMath
             self.previousTime = now
             if self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
                 for pair: (window: Window, deltaTime: Float) in windowsThatRequestedDraw {
-                    self.ecs.updateRendering(withTimePassed: pair.deltaTime)
+                    self.ecs.updateRendering(withTimePassed: pair.deltaTime, window: pair.window)
                 }
-                windowsThatRequestedDraw.removeAll(keepingCapacity: true)
             }
+            windowsThatRequestedDraw.removeAll(keepingCapacity: true)
             gameLoop()
         }
     }
+    #endif
     
     static var shared: Game! = nil
 }
 
 extension Game: WindowDelegate {
     func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float) {
+        #if GATEENGINE_SUPPORTS_MULTIWINDOW
         windowsThatRequestedDraw.append((window, deltaTime))
+        #else
+        if self.ecs.shouldRenderAfterUpdate(withTimePassed: deltaTime) {
+            self.ecs.updateRendering(withTimePassed: deltaTime, window: window)
+        }
+        #endif
     }
     
     func mouseChange(event: MouseChangeEvent, position: Position2) {

@@ -201,15 +201,6 @@ import GameMath
         let view = Matrix4x4(position: Position3(x: -(viewport?.position.x ?? 0), y: -(viewport?.position.y ?? 0), z: 1000000)) * Matrix4x4(scale: Size3(interfaceScale, interfaceScale, 1))
         return Matrices(projection: ortho, view: view)
     }
-    
-    @_transparent
-    internal var renderTargets: Set<RenderTarget> {
-        var renderTargets: Set<RenderTarget> = []
-        for command in drawCommands {
-            renderTargets.formUnion(command.renderTargets)
-        }
-        return renderTargets
-    }
 }
 
 public struct CanvasElementSpriteFlags: OptionSet {
@@ -234,7 +225,7 @@ public struct CanvasElementTextFlags: OptionSet {
     public static let flipHorizontal = CanvasElementTextFlags(rawValue: 1 << 1)
     public static let flipVertical = CanvasElementTextFlags(rawValue: 1 << 2)
     public static let flipDiagonal = CanvasElementTextFlags(rawValue: 1 << 3)
-        
+    
     public static let `default`: CanvasElementTextFlags = []
     
     public init(rawValue: RawValue) {

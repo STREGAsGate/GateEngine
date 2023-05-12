@@ -14,12 +14,17 @@ public enum WindowStyle {
     case bestForGames
 }
 
-@MainActor public final class Window {
-    internal let identifier: String
+@MainActor public final class Window: RenderTargetProtocol, _RenderTargetProtocol {
+    public let identifier: String
     public let style: WindowStyle
     @usableFromInline
     internal lazy var backing: WindowBacking = createWindowBacking()
-
+    
+    lazy var backend: RenderTargetBackend = getRenderTargetBackend(windowBacking: self.backing)
+    var drawables: [Any] = []
+    public private(set) lazy var texture: Texture = Texture(renderTarget: self)
+    var previousSize: Size2? = nil
+    
     weak var delegate: WindowDelegate? = nil
     
     public enum State {
@@ -37,6 +42,7 @@ public enum WindowStyle {
     internal init(identifier: String, style: WindowStyle) {
         self.identifier = identifier
         self.style = style
+        self.clearColor = .black
     }
     
     private var previousTime: Double = 0
@@ -48,21 +54,20 @@ public enum WindowStyle {
         // Positive time change and miniumum of 10 fps
         guard delta > 0 && delta < 0.1 else {return}
         if let delegate: WindowDelegate = self.delegate {
-            self.framebuffer.size = self.backing.backingSize
+            self.size = self.backing.backingSize
             delegate.window(self, wantsUpdateForTimePassed: Float(delta))
-            self.framebuffer.draw()
+            self.draw()
         }
     }
     
-    @usableFromInline
-    lazy var framebuffer: RenderTarget = {
-        _ = backing
-        return RenderTarget(windowBacking: self.backing)
-    }()
-    
-    @inlinable
-    var interfaceScale: Float {
+    @inlinable @inline(__always)
+    public var interfaceScale: Float {
         return backing.backingSize.width / backing.frame.size.width
+    }
+    
+    @inlinable @inline(__always)
+    public var safeAreaInsets: Insets {
+        return backing.safeAreaInsets
     }
     
     func show() {

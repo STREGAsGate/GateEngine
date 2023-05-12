@@ -58,14 +58,15 @@ class WASIWindow: WindowBacking {
 
     var safeAreaInsets: Insets = .zero
 
-    @MainActor func vSync(_ deltaTime: Double) {
+    @preconcurrency @MainActor func vSync(_ deltaTime: Double) {
         self.window.vSyncCalled()
         _ = globalThis.window.requestAnimationFrame(callback: vSync(_:))
     }
     @MainActor func show() {
+        self.state = .shown
+        print("Show")
         vSync(0)
         addListeners()
-        self.state = .shown
     }
     
     func addListeners() {

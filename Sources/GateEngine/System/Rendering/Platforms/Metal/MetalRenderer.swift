@@ -33,7 +33,7 @@ class MetalRenderer: RendererBackend {
         let fragmentShader: FragmentShader
     }
     
-    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: RenderTarget) {
+    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: any _RenderTargetProtocol) {
         let renderTarget = renderTarget.backend as! MetalRenderTarget
         let encoder = renderTarget.commandEncoder!
         let geometries = ContiguousArray(drawCommand.geometries.map({$0 as! MetalGeometry}))

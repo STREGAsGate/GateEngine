@@ -19,9 +19,9 @@ public final class StandardRenderingSystem: RenderingSystem {
 
     }
 
-    public override func render(game: Game, framebuffer: RenderTarget, layout: WindowLayout, withTimePassed deltaTime: Float) {
+    public override func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
         if let verticalResolution = verticalResolution {
-            var width = verticalResolution * framebuffer.size.aspectRatio
+            var width = verticalResolution * window.size.aspectRatio
             width -= width.truncatingRemainder(dividingBy: 2)
             renderTarget.size = Size2(width: width, height: verticalResolution)
         }
@@ -62,13 +62,13 @@ public final class StandardRenderingSystem: RenderingSystem {
                 if verticalResolution != nil {
                     renderTarget.insert(scene)
                 }else{
-                    framebuffer.insert(scene)
+                    window.insert(scene)
                 }
             }
         }
 
         do {// 2D
-            var canvas = Canvas(interfaceScale: verticalResolution == nil ? layout.interfaceScale : 1)
+            var canvas = Canvas(interfaceScale: verticalResolution == nil ? window.interfaceScale : 1)
             
             for entity in game.entities {
                 if let transform = entity.component(ofType: Transform3Component.self) {
@@ -88,12 +88,12 @@ public final class StandardRenderingSystem: RenderingSystem {
             if verticalResolution != nil {
                 renderTarget.insert(canvas)
             }else{
-                framebuffer.insert(canvas)
+                window.insert(canvas)
             }
         }
         
         if verticalResolution != nil {
-            framebuffer.insert(renderTarget)
+            window.insert(renderTarget)
         }
     }
 }
