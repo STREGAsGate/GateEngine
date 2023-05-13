@@ -22,16 +22,20 @@ import GameMath
     }
     
     let renderer: Renderer = Renderer()
-    lazy public private(set) var windowManager: WindowManager = WindowManager(self)
-    @usableFromInline lazy private(set) var ecs: ECSContext = ECSContext(game: self)
-    @usableFromInline lazy private(set) var hid: HID = HID()
-    @usableFromInline lazy private(set) var resourceManager: ResourceManager = ResourceManager(game: self)
+    @usableFromInline internal var renderingIsPermitted: Bool = false
+    
+    public private(set) lazy var windowManager: WindowManager = WindowManager(self)
+    @usableFromInline private(set) lazy var ecs: ECSContext = ECSContext(game: self)
+    @usableFromInline private(set) lazy var hid: HID = HID()
+    @usableFromInline private(set) lazy var resourceManager: ResourceManager = ResourceManager(game: self)
     
     func didFinishLaunching() {
         if isHeadless == false {
             do {
-            // Create the main window
+                // Allow the main window to be created even though we're not rendering
+                self.renderingIsPermitted = true
                 try windowManager.createWindow(identifier: windowManager.mainWindowIdentifier, style: .system)
+                self.renderingIsPermitted = false
             }catch{
                 fatalError("[GateEngine] Failed to create main window. \(error)")
             }
@@ -61,9 +65,11 @@ import GameMath
             let deltaTime: Double = now - previousTime
             self.previousTime = now
             if self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
+                self.renderingIsPermitted = true
                 for pair: (window: Window, deltaTime: Float) in windowsThatRequestedDraw {
                     self.ecs.updateRendering(withTimePassed: pair.deltaTime, window: pair.window)
                 }
+                self.renderingIsPermitted = false
             }
             windowsThatRequestedDraw.removeAll(keepingCapacity: true)
             gameLoop()
@@ -71,36 +77,8 @@ import GameMath
     }
     #endif
     
+    @usableFromInline
     static var shared: Game! = nil
-}
-
-extension Game: WindowDelegate {
-    func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float) {
-        #if GATEENGINE_SUPPORTS_MULTIWINDOW
-        windowsThatRequestedDraw.append((window, deltaTime))
-        #else
-        if self.ecs.shouldRenderAfterUpdate(withTimePassed: deltaTime) {
-            self.ecs.updateRendering(withTimePassed: deltaTime, window: window)
-        }
-        #endif
-    }
-    
-    func mouseChange(event: MouseChangeEvent, position: Position2) {
-        hid.mouseChange(event: event, position: position)
-    }
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2) {
-        hid.mouseClick(event: event, button: button, count: count, position: position)
-    }
-
-    func touchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2) {
-        hid.touchChange(id: id, kind: kind, event: event, position: position)
-    }
-
-    func keyboardRequestedHandling(key: KeyboardKey,
-                                   modifiers: KeyboardModifierMask,
-                                   event: KeyboardEvent) -> Bool {
-        return hid.keyboardRequestedHandling(key: key, modifiers: modifiers, event: event)
-    }
 }
 
 extension Game {

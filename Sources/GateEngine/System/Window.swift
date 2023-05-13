@@ -20,7 +20,7 @@ public enum WindowStyle {
     @usableFromInline
     internal lazy var backing: WindowBacking = createWindowBacking()
     
-    lazy var backend: RenderTargetBackend = getRenderTargetBackend(windowBacking: self.backing)
+    lazy var renderTargetBackend: RenderTargetBackend = getRenderTargetBackend(windowBacking: self.backing)
     var drawables: [Any] = []
     public private(set) lazy var texture: Texture = Texture(renderTarget: self)
     var previousSize: Size2? = nil
@@ -102,24 +102,6 @@ protocol WindowDelegate: AnyObject {
     func keyboardRequestedHandling(key: KeyboardKey,
                                    modifiers: KeyboardModifierMask,
                                    event: KeyboardEvent) -> Bool
-}
-
-extension WindowDelegate {
-    func mouseChange(event: MouseChangeEvent, position: Position2) {
-        // Optional
-    }
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2) {
-        // Optional
-    }
-    func touchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2) {
-        // Optional
-    }
-    func keyboardRequestedHandling(key: KeyboardKey,
-                                   modifiers: KeyboardModifierMask,
-                                   event: KeyboardEvent) -> Bool {
-        // Optional
-        return false
-    }
 }
 
 internal extension Window {

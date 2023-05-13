@@ -17,7 +17,7 @@ import GameMath
 
 @MainActor protocol _RenderTargetProtocol: RenderTargetProtocol {
     var texture: Texture {get}
-    var backend: RenderTargetBackend {get set}
+    var renderTargetBackend: RenderTargetBackend {get set}
     var drawables: [Any] {get set}
     var size: Size2 {get set}
     var previousSize: Size2? {get set}
@@ -34,15 +34,25 @@ extension RenderTargetProtocol {
 }
 
 extension _RenderTargetProtocol {
+    @inlinable @inline(__always)
     public func insert(_ scene: Scene) {
+        precondition(Game.shared.renderingIsPermitted, "Rendering can only be changed from a RenderingSystem.")
         self.drawables.append(scene)
     }
     
+    @inlinable @inline(__always)
     public func insert(_ canvas: Canvas) {
+        precondition(Game.shared.renderingIsPermitted, "Rendering can only be changed from a RenderingSystem.")
         if let size = canvas.size {
-            precondition(size == self.size, "Canvas size must match the render targets size.")
+            precondition(size == self.size, "Canvas.size must equal RenderTarget.size to insert.")
         }
         self.drawables.append(canvas)
+    }
+    
+    @inlinable @inline(__always)
+    public func insert(_ drawCommand: DrawCommand) {
+        precondition(Game.shared.renderingIsPermitted, "Rendering can only be changed from a RenderingSystem.")
+        self.drawables.append(drawCommand)
     }
     
     @inline(__always)
@@ -73,22 +83,24 @@ extension _RenderTargetProtocol {
 
 @MainActor public final class RenderTarget: RenderTargetProtocol, _RenderTargetProtocol {
     @usableFromInline
-    var backend: RenderTargetBackend
+    var renderTargetBackend: RenderTargetBackend
     var drawables: [Any] = []
     var previousSize: Size2? = nil
     
-    @inlinable
+    @inlinable @inline(__always)
     public var size: Size2 {
         get {
-            return backend.size
+            return renderTargetBackend.size
         }
         set {
-            backend.size = newValue
+            precondition(Game.shared.renderingIsPermitted, "Resizing a RenderTarget can only be done from a RenderingSystem.")
+            renderTargetBackend.size = newValue
         }
     }
     
     public init() {
-        self.backend = getRenderTargetBackend(windowBacking: nil)
+        precondition(Game.shared.renderingIsPermitted, "RenderTarget can only be created from a RenderingSystem.")
+        self.renderTargetBackend = getRenderTargetBackend(windowBacking: nil)
         self.clearColor = .black
     }
     
@@ -96,30 +108,31 @@ extension _RenderTargetProtocol {
 }
 
 extension _RenderTargetProtocol {
-    @inlinable
+    @inlinable @inline(__always)
     public var size: Size2 {
         get {
-            return backend.size
+            return renderTargetBackend.size
         }
         set {
-            backend.size = newValue
+            renderTargetBackend.size = newValue
         }
     }
     
-    @inlinable
+    @inlinable @inline(__always)
     public var clearColor: Color {
         get {
-            return backend.clearColor
+            return renderTargetBackend.clearColor
         }
         set {
-            backend.clearColor = newValue
+            renderTargetBackend.clearColor = newValue
         }
     }
     
-    func reshapeIfNeeded() {
-        if backend.wantsReshape || previousSize != backend.size {
-            previousSize = backend.size
-            backend.reshape()
+    @inline(__always)
+    internal func reshapeIfNeeded() {
+        if renderTargetBackend.wantsReshape || previousSize != renderTargetBackend.size {
+            previousSize = renderTargetBackend.size
+            renderTargetBackend.reshape()
         }
     }
     
@@ -129,7 +142,7 @@ extension _RenderTargetProtocol {
             renderTarget.draw()
         }
         self.reshapeIfNeeded()
-        backend.willBeginFrame()
+        renderTargetBackend.willBeginFrame()
 
         for drawable in drawables {
             switch drawable {
@@ -145,37 +158,37 @@ extension _RenderTargetProtocol {
             }
         }
         drawables.removeAll(keepingCapacity: true)
-        backend.didEndFrame()
+        renderTargetBackend.didEndFrame()
     }
     
     @inline(__always)
     private func drawScene(_ scene: Scene) {
         let matrices = scene.camera.matricies(withAspectRatio: self.size.aspectRatio)
         
-        backend.willBeginContent(matrices: matrices, viewport: scene.viewport)
+        renderTargetBackend.willBeginContent(matrices: matrices, viewport: scene.viewport)
         for command in scene.drawCommands {
             Game.shared.renderer.draw(command, camera: scene.camera, matrices: matrices, renderTarget: self)
         }
-        backend.didEndContent()
+        renderTargetBackend.didEndContent()
     }
     
     @inline(__always)
     private func drawCanvas(_ canvas: Canvas) {
         let matrices = canvas.matrices(withSize: self.size)
 
-        backend.willBeginContent(matrices: matrices, viewport: canvas.viewport)
+        renderTargetBackend.willBeginContent(matrices: matrices, viewport: canvas.viewport)
         for command in canvas.drawCommands {
             Game.shared.renderer.draw(command, camera: canvas.camera, matrices: matrices, renderTarget: self)
         }
-        backend.didEndContent()
+        renderTargetBackend.didEndContent()
     }
     
     @inline(__always)
     private func drawRenderTarget(_ container: RenderTargetFillContainer) {
         container.renderTarget.draw()
-        backend.willBeginContent(matrices: nil, viewport: nil)
+        renderTargetBackend.willBeginContent(matrices: nil, viewport: nil)
         Game.shared.renderer.draw(container.renderTarget, into: self, options: container.options, sampler: container.filter)
-        backend.didEndContent()
+        renderTargetBackend.didEndContent()
     }
 }
 
@@ -203,6 +216,7 @@ struct RenderTargetFillContainer {
     let filter: RenderTargetFillSampleFilter
 }
 extension RenderTargetProtocol {
+    @inline(__always)
     public func insert(_ target: any RenderTargetProtocol,
                 withOptions options: RenderTargetFillOptions = [],
                 sampleFilter: RenderTargetFillSampleFilter = .nearest) {
@@ -236,6 +250,7 @@ extension RenderTargetProtocol {
 }
 
 extension RenderTargetBackend {
+    @inlinable @inline(__always)
     var wantsReshape: Bool {false}
 }
 

@@ -34,7 +34,7 @@ class MetalRenderer: RendererBackend {
     }
     
     func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: any _RenderTargetProtocol) {
-        let renderTarget = renderTarget.backend as! MetalRenderTarget
+        let renderTarget = renderTarget.renderTargetBackend as! MetalRenderTarget
         let encoder = renderTarget.commandEncoder!
         let geometries = ContiguousArray(drawCommand.geometries.map({$0 as! MetalGeometry}))
         let data = createUniforms(drawCommand.material, camera, matrices)

@@ -90,7 +90,7 @@ public enum MipMapping: Hashable {
     init(renderTarget: any _RenderTargetProtocol) {
         let resourceManager = Game.shared.resourceManager
         self.renderTarget = renderTarget
-        self.cacheKey = resourceManager.texureCacheKey(renderTargetBackend: renderTarget.backend)
+        self.cacheKey = resourceManager.texureCacheKey(renderTargetBackend: renderTarget.renderTargetBackend)
         self.sizeHint = renderTarget.size
         self.cacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
