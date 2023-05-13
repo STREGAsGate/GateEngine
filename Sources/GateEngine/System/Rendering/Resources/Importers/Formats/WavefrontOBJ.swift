@@ -87,11 +87,13 @@ public class WavefrontOBJImporter: GeometryImporter {
                     for raw in comps[1...] {
                         verts.append(try rawVertexConvert(raw))
                     }
-                    if verts.count == 4 {//Quades
-                        return [Triangle(v1: verts[0], v2: verts[1], v3: verts[2], repairIfNeeded: true),
-                                Triangle(v1: verts[0], v2: verts[2], v3: verts[3], repairIfNeeded: true)]
-                    }else if verts.count == 3 {//Triangles
-                        return [Triangle(v1: verts[0], v2: verts[1], v3: verts[2], repairIfNeeded: true)]
+   
+                    if verts.count >= 3 {// N-Gon
+                        var triangles = [Triangle(v1: verts[0], v2: verts[1], v3: verts[2], repairIfNeeded: true)]
+                        for i in 1 ..< verts.count - 1 {
+                            triangles.append(Triangle(v1: verts[0], v2: verts[i], v3: verts[i + 1], repairIfNeeded: true))
+                        }
+                        return triangles
                     }else{
                         throw "File malformed at face: \(string)"
                     }
