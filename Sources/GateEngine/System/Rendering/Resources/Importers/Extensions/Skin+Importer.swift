@@ -13,9 +13,9 @@ extension ResourceManager {
         importers.skinImporters.insert(type, at: 0)
     }
     
-    fileprivate func importerForFileType(_ file: String) -> SkinImporter? {
+    fileprivate func importerForFile(_ file: URL) -> SkinImporter? {
         for type in self.importers.skinImporters {
-            if type.supportedFileExtensions().contains(where: {$0.caseInsensitiveCompare(file) == .orderedSame}) {
+            if type.canProcessFile(file) {
                 return type.init()
             }
         }
@@ -41,7 +41,7 @@ public protocol SkinImporter: AnyObject {
     func loadData(path: String, options: SkinImporterOptions) async throws -> Data
     func process(data: Data, baseURL: URL, options: SkinImporterOptions) async throws -> Skin
 
-    static func supportedFileExtensions() -> [String]
+    static func canProcessFile(_ file: URL) -> Bool
 }
 
 public extension SkinImporter {
@@ -52,11 +52,9 @@ public extension SkinImporter {
 
 extension Skin {
     public init(path: String, options: SkinImporterOptions = .none) async throws {
-        guard let fileExtension = path.components(separatedBy: ".").last else {
-            throw "Unknown file type."
-        }
-        guard let importer: SkinImporter = await Game.shared.resourceManager.importerForFileType(fileExtension) else {
-            throw "No importer for \(fileExtension)."
+        let file = URL(fileURLWithPath: path)
+        guard let importer: SkinImporter = await Game.shared.resourceManager.importerForFile(file) else {
+            throw "No importer for \(file.pathExtension)."
         }
         
         do {

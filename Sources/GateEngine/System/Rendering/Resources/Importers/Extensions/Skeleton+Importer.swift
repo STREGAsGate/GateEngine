@@ -13,9 +13,9 @@ extension ResourceManager {
         importers.skeletonImporters.insert(type, at: 0)
     }
     
-    internal func importerForFileType(_ file: String) -> SkeletonImporter? {
+    internal func importerForFile(_ file: URL) -> SkeletonImporter? {
         for type in self.importers.skeletonImporters {
-            if type.supportedFileExtensions().contains(where: {$0.caseInsensitiveCompare(file) == .orderedSame}) {
+            if type.canProcessFile(file) {
                 return type.init()
             }
         }
@@ -41,7 +41,7 @@ public protocol SkeletonImporter: AnyObject {
     func loadData(path: String, options: SkeletonImporterOptions) async throws -> Data
     func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) async throws -> Skeleton.Joint
 
-    static func supportedFileExtensions() -> [String]
+    static func canProcessFile(_ file: URL) -> Bool
 }
 
 public extension SkeletonImporter {
@@ -52,11 +52,9 @@ public extension SkeletonImporter {
 
 extension Skeleton {
     public convenience init(path: String, options: SkeletonImporterOptions = .none) async throws {
-        guard let fileExtension = path.components(separatedBy: ".").last else {
-            throw "Unknown file type."
-        }
-        guard let importer = await Game.shared.resourceManager.importerForFileType(fileExtension) else {
-            throw "No importer for \(fileExtension)."
+        let file = URL(fileURLWithPath: path)
+        guard let importer = await Game.shared.resourceManager.importerForFile(file) else {
+            throw "No importer for \(file.pathExtension)."
         }
         
         do {

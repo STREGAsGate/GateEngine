@@ -13,9 +13,9 @@ extension ResourceManager {
         importers.geometryImporters.insert(type, at: 0)
     }
     
-    fileprivate func importerForFileType(_ file: String) -> GeometryImporter? {
+    fileprivate func importerForFile(_ file: URL) -> GeometryImporter? {
         for type in self.importers.geometryImporters {
-            if type.supportedFileExtensions().contains(where: {$0.caseInsensitiveCompare(file) == .orderedSame}) {
+            if type.canProcessFile(file) {
                 return type.init()
             }
         }
@@ -57,7 +57,7 @@ public protocol GeometryImporter: AnyObject {
     func loadData(path: String, options: GeometryImporterOptions) async throws -> Data
     func process(data: Data, baseURL: URL, options: GeometryImporterOptions) async throws -> RawGeometry
 
-    static func supportedFileExtensions() -> [String]
+    static func canProcessFile(_ file: URL) -> Bool
 }
 
 public extension GeometryImporter {
@@ -68,11 +68,9 @@ public extension GeometryImporter {
 
 extension RawGeometry {
     public init(path: String, options: GeometryImporterOptions = .none) async throws {
-        guard let fileExtension = path.components(separatedBy: ".").last else {
-            throw "Unknown file type."
-        }
-        guard let importer: GeometryImporter = await Game.shared.resourceManager.importerForFileType(fileExtension) else {
-            throw "No importer for \(fileExtension)."
+        let file = URL(fileURLWithPath: path)
+        guard let importer: GeometryImporter = await Game.shared.resourceManager.importerForFile(file) else {
+            throw "No importer for \(file.pathExtension)."
         }
         
         do {

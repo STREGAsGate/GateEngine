@@ -14,9 +14,9 @@ extension ResourceManager {
         importers.textureImporters.insert(type, at: 0)
     }
     
-    internal func textureImporterForFileType(_ file: String) -> TextureImporter? {
+    internal func textureImporterForFile(_ file: URL) -> TextureImporter? {
         for type in self.importers.textureImporters {
-            if type.supportedFileExtensions().contains(where: {$0.caseInsensitiveCompare(file) == .orderedSame}) {
+            if type.canProcessFile(file) {
                 return type.init()
             }
         }
@@ -52,7 +52,7 @@ public protocol TextureImporter: AnyObject {
 
     func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (data: Data, size: Size2)
 
-    static func supportedFileExtensions() -> [String]
+    static func canProcessFile(_ file: URL) -> Bool
 }
 
 public extension TextureImporter {

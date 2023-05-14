@@ -397,8 +397,15 @@ public class GLTransmissionFormat {
         return gltf
     }
     
-    public static func supportedFileExtensions() -> [String] {
-        return ["gltf", "glb"]
+    public static func canProcessFile(_ file: URL) -> Bool {
+        let fileType = file.pathExtension
+        if fileType.caseInsensitiveCompare("glb") == .orderedSame {
+            return true
+        }
+        if fileType.caseInsensitiveCompare("gltf") == .orderedSame {
+            return true
+        }
+        return false
     }
 }
 

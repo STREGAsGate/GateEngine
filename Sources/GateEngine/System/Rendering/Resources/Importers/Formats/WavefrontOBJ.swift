@@ -108,7 +108,7 @@ public class WavefrontOBJImporter: GeometryImporter {
         return RawGeometry(triangles: triangles)
     }
 
-    public class func supportedFileExtensions() -> [String] {
-        return ["obj"]
+    public static func canProcessFile(_ file: URL) -> Bool {
+        return file.pathExtension.caseInsensitiveCompare("obj") == .orderedSame
     }
 }

@@ -609,7 +609,7 @@ internal extension ResourceManager {
                 guard let fileExtension = path.components(separatedBy: ".").last else {
                     throw "Unknown file type."
                 }
-                guard let importer = await Game.shared.resourceManager.textureImporterForFileType(fileExtension) else {
+                guard let importer = await Game.shared.resourceManager.textureImporterForFile(URL(fileURLWithPath: key.requestedPath)) else {
                     throw "No importer for \(fileExtension)."
                 }
                 
