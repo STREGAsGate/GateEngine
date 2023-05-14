@@ -1,11 +1,11 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.5
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
     name: "GateEngine",
-    platforms: [.macOS(.v11), .iOS(.v13), .tvOS(.v13)],
+    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13)],
     products: [
         .library(name: "GateEngine", targets: ["GateEngine"]),
     ],
@@ -183,6 +183,7 @@ let package = Package(
         ])
         
         return targets
-    }()
+    }(),
+    swiftLanguageVersions: [.v5]
 )
 
