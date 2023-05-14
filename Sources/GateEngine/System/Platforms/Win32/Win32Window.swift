@@ -231,9 +231,7 @@ fileprivate extension Win32Window {
     @preconcurrency 
     @MainActor
     func _msgResized() {
-        Task(priority: .high) {@MainActor in
-            self.window.framebuffer.size = self.frame.size
-        }
+        self.window.renderTargetBackend.size = self.frame.size
     }
 
     @inline(__always)
