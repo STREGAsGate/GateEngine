@@ -1,14 +1,13 @@
 name: macOS
-
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    workflow_dispatch:
+    push:
+        branches: [ main ]
+    pull_request:
+        branches: [ main ]
 
 jobs:
-  build-macOS:
-    
+  Build_Test-Swift:
     runs-on: macos-13
     steps:
     - uses: actions/checkout@v3
@@ -16,7 +15,18 @@ jobs:
       run: sudo xcode-select -s '/Applications/Xcode_14.3.app/Contents/Developer'
     - name: Swift Version
       run: swift --version
-    - name: Build
+    - name: Build using Swift
       run: swift build
-    - name: Test
+    - name: Test using Swift
       run: swift test
+  
+  Build_Test-Xcode:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v3
+    - name: Select Xcode version
+      run: sudo xcode-select -s '/Applications/Xcode_14.3.app/Contents/Developer'
+    - name: Build using Xcode
+      run: xcodebuild -scheme GateEngine -destination "platform=macOS,name=Any Mac"
+    - name: Test using Xcode
+      run: xcodebuild -scheme GateEngine -destination "platform=macOS,name=Any Mac" test

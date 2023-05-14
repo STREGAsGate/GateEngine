@@ -1,20 +1,20 @@
 name: HTML5
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  build-WASI:
-
+  Build_Test-Linux:
     runs-on: ubuntu-latest
-
+    
     container:
       image: ghcr.io/swiftwasm/carton:latest
       
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Test
       run: carton test --environment node

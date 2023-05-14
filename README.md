@@ -1,5 +1,9 @@
 # Gate Engine
 
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FSTREGAsGate%2FGateEngine%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/STREGAsGate/GateEngine)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FSTREGAsGate%2FGateEngine%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/STREGAsGate/GateEngine)
+
+
 [![Windows](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml/badge.svg)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml)
 [![macOS](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml/badge.svg)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml)
 [![Linux](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml/badge.svg)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml)
@@ -13,21 +17,20 @@ It includes simple APIs for loading resources, handling user inputs, and renderi
 is a custom package written specifically for Gate Engine that is designed to make doing math easy to read and write without needing to know the names of special functions and algorithms.
 
 ## Platform Support:
-| | Dependencies¹ | Render | Sound | Mouse/Key | Gamepad | Touch | CI
+| | CI | Dependencies¹ | Render | Sound | Desktop | Gamepad | Touch 
 |:----------|:----------|:----------|:----------|:----------|:----------|:----------|:----------|
-| **Windows²**   |<span style="color:green"> None³ |<span style="color:green">✔︎</span> |<span style="color:red">⛌ |<span style="color:green">✔︎ |<span style="color:orange">◑</span> Buggy |<span style="color:red">⛌ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Windows.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) |
-| **macOS**     |<span style="color:green">None |<span style="color:green">✔︎</span> |<span style="color:green">✔︎ |<span style="color:green">✔︎ |<span style="color:green">✔︎ |<span style="color:green">✔︎ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) |
-| **Linux**     | *TBD* |<span style="color:red">⛌ |<span style="color:red">⛌ |<span style="color:red">⛌ |<span style="color:red">⛌ |<span style="color:red">⛌ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Linux.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml) |
-| **iOS**/**tvOS**  |<span style="color:green">None |<span style="color:green">✔︎</span> | <span style="color:green">✔︎ |<span style="color:green">✔︎ |<span style="color:green">✔︎ |<span style="color:green">✔︎
-| **Android**   | *TBD* |<span style="color:red">⛌ |<span style="color:red">⛌ |<span style="color:red">⛌ |<span style="color:red">⛌ |<span style="color:red">⛌
-| **HTML5**     |<span style="color:green">None |<span style="color:green">✔︎</span> | <span style="color:green">✔︎ |<span style="color:green">✔︎ |<span style="color:green">✔︎ |<span style="color:green">✔︎ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/HTML5.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/HTML5.yml) |
+| [**Windows**](https://www.swift.org/getting-started/#on-windows)² | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Windows.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) | None³ | ✔︎ | ⛌ | ✔︎ | ◑ Buggy | ⛌ | 
+| [**macOS**]((https://apps.apple.com/us/app/xcode/id497799835)) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | None | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
+| [**Linux**](https://www.swift.org/getting-started/#on-linux) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Linux.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml) | *TBD* | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | 
+| [**iOS**/**tvOS**](https://apps.apple.com/us/app/xcode/id497799835) | | None | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎
+| [**Android**](https://github.com/readdle/swift-android-toolchain) | | *TBD* | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
+| [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/HTML5.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/HTML5.yml) | None | ✔︎| ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
 
 
 Complete: <span style="color:green">✔︎</span> | Incomplete: <span style="color:red">⛌</span> | Partial: <span style="color:orange">◑</span>
 <sub>
-</br>¹All platforms require a functioning Swift toolchain. Xcode on macOS, see <a href="https://swift.org/getting-started" target="_blank">Getting Started</a> for other platforms.
-</br>²Windows support for Swift and Swift Package Manager is in development and **will** be buggy.
-</br>³The latest Swift toolchain is always highly recommended.
+</br>¹All platforms require a functioning Swift toolchain. Click platform above for setup information.
+</br>²Windows support for Swift and Swift Package Manager is in development the latest Swift toolchain recommended.
 </sub>
 
 ## Getting Started

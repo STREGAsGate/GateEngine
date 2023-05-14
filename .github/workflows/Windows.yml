@@ -1,21 +1,22 @@
 name: Windows
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  windows:
+  Build_Test-Windows:
     runs-on: windows-latest
     steps:
       - uses: compnerd/gha-setup-swift@main
         with:
-          branch: swift-5.7.1-release
-          tag: 5.7.1-RELEASE
+          branch: swift-5.8-release
+          tag: 5.8-RELEASE
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build
         run: swift build
       - name: Test

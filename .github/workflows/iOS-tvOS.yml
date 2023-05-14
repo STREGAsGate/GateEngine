@@ -1,0 +1,23 @@
+name: iOS-tvOS
+on:
+    workflow_dispatch:
+    push:
+        branches: [ main ]
+    pull_request:
+        branches: [ main ]
+
+jobs:
+  Build_Test-Xcode:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v3
+    - name: Select Xcode version
+      run: sudo xcode-select -s '/Applications/Xcode_14.3.app/Contents/Developer'
+    - name: Build iOS using Xcode
+      run: xcodebuild -scheme GateEngine -destination "platform=iOS,name=Any iOS Device"
+    - name: Test iOS using Xcode
+      run: xcodebuild -scheme GateEngine -destination "platform=iOS,name=Any iOS Device" test
+    - name: Build tvOS using Xcode
+      run: xcodebuild -scheme GateEngine -destination "platform=tvOS,name=Any tvOS Device"
+    - name: Test tvOS using Xcode
+      run: xcodebuild -scheme GateEngine -destination "platform=tvOS,name=Any tvOS Device" test
