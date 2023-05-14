@@ -14,10 +14,11 @@ import GameMath
 class UIKitWindow: WindowBacking {
     unowned let window: Window
     let uiWindow: UIWindow
-    let identifier: String?
+    let identifier: String
     let style: WindowStyle
+    var state: Window.State = .hidden
     
-    required init(identifier: String?, style: WindowStyle, window: Window) {
+    required init(identifier: String, style: WindowStyle, window: Window) {
         self.window = window
         self.uiWindow = UIWindow()
         self.identifier = identifier
@@ -39,10 +40,11 @@ class UIKitWindow: WindowBacking {
     func show() {
         _ = displayLink
         uiWindow.makeKeyAndVisible()
+        self.state = .shown
     }
     
     func close() {
-        assertionFailure("UIKIt windows can't be closed.")
+        assertionFailure("UIKit windows can't be closed.")
     }
     
     deinit {
