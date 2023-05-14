@@ -9,16 +9,17 @@ import Foundation
 import GameMath
 
 struct ImageFont: FontBackend {
-    private let fontData: [Font.Style:(data: Data, size: Size2?)]
+    private let fontData: [Font.Style:(data: Data, size: Size2?, importer: TextureImporter.Type)]
     internal var nativePointSizes: [Font.Style:UInt] = [:]
     internal var textures: [Font.Style:Texture] = [:]
     internal var characterXAdvances: [Font.Style:[Float]] = [:]
     
     init(regular: String) async throws {
-        #warning("TODO: Remove explicit PNGImporter and use textureImporter")
-        let regular = try await PNGImporter().loadData(path: regular, options: .none)
+        let url = URL(fileURLWithPath: regular)
+        guard let importer = await Game.shared.resourceManager.textureImporterForFile(url) else {throw "Unsupported file type \(regular)."}
+        let regular = try await importer.loadData(path: regular, options: .none)
         
-        let fontData: [Font.Style:(data: Data, size: Size2?)] = [.regular : regular]
+        let fontData: [Font.Style:(data: Data, size: Size2?, importer: TextureImporter.Type)] = [.regular : (regular.data, regular.size, type(of: importer))]
 //        fontData[.bold] = bold
 //        fontData[.italic] = italic
 //        fontData[.boldItalic] = boldItalic
@@ -78,8 +79,7 @@ struct ImageFont: FontBackend {
     
     @MainActor private mutating func populate(style: Font.Style) {
         let fontData = fontData[style]!
-        #warning("TODO: Remove explicit PNGImporter and use textureImporter")
-        let (data, size) = try! PNGImporter().process(data: fontData.data, size: fontData.size, options: .none)
+        let (data, size) = try! fontData.importer.init().process(data: fontData.data, size: fontData.size, options: .none)
         
         let width: Int = Int(size.width)
         let height: Int = Int(size.height)
