@@ -9,7 +9,7 @@ import Foundation
 import GameMath
 import ImageIO
 import CoreImage
-import UniformTypeIdentifiers
+import CoreServices
 
 public class ApplePlatformImageImporter: TextureImporter {
     public required init() {}
@@ -23,8 +23,8 @@ public class ApplePlatformImageImporter: TextureImporter {
     }
 
     public class func canProcessFile(_ file: URL) -> Bool {
-        guard let identifers = (CGImageSourceCopyTypeIdentifiers() as? [CFString])?.compactMap({UTType($0 as String)}) else {return false}
-        let uttype = UTType(filenameExtension: file.pathExtension, conformingTo: .image)
+        guard let identifers = (CGImageSourceCopyTypeIdentifiers() as? [CFString]) else {return false}
+        guard let uttype = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, file.pathExtension as CFString, kUTTypeImage)?.takeRetainedValue() else {return false}
         return identifers.contains(where: {$0 == uttype})
     }
 }
