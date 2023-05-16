@@ -58,10 +58,11 @@ public final class D3DCommandQueue: D3DPageable {
     @inlinable @inline(__always)
     public var commandQueueDescription: D3DCommandQueueDescription {
         return performFatally(as: RawValue.self) {pThis in
-            let v = pThis.pointee.lpVtbl.pointee.GetDesc(pThis)
-            
-            
-            return D3DCommandQueueDescription(v)
+            var desc: D3DCommandQueueDescription.RawValue = D3DCommandQueueDescription.RawValue()
+            typealias GetDescABI = @convention(c) (UnsafeMutablePointer<D3DCommandQueue.RawValue>?, UnsafeMutablePointer<D3DCommandQueueDescription.RawValue>?) -> Void
+            let pGetDesc: GetDescABI = unsafeBitCast(pThis.pointee.lpVtbl.pointee.GetDesc, to: GetDescABI.self)
+            pGetDesc(pThis, &desc)
+            return D3DCommandQueueDescription(desc)
         }
     }
 

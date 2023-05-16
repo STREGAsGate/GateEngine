@@ -14,7 +14,11 @@ public final class D3DHeap: D3DPageable {
     @inlinable @inline(__always)
     public var heapDescription: D3DHeapDescription {
         return performFatally(as: RawValue.self) {pThis in
-            return D3DHeapDescription(pThis.pointee.lpVtbl.pointee.GetDesc(pThis))
+            var desc: D3DHeapDescription.RawValue = D3DHeapDescription.RawValue()
+            typealias GetDescABI = @convention(c) (UnsafeMutablePointer<D3DHeap.RawValue>?, UnsafeMutablePointer<D3DHeapDescription.RawValue>?) -> Void
+            let pGetDesc: GetDescABI = unsafeBitCast(pThis.pointee.lpVtbl.pointee.GetDesc, to: GetDescABI.self)
+            pGetDesc(pThis, &desc)
+            return D3DHeapDescription(desc)
         }
     }
 

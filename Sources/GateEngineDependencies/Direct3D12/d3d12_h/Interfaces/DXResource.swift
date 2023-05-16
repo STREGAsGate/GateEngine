@@ -13,8 +13,11 @@ public final class D3DResource: D3DPageable {
     @inlinable @inline(__always)
     public var resourceDescription: D3DResourceDescription {
         return performFatally(as: RawValue.self) {pThis in
-            let v: WinSDK.D3D12_RESOURCE_DESC = pThis.pointee.lpVtbl.pointee.GetDesc(pThis)
-            return D3DResourceDescription(v)
+            var desc: D3DResourceDescription.RawValue = D3DResourceDescription.RawValue()
+            typealias GetDescABI = @convention(c) (UnsafeMutablePointer<D3DResource.RawValue>?, UnsafeMutablePointer<D3DResourceDescription.RawValue>?) -> Void
+            let pGetDesc: GetDescABI = unsafeBitCast(pThis.pointee.lpVtbl.pointee.GetDesc, to: GetDescABI.self)
+            pGetDesc(pThis, &desc)
+            return D3DResourceDescription(desc)
         }
     }
 

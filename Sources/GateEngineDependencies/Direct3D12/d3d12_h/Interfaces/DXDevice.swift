@@ -554,9 +554,12 @@ public final class D3DDevice: D3DObject {
         return performFatally(as: RawValue.self) {pThis in
             let visibleMask = multipleAdapterNodeMask
             let numResourceDescs = UInt32(descriptors.count)
-            let pResourceDescs = descriptors.map({$0.rawValue})
-            let v = pThis.pointee.lpVtbl.pointee.GetResourceAllocationInfo(pThis, visibleMask, numResourceDescs, pResourceDescs)
-            return D3DResourceAllocationInfo(v)
+            let pResourceDescs: [D3DResourceDescription.RawValue] = descriptors.map({$0.rawValue})
+            var info: D3DResourceAllocationInfo.RawValue = D3DResourceAllocationInfo.RawValue()
+            typealias GetResourceAllocationInfoABI = @convention(c) (UnsafeMutablePointer<ID3D12Device5>?, UnsafeMutablePointer<D3DResourceAllocationInfo.RawValue>?, UInt32, UInt32, UnsafePointer<D3DResourceDescription.RawValue>?) -> Void
+            let pGetResourceAllocationInfo: GetResourceAllocationInfoABI = unsafeBitCast(pThis.pointee.lpVtbl.pointee.GetResourceAllocationInfo, to: GetResourceAllocationInfoABI.self)
+            pGetResourceAllocationInfo(pThis, &info, visibleMask, numResourceDescs, pResourceDescs)
+            return D3DResourceAllocationInfo(info)
         }
     }
 
@@ -574,7 +577,11 @@ public final class D3DDevice: D3DObject {
     @inlinable @inline(__always)
     public var adapterLUID: WinSDK.LUID {
         return performFatally(as: RawValue.self) {pThis in
-            return pThis.pointee.lpVtbl.pointee.GetAdapterLuid(pThis)
+            var luid: WinSDK.LUID = WinSDK.LUID()
+            typealias GetAdapterLuidABI = @convention(c) (UnsafeMutablePointer<D3DDevice.RawValue>?, UnsafeMutablePointer<WinSDK.LUID>?) -> Void
+            let pGetAdapterLuid: GetAdapterLuidABI = unsafeBitCast(pThis.pointee.lpVtbl.pointee.GetAdapterLuid, to: GetAdapterLuidABI.self)
+            pGetAdapterLuid(pThis, &luid)
+            return luid
         }
     }
 
