@@ -53,11 +53,12 @@ public final class D3DFence: D3DPageable {
 }
 
 extension D3DFence {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12Fence
 }
 extension D3DFence.RawValue {
     @inlinable @inline(__always)
-    static var interfaceID: WinSDK.IID {\WinSDK.IID_ID3D12Fence}
+    static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12Fence}
 }
 
 //MARK: - Original Style API

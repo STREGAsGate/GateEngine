@@ -25,6 +25,7 @@ public class D3DObject: IUnknown {
 }
 
 extension D3DObject {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12Object
 }
 extension D3DObject.RawValue {

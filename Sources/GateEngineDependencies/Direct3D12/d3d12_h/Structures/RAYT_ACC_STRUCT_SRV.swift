@@ -10,6 +10,7 @@ import WinSDK
 /// A shader resource view (SRV) structure for storing a raytracing acceleration structure.
 public struct D3DRaytracingAccelerationStructureShaderResourceView {
     public typealias RawValue = WinSDK.D3D12_RAYTRACING_ACCELERATION_STRUCTURE_SRV
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The GPU virtual address of the SRV.

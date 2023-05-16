@@ -26,6 +26,7 @@ public final class D3DPipelineState: D3DPageable {
 }
 
 extension D3DPipelineState {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12PipelineState
 }
 extension D3DPipelineState.RawValue {

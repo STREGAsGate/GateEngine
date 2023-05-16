@@ -10,6 +10,7 @@ import WinSDK
 /// Describes a vertex element in a vertex buffer in an output slot.
 public struct D3DStreamOutputDeclarationEntry {
     public typealias RawValue = WinSDK.D3D12_SO_DECLARATION_ENTRY
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// Zero-based, stream number.

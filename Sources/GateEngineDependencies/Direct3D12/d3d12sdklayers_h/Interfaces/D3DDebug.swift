@@ -35,6 +35,7 @@ public final class D3DDebug: IUnknown {
 }
 
 extension D3DDebug {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12Debug
 }
 extension D3DDebug.RawValue {

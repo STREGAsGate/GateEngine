@@ -11,6 +11,7 @@ import WinSDK
 /// Describes a resource, such as a texture. This structure is used extensively.
 public struct D3DResourceDescription {
     public typealias RawValue = WinSDK.D3D12_RESOURCE_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// One member of D3D12_RESOURCE_DIMENSION, specifying the dimensions of the resource (for example, D3D12_RESOURCE_DIMENSION_TEXTURE1D), or whether it is a buffer ((D3D12_RESOURCE_DIMENSION_BUFFER).

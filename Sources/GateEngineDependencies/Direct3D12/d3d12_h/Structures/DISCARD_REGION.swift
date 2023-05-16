@@ -10,6 +10,7 @@ import WinSDK
 /// Describes details for the discard-resource operation.
 public struct D3DDiscardRegion {
     public typealias RawValue = WinSDK.D3D12_DISCARD_REGION
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// An array of D3D12_RECT structures for the rectangles in the resource to discard. If NULL, DiscardResource discards the entire resource.
@@ -30,7 +31,7 @@ public struct D3DDiscardRegion {
         }
     }
     @usableFromInline
-    private var _regions: [WinSDK.RECT]! = nil
+    internal var _regions: [WinSDK.RECT]! = nil
 
     /// Index of the first subresource in the resource to discard.
     @inlinable @inline(__always)

@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the elements in a buffer resource to use in a shader-resource view.
 public struct D3DShaderResourceViewBuffer {
     public typealias RawValue = WinSDK.D3D12_BUFFER_SRV
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The index of the first element to be accessed by the view.
@@ -64,7 +65,7 @@ public struct D3DShaderResourceViewBuffer {
     */
     @inlinable @inline(__always)
     public init(index: UInt64, count: UInt32, stride: UInt32, flags: D3DBufferShaderResourceViewFlags) {
-        self.rawValue = RawValue(index, count stride, flags)
+        self.rawValue = RawValue(FirstElement: index, NumElements: count, StructureByteStride: stride, Flags: flags.rawType)
     }
 
     @inlinable @inline(__always)

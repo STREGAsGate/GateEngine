@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the coordinates of a tiled resource.
 public struct D3DTiledResourceCoordinate {
     public typealias RawValue = WinSDK.D3D12_TILED_RESOURCE_COORDINATE
+    @usableFromInline
     var rawValue: RawValue
 
     /// The x-coordinate of the tiled resource.

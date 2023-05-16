@@ -50,6 +50,7 @@ public final class D3DDescriptorHeap: D3DPageable {
 }
 
 extension D3DDescriptorHeap {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12DescriptorHeap
 }
 extension D3DDescriptorHeap.RawValue {

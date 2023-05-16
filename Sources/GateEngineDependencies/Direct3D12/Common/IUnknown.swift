@@ -29,11 +29,13 @@ public class IUnknown {
         }
     }
 
+    @usableFromInline
     internal enum MemoryManagment {
         case alreadyRetained
         case retain
     }
 
+    @inlinable @inline(__always)
     required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: MemoryManagment = .alreadyRetained) {
         guard let pointer = pointer else {return nil}
         self.pUnk = pointer
@@ -66,7 +68,6 @@ public class IUnknown {
     @inlinable @inline(__always)
     public func queryInterface<T: IUnknown>(_ type: T.Type) -> T? {
         return self.perform(as: WinSDK.IUnknown.self) { pThis in
-            
             var pointer: UnsafeMutableRawPointer? = nil
             var iid: IID = type.interfaceID
             let result: HRESULT = pThis.pointee.lpVtbl.pointee.QueryInterface(pThis, &iid, &pointer)
@@ -82,12 +83,15 @@ public class IUnknown {
         self.release()
     }
     
+    @inlinable @inline(__always)
     class var interfaceID: WinSDK.IID {preconditionFailure("Must override!")}
 }
 
 extension IUnknown {
+    @usableFromInline
     typealias RawValue = WinSDK.IUnknown
 }
 extension IUnknown.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: WinSDK.IID {WinSDK.IID_IUnknown}
 }

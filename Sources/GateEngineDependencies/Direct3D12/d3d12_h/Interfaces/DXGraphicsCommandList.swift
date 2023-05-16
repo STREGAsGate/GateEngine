@@ -789,6 +789,7 @@ public final class D3DGraphicsCommandList: D3DCommandList {
 }
 
 extension D3DGraphicsCommandList {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12GraphicsCommandList
 }
 extension D3DGraphicsCommandList.RawValue {

@@ -47,6 +47,7 @@ public final class D3DBlob: IUnknown {
 }
 
 extension D3DBlob {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D10Blob
 }
 extension D3DBlob.RawValue {

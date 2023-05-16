@@ -13,6 +13,7 @@ public final class DGIAdapter: DGIObject {
 }
 
 extension DGIAdapter {
+    @usableFromInline
     typealias RawValue = WinSDK.IDXGIAdapter
 }
 extension DGIAdapter.RawValue {

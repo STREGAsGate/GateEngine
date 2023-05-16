@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the elements in a buffer resource to use in a render-target view.
 public struct D3DRenderTargetViewBuffer {
     public typealias RawValue = WinSDK.D3D12_BUFFER_RTV
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// Number of bytes between the beginning of the buffer and the first element to access.

@@ -9,6 +9,7 @@ import WinSDK
 
 public struct D3DVertexBufferView {
     public typealias RawValue = WinSDK.D3D12_VERTEX_BUFFER_VIEW
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The GPU virtual address of the index buffer. D3D12_GPU_VIRTUAL_ADDRESS is a typedef'd synonym of UINT64.

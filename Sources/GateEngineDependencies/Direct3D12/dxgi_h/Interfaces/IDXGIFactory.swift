@@ -53,6 +53,7 @@ public final class DGIFactory: DGIObject {
         }
     }
 
+    @inlinable @inline(__always)
     public init() throws {
         #if DEBUG
         let flags = UInt32(DXGI_CREATE_FACTORY_DEBUG)
@@ -66,6 +67,7 @@ public final class DGIFactory: DGIObject {
         super.init(winSDKPointer: p)!
     }
 
+    @inlinable @inline(__always)
     required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: MemoryManagment = .alreadyRetained) {
         super.init(winSDKPointer: pointer, memoryManagment: memoryManagment)
     }
@@ -75,6 +77,7 @@ public final class DGIFactory: DGIObject {
 }
 
 extension DGIFactory {// Always use Factory4
+    @usableFromInline
     typealias RawValue = WinSDK.IDXGIFactory4
 }
 extension DGIFactory.RawValue {// Always use Factory4

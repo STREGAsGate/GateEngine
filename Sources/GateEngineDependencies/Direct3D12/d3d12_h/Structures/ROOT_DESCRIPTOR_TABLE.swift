@@ -24,7 +24,7 @@ public struct D3DRootDescriptorTable {
 
     @inlinable @inline(__always)
     internal func withUnsafeRawValue<ResultType>(_ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
-        @inlinable @inline(__always)
+        @inline(__always)
         func withUnsafeParameter(at index: Int, _ pDescriptorRanges: inout [D3DDescriptorRange.RawValue], _ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
             if descriptorRanges.isEmpty || index == descriptorRanges.count {
                 return try pDescriptorRanges.withUnsafeBufferPointer {pDescriptorRanges in

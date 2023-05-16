@@ -10,6 +10,7 @@ import WinSDK
 /// Specifies a depth and stencil value.
 public struct D3DDepthStencilValue {
     public typealias RawValue = WinSDK.D3D12_DEPTH_STENCIL_VALUE
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// Specifies the depth value.

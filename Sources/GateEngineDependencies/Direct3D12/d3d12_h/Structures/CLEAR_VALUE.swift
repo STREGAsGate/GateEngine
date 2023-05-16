@@ -10,6 +10,7 @@ import WinSDK
 /// Describes a value used to optimize clear operations for a particular resource.
 public struct D3DClearValue {
     public typealias RawValue = WinSDK.D3D12_CLEAR_VALUE
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// Specifies one member of the DXGI_FORMAT enum. The format of the commonly cleared color follows the same validation rules as a view/ descriptor creation. In general, the format of the clear color can be any format in the same typeless group that the resource format belongs to. This Format must match the format of the view used during the clear operation. It indicates whether the Color or the DepthStencil member is valid and how to convert the values for usage with the resource.
@@ -52,7 +53,9 @@ public struct D3DClearValue {
     */
     @inlinable @inline(__always)
     public init(format: DGIFormat, color: D3DColor, depthStencil: D3DDepthStencilValue = .init(depth: 1, stencil: 0)) {
-        self.rawValue = RawValue(format.rawValue, color.rawValue, depthStencil.rawValue)
+        var field1 = RawValue.__Unnamed_union___Anonymous_field1(Color: color.tuple)
+        field1.DepthStencil = depthStencil.rawValue
+        self.rawValue = RawValue(Format: format.rawValue, field1)
     }
 
     @inlinable @inline(__always)

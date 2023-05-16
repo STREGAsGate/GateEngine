@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the transition of subresources between different usages.
 public struct D3DResourceTransitionBarrier {
     public typealias RawValue = WinSDK.D3D12_RESOURCE_TRANSITION_BARRIER
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// A pointer to the ID3D12Resource object that represents the resource used in the transition.

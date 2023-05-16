@@ -9,6 +9,7 @@ import WinSDK
 
 public struct DGIPresentParameters {
     public typealias RawValue = WinSDK.DXGI_PRESENT_PARAMETERS
+    @usableFromInline
     internal var rawValue: RawValue
 
     @inlinable @inline(__always)
@@ -16,15 +17,15 @@ public struct DGIPresentParameters {
         self.rawValue = rawValue
     }
 
-    @inlinable @inline(__always)
-    public static let `fullFrame`: DGIPresentParameters = {
+    @_transparent
+    public static var `fullFrame`: DGIPresentParameters {
         var params = WinSDK.DXGI_PRESENT_PARAMETERS()
         params.DirtyRectsCount = 0
         params.pDirtyRects = nil
         params.pScrollRect = nil
         params.pScrollOffset = nil
         return DGIPresentParameters(params)
-    }()
+    }
 }
 
 

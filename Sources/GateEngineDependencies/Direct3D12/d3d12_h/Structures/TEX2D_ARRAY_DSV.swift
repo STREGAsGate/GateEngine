@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the subresources from an array of 2D textures that are accessible to a depth-stencil view.
 public struct D3DTexture2DArrayDepthStencilView {
     public typealias RawValue = WinSDK.D3D12_TEX2D_ARRAY_DSV
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The index of the first mipmap level to use.

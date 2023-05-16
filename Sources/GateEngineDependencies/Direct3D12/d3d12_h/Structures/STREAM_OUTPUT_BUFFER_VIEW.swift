@@ -10,6 +10,7 @@ import WinSDK
 /// Describes a stream output buffer.
 public struct D3DStreamOutputBufferView {
     public typealias RawValue = WinSDK.D3D12_STREAM_OUTPUT_BUFFER_VIEW
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// A D3D12_GPU_VIRTUAL_ADDRESS (a UINT64) that points to the stream output buffer. If SizeInBytes is 0, this member isn't used and can be any value.

@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the elements in a buffer to use in a unordered-access view.
 public struct D3DUnorderedAccessViewBuffer {
     public typealias RawValue = WinSDK.D3D12_BUFFER_UAV
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The zero-based index of the first element to be accessed.
@@ -76,7 +77,7 @@ public struct D3DUnorderedAccessViewBuffer {
     */
     @inlinable @inline(__always)
     public init(index: UInt64, count: UInt32, stride: UInt32, counterOffset: UInt64, flags: D3DBufferUnorderedAccessViewFlags) {
-        self.rawValue = RawValue(index, count, stride, counterOffset, flags.rawValue)
+        self.rawValue = RawValue(FirstElement: index, NumElements: count, StructureByteStride: stride, CounterOffsetInBytes: counterOffset, Flags: flags.rawType)
     }
 
     @inlinable @inline(__always)

@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the blend state for a render target.
 public struct D3DRenderTargetBlendDescription {
     public typealias RawValue = WinSDK.D3D12_RENDER_TARGET_BLEND_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /** Specifies whether to enable (or disable) blending. Set to TRUE to enable blending.

@@ -10,6 +10,7 @@ import WinSDK
 /// Describes heap properties.
 public struct D3DHeapProperties {
     public typealias RawValue = WinSDK.D3D12_HEAP_PROPERTIES
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// A D3D12_HEAP_TYPE-typed value that specifies the type of heap.

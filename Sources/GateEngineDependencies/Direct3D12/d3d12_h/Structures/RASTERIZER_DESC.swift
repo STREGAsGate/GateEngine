@@ -10,6 +10,7 @@ import WinSDK
 /// Describes rasterizer state.
 public struct D3DRasterizerDescription {
     public typealias RawValue = WinSDK.D3D12_RASTERIZER_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// A D3D12_FILL_MODE-typed value that specifies the fill mode to use when rendering.

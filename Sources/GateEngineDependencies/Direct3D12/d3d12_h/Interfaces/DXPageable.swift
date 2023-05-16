@@ -14,6 +14,7 @@ public class D3DPageable: D3DDeviceChild {
 }
 
 extension D3DPageable {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12Pageable
 }
 extension D3DPageable.RawValue {

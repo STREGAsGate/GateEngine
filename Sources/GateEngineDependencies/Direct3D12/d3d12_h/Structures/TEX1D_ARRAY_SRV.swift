@@ -9,6 +9,7 @@ import WinSDK
 
 public struct D3DTexture1DArrayShaderResourceView {
     public typealias RawValue = WinSDK.D3D12_TEX1D_ARRAY_SRV
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// Index of the most detailed mipmap level to use; this number is between 0 and MipLevels (from the original Texture1D for which ID3D12Device::CreateShaderResourceView creates a view) -1.

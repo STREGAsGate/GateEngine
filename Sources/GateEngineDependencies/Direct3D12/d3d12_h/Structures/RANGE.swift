@@ -9,6 +9,7 @@ import WinSDK
 
 public typealias D3DRange = ClosedRange<WinSDK.SIZE_T>
 internal extension D3DRange {
+    @usableFromInline
     typealias RawValue = WinSDK.D3D12_RANGE
     @inlinable @inline(__always)
     var rawValue: RawValue {

@@ -138,9 +138,11 @@ public final class D3DCommandQueue: D3DPageable {
 }
 
 extension D3DCommandQueue {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12CommandQueue
 }
 extension D3DCommandQueue.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12CommandQueue}
 }
 

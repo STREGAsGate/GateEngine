@@ -58,6 +58,7 @@ public final class DGISwapChain: DGIDeviceSubObject {
 }
 
 extension DGISwapChain {
+    @usableFromInline
     typealias RawValue = WinSDK.IDXGISwapChain1
 }
 extension DGISwapChain.RawValue {

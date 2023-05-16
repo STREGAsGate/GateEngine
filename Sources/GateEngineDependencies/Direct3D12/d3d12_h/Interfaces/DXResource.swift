@@ -122,7 +122,12 @@ public final class D3DResource: D3DPageable {
 }
 
 extension D3DResource {
+    #if !Direct3D12ExcludeOriginalStyleAPI
     public typealias RawValue = WinSDK.ID3D12Resource
+    #else
+    @usableFromInline
+    typealias RawValue = WinSDK.ID3D12Resource
+    #endif
 }
 extension D3DResource.RawValue {
     @inlinable @inline(__always)

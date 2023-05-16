@@ -9,6 +9,7 @@ import WinSDK
 
 public struct D3DTexture3DUnorderedAccessView {
     public typealias RawValue = WinSDK.D3D12_TEX3D_UAV
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The index of the mipmap level to use.

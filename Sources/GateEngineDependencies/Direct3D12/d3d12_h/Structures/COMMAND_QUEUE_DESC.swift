@@ -10,6 +10,7 @@ import WinSDK
 /// Describes a command queue.
 public struct D3DCommandQueueDescription {
     public typealias RawValue = WinSDK.D3D12_COMMAND_QUEUE_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// Specifies one member of D3D12_COMMAND_LIST_TYPE.
@@ -64,7 +65,8 @@ public struct D3DCommandQueueDescription {
     */
     @inlinable @inline(__always)
     public init(type: D3DCommandListType, priority: D3DCommandQueuePriority = .normal, flags: D3DCommandQueueFlags = [], multipleAdapterNodeMask: UInt32 = 0) {
-        self.rawValue = RawValue(type, priority, flags, multipleAdapterNodeMask)
+        let flags = D3DCommandQueueFlags.RawType(flags.rawValue)
+        self.rawValue = RawValue(Type: type.rawValue, Priority: priority.rawValue.rawValue, Flags: flags, NodeMask: multipleAdapterNodeMask)
     }
 
     @inlinable @inline(__always)

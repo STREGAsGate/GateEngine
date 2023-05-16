@@ -21,9 +21,11 @@ public class D3DCommandList: D3DDeviceChild {
 }
 
 extension D3DCommandList {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12CommandList
 }
 extension D3DCommandList.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: IID {WinSDK.IID_ID3D12CommandList}
 }
 

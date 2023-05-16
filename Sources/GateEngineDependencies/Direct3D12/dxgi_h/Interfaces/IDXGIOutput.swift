@@ -13,6 +13,7 @@ public final class DGIOutput: DGIObject {
 }
 
 extension DGIOutput {
+    @usableFromInline
     typealias RawValue = WinSDK.IDXGIOutput
 }
 extension DGIOutput.RawValue {

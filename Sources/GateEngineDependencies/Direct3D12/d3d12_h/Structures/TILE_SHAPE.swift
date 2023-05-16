@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the shape of a tile by specifying its dimensions.
 public struct D3DTileShape {
     public typealias RawValue = WinSDK.D3D12_TILE_SHAPE
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The width in texels of the tile.

@@ -59,6 +59,7 @@ public final class D3DInfoQueue: IUnknown {
 }
 
 extension D3DInfoQueue {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12InfoQueue
 }
 extension D3DInfoQueue.RawValue {

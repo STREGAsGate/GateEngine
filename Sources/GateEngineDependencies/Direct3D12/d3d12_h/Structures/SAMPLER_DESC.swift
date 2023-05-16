@@ -10,6 +10,7 @@ import WinSDK
 /// Describes a sampler state.
 public struct D3DSamplerDescription {
     public typealias RawValue = WinSDK.D3D12_SAMPLER_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// A D3D12_FILTER-typed value that specifies the filtering method to use when sampling a texture.

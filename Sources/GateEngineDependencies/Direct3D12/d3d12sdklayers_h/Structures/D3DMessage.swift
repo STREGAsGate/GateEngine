@@ -9,6 +9,7 @@ import WinSDK
 import struct Foundation.Data
 public struct D3DMessage: Swift.Error, CustomStringConvertible {
     public typealias RawValue = WinSDK.D3D12_MESSAGE
+    @usableFromInline
     internal var rawValue: RawValue
 
     @inlinable @inline(__always)

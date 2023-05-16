@@ -28,6 +28,7 @@ public class DGIDeviceSubObject: DGIObject {
 }
 
 extension DGIDeviceSubObject {
+    @usableFromInline
     typealias RawValue = WinSDK.IDXGIDeviceSubObject
 }
 extension DGIDeviceSubObject.RawValue {

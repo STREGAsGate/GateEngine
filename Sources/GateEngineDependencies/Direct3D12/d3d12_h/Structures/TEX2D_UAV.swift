@@ -10,6 +10,7 @@ import WinSDK
 /// Describes a unordered-access 2D texture resource.
 public struct D3DTexture2DUnorderedAccessView {
     public typealias RawValue = WinSDK.D3D12_TEX2D_UAV
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The index of the mipmap level to use.

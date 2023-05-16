@@ -14,7 +14,8 @@ public final class D3DRootSignature: D3DDeviceChild {
 }
 
 extension D3DRootSignature {
-    public typealias RawValue = WinSDK.ID3D12RootSignature
+    @usableFromInline
+    typealias RawValue = WinSDK.ID3D12RootSignature
 }
 extension D3DRootSignature.RawValue {
     @inlinable @inline(__always)

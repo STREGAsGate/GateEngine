@@ -10,6 +10,7 @@ import WinSDK
 /// Describes descriptors inline in the root signature version 1.0 that appear in shaders.
 public struct D3DRootDescriptor {
     public typealias RawValue = WinSDK.D3D12_ROOT_DESCRIPTOR
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The shader register.

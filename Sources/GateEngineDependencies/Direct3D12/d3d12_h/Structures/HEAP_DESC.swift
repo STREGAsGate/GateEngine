@@ -10,6 +10,7 @@ import WinSDK
 /// Describes a heap.
 public struct D3DHeapDescription {
     public typealias RawValue = WinSDK.D3D12_HEAP_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The size, in bytes, of the heap. To avoid wasting memory, applications should pass SizeInBytes values which are multiples of the effective Alignment; but non-aligned SizeInBytes is also supported, for convenience. To find out how large a heap must be to support textures with undefined layouts and adapter-specific sizes, call ID3D12Device::GetResourceAllocationInfo.
@@ -64,7 +65,7 @@ public struct D3DHeapDescription {
     */
     @inlinable @inline(__always)
     public init(byteCount: UInt64, properties: D3DHeapProperties, alignment: UInt64, flags: D3DHeapFlags) {
-        self.rawValue = RawValue(byteCount, properties, alignment, flags)
+        self.rawValue = RawValue(SizeInBytes: byteCount, Properties: properties.rawValue, Alignment: alignment, Flags: flags.rawType)
     }
 
     /// Describes a heap.

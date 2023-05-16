@@ -9,6 +9,7 @@ import WinSDK
 
 public struct D3DTexture2DMultiSampledDepthStencilView {
     public typealias RawValue = WinSDK.D3D12_TEX2DMS_DSV
+    @usableFromInline
     internal var rawValue: RawValue
 
     @inlinable @inline(__always)

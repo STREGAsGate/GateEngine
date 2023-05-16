@@ -9,6 +9,7 @@ import WinSDK
 
 public struct D3DViewport {
     public typealias RawValue = WinSDK.D3D12_VIEWPORT
+    @usableFromInline
     internal var rawValue: RawValue
 
     @inlinable @inline(__always)

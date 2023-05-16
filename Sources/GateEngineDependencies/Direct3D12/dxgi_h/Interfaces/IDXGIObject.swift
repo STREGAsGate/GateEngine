@@ -13,6 +13,7 @@ public class DGIObject: IUnknown {
 }
 
 extension DGIObject {
+    @usableFromInline
     typealias RawValue = WinSDK.IDXGIObject
 }
 extension DGIObject.RawValue {

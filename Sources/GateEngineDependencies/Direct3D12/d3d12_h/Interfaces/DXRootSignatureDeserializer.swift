@@ -22,7 +22,8 @@ public final class D3DRootSignatureDeserializer: IUnknown {
 }
 
 extension D3DRootSignatureDeserializer {
-    public typealias RawValue = WinSDK.ID3D12RootSignatureDeserializer
+    @usableFromInline
+    typealias RawValue = WinSDK.ID3D12RootSignatureDeserializer
 }
 extension D3DRootSignatureDeserializer.RawValue {
     @inlinable @inline(__always)

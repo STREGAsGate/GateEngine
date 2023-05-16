@@ -10,6 +10,7 @@ import WinSDK
 /// Describes a swap chain.
 public struct DGISwapChainDescription1 {
     public typealias RawValue = WinSDK.DXGI_SWAP_CHAIN_DESC1
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// A value that describes the resolution width. If you specify the width as zero when you call the IDXGIFactory2::CreateSwapChainForHwnd method to create a swap chain, the runtime obtains the width from the output window and assigns this width value to the swap-chain description. You can subsequently call the IDXGISwapChain1::GetDesc1 method to retrieve the assigned width value. You cannot specify the width as zero when you call the IDXGIFactory2::CreateSwapChainForComposition method.

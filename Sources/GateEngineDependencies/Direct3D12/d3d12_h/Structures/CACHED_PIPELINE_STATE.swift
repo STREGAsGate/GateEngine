@@ -11,6 +11,7 @@ import Foundation
 /// Stores a pipeline state.
 public struct D3DCachedPipelineState {
     public typealias RawValue = WinSDK.D3D12_CACHED_PIPELINE_STATE
+    @usableFromInline
     internal var rawValue: RawValue
 
     /** Stores a pipeline state.
@@ -20,7 +21,7 @@ public struct D3DCachedPipelineState {
     public init(cachedBlob: D3DBlob) {
         let pCachedBlob = UnsafeRawPointer(cachedBlob.bufferPointer)
         let CachedBlobSizeInBytes = cachedBlob.bufferSize
-        self.rawValue = RawValue(pCachedBlob, CachedBlobSizeInBytes)
+        self.rawValue = RawValue(pCachedBlob: pCachedBlob, CachedBlobSizeInBytes: CachedBlobSizeInBytes)
     }
 
     /// Stores a pipeline state.

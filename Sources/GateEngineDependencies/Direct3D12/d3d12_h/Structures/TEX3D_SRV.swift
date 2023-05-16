@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the subresources from a 3D texture to use in a shader-resource view.
 public struct D3DTexture3DShaderResourceView {
     public typealias RawValue = WinSDK.D3D12_TEX3D_SRV
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// Index of the most detailed mipmap level to use; this number is between 0 and MipLevels (from the original Texture2D for which ID3D12Device::CreateShaderResourceView creates a view) -1.

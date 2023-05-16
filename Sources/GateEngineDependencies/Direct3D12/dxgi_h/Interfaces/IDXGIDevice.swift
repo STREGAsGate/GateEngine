@@ -13,6 +13,7 @@ public final class DGIDevice: DGIObject {
 }
 
 extension DGIDevice {
+    @usableFromInline
     typealias RawValue = WinSDK.IDXGIDevice
 }
 extension DGIDevice.RawValue {

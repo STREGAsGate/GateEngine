@@ -29,6 +29,7 @@ public class D3DDeviceChild: D3DObject {
 }
 
 extension D3DDeviceChild {
+     @usableFromInline
     typealias RawValue = WinSDK.ID3D12DeviceChild
 }
 extension D3DDeviceChild.RawValue {

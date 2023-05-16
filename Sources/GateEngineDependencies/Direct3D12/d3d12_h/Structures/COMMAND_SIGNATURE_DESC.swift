@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the arguments (parameters) of a command signature.
 public struct D3DCommandSignatureDescription {
     public typealias RawValue = WinSDK.D3D12_COMMAND_SIGNATURE_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// An array of D3D12_INDIRECT_ARGUMENT_DESC structures, containing details of the arguments, including whether the argument is a vertex buffer, constant, constant buffer view, shader resource view, or unordered access view.
@@ -31,7 +32,8 @@ public struct D3DCommandSignatureDescription {
             }
         }
     }
-    private var _argumentDescriptors: [D3DIndirectArgumentDescription.RawValue]! = nil
+    @usableFromInline
+    internal var _argumentDescriptors: [D3DIndirectArgumentDescription.RawValue]! = nil
 
     /// For single GPU operation, set this to zero. If there are multiple GPU nodes, set a bit to identify the node (the device's physical adapter) to which the command queue applies. Each bit in the mask corresponds to a single node. Only 1 bit must be set. Refer to Multi-adapter systems.
     @inlinable @inline(__always)
@@ -50,7 +52,9 @@ public struct D3DCommandSignatureDescription {
     */
     @inlinable @inline(__always)
     public init(argumentDescriptors: [D3DIndirectArgumentDescription], multipleAdapterNodeMask: UInt32 = 0) {
-        self.rawValue = RawValue(argumentDescriptors, multipleAdapterNodeMask)
+        self.rawValue = RawValue()
+        self.argumentDescriptors = argumentDescriptors
+        self.multipleAdapterNodeMask = multipleAdapterNodeMask
     }
 
     @inlinable @inline(__always)

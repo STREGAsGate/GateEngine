@@ -13,6 +13,7 @@ public final class D3DQueryHeap: D3DPageable {
 }
 
 extension D3DQueryHeap {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12QueryHeap
 }
 extension D3DQueryHeap.RawValue {

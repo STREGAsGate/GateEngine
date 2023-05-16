@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the blend state.
 public struct D3DBlendDescription {
     public typealias RawValue = WinSDK.D3D12_BLEND_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// Specifies whether to use alpha-to-coverage as a multisampling technique when setting a pixel to a render target. For more info about using alpha-to-coverage, see Alpha-To-Coverage.
@@ -54,7 +55,8 @@ public struct D3DBlendDescription {
             }
         }
     }
-    private var _renderTarget: [D3DRenderTargetBlendDescription.RawValue]! = nil
+    @usableFromInline
+    internal var _renderTarget: [D3DRenderTargetBlendDescription.RawValue]! = nil
 
     /// Describes the blend state.
     @inlinable @inline(__always)

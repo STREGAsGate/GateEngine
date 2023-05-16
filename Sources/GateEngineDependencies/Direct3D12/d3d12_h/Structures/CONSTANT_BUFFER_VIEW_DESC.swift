@@ -9,6 +9,7 @@ import WinSDK
 
 public struct D3DConstantBufferViewDescription {
     public typealias RawValue = WinSDK.D3D12_CONSTANT_BUFFER_VIEW_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The D3D12_GPU_VIRTUAL_ADDRESS of the constant buffer. D3D12_GPU_VIRTUAL_ADDRESS is a typedef'd alias of UINT64.
@@ -39,7 +40,7 @@ public struct D3DConstantBufferViewDescription {
     */
     @inlinable @inline(__always)
     public init(location: D3DGPUVirtualAddress, size: UInt32) {
-        self.rawValue = RawValue(location.rawValue, size)
+        self.rawValue = RawValue(BufferLocation: location, SizeInBytes: size)
     }
 
     @inlinable @inline(__always)

@@ -10,6 +10,7 @@ import WinSDK
 /// Describes multi-sampling parameters for a resource.
 public struct DGISampleDescription {
     public typealias RawValue = WinSDK.DXGI_SAMPLE_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The number of multisamples per pixel.

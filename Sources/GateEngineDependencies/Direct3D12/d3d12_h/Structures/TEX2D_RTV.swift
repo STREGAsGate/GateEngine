@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the subresource from a 2D texture to use in a render-target view.
 public struct D3DTexture2DRenderTargetView {
     public typealias RawValue = WinSDK.D3D12_TEX2D_RTV
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The index of the mipmap level to use.

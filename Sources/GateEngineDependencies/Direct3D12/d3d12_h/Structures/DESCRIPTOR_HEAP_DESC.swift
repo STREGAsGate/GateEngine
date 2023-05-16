@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the descriptor heap.
 public struct D3DDescriptorHeapDescription {
     public typealias RawValue = WinSDK.D3D12_DESCRIPTOR_HEAP_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// A D3D12_DESCRIPTOR_HEAP_TYPE-typed value that specifies the types of descriptors in the heap.
@@ -64,7 +65,7 @@ public struct D3DDescriptorHeapDescription {
     */
     @inlinable @inline(__always)
     public init(type: D3DDescriptorHeapType, count: UInt32, flags: D3DDescriptorHeapFlags, multipleAdapterNodeMask: UInt32 = 0) {
-        self.rawValue = RawValue(type, count, flags, multipleAdapterNodeMask)
+        self.rawValue = RawValue(Type: type.rawValue, NumDescriptors: count, Flags: flags.rawType, NodeMask: multipleAdapterNodeMask)
     }
 
     @inlinable @inline(__always)

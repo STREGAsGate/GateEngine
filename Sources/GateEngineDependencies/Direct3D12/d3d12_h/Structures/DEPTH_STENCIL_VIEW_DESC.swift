@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the subresources of a texture that are accessible from a depth-stencil view.
 public struct D3DDepthStencilViewDescription {
     public typealias RawValue = WinSDK.D3D12_DEPTH_STENCIL_VIEW_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// A DXGI_FORMAT-typed value that specifies the viewing format. For allowable formats, see Remarks.

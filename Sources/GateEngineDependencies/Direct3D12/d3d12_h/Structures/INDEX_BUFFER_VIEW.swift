@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the index buffer to view.
 public struct D3DIndexBufferView {
     public typealias RawValue = WinSDK.D3D12_INDEX_BUFFER_VIEW
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The GPU virtual address of the index buffer. D3D12_GPU_VIRTUAL_ADDRESS is a typedef'd synonym of UINT64.
@@ -52,7 +53,7 @@ public struct D3DIndexBufferView {
     */
     @inlinable @inline(__always)
     public init(bufferLocation: D3DGPUVirtualAddress, byteCount: UInt32, format: DGIFormat) {
-        self.rawValue = RawValue(bufferLocation, byteCount, format)
+        self.rawValue = RawValue(BufferLocation: bufferLocation, SizeInBytes: byteCount, Format: format.rawValue)
     }
 }
 

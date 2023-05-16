@@ -16,6 +16,7 @@ extension Error {
 }
 
 public struct Error: Swift.Error {
+    @usableFromInline
     let kind: Kind
     
     @inlinable @inline(__always)

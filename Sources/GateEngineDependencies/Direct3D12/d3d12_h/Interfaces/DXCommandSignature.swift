@@ -14,6 +14,7 @@ public final class D3DCommandSignature: D3DPageable {
 }
 
 extension D3DCommandSignature {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12CommandSignature
 }
 extension D3DCommandSignature.RawValue {

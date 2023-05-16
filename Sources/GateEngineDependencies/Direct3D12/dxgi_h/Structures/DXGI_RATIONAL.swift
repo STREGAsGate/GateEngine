@@ -10,6 +10,7 @@ import WinSDK
 /// Represents a rational number.
 public struct DGIRational {
     public typealias RawValue = WinSDK.DXGI_RATIONAL 
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// An unsigned integer value representing the top of the rational number.

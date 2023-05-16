@@ -10,6 +10,7 @@ import WinSDK
 /// Describes stencil operations that can be performed based on the results of stencil test.
 public struct D3DDepthStencilOperationDescription {
     public typealias RawValue = WinSDK.D3D12_DEPTH_STENCILOP_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// A D3D12_STENCIL_OP-typed value that identifies the stencil operation to perform when stencil testing fails.

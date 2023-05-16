@@ -10,6 +10,7 @@ import WinSDK
 /// Describes an indirect argument (an indirect parameter), for use with a command signature.
 public struct D3DIndirectArgumentDescription {
     public typealias RawValue = WinSDK.D3D12_INDIRECT_ARGUMENT_DESC
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// A single D3D12_INDIRECT_ARGUMENT_TYPE enumeration constant.
@@ -37,7 +38,6 @@ public struct D3DIndirectArgumentDescription {
         }
     }
 
-    @inlinable @inline(__always)
     public struct Constant {
         /// Specifies the root index of the constant.
         var rootParameterIndex: UInt32
@@ -56,7 +56,6 @@ public struct D3DIndirectArgumentDescription {
         }
     }
 
-    @inlinable @inline(__always)
     public struct ConstantBufferView {
         /// Specifies the root index of the CBV.
         var rootParameterIndex: UInt32
@@ -71,7 +70,6 @@ public struct D3DIndirectArgumentDescription {
         }
     }
 
-    @inlinable @inline(__always)
     public struct ShaderResourceView {
         /// Specifies the root index of the SRV.
         var rootParameterIndex: UInt32
@@ -86,7 +84,6 @@ public struct D3DIndirectArgumentDescription {
         }
     }
 
-    @inlinable @inline(__always)
     public struct UnorderedAccessView {
         /// Specifies the root index of the UAV.
         var rootParameterIndex: UInt32

@@ -9,6 +9,7 @@ import WinSDK
 
 public struct D3DBox {
     public typealias RawValue = WinSDK.D3D12_BOX
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The x position of the left hand side of the box.

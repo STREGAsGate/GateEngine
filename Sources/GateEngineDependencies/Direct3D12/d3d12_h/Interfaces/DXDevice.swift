@@ -716,6 +716,7 @@ public final class D3DDevice: D3DObject {
         // }
     }
 
+    @inlinable @inline(__always)
     public init(adapter: DGIAdapter? = nil, minimumFeatureLevel featureLevel: D3DFeatureLevel = .v11) throws {
         let pAdapter = adapter?.perform(as: IUnknown.RawValue.self) {$0}
         let MinimumFeatureLevel = featureLevel.rawValue
@@ -726,15 +727,18 @@ public final class D3DDevice: D3DObject {
         super.init(winSDKPointer: p)!
     }
 
+    @inlinable @inline(__always)
     required init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: IUnknown.MemoryManagment = .alreadyRetained) {
         super.init(winSDKPointer: pointer, memoryManagment: memoryManagment)
     }
 }
 
 extension D3DDevice {
+    @usableFromInline
     typealias RawValue = WinSDK.ID3D12Device5
 }
 extension D3DDevice.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: IID {WinSDK.IID_ID3D12Device5}
 }
 

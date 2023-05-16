@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the size of a tiled region.
 public struct D3DTileRegionSize {
     public typealias RawValue = WinSDK.D3D12_TILE_REGION_SIZE
+    @usableFromInline
     var rawValue: RawValue
 
     /// The number of tiles in the tiled region.

@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the footprint of a placed subresource, including the offset and the D3D12_SUBRESOURCE_FOOTPRINT.
 public struct D3DPlacedSubresourceFootprint {
     public typealias RawValue = WinSDK.D3D12_PLACED_SUBRESOURCE_FOOTPRINT
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The offset of the subresource within the parent resource, in bytes. The offset between the start of the parent resource and this subresource.

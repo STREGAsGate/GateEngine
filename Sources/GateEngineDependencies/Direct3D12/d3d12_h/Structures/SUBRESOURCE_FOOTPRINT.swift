@@ -10,6 +10,7 @@ import WinSDK
 /// Describes the format, width, height, depth, and row-pitch of the subresource into the parent resource.
 public struct D3DSubresourceFootprint {
     public typealias RawValue = WinSDK.D3D12_SUBRESOURCE_FOOTPRINT
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// A DXGI_FORMAT-typed value that specifies the viewing format.

@@ -10,6 +10,7 @@ import WinSDK
 /// Describes parameters needed to allocate resources.
 public struct D3DResourceAllocationInfo {
     public typealias RawValue = WinSDK.D3D12_RESOURCE_ALLOCATION_INFO
+    @usableFromInline
     internal var rawValue: RawValue
 
     /// The size, in bytes, of the resource.
