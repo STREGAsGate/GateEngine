@@ -652,6 +652,7 @@ extension DX12Renderer {
         device.createShaderResourceView(resource: resource, description: srvDesc, destination: blockDestination)
     }
 
+    @_optimize(none) // Prevent compiler crash on release builds
     static func checkError(_ error: Swift.Error, function: String = #function, line: Int = #line) -> Never {
         print("[GateEngine] Error:", error)
 
