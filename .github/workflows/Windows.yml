@@ -9,7 +9,6 @@ on:
 
 jobs:
   Build_Test-Windows:
-    if: false
     runs-on: windows-latest
     steps:
       - uses: compnerd/gha-setup-swift@main
@@ -24,6 +23,7 @@ jobs:
         run: swift test
 
   Build_Test-Windows-10_0_19041_685:
+    if: false
     runs-on: windows-latest
     env:
         SNAPSHOT: "https://download.swift.org/swift-5.8-release/windows10/swift-5.8-RELEASE/swift-5.8-RELEASE-windows10.exe"
