@@ -37,12 +37,7 @@ class UIKitPlatform: InternalPlatform {
     func loadResource(from path: String) async throws -> Data {
         if let path = await locateResource(from: path) {
             do {
-                let url: URL
-                if #available(iOS 16.0, *) {
-                    url = URL(filePath: path)
-                } else {
-                    url = URL(fileURLWithPath: path)
-                }
+                let url = URL(fileURLWithPath: path)
                 return try Data(contentsOf: url, options: .mappedIfSafe)
             }catch{
                 print("[GateEngine] Error: Failed to load resource \(path).")
