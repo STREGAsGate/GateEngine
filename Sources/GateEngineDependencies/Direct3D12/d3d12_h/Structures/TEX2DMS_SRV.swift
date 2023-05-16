@@ -11,6 +11,7 @@ public struct D3DTexture2DMultiSampledShaderResourceView {
     public typealias RawValue = WinSDK.D3D12_TEX2DMS_SRV
     internal var rawValue: RawValue
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

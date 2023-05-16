@@ -13,6 +13,7 @@ public struct D3DDepthStencilOperationDescription {
     internal var rawValue: RawValue
 
     /// A D3D12_STENCIL_OP-typed value that identifies the stencil operation to perform when stencil testing fails.
+    @inlinable @inline(__always)
     public var failureOperation: D3DStencilOperation {
         get {
             return D3DStencilOperation(rawValue.StencilFailOp)
@@ -23,6 +24,7 @@ public struct D3DDepthStencilOperationDescription {
     }
 
     /// A D3D12_STENCIL_OP-typed value that identifies the stencil operation to perform when stencil testing passes and depth testing fails.
+    @inlinable @inline(__always)
     public var depthFailureOperation: D3DStencilOperation {
         get {
             return D3DStencilOperation(rawValue.StencilDepthFailOp)
@@ -33,6 +35,7 @@ public struct D3DDepthStencilOperationDescription {
     }
 
     /// A D3D12_STENCIL_OP-typed value that identifies the stencil operation to perform when stencil testing and depth testing both pass.
+    @inlinable @inline(__always)
     public var successOperation: D3DStencilOperation {
         get {
             return D3DStencilOperation(rawValue.StencilPassOp)
@@ -43,6 +46,7 @@ public struct D3DDepthStencilOperationDescription {
     }
 
     /// A D3D12_COMPARISON_FUNC-typed value that identifies the function that compares stencil data against existing stencil data.
+    @inlinable @inline(__always)
     public var comparisonFunction: D3DComparisonFunction {
         get {
             return D3DComparisonFunction(rawValue.StencilFunc)
@@ -58,7 +62,8 @@ public struct D3DDepthStencilOperationDescription {
     - parameter successOperation: A D3D12_STENCIL_OP-typed value that identifies the stencil operation to perform when stencil testing and depth testing both pass.
     - parameter comparisonFunction: A D3D12_COMPARISON_FUNC-typed value that identifies the function that compares stencil data against existing stencil data.
     */
-    public init(failureOperation: D3DStencilOperation, 
+    @inlinable @inline(__always)
+    public init(failureOperation: D3DStencilOperation,
                 depthFailureOperation: D3DStencilOperation, 
                 successOperation: D3DStencilOperation, 
                 comparisonFunction: D3DComparisonFunction) {
@@ -70,10 +75,12 @@ public struct D3DDepthStencilOperationDescription {
     }
 
     /// Describes stencil operations that can be performed based on the results of stencil test.
+    @inlinable @inline(__always)
     public init() {
         self.rawValue = RawValue()
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

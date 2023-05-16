@@ -26,12 +26,14 @@ public struct D3DShaderComponentMap {
 
     public static let `default` = D3DShaderComponentMap(mapRedTo: .red, mapGreenTo: .green, mapBlueTo: .blue, mapAlphaTo: .alpha)
 
+    @inlinable @inline(__always)
     public static func encode(_ src0: RawValue, _ src1: RawValue, _ src2: RawValue, _ src3: RawValue) -> RawValue {
         let D3D12_SHADER_COMPONENT_MAPPING_MASK: RawValue = 0x7
         let D3D12_SHADER_COMPONENT_MAPPING_SHIFT: RawValue = 3
         return ((((src0)&D3D12_SHADER_COMPONENT_MAPPING_MASK) | (((src1)&D3D12_SHADER_COMPONENT_MAPPING_MASK)<<D3D12_SHADER_COMPONENT_MAPPING_SHIFT) | (((src2)&D3D12_SHADER_COMPONENT_MAPPING_MASK)<<(D3D12_SHADER_COMPONENT_MAPPING_SHIFT*2)) | (((src3)&D3D12_SHADER_COMPONENT_MAPPING_MASK)<<(D3D12_SHADER_COMPONENT_MAPPING_SHIFT*3)) | (1<<(D3D12_SHADER_COMPONENT_MAPPING_SHIFT*4))))
     }
 
+    @inlinable @inline(__always)
     public static func decodeComponent(mappedTo mapping: D3DShaderComponentMapping, from rawValue: RawValue) -> RawValue {
         let D3D12_SHADER_COMPONENT_MAPPING_MASK: RawValue = 0x7
         let D3D12_SHADER_COMPONENT_MAPPING_SHIFT: RawValue = 3
@@ -61,6 +63,7 @@ public enum D3DShaderComponentMapping {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
 
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .red:
@@ -80,6 +83,7 @@ public enum D3DShaderComponentMapping {
         }
     }
 
+    @inlinable @inline(__always)
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_0:

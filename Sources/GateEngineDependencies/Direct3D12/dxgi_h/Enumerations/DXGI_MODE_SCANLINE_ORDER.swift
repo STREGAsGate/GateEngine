@@ -23,6 +23,7 @@ public enum DGIModeScanlineOrder {
 
     case _unimplemented(RawValue)
     
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .unspecified:
@@ -38,6 +39,7 @@ public enum DGIModeScanlineOrder {
         }
     }
 
+    @inlinable @inline(__always)
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED:

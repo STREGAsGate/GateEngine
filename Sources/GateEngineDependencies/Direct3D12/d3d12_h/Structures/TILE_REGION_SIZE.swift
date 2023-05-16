@@ -13,6 +13,7 @@ public struct D3DTileRegionSize {
     var rawValue: RawValue
 
     /// The number of tiles in the tiled region.
+    @inlinable @inline(__always)
     public var tileCount: UInt32 {
         get {
             return rawValue.NumTiles
@@ -30,6 +31,7 @@ public struct D3DTileRegionSize {
 
     When the region includes mipmaps that are packed with nonstandard tiling, UseBox must be FALSE because tile dimensions are not standard and the app only knows a count of how many tiles are consumed by the packed area, which is per array slice. The corresponding (separate) starting location parameter uses x to offset into the flat range of tiles in this case, and y and z coordinates must each be 0.
     */
+    @inlinable @inline(__always)
     public var useBox: Bool {
         get {
             return rawValue.UseBox.boolValue
@@ -40,6 +42,7 @@ public struct D3DTileRegionSize {
     }
 
     /// The width of the tiled region, in tiles. Used for buffer and 1D, 2D, and 3D textures.
+    @inlinable @inline(__always)
     public var width: UInt32 {
         get {
             return rawValue.Width
@@ -50,6 +53,7 @@ public struct D3DTileRegionSize {
     }
 
     /// The height of the tiled region, in tiles. Used for 2D and 3D textures.
+    @inlinable @inline(__always)
     public var height: UInt16 {
         get {
             return rawValue.Height
@@ -60,6 +64,7 @@ public struct D3DTileRegionSize {
     }
 
     /// The depth of the tiled region, in tiles. Used for 3D textures or arrays. For arrays, used for advancing in depth jumps to next slice of same mipmap size, which isn't contiguous in the subresource counting space if there are multiple mipmaps.
+    @inlinable @inline(__always)
     public var depth: UInt16 {
         get {
             return rawValue.Depth
@@ -76,6 +81,7 @@ public struct D3DTileRegionSize {
     - parameter height: The height of the tiled region, in tiles. Used for 2D and 3D textures.
     - parameter depth: The depth of the tiled region, in tiles. Used for 3D textures or arrays. For arrays, used for advancing in depth jumps to next slice of same mipmap size, which isn't contiguous in the subresource counting space if there are multiple mipmaps.
     */
+    @inlinable @inline(__always)
     public init(tileCount: UInt32,
                 useBox: Bool,
                 width: UInt32,
@@ -88,6 +94,7 @@ public struct D3DTileRegionSize {
                                  Depth: depth)
     }
 
+    @inlinable @inline(__always)
     init(rawValue: RawValue) {
         self.rawValue = rawValue
     }

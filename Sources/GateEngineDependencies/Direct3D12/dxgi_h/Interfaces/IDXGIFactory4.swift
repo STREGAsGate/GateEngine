@@ -10,6 +10,7 @@ import WinSDK
 public extension DGIFactory {
     
     /// Provides an adapter which can be provided to D3D12CreateDevice to use the WARP renderer.
+    @inlinable @inline(__always)
     func enumWarpAdapter() throws -> DGIAdapter {
         return try perform(as: RawValue.self) {pThis in
             var riid = DGIAdapter.interfaceID

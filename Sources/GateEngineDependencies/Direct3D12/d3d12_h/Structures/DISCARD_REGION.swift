@@ -13,6 +13,7 @@ public struct D3DDiscardRegion {
     internal var rawValue: RawValue
 
     /// An array of D3D12_RECT structures for the rectangles in the resource to discard. If NULL, DiscardResource discards the entire resource.
+    @inlinable @inline(__always)
     public var regions: [D3DRect] {
         get {
             return withUnsafePointer(to: rawValue.pRects) {p in
@@ -28,9 +29,11 @@ public struct D3DDiscardRegion {
             rawValue.NumRects = UInt32(newValue.count)
         }
     }
+    @usableFromInline
     private var _regions: [WinSDK.RECT]! = nil
 
     /// Index of the first subresource in the resource to discard.
+    @inlinable @inline(__always)
     public var subresourceIndex: UInt32 {
         get {
             return rawValue.FirstSubresource
@@ -41,6 +44,7 @@ public struct D3DDiscardRegion {
     }
 
     /// The number of subresources in the resource to discard.
+    @inlinable @inline(__always)
     public var subresourceCount: UInt32 {
         get {
             return rawValue.NumSubresources
@@ -55,6 +59,7 @@ public struct D3DDiscardRegion {
     - parameter subresourceIndex: Index of the first subresource in the resource to discard.
     = parameter subresourceCount: The number of subresources in the resource to discard.
     */
+    @inlinable @inline(__always)
     public init(regions: [D3DRect], subresourceIndex: UInt32, subresourceCount: UInt32) {
         self.rawValue = RawValue()
         self.regions = regions
@@ -62,6 +67,7 @@ public struct D3DDiscardRegion {
         self.subresourceCount = subresourceCount
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

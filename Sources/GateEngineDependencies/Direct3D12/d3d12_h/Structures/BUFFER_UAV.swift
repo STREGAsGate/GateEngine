@@ -13,6 +13,7 @@ public struct D3DUnorderedAccessViewBuffer {
     internal var rawValue: RawValue
 
     /// The zero-based index of the first element to be accessed.
+    @inlinable @inline(__always)
     public var index: UInt64 {
         get {
             return rawValue.FirstElement
@@ -23,6 +24,7 @@ public struct D3DUnorderedAccessViewBuffer {
     }
 
     /// The number of elements in the resource. For structured buffers, this is the number of structures in the buffer.
+    @inlinable @inline(__always)
     public var count: UInt32 {
         get {
             return rawValue.NumElements
@@ -33,6 +35,7 @@ public struct D3DUnorderedAccessViewBuffer {
     }
 
     /// The size of each element in the buffer structure (in bytes) when the buffer represents a structured buffer.
+    @inlinable @inline(__always)
     public var stride: UInt32 {
         get {
             return rawValue.StructureByteStride
@@ -43,6 +46,7 @@ public struct D3DUnorderedAccessViewBuffer {
     }
 
     /// The counter offset, in bytes.
+    @inlinable @inline(__always)
     public var counterOffset: UInt64 {
         get {
             return rawValue.CounterOffsetInBytes
@@ -53,6 +57,7 @@ public struct D3DUnorderedAccessViewBuffer {
     }
 
     /// A D3D12_BUFFER_UAV_FLAGS-typed value that specifies the view options for the resource.
+    @inlinable @inline(__always)
     public var flags: D3DBufferUnorderedAccessViewFlags {
         get {
             return D3DBufferUnorderedAccessViewFlags(rawValue.Flags)
@@ -69,15 +74,12 @@ public struct D3DUnorderedAccessViewBuffer {
     - parameter counterOffset: The counter offset, in bytes.
     - parameter flags: A D3D12_BUFFER_UAV_FLAGS-typed value that specifies the view options for the resource.
     */
+    @inlinable @inline(__always)
     public init(index: UInt64, count: UInt32, stride: UInt32, counterOffset: UInt64, flags: D3DBufferUnorderedAccessViewFlags) {
-        self.rawValue = RawValue()
-        self.index = index
-        self.count = count
-        self.stride = stride
-        self.counterOffset = counterOffset
-        self.flags = flags
+        self.rawValue = RawValue(index, count, stride, counterOffset, flags.rawValue)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

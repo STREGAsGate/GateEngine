@@ -21,6 +21,7 @@ public enum D3DCullMode {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
 
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .disabled:
@@ -34,6 +35,7 @@ public enum D3DCullMode {
         }
     }
 
+    @inlinable @inline(__always)
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_CULL_MODE_NONE:

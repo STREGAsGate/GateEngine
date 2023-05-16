@@ -11,11 +11,12 @@ public struct DGIPresentParameters {
     public typealias RawValue = WinSDK.DXGI_PRESENT_PARAMETERS
     internal var rawValue: RawValue
 
-
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }
 
+    @inlinable @inline(__always)
     public static let `fullFrame`: DGIPresentParameters = {
         var params = WinSDK.DXGI_PRESENT_PARAMETERS()
         params.DirtyRectsCount = 0

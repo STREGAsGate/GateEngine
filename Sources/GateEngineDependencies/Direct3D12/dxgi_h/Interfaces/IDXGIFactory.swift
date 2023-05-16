@@ -12,6 +12,7 @@ public final class DGIFactory: DGIObject {
     /** Enumerates the adapters (video cards).
     - parameter index: The index of the adapter to enumerate.
     */
+    @inlinable @inline(__always)
     public func enumAdapter(at index: UInt32) throws -> DGIAdapter {
         return try perform(as: RawValue.self) {pThis in 
             let Adapter = index
@@ -25,6 +26,7 @@ public final class DGIFactory: DGIObject {
     /** Allows DXGI to monitor an application's message queue for the alt-enter key sequence (which causes the application to switch from windowed to full screen or vice versa).
     - parameter hWnd: The handle of the window that is to be monitored. This parameter can be NULL; but only if Flags is also 0.
     */
+    @inlinable @inline(__always)
     public func makeWindowAssociation(_ hWnd: HWND, flags: UInt32) throws {
         try perform(as: RawValue.self) {pThis in
             try pThis.pointee.lpVtbl.pointee.MakeWindowAssociation(pThis, hWnd, flags).checkResult(self, #function)
@@ -32,6 +34,7 @@ public final class DGIFactory: DGIObject {
     }
 
     /// Creates an appropriate D3DDevice
+    @inlinable @inline(__always)
     public func createDefaultDevice() throws -> D3DDevice {
         do {
             let adapter = try enumAdapter(at: 0)
@@ -67,6 +70,7 @@ public final class DGIFactory: DGIObject {
         super.init(winSDKPointer: pointer, memoryManagment: memoryManagment)
     }
 
+    @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -74,6 +78,7 @@ extension DGIFactory {// Always use Factory4
     typealias RawValue = WinSDK.IDXGIFactory4
 }
 extension DGIFactory.RawValue {// Always use Factory4
+    @inlinable @inline(__always)
     static var interfaceID: WinSDK.IID {WinSDK.IID_IDXGIFactory4}
 }
 

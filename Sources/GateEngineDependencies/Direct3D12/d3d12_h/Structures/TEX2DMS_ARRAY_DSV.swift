@@ -13,6 +13,7 @@ public struct D3DTexture2DMultiSampledArrayDepthStencilView {
     internal var rawValue: RawValue
 
     /// The index of the first texture to use in an array of textures.
+    @inlinable @inline(__always)
     public var textureIndex: UInt32 {
         get {
             return rawValue.FirstArraySlice
@@ -23,6 +24,7 @@ public struct D3DTexture2DMultiSampledArrayDepthStencilView {
     }
 
     /// Number of textures to use.
+    @inlinable @inline(__always)
     public var textureCount: UInt32 {
         get {
             return rawValue.ArraySize
@@ -36,10 +38,12 @@ public struct D3DTexture2DMultiSampledArrayDepthStencilView {
     - parameter firstArraySlice: The index of the first texture to use in an array of textures.
     - parameter arraySize: Number of textures to use.
     */
+    @inlinable @inline(__always)
     public init(textureIndex: UInt32, textureCount: UInt32) {
         self.rawValue = RawValue(FirstArraySlice: textureIndex, ArraySize: textureCount)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

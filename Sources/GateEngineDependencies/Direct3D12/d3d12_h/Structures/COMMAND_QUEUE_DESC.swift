@@ -13,6 +13,7 @@ public struct D3DCommandQueueDescription {
     internal var rawValue: RawValue
 
     /// Specifies one member of D3D12_COMMAND_LIST_TYPE.
+    @inlinable @inline(__always)
     public var type: D3DCommandListType {
         get {
             return D3DCommandListType(rawValue: self.rawValue.Type)
@@ -23,6 +24,7 @@ public struct D3DCommandQueueDescription {
     }
 
     /// The priority for the command queue, as a D3D12_COMMAND_QUEUE_PRIORITYenumeration constant to select normal or high priority.
+    @inlinable @inline(__always)
     public var priority: D3DCommandQueuePriority {
         get {
             return D3DCommandQueuePriority(rawValue: self.rawValue.Priority)
@@ -33,6 +35,7 @@ public struct D3DCommandQueueDescription {
     }
 
     /// Specifies any flags from the D3D12_COMMAND_QUEUE_FLAGS enumeration.
+    @inlinable @inline(__always)
     public var flags: D3DCommandQueueFlags {
         get {
             return D3DCommandQueueFlags(rawValue: self.rawValue.Flags.rawValue)
@@ -43,6 +46,7 @@ public struct D3DCommandQueueDescription {
     }
 
     /// For single GPU operation, set this to zero. If there are multiple GPU nodes, set a bit to identify the node (the device's physical adapter) to which the command queue applies. Each bit in the mask corresponds to a single node. Only 1 bit must be set. Refer to Multi-adapter systems.
+    @inlinable @inline(__always)
     public var multipleAdapterNodeMask: UInt32 {
         get {
             return self.rawValue.NodeMask
@@ -58,14 +62,12 @@ public struct D3DCommandQueueDescription {
     - parameter flags: Specifies any flags from the D3D12_COMMAND_QUEUE_FLAGS enumeration.
     - parameter multipleAdapterNodeMask: For single GPU operation, set this to zero. If there are multiple GPU nodes, set a bit to identify the node (the device's physical adapter) to which the command queue applies. Each bit in the mask corresponds to a single node. Only 1 bit must be set. Refer to Multi-adapter systems.
     */
+    @inlinable @inline(__always)
     public init(type: D3DCommandListType, priority: D3DCommandQueuePriority = .normal, flags: D3DCommandQueueFlags = [], multipleAdapterNodeMask: UInt32 = 0) {
-        self.rawValue = RawValue()
-        self.type = type
-        self.priority = priority
-        self.flags = flags
-        self.multipleAdapterNodeMask = multipleAdapterNodeMask
+        self.rawValue = RawValue(type, priority, flags, multipleAdapterNodeMask)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

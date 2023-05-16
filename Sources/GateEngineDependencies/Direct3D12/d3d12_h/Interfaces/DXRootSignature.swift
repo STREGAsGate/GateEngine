@@ -9,7 +9,7 @@ import WinSDK
 
 /// The root signature defines what resources are bound to the graphics pipeline. A root signature is configured by the app and links command lists to the resources the shaders require. Currently, there is one graphics and one compute root signature per app.
 public final class D3DRootSignature: D3DDeviceChild {
-
+    @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -17,6 +17,7 @@ extension D3DRootSignature {
     public typealias RawValue = WinSDK.ID3D12RootSignature
 }
 extension D3DRootSignature.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12RootSignature}
 }
 

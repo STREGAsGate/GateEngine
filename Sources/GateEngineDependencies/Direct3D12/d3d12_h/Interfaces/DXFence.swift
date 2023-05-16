@@ -11,6 +11,7 @@ import WinSDK
 public final class D3DFence: D3DPageable {
     
     /// Gets the current value of the fence.
+    @inlinable @inline(__always)
     public var value: UInt64 {
         return performFatally(as: RawValue.self) {pThis in
             return pThis.pointee.lpVtbl.pointee.GetCompletedValue(pThis)
@@ -21,6 +22,7 @@ public final class D3DFence: D3DPageable {
     - parameter handle: A handle to the event object.
     - parameter value: The fence value when the event is to be signaled.
     */
+    @inlinable @inline(__always)
     public func setCompletionEvent(_ handle: HANDLE?, whenValueIs value: UInt64) throws {
         try perform(as: RawValue.self) {pThis in
             let Value = value
@@ -32,6 +34,7 @@ public final class D3DFence: D3DPageable {
     /** Sets the fence to the specified value.
     - parameter value: The value to set the fence to.
     */
+    @inlinable @inline(__always)
     public func signal(_ value: UInt64) throws {
         try perform(as: RawValue.self) {pThis in
             let Value = value
@@ -39,6 +42,7 @@ public final class D3DFence: D3DPageable {
         }
     }
 
+    @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {
         // if #available(Windows 10.0.16299, *) {
         //     return RawValue1.interfaceID//ID3D12Fence1
@@ -52,9 +56,8 @@ extension D3DFence {
     typealias RawValue = WinSDK.ID3D12Fence
 }
 extension D3DFence.RawValue {
-    static var interfaceID: WinSDK.IID {
-        return WinSDK.IID_ID3D12Fence
-    }
+    @inlinable @inline(__always)
+    static var interfaceID: WinSDK.IID {\WinSDK.IID_ID3D12Fence}
 }
 
 //MARK: - Original Style API

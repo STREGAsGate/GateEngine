@@ -25,9 +25,11 @@ public struct DGIUsage: OptionSet {
     public static let discardOnPresent = DGIUsage(rawValue: DXGI_USAGE_DISCARD_ON_PRESENT)
     public static let unorderedAccess = DGIUsage(rawValue: DXGI_USAGE_UNORDERED_ACCESS)
 
+    @inlinable @inline(__always)
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
+    @inlinable @inline(__always)
     public init() {
         self.rawValue = 0
     }

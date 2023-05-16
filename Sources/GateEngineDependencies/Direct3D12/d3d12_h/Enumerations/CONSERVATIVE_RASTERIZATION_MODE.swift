@@ -19,6 +19,7 @@ public enum D3DConservativeRasterizationMode {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
 
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .off:
@@ -30,6 +31,7 @@ public enum D3DConservativeRasterizationMode {
         }
     }
 
+    @inlinable @inline(__always)
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF:

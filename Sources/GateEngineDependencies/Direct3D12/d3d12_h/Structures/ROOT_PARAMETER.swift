@@ -33,6 +33,7 @@ public struct D3DRootParameter {
     - parameter descriptor: A D3D12_ROOT_DESCRIPTOR structure that describes descriptors inline in the root signature that appear in shaders.
     - parameter shaderVisibility: A D3D12_SHADER_VISIBILITY-typed value that specifies the shaders that can access the contents of the root signature slot.
     */
+    @inlinable @inline(__always)
     public init(type: D3DRootParameterType,
                 descriptorTable: D3DRootDescriptorTable,
                 constants: D3DRootConstants = D3DRootConstants(),
@@ -45,6 +46,7 @@ public struct D3DRootParameter {
         self.shaderVisibility = shaderVisibility
     }
 
+    @inlinable @inline(__always)
     internal func withUnsafeRawValue<ResultType>(_ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
         return try descriptorTable.withUnsafeRawValue {DescriptorTable in
             var rawValue = RawValue()

@@ -78,6 +78,7 @@ public enum D3DFeature {
     @available(Windows, introduced: 10.0.19041)//Possibly available earlier
     case protectedResourceSessionTypes
 
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .options:

@@ -21,6 +21,7 @@ public enum DGIModeScaling {
 
     case _unimplemented(RawValue)
     
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .unspecified:
@@ -34,6 +35,7 @@ public enum DGIModeScaling {
         }
     }
 
+    @inlinable @inline(__always)
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.DXGI_MODE_SCALING_UNSPECIFIED:

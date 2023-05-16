@@ -13,6 +13,7 @@ public struct DGISwapChainFullscreenDescription {
     internal var rawValue: RawValue
 
     /// A DXGI_RATIONAL structure that describes the refresh rate in hertz.
+    @inlinable @inline(__always)
     public var refreshRate: DGIRational {
         get {
             return DGIRational(rawValue.RefreshRate)
@@ -23,6 +24,7 @@ public struct DGISwapChainFullscreenDescription {
     }
 
     /// A member of the DXGI_MODE_SCANLINE_ORDER enumerated type that describes the scan-line drawing mode.
+    @inlinable @inline(__always)
     public var scanlineOrdering: DGIModeScanlineOrder {
         get {
             return DGIModeScanlineOrder(rawValue.ScanlineOrdering)
@@ -33,6 +35,7 @@ public struct DGISwapChainFullscreenDescription {
     }
 
     /// A member of the DXGI_MODE_SCALING enumerated type that describes the scaling mode.
+    @inlinable @inline(__always)
     public var scaling: DGIModeScaling {
         get {
             return DGIModeScaling(rawValue.Scaling)
@@ -43,6 +46,7 @@ public struct DGISwapChainFullscreenDescription {
     }
 
     /// A Boolean value that specifies whether the swap chain is in windowed mode. TRUE if the swap chain is in windowed mode; otherwise, FALSE.
+    @inlinable @inline(__always)
     public var isWindowed: Bool {
         get {
             return rawValue.Windowed.boolValue
@@ -58,7 +62,8 @@ public struct DGISwapChainFullscreenDescription {
     - parameter scaling: A member of the DXGI_MODE_SCALING enumerated type that describes the scaling mode.
     - parameter isWindowed: A Boolean value that specifies whether the swap chain is in windowed mode. TRUE if the swap chain is in windowed mode; otherwise, FALSE.
     */
-    public init(refreshRate: DGIRational, 
+    @inlinable @inline(__always)
+    public init(refreshRate: DGIRational,
                 scanlineOrdering: DGIModeScanlineOrder = .unspecified,
                 scaling: DGIModeScaling = .unspecified,
                 isWindowed: Bool = true) {
@@ -69,6 +74,7 @@ public struct DGISwapChainFullscreenDescription {
         self.isWindowed = isWindowed
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

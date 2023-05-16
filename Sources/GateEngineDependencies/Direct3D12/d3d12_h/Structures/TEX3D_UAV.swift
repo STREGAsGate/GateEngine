@@ -12,6 +12,7 @@ public struct D3DTexture3DUnorderedAccessView {
     internal var rawValue: RawValue
 
     /// The index of the mipmap level to use.
+    @inlinable @inline(__always)
     public var mipIndex: UInt32 {
         get {
             return rawValue.MipSlice
@@ -22,6 +23,7 @@ public struct D3DTexture3DUnorderedAccessView {
     }
 
     /// First depth level to use.
+    @inlinable @inline(__always)
     public var depthIndex: UInt32 {
         get {
             return rawValue.FirstWSlice
@@ -32,6 +34,7 @@ public struct D3DTexture3DUnorderedAccessView {
     }
 
     /// Number of depth levels to use in the render-target view, starting from FirstWSlice. A value of -1 indicates all of the slices along the w axis, starting from FirstWSlice.
+    @inlinable @inline(__always)
     public var depthCount: UInt32 {
         get {
             return rawValue.WSize
@@ -46,10 +49,12 @@ public struct D3DTexture3DUnorderedAccessView {
     - parameter depthIndex: First depth level to use.
     - parameter depthCount: Number of depth levels to use in the render-target view, starting from FirstWSlice. A value of -1 indicates all of the slices along the w axis, starting from FirstWSlice.
     */
+    @inlinable @inline(__always)
     public init(mipIndex: UInt32, depthIndex: UInt32, depthCount: UInt32) {
         self.rawValue = RawValue(MipSlice: mipIndex, FirstWSlice: depthIndex, WSize: depthCount)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

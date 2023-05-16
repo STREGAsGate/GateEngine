@@ -13,6 +13,7 @@ public struct D3DRenderTargetViewBuffer {
     internal var rawValue: RawValue
 
     /// Number of bytes between the beginning of the buffer and the first element to access.
+    @inlinable @inline(__always)
     public var index: UInt64 {
         get {
             return rawValue.FirstElement
@@ -23,6 +24,7 @@ public struct D3DRenderTargetViewBuffer {
     }
 
     /// The total number of elements in the view.
+    @inlinable @inline(__always)
     public var count: UInt32 {
         get {
             return rawValue.NumElements
@@ -36,10 +38,12 @@ public struct D3DRenderTargetViewBuffer {
     - parameter index: Number of bytes between the beginning of the buffer and the first element to access.
     - parameter count: The total number of elements in the view.
     */
+    @inlinable @inline(__always)
     public init(index: UInt64, count: UInt32) {
         self.rawValue = RawValue(FirstElement: index, NumElements: count)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

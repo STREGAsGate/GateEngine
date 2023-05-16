@@ -8,13 +8,16 @@
 import WinSDK
 
 public class IUnknown {
-    private let pUnk: UnsafeMutableRawPointer
+    @usableFromInline
+    internal let pUnk: UnsafeMutableRawPointer
 
+    @inlinable @inline(__always)
     func perform<Type, ResultType>(as type: Type.Type, body: (_ pThis: UnsafeMutablePointer<Type>) throws -> ResultType) rethrows -> ResultType {
         let pThis = pUnk.bindMemory(to: Type.self, capacity: 1)
         return try body(pThis)
     }
 
+    @inlinable @inline(__always)
     func performFatally<Type, ResultType>(as type: Type.Type, body: (_ pThis: UnsafeMutablePointer<Type>) throws -> ResultType) -> ResultType {
         do {
             let pThis = pUnk.bindMemory(to: Type.self, capacity: 1)
@@ -39,24 +42,28 @@ public class IUnknown {
         }
     }
 
+    @inlinable @inline(__always)
     internal func retain() {
         self.performFatally(as: WinSDK.IUnknown.self) {pThis in
             _ = pThis.pointee.lpVtbl.pointee.AddRef(pThis)
         }
     }
 
+    @inlinable @inline(__always)
     internal func release() {
         self.performFatally(as: WinSDK.IUnknown.self) {pThis in
             _ = pThis.pointee.lpVtbl.pointee.Release(pThis)
         }
     }
 
+    @inlinable @inline(__always)
     public func fullRelease() {
         self.performFatally(as: WinSDK.IUnknown.self) {pThis in
             while pThis.pointee.lpVtbl.pointee.Release(pThis) > 0 {}
         }
     }
 
+    @inlinable @inline(__always)
     public func queryInterface<T: IUnknown>(_ type: T.Type) -> T? {
         return self.perform(as: WinSDK.IUnknown.self) { pThis in
             

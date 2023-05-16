@@ -13,6 +13,7 @@ public struct D3DUnorderedAccessViewDescription {
     internal var rawValue: RawValue
 
     /// A DXGI_FORMAT-typed value that specifies the viewing format.
+    @inlinable @inline(__always)
     public var format: DGIFormat {
         get {
             return DGIFormat(rawValue.Format)
@@ -23,6 +24,7 @@ public struct D3DUnorderedAccessViewDescription {
     }
 
     /// A D3D12_UAV_DIMENSION-typed value that specifies the resource type of the view. This type specifies how the resource will be accessed. This member also determines which _UAV to use in the union below.
+    @inlinable @inline(__always)
     public var dimension: D3DUnorderedAccessViewDimension {
         get {
             return D3DUnorderedAccessViewDimension(rawValue.ViewDimension)
@@ -33,6 +35,7 @@ public struct D3DUnorderedAccessViewDescription {
     }
 
     /// A D3D12_BUFFER_UAV structure that specifies which buffer elements can be accessed.
+    @inlinable @inline(__always)
     public var buffer: D3DUnorderedAccessViewBuffer {
         get {
             return D3DUnorderedAccessViewBuffer(rawValue.Buffer)
@@ -43,6 +46,7 @@ public struct D3DUnorderedAccessViewDescription {
     }
 
     /// A D3D12_TEX1D_UAV structure that specifies the subresources in a 1D texture that can be accessed.
+    @inlinable @inline(__always)
     public var texture1D: D3DTexture1DUnorderedAccessView {
         get {
             return D3DTexture1DUnorderedAccessView(rawValue.Texture1D)
@@ -53,6 +57,7 @@ public struct D3DUnorderedAccessViewDescription {
     }
 
     /// A D3D12_TEX1D_ARRAY_UAV structure that specifies the subresources in a 1D texture array that can be accessed.
+    @inlinable @inline(__always)
     public var texture1DArray: D3DTexture1DArrayUnorderedAccessView {
         get {
             return D3DTexture1DArrayUnorderedAccessView(rawValue.Texture1DArray)
@@ -63,6 +68,7 @@ public struct D3DUnorderedAccessViewDescription {
     }
 
     /// A D3D12_TEX2D_UAV structure that specifies the subresources in a 2D texture that can be accessed.
+    @inlinable @inline(__always)
     public var texture2D: D3DTexture2DUnorderedAccessView {
         get {
             return D3DTexture2DUnorderedAccessView(rawValue.Texture2D)
@@ -73,6 +79,7 @@ public struct D3DUnorderedAccessViewDescription {
     }
 
     /// A D3D12_TEX2D_ARRAY_UAV structure that specifies the subresources in a 2D texture array that can be accessed.
+    @inlinable @inline(__always)
     public var texture2DArray: D3DTexture2DArrayUnorderedAccessView {
         get {
             return D3DTexture2DArrayUnorderedAccessView(rawValue.Texture2DArray)
@@ -83,6 +90,7 @@ public struct D3DUnorderedAccessViewDescription {
     }
 
     /// A D3D12_TEX3D_UAV structure that specifies subresources in a 3D texture that can be accessed.
+    @inlinable @inline(__always)
     public var texture3D: D3DTexture3DUnorderedAccessView {
         get {
             return D3DTexture3DUnorderedAccessView(rawValue.Texture3D)
@@ -102,6 +110,7 @@ public struct D3DUnorderedAccessViewDescription {
     - parameter texture2DArray: A D3D12_TEX2D_ARRAY_UAV structure that specifies the subresources in a 2D texture array that can be accessed.
     - parameter texture3D: A D3D12_TEX3D_UAV structure that specifies subresources in a 3D texture that can be accessed.
     */
+    @inlinable @inline(__always)
     public init(format: DGIFormat,
                 dimension: D3DUnorderedAccessViewDimension,
                 buffer: D3DUnorderedAccessViewBuffer,
@@ -121,6 +130,7 @@ public struct D3DUnorderedAccessViewDescription {
         self.texture3D = texture3D
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

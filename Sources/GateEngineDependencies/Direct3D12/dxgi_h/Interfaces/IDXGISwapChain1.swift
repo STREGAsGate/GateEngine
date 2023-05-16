@@ -14,7 +14,8 @@ public extension DGISwapChain {
     - parameter flags: An integer value that contains swap-chain presentation options. These options are defined by the DXGI_PRESENT constants.
     - parameter parameters: A pointer to a DXGI_PRESENT_PARAMETERS structure that describes updated rectangles and scroll information of the frame to present.
     */
-    func present(withSyncInterval syncInterval: UInt32 = 1, 
+    @inlinable @inline(__always)
+    func present(withSyncInterval syncInterval: UInt32 = 1,
                  flags: DGIPresentFlags = [],
                  parameters: DGIPresentParameters = .fullFrame) throws {
         try perform(as: RawValue.self) {pThis in 

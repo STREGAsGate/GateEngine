@@ -13,12 +13,14 @@ public class D3DObject: IUnknown {
     /** Associates a name with the device object. This name is for use in debug diagnostics and tools.
     - parameter string: A NULL-terminated UNICODE string that contains the name to associate with the device object.
     */
+    @inlinable @inline(__always)
     public func setDebugName(_ string: String) throws {
         try perform(as: RawValue.self) {pThis in
             try pThis.pointee.lpVtbl.pointee.SetName(pThis, string.windowsUTF16).checkResult(self, #function)
         }
     }
 
+    @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -26,6 +28,7 @@ extension D3DObject {
     typealias RawValue = WinSDK.ID3D12Object
 }
 extension D3DObject.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12Object}
 }
 

@@ -10,6 +10,7 @@ import WinSDK
 public final class D3DResource: D3DPageable {
     
     /// Gets the resource description.
+    @inlinable @inline(__always)
     public var resourceDescription: D3DResourceDescription {
         return performFatally(as: RawValue.self) {pThis in
             let v: WinSDK.D3D12_RESOURCE_DESC = pThis.pointee.lpVtbl.pointee.GetDesc(pThis)
@@ -18,6 +19,7 @@ public final class D3DResource: D3DPageable {
     }
 
     /// This method returns the GPU virtual address of a buffer resource.
+    @inlinable @inline(__always)
     public var gpuVirtualAddress: UInt64 {
         return performFatally(as: RawValue.self) {pThis in
             return pThis.pointee.lpVtbl.pointee.GetGPUVirtualAddress(pThis)
@@ -25,6 +27,7 @@ public final class D3DResource: D3DPageable {
     }
 
     /// Retrieves the properties of the resource heap, for placed and committed resources.
+    @inlinable @inline(__always)
     public func heapProperties() throws -> (properties: D3DHeapProperties, flags: D3DHeapFlags) {
         return try perform(as: RawValue.self) {pThis in
             var pHeapProperties = D3DHeapProperties.RawValue()
@@ -38,6 +41,7 @@ public final class D3DResource: D3DPageable {
     - parameter index: Specifies the index number of the subresource.
     - parameter range: A pointer to a D3D12_RANGE structure that describes the range of memory to access. This indicates the region the CPU might read, and the coordinates are subresource-relative. A null pointer indicates the entire subresource might be read by the CPU. It is valid to specify the CPU won't read any data by passing a range where End is less than or equal to Begin.
     */
+    @inlinable @inline(__always)
     public func map(index: UInt32 = 0, range: D3DRange? = nil) throws -> UnsafeMutableRawPointer? {
         return try perform(as: RawValue.self) {pThis in
             let Subresource = index
@@ -60,6 +64,7 @@ public final class D3DResource: D3DPageable {
     - parameter rowLength: The distance from one row of destination data to the next row.
     - parameter depthPitch: The distance from one depth slice of destination data to the next.
     */
+    @inlinable @inline(__always)
     public func readFromSubresource(_ index: UInt32, srcBox: D3DBox?, toData data: UnsafeMutableRawPointer?, rowPitch: UInt32, depthPitch: UInt32) throws {
         try perform(as: RawValue.self) {pThis in
             let pDstData = data
@@ -78,6 +83,7 @@ public final class D3DResource: D3DPageable {
     - parameter index: Specifies the index of the subresource.
     - parameter range: A pointer to a D3D12_RANGE structure that describes the range of memory to unmap. This indicates the region the CPU might have modified, and the coordinates are subresource-relative. A null pointer indicates the entire subresource might have been modified by the CPU. It is valid to specify the CPU didn't write any data by passing a range where End is less than or equal to Begin.
     */
+    @inlinable @inline(__always)
     public func unmap(index: UInt32 = 0, range: D3DRange? = nil) {
         performFatally(as: RawValue.self) {pThis in
             let Subresource = index            
@@ -96,6 +102,7 @@ public final class D3DResource: D3DPageable {
     - parameter rowPitch: The distance from one row of source data to the next row.
     - parameter depthPitch: The distance from one depth slice of source data to the next.
     */
+    @inlinable @inline(__always)
     public func writeToSubresource(_ index: UInt32, dstBox: D3DBox?, fromData data: UnsafeMutableRawPointer?, rowPitch: UInt32, depthPitch: UInt32) throws {
         try perform(as: RawValue.self) {pThis in
             let DstSubresource = index
@@ -110,6 +117,7 @@ public final class D3DResource: D3DPageable {
         }
     }
 
+    @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -117,6 +125,7 @@ extension D3DResource {
     public typealias RawValue = WinSDK.ID3D12Resource
 }
 extension D3DResource.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12Resource}
 }
 

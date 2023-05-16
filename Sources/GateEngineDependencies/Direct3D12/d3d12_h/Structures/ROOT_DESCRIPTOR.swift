@@ -13,6 +13,7 @@ public struct D3DRootDescriptor {
     internal var rawValue: RawValue
 
     /// The shader register.
+    @inlinable @inline(__always)
     public var shaderRegister: UInt32 {
         get {
             return rawValue.ShaderRegister
@@ -23,6 +24,7 @@ public struct D3DRootDescriptor {
     }
 
     /// The register space.
+    @inlinable @inline(__always)
     public var registerSpace: UInt32 {
         get {
             return rawValue.RegisterSpace
@@ -36,10 +38,12 @@ public struct D3DRootDescriptor {
     - parameter shaderRegister: The shader register.
     - parameter registerSpace: The register space.
     */
+    @inlinable @inline(__always)
     public init(shaderRegister: UInt32 = 1, registerSpace: UInt32 = 0) {
         self.rawValue = RawValue(ShaderRegister: shaderRegister, RegisterSpace: registerSpace)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

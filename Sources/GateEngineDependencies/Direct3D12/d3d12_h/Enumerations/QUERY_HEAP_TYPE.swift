@@ -35,6 +35,7 @@ public enum D3DQueryHeapType {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
 
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .occlusion:
@@ -54,6 +55,7 @@ public enum D3DQueryHeapType {
         }
     }
 
+    @inlinable @inline(__always)
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_QUERY_HEAP_TYPE_OCCLUSION:

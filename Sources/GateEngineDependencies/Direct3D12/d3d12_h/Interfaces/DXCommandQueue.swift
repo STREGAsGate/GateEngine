@@ -17,7 +17,8 @@ public final class D3DCommandQueue: D3DPageable {
     - parameter regionSize: A pointer to a D3D12_TILE_REGION_SIZE structure that describes the size of the reserved region.
     - parameter flags: One member of D3D12_TILE_MAPPING_FLAGS.
     */
-    public func copyTileMappings(from srcResource: D3DResource, sourceRegionStartCoord: D3DTiledResourceCoordinate, 
+    @inlinable @inline(__always)
+    public func copyTileMappings(from srcResource: D3DResource, sourceRegionStartCoord: D3DTiledResourceCoordinate,
                                  to dstResource: D3DResource, destinationRegionStartCoord: D3DTiledResourceCoordinate, 
                                  regionSize: D3DTileRegionSize, flags: D3DTileMappingFlags = []) {
         performFatally(as: RawValue.self) {pThis in
@@ -34,6 +35,7 @@ public final class D3DCommandQueue: D3DPageable {
     /** Submits an array of command lists for execution.
     - parameter commandLists: The array of ID3D12CommandList command lists to be executed.
     */
+    @inlinable @inline(__always)
     public func executeCommandLists(_ commandLists: [D3DCommandList]) {
         performFatally(as: RawValue.self) {pThis in
             let pCommandLists = commandLists.map({$0.performFatally(as: D3DCommandList.RawValue.self){Optional($0)}})
@@ -42,6 +44,7 @@ public final class D3DCommandQueue: D3DPageable {
     }
 
     /// This method samples the CPU and GPU timestamp counters at the same moment in time.
+    @inlinable @inline(__always)
     public func clockCalibration() throws -> (cpuTimestampCount: UInt64, gpuTimestampCount: UInt64) {
         return try perform(as: RawValue.self) {pThis in
             var gpuTimestamp: UInt64 = 0
@@ -52,14 +55,18 @@ public final class D3DCommandQueue: D3DPageable {
     }
 
     /// Gets the description of the command queue.
+    @inlinable @inline(__always)
     public var commandQueueDescription: D3DCommandQueueDescription {
         return performFatally(as: RawValue.self) {pThis in
             let v = pThis.pointee.lpVtbl.pointee.GetDesc(pThis)
+            
+            
             return D3DCommandQueueDescription(v)
         }
     }
 
     /// This method is used to determine the rate at which the GPU timestamp counter increments.
+    @inlinable @inline(__always)
     public func timestampFrequency() throws -> UInt64 {
         return try perform(as: RawValue.self) {pThis in
             var frequency: UInt64 = 0
@@ -72,6 +79,7 @@ public final class D3DCommandQueue: D3DPageable {
     - parameter fence: A pointer to the ID3D12Fence object.
     - parameter value: The value to set the fence to.
     */
+    @inlinable @inline(__always)
     public func signal(fence: D3DFence, value: UInt64) throws {
         try perform(as: RawValue.self) {pThis in
             let pFence = fence.perform(as: D3DFence.RawValue.self) {$0}
@@ -89,6 +97,7 @@ public final class D3DCommandQueue: D3DPageable {
     - parameter resourceHeap: A pointer to the resource heap.
     - parameter flags: A combination of D3D12_TILE_MAPPING_FLAGS values that are combined by using a bitwise OR operation.
     */
+    @inlinable @inline(__always)
     public func updateTileMappings(for resource: D3DResource,
                                    resourceRegionStartCoordinates: [D3DTiledResourceCoordinate]?,
                                    resourceRegionSizes: [D3DTileRegionSize]?,
@@ -116,6 +125,7 @@ public final class D3DCommandQueue: D3DPageable {
     - parameter fence: A pointer to the ID3D12Fence object.
     - parameter value: The value that the command queue is waiting for the fence to reach or exceed. So when ID3D12Fence::GetCompletedValue is greater than or equal to Value, the wait is terminated.
     */
+    @inlinable @inline(__always)
     public func wait(fence: D3DFence, value: UInt64) throws {
         try perform(as: RawValue.self) {pThis in
             let pFence = fence.perform(as: D3DFence.RawValue.self) {$0}
@@ -123,6 +133,7 @@ public final class D3DCommandQueue: D3DPageable {
         }
     }
 
+    @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 

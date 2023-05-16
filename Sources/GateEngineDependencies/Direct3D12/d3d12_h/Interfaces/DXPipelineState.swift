@@ -11,6 +11,7 @@ import WinSDK
 public final class D3DPipelineState: D3DPageable {
     
     /// Gets the cached blob representing the pipeline state.
+    @inlinable @inline(__always)
     public func cachedBlob() throws -> D3DBlob {
         return try perform(as: RawValue.self) {pThis in
             var ppBlob: UnsafeMutablePointer<D3DBlob.RawValue>?
@@ -20,6 +21,7 @@ public final class D3DPipelineState: D3DPageable {
         }
     }
 
+    @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -27,6 +29,7 @@ extension D3DPipelineState {
     typealias RawValue = WinSDK.ID3D12PipelineState
 }
 extension D3DPipelineState.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12PipelineState}
 }
 

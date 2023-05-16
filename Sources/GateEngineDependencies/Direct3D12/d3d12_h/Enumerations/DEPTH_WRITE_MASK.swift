@@ -18,6 +18,7 @@ public enum D3DDepthWriteMask {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
 
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .zero:
@@ -29,6 +30,7 @@ public enum D3DDepthWriteMask {
         }
     }
 
+    @inlinable @inline(__always)
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_DEPTH_WRITE_MASK_ZERO:

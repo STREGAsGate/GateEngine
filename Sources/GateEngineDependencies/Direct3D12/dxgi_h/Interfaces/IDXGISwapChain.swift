@@ -13,6 +13,7 @@ public final class DGISwapChain: DGIDeviceSubObject {
     - parameter index: A zero-based buffer index.
     - returns: A pointer to a back-buffer interface.
     */
+    @inlinable @inline(__always)
     public func backBuffer(at index: UInt32) throws -> D3DResource {
         return try perform(as: RawValue.self) {pThis in
             let Buffer = index
@@ -31,6 +32,7 @@ public final class DGISwapChain: DGIDeviceSubObject {
     - parameter format: A DXGI_FORMAT-typed value for the new format of the back buffer. Set this value to DXGI_FORMAT_UNKNOWN to preserve the existing format of the back buffer. The flip presentation model supports a more restricted set of formats than the bit-block transfer (bitblt) model.
     - parameter flags: A combination of DXGI_SWAP_CHAIN_FLAG-typed values that are combined by using a bitwise OR operation. The resulting value specifies options for swap-chain behavior.
     */
+    @inlinable @inline(__always)
     public func resizeBuffers(count: UInt32 = 0, width: UInt32 = 0, height: UInt32 = 0, format: DGIFormat = .unknown, flags: DGISwapChainFlags = [.allowModeSwitch, .allowTearing]) throws {
         try perform(as: RawValue.self) {pThis in
             let BufferCount = count
@@ -43,7 +45,7 @@ public final class DGISwapChain: DGIDeviceSubObject {
     }
 
     /// Changes the background color of the swap chain.
-    @discardableResult
+    @discardableResult @inlinable @inline(__always)
     public func setBackgroundColor(_ pColor: D3DColor) -> Bool {
         return perform(as: RawValue.self) {pThis in
             var pColor = WinSDK.DXGI_RGBA(r: pColor.red, g: pColor.green, b: pColor.blue, a: pColor.alpha)
@@ -51,6 +53,7 @@ public final class DGISwapChain: DGIDeviceSubObject {
         }
     }
 
+    @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -58,6 +61,7 @@ extension DGISwapChain {
     typealias RawValue = WinSDK.IDXGISwapChain1
 }
 extension DGISwapChain.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: WinSDK.IID {WinSDK.IID_IDXGISwapChain1}
 }
 

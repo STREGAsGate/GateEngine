@@ -9,6 +9,7 @@ import WinSDK
 
 /// A command signature object enables apps to specify indirect drawing, including the buffer format, command type and resource bindings to be used.
 public final class D3DCommandSignature: D3DPageable {
+    @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -16,6 +17,7 @@ extension D3DCommandSignature {
     typealias RawValue = WinSDK.ID3D12CommandSignature
 }
 extension D3DCommandSignature.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: IID {WinSDK.IID_ID3D12CommandSignature}
 }
 

@@ -12,6 +12,7 @@ public struct D3DConstantBufferViewDescription {
     internal var rawValue: RawValue
 
     /// The D3D12_GPU_VIRTUAL_ADDRESS of the constant buffer. D3D12_GPU_VIRTUAL_ADDRESS is a typedef'd alias of UINT64.
+    @inlinable @inline(__always)
     public var bufferLocation: D3DGPUVirtualAddress {
         get {
             return rawValue.BufferLocation
@@ -22,6 +23,7 @@ public struct D3DConstantBufferViewDescription {
     }
 
     /// The size in bytes of the constant buffer.
+    @inlinable @inline(__always)
     public var bufferSize: UInt32 {
         get {
             return rawValue.SizeInBytes
@@ -35,12 +37,12 @@ public struct D3DConstantBufferViewDescription {
     - parameters location: The D3D12_GPU_VIRTUAL_ADDRESS of the constant buffer.
     - parameters size: The size in bytes of the constant buffer.
     */
+    @inlinable @inline(__always)
     public init(location: D3DGPUVirtualAddress, size: UInt32) {
-        self.rawValue = RawValue()
-        self.bufferLocation = location
-        self.bufferSize = size
+        self.rawValue = RawValue(location.rawValue, size)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

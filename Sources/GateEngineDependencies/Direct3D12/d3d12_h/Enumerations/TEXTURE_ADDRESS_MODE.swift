@@ -28,6 +28,7 @@ public enum D3DTextureAddressMode {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
 
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .wrap:
@@ -45,6 +46,7 @@ public enum D3DTextureAddressMode {
         }
     }
     
+    @inlinable @inline(__always)
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_TEXTURE_ADDRESS_MODE_WRAP:

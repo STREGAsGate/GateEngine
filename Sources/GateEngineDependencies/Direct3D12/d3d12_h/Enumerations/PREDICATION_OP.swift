@@ -15,6 +15,7 @@ public enum D3DPredictionOperation {
     ///	Enables predication if at least one of the 64-bits are not zero.
     case notEqualZero
 
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .equalZero:

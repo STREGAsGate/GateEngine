@@ -13,6 +13,7 @@ public struct D3DQueryHeapDescription {
     internal var rawValue: RawValue
 
     /// Specifies one member of D3D12_QUERY_HEAP_TYPE.
+    @inlinable @inline(__always)
     public var `type`: D3DQueryHeapType {
         get {
             return D3DQueryHeapType(rawValue.Type)
@@ -23,6 +24,7 @@ public struct D3DQueryHeapDescription {
     }
 
     /// Specifies the number of queries the heap should contain.
+    @inlinable @inline(__always)
     public var count: UInt32 {
         get {
             return rawValue.Count
@@ -33,6 +35,7 @@ public struct D3DQueryHeapDescription {
     }
 
     /// For single GPU operation, set this to zero. If there are multiple GPU nodes, set a bit to identify the node (the device's physical adapter) to which the command queue applies. Each bit in the mask corresponds to a single node. Only 1 bit must be set. Refer to Multi-adapter systems.
+    @inlinable @inline(__always)
     public var multipleAdapterNodeMask: UInt32 {
         get {
             return self.rawValue.NodeMask
@@ -47,6 +50,7 @@ public struct D3DQueryHeapDescription {
     - parameter count: Specifies the number of queries the heap should contain.
     - parameter multipleAdapterNodeMask: For single GPU operation, set this to zero. If there are multiple GPU nodes, set a bit to identify the node (the device's physical adapter) to which the query heap applies. Each bit in the mask corresponds to a single node. Only 1 bit must be set. Refer to Multi-adapter systems.
     */
+    @inlinable @inline(__always)
     public init(type: D3DQueryHeapType, count: UInt32, multipleAdapterNodeMask: UInt32 = 0) {
         self.rawValue = RawValue()
         self.type = type
@@ -55,10 +59,12 @@ public struct D3DQueryHeapDescription {
     }
 
     /// Describes the purpose of a query heap. A query heap contains an array of individual queries.
+    @inlinable @inline(__always)
     public init() {
         self.rawValue = RawValue()
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: WinSDK.D3D12_QUERY_HEAP_DESC) {
         self.rawValue = rawValue
     }

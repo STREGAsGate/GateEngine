@@ -8,6 +8,7 @@
 import Foundation
 import WinSDK
 
+@inlinable @inline(__always)
 public func compileFromSource(_ source: String, functionName: String, target: String, forDebug: Bool) throws -> D3DBlob {
     let source: [CChar] = source.cString(using: .ascii)!
 

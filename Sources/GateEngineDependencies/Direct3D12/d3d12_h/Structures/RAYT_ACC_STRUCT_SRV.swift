@@ -13,6 +13,7 @@ public struct D3DRaytracingAccelerationStructureShaderResourceView {
     internal var rawValue: RawValue
 
     /// The GPU virtual address of the SRV.
+    @inlinable @inline(__always)
     public var location: UInt64 {
         get {
             return rawValue.Location
@@ -25,10 +26,12 @@ public struct D3DRaytracingAccelerationStructureShaderResourceView {
     /** A shader resource view (SRV) structure for storing a raytracing acceleration structure.
     - parameter location: The GPU virtual address of the SRV.
     */
+    @inlinable @inline(__always)
     public init(location: UInt64) {
         self.rawValue = RawValue(Location: location)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

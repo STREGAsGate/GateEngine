@@ -13,6 +13,7 @@ public struct D3DDepthStencilDescription {
     internal var rawValue: RawValue
     
     /// Specifies whether to enable depth testing. Set this member to TRUE to enable depth testing.
+    @inlinable @inline(__always)
     public var depthTestingEnabled: Bool {
         get {
             return rawValue.DepthEnable.boolValue
@@ -23,6 +24,7 @@ public struct D3DDepthStencilDescription {
     }
 
     /// A D3D12_DEPTH_WRITE_MASK-typed value that identifies a portion of the depth-stencil buffer that can be modified by depth data.
+    @inlinable @inline(__always)
     public var depthWriteMask: D3DDepthWriteMask {
         get {
             return D3DDepthWriteMask(rawValue.DepthWriteMask)
@@ -33,6 +35,7 @@ public struct D3DDepthStencilDescription {
     }
 
     /// A D3D12_COMPARISON_FUNC-typed value that identifies a function that compares depth data against existing depth data.
+    @inlinable @inline(__always)
     public var depthFunction: D3DComparisonFunction {
         get {
             return D3DComparisonFunction(rawValue.DepthFunc)
@@ -43,6 +46,7 @@ public struct D3DDepthStencilDescription {
     }
 
     /// Specifies whether to enable stencil testing. Set this member to TRUE to enable stencil testing.
+    @inlinable @inline(__always)
     public var stencilTestingEnabled: Bool {
         get {
             return rawValue.StencilEnable.boolValue
@@ -53,6 +57,7 @@ public struct D3DDepthStencilDescription {
     }
 
     /// Identify a portion of the depth-stencil buffer for reading stencil data.
+    @inlinable @inline(__always)
     public var stencilReadMask: UInt8 {
         get {
             return rawValue.StencilReadMask
@@ -63,6 +68,7 @@ public struct D3DDepthStencilDescription {
     }
 
     /// Identify a portion of the depth-stencil buffer for writing stencil data.
+    @inlinable @inline(__always)
     public var stencilWriteMask: UInt8 {
         get {
             return rawValue.StencilWriteMask
@@ -73,6 +79,7 @@ public struct D3DDepthStencilDescription {
     }
 
     /// A D3D12_DEPTH_STENCILOP_DESC structure that describes how to use the results of the depth test and the stencil test for pixels whose surface normal is facing towards the camera.
+    @inlinable @inline(__always)
     public var frontFace: D3DDepthStencilOperationDescription {
         get {
             return D3DDepthStencilOperationDescription(rawValue.FrontFace)
@@ -83,6 +90,7 @@ public struct D3DDepthStencilDescription {
     }
 
     /// A D3D12_DEPTH_STENCILOP_DESC structure that describes how to use the results of the depth test and the stencil test for pixels whose surface normal is facing away from the camera.
+    @inlinable @inline(__always)
     public var backFace: D3DDepthStencilOperationDescription {
         get {
             return D3DDepthStencilOperationDescription(rawValue.BackFace)
@@ -102,6 +110,7 @@ public struct D3DDepthStencilDescription {
     - parameter frontFace: A D3D12_DEPTH_STENCILOP_DESC structure that describes how to use the results of the depth test and the stencil test for pixels whose surface normal is facing towards the camera.
     - parameter backFace: A D3D12_DEPTH_STENCILOP_DESC structure that describes how to use the results of the depth test and the stencil test for pixels whose surface normal is facing away from the camera.
     */
+    @inlinable @inline(__always)
     public init(depthTestingEnabled: Bool,
                 depthWriteMask: D3DDepthWriteMask,
                 depthFunction: D3DComparisonFunction,
@@ -122,10 +131,12 @@ public struct D3DDepthStencilDescription {
     }
 
     /// Describes depth-stencil state.
+    @inlinable @inline(__always)
     public init() {
         self.rawValue = RawValue()
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

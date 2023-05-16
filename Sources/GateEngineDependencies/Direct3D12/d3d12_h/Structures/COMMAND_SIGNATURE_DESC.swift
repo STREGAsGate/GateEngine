@@ -13,6 +13,7 @@ public struct D3DCommandSignatureDescription {
     internal var rawValue: RawValue
 
     /// An array of D3D12_INDIRECT_ARGUMENT_DESC structures, containing details of the arguments, including whether the argument is a vertex buffer, constant, constant buffer view, shader resource view, or unordered access view.
+    @inlinable @inline(__always)
     public var argumentDescriptors: [D3DIndirectArgumentDescription] {
         get {
             guard rawValue.NumArgumentDescs > 0 else {return []}
@@ -33,6 +34,7 @@ public struct D3DCommandSignatureDescription {
     private var _argumentDescriptors: [D3DIndirectArgumentDescription.RawValue]! = nil
 
     /// For single GPU operation, set this to zero. If there are multiple GPU nodes, set a bit to identify the node (the device's physical adapter) to which the command queue applies. Each bit in the mask corresponds to a single node. Only 1 bit must be set. Refer to Multi-adapter systems.
+    @inlinable @inline(__always)
     public var multipleAdapterNodeMask: UInt32 {
         get {
             return self.rawValue.NodeMask
@@ -46,12 +48,12 @@ public struct D3DCommandSignatureDescription {
     - parameter argumentDescriptors: An array of D3D12_INDIRECT_ARGUMENT_DESC structures, containing details of the arguments, including whether the argument is a vertex buffer, constant, constant buffer view, shader resource view, or unordered access view.
     - parameter multipleAdapterNodeMask: For single GPU operation, set this to zero. If there are multiple GPU nodes, set bits to identify the nodes (the device's physical adapters) for which the command signature is to apply. Each bit in the mask corresponds to a single node. Refer to Multi-adapter systems.
     */
+    @inlinable @inline(__always)
     public init(argumentDescriptors: [D3DIndirectArgumentDescription], multipleAdapterNodeMask: UInt32 = 0) {
-        self.rawValue = RawValue()
-        self.argumentDescriptors = argumentDescriptors
-        self.multipleAdapterNodeMask = multipleAdapterNodeMask
+        self.rawValue = RawValue(argumentDescriptors, multipleAdapterNodeMask)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

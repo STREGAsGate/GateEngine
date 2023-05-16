@@ -17,6 +17,7 @@ public enum D3DMessageSeverity {
     case message
     case unknwon(RawValue)
 
+    @inlinable @inline(__always)
     var rawValue: RawValue {
         switch self {
         case .corruption:
@@ -34,6 +35,7 @@ public enum D3DMessageSeverity {
         }
     }
 
+    @inlinable @inline(__always)
     init(rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_MESSAGE_SEVERITY_CORRUPTION:

@@ -16,6 +16,7 @@ public enum D3DRootSignatureVersion {
     @available(Windows, introduced: 10.0.14393)
     case v1_1
 
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
             case .v1_0:

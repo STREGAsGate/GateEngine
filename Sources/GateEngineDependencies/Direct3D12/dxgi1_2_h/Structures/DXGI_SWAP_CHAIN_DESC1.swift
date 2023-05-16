@@ -13,6 +13,7 @@ public struct DGISwapChainDescription1 {
     internal var rawValue: RawValue
 
     /// A value that describes the resolution width. If you specify the width as zero when you call the IDXGIFactory2::CreateSwapChainForHwnd method to create a swap chain, the runtime obtains the width from the output window and assigns this width value to the swap-chain description. You can subsequently call the IDXGISwapChain1::GetDesc1 method to retrieve the assigned width value. You cannot specify the width as zero when you call the IDXGIFactory2::CreateSwapChainForComposition method.
+    @inlinable @inline(__always)
     public var width: UInt32 {
         get {
             return rawValue.Width
@@ -23,6 +24,7 @@ public struct DGISwapChainDescription1 {
     }
 
     /// A value that describes the resolution height. If you specify the height as zero when you call the IDXGIFactory2::CreateSwapChainForHwnd method to create a swap chain, the runtime obtains the height from the output window and assigns this height value to the swap-chain description. You can subsequently call the IDXGISwapChain1::GetDesc1 method to retrieve the assigned height value. You cannot specify the height as zero when you call the IDXGIFactory2::CreateSwapChainForComposition method.
+    @inlinable @inline(__always)
     public var height: UInt32 {
         get {
             return rawValue.Height
@@ -33,6 +35,7 @@ public struct DGISwapChainDescription1 {
     }
 
     /// A DXGI_FORMAT structure that describes the display format.
+    @inlinable @inline(__always)
     public var format: DGIFormat {
         get {
             return DGIFormat(rawValue.Format)
@@ -43,6 +46,7 @@ public struct DGISwapChainDescription1 {
     }
 
     /// Specifies whether the full-screen display mode or the swap-chain back buffer is stereo. TRUE if stereo; otherwise, FALSE. If you specify stereo, you must also specify a flip-model swap chain (that is, a swap chain that has the DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL value set in the SwapEffect member).
+    @inlinable @inline(__always)
     public var isStereo: Bool {
         get {
             return rawValue.Stereo.boolValue
@@ -53,6 +57,7 @@ public struct DGISwapChainDescription1 {
     }
 
     /// A DXGI_SAMPLE_DESC structure that describes multi-sampling parameters. This member is valid only with bit-block transfer (bitblt) model swap chains.
+    @inlinable @inline(__always)
     public var sampleDescription: DGISampleDescription {
         get {
             return DGISampleDescription(rawValue.SampleDesc)
@@ -63,6 +68,7 @@ public struct DGISwapChainDescription1 {
     }
 
     /// A DXGI_USAGE-typed value that describes the surface usage and CPU access options for the back buffer. The back buffer can be used for shader input or render-target output.
+    @inlinable @inline(__always)
     public var bufferUsage: DGIUsage {
         get {
             return DGIUsage(rawValue: rawValue.BufferUsage)
@@ -73,6 +79,7 @@ public struct DGISwapChainDescription1 {
     }
 
     /// A value that describes the number of buffers in the swap chain. When you create a full-screen swap chain, you typically include the front buffer in this value.
+    @inlinable @inline(__always)
     public var bufferCount: UInt32 {
         get {
             return rawValue.BufferCount
@@ -83,6 +90,7 @@ public struct DGISwapChainDescription1 {
     }
 
     /// A DXGI_SCALING-typed value that identifies resize behavior if the size of the back buffer is not equal to the target output.
+    @inlinable @inline(__always)
     public var scaling: DGIScaling {
         get {
             return DGIScaling(rawValue.Scaling)
@@ -93,6 +101,7 @@ public struct DGISwapChainDescription1 {
     }
 
     /// A DXGI_SWAP_EFFECT-typed value that describes the presentation model that is used by the swap chain and options for handling the contents of the presentation buffer after presenting a surface. You must specify the DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL value when you call the IDXGIFactory2::CreateSwapChainForComposition method because this method supports only flip presentation model.
+    @inlinable @inline(__always)
     public var swapEffect: DGISwapEffect {
         get {
             return DGISwapEffect(rawValue.SwapEffect)
@@ -103,6 +112,7 @@ public struct DGISwapChainDescription1 {
     }
 
     /// A DXGI_ALPHA_MODE-typed value that identifies the transparency behavior of the swap-chain back buffer.
+    @inlinable @inline(__always)
     public var alphaMode: DGIAlphaMode {
         get {
             return DGIAlphaMode(rawValue.AlphaMode)
@@ -113,6 +123,7 @@ public struct DGISwapChainDescription1 {
     }
 
     /// A combination of DXGI_SWAP_CHAIN_FLAG-typed values that are combined by using a bitwise OR operation. The resulting value specifies options for swap-chain behavior.
+    @inlinable @inline(__always)
     public var flags: DGISwapChainFlags {
         get {
             return DGISwapChainFlags(rawValue: Int32(rawValue.Flags))
@@ -135,6 +146,7 @@ public struct DGISwapChainDescription1 {
     - parameter alphaMode: A DXGI_ALPHA_MODE-typed value that identifies the transparency behavior of the swap-chain back buffer.
     - parameter flags: A combination of DXGI_SWAP_CHAIN_FLAG-typed values that are combined by using a bitwise OR operation. The resulting value specifies options for swap-chain behavior.
     */
+    @inlinable @inline(__always)
     public init(width: UInt32,
                 height: UInt32,
                 format: DGIFormat,
@@ -160,6 +172,7 @@ public struct DGISwapChainDescription1 {
         self.flags = flags
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

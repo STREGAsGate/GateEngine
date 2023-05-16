@@ -13,6 +13,7 @@ public struct D3DShaderResourceViewDescription {
     internal var rawValue: RawValue
 
     /// A DXGI_FORMAT-typed value that specifies the viewing format. See remarks.
+    @inlinable @inline(__always)
     public var format: DGIFormat {
         get {
             return DGIFormat(rawValue.Format)
@@ -23,6 +24,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_SRV_DIMENSION-typed value that specifies the resource type of the view. This type is the same as the resource type of the underlying resource. This member also determines which _SRV to use in the union below.
+    @inlinable @inline(__always)
     public var dimension: D3DShaderResourceViewDimension {
         get {
             return D3DShaderResourceViewDimension(rawValue.ViewDimension)
@@ -33,6 +35,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A value, constructed using the D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING macro. The D3D12_SHADER_COMPONENT_MAPPING enumeration specifies what values from memory should be returned when the texture is accessed in a shader via this shader resource view (SRV). For example, it can route component 1 (green) from memory, or the constant 0, into component 2 (.b) of the value given to the shader.
+    @inlinable @inline(__always)
     public var componentMapping: D3DShaderComponentMap {
         get {
             return D3DShaderComponentMap(D3DShaderComponentMap.RawValue(rawValue.Shader4ComponentMapping))
@@ -43,6 +46,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_BUFFER_SRV structure that views the resource as a buffer.
+    @inlinable @inline(__always)
     public var buffer: D3DShaderResourceViewBuffer {
         get {
             return D3DShaderResourceViewBuffer(rawValue.Buffer)
@@ -53,6 +57,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_TEX1D_SRV structure that views the resource as a 1D texture.
+    @inlinable @inline(__always)
     public var texture1D: D3DTexture1DShaderResourceView {
         get {
             return D3DTexture1DShaderResourceView(rawValue.Texture1D)
@@ -63,6 +68,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_TEX1D_ARRAY_SRV structure that views the resource as a 1D-texture array.
+    @inlinable @inline(__always)
     public var texture1DArray: D3DTexture1DArrayShaderResourceView {
         get {
             return D3DTexture1DArrayShaderResourceView(rawValue.Texture1DArray)
@@ -73,6 +79,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_TEX2D_SRV structure that views the resource as a 2D-texture.
+    @inlinable @inline(__always)
     public var texture2D: D3DTexture2DShaderResourceView {
         get {
             return D3DTexture2DShaderResourceView(rawValue.Texture2D)
@@ -83,6 +90,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_TEX2D_ARRAY_SRV structure that views the resource as a 2D-texture array.
+    @inlinable @inline(__always)
     public var texture2DArray: D3DTexture2DArrayShaderResourceView {
         get {
             return D3DTexture2DArrayShaderResourceView(rawValue.Texture2DArray)
@@ -93,6 +101,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_TEX2DMS_SRV structure that views the resource as a 2D-multisampled texture.
+    @inlinable @inline(__always)
     public var texture2DMultiSampled: D3DTexture2DMultiSampledShaderResourceView {
         get {
             return D3DTexture2DMultiSampledShaderResourceView(rawValue.Texture2DMS)
@@ -103,6 +112,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_TEX2DMS_ARRAY_SRV structure that views the resource as a 2D-multisampled-texture array.
+    @inlinable @inline(__always)
     public var texture2DMultiSampledArray: D3DTexture2DMultiSampledArrayShaderResourceView {
         get {
             return D3DTexture2DMultiSampledArrayShaderResourceView(rawValue.Texture2DMSArray)
@@ -113,6 +123,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_TEX3D_SRV structure that views the resource as a 3D texture.
+    @inlinable @inline(__always)
     public var texture3D: D3DTexture3DShaderResourceView {
         get {
             return D3DTexture3DShaderResourceView(rawValue.Texture3D)
@@ -123,6 +134,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_TEXCUBE_SRV structure that views the resource as a 3D-cube texture.
+    @inlinable @inline(__always)
     public var textureCube: D3DTextureCubeShaderResourceView {
         get {
             return D3DTextureCubeShaderResourceView(rawValue.TextureCube)
@@ -133,6 +145,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_TEXCUBE_ARRAY_SRV structure that views the resource as a 3D-cube-texture array.
+    @inlinable @inline(__always)
     public var textureCubeArray: D3DTextureCubeArrayShaderResourceView {
         get {
             return D3DTextureCubeArrayShaderResourceView(rawValue.TextureCubeArray)
@@ -143,6 +156,7 @@ public struct D3DShaderResourceViewDescription {
     }
 
     /// A D3D12_RAYTRACING_ACCELERATION_STRUCTURE_SRV structure that views the resource as a raytracing acceleration structure.
+    @inlinable @inline(__always)
     public var raytracingAccelerationStructure: D3DRaytracingAccelerationStructureShaderResourceView {
         get {
             return D3DRaytracingAccelerationStructureShaderResourceView(rawValue.RaytracingAccelerationStructure)
@@ -168,6 +182,7 @@ public struct D3DShaderResourceViewDescription {
     - parameter textureCubeArray: A D3D12_TEXCUBE_ARRAY_SRV structure that views the resource as a 3D-cube-texture array.
     - parameter raytracingAccelerationStructure: A D3D12_RAYTRACING_ACCELERATION_STRUCTURE_SRV structure that views the resource as a raytracing acceleration structure.
     */
+    @inlinable @inline(__always)
     public init(format: DGIFormat,
                 dimension: D3DShaderResourceViewDimension,
                 componentMapping: D3DShaderComponentMap = .default,
@@ -199,10 +214,12 @@ public struct D3DShaderResourceViewDescription {
         self.raytracingAccelerationStructure = raytracingAccelerationStructure
     }
 
+    @inlinable @inline(__always)
     public init() {
         self.rawValue = RawValue()
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

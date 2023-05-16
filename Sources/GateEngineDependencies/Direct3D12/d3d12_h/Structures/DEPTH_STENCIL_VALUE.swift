@@ -13,6 +13,7 @@ public struct D3DDepthStencilValue {
     internal var rawValue: RawValue
 
     /// Specifies the depth value.
+    @inlinable @inline(__always)
     public var depth: Float {
         get {
             return rawValue.Depth
@@ -23,6 +24,7 @@ public struct D3DDepthStencilValue {
     }
 
     /// Specifies the stencil value.
+    @inlinable @inline(__always)
     public var stencil: UInt8 {
         get {
             return rawValue.Stencil
@@ -36,12 +38,14 @@ public struct D3DDepthStencilValue {
     - parameter depth: Specifies the depth value. 
     - parameter stencil: Specifies the stencil value.
     */
+    @inlinable @inline(__always)
     public init(depth: Float, stencil: UInt8) {
         self.rawValue = RawValue()
         self.depth = depth
         self.stencil = stencil
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

@@ -8,7 +8,7 @@
 import WinSDK
 
 public final class DGIAdapter: DGIObject {
-
+    @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -16,6 +16,7 @@ extension DGIAdapter {
     typealias RawValue = WinSDK.IDXGIAdapter
 }
 extension DGIAdapter.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: WinSDK.IID {WinSDK.IID_IDXGIAdapter}
 }
 

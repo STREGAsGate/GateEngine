@@ -8,7 +8,7 @@
 import WinSDK
 
 public final class D3DRootSignatureDeserializer: IUnknown {
-        
+    @inlinable @inline(__always)
     public var rootSignatureDescription: D3DRootSignatureDescription {
         return performFatally(as: RawValue.self) {pThis in
             // let v = pThis.pointee.lpVtbl.pointee.GetRootSignatureDesc(pThis)
@@ -17,6 +17,7 @@ public final class D3DRootSignatureDeserializer: IUnknown {
         }
     }
 
+    @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -24,6 +25,7 @@ extension D3DRootSignatureDeserializer {
     public typealias RawValue = WinSDK.ID3D12RootSignatureDeserializer
 }
 extension D3DRootSignatureDeserializer.RawValue {
+    @inlinable @inline(__always)
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12RootSignatureDeserializer}
 }
 

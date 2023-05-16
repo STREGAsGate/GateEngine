@@ -25,12 +25,14 @@ public struct D3DStreamOutputDescription {
     - parameter bufferStrides: An array of buffer strides; each stride is the size of an element for that buffer.
     - parameter rasterizedStream: The index number of the stream to be sent to the rasterizer stage.
     */
+    @inlinable @inline(__always)
     public init(declarationEntries: [D3DStreamOutputDeclarationEntry]? = nil, bufferStrides: [UInt32] = [], rasterizedStream: UInt32 = 0) {
         self.declarationEntries = declarationEntries
         self.bufferStrides = bufferStrides
         self.rasterizedStream = rasterizedStream
     }
 
+    @inlinable @inline(__always)
     internal func withUnsafeRawValue<ResultType>(_ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
         return try (declarationEntries ?? []).map({$0.rawValue}).withUnsafeBufferPointer {pSODeclaration in
             let NumEntries = UInt32(declarationEntries?.count ?? 0)

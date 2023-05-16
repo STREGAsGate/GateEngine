@@ -13,6 +13,7 @@ public struct D3DSubresourceTiling {
     internal var rawValue: RawValue
 
     /// The width in tiles of the subresource.
+    @inlinable @inline(__always)
     public var horizontalTileCount: UInt32 {
         get {
             return rawValue.WidthInTiles
@@ -23,6 +24,7 @@ public struct D3DSubresourceTiling {
     }
 
     /// The height in tiles of the subresource.
+    @inlinable @inline(__always)
     public var verticalTileCount: UInt16 {
         get {
             return rawValue.HeightInTiles
@@ -33,6 +35,7 @@ public struct D3DSubresourceTiling {
     }
 
     /// The depth in tiles of the subresource.
+    @inlinable @inline(__always)
     public var depthTileCount: UInt16 {
         get {
             return rawValue.DepthInTiles
@@ -43,6 +46,7 @@ public struct D3DSubresourceTiling {
     }
 
     /// The index of the tile in the overall tiled subresource to start with.
+    @inlinable @inline(__always)
     public var startIndex: UInt32 {
         get {
             return rawValue.StartTileIndexInOverallResource
@@ -58,6 +62,7 @@ public struct D3DSubresourceTiling {
     - parameter depthTileCount: The depth in tiles of the subresource.
     - parameter startIndex: The index of the tile in the overall tiled subresource to start with.
     */
+    @inlinable @inline(__always)
     public init(horizontalTileCount: UInt32,
                 verticalTileCount: UInt16,
                 depthTileCount: UInt16,
@@ -68,6 +73,7 @@ public struct D3DSubresourceTiling {
                                  StartTileIndexInOverallResource: startIndex)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

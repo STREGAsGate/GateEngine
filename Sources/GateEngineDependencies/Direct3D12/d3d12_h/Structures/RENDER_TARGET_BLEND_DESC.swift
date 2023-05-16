@@ -15,6 +15,7 @@ public struct D3DRenderTargetBlendDescription {
     /** Specifies whether to enable (or disable) blending. Set to TRUE to enable blending.
     - note: It's not valid for LogicOpEnable and BlendEnable to both be TRUE.
     */
+    @inlinable @inline(__always)
     public var blendEnabled: Bool {
         get {
             return rawValue.BlendEnable.boolValue
@@ -27,6 +28,7 @@ public struct D3DRenderTargetBlendDescription {
     /** Specifies whether to enable (or disable) a logical operation. Set to TRUE to enable a logical operation.
     - note: It's not valid for LogicOpEnable and BlendEnable to both be TRUE.
     */
+    @inlinable @inline(__always)
     public var logicOperationEnabled: Bool {
         get {
             return rawValue.LogicOpEnable.boolValue
@@ -37,6 +39,7 @@ public struct D3DRenderTargetBlendDescription {
     }
 
     /// A D3D12_BLEND-typed value that specifies the operation to perform on the RGB value that the pixel shader outputs. The BlendOp member defines how to combine the SrcBlend and DestBlend operations.
+    @inlinable @inline(__always)
     public var sourceBlend: D3DBlendFactor {
         get {
             return D3DBlendFactor(rawValue.SrcBlend)
@@ -47,6 +50,7 @@ public struct D3DRenderTargetBlendDescription {
     }
 
     /// A D3D12_BLEND-typed value that specifies the operation to perform on the current RGB value in the render target. The BlendOp member defines how to combine the SrcBlend and DestBlend operations.
+    @inlinable @inline(__always)
     public var destinationBlend: D3DBlendFactor {
         get {
             return D3DBlendFactor(rawValue.DestBlend)
@@ -57,6 +61,7 @@ public struct D3DRenderTargetBlendDescription {
     }
 
     /// A D3D12_BLEND_OP-typed value that defines how to combine the SrcBlend and DestBlend operations.
+    @inlinable @inline(__always)
     public var blendOperation: D3DBlendOperation {
         get {
             return D3DBlendOperation(rawValue.BlendOp)
@@ -67,6 +72,7 @@ public struct D3DRenderTargetBlendDescription {
     }
 
     /// A D3D12_BLEND-typed value that specifies the operation to perform on the alpha value that the pixel shader outputs. Blend options that end in _COLOR are not allowed. The BlendOpAlpha member defines how to combine the SrcBlendAlpha and DestBlendAlpha operations.
+    @inlinable @inline(__always)
     public var sourceBlendAlpha: D3DBlendFactor {
         get {
             return D3DBlendFactor(rawValue.SrcBlendAlpha)
@@ -77,6 +83,7 @@ public struct D3DRenderTargetBlendDescription {
     }
 
     /// A D3D12_BLEND-typed value that specifies the operation to perform on the current alpha value in the render target. Blend options that end in _COLOR are not allowed. The BlendOpAlpha member defines how to combine the SrcBlendAlpha and DestBlendAlpha operations.
+    @inlinable @inline(__always)
     public var destinationBlendAlpha: D3DBlendFactor {
         get {
             return D3DBlendFactor(rawValue.DestBlendAlpha)
@@ -87,6 +94,7 @@ public struct D3DRenderTargetBlendDescription {
     }
 
     /// A D3D12_BLEND_OP-typed value that defines how to combine the SrcBlendAlpha and DestBlendAlpha operations.
+    @inlinable @inline(__always)
     public var blendAlphaOperation: D3DBlendOperation {
         get {
             return D3DBlendOperation(rawValue.BlendOpAlpha)
@@ -97,6 +105,7 @@ public struct D3DRenderTargetBlendDescription {
     }
 
     /// A D3D12_LOGIC_OP-typed value that specifies the logical operation to configure for the render target.
+    @inlinable @inline(__always)
     public var logicOperation: D3DLogicOperation {
         get {
             return D3DLogicOperation(rawValue.LogicOp)
@@ -107,6 +116,7 @@ public struct D3DRenderTargetBlendDescription {
     }
 
     /// A combination of D3D12_COLOR_WRITE_ENABLE-typed values that are combined by using a bitwise OR operation. The resulting value specifies a write mask.
+    @inlinable @inline(__always)
     public var renderTargetWriteMask: D3DColorWriteEnable {
         get {
             return D3DColorWriteEnable(rawValue: D3DColorWriteEnable.RawValue(rawValue.RenderTargetWriteMask))
@@ -128,6 +138,7 @@ public struct D3DRenderTargetBlendDescription {
     - parameter logicOperation: A D3D12_LOGIC_OP-typed value that specifies the logical operation to configure for the render target.
     - parameter renderTargetWriteMask: A combination of D3D12_COLOR_WRITE_ENABLE-typed values that are combined by using a bitwise OR operation. The resulting value specifies a write mask.
     */
+    @inlinable @inline(__always)
     public init(blendEnabled: Bool = false,
                 logicOperationEnabled: Bool = false,
                 sourceBlend: D3DBlendFactor = .one,
@@ -151,6 +162,7 @@ public struct D3DRenderTargetBlendDescription {
         self.renderTargetWriteMask = renderTargetWriteMask
     }
     
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

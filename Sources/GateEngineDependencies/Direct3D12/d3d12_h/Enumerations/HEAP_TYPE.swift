@@ -55,6 +55,7 @@ public enum D3DHeapType {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
 
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .default:
@@ -70,6 +71,7 @@ public enum D3DHeapType {
         }
     }
 
+    @inlinable @inline(__always)
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_HEAP_TYPE_DEFAULT:

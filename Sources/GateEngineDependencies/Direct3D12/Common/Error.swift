@@ -17,14 +17,18 @@ extension Error {
 
 public struct Error: Swift.Error {
     let kind: Kind
+    
+    @inlinable @inline(__always)
     internal init(_ kind: Kind) {
         self.kind = kind
     }
 
+    @inlinable @inline(__always)
     internal init(_ hr: HRESULT) {
         self.kind = .hresult(hr)
     }
-
+    
+    @inlinable @inline(__always)
     internal init(_ string: String) {
         self.kind = .text(string)
     }
@@ -68,9 +72,11 @@ public extension HRESULT {
 }
 
 internal extension HRESULT {
+    @inlinable @inline(__always)
     init(severity: UInt32, facility: UInt32, code: UInt32) {
         self.init(bitPattern:(((severity<<31) | (facility<<16) | ((code)))))
     }
+    @inlinable @inline(__always)
     init(dxgiCode: UInt32) {
         let dxgiFacility: UInt32 = 0x87a
         self.init(severity: 1, facility: dxgiFacility, code: dxgiCode)
@@ -79,15 +85,18 @@ internal extension HRESULT {
 
 public extension HRESULT {
     // https://docs.microsoft.com/en-us/windows/win32/api/winerror/nf-winerror-succeeded
+    @inlinable @inline(__always)
     var isSuccess: Bool {
         return self >= 0 
     }
     // https://docs.microsoft.com/en-us/windows/win32/api/winerror/nf-winerror-failed
+    @inlinable @inline(__always)
     var isFailure: Bool {
         return self < 0 
     }
 
     /// Throws Error(self) if isFailure is true
+    @inlinable @inline(__always)
     func checkResult(_ source: Any?, _ function: StaticString) throws {
         if isFailure {
             if let source = source {
@@ -100,6 +109,7 @@ public extension HRESULT {
 }
 
 public extension DWORD {
+    @inlinable @inline(__always)
     var errorMessage: String {
         let dwFlags: DWORD = DWORD(FORMAT_MESSAGE_ALLOCATE_BUFFER) | DWORD(FORMAT_MESSAGE_FROM_SYSTEM) | DWORD(FORMAT_MESSAGE_IGNORE_INSERTS)
 
@@ -118,5 +128,6 @@ public extension DWORD {
 }
 
 public extension HRESULT {
+    @inlinable @inline(__always)
     var errorMessage: String {DWORD(bitPattern: self).errorMessage}
 }

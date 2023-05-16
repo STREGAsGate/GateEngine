@@ -13,6 +13,7 @@ public struct D3DBlendDescription {
     internal var rawValue: RawValue
 
     /// Specifies whether to use alpha-to-coverage as a multisampling technique when setting a pixel to a render target. For more info about using alpha-to-coverage, see Alpha-To-Coverage.
+    @inlinable @inline(__always)
     public var alphaToCoverageEnabled: Bool {
         get {
             return rawValue.AlphaToCoverageEnable.boolValue
@@ -23,6 +24,7 @@ public struct D3DBlendDescription {
     }
 
     /// Specifies whether to enable independent blending in simultaneous render targets. Set to TRUE to enable independent blending. If set to FALSE, only the RenderTarget[0] members are used; RenderTarget[1..7] are ignored.
+    @inlinable @inline(__always)
     public var independentBlendEnabled: Bool {
         get {
             return rawValue.IndependentBlendEnable.boolValue
@@ -33,6 +35,7 @@ public struct D3DBlendDescription {
     }
 
     /// An array of D3D12_RENDER_TARGET_BLEND_DESC structures that describe the blend states for render targets; these correspond to the eight render targets that can be bound to the output-merger stage at one time.
+    @inlinable @inline(__always)
     public var renderTarget: [D3DRenderTargetBlendDescription] {
         get {
             return withUnsafePointer(to: rawValue.RenderTarget.0) {p in
@@ -54,16 +57,19 @@ public struct D3DBlendDescription {
     private var _renderTarget: [D3DRenderTargetBlendDescription.RawValue]! = nil
 
     /// Describes the blend state.
+    @inlinable @inline(__always)
     public init() {
         self.rawValue = RawValue()
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }
 }
 
 public extension D3DBlendDescription {
+    @inlinable @inline(__always)
     static var `default`: D3DBlendDescription {
         return D3DBlendDescription(WinSDK.D3D12_BLEND_DESC(
             AlphaToCoverageEnable: false,
@@ -162,6 +168,7 @@ public extension D3DBlendDescription {
         )
     }
 
+    @inlinable @inline(__always)
     static var `additive`: D3DBlendDescription {
         return D3DBlendDescription(WinSDK.D3D12_BLEND_DESC(
             AlphaToCoverageEnable: false,

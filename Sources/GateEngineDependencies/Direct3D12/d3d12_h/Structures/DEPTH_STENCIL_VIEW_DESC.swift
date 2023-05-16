@@ -13,6 +13,7 @@ public struct D3DDepthStencilViewDescription {
     internal var rawValue: RawValue
 
     /// A DXGI_FORMAT-typed value that specifies the viewing format. For allowable formats, see Remarks.
+    @inlinable @inline(__always)
     public var format: DGIFormat {
         get {
             return DGIFormat(rawValue.Format)
@@ -23,6 +24,7 @@ public struct D3DDepthStencilViewDescription {
     }
 
     /// A D3D12_DSV_DIMENSION-typed value that specifies how the depth-stencil resource will be accessed. This member also determines which _DSV to use in the following union.
+    @inlinable @inline(__always)
     public var dimension: D3DDSVDimension {
         get {
             return D3DDSVDimension(rawValue.ViewDimension)
@@ -33,6 +35,7 @@ public struct D3DDepthStencilViewDescription {
     }
 
     /// A combination of D3D12_DSV_FLAGS enumeration constants that are combined by using a bitwise OR operation. The resulting value specifies whether the texture is read only. Pass 0 to specify that it isn't read only; otherwise, pass one or more of the members of the D3D12_DSV_FLAGS enumerated type.
+    @inlinable @inline(__always)
     public var flags: D3DDepthStencilViewFlags {
         get {
             return D3DDepthStencilViewFlags(rawValue.Flags)
@@ -43,6 +46,7 @@ public struct D3DDepthStencilViewDescription {
     }
 
     /// A D3D12_TEX1D_DSV structure that specifies a 1D texture subresource.
+    @inlinable @inline(__always)
     public var texture1D: D3DTexture1DDepthStencilView {
         get {
             return D3DTexture1DDepthStencilView(rawValue.Texture1D)
@@ -53,6 +57,7 @@ public struct D3DDepthStencilViewDescription {
     }
 
     /// A D3D12_TEX1D_ARRAY_DSV structure that specifies an array of 1D texture subresources.
+    @inlinable @inline(__always)
     public var texture1DArray: D3DTexture1DArrayDepthStencilView {
         get {
             return D3DTexture1DArrayDepthStencilView(rawValue.Texture1DArray)
@@ -63,6 +68,7 @@ public struct D3DDepthStencilViewDescription {
     }
 
     /// A D3D12_TEX2D_DSV structure that specifies a 2D texture subresource.
+    @inlinable @inline(__always)
     public var texture2D: D3DTexture2DDepthStencilView {
         get {
             return D3DTexture2DDepthStencilView(rawValue.Texture2D)
@@ -73,6 +79,7 @@ public struct D3DDepthStencilViewDescription {
     }
 
     /// A D3D12_TEX2D_ARRAY_DSV structure that specifies an array of 2D texture subresources.
+    @inlinable @inline(__always)
     public var texture2DArray: D3DTexture2DArrayDepthStencilView {
         get {
             return D3DTexture2DArrayDepthStencilView(rawValue.Texture2DArray)
@@ -83,6 +90,7 @@ public struct D3DDepthStencilViewDescription {
     }
 
     /// A D3D12_TEX2DMS_DSV structure that specifies a multisampled 2D texture.
+    @inlinable @inline(__always)
     public var texture2DMultiSampled: D3DTexture2DMultiSampledDepthStencilView {
         get {
             return D3DTexture2DMultiSampledDepthStencilView(rawValue.Texture2DMS)
@@ -93,6 +101,7 @@ public struct D3DDepthStencilViewDescription {
     }
 
     /// A D3D12_TEX2DMS_ARRAY_DSV structure that specifies an array of multisampled 2D textures.
+    @inlinable @inline(__always)
     public var texture2DMultiSampledArray: D3DTexture2DMultiSampledArrayDepthStencilView {
         get {
             return D3DTexture2DMultiSampledArrayDepthStencilView(rawValue.Texture2DMSArray)
@@ -113,7 +122,8 @@ public struct D3DDepthStencilViewDescription {
     - parameter texture2DMultiSampled: A D3D12_TEX2DMS_DSV structure that specifies a multisampled 2D texture.
     - parameter texture2DMultiSampledArray: A D3D12_TEX2DMS_ARRAY_DSV structure that specifies an array of multisampled 2D textures.
     */
-    public init(format: DGIFormat, 
+    @inlinable @inline(__always)
+    public init(format: DGIFormat,
                 dimension: D3DDSVDimension, 
                 flags: D3DDepthStencilViewFlags,
                 texture1D: D3DTexture1DDepthStencilView,
@@ -135,10 +145,12 @@ public struct D3DDepthStencilViewDescription {
     }
 
     /// Describes the subresources of a texture that are accessible from a depth-stencil view.
+    @inlinable @inline(__always)
     public init() {
         self.rawValue = RawValue()
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

@@ -19,6 +19,7 @@ public enum DGISwapEffect {
 
     case _unimplemented(RawValue)
     
+    @inlinable @inline(__always)
     public var rawValue: RawValue {
         switch self {
         case .flipSequential:
@@ -30,6 +31,7 @@ public enum DGISwapEffect {
         }
     }
 
+    @inlinable @inline(__always)
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL:

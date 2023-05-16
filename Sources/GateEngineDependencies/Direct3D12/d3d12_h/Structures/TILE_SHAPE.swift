@@ -13,6 +13,7 @@ public struct D3DTileShape {
     internal var rawValue: RawValue
 
     /// The width in texels of the tile.
+    @inlinable @inline(__always)
     public var width: UInt32 {
         get {
             return rawValue.WidthInTexels
@@ -23,6 +24,7 @@ public struct D3DTileShape {
     }
 
     /// The height in texels of the tile.
+    @inlinable @inline(__always)
     public var height: UInt32 {
         get {
             return rawValue.HeightInTexels
@@ -33,6 +35,7 @@ public struct D3DTileShape {
     }
 
     /// The depth in texels of the tile.
+    @inlinable @inline(__always)
     public var depth: UInt32 {
         get {
             return rawValue.DepthInTexels
@@ -47,10 +50,12 @@ public struct D3DTileShape {
     - parameter height: The height in texels of the tile.
     - parameter depth: The depth in texels of the tile.
     */
+    @inlinable @inline(__always)
     public init(width: UInt32, height: UInt32, depth: UInt32) {
         self.rawValue = RawValue(WidthInTexels: width, HeightInTexels: height, DepthInTexels: depth)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

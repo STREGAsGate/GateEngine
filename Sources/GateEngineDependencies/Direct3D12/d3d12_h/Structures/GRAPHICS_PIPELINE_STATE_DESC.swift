@@ -93,6 +93,7 @@ public struct D3DGraphicsPipelineStateDescription {
     - parameter cachedPipelineState: A cached pipeline state object, as a D3D12_CACHED_PIPELINE_STATE structure. pCachedBlob and CachedBlobSizeInBytes may be set to NULL and 0 respectively.
     - parameter flags: A D3D12_PIPELINE_STATE_FLAGS enumeration constant such as for "tool debug".
     */
+    @inlinable @inline(__always)
     public init(rootSignature: D3DRootSignature,
                 vertexShader: D3DShaderBytecode,
                 pixelShader: D3DShaderBytecode,
@@ -135,6 +136,7 @@ public struct D3DGraphicsPipelineStateDescription {
         self.flags = flags
     }
 
+    @inlinable @inline(__always)
     internal func withUnsafeRawValue<ResultType>(_ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
         let pRootSignature = rootSignature?.performFatally(as: D3DRootSignature.RawValue.self){$0}
         return try vertexShader.withUnsafeRawValue {VS in

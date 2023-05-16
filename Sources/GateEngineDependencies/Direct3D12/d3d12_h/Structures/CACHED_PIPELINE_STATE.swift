@@ -16,17 +16,20 @@ public struct D3DCachedPipelineState {
     /** Stores a pipeline state.
     - parameter cachedBlob: Specifies pointer that references the memory location of the cache.
     */
+    @inlinable @inline(__always)
     public init(cachedBlob: D3DBlob) {
-        self.rawValue = RawValue()
-        self.rawValue.pCachedBlob = UnsafeRawPointer(cachedBlob.bufferPointer)
-        self.rawValue.CachedBlobSizeInBytes = cachedBlob.bufferSize
+        let pCachedBlob = UnsafeRawPointer(cachedBlob.bufferPointer)
+        let CachedBlobSizeInBytes = cachedBlob.bufferSize
+        self.rawValue = RawValue(pCachedBlob, CachedBlobSizeInBytes)
     }
 
     /// Stores a pipeline state.
+    @inlinable @inline(__always)
     public init() {
         self.rawValue = RawValue(pCachedBlob: nil, CachedBlobSizeInBytes: 0)
     }
 
+    @inlinable @inline(__always)
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

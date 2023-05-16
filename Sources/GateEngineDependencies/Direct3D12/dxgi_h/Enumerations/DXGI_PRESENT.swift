@@ -15,9 +15,11 @@ public struct DGIPresentFlags: OptionSet {
     /// Present a frame from the current buffer to the output. Use this flag so that the presentation can use vertical-blank synchronization instead of sequencing buffers in the chain in the usual manner.
     public static let noSequence = DGIPresentFlags(rawValue: WinSDK.DXGI_PRESENT_DO_NOT_SEQUENCE)
 
+    @inlinable @inline(__always)
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
+    @inlinable @inline(__always)
     public init() {
         self.rawValue = 0
     }
