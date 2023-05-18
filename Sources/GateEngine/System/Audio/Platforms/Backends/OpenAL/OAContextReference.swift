@@ -4,12 +4,12 @@
  *
  * http://stregasgate.com
  */
-#if canImport(OpenALSoft)
+#if canImport(OpenALSoft) && !os(WASI)
 
 import Foundation
 import OpenALSoft
 
-internal class OAContextReference: AudioContextReference {
+internal class OAContextReference: AudioContextBackend {
     let device: OpenALDevice!
     
     init() {

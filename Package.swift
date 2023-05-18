@@ -223,7 +223,9 @@ let package = Package(
         
         return targets
     }(),
-    swiftLanguageVersions: [.v5]
+    swiftLanguageVersions: [.v5],
+    cLanguageStandard: .gnu11,
+    cxxLanguageStandard: .gnucxx14
 )
 
 #if os(Linux) || os(Android) || os(Windows)

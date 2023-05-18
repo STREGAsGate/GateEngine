@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if canImport(OpenALSoft)
+#if canImport(OpenALSoft) && !os(WASI)
 
 import Foundation
 import OpenALSoft
@@ -53,8 +53,8 @@ internal class OASourceReference: SpatialAudioSourceReference {
         source.stop()
     }
     
-    func setPosition(x: Float, y: Float, z: Float) {
-        source.setPosition(x: x, y: y, z: z)
+    func setPosition(_ position: GameMath.Position3) {
+        source.setPosition(x: position.x, y: position.y, z: position.z)
     }
     
     func setBuffer(_ buffer: AudioBuffer) {
