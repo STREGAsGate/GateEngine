@@ -17,21 +17,21 @@ internal protocol AudioContextBackend: AnyObject {
 
 public class AudioContext {
     internal let reference: AudioContextBackend
-    let backend: Backend
     
-    internal init(preferredBackend backend: Backend = .default) {
-        self.backend = backend
+    internal init() {
         #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
         self.reference = CAContextReference()
         #elseif os(WASI)
         self.reference = WAContextReference()
         #elseif os(Linux)
-        switch backend {
-        case .openAL:
-            self.reference = OAContextReference()
-        }
-        #elseif os(Windows)
+        self.reference = OAContextReference()
+        #elseif os(Windows) && swift(>=5.10)
+        #warning("XAudio2 Not Implemented.")
         self.reference = XAContextReference()
+        #elseif os(Windows)
+        self.reference = OAContextReference()
+        #else
+        #error("Not Implemented.")
         #endif
     }
     
@@ -47,30 +47,5 @@ public class AudioContext {
     
     public func createBuffer(path: String) -> AudioBuffer {
         return AudioBuffer(path: path, context: self)
-    }
-}
-
-public extension AudioContext {
-    enum Backend {
-        #if canImport(AVFoundation)
-        case coreAudio
-        #endif
-        #if canImport(WinSDK)
-        case xAudio
-        #endif
-        #if os(WASI) && canImport(WebAudio)
-        case webAudio
-        #endif
-        public static var `default`: Backend {
-            #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-            return .coreAudio
-            #elseif os(WASI)
-            return .webAudio
-            #elseif os(Windows)
-            return .xAudio
-            #else
-            #error("Platform not supported. No supported audio backends available.")
-            #endif
-        }
     }
 }

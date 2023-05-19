@@ -44,7 +44,7 @@ let package = Package(
                         dependencies.append(.target(name: "Direct3D12", condition: .when(platforms: [.windows])))
                         // XAudio is C++ and won't be available on all Swift versions so we'll use OpenAL as a fallback
                         dependencies.append(.target(name: "OpenALSoft", condition: .when(platforms: [.windows])))
-                        #if swift(>=5.9)
+                        #if swift(>=5.10)
                         #warning("Reminder: Check XAudio2 C++ build support.")
                         #endif
                         #endif
