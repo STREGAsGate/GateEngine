@@ -8,7 +8,7 @@ is a custom package written specifically for Gate Engine that is designed to mak
 ## Platform Support:
 | Platform | CI | Dependencies¹ | Render | Sound | Keyboard | Mouse | Touch | Gamepad |
 |---------:|:---|:--------------|:-------|:------|:----------|:-----|:------|:--------|
-| [**Windows**](https://www.swift.org/getting-started/#on-windows)² | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Windows.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) | None³ | ✔︎ | ⛌ | ✔︎ | ✔︎ | ⛌ | ◑ Buggy |
+| [**Windows**](https://www.swift.org/getting-started/#on-windows)² | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Windows.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) | None³ | ✔︎ | ◑ | ✔︎ | ✔︎ | ⛌ | ◑ Buggy |
 | [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | None | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
 | [**Linux**](https://www.swift.org/getting-started/#on-linux)     | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Linux.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml) | *TBD* | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
 | [**iOS**/**tvOS**](https://apps.apple.com/us/app/xcode/id497799835)  | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | None | ✔︎ | ✔︎ | ⛌ | ⛌ | ✔︎ | ✔︎
@@ -26,7 +26,7 @@ Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
 On most platforms, Gate Engine is a self contained Swift Package with no external dependencies. </br>
 Add the package to your project like any other package and you're done.
 ```swift
-.package(url: "https://github.com/STREGAsGate/GateEngine.git", branch: "main")
+.package(url: "https://github.com/STREGAsGate/GateEngine.git", .upToNextMajor(from: "0.0.1"))
 ```
 ### Examples
 A suite of example projects is available at <a href="https://github.com/STREGAsGate/GateEngineDemos" target="_blank">Gate Engine Demos</a>.
