@@ -134,6 +134,7 @@ public class ResourceManager {
 }
 
 extension ResourceManager {
+    @usableFromInline
     class Cache {
         var textures: [TextureKey : TextureCache] = [:]
         var geometries: [GeometryKey : GeometryCache] = [:]
@@ -163,13 +164,15 @@ extension ResourceManager {
 
 // MARK: - Geometry
 internal extension ResourceManager.Cache {
+    @usableFromInline
     struct GeometryKey: Hashable {
         let requestedPath: String
         let geometryOptions: GeometryImporterOptions
     }
     
+    @usableFromInline
     class GeometryCache {
-        var geometryBackend: GeometryBackend?
+        @usableFromInline var geometryBackend: GeometryBackend?
         var lastLoaded: Date
         var state: ResourceState
         var referenceCount: UInt
@@ -234,6 +237,7 @@ internal extension ResourceManager {
         return key
     }
     
+    @usableFromInline
     func geometryCache(for key: Cache.GeometryKey) -> Cache.GeometryCache? {
         return cache.geometries[key]
     }
@@ -295,6 +299,7 @@ internal extension ResourceManager {
 
 // MARK: - SkinnedGeometry
 internal extension ResourceManager.Cache {
+    @usableFromInline
     struct SkinnedGeometryKey: Hashable {
         let requestedPath: String
         let geometryOptions: GeometryImporterOptions

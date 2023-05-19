@@ -10,6 +10,7 @@ import GameMath
 @MainActor public final class Renderer {
     let _backend: RendererBackend = getDefaultBackend()
     
+    @usableFromInline
     lazy var rectOriginCentered: Geometry = {
         let positions: [Float] = [-0.5, -0.5, 0.0,
                                    0.5, -0.5, 0.0,
@@ -27,6 +28,8 @@ import GameMath
         let raw = RawGeometry(positions: positions, uvSets: [uvs], normals: nil, tangents: nil, colors: nil, indicies: indicies)
         return Geometry(raw)
     }()
+    
+    @usableFromInline
     lazy var rectOriginTopLeft: Geometry = {
         let positions: [Float] = [0.0, 0.0, 0.0,
                                   1.0, 0.0, 0.0,

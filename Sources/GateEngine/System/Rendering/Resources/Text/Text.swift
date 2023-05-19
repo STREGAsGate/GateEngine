@@ -26,7 +26,7 @@ public final class Text {
     }
     
     private var _texture: Texture! = nil
-    @MainActor internal var texture: Texture {
+    @MainActor @usableFromInline internal var texture: Texture {
         if needsUpdateTexture {
             needsUpdateTexture = false
             _texture = font.texture(forPointSize: UInt(actualPointSize.rounded()), style: style)
@@ -34,7 +34,7 @@ public final class Text {
         return _texture
     }
     @MainActor private var _geometry: MutableGeometry = MutableGeometry()
-    @MainActor internal var geometry: Geometry {
+    @MainActor @usableFromInline internal var geometry: Geometry {
         if needsUpdateGeometry {
             needsUpdateGeometry = false
             updateGeometry()
@@ -77,6 +77,7 @@ public final class Text {
             }
         }
     }
+    @usableFromInline
     internal var interfaceScale: Float {
         didSet {
             if oldValue != interfaceScale {
@@ -232,19 +233,9 @@ public final class Text {
 }
 
 extension Text {
+    @usableFromInline
     @MainActor var isReady: Bool {
-        #if DEBUG
-        let font = font.state == .ready
-        let texture = font && texture.state == .ready
-        let geometry = texture && geometry.state == .ready
-        
-        if font && texture && geometry {
-            return true
-        }
-        return false
-        #else
         return font.state == .ready && texture.state == .ready && geometry.state == .ready
-        #endif
     }
 }
 

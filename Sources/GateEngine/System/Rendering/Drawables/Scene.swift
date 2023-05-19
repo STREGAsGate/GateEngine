@@ -12,25 +12,25 @@ import GameMath
  A Scene is a drawing space with 3 dimentions and a persepctive camera.
  */
 @MainActor public struct Scene {
-    internal var camera: Camera
-    internal var viewport: Rect?
+    @usableFromInline internal var camera: Camera
+    @usableFromInline internal var viewport: Rect?
     
-    internal var pointLights: Set<ScenePointLight> = []
-    internal var spotLights: Set<SceneSpotLight> = []
-    internal var directionalLight: SceneDirectionalLight? = nil
+    @usableFromInline internal var pointLights: Set<ScenePointLight> = []
+    @usableFromInline internal var spotLights: Set<SceneSpotLight> = []
+    @usableFromInline internal var directionalLight: SceneDirectionalLight? = nil
 
-    internal var drawCommands: ContiguousArray<DrawCommand> = []
+    @usableFromInline internal var drawCommands: ContiguousArray<DrawCommand> = []
     
     /** Adds the camera to the scene
     Each scene can have a single camera. Only the most recent camera is kept.
     - parameter camera: The camera to view the scene from
      */
-    @inline(__always)
+    @inlinable @inline(__always)
     public mutating func setCamera(_ camera: Camera) {
         self.camera = camera
     }
     
-    @inline(__always)
+    @inlinable @inline(__always)
     public mutating func setViewport(_ viewport: Rect?) {
         self.viewport = viewport
     }
@@ -58,7 +58,7 @@ import GameMath
     - parameter flags: Options to customize how drawing is handled.
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
     */
-    @inline(__always)
+    @inlinable @inline(__always)
     public mutating func insert(_ geometry: Geometry, withMaterial material: Material, at transforms: [Transform3], flags: SceneElementFlags = .default) {
         guard geometry.state == .ready else {return}
         guard material.isReady else {return}
@@ -95,7 +95,7 @@ import GameMath
     - The  instancing is best effort and does not guarantee the same perfromance across platforms or package version. You should test each platform if you use many instances.
     - You may not explicilty choose the instancing, however you could create a new `Geometry` from the same URL wich would have a different id and have seperate instancing. This would allow both instancing types at the expence of an additional GPU resource for each `Geometry` reference.
     */
-    @inline(__always)
+    @inlinable @inline(__always)
     public mutating func insert(_ geometry: SkinnedGeometry, withPose pose: Skeleton.Pose, material: Material, at transforms: [Transform3], flags: SceneElementFlags = .default) {
         guard geometry.state == .ready else {return}
         guard material.isReady else {return}
@@ -108,7 +108,7 @@ import GameMath
         self.drawCommands.append(command)
     }
     
-    @inline(__always)
+    @inlinable @inline(__always)
     public mutating func insert(_ source: Geometry, withSourceMaterial sourceMaterial: Material,
                                 morphingTo destination: Geometry, withDestinationMaterial destinationMaterial: Material,
                                 interpolationFactors factor: Float,
@@ -172,7 +172,7 @@ import GameMath
         return drawCommands.isEmpty == false
     }
     
-    @_transparent
+    @inlinable @inline(__always)
     internal var hasLights: Bool {
         guard directionalLight != nil else {return true}
         guard pointLights.isEmpty else {return true}
@@ -189,6 +189,7 @@ import GameMath
     }
 }
 
+@usableFromInline
 internal struct ScenePointLight: Hashable {
     let pointer: PointLight
     let brightness: Float
@@ -208,11 +209,12 @@ internal struct ScenePointLight: Hashable {
         self.position = pointer.position.simd
     }
     
-    func hash(into hasher: inout Hasher) {
+    @usableFromInline func hash(into hasher: inout Hasher) {
         hasher.combine(pointer.id)
     }
 }
 
+@usableFromInline
 internal struct SceneSpotLight: Hashable {
     let pointer: SpotLight
     let brightness: Float
@@ -236,11 +238,12 @@ internal struct SceneSpotLight: Hashable {
         self.direction = pointer.direction.simd
     }
     
-    func hash(into hasher: inout Hasher) {
+    @usableFromInline func hash(into hasher: inout Hasher) {
         hasher.combine(pointer.id)
     }
 }
 
+@usableFromInline
 internal struct SceneDirectionalLight: Hashable {
     let pointer: DirectionalLight
     let brightness: Float
@@ -256,7 +259,7 @@ internal struct SceneDirectionalLight: Hashable {
         self.direction = pointer.direction.simd
     }
     
-    func hash(into hasher: inout Hasher) {
+    @usableFromInline func hash(into hasher: inout Hasher) {
         hasher.combine(pointer.id)
     }
 }
@@ -277,7 +280,7 @@ public struct SceneElementFlags: OptionSet, Hashable {
         self.rawValue = rawValue
     }
     
-    @_transparent
+    @_transparent @usableFromInline
     internal var drawFlags: DrawFlags {
         let cull: DrawFlags.Cull = self.contains(.cullBackface) ? .back : .disabled
         let depthTest: DrawFlags.DepthTest = self.contains(.disableDepthCull) ? .always : .lessThan

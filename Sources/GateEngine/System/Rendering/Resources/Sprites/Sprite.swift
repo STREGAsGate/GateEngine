@@ -20,17 +20,21 @@ import GameMath
 
     public var tintColor: Color
 
+    @usableFromInline
     internal lazy var geometryScale: Size3 = {
         return Size3(bounds.size.width, bounds.size.height, 1)
     }()
     
+    @usableFromInline
     internal lazy var uvOffset: Position2 = {
         return Position2((bounds.position.x + 0.001) / Float(texture.size.width), (bounds.position.y + 0.001) / Float(texture.size.height))
     }()
+    @usableFromInline
     internal lazy var uvScale: Size2 = {
         return Size2(bounds.size.width / Float(texture.size.width), bounds.size.height / Float(texture.size.height))
     }()
     
+    @usableFromInline
     internal var isReady: Bool {
         return texture.state == .ready
     }

@@ -7,6 +7,7 @@
 
 import Shaders
 
+@usableFromInline
 @MainActor internal protocol GeometryBackend: AnyObject {
     nonisolated var primitive: DrawFlags.Primitive {get}
     nonisolated var attributes: ContiguousArray<GeometryAttribute> {get}
@@ -19,6 +20,7 @@ import Shaders
 #endif
 }
 
+@usableFromInline
 internal struct GeometryAttribute: Hashable {
     let type: AttributeType
     let componentLength: Int

@@ -16,12 +16,15 @@ It's contents are stored within GPU accessible memory and this object represents
 When this object deinitializes it's contents will also be removed from GPU memory.
 */
 @MainActor public class SkinnedGeometry: Resource {
-    let cacheKey: ResourceManager.Cache.SkinnedGeometryKey
+    @usableFromInline
+    internal let cacheKey: ResourceManager.Cache.SkinnedGeometryKey
     
+    @usableFromInline
     internal var backend: GeometryBackend? {
         return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)?.geometryBackend
     }
     
+    @usableFromInline
     internal var skinJoints: [Skin.Joint]? {
         return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)?.skinJoints
     }

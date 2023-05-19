@@ -21,7 +21,7 @@ import GameMath
         self.isHeadless = delegate.isHeadless()
     }
     
-    let renderer: Renderer = Renderer()
+    @usableFromInline let renderer: Renderer = Renderer()
     @usableFromInline internal var renderingIsPermitted: Bool = false
     
     public private(set) lazy var windowManager: WindowManager = WindowManager(self)
