@@ -14,6 +14,7 @@ import GameMath
 import Shaders
 
 class MetalRenderer: RendererBackend {
+    static var isSupported: Bool = MTLCreateSystemDefaultDevice() != nil
     var device: MTLDevice = MTLCreateSystemDefaultDevice()!
     lazy var commandQueue: MTLCommandQueue = self.device.makeCommandQueue()!
     

@@ -285,7 +285,14 @@ internal extension ResourceManager {
     }
     
     func geometryBackend(from raw: RawGeometry) async -> GeometryBackend {
-#if canImport(MetalKit)
+#if GATEENGINE_FORCE_OPNEGL_APPLE
+        return await OpenGLGeometry(geometry: raw)
+#elseif canImport(MetalKit)
+        #if canImport(GLKit)
+        if await MetalRenderer.isSupported == false {
+            return await OpenGLGeometry(geometry: raw)
+        }
+        #endif
         return await MetalGeometry(geometry: raw)
 #elseif canImport(WebGL2)
         return await WebGL2Geometry(geometry: raw)
@@ -430,7 +437,14 @@ internal extension ResourceManager {
     }
     
     func geometryBackend(from raw: RawGeometry, skin: Skin) async -> GeometryBackend {
-#if canImport(MetalKit)
+#if GATEENGINE_FORCE_OPNEGL_APPLE
+        return await OpenGLGeometry(geometry: raw, skin: skin)
+#elseif canImport(MetalKit)
+    #if canImport(GLKit)
+        if await MetalRenderer.isSupported == false {
+            return await OpenGLGeometry(geometry: raw, skin: skin)
+        }
+    #endif
         return await MetalGeometry(geometry: raw, skin: skin)
 #elseif canImport(WebGL2)
         return await WebGL2Geometry(geometry: raw, skin: skin)
@@ -463,15 +477,22 @@ internal extension ResourceManager {
     }
     
     func geometryBackend(from raw: RawLines) async -> GeometryBackend {
-        #if canImport(MetalKit)
-        return await MetalGeometry(lines: raw)
-        #elseif canImport(WebGL2)
-        return await WebGL2Geometry(lines: raw)
-        #elseif canImport(WinSDK)
-        return await DX12Geometry(lines: raw)
-        #else
-        #error("Not implemented")
+#if GATEENGINE_FORCE_OPNEGL_APPLE
+        return await OpenGLGeometry(lines: raw)
+#elseif canImport(MetalKit)
+        #if canImport(GLKit)
+        if await MetalRenderer.isSupported == false {
+            return await OpenGLGeometry(lines: raw)
+        }
         #endif
+        return await MetalGeometry(lines: raw)
+#elseif canImport(WebGL2)
+        return await WebGL2Geometry(lines: raw)
+#elseif canImport(WinSDK)
+        return await DX12Geometry(lines: raw)
+#else
+#error("Not implemented")
+#endif
     }
 }
 
@@ -496,15 +517,22 @@ internal extension ResourceManager {
     }
     
     func geometryBackend(from raw: RawPoints) async -> GeometryBackend {
-        #if canImport(MetalKit)
-        return await MetalGeometry(points: raw)
-        #elseif canImport(WebGL2)
-        return await WebGL2Geometry(points: raw)
-        #elseif canImport(WinSDK)       
-        return await DX12Geometry(points: raw)
-        #else
-        #error("Not implemented")
+#if GATEENGINE_FORCE_OPNEGL_APPLE
+        return await OpenGLGeometry(points: raw)
+#elseif canImport(MetalKit)
+        #if canImport(GLKit)
+        if await MetalRenderer.isSupported == false {
+            return await OpenGLGeometry(points: raw)
+        }
         #endif
+        return await MetalGeometry(points: raw)
+#elseif canImport(WebGL2)
+        return await WebGL2Geometry(points: raw)
+#elseif canImport(WinSDK)
+        return await DX12Geometry(points: raw)
+#else
+#error("Not implemented")
+#endif
     }
 }
 
@@ -660,7 +688,14 @@ internal extension ResourceManager {
     }
     
     func textureBackend(data: Data, size: Size2, mipMapping: MipMapping) async -> TextureBackend {
-#if canImport(MetalKit)
+#if GATEENGINE_FORCE_OPNEGL_APPLE
+        return await OpenGLTexture(data: data, size: size, mipMapping: mipMapping)
+#elseif canImport(MetalKit)
+        #if canImport(GLKit)
+        if await MetalRenderer.isSupported == false {
+            return await OpenGLTexture(data: data, size: size, mipMapping: mipMapping)
+        }
+        #endif
         return await MetalTexture(data: data, size: size, mipMapping: mipMapping)
 #elseif canImport(WebGL2)
         return await WebGL2Texture(data: data, size: size, mipMapping: mipMapping)
@@ -671,7 +706,14 @@ internal extension ResourceManager {
 #endif
     }
     func textureBackend(renderTargetBackend: RenderTargetBackend) async -> TextureBackend {
-#if canImport(MetalKit)
+#if GATEENGINE_FORCE_OPNEGL_APPLE
+        return await OpenGLTexture(renderTargetBackend: renderTargetBackend)
+#elseif canImport(MetalKit)
+        #if canImport(GLKit)
+        if await MetalRenderer.isSupported == false {
+            return await OpenGLTexture(renderTargetBackend: renderTargetBackend)
+        }
+        #endif
         return await MetalTexture(renderTargetBackend: renderTargetBackend)
 #elseif canImport(WebGL2)
         return await WebGL2Texture(renderTargetBackend: renderTargetBackend)

@@ -92,6 +92,7 @@ import OpenGL_Windows
 @_transparent @usableFromInline internal var GL_COMPILE_STATUS: Int32 {return OpenGL_Windows.GL_COMPILE_STATUS}
 @_transparent @usableFromInline internal var GL_INFO_LOG_LENGTH: Int32 {return OpenGL_Windows.GL_INFO_LOG_LENGTH}
 @_transparent @usableFromInline internal var GL_LINK_STATUS: Int32 {return OpenGL_Windows.GL_LINK_STATUS}
+@_transparent @usableFromInline internal var GL_VALIDATE_STATUS: Int32 {return OpenGL_Windows.GL_VALIDATE_STATUS}
 
 @_transparent @usableFromInline internal var GL_VERTEX_SHADER: Int32 {return OpenGL_Windows.GL_VERTEX_SHADER}
 @_transparent @usableFromInline internal var GL_FRAGMENT_SHADER: Int32 {return OpenGL_Windows.GL_FRAGMENT_SHADER}
@@ -225,6 +226,9 @@ public typealias GLdouble = OpenGL_Windows.GLdouble
     OpenGL_Windows.glFrontFace(mode)
 }
 
+@_transparent @usableFromInline internal func _glCullFace(_ mode: GLenum) {
+    OpenGL_Windows.glCullFace(mode)
+}
 
 //framebuffer
 @_transparent @usableFromInline internal func _glCheckFramebufferStatus(_ target: GLenum) -> GLenum {
@@ -475,6 +479,10 @@ public typealias GLdouble = OpenGL_Windows.GLdouble
     OpenGL_Windows.glLinkProgram(program)
 }
 
+@_transparent @usableFromInline internal func _glValidateProgram(_ program: GLuint) {
+    OpenGL_Windows.glValidateProgram(program)
+}
+
 @_transparent @usableFromInline internal func _glDeleteShader(_ shader: GLuint) {
     OpenGL_Windows.glDeleteShader(shader)
 }
@@ -509,6 +517,10 @@ public typealias GLdouble = OpenGL_Windows.GLdouble
 
 @_transparent @usableFromInline internal func _glBlendFunc(_ sfactor: GLenum, _ dfactor: GLenum) {
     OpenGL_Windows.glBlendFunc(sfactor, dfactor)
+}
+
+@_transparent @usableFromInline internal func _glBlendFuncSeparate(_ sfactorRGB: GLenum, _ dfactorRGB: GLenum, sfactorAlpha: GLenum, dfactorAlpha: GLenum) {
+    OpenGL_Windows.glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha)
 }
 
 @_transparent @usableFromInline internal func _glReadBuffer(_ mode: GLenum) {

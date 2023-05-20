@@ -92,6 +92,7 @@ import GLKit
 @_transparent @usableFromInline internal var GL_COMPILE_STATUS: Int32 {return GLKit.GL_COMPILE_STATUS}
 @_transparent @usableFromInline internal var GL_INFO_LOG_LENGTH: Int32 {return GLKit.GL_INFO_LOG_LENGTH}
 @_transparent @usableFromInline internal var GL_LINK_STATUS: Int32 {return GLKit.GL_LINK_STATUS}
+@_transparent @usableFromInline internal var GL_VALIDATE_STATUS: Int32 {return GLKit.GL_VALIDATE_STATUS}
 
 @_transparent @usableFromInline internal var GL_VERTEX_SHADER: Int32 {return GLKit.GL_VERTEX_SHADER}
 @_transparent @usableFromInline internal var GL_FRAGMENT_SHADER: Int32 {return GLKit.GL_FRAGMENT_SHADER}
@@ -222,6 +223,10 @@ public typealias GLdouble = GLKit.GLdouble
 
 @_transparent @usableFromInline internal func _glFrontFacing(_ mode: GLenum) {
     GLKit.glFrontFace(mode)
+}
+
+@_transparent @usableFromInline internal func _glCullFace(_ mode: GLenum) {
+    GLKit.glCullFace(mode)
 }
 
 //framebuffer
@@ -482,6 +487,10 @@ public typealias GLdouble = GLKit.GLdouble
     GLKit.glLinkProgram(program)
 }
 
+@_transparent @usableFromInline internal func _glValidateProgram(_ program: GLuint) {
+    GLKit.glValidateProgram(program)
+}
+
 @_transparent @usableFromInline internal func _glDeleteShader(_ shader: GLuint) {
     GLKit.glDeleteShader(shader)
 }
@@ -516,6 +525,10 @@ public typealias GLdouble = GLKit.GLdouble
 
 @_transparent @usableFromInline internal func _glBlendFunc(_ sfactor: GLenum, _ dfactor: GLenum) {
     GLKit.glBlendFunc(sfactor, dfactor)
+}
+
+@_transparent @usableFromInline internal func _glBlendFuncSeparate(_ sfactorRGB: GLenum, _ dfactorRGB: GLenum, sfactorAlpha: GLenum, dfactorAlpha: GLenum) {
+    GLKit.glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha)
 }
 
 @_transparent @usableFromInline internal func _glReadBuffer(_ mode: GLenum) {

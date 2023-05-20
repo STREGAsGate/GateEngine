@@ -110,17 +110,20 @@ class AppKitWindow: WindowBacking {
             UserDefaults.standard.synchronize()
         }
         
-        // Update to the best GPU
-        if #available(macOS 10.15, *) {
-            let metalView = nsWindowController.contentViewController!.view as! MTKView
-            if let device = metalView.preferredDevice {
-                Game.shared.renderer.device = device
-                metalView.device = device
-            }
-        }else if let screenID = self.nsWindowController.window?.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID {
-            if let device = CGDirectDisplayCopyCurrentMetalDevice(screenID) {
-                Game.shared.renderer.device = device
-                (nsWindowController.contentViewController!.view as! MTKView).device = device
+        if MetalRenderer.isSupported {
+            // Update to the best GPU
+            if #available(macOS 10.15, *) {
+                if let metalView = nsWindowController.contentViewController?.view as? MTKView {
+                    if let device = metalView.preferredDevice {
+                        Game.shared.renderer.device = device
+                        metalView.device = device
+                    }
+                }
+            }else if let screenID = self.nsWindowController.window?.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID {
+                if let device = CGDirectDisplayCopyCurrentMetalDevice(screenID) {
+                    Game.shared.renderer.device = device
+                    (nsWindowController.contentViewController!.view as! MTKView).device = device
+                }
             }
         }
     }

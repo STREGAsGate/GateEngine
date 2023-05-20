@@ -404,13 +404,15 @@ public enum OpenGL {
             public enum Property {
                 case linkStatus
                 case infoLogLength
-                
+                case validateStatus
                 @inlinable @inline(__always) internal var value: Int32 {
                     switch self {
                     case .linkStatus:
                         return GL_LINK_STATUS
                     case .infoLogLength:
                         return GL_INFO_LOG_LENGTH
+                    case .validateStatus:
+                        return GL_VALIDATE_STATUS
                     }
                 }
             }
@@ -608,6 +610,20 @@ public enum OpenGL {
         }
     }
     
+    public enum CullFace {
+        case front
+        case back
+        
+        @inlinable @inline(__always) var value: Int32 {
+            switch self {
+            case .front:
+                return GL_FRONT
+            case .back:
+                return GL_BACK
+            }
+        }
+    }
+    
     public struct Error: Swift.Error, CustomStringConvertible {
         public let kind: Kind
         public let function: StaticString
@@ -665,6 +681,10 @@ public let glBackBuffer = GL_BACK
 
 @inlinable @inline(__always) public func glFrontFacing(_ mode: OpenGL.FaceWinding) {
     _glFrontFacing(GLenum(mode.value))
+}
+
+@inlinable @inline(__always) public func glCullFace(_ mode: OpenGL.CullFace) {
+    _glCullFace(GLenum(mode.value))
 }
 
 @inlinable @inline(__always) public func glCheckFramebufferStatus(target: OpenGL.Framebuffer.Target) -> OpenGL.Framebuffer.Status {
@@ -834,7 +854,7 @@ public let glBackBuffer = GL_BACK
     var param: GLint = -1
     _glGetShaderiv(shader, GLenum(property.value), &param)
     
-    let error = SwiftGL.glGetError()
+    let error = OpenGL_GateEngine.glGetError()
     switch error {
     case .invalidOperation:
         throw OpenGL.Error(.invalidOperation, #function, ["shader compiler is not supported.",
@@ -1054,7 +1074,7 @@ public let glBackBuffer = GL_BACK
 
 @inlinable @inline(__always) public func glDrawElements(mode: OpenGL.Elements.Mode, count: GLsizei, type: OpenGL.Types, indices: UnsafeRawPointer! = nil) throws {
     _glDrawElements(GLenum(mode.value), count, GLenum(type.value), indices)
-    let error = SwiftGL.glGetError()
+    let error = OpenGL_GateEngine.glGetError()
     switch error {
     case .invalidOperation:
         throw OpenGL.Error(error, #function, ["a geometry shader is active and mode is incompatible with the input primitive type of the geometry shader in the currently installed program object",
@@ -1071,7 +1091,7 @@ public let glBackBuffer = GL_BACK
 
 @inlinable @inline(__always) public func glDrawElementsInstanced(mode: OpenGL.Elements.Mode, count: GLsizei, type: OpenGL.Types, indices: UnsafeRawPointer! = nil, instanceCount: GLsizei) throws {
     _glDrawElementsInstanced(GLenum(mode.value), count, GLenum(type.value), indices, instanceCount)
-    let error = SwiftGL.glGetError()
+    let error = OpenGL_GateEngine.glGetError()
     switch error {
     case .invalidOperation:
         throw OpenGL.Error(error, #function, ["a geometry shader is active and mode is incompatible with the input primitive type of the geometry shader in the currently installed program object",
@@ -1118,6 +1138,10 @@ public let glBackBuffer = GL_BACK
 
 @inlinable @inline(__always) public func glLinkProgram(_ program: GLuint) {
     _glLinkProgram(program)
+}
+
+@inlinable @inline(__always) public func glValidateProgram(_ program: GLuint) {
+    _glValidateProgram(program)
 }
 
 @inlinable @inline(__always) public func glDeleteShader(_ shader: GLuint) {
@@ -1190,6 +1214,10 @@ public let glBackBuffer = GL_BACK
 
 @inlinable @inline(__always) public func glBlendFunc(source: OpenGL.Blending.Function, destination: OpenGL.Blending.Function) {
     _glBlendFunc(GLenum(source.value), GLenum(destination.value))
+}
+
+@inlinable @inline(__always) public func glBlendFuncSeparate(sourceRGB: OpenGL.Blending.Function, destinationRGB: OpenGL.Blending.Function, sourceAlpha: OpenGL.Blending.Function, destinationAlpha: OpenGL.Blending.Function) {
+    _glBlendFuncSeparate(GLenum(sourceRGB.value), GLenum(destinationRGB.value), sfactorAlpha: GLenum(sourceAlpha.value), dfactorAlpha: GLenum(destinationAlpha.value))
 }
 
 @inlinable @inline(__always) public func glReadBuffer(_ target: OpenGL.Framebuffer.ReadWrite) {

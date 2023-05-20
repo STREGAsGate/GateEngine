@@ -256,7 +256,14 @@ extension RenderTargetBackend {
 
 @_transparent
 @MainActor func getRenderTargetBackend(windowBacking: WindowBacking?) -> RenderTargetBackend {
-#if canImport(MetalKit)
+#if GATEENGINE_FORCE_OPNEGL_APPLE
+    return OpenGLRenderTarget(isWindow: windowBacking != nil)
+#elseif canImport(MetalKit)
+    #if canImport(GLKit)
+    if MetalRenderer.isSupported == false {
+        return OpenGLRenderTarget(isWindow: windowBacking != nil)
+    }
+    #endif
     return MetalRenderTarget(windowBacking: windowBacking)
 #elseif canImport(WebGL2)
     return WebGL2RenderTarget(isWindow: windowBacking != nil)

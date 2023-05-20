@@ -91,6 +91,7 @@ import Foundation
 @_transparent @usableFromInline internal var GL_COMPILE_STATUS: Int32 {fatalError("OpenGL Not Supported")}
 @_transparent @usableFromInline internal var GL_INFO_LOG_LENGTH: Int32 {fatalError("OpenGL Not Supported")}
 @_transparent @usableFromInline internal var GL_LINK_STATUS: Int32 {fatalError("OpenGL Not Supported")}
+@_transparent @usableFromInline internal var GL_VALIDATE_STATUS: Int32 {fatalError("OpenGL Not Supported")}
 
 @_transparent @usableFromInline internal var GL_VERTEX_SHADER: Int32 {fatalError("OpenGL Not Supported")}
 @_transparent @usableFromInline internal var GL_FRAGMENT_SHADER: Int32 {fatalError("OpenGL Not Supported")}
@@ -221,6 +222,10 @@ public typealias GLdouble = Double
 @_transparent @usableFromInline internal var GL_DEPTH: Int32 {fatalError("OpenGL Not Supported")}
 
 @_transparent @usableFromInline internal func _glFrontFacing(_ mode: GLenum) {
+    fatalError("OpenGL Not Supported")
+}
+
+@_transparent @usableFromInline internal func _glCullFace(_ mode: GLenum) {
     fatalError("OpenGL Not Supported")
 }
 
@@ -481,6 +486,10 @@ public typealias GLdouble = Double
     fatalError("OpenGL Not Supported")
 }
 
+@_transparent @usableFromInline internal func _glValidateProgram(_ program: GLuint) {
+    fatalError("OpenGL Not Supported")
+}
+
 @_transparent @usableFromInline internal func _glDeleteShader(_ shader: GLuint) {
     fatalError("OpenGL Not Supported")
 }
@@ -514,6 +523,10 @@ public typealias GLdouble = Double
 }
 
 @_transparent @usableFromInline internal func _glBlendFunc(_ sfactor: GLenum, _ dfactor: GLenum) {
+    fatalError("OpenGL Not Supported")
+}
+
+@_transparent @usableFromInline internal func _glBlendFuncSeparate(_ sfactorRGB: GLenum, _ dfactorRGB: GLenum, sfactorAlpha: GLenum, dfactorAlpha: GLenum) {
     fatalError("OpenGL Not Supported")
 }
 

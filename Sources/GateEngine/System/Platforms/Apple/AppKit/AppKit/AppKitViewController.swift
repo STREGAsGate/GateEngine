@@ -17,7 +17,15 @@ internal class AppKitViewController: GCEventViewController {
     init(window: AppKitWindow, size: Size2) {
         self.window = window
         super.init(nibName: nil, bundle: nil)
-        self.view = MetalView(viewController: self, size: CGSize(size))
+        #if GATEENGINE_FORCE_OPNEGL_APPLE
+        self.view = GLKitView(viewController: self, size: CGSize(size))
+        #else
+        if MetalRenderer.isSupported {
+            self.view = MetalView(viewController: self, size: CGSize(size))
+        }else{
+            self.view = GLKitView(viewController: self, size: CGSize(size))
+        }
+        #endif
     }
     
     override func updateViewConstraints() {

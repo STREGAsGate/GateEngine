@@ -40,6 +40,8 @@ let package = Package(
                         dependencies.append(contentsOf: ["GameMath", "Shaders", "TrueType", "LibSPNG"])
                         dependencies.append(.target(name: "Vorbis", condition: .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])))
                         
+                        dependencies.append(.target(name: "OpenGL_GateEngine", condition: .when(platforms: [.macOS, .iOS, .tvOS, .linux, .android])))
+                        
                         #if os(Windows)
                         dependencies.append(.target(name: "Direct3D12", condition: .when(platforms: [.windows])))
                         // XAudio is C++ and won't be available on all Swift versions so we'll use OpenAL as a fallback
@@ -51,7 +53,6 @@ let package = Package(
                         
                         #if os(Linux)
                         dependencies.append(.target(name: "LinuxSupport", condition: .when(platforms: [.linux, .android])))
-                        dependencies.append(.target(name: "OpenGL_GateEngine", condition: .when(platforms: [.linux, .android])))
                         dependencies.append(.target(name: "OpenALSoft", condition: .when(platforms: [.linux, .android])))
                         #endif
                         
@@ -74,6 +75,9 @@ let package = Package(
                         .copy("_Resources/GateEngine"),
                         .copy("System/HID/GamePad/GamePadInterpreter/Interpreters/HID/Mapping/SDL2/SDL2 Game Controller DB.txt"),
                     ],
+                    cSettings: [
+                        .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS, .iOS, .tvOS])),
+                    ],
                     swiftSettings: {
                         var settings: [SwiftSetting] = []
                         
@@ -91,6 +95,7 @@ let package = Package(
                             .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
                             .define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
                             .define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
+                            .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, .iOS, .tvOS])),
                         ])
                         #endif
                         return settings
@@ -181,6 +186,14 @@ let package = Package(
                         .linkedLibrary("D3DCompiler"),
                     ])
         )
+        #endif
+        
+        #if os(macOS)
+        targets.append(contentsOf: [
+            .target(name: "OpenGL_GateEngine",
+                    path: "Sources/GateEngineDependencies/OpenGL/OpenGL_GateEngine",
+                    cSettings: [.define("GL_SILENCE_DEPRECATION")])
+        ])
         #endif
         
         #if os(Linux) || os(Android)

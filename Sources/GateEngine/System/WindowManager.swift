@@ -64,11 +64,14 @@ import GameMath
 extension WindowManager: WindowDelegate {
     func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float) {
         #if GATEENGINE_SUPPORTS_MULTIWINDOW
+        window.didDrawSomething = false
         self.game.renderingIsPermitted = true
         game.windowsThatRequestedDraw.append((window, deltaTime))
         self.game.renderingIsPermitted = false
         #else
+        window.didDrawSomething = false
         if self.game.ecs.shouldRenderAfterUpdate(withTimePassed: deltaTime) {
+            window.didDrawSomething = true
             self.game.ecs.updateRendering(withTimePassed: deltaTime, window: window)
         }
         #endif

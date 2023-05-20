@@ -27,6 +27,8 @@ public enum WindowStyle {
     
     weak var delegate: WindowDelegate? = nil
     
+    internal var didDrawSomething: Bool = false
+    
     public enum State {
         ///The window exists but isn't on screen
         case hidden

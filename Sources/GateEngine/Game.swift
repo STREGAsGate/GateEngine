@@ -68,6 +68,7 @@ import GameMath
                 self.renderingIsPermitted = true
                 for pair: (window: Window, deltaTime: Float) in windowsThatRequestedDraw {
                     self.ecs.updateRendering(withTimePassed: pair.deltaTime, window: pair.window)
+                    pair.window.didDrawSomething = true
                 }
                 self.renderingIsPermitted = false
             }

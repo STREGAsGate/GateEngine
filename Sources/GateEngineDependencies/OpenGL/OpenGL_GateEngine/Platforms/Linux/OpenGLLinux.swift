@@ -92,6 +92,7 @@ import OpenGL_Linux
 @_transparent @usableFromInline internal var GL_COMPILE_STATUS: Int32 {return OpenGL_Linux.GL_COMPILE_STATUS}
 @_transparent @usableFromInline internal var GL_INFO_LOG_LENGTH: Int32 {return OpenGL_Linux.GL_INFO_LOG_LENGTH}
 @_transparent @usableFromInline internal var GL_LINK_STATUS: Int32 {return OpenGL_Linux.GL_LINK_STATUS}
+@_transparent @usableFromInline internal var GL_VALIDATE_STATUS: Int32 {return OpenGL_Linux.GL_VALIDATE_STATUS}
 
 @_transparent @usableFromInline internal var GL_VERTEX_SHADER: Int32 {return OpenGL_Linux.GL_VERTEX_SHADER}
 @_transparent @usableFromInline internal var GL_FRAGMENT_SHADER: Int32 {return OpenGL_Linux.GL_FRAGMENT_SHADER}
@@ -220,6 +221,10 @@ public typealias GLdouble = OpenGL_Linux.GLdouble
 
 @_transparent @usableFromInline internal func _glFrontFacing(_ mode: GLenum) {
     OpenGL_Linux.glFrontFace(mode)
+}
+
+@_transparent @usableFromInline internal func _glCullFace(_ mode: GLenum) {
+    OpenGL_Linux.glCullFace(mode)
 }
 
 //framebuffer
@@ -479,6 +484,10 @@ public typealias GLdouble = OpenGL_Linux.GLdouble
     OpenGL_Linux.glLinkProgram(program)
 }
 
+@_transparent @usableFromInline internal func _glValidateProgram(_ program: GLuint) {
+    OpenGL_Linux.glValidateProgram(program)
+}
+
 @_transparent @usableFromInline internal func _glDeleteShader(_ shader: GLuint) {
     OpenGL_Linux.glDeleteShader(shader)
 }
@@ -513,6 +522,10 @@ public typealias GLdouble = OpenGL_Linux.GLdouble
 
 @_transparent @usableFromInline internal func _glBlendFunc(_ sfactor: GLenum, _ dfactor: GLenum) {
     OpenGL_Linux.glBlendFunc(sfactor, dfactor)
+}
+
+@_transparent @usableFromInline internal func _glBlendFuncSeparate(_ sfactorRGB: GLenum, _ dfactorRGB: GLenum, sfactorAlpha: GLenum, dfactorAlpha: GLenum) {
+    OpenGL_Linux.glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha)
 }
 
 @_transparent @usableFromInline internal func _glReadBuffer(_ mode: GLenum) {
