@@ -57,6 +57,11 @@ public extension System {
             }
         }
     }
+    
+    @inlinable @inline(__always)
+    public var entities: ContiguousArray<Entity> {
+        return Game.shared.entities
+    }
         
     internal final func willUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) {
         if didSetup == false {

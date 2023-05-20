@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class RigComponent: Component {
+public class Rig3DComponent: Component {
     public var disabled: Bool = false
     internal var deltaAccumulator: Float = 0
     public var slowAnimationsPastDistance: Float = 20
@@ -245,7 +245,7 @@ public class RigComponent: Component {
     public static let componentID: ComponentID = ComponentID()
 }
 
-public extension RigComponent {
+public extension Rig3DComponent {
     func reset(keepingAnimationTime keepAnimationTime: Bool = false) {
         self.blendingAccumulator = 0
         self.blendingDuration = nil
@@ -265,8 +265,8 @@ public class RigAttachmentComponent: Component {
 }
 
 public extension Entity {
-    @inline(__always)
-    var rigComponent: RigComponent {
-        return self[RigComponent.self]
+    @inlinable @inline(__always)
+    var rig3DComponent: Rig3DComponent {
+        return self[Rig3DComponent.self]
     }
 }

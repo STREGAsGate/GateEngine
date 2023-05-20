@@ -11,7 +11,7 @@ public class RigSystem: System {
     var checkedIDs: Set<ObjectIdentifier> = []
     func getFarAway(from entites: ContiguousArray<Entity>) -> Entity? {
         func filter(_ entity: Entity) -> Bool {
-            if let rig = entity.component(ofType: RigComponent.self) {
+            if let rig = entity.component(ofType: Rig3DComponent.self) {
                 return rig.disabled == false && rig.deltaAccumulator > 0 && checkedIDs.contains(entity.id) == false
             }
             return false
@@ -32,11 +32,11 @@ public class RigSystem: System {
         func shouldAccumulate(entity: Entity) -> Bool {
             guard let cameraTransform = game.cameraEntity?.component(ofType: Transform3Component.self) else {return false}
             guard let transform = entity.component(ofType: Transform3Component.self) else {return false}
-            guard let rig = entity.component(ofType: RigComponent.self) else {return false}
+            guard let rig = entity.component(ofType: Rig3DComponent.self) else {return false}
             return cameraTransform.position.distance(from: transform.position) > rig.slowAnimationsPastDistance
         }
         func updateAnimation(for entity: Entity) {
-            if let component = entity.component(ofType: RigComponent.self), component.disabled == false {
+            if let component = entity.component(ofType: Rig3DComponent.self), component.disabled == false {
                 if let animation = component.activeAnimation {
                     if let scale = entity.component(ofType: Transform3Component.self)?.scale {
                         component.update(deltaTime: deltaTime + component.deltaAccumulator, objectScale: scale)
@@ -65,7 +65,7 @@ public class RigSystem: System {
         }
         for entity in game.entities {
             guard entity != slowEntity else {continue}
-            if let component = entity.component(ofType: RigComponent.self), component.disabled == false {
+            if let component = entity.component(ofType: Rig3DComponent.self), component.disabled == false {
                 if shouldAccumulate(entity: entity) {
                     component.deltaAccumulator += deltaTime
                 }else{
@@ -96,7 +96,7 @@ public class RigSystem: System {
             return
         }
         guard let parentTransform = parent.component(ofType: Transform3Component.self) else {return}
-        guard let parentRig = parent.component(ofType: RigComponent.self) else {return}
+        guard let parentRig = parent.component(ofType: Rig3DComponent.self) else {return}
         guard let joint = parentRig.skeleton.jointNamed(rigAttachmentComponenet.parentJointName) else {return}
         entity.configure(Transform3Component.self) { component in
             let transform = (parentTransform.transform.createMatrix() * joint.modelSpace).transform
@@ -106,4 +106,7 @@ public class RigSystem: System {
     }
     
     public override class var phase: System.Phase {.simulation}
+    public override class func sortOrder() -> Int? {
+        return _SystemSortOrder.rigSystem.rawValue
+    }
 }

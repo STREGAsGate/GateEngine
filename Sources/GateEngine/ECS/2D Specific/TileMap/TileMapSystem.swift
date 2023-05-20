@@ -48,4 +48,7 @@ public final class TileMapSystem: System {
     }
 
     public override class var phase: System.Phase {.updating}
+    public override class func sortOrder() -> Int? {
+        return _SystemSortOrder.tileMapSystem.rawValue
+    }
 }

@@ -105,8 +105,8 @@ public extension Entity {
     
     /// Allows changing a component, addind it first if needed.
     @inlinable
-    func configure<T: Component>(_ type: T.Type, _ config: (_ component: inout T)->()) {
-        config(&self[T.self])
+    func configure<T: Component, ResultType>(_ type: T.Type, _ config: (_ component: inout T) -> ResultType) -> ResultType {
+        return config(&self[T.self])
     }
     
     /// Allows changing a component with async, creating the component if needed.
