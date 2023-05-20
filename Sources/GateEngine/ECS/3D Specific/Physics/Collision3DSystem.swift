@@ -351,7 +351,7 @@ extension Collision3DSystem {
     }
 }
 
-extension Collision3DSystem {
+public extension Collision3DSystem {
     private var octrees: [OctreeComponent] {
         return self.entities.filter({$0.hasComponent(OctreeComponent.self)}).map({$0[OctreeComponent.self]})
     }
