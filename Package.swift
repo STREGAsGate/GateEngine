@@ -40,7 +40,9 @@ let package = Package(
                         dependencies.append(contentsOf: ["GameMath", "Shaders", "TrueType", "LibSPNG"])
                         dependencies.append(.target(name: "Vorbis", condition: .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])))
                         
+                        #if os(macOS) || os(Linux)
                         dependencies.append(.target(name: "OpenGL_GateEngine", condition: .when(platforms: [.macOS, .iOS, .tvOS, .linux, .android])))
+                        #endif
                         
                         #if os(Windows)
                         dependencies.append(.target(name: "Direct3D12", condition: .when(platforms: [.windows])))
