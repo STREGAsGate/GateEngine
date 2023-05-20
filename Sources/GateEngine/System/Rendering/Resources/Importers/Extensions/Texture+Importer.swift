@@ -9,9 +9,13 @@ import Foundation
 import GameMath
 
 extension ResourceManager {
-    public func addTextureImporter(_ type: TextureImporter.Type) {
+    public func addTextureImporter(_ type: TextureImporter.Type, atEnd: Bool = false) {
         guard importers.textureImporters.contains(where: {$0 == type}) == false else {return}
-        importers.textureImporters.insert(type, at: 0)
+        if atEnd {
+            importers.textureImporters.append(type)
+        }else{
+            importers.textureImporters.insert(type, at: 0)
+        }
     }
     
     internal func textureImporterForFile(_ file: URL) -> TextureImporter? {

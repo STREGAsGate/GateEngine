@@ -8,9 +8,13 @@
 import Foundation
 
 extension ResourceManager {
-    public func addGeometryImporter(_ type: GeometryImporter.Type) {
+    public func addGeometryImporter(_ type: GeometryImporter.Type, atEnd: Bool = false) {
         guard importers.geometryImporters.contains(where: {$0 == type}) == false else {return}
-        importers.geometryImporters.insert(type, at: 0)
+        if atEnd {
+            importers.geometryImporters.append(type)
+        }else{
+            importers.geometryImporters.insert(type, at: 0)
+        }
     }
     
     fileprivate func importerForFile(_ file: URL) -> GeometryImporter? {
