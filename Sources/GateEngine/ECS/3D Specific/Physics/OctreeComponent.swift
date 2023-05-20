@@ -6,14 +6,21 @@
  */
 
 import func Foundation.floor
+import GameMath
+
+public extension OctreeComponent {
+    func load(_ path: String, options: GeometryImporterOptions = .none, center: Position3) async throws {
+        self.load(withCenter: center, triangles: try await RawGeometry(path: path).generateCollisionTrianges())
+    }
+}
 
 extension OctreeComponent {
-    @inlinable
+    @inline(__always)
     func trianglesHit(by ray: Ray3D, filter: ((CollisionTriangle)->Bool)? = nil) -> [(position: Position3, triangle: CollisionTriangle)] {
         return rootNode.trianglesHit(by: ray, filter: filter)
     }
     
-    @inlinable
+    @inline(__always)
     func trianglesNear(_ box: AxisAlignedBoundingBox3D) -> [CollisionTriangle] {
         var triangles: [CollisionTriangle] = []
         for node in self.nodesNear(box) {
@@ -27,7 +34,7 @@ extension OctreeComponent {
 //    }
 }
 
-final class OctreeComponent: Component {
+public final class OctreeComponent: Component {
     @inline(__always)
     var center: Position3 {return rootNode.boundingBox.center}
     @inline(__always)
@@ -48,8 +55,8 @@ final class OctreeComponent: Component {
         var position: Position3
     }
     
-    required init() {}
-    static var componentID: ComponentID = ComponentID()
+    public required init() {}
+    public static var componentID: ComponentID = ComponentID()
 }
 
 // MARK: - Helpers
@@ -104,7 +111,7 @@ internal extension OctreeComponent {
     }
     
     @inline(__always)
-    func load(withCenter center: Position3, triangles: [CollisionTriangle], game: Game) {
+    func load(withCenter center: Position3, triangles: [CollisionTriangle]) {
         struct Primer {
             let center: Position3
             private(set) var triangles: [CollisionTriangle] = []
@@ -201,7 +208,8 @@ internal extension OctreeComponent {
 }
 
 extension OctreeComponent {
-    class Node: Codable {
+    @usableFromInline
+    final class Node: Codable {
         let depth: Int
         let maxDepth: Int
         fileprivate(set) var boundingBox: AxisAlignedBoundingBox3D
