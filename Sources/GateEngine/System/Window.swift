@@ -40,6 +40,15 @@ public enum WindowStyle {
     public var state: State {
         return backing.state
     }
+    
+    public var title: String? {
+        get {
+            return backing.title
+        }
+        set {
+            backing.title = newValue
+        }
+    }
 
     internal init(identifier: String, style: WindowStyle) {
         self.identifier = identifier
