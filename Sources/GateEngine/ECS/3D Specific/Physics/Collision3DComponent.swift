@@ -5,55 +5,56 @@
  * http://stregasgate.com
  */
 
-extension CollisionComponent {
+public extension Collision3DComponent {
     enum Kind {
         case `static`
         case dynamic
     }
-}
-
-class CollisionComponent: Component {
     struct Options: OptionSet {
-        let rawValue: UInt32
+        public let rawValue: UInt32
         
-        static let skipEntities = Options(rawValue: 1 << 1)
-        static let skipTriangles = Options(rawValue: 1 << 2)
+        public static let skipEntities = Options(rawValue: 1 << 1)
+        public static let skipTriangles = Options(rawValue: 1 << 2)
         
         /// Prevent high velocity objects from skipping collision detection
-        static let robustProtection = Options(rawValue: 1 << 3)
+        public static let robustProtection = Options(rawValue: 1 << 3)
         /// Keep object from falling off ledges
-        static let ledgeDetection = Options(rawValue: 1 << 4)
+        public static let ledgeDetection = Options(rawValue: 1 << 4)
         
-        init(rawValue: UInt32) {
+        public init(rawValue: UInt32) {
             self.rawValue = rawValue
         }
     }
-    var isEnabled: Bool = true
-    var kind: Kind = .static
+}
+
+public final class Collision3DComponent: Component {
+    public var isEnabled: Bool = true
+    public var kind: Kind = .static
     
-    var options: Options = []
+    public var options: Options = []
     
-    var primitiveCollider: AxisAlignedBoundingBox3D = AxisAlignedBoundingBox3D(center: .zero, offset: .zero, radius: .one)
-    var detailCollider: Collider3D? = nil
-    var collider: Collider3D {
+    public var primitiveCollider: AxisAlignedBoundingBox3D = AxisAlignedBoundingBox3D(center: .zero, offset: .zero, radius: .one)
+    public var detailCollider: Collider3D? = nil
+    
+    public var collider: Collider3D {
         return detailCollider ?? primitiveCollider
     }
     
     var touching: [(triangle: CollisionTriangle, interpenetration: Interpenetration3D)] = []
     var intersecting: [(entity: Entity, interpenetration: Interpenetration3D)] = []
     
-    var offset: Transform3 = .default
+    public var offset: Transform3 = .default
     
     /// The distance down for a surface to be considered a ledge. Option `ledgeDetection` required.
-    var ledgeHeight: Float = 0.5
+    public var ledgeHeight: Float = 0.5
     
-    var triangleFilter: ((CollisionTriangle)->(Bool))? = nil
-    var entityFilter: ((Entity)->(Bool))? = nil
+    public var triangleFilter: ((CollisionTriangle)->(Bool))? = nil
+    public var entityFilter: ((Entity)->(Bool))? = nil
     
     func interpenetration(comparing: Collider3D) -> Interpenetration3D? {
         return (self.detailCollider ?? self.primitiveCollider).interpenetration(comparing: comparing)
     }
-    func interpenetration(comparing: CollisionComponent) -> Interpenetration3D? {
+    func interpenetration(comparing: Collision3DComponent) -> Interpenetration3D? {
         let lhs = self.detailCollider ?? self.primitiveCollider
         let rhs = comparing.detailCollider ?? comparing.primitiveCollider
         return lhs.interpenetration(comparing: rhs)
@@ -72,13 +73,13 @@ class CollisionComponent: Component {
         self.detailCollider?.update(sizeAndOffsetUsingTransform: transform)
     }
     
-    required init(){}
-    static let componentID: ComponentID = ComponentID()
+    public required init(){}
+    public static let componentID: ComponentID = ComponentID()
 }
 
 extension Entity {
-    @inline(__always)
-    var collisionComponent: CollisionComponent {
-        return self[CollisionComponent.self]
+    @inlinable @inline(__always)
+    var collision3DComponent: Collision3DComponent {
+        return self[Collision3DComponent.self]
     }
 }

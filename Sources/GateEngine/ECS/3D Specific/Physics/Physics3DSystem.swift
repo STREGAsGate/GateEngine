@@ -13,7 +13,7 @@ class Physics3DSystem: System {
         guard deltaTime < 1/20 else {return}
         
         for entity in game.entities {
-            guard let physicsComponent = entity.component(ofType: PhysicsComponent.self) else {continue}
+            guard let physicsComponent = entity.component(ofType: Physics3DComponent.self) else {continue}
             guard entity.hasComponent(Transform3Component.self) else {continue}
             entity.configure(Transform3Component.self) { transformComponent in
                 var deltaTime = deltaTime
@@ -24,7 +24,7 @@ class Physics3DSystem: System {
                 if physicsComponent.shouldApplyGravity {
                     var gravity = physicsComponent.velocity
                     gravity.y = physicsComponent.effectiveGravity().y
-                    if let collisionComponent = entity.component(ofType: CollisionComponent.self) {
+                    if let collisionComponent = entity.component(ofType: Collision3DComponent.self) {
                         if collisionComponent.touching.first(where: {$0.triangle.surfaceType.isWalkable}) != nil {
                             // Skip gravity if we're on the floor
                             gravity.y = 0
@@ -49,7 +49,7 @@ class Physics3DSystem: System {
 }
 
 extension Physics3DSystem {
-    func applyGravity(entitiy: Entity, component: PhysicsComponent, deltaTime: Float) {
+    func applyGravity(entitiy: Entity, component: Physics3DComponent, deltaTime: Float) {
         var gravity = component.velocity
         gravity.y = component.effectiveGravity().y
         component.velocity = component.velocity.interpolated(to: gravity, .linear(deltaTime))

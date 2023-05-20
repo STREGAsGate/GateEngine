@@ -5,15 +5,15 @@
  * http://stregasgate.com
  */
 
-class CollisionDetectionSystem: System {
-    override func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
-        let staticEntities = game.entities.filter({$0.component(ofType: CollisionComponent.self)?.kind == .static})
+public final class Collision3DSystem: System {
+    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
+        let staticEntities = game.entities.filter({$0.component(ofType: Collision3DComponent.self)?.kind == .static})
         for entity in staticEntities {
-            entity.collisionComponent.updateColliders(entity.transform3)
+            entity.collision3DComponent.updateColliders(entity.transform3)
         }
-        let dynamicEntites = game.entities.filter({$0.component(ofType: CollisionComponent.self)?.kind == .dynamic})
+        let dynamicEntites = game.entities.filter({$0.component(ofType: Collision3DComponent.self)?.kind == .dynamic})
         for entity in dynamicEntites {
-            entity.collisionComponent.updateColliders(entity.transform3)
+            entity.collision3DComponent.updateColliders(entity.transform3)
         }
                 
         var finishedPairs: Set<Set<ObjectIdentifier>> = []
@@ -21,7 +21,7 @@ class CollisionDetectionSystem: System {
         let octrees = self.octrees
         
         for dynamicEntity in dynamicEntites {
-            guard let collisionComponent = dynamicEntity.component(ofType: CollisionComponent.self) else {continue}
+            guard let collisionComponent = dynamicEntity.component(ofType: Collision3DComponent.self) else {continue}
             guard collisionComponent.isEnabled else {continue}
             guard dynamicEntity.hasComponent(Transform3Component.self) else {continue}
             dynamicEntity.configure(Transform3Component.self) { transformComponent in
@@ -65,7 +65,7 @@ class CollisionDetectionSystem: System {
                     var triangles: [CollisionTriangle] = []
                     
                     for entity in entitiesProbablyHit(by: collisionComponent.primitiveCollider) {
-                        guard let mesh = entity[CollisionComponent.self].detailCollider as? MeshCollider else {continue}
+                        guard let mesh = entity[Collision3DComponent.self].detailCollider as? MeshCollider else {continue}
                         triangles.append(contentsOf: mesh.triangles())
                     }
                     for octree in octrees.filter({$0.boundingBox.isColiding(with: collisionComponent.primitiveCollider)}) {
@@ -91,7 +91,7 @@ class CollisionDetectionSystem: System {
                         guard entity != dynamicEntity else {continue}
                         
                         guard collisionComponent.entityFilter?(entity) ?? true else {continue}
-                        guard let staticComponent = entity.component(ofType: CollisionComponent.self) else {continue}
+                        guard let staticComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
                         guard staticComponent.isEnabled else {continue}
                         guard staticComponent.detailCollider is MeshCollider == false else {continue}
                         guard staticComponent.options.contains(.skipEntities) == false else {continue}
@@ -112,7 +112,7 @@ class CollisionDetectionSystem: System {
                     for entity in dynamicEntites {
                         guard entity != dynamicEntity else {continue}
                         guard collisionComponent.entityFilter?(entity) ?? true else {continue}
-                        guard let dynamicComponent = entity.component(ofType: CollisionComponent.self) else {continue}
+                        guard let dynamicComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
                         guard dynamicComponent.isEnabled else {continue}
                         guard dynamicComponent.detailCollider is MeshCollider == false else {continue}
                         guard dynamicComponent.options.contains(.skipEntities) == false else {continue}
@@ -140,14 +140,14 @@ class CollisionDetectionSystem: System {
         }
     }
     
-    override class var phase: System.Phase {.simulation}
+    public override class var phase: System.Phase {.simulation}
     public override class func sortOrder() -> Int? {
         return _SystemSortOrder.colision3DSystem.rawValue
     }
 }
 
-extension CollisionDetectionSystem {
-    func performRobustnessProtection(_ entity: Entity, transformComponent: inout Transform3Component, collisionComponent: CollisionComponent) {
+extension Collision3DSystem {
+    func performRobustnessProtection(_ entity: Entity, transformComponent: inout Transform3Component, collisionComponent: Collision3DComponent) {
         func revert() {
             transformComponent.transform.position = transformComponent.previousTransform.position
         }
@@ -166,7 +166,7 @@ extension CollisionDetectionSystem {
         transformComponent.position = hit.position.moved(-0.001, toward: transformComponent.directionTraveled())
     }
     
-    func performLedgeDetection(_ entity: Entity, transformComponent: inout Transform3Component, collisionComponent: CollisionComponent) {
+    func performLedgeDetection(_ entity: Entity, transformComponent: inout Transform3Component, collisionComponent: Collision3DComponent) {
         let collider: BoundingEllipsoid3D = collisionComponent.detailCollider as! BoundingEllipsoid3D
 
         func wall(_ position: Position3, _ direction: Direction3) -> (position: Position3, triangle: CollisionTriangle)? {
@@ -251,7 +251,7 @@ extension CollisionDetectionSystem {
 //        }
     }
 
-    func _performTriangleLedgeDetection(_ entity: Entity, transformComponent: inout Transform3Component, collisionComponent: CollisionComponent) {
+    func _performTriangleLedgeDetection(_ entity: Entity, transformComponent: inout Transform3Component, collisionComponent: Collision3DComponent) {
         var collider = collisionComponent.detailCollider as! BoundingEllipsoid3D
         let filter: (CollisionTriangle) -> Bool = {$0.surfaceType.isWalkable && $0.plane.classifyPoint(collider.position) == .front}
         var sphere = BoundingSphere3D(center: transformComponent.position, offset: .zero, radius: collider.radius.x)
@@ -300,7 +300,7 @@ extension CollisionDetectionSystem {
     }
     
     func sortedTrianglesProbablyHitting(dynamic: Entity, triangles: [CollisionTriangle]) -> [CollisionTriangle] {
-        let collider = dynamic.collisionComponent.primitiveCollider
+        let collider = dynamic.collision3DComponent.primitiveCollider
 
         var values: [CollisionTriangle] = []
         values.reserveCapacity(triangles.count)
@@ -317,7 +317,7 @@ extension CollisionDetectionSystem {
     }
     
     func respondToCollision(dynamicEntity: Entity, triangle: CollisionTriangle) -> Bool {
-        guard let collisionComponent = dynamicEntity.component(ofType: CollisionComponent.self) else {return false}
+        guard let collisionComponent = dynamicEntity.component(ofType: Collision3DComponent.self) else {return false}
         return dynamicEntity.configure(Transform3Component.self) { transformComponent in
             guard let interpenetration = triangle.interpenetration(comparing: collisionComponent.collider), interpenetration.isColiding else {return false}
             
@@ -351,7 +351,7 @@ extension CollisionDetectionSystem {
     }
 }
 
-extension CollisionDetectionSystem {
+extension Collision3DSystem {
     private var octrees: [OctreeComponent] {
         return self.entities.filter({$0.hasComponent(OctreeComponent.self)}).map({$0[OctreeComponent.self]})
     }
@@ -376,7 +376,7 @@ extension CollisionDetectionSystem {
         var hits: [(position: Position3, triangle: CollisionTriangle)] = []
         
         for entity in entitiesProbablyHit(by: ray) {
-            guard let mesh = entity[CollisionComponent.self].detailCollider as? MeshCollider else {continue}
+            guard let mesh = entity[Collision3DComponent.self].detailCollider as? MeshCollider else {continue}
             hits.append(contentsOf: mesh.trianglesHit(by: ray))
         }
         
@@ -393,7 +393,7 @@ extension CollisionDetectionSystem {
         var entities: [Entity] = []
         
         for entity in self.entities {
-            guard let collisionComponent = entity.component(ofType: CollisionComponent.self) else {continue}
+            guard let collisionComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
             guard filter?(entity) ?? true else {continue}
             guard collisionComponent.primitiveCollider.surfacePoint(for: ray) != nil else {continue}
             entities.append(entity)
@@ -406,7 +406,7 @@ extension CollisionDetectionSystem {
         var entities: [Entity] = []
         
         for entity in self.entities {
-            guard let collisionComponent = entity.component(ofType: CollisionComponent.self) else {continue}
+            guard let collisionComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
             guard filter?(entity) ?? true else {continue}
             guard collisionComponent.primitiveCollider.interpenetration(comparing: collider)?.isColiding == true else {continue}
             entities.append(entity)
@@ -420,7 +420,7 @@ extension CollisionDetectionSystem {
         
         var hits: [(position: Position3, surfaceDirection: Direction3, entity: Entity)] = []
         for entity in entites {
-            guard let collisionComponent = entity.component(ofType: CollisionComponent.self) else {continue}
+            guard let collisionComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
             let collider = collisionComponent.detailCollider ?? collisionComponent.primitiveCollider
             guard collider is MeshCollider == false else {continue}
             if let impact = collider.surfaceImpact(comparing: ray) {
@@ -453,8 +453,8 @@ extension CollisionDetectionSystem {
 
 }
 
-extension Game {
-    var collision: CollisionDetectionSystem {
-        return self.system(ofType: CollisionDetectionSystem.self)
+public extension Game {
+    var collision3DSystem: Collision3DSystem {
+        return self.system(ofType: Collision3DSystem.self)
     }
 }
