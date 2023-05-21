@@ -402,7 +402,6 @@ public extension AxisAlignedBoundingBox3D {
         var position = position
         let box = self
         
-        let boxPosition = box.position
         let minPosition = box.minPosition
         let maxPosition = box.maxPosition
                 
