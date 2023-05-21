@@ -8,7 +8,14 @@
 import GameMath
 
 @MainActor public final class Mouse {
+    public internal(set) weak var window: Window? = nil
     public internal(set) var position: Position2? = nil
+    public var interfacePosition: Position2? {
+        if let position, let window {
+            return position / window.interfaceScale
+        }
+        return position
+    }
     internal var buttons: [MouseButton:ButtonState] = [:]
     
     public func button(_ mouseButton: MouseButton) -> ButtonState {
@@ -30,9 +37,14 @@ public extension Mouse {
             self.mouse = mouse
         }
         
-        /// The location of the mouse in the window
+        /// The location of the mouse in the windows native pixels
         public var position: Position2? {
             return mouse.position
+        }
+        
+        /// The location of the mouse in the window
+        public var interfacePosition: Position2? {
+            return mouse.interfacePosition
         }
         
         /// The current platform's preference for "Double Click" gesture
@@ -66,7 +78,8 @@ public extension Mouse {
 
 extension Mouse {
     @usableFromInline
-    func mouseChange(event: MouseChangeEvent, position: Position2) {
+    func mouseChange(event: MouseChangeEvent, position: Position2, window: Window?) {
+        self.window = window
         switch event {
         case .entered, .moved:
             self.position = position
@@ -75,7 +88,8 @@ extension Mouse {
         }
     }
     @usableFromInline
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2) {
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2, window: Window?) {
+        self.window = window
         self.position = position
         let button = self.button(button)
         button.isPressed = (event == .buttonDown)

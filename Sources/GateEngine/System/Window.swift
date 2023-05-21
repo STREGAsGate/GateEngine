@@ -105,8 +105,8 @@ internal protocol WindowBacking: AnyObject {
 protocol WindowDelegate: AnyObject {
     func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float)
 
-    func mouseChange(event: MouseChangeEvent, position: Position2)
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2)
+    func mouseChange(event: MouseChangeEvent, position: Position2, window: Window?)
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2, window: Window?)
 
     func touchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2)
 
@@ -172,7 +172,7 @@ public enum TouchKind {
     case stylus
     /// The touch happened through software
     case simulated
-    /// The touch happened on a device no necesarrily the same shape or resolution as the screen
+    /// The touch happened on a device not necesarrily the same shape or resolution as the screen
     case indirect
 }
 

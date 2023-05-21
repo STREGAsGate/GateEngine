@@ -77,11 +77,11 @@ extension WindowManager: WindowDelegate {
         #endif
     }
     
-    func mouseChange(event: MouseChangeEvent, position: Position2) {
-        game.hid.mouseChange(event: event, position: position)
+    func mouseChange(event: MouseChangeEvent, position: Position2, window: Window?) {
+        game.hid.mouseChange(event: event, position: position, window: window)
     }
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2) {
-        game.hid.mouseClick(event: event, button: button, count: count, position: position)
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2, window: Window?) {
+        game.hid.mouseClick(event: event, button: button, count: count, position: position, window: window)
     }
 
     func touchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2) {

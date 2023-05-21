@@ -33,12 +33,12 @@ public struct InputRecipts {
 
 extension HID /*WindowDelegate*/ {
     @_transparent
-    func mouseChange(event: MouseChangeEvent, position: Position2) {
-        mouse.mouseChange(event: event, position: position)
+    func mouseChange(event: MouseChangeEvent, position: Position2, window: Window?) {
+        mouse.mouseChange(event: event, position: position, window: window)
     }
     @_transparent
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2) {
-        mouse.mouseClick(event: event, button: button, count: count, position: position)
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2, window: Window?) {
+        mouse.mouseClick(event: event, button: button, count: count, position: position, window: window)
     }
 
     @_transparent
