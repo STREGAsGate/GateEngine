@@ -32,10 +32,10 @@ class WASIWindow: WindowBacking {
 
     var title: String? {
         get {
-            fatalError()
+            return nil
         }
         set {
-            fatalError()
+            // can't
         }
     }
 
@@ -62,9 +62,9 @@ class WASIWindow: WindowBacking {
         self.window.vSyncCalled()
         _ = globalThis.window.requestAnimationFrame(callback: vSync(_:))
     }
+    
     @MainActor func show() {
         self.state = .shown
-        print("Show")
         vSync(0)
         addListeners()
     }
@@ -123,7 +123,13 @@ class WASIWindow: WindowBacking {
         }
         canvas.addEventListener(type: "mouseenter") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
+            let position: Position2 = {
+                var position = Position2(x: Float(event.pageX), y: Float(event.pageY))
+                if let pixelRatio = globalThis.document.defaultView?.devicePixelRatio {
+                    position *= Float(pixelRatio)
+                }
+                return position
+            }()
             Task {@MainActor in
                 self.window.delegate?.mouseChange(event: .entered, position: position, window: self.window)
             }
@@ -131,7 +137,13 @@ class WASIWindow: WindowBacking {
         }
         canvas.addEventListener(type: "mousemove") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
+            let position: Position2 = {
+                var position = Position2(x: Float(event.pageX), y: Float(event.pageY))
+                if let pixelRatio = globalThis.document.defaultView?.devicePixelRatio {
+                    position *= Float(pixelRatio)
+                }
+                return position
+            }()
             Task {@MainActor in
                 self.window.delegate?.mouseChange(event: .moved, position: position, window: self.window)
             }
@@ -139,7 +151,13 @@ class WASIWindow: WindowBacking {
         }
         canvas.addEventListener(type: "mouseleave") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
+            let position: Position2 = {
+                var position = Position2(x: Float(event.pageX), y: Float(event.pageY))
+                if let pixelRatio = globalThis.document.defaultView?.devicePixelRatio {
+                    position *= Float(pixelRatio)
+                }
+                return position
+            }()
             Task {@MainActor in
                 self.window.delegate?.mouseChange(event: .exited, position: position, window: self.window)
             }
@@ -147,7 +165,13 @@ class WASIWindow: WindowBacking {
         }
         canvas.addEventListener(type: "mousedown") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
+            let position: Position2 = {
+                var position = Position2(x: Float(event.pageX), y: Float(event.pageY))
+                if let pixelRatio = globalThis.document.defaultView?.devicePixelRatio {
+                    position *= Float(pixelRatio)
+                }
+                return position
+            }()
             let button: MouseButton = self.mouseButton(fromEvent: event)
             Task {@MainActor in
                 self.window.delegate?.mouseClick(event: .buttonDown, button: button, count: nil, position: position, window: self.window)
@@ -156,7 +180,13 @@ class WASIWindow: WindowBacking {
         }
         canvas.addEventListener(type: "mouseup") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
+            let position: Position2 = {
+                var position = Position2(x: Float(event.pageX), y: Float(event.pageY))
+                if let pixelRatio = globalThis.document.defaultView?.devicePixelRatio {
+                    position *= Float(pixelRatio)
+                }
+                return position
+            }()
             let button: MouseButton = self.mouseButton(fromEvent: event)
             Task {@MainActor in
                 self.window.delegate?.mouseClick(event: .buttonUp, button: button, count: nil ,position: position, window: self.window)

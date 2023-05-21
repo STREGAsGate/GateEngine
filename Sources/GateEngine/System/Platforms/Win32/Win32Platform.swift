@@ -97,6 +97,10 @@ import Foundation
     func systemTime() -> Double {
         return Date.timeIntervalSinceReferenceDate
     }
+    
+    var supportsMultipleWindows: Bool {
+        return true
+    }
 }
 
 extension Win32Platform {

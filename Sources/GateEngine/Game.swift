@@ -42,7 +42,7 @@ import GameMath
         }
         self.addPlatformSystems()
         self.delegate.didFinishLaunching(game: self, options: [])
-        #if GATEENGINE_SUPPORTS_MULTIWINDOW
+        #if !GATEENGINE_PLATFORM_SINGLETHREADED
         self.gameLoop()
         #endif
     }
@@ -55,25 +55,18 @@ import GameMath
         self.insertSystem(AudioSystem.self)
         self.insertSystem(CacheSystem.self)
     }
-
-    #if GATEENGINE_SUPPORTS_MULTIWINDOW
-    internal var windowsThatRequestedDraw: [(window: Window, deltaTime: Float)] = []
+    
+    #if !GATEENGINE_PLATFORM_SINGLETHREADED
     private var previousTime: Double = 0
     internal func gameLoop() {
         Task(priority: .high) {@MainActor in
             let now: Double = Game.shared.internalPlatform.systemTime()
-            let deltaTime: Double = now - previousTime
+            let deltaTime: Double = now - self.previousTime
             self.previousTime = now
             if self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
-                self.renderingIsPermitted = true
-                for pair: (window: Window, deltaTime: Float) in windowsThatRequestedDraw {
-                    self.ecs.updateRendering(withTimePassed: pair.deltaTime, window: pair.window)
-                    pair.window.didDrawSomething = true
-                }
-                self.renderingIsPermitted = false
+                self.windowManager.drawWindows()
             }
-            windowsThatRequestedDraw.removeAll(keepingCapacity: true)
-            gameLoop()
+            self.gameLoop()
         }
     }
     #endif

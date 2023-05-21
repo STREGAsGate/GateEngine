@@ -157,7 +157,7 @@ internal extension Window {
         #elseif os(WASI)
         return WASIWindow(identifier: identifier, style: style, window: self)
         #elseif os(Android)
-       #error("Not implemented")
+        #error("Not implemented")
         #else
         #error("Not implemented")
         #endif

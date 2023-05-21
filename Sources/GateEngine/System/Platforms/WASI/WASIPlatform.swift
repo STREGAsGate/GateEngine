@@ -126,6 +126,10 @@ class WASIPlatform: InternalPlatform {
         #endif
     }
     
+    var supportsMultipleWindows: Bool {
+        return false
+    }
+    
     func setupDocument() {
         globalThis.onbeforeunload = { event -> String? in
             Game.shared.willTerminate()
@@ -195,5 +199,9 @@ extension DOM.Navigator {
         return .unknown
     }
 }
+
+#if os(WASI) && !GATEENGINE_PLATFORM_SINGLETHREADED
+#error("WASI must be single threaded.")
+#endif
 
 #endif

@@ -84,6 +84,10 @@ import System
         }
         return Double(time.tv_sec) + (Double(time.tv_nsec) / 1e+9)
     }
+    
+    var supportsMultipleWindows: Bool {
+        return true
+    }
 }
 
 extension AppKitPlatform {

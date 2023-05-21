@@ -18,6 +18,8 @@ public protocol Platform {
     
     func systemTime() -> Double
     func main()
+    
+    var supportsMultipleWindows: Bool {get}
 }
 
 @_transparent

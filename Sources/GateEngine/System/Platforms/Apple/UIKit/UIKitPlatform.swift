@@ -75,6 +75,10 @@ class UIKitPlatform: InternalPlatform {
         }
         return Double(time.tv_sec) + (Double(time.tv_nsec) / 1e+9)
     }
+    
+    var supportsMultipleWindows: Bool {
+        return false
+    }
 }
 
 internal final class UIKItAppDelegate: NSObject, UIApplicationDelegate {
