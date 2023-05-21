@@ -133,27 +133,42 @@ public final class Text {
     }
 
     @MainActor private static func rawGeometry(fromString string: String, font: Font, pointSize: Float, style: Font.Style, paragraphWidth: Float?, interfaceScale: Float) -> (RawGeometry, Size2) {
+        enum CharType {
+            case space
+            case tab
+            case newLine
+            case wordComponent
+        }
+        
         let roundedPointSize = UInt(pointSize.rounded())
         
         var triangles: [Triangle] = []
         triangles.reserveCapacity(string.count)
         
+        var lineCount = 1
         var xPosition: Float = 0
-        var yPosition: Float = 0
-        var width: Float = 0
-        var height: Float = 0
+        var yPosition: Float = abs(obtainFirstLineYCoord())
+        var width: Float = -.greatestFiniteMagnitude
+        var heightMin: Float = .greatestFiniteMagnitude
+        var heightMax: Float = -.greatestFiniteMagnitude
         
         var currentWord: [Triangle] = []
         
-        @_transparent
+        @inline(__always)
+        func newLine() {
+            yPosition += pointSize
+            lineCount += 1
+        }
+        
+        @inline(__always)
         func processWord() {
             triangles.append(contentsOf: currentWord)
             currentWord.removeAll(keepingCapacity: true)
         }
-        @_transparent
+        @inline(__always)
         func moveCurrentWordToNextLine() {
             let pointSize = Float(pointSize)
-            yPosition += pointSize
+            newLine()
             let offset: Float = .minimum(currentWord.first?.v1.x ?? 0, .minimum(currentWord.first?.v2.x ?? 0, currentWord.first?.v3.x ?? 0))
             for index in currentWord.indices {
                 currentWord[index].v1.x -= offset
@@ -166,9 +181,53 @@ public final class Text {
             }
             xPosition -= offset
         }
-        @_transparent
-        func insertCharacter(_ char: Character) {
+        
+        @inline(__always)
+        func charType(for character: Character) -> CharType {
+            switch character {
+            case " ":
+                return .space
+            case "\t":
+                return .tab
+            case "\n", "\r":
+                return .newLine
+            default:
+                return .wordComponent
+            }
+        }
+        
+        @inline(__always)
+        func obtainFirstLineYCoord() -> Float {
+            var yMin: Float = 0
             var xAdvance: Float = 0
+            let yPosition: Float = 0
+            func processCharacter(_ char: Character) {
+                let quad = font.alignedCharacter(forCharacter: char, pointSize: roundedPointSize, style: style, origin: Position2(xPosition, yPosition), xAdvance: &xAdvance)
+                yMin = .minimum(yMin, quad.position.min.y)
+            }
+            
+            for char in string {
+                let charType: CharType = charType(for: char)
+                if charType == .newLine {
+                    return yMin
+                }else if charType == .tab {
+                    for _ in 0 ..< 4 {
+                        processCharacter(" ")
+                    }
+                }else{
+                    processCharacter(char)
+                }
+                
+                if let paragraphWidth = paragraphWidth, xPosition > paragraphWidth {
+                    return yMin
+                }
+            }
+            return yMin
+        }
+        
+        @inline(__always)
+        func insertCharacter(_ char: Character) {
+            var xAdvance: Float = .nan
             let quad = font.alignedCharacter(forCharacter: char, pointSize: roundedPointSize, style: style, origin: Position2(xPosition, yPosition), xAdvance: &xAdvance)
             let v1 = Vertex(px: quad.position.min.x, py: quad.position.min.y, pz: 0, tu1: quad.texturePosition.min.x, tv1: quad.texturePosition.min.y) / interfaceScale
             let v2 = Vertex(px: quad.position.max.x, py: quad.position.min.y, pz: 0, tu1: quad.texturePosition.max.x, tv1: quad.texturePosition.min.y) / interfaceScale
@@ -178,34 +237,20 @@ public final class Text {
             currentWord.append(Triangle(v1: v1, v2: v2, v3: v3, repairIfNeeded: false))
             currentWord.append(Triangle(v1: v3, v2: v4, v3: v1, repairIfNeeded: false))
             
-            width = .maximum(width, .maximum(quad.position.max.x, quad.position.min.x))
-            height = .maximum(height, .maximum(quad.position.max.y, quad.position.min.y))
-            
             xPosition += xAdvance
+            
+            width = .maximum(width, xPosition)
+            heightMin = .minimum(heightMin, quad.position.min.y)
+            heightMax = .maximum(heightMax, quad.position.max.y)
         }
-        enum CharType {
-            case space
-            case tab
-            case newLine
-            case wordComponent
-        }
+ 
         
         for char in string {
-            let charType: CharType = {
-                switch char {
-                case " ":
-                    return .space
-                case "\t":
-                    return .tab
-                case "\n", "\r":
-                    return .newLine
-                default:
-                    return .wordComponent
-                }
-            }()
+            let charType: CharType = charType(for: char)
+            
             if charType == .newLine {
                 xPosition = 0
-                yPosition += Float(pointSize)
+                newLine()
                 continue
             }else if charType == .tab {
                 for _ in 0 ..< 4 {
@@ -228,6 +273,7 @@ public final class Text {
         }
         processWord()
         
+        let height = heightMax - heightMin
         return (RawGeometry(triangles: triangles), Size2(width: width, height: height))
     }
 }
