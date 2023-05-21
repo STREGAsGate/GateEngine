@@ -190,6 +190,18 @@ import GameMath
         self.drawCommands.reserveCapacity(estimatedCommandCount)
     }
     
+    /**
+     Create a canvas.
+     
+     - parameter camera: An optional Scene camera, which is required for 3D space convertions.
+     - parameter window: The Window this canvas will be added to.
+     - parameter estimatedCommandCount: A performance hint of how many commands will be added.
+     */
+    @_transparent
+    public init(window: Window, camera: Camera? = nil, estimatedCommandCount: Int = 10) {
+        self.init(camera: camera, size: window.size, interfaceScale: window.interfaceScale, estimatedCommandCount: estimatedCommandCount)
+    }
+    
     @_transparent
     internal var hasContent: Bool {
         return drawCommands.isEmpty == false
