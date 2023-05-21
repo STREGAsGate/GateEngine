@@ -31,19 +31,6 @@ public struct SystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral {
     }
 }
 
-public extension SystemSortOrder {
-    static let tileMapSystem: Self      = 0_100
-    static let spriteSystem: Self       = 0_200
-    
-    static let physics2DSystem: Self    = 2_100
-    static let collision2DSystem: Self  = 2_200
-    
-    static let physics3DSystem: Self    = 3_100
-    static let colision3DSystem: Self   = 3_200
-    
-    static let rigSystem: Self          = 4_100
-}
-
 public struct RenderingSystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral {
     public typealias RawValue = Int
     public let rawValue: RawValue
@@ -68,6 +55,22 @@ public struct RenderingSystemSortOrder: RawRepresentable, ExpressibleByIntegerLi
         guard let sortOrder = system.sortOrder() else {return nil}
         return Self(rawValue: sortOrder.rawValue - 1)
     }
+}
+
+
+// MARK: - GateEngine Provided System Orders
+
+public extension SystemSortOrder {
+    static let tileMapSystem: Self      = 0_100
+    static let spriteSystem: Self       = 0_200
+    
+    static let physics2DSystem: Self    = 2_100
+    static let collision2DSystem: Self  = 2_200
+    
+    static let physics3DSystem: Self    = 3_100
+    static let colision3DSystem: Self   = 3_200
+    
+    static let rigSystem: Self          = 4_100
 }
 
 public extension RenderingSystemSortOrder {
