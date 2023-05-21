@@ -9,7 +9,11 @@ import func Foundation.floor
 import GameMath
 
 public extension OctreeComponent {
-    func load(_ path: String, options: GeometryImporterOptions = .none, center: Position3) async throws {
+    @inlinable @inline(__always) @_disfavoredOverload
+    func load(as path: GeoemetryPath, options: GeometryImporterOptions = .none, center: Position3) async throws {
+        try await self.load(path: path.value, options: options, center: center)
+    }
+    func load(path: String, options: GeometryImporterOptions = .none, center: Position3) async throws {
         self.load(withCenter: center, triangles: try await RawGeometry(path: path).generateCollisionTrianges())
     }
 }

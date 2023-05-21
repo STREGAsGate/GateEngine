@@ -29,6 +29,11 @@ When this object deinitializes it's contents will also be removed from GPU memor
         return Game.shared.resourceManager.geometryCache(for: cacheKey)!.state
     }
     
+    @inlinable @inline(__always) @_disfavoredOverload
+    public convenience init(as path: GeoemetryPath, options: GeometryImporterOptions = .none) {
+        self.init(path: path.value, options: options)
+    }
+    
     public init(path: String, options: GeometryImporterOptions = .none) {
         let resourceManager = Game.shared.resourceManager
         self.cacheKey = resourceManager.geometryCacheKey(path: path, options: options)

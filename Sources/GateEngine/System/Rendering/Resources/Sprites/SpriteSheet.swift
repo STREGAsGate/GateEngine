@@ -18,6 +18,11 @@ import GameMath
         self.tintColor = tintColor
     }
     
+    @inlinable @inline(__always) @_disfavoredOverload
+    public convenience init(as path: TexturePath, mipMapping: MipMapping = .none, options: TextureImporterOptions = .none, sampleFilter: Sprite.SampleFilter = .nearest, tintColor: Color = .white) {
+        self.init(path: path.value, mipMapping: mipMapping, options: options, sampleFilter: sampleFilter, tintColor: tintColor)
+    }
+    
     public convenience init(path: String, mipMapping: MipMapping = .none, options: TextureImporterOptions = .none, sampleFilter: Sprite.SampleFilter = .nearest, tintColor: Color = .white) {
         let texture = Texture(path: path, mipMapping: mipMapping, options: options)
         self.init(texture: texture, sampleFilter: sampleFilter, tintColor: tintColor)

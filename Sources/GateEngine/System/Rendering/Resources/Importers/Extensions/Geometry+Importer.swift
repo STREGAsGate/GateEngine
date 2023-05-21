@@ -71,6 +71,10 @@ public extension GeometryImporter {
 }
 
 extension RawGeometry {
+    @inlinable @inline(__always) @_disfavoredOverload
+    public init(_ path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws {
+        try await self.init(path: path.value, options: options)
+    }
     public init(path: String, options: GeometryImporterOptions = .none) async throws {
         let file = URL(fileURLWithPath: path)
         guard let importer: GeometryImporter = await Game.shared.resourceManager.importerForFile(file) else {
@@ -79,7 +83,7 @@ extension RawGeometry {
         
         do {
             let data = try await importer.loadData(path: path, options: options)
-            self = try await importer.process(data: data, baseURL: URL(fileURLWithPath: path).deletingLastPathComponent(), options: options)
+            self = try await importer.process(data: data, baseURL: file.deletingLastPathComponent(), options: options)
         }catch let DecodingError.dataCorrupted(context) {
             throw "Failed to load \(Swift.type(of: self)): \(context)"
         }catch let DecodingError.keyNotFound(key, context) {

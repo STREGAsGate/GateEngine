@@ -38,6 +38,11 @@ When this object deinitializes it's contents will also be removed from GPU memor
         return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!.state
     }
     
+    @inlinable @inline(__always) @_disfavoredOverload
+    public convenience init(as path: GeoemetryPath, geometryOptions: GeometryImporterOptions = .none, skinOptions: SkinImporterOptions = .none) {
+        self.init(path: path.value, geometryOptions: geometryOptions, skinOptions: skinOptions)
+    }
+    
     public init(path: String, geometryOptions: GeometryImporterOptions = .none, skinOptions: SkinImporterOptions = .none) {
         let resourceManager = Game.shared.resourceManager
         self.cacheKey = resourceManager.skinnedGeometryCacheKey(path: path, geometryOptions: geometryOptions, skinOptions: skinOptions)
