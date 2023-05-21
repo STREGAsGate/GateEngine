@@ -1,7 +1,6 @@
 
 #Swift
 .build
-.swiftpm
 Package.resolved
 
 #Apple
