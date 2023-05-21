@@ -45,7 +45,7 @@ import GameMath
         // If the main window is closed, close all windows
         if identifier == mainWindowIdentifier {
             for window in windows {
-                window.backing.close()
+                window.windowBacking.close()
             }
         }
     }
