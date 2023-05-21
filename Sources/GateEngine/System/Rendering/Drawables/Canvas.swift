@@ -174,6 +174,28 @@ import GameMath
         return Position2(position.x, position.y)
     }
     
+    @inlinable @inline(__always)
+    public func convertTo3DSpace(_ position: Position2) -> Ray3D {
+        guard let camera = camera else {preconditionFailure("Must set camera during `Canvas.init` to use \(#function).")}
+        guard let size = size else {preconditionFailure("Must set size during `Canvas.init` to use \(#function).")}
+        
+        let halfSize = size / 2
+        let aspectRatio = size.aspectRatio
+        
+        let inverseView = camera.matricies(withAspectRatio: aspectRatio).view.inverse
+        let halfFOV = tanf(camera._fieldOfView.rawValue * 0.5)
+        let near = camera.clippingPlane.near
+        let far = camera.clippingPlane.far
+        
+        let dx = halfFOV * (position.x / halfSize.width - 1.0) * aspectRatio
+        let dy = halfFOV * (1.0 - position.y / halfSize.height)
+
+        let p1 = Position3(dx * near, dy * near, near) * inverseView
+        let p2 = Position3(dx * far, dy * far, far) * inverseView
+        
+        return Ray3D(from: p1, toward: p2)
+    }
+    
     /**
      Create a canvas.
      
