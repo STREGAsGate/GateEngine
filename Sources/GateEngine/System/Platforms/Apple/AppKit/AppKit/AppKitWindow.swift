@@ -153,14 +153,16 @@ class AppKitWindow: WindowBacking {
     }
     
     @MainActor func show() {
-        nsWindowController.showWindow(NSApp)
-        self.nsWindowController.window?.makeKeyAndOrderFront(nil)
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(30)) {
             self.restoreSizeAndPosition(ofWindow: self.nsWindowController.window!)
             if UserDefaults.standard.bool(forKey: "\(self.identifier)-WasFullScreen") {
                 self.nsWindowController.window!.toggleFullScreen(NSApp)
             }
         }
+        
+        nsWindowController.showWindow(NSApp)
+        self.nsWindowController.window?.makeKeyAndOrderFront(nil)
+        
         if CVDisplayLinkIsRunning(self.displayLink) == false {
             CVDisplayLinkStart(self.displayLink)
         }
