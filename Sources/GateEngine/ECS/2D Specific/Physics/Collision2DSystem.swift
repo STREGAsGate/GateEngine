@@ -43,8 +43,8 @@ public final class Collision2DSystem: System {
     }
 
     public override class var phase: System.Phase {.simulation}
-    public override class func sortOrder() -> Int? {
-        return _SystemSortOrder.collision2DSystem.rawValue
+    public override class func sortOrder() -> SystemSortOrder? {
+        return .collision2DSystem
     }
 }
 

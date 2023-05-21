@@ -106,7 +106,7 @@ public class RigSystem: System {
     }
     
     public override class var phase: System.Phase {.simulation}
-    public override class func sortOrder() -> Int? {
-        return _SystemSortOrder.rigSystem.rawValue
+    public override class func sortOrder() -> SystemSortOrder? {
+        return .rigSystem
     }
 }

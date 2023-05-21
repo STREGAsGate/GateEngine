@@ -141,8 +141,8 @@ public final class Collision3DSystem: System {
     }
     
     public override class var phase: System.Phase {.simulation}
-    public override class func sortOrder() -> Int? {
-        return _SystemSortOrder.colision3DSystem.rawValue
+    public override class func sortOrder() -> SystemSortOrder? {
+        return .colision3DSystem
     }
 }
 

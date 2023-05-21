@@ -45,7 +45,7 @@
         
     }
 
-    open class func sortOrder() -> Int? {
+    open class func sortOrder() -> RenderingSystemSortOrder? {
         return nil
     }
 }

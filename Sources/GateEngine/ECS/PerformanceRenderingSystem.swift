@@ -60,7 +60,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
 
     }
     
-    public override class func sortOrder() -> Int? {
-        return .max //Render on top of everything
+    public override class func sortOrder() -> RenderingSystemSortOrder? {
+        return .performance
     }
 }

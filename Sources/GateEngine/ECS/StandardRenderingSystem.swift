@@ -96,4 +96,8 @@ public final class StandardRenderingSystem: RenderingSystem {
             window.insert(renderTarget)
         }
     }
+    
+    public override class func sortOrder() -> RenderingSystemSortOrder? {
+        return .standard
+    }
 }

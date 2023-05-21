@@ -43,8 +43,8 @@ class Physics3DSystem: System {
     }
     
     override class var phase: System.Phase {.simulation}
-    public override class func sortOrder() -> Int? {
-        return _SystemSortOrder.physics3DSystem.rawValue
+    public override class func sortOrder() -> SystemSortOrder? {
+        return .physics3DSystem
     }
 }
 
