@@ -19,7 +19,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         let systemsFrameTime = game.ecs.performance!.systemsFrameTime
         let renderingSystemsFrameTime = game.ecs.performance!.renderingSystemsFrameTime
         
-        var string: String = "\n\(game.ecs.performance!.fps) FPS"
+        var string: String = "\(game.ecs.performance!.fps) FPS"
         if game.ecs.performance!.totalDroppedFrames > 0 {
             string += ", \(game.ecs.performance!.totalDroppedFrames) All Time Dropped"
         }
@@ -49,9 +49,9 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         
         guard text.isReady else {return}
         
-        var canvas: Canvas = Canvas(interfaceScale: window.interfaceScale)
-        let position = Position2(.maximum(Float(text.pointSize), window.safeAreaInsets.leading), .maximum(Float(text.pointSize), window.safeAreaInsets.top))
-        canvas.insert(Rect(size: text.size), color: Color(0, 0, 0, 0.5), at: position)
+        var canvas: Canvas = Canvas(window: window)
+        let position = Position2(.maximum(10, window.safeAreaInsets.leading), .maximum(10, window.safeAreaInsets.top))
+        canvas.insert(Rect(size: text.size).inset(by: Insets(-4)), color: Color(0, 0, 0, 0.5), at: position)
         canvas.insert(text, at: position)
         window.insert(canvas)
     }
