@@ -7,8 +7,8 @@
 
 import Shaders
 
-public enum SystemShaders {
-    public static let renderTargetVertexShader: VertexShader = {
+public extension VertexShader {
+    static let renderTargetVertexShader: VertexShader = {
         let vsh = VertexShader()
         vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
         #if os(WASI)
@@ -20,13 +20,13 @@ public enum SystemShaders {
         #endif
         return vsh
     }()
-    public static let standardVertexShader: VertexShader = {
+    static let standardVertexShader: VertexShader = {
         let vsh = VertexShader()
         vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
         vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
         return vsh
     }()
-    public static let standardSkinnedVertexShader: VertexShader = {
+    static let standardSkinnedVertexShader: VertexShader = {
         let vsh = VertexShader()
         let bones = vsh.uniform(named: "bones", as: Mat4Array.self, arrayCapacity: 24)
         let jointIndicies = vsh.input.geometry(0).jointIndicies
@@ -40,20 +40,20 @@ public enum SystemShaders {
         vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
         return vsh
     }()
-    public static let pointSizeAndColorVertexShader: VertexShader = {
+    static let pointSizeAndColorVertexShader: VertexShader = {
         let vsh = VertexShader()
         vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
         vsh.output.pointSize = vsh.uniform(named: "pointSize", as: Scalar.self)
         vsh.output["color"] = vsh.input.geometry(0).color
         return vsh
     }()
-    public static let colorsVertexShader: VertexShader = {
+    static let colorsVertexShader: VertexShader = {
         let vsh = VertexShader()
         vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
         vsh.output["color"] = vsh.input.geometry(0).color
         return vsh
     }()
-    public static let morphVertexShader: VertexShader = {
+    static let morphVertexShader: VertexShader = {
         let vsh = VertexShader()
         let factor = vsh.uniform(named: "factor", as: Scalar.self)
         let g1 = vsh.input.geometry(0)
@@ -64,7 +64,10 @@ public enum SystemShaders {
         vsh.output["texCoord1"] = g2.textureCoordinate0
         return vsh
     }()
-    public static let morphFragmentShader: FragmentShader = {
+}
+
+public extension FragmentShader {
+    static let morphFragmentShader: FragmentShader = {
         let fsh = FragmentShader()
         let factor = fsh.uniform(named: "factor", as: Scalar.self)
         let sample1 = fsh.channel(0).texture.sample(at: fsh.input["texCoord0"])
@@ -72,17 +75,17 @@ public enum SystemShaders {
         fsh.output.color = sample1.lerp(to: sample2, factor: factor)
         return fsh
     }()
-    public static let textureSampleFragmentShader: FragmentShader = {
+    static let textureSampleFragmentShader: FragmentShader = {
         let fsh = FragmentShader()
         fsh.output.color = fsh.channel(0).texture.sample(at: fsh.input["texCoord0"], filter: .nearest)
         return fsh
     }()
-    public static let materialColorFragmentShader: FragmentShader = {
+    static let materialColorFragmentShader: FragmentShader = {
         let fsh = FragmentShader()
         fsh.output.color = fsh.channel(0).color
         return fsh
     }()
-    public static let vertexColorFragmentShader: FragmentShader = {
+    static let vertexColorFragmentShader: FragmentShader = {
         let fsh = FragmentShader()
         fsh.output.color = fsh.input["color"]
         return fsh

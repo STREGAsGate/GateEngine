@@ -48,8 +48,8 @@ import GameMath
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
         
         let material = Material { material in
-            material.vertexShader = SystemShaders.pointSizeAndColorVertexShader
-            material.fragmentShader = SystemShaders.vertexColorFragmentShader
+            material.vertexShader = .pointSizeAndColorVertexShader
+            material.fragmentShader = .vertexColorFragmentShader
             material.setCustomUniformValue(pointSize, forUniform: "pointSize")
         }
         let flags = DrawFlags(cull: .back, depthTest: .lessThan, depthWrite: .enabled, primitive: .point, winding: .clockwise, blendMode: .normal)
@@ -68,8 +68,8 @@ import GameMath
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
         
         let material = Material { material in
-            material.vertexShader = SystemShaders.colorsVertexShader
-            material.fragmentShader = SystemShaders.vertexColorFragmentShader
+            material.vertexShader = .colorsVertexShader
+            material.fragmentShader = .vertexColorFragmentShader
         }
         let flags = DrawFlags(cull: .back, depthTest: .lessThan, depthWrite: .enabled, primitive: .line, winding: .clockwise, blendMode: .normal)
         let command = DrawCommand(backends: [geometryBackend], transforms: [transform], material: material, flags: flags)

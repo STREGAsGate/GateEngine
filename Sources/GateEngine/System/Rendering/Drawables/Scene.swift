@@ -100,7 +100,7 @@ import GameMath
         guard geometry.state == .ready else {return}
         guard material.isReady else {return}
         var material = material
-        material.vertexShader = SystemShaders.standardSkinnedVertexShader
+        material.vertexShader = .standardSkinnedVertexShader
         material.setCustomUniformValue(pose.shaderMatrixArray(orderedFromSkinJoints: geometry.skinJoints!), forUniform: "bones")
         guard let geometryBackend = geometry.backend else {return}
 

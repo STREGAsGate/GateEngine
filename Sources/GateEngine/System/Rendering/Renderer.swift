@@ -59,7 +59,7 @@ import GameMath
         }
 
         let material: Material = Material() { material in
-            material.vertexShader = SystemShaders.renderTargetVertexShader
+            material.vertexShader = .renderTargetVertexShader
             material.channel(0) { channel in
                 channel.texture = renderTarget.texture
                 if options.contains(.flipHorizontal) {
