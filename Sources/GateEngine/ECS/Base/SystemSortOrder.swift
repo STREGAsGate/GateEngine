@@ -15,6 +15,20 @@ public struct SystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral {
     public init(integerLiteral value: RawValue) {
         self.rawValue = value
     }
+    
+    /// Sorter after another system
+    @inlinable @inline(__always)
+    @MainActor public static func after(_ system: System.Type) -> Self {
+        guard let sortOrder = system.sortOrder() else {return Self(rawValue: .min)}
+        return Self(rawValue: sortOrder.rawValue + 1)
+    }
+    
+    /// Sorter before another system
+    @inlinable @inline(__always)
+    @MainActor public static func before(_ system: System.Type) -> Self? {
+        guard let sortOrder = system.sortOrder() else {return nil}
+        return Self(rawValue: sortOrder.rawValue - 1)
+    }
 }
 
 public extension SystemSortOrder {
@@ -39,6 +53,20 @@ public struct RenderingSystemSortOrder: RawRepresentable, ExpressibleByIntegerLi
     public typealias IntegerLiteralType = RawValue
     public init(integerLiteral value: RawValue) {
         self.rawValue = value
+    }
+    
+    /// Sorter after another system
+    @inlinable @inline(__always)
+    @MainActor public static func after(_ system: RenderingSystem.Type) -> Self {
+        guard let sortOrder = system.sortOrder() else {return Self(rawValue: .min)}
+        return Self(rawValue: sortOrder.rawValue + 1)
+    }
+    
+    /// Sorter before another system
+    @inlinable @inline(__always)
+    @MainActor public static func before(_ system: RenderingSystem.Type) -> Self? {
+        guard let sortOrder = system.sortOrder() else {return nil}
+        return Self(rawValue: sortOrder.rawValue - 1)
     }
 }
 
