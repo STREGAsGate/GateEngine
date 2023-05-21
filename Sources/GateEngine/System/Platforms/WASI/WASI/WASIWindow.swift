@@ -125,7 +125,7 @@ class WASIWindow: WindowBacking {
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
             Task {@MainActor in
-                self.window.delegate?.mouseChange(event: .entered, position: position)
+                self.window.delegate?.mouseChange(event: .entered, position: position, window: self.window)
             }
             event.preventDefault()
         }
@@ -133,7 +133,7 @@ class WASIWindow: WindowBacking {
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
             Task {@MainActor in
-                self.window.delegate?.mouseChange(event: .moved, position: position)
+                self.window.delegate?.mouseChange(event: .moved, position: position, window: self.window)
             }
             event.preventDefault()
         }
@@ -141,7 +141,7 @@ class WASIWindow: WindowBacking {
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
             Task {@MainActor in
-                self.window.delegate?.mouseChange(event: .exited, position: position)
+                self.window.delegate?.mouseChange(event: .exited, position: position, window: self.window)
             }
             event.preventDefault()
         }
@@ -150,7 +150,7 @@ class WASIWindow: WindowBacking {
             let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
             let button: MouseButton = self.mouseButton(fromEvent: event)
             Task {@MainActor in
-                self.window.delegate?.mouseClick(event: .buttonDown, button: button, count: nil, position: position)
+                self.window.delegate?.mouseClick(event: .buttonDown, button: button, count: nil, position: position, window: self.window)
             }
             event.preventDefault()
         }
@@ -159,7 +159,7 @@ class WASIWindow: WindowBacking {
             let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
             let button: MouseButton = self.mouseButton(fromEvent: event)
             Task {@MainActor in
-                self.window.delegate?.mouseClick(event: .buttonUp, button: button, count: nil ,position: position)
+                self.window.delegate?.mouseClick(event: .buttonUp, button: button, count: nil ,position: position, window: self.window)
             }
             event.preventDefault()
         }
