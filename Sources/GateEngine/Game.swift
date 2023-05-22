@@ -34,7 +34,8 @@ import GameMath
             do {
                 // Allow the main window to be created even though we're not rendering
                 self.renderingIsPermitted = true
-                try windowManager.createWindow(identifier: windowManager.mainWindowIdentifier, style: .system)
+                try delegate.createMainWindow(game: self, identifier: windowManager.mainWindowIdentifier)
+                assert(windowManager.mainWindow?.identifier == windowManager.mainWindowIdentifier, "Must use the provided identifier to make the mainWindow.")
                 self.renderingIsPermitted = false
             }catch{
                 fatalError("[GateEngine] Failed to create main window. \(error)")

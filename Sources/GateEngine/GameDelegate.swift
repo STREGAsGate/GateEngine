@@ -19,6 +19,15 @@ public struct LaunchOptions: OptionSet {
     /// Called when the app finishes loading.
     func didFinishLaunching(game: Game, options: LaunchOptions)
     
+    /**
+     Create a customized mainWindow
+        
+     Use `game.windowManager.createWindow(identifier:style:)`
+     - parameter game: The game to create the window from
+     - parameter identifier: The identifier to give the window. You must use this identifier.
+     */
+    func createMainWindow(game: Game, identifier: String) throws
+    
     /// Might be called immediatley before the app closes.
     func willTerminate(game: Game)
     
@@ -58,6 +67,10 @@ public extension GameDelegate {
     static func main() {
         Game.shared = Game(delegate: Self())
         Game.shared.internalPlatform.main()
+    }
+    
+    func createMainWindow(game: Game, identifier: String) throws {
+        try game.windowManager.createWindow(identifier: identifier, style: .system)
     }
 }
 
