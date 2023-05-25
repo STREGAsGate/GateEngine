@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-@available(*, deprecated, message: "Use AxisAlignedBoundingBox2D")
+@available(*, deprecated /*0.0.5*/, message: "Use AxisAlignedBoundingBox2D")
 extension Rect {
     @inlinable @inline(__always)
     public func nearest(outsidePositionFrom circle: Circle) -> Position2 {

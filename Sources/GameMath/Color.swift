@@ -356,22 +356,6 @@ public extension Color {
     static let yellow: Color        = #colorLiteral(red: 1.0, green: 1.0, blue: 0.0, alpha: 1.0)
     static let orange: Color        = #colorLiteral(red: 1.0, green: 0.64453125, blue: 0.0, alpha: 1.0)
     static let purple: Color        = #colorLiteral(red: 0.5, green: 0.0, blue: 0.5, alpha: 1.0)
-
-    //TODO: Move these to UniversalGraphics
-    @available(*, deprecated, message: "This will be removed in a future update.")
-    static let vertexColors = Color(red: -1001, green: -2002, blue: -3003, alpha: -4004)
-    @available(*, deprecated, message: "This will be removed in a future update.")
-    static let defaultDiffuseMapColor = Color(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
-    @available(*, deprecated, message: "This will be removed in a future update.")
-    static let defaultNormalMapColor = Color(red: 0.5, green: 0.5, blue: 1.0, alpha: 1.0)
-    @available(*, deprecated, message: "This will be removed in a future update.")
-    static let defaultRoughnessMapColor = Color(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
-    @available(*, deprecated, message: "This will be removed in a future update.")
-    static let defaultPointLightColor = Color(red: 1.0, green: 1.0, blue: 0.9, alpha: 1.0)
-    @available(*, deprecated, message: "This will be removed in a future update.")
-    static let defaultSpotLightColor = Color(red: 1.0, green: 1.0, blue: 0.8, alpha: 1.0)
-    @available(*, deprecated, message: "This will be removed in a future update.")
-    static let defaultDirectionalLightColor = Color(red: 0.7, green: 0.7, blue: 1.0, alpha: 1.0)
 }
 
 public extension Color {

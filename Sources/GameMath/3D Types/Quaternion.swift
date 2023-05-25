@@ -300,11 +300,6 @@ extension Quaternion {
         case yaw
         case pitch
         case pitchAndYaw
-        
-        @available(*, unavailable, renamed: "yaw")
-        case justYaw
-        @available(*, unavailable, renamed: "pitch")
-        case justPitch
     }
     
     @_transparent
