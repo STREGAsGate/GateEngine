@@ -13,9 +13,6 @@ let package = Package(
         var packageDependencies: [Package.Dependency] = []
 
         packageDependencies.append(contentsOf: [
-            // GateEngine
-            .package(url: "https://github.com/STREGAsGate/GameMath.git", branch: "master"),
-        
             // Official
             .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.1.0")),
             .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0")),
@@ -107,6 +104,24 @@ let package = Package(
                     ]),
             
             .target(name: "Shaders", dependencies: ["GameMath"]),
+            
+            .target(name: "GameMath", swiftSettings: {
+                var array: [SwiftSetting] = []
+                
+                #if false
+                // A little bit faster on old hardware, but less accurate.
+                // Theres no reason to use this on modern hardware.
+                array.append(.define("GameMathUseFastInverseSquareRoot"))
+                #endif
+                
+                // These settings are faster only with optimization.
+                #if true
+                array.append(.define("GameMathUseSIMD", .when(configuration: .release)))
+                array.append(.define("GameMathUseLoopVectorization", .when(configuration: .release)))
+                #endif
+                
+                return array.isEmpty ? nil : array
+            }()),
         ])
         
         // MARK: - GateEngineDependencies
@@ -234,6 +249,14 @@ let package = Package(
         // MARK: - Tests
         targets.append(contentsOf: [
             .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"]),
+            .testTarget(name: "GameMathTests",
+                        dependencies: ["GameMath"]),
+            .testTarget(name: "GameMathSIMDTests",
+                        dependencies: ["GameMath"],
+                        swiftSettings: [
+                            .define("GameMathUseSIMD"),
+                            .define("GameMathUseLoopVectorization")
+                        ]),
         ])
         
         return targets
