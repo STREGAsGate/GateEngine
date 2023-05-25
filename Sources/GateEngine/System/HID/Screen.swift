@@ -16,16 +16,20 @@ public extension HID {
             case touchDown
             case touchUp
         }
+        
+        @inlinable @inline(__always)
         public func anyTouch(if gesture: Gesture) -> Touch? {
             return touches.first { touch in
                 return (gesture == .touchUp && touch.phase == .up) || (gesture == .touchDown && touch.phase == .down)
             }
         }
         
+        @inlinable @inline(__always)
         public func anyTouch(withPhase phase: Touch.Phase) -> Touch? {
             return touches.first(where: {$0.phase == phase})
         }
         
+        @inline(__always)
         private func existingTouch(_ id: AnyHashable) -> Touch? {
             return touches.first(where: {$0.id == id})
         }
@@ -53,6 +57,7 @@ public extension HID {
             nextTouches.insert(touch)
         }
         
+        @inline(__always)
         func update() {
             let oldTouches = touches
             touches = nextTouches
@@ -74,6 +79,7 @@ public extension HID {
         case cancelled
     }
     
+    @inlinable @inline(__always)
     public var normalizedPosition: Position2 {
         #if os(macOS) && !targetEnvironment(macCatalyst)
         // Mac trackpad is already normalized
@@ -99,6 +105,7 @@ public extension HID {
 }
 
 extension Touch: Equatable {
+    @_transparent
     public static func ==(lhs: Touch, rhs: Touch) -> Bool {
         return lhs.id == rhs.id
     }

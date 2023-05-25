@@ -8,9 +8,12 @@
 import GameMath
 
 @MainActor public final class Keyboard {
+    @usableFromInline
     internal var modifiers: KeyboardModifierMask = []
+    @usableFromInline
     internal var buttons: [KeyboardKey:ButtonState] = [:]
     
+    @inlinable @inline(__always)
     public func button(_ keyboardKey: KeyboardKey) -> ButtonState {
         if let existing = buttons[keyboardKey] {
             return existing
@@ -23,14 +26,18 @@ import GameMath
 
 public extension Keyboard {
     @MainActor final class ButtonState {
+        @usableFromInline
         internal unowned let keyboard: Keyboard
+        @usableFromInline
         internal var currentRecipt: UInt8 = 0
         
+        @usableFromInline
         internal init(keyboard: Keyboard) {
             self.keyboard = keyboard
         }
         
         /// A mask representing special keys that might alter the behavior of this key.
+        @inlinable @inline(__always)
         public var modifiers: KeyboardModifierMask {
             return keyboard.modifiers
         }
@@ -50,6 +57,7 @@ public extension Keyboard {
          - parameter modifiers: Key modifiers required for a press to be considered valid.
          - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
          */
+        @inlinable @inline(__always)
         public func isPressed(ifDifferent recipt: inout InputRecipts, andUsing modifiers: KeyboardModifierMask = []) -> Bool {
             guard isPressed, keyboard.modifiers.contains(modifiers) else {return false}
             let key = ObjectIdentifier(self)
@@ -63,7 +71,7 @@ public extension Keyboard {
 }
 
 extension Keyboard {
-    @_transparent
+    @inline(__always)
     func keyboardRequestedHandling(key: KeyboardKey,
                                    modifiers: KeyboardModifierMask,
                                    event: KeyboardEvent) -> Bool {

@@ -9,6 +9,7 @@ import Foundation
 import GameMath
 
 @MainActor public final class Game {
+    @usableFromInline
     internal let internalPlatform: InternalPlatform = makeDefaultPlatform()
     public var platform: Platform {return internalPlatform}
     public let delegate: GameDelegate

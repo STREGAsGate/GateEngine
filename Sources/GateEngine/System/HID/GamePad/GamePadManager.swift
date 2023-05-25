@@ -42,6 +42,7 @@ public extension HID {
             any = all.first(where: {$0.hasInput}) ?? nullGamePad
         }
         
+        @inline(__always)
         func update() {
             pollIndex &+= 1
         }
