@@ -30,9 +30,9 @@ import GameMath
     public var position: Position2? {
         get {return _position}
         set {
-            if let window, let newValue {
-                Game.shared.internalPlatform.setMousePosition(newValue, window: window)
-            }
+//            if let window, let newValue {
+//                Game.shared.internalPlatform.setMousePosition(newValue, window: window)
+//            }
             self._position = newValue
         }
     }
