@@ -68,7 +68,7 @@ public extension System {
             didSetup = true
             setup(game: game, input: input)
         }
-        if shouldUpdate(withTimePassed: deltaTime) {
+        if shouldUpdate(game: game, input: input, withTimePassed: deltaTime) {
             update(game: game, input: input, withTimePassed: deltaTime)
         }
     }
@@ -89,7 +89,7 @@ public extension System {
      Called before `update(withTimePassed:)`. Return `true` if you would like `update(withTimePassed:)` to be called, otherwise return `false`.
      - parameter deltaTime: The duration of time since the last update frame.
      */
-    open func shouldUpdate(withTimePassed deltaTime: Float) -> Bool {
+    open func shouldUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) -> Bool {
         return true
     }
     
