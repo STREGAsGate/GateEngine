@@ -8,35 +8,42 @@
 import GameMath
 
 @dynamicMemberLookup
-public struct Transform3Component: Component {
-    private var needsUpdate = true
+public final class Transform3Component: Component {
+    @usableFromInline
+    internal private(set) var needsUpdate = true
+    
     public var transform: Transform3 = .default {
         didSet {
             needsUpdate = true
         }
     }
+    
     public var previousTransform: Transform3 = .default {
         didSet {
             needsUpdate = true
         }
     }
-    public private(set) var _distanceTraveled: Float = 0
-    public mutating func distanceTraveled() -> Float {
+    
+    public internal(set) var _distanceTraveled: Float = 0
+    @inlinable @inline(__always)
+    public func distanceTraveled() -> Float {
         if needsUpdate {
             update()
         }
         return _distanceTraveled
     }
+    
     public private(set) var _directionTraveled: Direction3 = .forward
-    public mutating func directionTraveled() -> Direction3 {
+    @inlinable @inline(__always)
+    public func directionTraveled() -> Direction3 {
         if needsUpdate {
             update()
         }
         return _directionTraveled
     }
     
-    @_transparent
-    private mutating func update() {
+    @usableFromInline @inline(__always)
+    internal func update() {
         needsUpdate = false
         self._distanceTraveled = transform.distance(from: previousTransform)
         self._directionTraveled = Direction3(from: previousTransform.position, to: self.position)
@@ -56,7 +63,7 @@ public struct Transform3Component: Component {
 }
 
 public extension Entity {
-    @inline(__always)
+    @inlinable  @inline(__always)
     var transform3: Transform3 {
         get {
             return self[Transform3Component.self].transform
@@ -65,7 +72,8 @@ public extension Entity {
             self[Transform3Component.self].transform = newValue
         }
     }
-    @inline(__always)
+    
+    @inlinable @inline(__always)
     var position3: Position3 {
         get {
             return transform3.position
@@ -74,6 +82,7 @@ public extension Entity {
             transform3.position = newValue
         }
     }
+    
     @inlinable @inline(__always)
     var rotation: Quaternion {
         get {
@@ -83,10 +92,12 @@ public extension Entity {
             transform3.rotation = newValue
         }
     }
+    
     @inlinable @inline(__always)
     func distance(from entity: Entity) -> Float {
         return self.transform3.position.distance(from: entity.transform3.position)
     }
+    
     @inlinable @inline(__always)
     func distance(from position: Position3) -> Float {
         return self.transform3.position.distance(from: position)
