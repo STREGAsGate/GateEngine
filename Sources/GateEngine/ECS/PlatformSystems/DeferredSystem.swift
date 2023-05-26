@@ -10,18 +10,18 @@ import Foundation
 public typealias DeferredBlock = () -> Void
 
 internal final class DeferredSystem: PlatformSystem {
-    var deferedBlocks: [DeferredBlock] = []
+    var deferredBlocks: [DeferredBlock] = []
     
     @inline(__always)
     func insert(_ block: @escaping DeferredBlock) {
-        deferedBlocks.append(block)
+        deferredBlocks.append(block)
     }
     
     override func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
-        for block in deferedBlocks {
+        for block in deferredBlocks {
             block()
         }
-        deferedBlocks.removeAll(keepingCapacity: true)
+        deferredBlocks.removeAll(keepingCapacity: true)
     }
     
     public override class var phase: PlatformSystem.Phase {.postDeffered}
