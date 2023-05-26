@@ -30,6 +30,10 @@ public final class Entity {
         }
     }
     
+    public convenience init(name: String? = nil, priority: Priority = .normal, components: [Component.Type]) {
+        self.init(name: name, priority: priority, components: components.map({$0.init()}))
+    }
+    
     public private(set) lazy var id: ObjectIdentifier = ObjectIdentifier(self)
 }
 
