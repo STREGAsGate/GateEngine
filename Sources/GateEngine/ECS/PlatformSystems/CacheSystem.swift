@@ -12,4 +12,5 @@ internal class CacheSystem: PlatformSystem {
     }
     
     override class var phase: PlatformSystem.Phase {return .postDeffered}
+    override class func sortOrder() -> PlatformSystemSortOrder? {.cacheSystem}
 }

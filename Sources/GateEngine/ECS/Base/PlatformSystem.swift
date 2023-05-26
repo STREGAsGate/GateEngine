@@ -108,7 +108,7 @@ extension PlatformSystem {
         preconditionFailure("Must Override \"\(#function)\" in \(type(of: Self.self))")
     }
     /// The minor sort order for systems
-    open class func sortOrder() -> Int? {
+    open class func sortOrder() -> PlatformSystemSortOrder? {
         return nil
     }
 }

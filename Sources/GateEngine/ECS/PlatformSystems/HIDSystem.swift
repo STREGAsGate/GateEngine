@@ -13,4 +13,5 @@ internal class HIDSystem: PlatformSystem {
     }
     
     override class var phase: PlatformSystem.Phase {return .preUpdating}
+    override class func sortOrder() -> PlatformSystemSortOrder? {.hidSystem}
 }

@@ -119,8 +119,8 @@ internal extension Game {
             _platformSystems.sort(by: { (lhs, rhs) -> Bool in
                 let lhs = type(of: lhs)
                 let rhs = type(of: rhs)
-                let lhsSO = lhs.sortOrder()
-                let rhsSO = rhs.sortOrder()
+                let lhsSO = lhs.sortOrder()?.rawValue
+                let rhsSO = rhs.sortOrder()?.rawValue
                 if lhsSO != nil || rhsSO != nil {
                     if let lhsSO = lhsSO, let rhsSO = rhsSO {
                         return lhsSO < rhsSO

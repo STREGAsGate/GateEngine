@@ -41,6 +41,7 @@ internal class AudioSystem: PlatformSystem {
     }
 
     override class var phase: PlatformSystem.Phase {.postDeffered}
+    override class func sortOrder() -> PlatformSystemSortOrder? {.audioSystem}
 }
 
 // MARK: - Music
