@@ -7,8 +7,8 @@
 
 import GameMath
 
-class Physics3DSystem: System {
-    override func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
+public final class Physics3DSystem: System {
+    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
         // Skip Physics if we don't have at least 20 fps
         guard deltaTime < 1/20 else {return}
         
@@ -42,7 +42,7 @@ class Physics3DSystem: System {
         }
     }
     
-    override class var phase: System.Phase {.simulation}
+    public override class var phase: System.Phase {.simulation}
     public override class func sortOrder() -> SystemSortOrder? {
         return .physics3DSystem
     }

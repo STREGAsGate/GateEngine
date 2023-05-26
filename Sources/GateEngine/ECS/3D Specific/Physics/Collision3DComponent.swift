@@ -33,12 +33,15 @@ public final class Collision3DComponent: Component {
     
     public var options: Options = []
     
+    @available(*, unavailable /*0.0.5*/, message: "Primitive colliders are generated automatically now.")
     public var primitiveCollider: AxisAlignedBoundingBox3D = AxisAlignedBoundingBox3D(center: .zero, offset: .zero, radius: .one)
-    public var detailCollider: Collider3D? = nil
-    
-    public var collider: Collider3D {
-        return detailCollider ?? primitiveCollider
+    @available(*, deprecated /*0.0.5*/, renamed: "collider", message: "Set the collider property directly.")
+    @inlinable @inline(__always)
+    public var detailCollider: Collider3D! {
+        get {return collider}
+        set {collider = newValue}
     }
+    public var collider: Collider3D = AxisAlignedBoundingBox3D(center: .zero, offset: .zero, radius: .one)
     
     var touching: [(triangle: CollisionTriangle, interpenetration: Interpenetration3D)] = []
     var intersecting: [(entity: Entity, interpenetration: Interpenetration3D)] = []
@@ -51,26 +54,24 @@ public final class Collision3DComponent: Component {
     public var triangleFilter: ((CollisionTriangle)->(Bool))? = nil
     public var entityFilter: ((Entity)->(Bool))? = nil
     
+    @inlinable @inline(__always)
     func interpenetration(comparing: Collider3D) -> Interpenetration3D? {
-        return (self.detailCollider ?? self.primitiveCollider).interpenetration(comparing: comparing)
+        return collider.interpenetration(comparing: comparing)
     }
+    @inlinable @inline(__always)
     func interpenetration(comparing: Collision3DComponent) -> Interpenetration3D? {
-        let lhs = self.detailCollider ?? self.primitiveCollider
-        let rhs = comparing.detailCollider ?? comparing.primitiveCollider
+        let lhs = collider
+        let rhs = comparing.collider
         return lhs.interpenetration(comparing: rhs)
     }
-    
+    @inlinable @inline(__always)
     func updateColliders(_ transform: Transform3) {
-        self.primitiveCollider.update(transform: transform)
-        self.detailCollider?.update(transform: transform)
-        if let oobb = detailCollider as? OrientedBoundingBox3D {
-            self.primitiveCollider = AxisAlignedBoundingBox3D(oobb.verticies)
-        }
+        self.collider.update(transform: transform)
     }
     
+    @inlinable @inline(__always)
     func update(sizeAndOffsetUsingTransform transform: Transform3) {
-        self.primitiveCollider.update(sizeAndOffsetUsingTransform: transform)
-        self.detailCollider?.update(sizeAndOffsetUsingTransform: transform)
+        self.collider.update(sizeAndOffsetUsingTransform: transform)
     }
     
     public required init(){}

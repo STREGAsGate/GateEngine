@@ -23,8 +23,8 @@ public final class Physics3DComponent: Component {
     
     public private(set) var xzSpeed: Float = 0
     
-    public private(set) var xzAcceleration: Float? = nil
-    public private(set) var xzDeceleration: Float? = nil
+    public var xzAcceleration: Float? = nil
+    public var xzDeceleration: Float? = nil
     
     func update(_ deltaTime: Float) {
         if let xzAcceleration = xzAcceleration, velocityXZMagnitude >= xzSpeed {

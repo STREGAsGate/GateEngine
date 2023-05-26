@@ -23,117 +23,114 @@ public final class Collision3DSystem: System {
         for dynamicEntity in dynamicEntites {
             guard let collisionComponent = dynamicEntity.component(ofType: Collision3DComponent.self) else {continue}
             guard collisionComponent.isEnabled else {continue}
-            guard dynamicEntity.hasComponent(Transform3Component.self) else {continue}
-            dynamicEntity.configure(Transform3Component.self) { transformComponent in
-                
-                @_transparent
-                func updateCollider() {
-                    collisionComponent.updateColliders(transformComponent.transform)
-                }
-                
-                // Update collider from animation
-                if let rigComponent = dynamicEntity.component(ofType: Rig3DComponent.self) {
-                    if let colliderJointName = rigComponent.updateColliderFromBoneNamed {
-                        if let joint = rigComponent.skeleton.jointNamed(colliderJointName) {
-                            let position = (transformComponent.transform.matrix() * joint.modelSpace).position - transformComponent.position
-                            let rotation = transformComponent.rotation * joint.modelSpace.rotation.conjugate
-                            let scale = joint.modelSpace.scale
-                            let transform = Transform3(position: position, rotation: rotation, scale: scale)
-                            collisionComponent.update(sizeAndOffsetUsingTransform: transform)
-                        }else{
-                            fatalError("Failed to find joint \(colliderJointName).")
-                        }
+            guard let transformComponent = dynamicEntity.component(ofType: Transform3Component.self) else {continue}
+            
+            @_transparent
+            func updateCollider() {
+                collisionComponent.updateColliders(transformComponent.transform)
+            }
+            
+            // Update collider from animation
+            if let rigComponent = dynamicEntity.component(ofType: Rig3DComponent.self) {
+                if let colliderJointName = rigComponent.updateColliderFromBoneNamed {
+                    if let joint = rigComponent.skeleton.jointNamed(colliderJointName) {
+                        let position = (transformComponent.transform.matrix() * joint.modelSpace).position - transformComponent.position
+                        let rotation = transformComponent.rotation * joint.modelSpace.rotation.conjugate
+                        let scale = joint.modelSpace.scale
+                        let transform = Transform3(position: position, rotation: rotation, scale: scale)
+                        collisionComponent.update(sizeAndOffsetUsingTransform: transform)
+                    }else{
+                        fatalError("Failed to find joint \(colliderJointName).")
                     }
                 }
+            }
+            
+            collisionComponent.touching.removeAll(keepingCapacity: true)
+            collisionComponent.intersecting.removeAll(keepingCapacity: true)
+            
+            if collisionComponent.options.contains(.ledgeDetection) {
+                updateCollider()
+                self.performLedgeDetection(dynamicEntity, transformComponent: transformComponent, collisionComponent: collisionComponent)
+                updateCollider()
+            }
+            
+            if collisionComponent.options.contains(.robustProtection) {
+                updateCollider()
+                self.performRobustnessProtection(dynamicEntity, transformComponent: transformComponent, collisionComponent: collisionComponent)
+                updateCollider()
+            }
+            
+            if collisionComponent.options.contains(.skipTriangles) == false {
+                var triangles: [CollisionTriangle] = []
                 
-                collisionComponent.touching.removeAll(keepingCapacity: true)
-                collisionComponent.intersecting.removeAll(keepingCapacity: true)
-                
-                if collisionComponent.options.contains(.ledgeDetection) {
-                    updateCollider()
-                    self.performLedgeDetection(dynamicEntity, transformComponent: &transformComponent, collisionComponent: collisionComponent)
-                    updateCollider()
+                for entity in entitiesProbablyHit(by: collisionComponent.collider.boundingBox) {
+                    guard let mesh = entity[Collision3DComponent.self].collider as? MeshCollider else {continue}
+                    triangles.append(contentsOf: mesh.triangles())
+                }
+                for octree in octrees.filter({$0.boundingBox.isColiding(with: collisionComponent.collider.boundingBox)}) {
+                    triangles.append(contentsOf: octree.trianglesNear(collisionComponent.collider.boundingBox))
                 }
                 
-                if collisionComponent.options.contains(.robustProtection) {
-                    updateCollider()
-                    self.performRobustnessProtection(dynamicEntity, transformComponent: &transformComponent, collisionComponent: collisionComponent)
-                    updateCollider()
+                triangles = sortedTrianglesProbablyHitting(dynamic: dynamicEntity, triangles: triangles)
+                if let filter = collisionComponent.triangleFilter {
+                    triangles = triangles.filter(filter)
                 }
                 
-                if collisionComponent.options.contains(.skipTriangles) == false {
-                    var triangles: [CollisionTriangle] = []
-                    
-                    for entity in entitiesProbablyHit(by: collisionComponent.primitiveCollider) {
-                        guard let mesh = entity[Collision3DComponent.self].detailCollider as? MeshCollider else {continue}
-                        triangles.append(contentsOf: mesh.triangles())
-                    }
-                    for octree in octrees.filter({$0.boundingBox.isColiding(with: collisionComponent.primitiveCollider)}) {
-                        triangles.append(contentsOf: octree.trianglesNear(collisionComponent.primitiveCollider))
-                    }
-                    
-                    triangles = sortedTrianglesProbablyHitting(dynamic: dynamicEntity, triangles: triangles)
-                    if let filter = collisionComponent.triangleFilter {
-                        triangles = triangles.filter(filter)
-                    }
-                    for triangle in triangles {
+                updateCollider()
+                for triangle in triangles {
+                    if respondToCollision(dynamicEntity: dynamicEntity, triangle: triangle) {
                         updateCollider()
-                        if respondToCollision(dynamicEntity: dynamicEntity, triangle: triangle) {
-                            updateCollider()
-                        }
                     }
+                }
+            }
+            
+            if collisionComponent.options.contains(.skipEntities) == false {
+                for entity in staticEntities {
+                    guard entity != dynamicEntity else {continue}
                     
-                    updateCollider()
+                    guard collisionComponent.entityFilter?(entity) ?? true else {continue}
+                    guard let staticComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
+                    guard staticComponent.isEnabled else {continue}
+                    guard staticComponent.collider is MeshCollider == false else {continue}
+                    guard staticComponent.options.contains(.skipEntities) == false else {continue}
+                    guard collisionComponent.collider.boundingBox.isColiding(with: staticComponent.collider.boundingBox) else {continue}
+                    
+                    let dynamicCollider = collisionComponent.collider
+                    let staticCollider = staticComponent.collider
+                    
+                    let interpenetration = staticCollider.interpenetration(comparing: dynamicCollider)
+                    
+                    if let interpenetration = interpenetration, interpenetration.isColiding == true {
+                        collisionComponent.intersecting.append((entity, interpenetration))
+                        respondToCollision(dynamicEntity: dynamicEntity, staticEntity: entity, interpenetration: interpenetration)
+                        updateCollider()
+                    }
                 }
                 
-                if collisionComponent.options.contains(.skipEntities) == false {
-                    for entity in staticEntities {
-                        guard entity != dynamicEntity else {continue}
-                        
-                        guard collisionComponent.entityFilter?(entity) ?? true else {continue}
-                        guard let staticComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
-                        guard staticComponent.isEnabled else {continue}
-                        guard staticComponent.detailCollider is MeshCollider == false else {continue}
-                        guard staticComponent.options.contains(.skipEntities) == false else {continue}
-                        guard collisionComponent.primitiveCollider.isColiding(with: staticComponent.primitiveCollider) else {continue}
-                        
-                        let dynamicCollider = collisionComponent.collider
-                        let staticCollider = staticComponent.collider
-                        
-                        let interpenetration = staticCollider.interpenetration(comparing: dynamicCollider)
-                        
-                        if let interpenetration = interpenetration, interpenetration.isColiding == true {
-                            collisionComponent.intersecting.append((entity, interpenetration))
-                            respondToCollision(dynamicEntity: dynamicEntity, staticEntity: entity, interpenetration: interpenetration)
-                            updateCollider()
-                        }
-                    }
+                for entity in dynamicEntites {
+                    guard entity != dynamicEntity else {continue}
+                    guard collisionComponent.entityFilter?(entity) ?? true else {continue}
+                    guard let dynamicComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
+                    guard dynamicComponent.isEnabled else {continue}
+                    guard dynamicComponent.collider is MeshCollider == false else {continue}
+                    guard dynamicComponent.options.contains(.skipEntities) == false else {continue}
                     
-                    for entity in dynamicEntites {
-                        guard entity != dynamicEntity else {continue}
-                        guard collisionComponent.entityFilter?(entity) ?? true else {continue}
-                        guard let dynamicComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
-                        guard dynamicComponent.isEnabled else {continue}
-                        guard dynamicComponent.detailCollider is MeshCollider == false else {continue}
-                        guard dynamicComponent.options.contains(.skipEntities) == false else {continue}
-                        
-                        let pair: Set = [dynamicEntity.id, entity.id]
-                        guard finishedPairs.contains(pair) == false else {continue}
-                        finishedPairs.insert(pair)
-                        
-                        guard dynamicComponent.options.contains(.skipEntities) == false else {continue}
-                        guard collisionComponent.primitiveCollider.isColiding(with: dynamicComponent.primitiveCollider) else {continue}
-                        
-                        let dynamicCollider1 = collisionComponent.collider
-                        let dynamicCollider2 = dynamicComponent.collider
-                        
-                        let interpenetration = dynamicCollider2.interpenetration(comparing: dynamicCollider1)
-                        
-                        if let interpenetration = interpenetration, interpenetration.isColiding == true {
-                            collisionComponent.intersecting.append((entity, interpenetration))
-                            respondToCollision(sourceEntity: dynamicEntity, dynamicEntity: entity, interpenetration: interpenetration)
-                            updateCollider()
-                        }
+                    let pair: Set = [dynamicEntity.id, entity.id]
+                    guard finishedPairs.contains(pair) == false else {continue}
+                    finishedPairs.insert(pair)
+                    
+                    guard dynamicComponent.options.contains(.skipEntities) == false else {continue}
+                    guard collisionComponent.collider.boundingBox.isColiding(with: dynamicComponent.collider.boundingBox) else {continue}
+                    
+                    let dynamicCollider1 = collisionComponent.collider
+                    let dynamicCollider2 = dynamicComponent.collider
+                    
+                    let interpenetration = dynamicCollider2.interpenetration(comparing: dynamicCollider1)
+                    
+                    if let interpenetration = interpenetration, interpenetration.isColiding == true {
+                        collisionComponent.intersecting.append((entity, interpenetration))
+                        respondToCollision(sourceEntity: dynamicEntity, dynamicEntity: entity, interpenetration: interpenetration)
+                        updateCollider()
                     }
                 }
             }
@@ -147,7 +144,9 @@ public final class Collision3DSystem: System {
 }
 
 extension Collision3DSystem {
-    func performRobustnessProtection(_ entity: Entity, transformComponent: inout Transform3Component, collisionComponent: Collision3DComponent) {
+    @inline(__always)
+    func performRobustnessProtection(_ entity: Entity, transformComponent: Transform3Component, collisionComponent: Collision3DComponent) {
+        @inline(__always)
         func revert() {
             transformComponent.transform.position = transformComponent.previousTransform.position
         }
@@ -157,7 +156,7 @@ extension Collision3DSystem {
         let collider = collisionComponent.collider
 
         let previousPosition = transformComponent.previousTransform.position + collider.offset
-        let point = previousPosition.moved(-collisionComponent.primitiveCollider.size.max, toward: transformComponent.directionTraveled())
+        let point = previousPosition.moved(-collisionComponent.collider.boundingBox.size.max, toward: transformComponent.directionTraveled())
         let ray = Ray3D(from: point, toward: transformComponent.directionTraveled())
         guard let hit = self.trianglesHit(by: ray, filter: collisionComponent.triangleFilter).first else {return}
         guard hit.position.distance(from: previousPosition) < transformComponent.distanceTraveled() else {return}
@@ -166,20 +165,24 @@ extension Collision3DSystem {
         transformComponent.position = hit.position.moved(-0.001, toward: transformComponent.directionTraveled())
     }
     
-    func performLedgeDetection(_ entity: Entity, transformComponent: inout Transform3Component, collisionComponent: Collision3DComponent) {
-        let collider: BoundingEllipsoid3D = collisionComponent.detailCollider as! BoundingEllipsoid3D
-
+    @inline(__always)
+    func performLedgeDetection(_ entity: Entity, transformComponent: Transform3Component, collisionComponent: Collision3DComponent) {
+        guard let collider: BoundingEllipsoid3D = collisionComponent.collider as? BoundingEllipsoid3D else {return}
+        
+        @inline(__always)
         func wall(_ position: Position3, _ direction: Direction3) -> (position: Position3, triangle: CollisionTriangle)? {
             let wFilter: (CollisionTriangle) -> Bool = {$0.surfaceType == .wall && $0.plane.classifyPoint(position) == .front}
             return trianglesHit(by: Ray3D(from: position, toward: direction), filter: wFilter).first
         }
+        
+        @inline(__always)
         func floor(_ position: Position3) -> (position: Position3, triangle: CollisionTriangle)? {
             let tFilter: (CollisionTriangle) -> Bool = {$0.surfaceType.isWalkable && $0.plane.classifyPoint(collider.position) == .front}
             return trianglesHit(by: Ray3D(from: position, toward: .down), filter: tFilter).first
         }
 
 
-        
+        @inline(__always)
         func processDirection(_ direction: Direction3) -> Bool {
             defer {
                 collisionComponent.updateColliders(transformComponent.transform)
@@ -233,11 +236,12 @@ extension Collision3DSystem {
         }
         
         if doSides {
-            let directions2: [Direction3] = {
+            @inline(__always)
+            var directions2: [Direction3] {
                 let r = transformComponent.rotation
                 return [r.right,
                         r.left]
-            }()
+            }
             for direction in directions2 {
                 if processDirection(direction) {
                     doSides = true
@@ -251,11 +255,12 @@ extension Collision3DSystem {
 //        }
     }
 
-    func _performTriangleLedgeDetection(_ entity: Entity, transformComponent: inout Transform3Component, collisionComponent: Collision3DComponent) {
-        var collider = collisionComponent.detailCollider as! BoundingEllipsoid3D
+    @inline(__always)
+    func _performTriangleLedgeDetection(_ entity: Entity, transformComponent: Transform3Component, collisionComponent: Collision3DComponent) {
+        guard var collider = collisionComponent.collider as? BoundingEllipsoid3D else {return}
         let filter: (CollisionTriangle) -> Bool = {$0.surfaceType.isWalkable && $0.plane.classifyPoint(collider.position) == .front}
         var sphere = BoundingSphere3D(center: transformComponent.position, offset: .zero, radius: collider.radius.x)
-        let triangles = trianglesNear(collisionComponent.primitiveCollider, filter: filter).filter({$0.interpenetration(comparing: sphere)?.isColiding == true})
+        let triangles = trianglesNear(collisionComponent.collider.boundingBox, filter: filter).filter({$0.interpenetration(comparing: sphere)?.isColiding == true})
 
         var match: [(edge: Line3D, point: Position3, angle: Degrees, distance: Float, triangle: CollisionTriangle)] = []
         for triangle in triangles {
@@ -299,8 +304,9 @@ extension Collision3DSystem {
         }
     }
     
+    @inline(__always)
     func sortedTrianglesProbablyHitting(dynamic: Entity, triangles: [CollisionTriangle]) -> [CollisionTriangle] {
-        let collider = dynamic.collision3DComponent.primitiveCollider
+        let collider = dynamic.collision3DComponent.collider.boundingBox
 
         var values: [CollisionTriangle] = []
         values.reserveCapacity(triangles.count)
@@ -316,38 +322,36 @@ extension Collision3DSystem {
         return values
     }
     
+    @inline(__always)
     func respondToCollision(dynamicEntity: Entity, triangle: CollisionTriangle) -> Bool {
         guard let collisionComponent = dynamicEntity.component(ofType: Collision3DComponent.self) else {return false}
-        return dynamicEntity.configure(Transform3Component.self) { transformComponent in
-            guard let interpenetration = triangle.interpenetration(comparing: collisionComponent.collider), interpenetration.isColiding else {return false}
-            
-            collisionComponent.touching.append((triangle, interpenetration))
-            
-            let depth = interpenetration.depth + 0.001 //Keep the objects touching a little
-            switch triangle.surfaceType {
-            case .floor, .ramp:
-                transformComponent.position -= Position3(Direction3.up * depth)
-            case .ceiling:
-                transformComponent.position -= Position3(Direction3.down * depth)
-            case .wall:
-                transformComponent.position -= Position3(interpenetration.direction * depth)
-            }
-            return true
+        guard let interpenetration = triangle.interpenetration(comparing: collisionComponent.collider), interpenetration.isColiding else {return false}
+        collisionComponent.touching.append((triangle, interpenetration))
+        guard let transformComponent = dynamicEntity.component(ofType: Transform3Component.self) else {return false}
+        let depth = interpenetration.depth + 0.001 //Keep the objects touching a little
+        switch triangle.surfaceType {
+        case .floor, .ramp:
+            transformComponent.position -= Position3(Direction3.up * depth)
+        case .ceiling:
+            transformComponent.position -= Position3(Direction3.down * depth)
+        case .wall:
+            transformComponent.position -= Position3(interpenetration.direction * depth)
         }
+        return true
     }
     
+    @inline(__always)
     func respondToCollision(dynamicEntity: Entity, staticEntity: Entity, interpenetration: Interpenetration3D) {
-        dynamicEntity.configure(Transform3Component.self) { transformComponent in
-            let depth = interpenetration.depth + 0.001 //Keep the objects touching a little
-            transformComponent.position -= Position3(interpenetration.direction * depth)
-        }
+        guard let transformComponent = dynamicEntity.component(ofType: Transform3Component.self) else {return}
+        let depth = interpenetration.depth + 0.001 //Keep the objects touching a little
+        transformComponent.position -= Position3(interpenetration.direction * depth)
     }
     
+    @inline(__always)
     func respondToCollision(sourceEntity: Entity, dynamicEntity: Entity, interpenetration: Interpenetration3D) {
-        dynamicEntity.configure(Transform3Component.self) { transformComponent in
-            let depth = interpenetration.depth + 0.001 //Keep the objects touching a little
-            transformComponent.position -= Position3(interpenetration.direction * depth)
-        }
+        guard let transformComponent = dynamicEntity.component(ofType: Transform3Component.self) else {return}
+        let depth = interpenetration.depth + 0.001 //Keep the objects touching a little
+        transformComponent.position -= Position3(interpenetration.direction * depth)
     }
 }
 
@@ -356,6 +360,7 @@ public extension Collision3DSystem {
         return self.entities.filter({$0.hasComponent(OctreeComponent.self)}).map({$0[OctreeComponent.self]})
     }
     
+    @inline(__always)
     func trianglesNear(_ box: AxisAlignedBoundingBox3D, filter: ((CollisionTriangle)->Bool)? = nil) -> [CollisionTriangle] {
         var hits: [CollisionTriangle] = []
         
@@ -372,11 +377,12 @@ public extension Collision3DSystem {
         return hits
     }
     
+    @inline(__always)
     func trianglesHit(by ray: Ray3D, filter: ((CollisionTriangle)->Bool)? = nil) -> [(position: Position3, triangle: CollisionTriangle)] {
         var hits: [(position: Position3, triangle: CollisionTriangle)] = []
         
         for entity in entitiesProbablyHit(by: ray) {
-            guard let mesh = entity[Collision3DComponent.self].detailCollider as? MeshCollider else {continue}
+            guard let mesh = entity[Collision3DComponent.self].collider as? MeshCollider else {continue}
             hits.append(contentsOf: mesh.trianglesHit(by: ray))
         }
         
@@ -389,39 +395,42 @@ public extension Collision3DSystem {
         return hits.sorted(by: {$0.position.distance(from: ray.origin) < $1.position.distance(from: ray.origin)})
     }
     
+    @inline(__always)
     func entitiesProbablyHit(by ray: Ray3D, filter: ((Entity)->Bool)? = nil) -> [Entity] {
         var entities: [Entity] = []
         
         for entity in self.entities {
             guard let collisionComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
             guard filter?(entity) ?? true else {continue}
-            guard collisionComponent.primitiveCollider.surfacePoint(for: ray) != nil else {continue}
+            guard collisionComponent.collider.boundingBox.surfacePoint(for: ray) != nil else {continue}
             entities.append(entity)
         }
         
         return entities
     }
     
+    @inline(__always)
     func entitiesProbablyHit(by collider: Collider3D, filter: ((Entity)->Bool)? = nil) -> [Entity] {
         var entities: [Entity] = []
         
         for entity in self.entities {
             guard let collisionComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
             guard filter?(entity) ?? true else {continue}
-            guard collisionComponent.primitiveCollider.interpenetration(comparing: collider)?.isColiding == true else {continue}
+            guard collisionComponent.collider.boundingBox.interpenetration(comparing: collider)?.isColiding == true else {continue}
             entities.append(entity)
         }
         
         return entities
     }
     
+    @inline(__always)
     func entitiesHit(by ray: Ray3D, filter: ((Entity)->Bool)? = nil) -> [(position: Position3, surfaceDirection: Direction3, entity: Entity)] {
         let entites = entitiesProbablyHit(by: ray, filter: filter)
         
         var hits: [(position: Position3, surfaceDirection: Direction3, entity: Entity)] = []
         for entity in entites {
             guard let collisionComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
-            let collider = collisionComponent.detailCollider ?? collisionComponent.primitiveCollider
+            let collider = collisionComponent.collider
             guard collider is MeshCollider == false else {continue}
             if let impact = collider.surfaceImpact(comparing: ray) {
                 hits.append((impact.position, impact.normal, entity))
@@ -431,6 +440,7 @@ public extension Collision3DSystem {
         return hits.sorted(by: {$0.position.distance(from: ray.origin) < $1.position.distance(from: ray.origin)})
     }
     
+    @inline(__always)
     func closestHit(from ray: Ray3D, entityFilter: ((Entity)->Bool)? = nil, triangleFilter: ((CollisionTriangle)->Bool)? = nil) -> (position: Position3, surfaceDirection: Direction3, triangle: CollisionTriangle?, entity: Entity?)? {
         let _entity = entitiesHit(by: ray, filter: entityFilter).first
         guard let triangle = trianglesHit(by: ray, filter: triangleFilter).first else {
@@ -449,11 +459,10 @@ public extension Collision3DSystem {
             return (entity.position, entity.surfaceDirection, nil, entity.entity)
         }
     }
-    
-
 }
 
 public extension Game {
+    @_transparent
     var collision3DSystem: Collision3DSystem {
         return self.system(ofType: Collision3DSystem.self)
     }

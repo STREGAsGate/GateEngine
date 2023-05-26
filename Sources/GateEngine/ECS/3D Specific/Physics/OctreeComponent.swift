@@ -9,8 +9,8 @@ import func Foundation.floor
 import GameMath
 
 public extension OctreeComponent {
-    @inlinable @inline(__always) @_disfavoredOverload
-    func load(as path: GeoemetryPath, options: GeometryImporterOptions = .none, center: Position3) async throws {
+    @_transparent @_disfavoredOverload
+    func load(path: GeoemetryPath, options: GeometryImporterOptions = .none, center: Position3) async throws {
         try await self.load(path: path.value, options: options, center: center)
     }
     func load(path: String, options: GeometryImporterOptions = .none, center: Position3) async throws {
