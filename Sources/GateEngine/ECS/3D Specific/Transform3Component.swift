@@ -45,6 +45,7 @@ public struct Transform3Component: Component {
         }
     }
     
+    @inlinable @inline(__always)
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<Transform3, T>) -> T {
         get {return transform[keyPath: keyPath]}
         set {transform[keyPath: keyPath] = newValue}
@@ -55,38 +56,38 @@ public struct Transform3Component: Component {
 }
 
 public extension Entity {
-    @inlinable
+    @inline(__always)
     var transform3: Transform3 {
-        @inlinable get {
+        get {
             return self[Transform3Component.self].transform
         }
-        @inlinable set {
+        set {
             self[Transform3Component.self].transform = newValue
         }
     }
-    @inlinable
+    @inline(__always)
     var position3: Position3 {
-        @inlinable get {
+        get {
             return transform3.position
         }
-        @inlinable set {
+        set {
             transform3.position = newValue
         }
     }
-    @inlinable
+    @inlinable @inline(__always)
     var rotation: Quaternion {
-        @inlinable get {
+        get {
             return transform3.rotation
         }
-        @inlinable set {
+        set {
             transform3.rotation = newValue
         }
     }
-    @inlinable
+    @inlinable @inline(__always)
     func distance(from entity: Entity) -> Float {
         return self.transform3.position.distance(from: entity.transform3.position)
     }
-    @inlinable
+    @inlinable @inline(__always)
     func distance(from position: Position3) -> Float {
         return self.transform3.position.distance(from: position)
     }

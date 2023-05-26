@@ -155,6 +155,7 @@ extension CollisionTriangle: Collider3D {
             return interpenetration
         case let ellipsoid as BoundingEllipsoid3D:
             let position = ellipsoid.position / ellipsoid.radius
+            @inline(__always)
             func closestUnitSphereSurfacePoint(from point: Position3) -> Position3 {
                 let scale: Float = 1
                 return ((point - position).normalized * scale) + position
