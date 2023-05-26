@@ -28,6 +28,13 @@ public struct InputRecipts {
     public let screen: Screen = Screen()
     public internal(set) lazy var gamePads: GamePadManger = GamePadManger(hid: self)
     
+    @inline(__always)
+    func update(_ deltaTime: Float) {
+        self.gamePads.update()
+        self.screen.update()
+        self.mouse.update()
+    }
+    
     internal init() {}
 }
 

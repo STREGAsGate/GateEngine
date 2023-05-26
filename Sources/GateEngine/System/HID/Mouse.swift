@@ -53,6 +53,10 @@ import GameMath
             }
         }
     }
+    
+    @inline(__always)
+    func update() {
+    }
 }
 
 public extension Mouse {
