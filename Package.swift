@@ -251,6 +251,9 @@ let package = Package(
             .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"]),
             .testTarget(name: "GameMathTests",
                         dependencies: ["GameMath"]),
+        ])
+        #if !os(Windows)
+        targets.append(contentsOf: [
             .testTarget(name: "GameMathSIMDTests",
                         dependencies: ["GameMath"],
                         swiftSettings: [
@@ -258,6 +261,7 @@ let package = Package(
                             .define("GameMathUseLoopVectorization")
                         ]),
         ])
+        #endif
         
         return targets
     }(),
