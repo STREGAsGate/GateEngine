@@ -104,7 +104,7 @@ import GameMath
 #if GATEENGINE_FORCE_OPNEGL_APPLE
     return OpenGLRenderer()
 #elseif canImport(MetalKit)
-    #if canImport(GLKit)
+    #if canImport(GLKit) && !targetEnvironment(macCatalyst)
     if MetalRenderer.isSupported == false {
         return OpenGLRenderer()
     }

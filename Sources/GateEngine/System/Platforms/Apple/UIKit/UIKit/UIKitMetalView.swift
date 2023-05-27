@@ -11,7 +11,7 @@ import UIKit
 import MetalKit
 
 @available(iOS 9, tvOS 9, *)
-internal class UIKitMetalView: MTKView, MTKViewDelegate {
+internal class MetalView: MTKView, MTKViewDelegate {
     unowned let viewController: UIKitViewController
     
     init(viewController: UIKitViewController, size: CGSize) {

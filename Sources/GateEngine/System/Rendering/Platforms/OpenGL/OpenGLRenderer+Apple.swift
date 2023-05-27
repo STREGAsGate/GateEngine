@@ -36,4 +36,10 @@ internal extension OpenGLRenderer {
         CGLFlushDrawable(ctx)
     }
 }
+#elseif os(iOS) || os(tvOS)
+internal extension OpenGLRenderer {
+    func setup() {
+        
+    }
+}
 #endif

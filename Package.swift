@@ -76,6 +76,7 @@ let package = Package(
                     ],
                     cSettings: [
                         .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS, .iOS, .tvOS])),
+                        .define("GLES_SILENCE_DEPRECATION", .when(platforms: [.iOS, .tvOS])),
                     ],
                     swiftSettings: {
                         var settings: [SwiftSetting] = []
@@ -209,7 +210,10 @@ let package = Package(
         targets.append(contentsOf: [
             .target(name: "OpenGL_GateEngine",
                     path: "Sources/GateEngineDependencies/OpenGL/OpenGL_GateEngine",
-                    cSettings: [.define("GL_SILENCE_DEPRECATION")])
+                    cSettings: [
+                        .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS, .iOS, .tvOS])),
+                        .define("GLES_SILENCE_DEPRECATION", .when(platforms: [.iOS, .tvOS])),
+                    ])
         ])
         #endif
         
