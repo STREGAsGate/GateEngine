@@ -85,7 +85,7 @@ public class ResourceManager {
                 if cache.referenceCount == 0 {
                     self.cache.textures.removeValue(forKey: key)
                     #if DEBUG
-                    print("[GateEngine] Removing cache (no longer referenced)", key.requestedPath)
+                    print("[GateEngine] Removing cache (no longer referenced)", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
                     #endif
                 }
             case .until(minutes: let minutes):
@@ -94,7 +94,7 @@ public class ResourceManager {
                     if cache.minutesDead == minutes {
                         self.cache.textures.removeValue(forKey: key)
                         #if DEBUG
-                        print("[GateEngine] Removing cache (unsused for \(cache.minutesDead) min)", key.requestedPath)
+                        print("[GateEngine] Removing cache (unsused for \(cache.minutesDead) min)", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
                         #endif
                     }
                 }else{
@@ -113,7 +113,7 @@ public class ResourceManager {
                 if cache.referenceCount == 0 {
                     self.cache.geometries.removeValue(forKey: key)
                     #if DEBUG
-                    print("[GateEngine] Removing cache (no longer referenced)", key.requestedPath)
+                    print("[GateEngine] Removing cache (no longer referenced)", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
                     #endif
                 }
             case .until(minutes: let minutes):
@@ -122,7 +122,7 @@ public class ResourceManager {
                     if cache.minutesDead == minutes {
                         self.cache.geometries.removeValue(forKey: key)
                         #if DEBUG
-                        print("[GateEngine] Removing cache (unsused for \(cache.minutesDead) min)", key.requestedPath)
+                        print("[GateEngine] Removing cache (unsused for \(cache.minutesDead) min)", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
                         #endif
                     }
                 }else{
