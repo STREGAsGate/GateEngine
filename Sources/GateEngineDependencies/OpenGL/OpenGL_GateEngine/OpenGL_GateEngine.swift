@@ -127,7 +127,7 @@ public enum OpenGL {
                 case .triangleStrip: return GL_TRIANGLE_STRIP
                 case .points: return GL_POINTS
                 case .lines: return GL_LINES
-                case .lineStrip: return GL_LINES_ADJACENCY
+                case .lineStrip: return GL_LINE_STRIP
                 }
             }
         }
