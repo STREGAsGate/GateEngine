@@ -42,8 +42,10 @@ import GameMath
                 fatalError("[GateEngine] Failed to create main window. \(error)")
             }
         }
+        #if !os(WASI)
         self.addPlatformSystems()
         self.delegate.didFinishLaunching(game: self, options: [])
+        #endif
         #if !GATEENGINE_PLATFORM_SINGLETHREADED
         self.gameLoop()
         #endif
