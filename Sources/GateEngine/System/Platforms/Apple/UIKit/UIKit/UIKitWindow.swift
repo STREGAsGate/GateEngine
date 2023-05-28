@@ -84,5 +84,13 @@ extension UIKitWindow {
     var backingSize: Size2 {
         return frame.size * Float(uiWindow.traitCollection.displayScale)
     }
+    
+    func setMouseHidden(_ hidden: Bool) {
+        // TODO: implement
+    }
+    
+    func setMousePosition(_ position: Position2) {
+        // TODO: implement
+    }
 }
 #endif

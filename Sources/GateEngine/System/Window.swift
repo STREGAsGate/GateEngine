@@ -109,6 +109,17 @@ public enum WindowStyle {
         return windowBacking.safeAreaInsets
     }
     
+    @usableFromInline @inline(__always)
+    func setMouseHidden(_ hidden: Bool) {
+        self.windowBacking.setMouseHidden(hidden)
+    }
+    @usableFromInline @inline(__always)
+    func setMousePosition(_ position: Position2) {
+        let windowFrame = Rect(size: self.size)
+        let clampedToWindowFrame = position.clamped(within: windowFrame)
+        self.windowBacking.setMousePosition(clampedToWindowFrame)
+    }
+    
     func show() {
         self.windowBacking.show()
     }
@@ -125,6 +136,9 @@ internal protocol WindowBacking: AnyObject {
     
     init(identifier: String, style: WindowStyle, window: Window)
     
+    func setMouseHidden(_ hidden: Bool)
+    func setMousePosition(_ position: Position2)
+    
     func show()
     func close()
 }
@@ -133,7 +147,7 @@ internal protocol WindowBacking: AnyObject {
 protocol WindowDelegate: AnyObject {
     func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float)
 
-    func mouseChange(event: MouseChangeEvent, position: Position2, window: Window?)
+    func mouseChange(event: MouseChangeEvent, position: Position2, delta: Position2, window: Window?)
     func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2, window: Window?)
 
     func touchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2)

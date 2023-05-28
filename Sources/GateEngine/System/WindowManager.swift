@@ -80,6 +80,7 @@ import GameMath
 }
 
 extension WindowManager: WindowDelegate {
+    @inline(__always)
     func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float) {
         window.didDrawSomething = false
         if let index = windowsThatRequestedDraw.firstIndex(where: {$0.window == window}) {
@@ -96,17 +97,21 @@ extension WindowManager: WindowDelegate {
         #endif
     }
     
-    func mouseChange(event: MouseChangeEvent, position: Position2, window: Window?) {
-        game.hid.mouseChange(event: event, position: position, window: window)
+    @_transparent
+    func mouseChange(event: MouseChangeEvent, position: Position2, delta: Position2, window: Window?) {
+        game.hid.mouseChange(event: event, position: position, delta: delta, window: window)
     }
+    @_transparent
     func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2, window: Window?) {
         game.hid.mouseClick(event: event, button: button, count: count, position: position, window: window)
     }
-
+    
+    @_transparent
     func touchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2) {
         game.hid.touchChange(id: id, kind: kind, event: event, position: position)
     }
 
+    @_transparent
     func keyboardRequestedHandling(key: KeyboardKey,
                                    modifiers: KeyboardModifierMask,
                                    event: KeyboardEvent) -> Bool {
