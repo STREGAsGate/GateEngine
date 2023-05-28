@@ -26,8 +26,8 @@ public final class D3DDevice: D3DObject {
     public func supports<T>(_ feature: D3DFeature, _ structure: T) -> Bool {
         return performFatally(as: RawValue.self) {pThis in
             let size = UInt32(MemoryLayout<T>.size)
-            var s = structure
-            return pThis.pointee.lpVtbl.pointee.CheckFeatureSupport(pThis, feature.rawValue, &s, size).isSuccess
+            var structure = structure
+            return pThis.pointee.lpVtbl.pointee.CheckFeatureSupport(pThis, feature.rawValue, &structure, size).isSuccess
         }
     }
 

@@ -5,9 +5,9 @@
  * http://stregasgate.com
  */
 
-#if canImport(WinSDK)
+#if canImport(WinSDK) && canImport(XAudio29)
 import Foundation
-import WinSDK
+import XAudio29
 
 internal class XAContextReference: AudioContextBackend {
     
