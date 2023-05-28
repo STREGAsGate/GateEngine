@@ -14,7 +14,7 @@ public final class CollisionTriangle {
     public let _attributes: UInt32
     
     public private(set) lazy var plane: Plane3D = Plane3D(self)
-    public private(set) lazy var center: Position3 = (p1 + p2 + p3) / 3.0
+    public private(set) lazy var center: Position3 = (p1 + p2 + p3) / Position3(3.0)
     
     public static var attributeParser = {(u: Float, v: Float, section: UInt32) -> UInt32 in
         let range: Float = 3
@@ -57,12 +57,18 @@ public extension CollisionTriangle {
 extension CollisionTriangle: Surface3D {}
 
 public extension CollisionTriangle {
+    @inlinable @inline(__always)
     var p1: Position3 {return positions[0]}
+    @inlinable @inline(__always)
     var p2: Position3 {return positions[1]}
+    @inlinable @inline(__always)
     var p3: Position3 {return positions[2]}
     
+    @inlinable @inline(__always)
     var c1: Color {return colors[0]}
+    @inlinable @inline(__always)
     var c2: Color {return colors[1]}
+    @inlinable @inline(__always)
     var c3: Color {return colors[2]}
 }
 

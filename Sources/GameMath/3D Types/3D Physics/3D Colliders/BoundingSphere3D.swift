@@ -31,13 +31,13 @@ public struct BoundingSphere3D: Collider3D {
     @inline(__always)
     mutating public func update(center: Position3) {
         self.center = center
-        self.boundingBox.update(center: center)
+        self.boundingBox.center = center
     }
     @inline(__always)
     mutating public func update(offset: Position3) {
         self.offset = offset
         self._offset = offset
-        self.boundingBox.update(offset: offset)
+        self.boundingBox.offset = offset
     }
     @inline(__always)
     public mutating func update(transform: Transform3) {
