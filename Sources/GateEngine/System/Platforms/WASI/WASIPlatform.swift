@@ -126,6 +126,10 @@ class WASIPlatform: InternalPlatform {
         #endif
     }
     
+    var supportsMultipleWindows: Bool {
+        return false
+    }
+    
     func setupDocument() {
         globalThis.onbeforeunload = { event -> String? in
             Game.shared.willTerminate()
@@ -165,6 +169,26 @@ extension WASIPlatform {
         JavaScriptEventLoop.installGlobalExecutor()
         setupDocument()
         Game.shared.didFinishLaunching()
+        Game.shared.insertSystem(WASIUserActivationRenderingSystem.self)
+    }
+}
+
+fileprivate final class WASIUserActivationRenderingSystem: RenderingSystem {
+    let text = Text(string: "Click to Start", pointSize: 32, color: .white)
+    
+    override func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
+        var canvas = Canvas(window: window)
+        
+        canvas.insert(text, at: Position2((window.interfaceSize / 2) - (text.size / 2)))
+        
+        window.insert(canvas)
+        
+        if game.hid.mouse.button(.button1).isPressed {
+            game.removeSystem(self)
+            
+            game.addPlatformSystems()
+            game.delegate.didFinishLaunching(game: game, options: [])
+        }
     }
 }
 
@@ -195,5 +219,9 @@ extension DOM.Navigator {
         return .unknown
     }
 }
+
+#if os(WASI) && !GATEENGINE_PLATFORM_SINGLETHREADED
+#error("WASI must be single threaded.")
+#endif
 
 #endif

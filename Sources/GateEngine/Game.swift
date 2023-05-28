@@ -9,6 +9,7 @@ import Foundation
 import GameMath
 
 @MainActor public final class Game {
+    @usableFromInline
     internal let internalPlatform: InternalPlatform = makeDefaultPlatform()
     public var platform: Platform {return internalPlatform}
     public let delegate: GameDelegate
@@ -21,7 +22,7 @@ import GameMath
         self.isHeadless = delegate.isHeadless()
     }
     
-    let renderer: Renderer = Renderer()
+    @usableFromInline let renderer: Renderer = Renderer()
     @usableFromInline internal var renderingIsPermitted: Bool = false
     
     public private(set) lazy var windowManager: WindowManager = WindowManager(self)
@@ -34,15 +35,18 @@ import GameMath
             do {
                 // Allow the main window to be created even though we're not rendering
                 self.renderingIsPermitted = true
-                try windowManager.createWindow(identifier: windowManager.mainWindowIdentifier, style: .system)
+                try delegate.createMainWindow(game: self, identifier: windowManager.mainWindowIdentifier)
+                assert(windowManager.mainWindow?.identifier == windowManager.mainWindowIdentifier, "Must use the provided identifier to make the mainWindow.")
                 self.renderingIsPermitted = false
             }catch{
                 fatalError("[GateEngine] Failed to create main window. \(error)")
             }
         }
+        #if !os(WASI)
         self.addPlatformSystems()
         self.delegate.didFinishLaunching(game: self, options: [])
-        #if GATEENGINE_SUPPORTS_MULTIWINDOW
+        #endif
+        #if !GATEENGINE_PLATFORM_SINGLETHREADED
         self.gameLoop()
         #endif
     }
@@ -55,24 +59,18 @@ import GameMath
         self.insertSystem(AudioSystem.self)
         self.insertSystem(CacheSystem.self)
     }
-
-    #if GATEENGINE_SUPPORTS_MULTIWINDOW
-    internal var windowsThatRequestedDraw: [(window: Window, deltaTime: Float)] = []
+    
+    #if !GATEENGINE_PLATFORM_SINGLETHREADED
     private var previousTime: Double = 0
     internal func gameLoop() {
         Task(priority: .high) {@MainActor in
             let now: Double = Game.shared.internalPlatform.systemTime()
-            let deltaTime: Double = now - previousTime
+            let deltaTime: Double = now - self.previousTime
             self.previousTime = now
             if self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
-                self.renderingIsPermitted = true
-                for pair: (window: Window, deltaTime: Float) in windowsThatRequestedDraw {
-                    self.ecs.updateRendering(withTimePassed: pair.deltaTime, window: pair.window)
-                }
-                self.renderingIsPermitted = false
+                self.windowManager.drawWindows()
             }
-            windowsThatRequestedDraw.removeAll(keepingCapacity: true)
-            gameLoop()
+            self.gameLoop()
         }
     }
     #endif

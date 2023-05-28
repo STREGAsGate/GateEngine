@@ -37,9 +37,9 @@ public class Camera {
     
     public convenience init?(_ entity: Entity?) {
         guard let entity = entity else {return nil}
-        guard let transformComponent = entity.component(ofType: Transform3Component.self) else {return nil}
         guard let cameraComponent = entity.component(ofType: CameraComponent.self) else {return nil}
-        self.init(transform: transformComponent.transform, fieldOfView: cameraComponent.fieldOfView, clippingPlane: cameraComponent.clippingPlane)
+        let transform = entity.component(ofType: Transform3Component.self)?.transform ?? .default
+        self.init(transform: transform, fieldOfView: cameraComponent.fieldOfView, clippingPlane: cameraComponent.clippingPlane)
     }
     
     private var needsUpdateTransform = true

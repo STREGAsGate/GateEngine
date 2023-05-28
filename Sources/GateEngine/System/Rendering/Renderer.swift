@@ -10,6 +10,7 @@ import GameMath
 @MainActor public final class Renderer {
     let _backend: RendererBackend = getDefaultBackend()
     
+    @usableFromInline
     lazy var rectOriginCentered: Geometry = {
         let positions: [Float] = [-0.5, -0.5, 0.0,
                                    0.5, -0.5, 0.0,
@@ -27,6 +28,8 @@ import GameMath
         let raw = RawGeometry(positions: positions, uvSets: [uvs], normals: nil, tangents: nil, colors: nil, indicies: indicies)
         return Geometry(raw)
     }()
+    
+    @usableFromInline
     lazy var rectOriginTopLeft: Geometry = {
         let positions: [Float] = [0.0, 0.0, 0.0,
                                   1.0, 0.0, 0.0,
@@ -56,7 +59,7 @@ import GameMath
         }
 
         let material: Material = Material() { material in
-            material.vertexShader = SystemShaders.renderTargetVertexShader
+            material.vertexShader = .renderTarget
             material.channel(0) { channel in
                 channel.texture = renderTarget.texture
                 if options.contains(.flipHorizontal) {
@@ -98,7 +101,14 @@ import GameMath
 
 @_transparent
 @MainActor fileprivate func getDefaultBackend() -> RendererBackend {
-#if canImport(MetalKit)
+#if GATEENGINE_FORCE_OPNEGL_APPLE
+    return OpenGLRenderer()
+#elseif canImport(MetalKit)
+    #if canImport(GLKit) && !targetEnvironment(macCatalyst)
+    if MetalRenderer.isSupported == false {
+        return OpenGLRenderer()
+    }
+    #endif
     return MetalRenderer()
 #elseif canImport(WebGL2)
     return WebGL2Renderer()

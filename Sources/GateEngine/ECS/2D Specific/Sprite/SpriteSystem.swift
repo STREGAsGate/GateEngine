@@ -24,4 +24,7 @@ public final class SpriteSystem: System {
     }
 
     public override class var phase: System.Phase {.updating}
+    public override class func sortOrder() -> SystemSortOrder? {
+        return .spriteSystem
+    }
 }

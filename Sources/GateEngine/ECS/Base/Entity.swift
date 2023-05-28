@@ -22,7 +22,7 @@ public final class Entity {
     public init(name: String? = nil, priority: Priority = .normal, components: [Component]? = nil) {
         self.name = name
         self.priority = priority
-        self.components = Dictionary(minimumCapacity: components?.count ?? 3)
+        self.components = Dictionary(minimumCapacity: components?.count ?? 5)
         if let components = components {
             for component in components {
                 self.insert(component)
@@ -30,10 +30,15 @@ public final class Entity {
         }
     }
     
+    public convenience init(name: String? = nil, priority: Priority = .normal, components: [Component.Type]) {
+        self.init(name: name, priority: priority, components: components.map({$0.init()}))
+    }
+    
     public private(set) lazy var id: ObjectIdentifier = ObjectIdentifier(self)
 }
 
 extension Entity: Hashable {
+    @_transparent
     public static func ==(lhs: Entity, rhs: Entity) -> Bool {
         return lhs.id == rhs.id
     }
@@ -45,13 +50,13 @@ extension Entity: Hashable {
 //MARK: Component Managment
 public extension Entity {
     /// - returns true if the entity has the component
-    @inlinable
+    @inlinable @inline(__always)
     func hasComponent(_ type: Component.Type) -> Bool {
         return components.keys.contains(type.componentID)
     }
 
     /// - returns The component, addind it to the entity if neccessary
-    @inlinable
+    @inlinable @inline(__always)
     subscript<T: Component>(_ type: T.Type) -> T {
         get {
             if self.hasComponent(type) == false {
@@ -66,7 +71,7 @@ public extension Entity {
 
     /// Obtain an existing component by it's ID.
     /// - returns The existing component or nil if it's not present.
-    @inlinable
+    @inlinable @inline(__always)
     func component<T: Component>(ofType type: T.Type) -> T? {
         if let existing = components[type.componentID] as? T {
             return existing
@@ -75,7 +80,7 @@ public extension Entity {
     }
     
     /// Obtain a component by type. Useful for Component subclasses.
-    @inlinable
+    @inlinable @inline(__always)
     func component<T>(as type: T.Type) -> T? where T: AnyObject {
         if let existing: T = components.first(where: {$0.value is T})?.value as? T {
             return existing
@@ -84,7 +89,7 @@ public extension Entity {
     }
     
     /// - returns true if an existing component was replaced
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     func insert(_ component: Component, replacingExisting: Bool = true) -> Bool {
         let key = type(of: component).componentID
@@ -95,7 +100,7 @@ public extension Entity {
     }
     
     ///Adds or replaces a component with option configuration closure
-    @inlinable
+    @inlinable @inline(__always)
     func insert<T: Component>(_ type: T.Type, replaceExisting: Bool = false, _ config: ((_ component: inout T)->())? = nil) {
         if self.hasComponent(type) == false || replaceExisting {
             self.insert(type.init(), replacingExisting: true)
@@ -104,13 +109,14 @@ public extension Entity {
     }
     
     /// Allows changing a component, addind it first if needed.
-    @inlinable
-    func configure<T: Component>(_ type: T.Type, _ config: (_ component: inout T)->()) {
-        config(&self[T.self])
+    @inlinable @inline(__always)
+    func configure<T: Component, ResultType>(_ type: T.Type, _ config: (_ component: inout T) -> ResultType) -> ResultType {
+        return config(&self[T.self])
     }
     
     /// Allows changing a component with async, creating the component if needed.
-    @inlinable
+    /// The compnent is added to the Entity after the async operation is complete.
+    @inlinable @inline(__always)
     func configure<T: Component>(_ type: T.Type, _ config: @escaping (_ component: inout T) async throws -> Void) {
         Task(priority: .medium) {
             var component = self.component(ofType: type) ?? T.init()
@@ -125,7 +131,7 @@ public extension Entity {
     }
     
     /// - returns The removed componen or nil if no component was found.
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     func remove<T: Component>(_ type: T.Type) -> T? {
         return components.removeValue(forKey: type.componentID) as? T

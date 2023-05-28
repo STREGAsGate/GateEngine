@@ -12,8 +12,10 @@ It's contents are stored within GPU accessible memory and this object represents
 When this object deinitializes it's contents will also be removed from GPU memory.
 */
 @MainActor public class Lines: Resource {
+    @usableFromInline
     let cacheKey: ResourceManager.Cache.GeometryKey
     
+    @usableFromInline
     internal var backend: GeometryBackend? {
         return Game.shared.resourceManager.geometryCache(for: cacheKey)?.geometryBackend
     }
@@ -25,6 +27,11 @@ When this object deinitializes it's contents will also be removed from GPU memor
     
     public var state: ResourceState {
         return Game.shared.resourceManager.geometryCache(for: cacheKey)!.state
+    }
+    
+    @inlinable @inline(__always) @_disfavoredOverload
+    public convenience init(as path: GeoemetryPath, options: GeometryImporterOptions = .none) {
+        self.init(path: path.value, options: options)
     }
     
     public init(path: String, options: GeometryImporterOptions = .none) {

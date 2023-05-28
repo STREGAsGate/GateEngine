@@ -97,6 +97,10 @@ import Foundation
     func systemTime() -> Double {
         return Date.timeIntervalSinceReferenceDate
     }
+    
+    var supportsMultipleWindows: Bool {
+        return true
+    }
 }
 
 extension Win32Platform {
@@ -106,7 +110,7 @@ extension Win32Platform {
 
         Game.shared.didFinishLaunching()
         
-        var window: Win32Window? = Game.shared.windowManager.mainWindow?.backing as? Win32Window
+        var window: Win32Window? = Game.shared.windowManager.mainWindow?.windowBacking as? Win32Window
         mainLoop: while true {
             if Game.shared.windowManager.windows.isEmpty {
                 window = nil

@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if canImport(UIKit) && !os(watchOS)
+#if canImport(UIKit) && canImport(UIKit) && !os(watchOS)
 
 import Foundation
 import GameController
@@ -16,7 +16,18 @@ internal class UIKitViewController: GCEventViewController {
         self.window = window
         super.init(nibName: nil, bundle: nil)
 
-        self.view = UIKitMetalView(viewController: self, size: CGSize(width: 2, height: 2))
+        let startingSize = CGSize(width: 2, height: 2)
+        #if GATEENGINE_FORCE_OPNEGL_APPLE
+        self.view = GLKitView(viewController: self, size: startingSize)
+        #else
+        if MetalRenderer.isSupported {
+            self.view = MetalView(viewController: self, size: startingSize)
+        }else{
+            #if canImport(GLKit)
+            self.view = GLKitView(viewController: self, size: startingSize)
+            #endif
+        }
+        #endif
     }
     
     #if os(iOS)

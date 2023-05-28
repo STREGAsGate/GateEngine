@@ -19,13 +19,6 @@ jobs:
       run: swift build
     - name: Test using Swift
       run: swift test
-  
-  Build_Test-Xcode:
-    runs-on: macos-13
-    steps:
-    - uses: actions/checkout@v3
-    - name: Select Xcode version
-      run: sudo xcode-select -s '/Applications/Xcode_14.3.app/Contents/Developer'
     - name: Build using Xcode
       run: xcodebuild -scheme GateEngine -destination "platform=macOS,name=Any Mac"
     - name: Test using Xcode

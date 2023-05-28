@@ -8,8 +8,9 @@
 import GameMath
 
 @dynamicMemberLookup
-public struct Transform2Component: Component {
-    private var needsUpdate = true
+public final class Transform2Component: Component {
+    @usableFromInline
+    internal private(set) var needsUpdate = true
     public var transform: Transform2 = .default {
         didSet {
             needsUpdate = true
@@ -20,23 +21,27 @@ public struct Transform2Component: Component {
             needsUpdate = true
         }
     }
+    
     public private(set) var _distanceTraveled: Float = 0
-    public mutating func distanceTraveled() -> Float {
+    @inlinable @inline(__always)
+    public func distanceTraveled() -> Float {
         if needsUpdate {
             update()
         }
         return _distanceTraveled
     }
+    
     public private(set) var _directionTraveled: Direction2 = .right
-    public mutating func directionTraveled() -> Direction2 {
+    @inlinable @inline(__always)
+    public func directionTraveled() -> Direction2 {
         if needsUpdate {
             update()
         }
         return _directionTraveled
     }
     
-    @_transparent
-    private mutating func update() {
+    @usableFromInline @inline(__always)
+    internal func update() {
         needsUpdate = false
         self._distanceTraveled = transform.distance(from: previousTransform)
         self._directionTraveled = Direction2(from: previousTransform.position, to: self.position)
@@ -45,6 +50,7 @@ public struct Transform2Component: Component {
         }
     }
     
+    @inlinable @inline(__always)
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<Transform2, T>) -> T {
         get {return transform[keyPath: keyPath]}
         set {transform[keyPath: keyPath] = newValue}
@@ -55,7 +61,7 @@ public struct Transform2Component: Component {
 }
 
 public extension Entity {
-    @inlinable
+    @inlinable @inline(__always)
     var transform2: Transform2 {
         @inlinable get {
             return self[Transform2Component.self].transform
@@ -64,7 +70,8 @@ public extension Entity {
             self[Transform2Component.self].transform = newValue
         }
     }
-    @inlinable
+    
+    @inlinable @inline(__always)
     var position2: Position2 {
         @inlinable get {
             return transform2.position
@@ -74,7 +81,7 @@ public extension Entity {
         }
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     func distance(from position: Position2) -> Float {
         return self.transform2.position.distance(from: position)
     }

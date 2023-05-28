@@ -1,0 +1,5 @@
+module OpenGL_Linux [system] {
+    header "shim.h"
+    link "OpenGL"
+    export *
+}

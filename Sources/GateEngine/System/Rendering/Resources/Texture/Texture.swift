@@ -69,6 +69,19 @@ public enum MipMapping: Hashable {
      - parameter options: Options that will be given to the texture importer.
      - parameter mipMapping: The mip level to generate for this texture.
      */
+    @inlinable @inline(__always) @_disfavoredOverload
+    public convenience init(as path: TexturePath, sizeHint: Size2? = nil, mipMapping: MipMapping = .auto(), options: TextureImporterOptions = .none) {
+        self.init(path: path.value, sizeHint: sizeHint, mipMapping: mipMapping, options: options)
+    }
+    
+    /**
+     Create a new texture.
+     
+     - parameter path: The package resource path. This path is relative to a package resource. Using a fullyqualified disc path will fail.
+     - parameter sizeHint: This hint will be returned by the `Texture.size` property before the texture data has been loaded. After the Texture data has loaded the actual texture file dimenstions will be returned by `Texture.size`.
+     - parameter options: Options that will be given to the texture importer.
+     - parameter mipMapping: The mip level to generate for this texture.
+     */
     public init(path: String, sizeHint: Size2? = nil, mipMapping: MipMapping = .auto(), options: TextureImporterOptions = .none) {
         let resourceManager = Game.shared.resourceManager
         self.renderTarget = nil

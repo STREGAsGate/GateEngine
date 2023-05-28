@@ -482,7 +482,7 @@ public extension GamePad {
         
         /// The vector2 angle of the sticks rotation
         public var direction: Direction2 {
-            return Direction2(-xAxis, yAxis).normalized
+            return Direction2(xAxis, yAxis).normalized
         }
         
         public private(set) lazy var button: ButtonState = ButtonState(gamePad: gamePad, id: id == .leftStickButton ? .leftStick : .rightStickButton)

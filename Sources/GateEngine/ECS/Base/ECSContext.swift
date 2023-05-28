@@ -119,8 +119,8 @@ internal extension Game {
             _platformSystems.sort(by: { (lhs, rhs) -> Bool in
                 let lhs = type(of: lhs)
                 let rhs = type(of: rhs)
-                let lhsSO = lhs.sortOrder()
-                let rhsSO = rhs.sortOrder()
+                let lhsSO = lhs.sortOrder()?.rawValue
+                let rhsSO = rhs.sortOrder()?.rawValue
                 if lhsSO != nil || rhsSO != nil {
                     if let lhsSO = lhsSO, let rhsSO = rhsSO {
                         return lhsSO < rhsSO
@@ -149,8 +149,8 @@ internal extension Game {
                 return lhs.phase.rawValue <= rhs.phase.rawValue
             })
             _systems.sort(by: { (lhs, rhs) -> Bool in
-                let lhsSO = type(of: lhs).sortOrder()
-                let rhsSO = type(of: rhs).sortOrder()
+                let lhsSO = type(of: lhs).sortOrder()?.rawValue
+                let rhsSO = type(of: rhs).sortOrder()?.rawValue
                 if let lhsSO = lhsSO, let rhsSO = rhsSO {
                     return lhsSO < rhsSO
                 }
@@ -169,8 +169,8 @@ internal extension Game {
         if renderingSystemsNeedSorting {
             renderingSystemsNeedSorting = false
             _renderingSystems.sort(by: { (lhs, rhs) -> Bool in
-                let lhsSO = type(of: lhs).sortOrder()
-                let rhsSO = type(of: rhs).sortOrder()
+                let lhsSO = type(of: lhs).sortOrder()?.rawValue
+                let rhsSO = type(of: rhs).sortOrder()?.rawValue
                 if let lhsSO = lhsSO, let rhsSO = rhsSO {
                     return lhsSO < rhsSO
                 }

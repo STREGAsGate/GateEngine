@@ -17,15 +17,19 @@ public enum WindowStyle {
 @MainActor public final class Window: RenderTargetProtocol, _RenderTargetProtocol {
     public let identifier: String
     public let style: WindowStyle
-    @usableFromInline
-    internal lazy var backing: WindowBacking = createWindowBacking()
     
-    lazy var renderTargetBackend: RenderTargetBackend = getRenderTargetBackend(windowBacking: self.backing)
+    @usableFromInline
+    internal lazy var windowBacking: WindowBacking = createWindowBacking()
+    @usableFromInline
+    lazy var renderTargetBackend: RenderTargetBackend = getRenderTargetBackend(windowBacking: self.windowBacking)
+    
     var drawables: [Any] = []
     public private(set) lazy var texture: Texture = Texture(renderTarget: self)
-    var previousSize: Size2? = nil
     
     weak var delegate: WindowDelegate? = nil
+    
+    // true if the last draw attempt changed the screen
+    internal var didDrawSomething: Bool = false
     
     public enum State {
         ///The window exists but isn't on screen
@@ -35,10 +39,46 @@ public enum WindowStyle {
         ///The window isn't visible and can never be shown again.
         case destroyed
     }
+    
+    @inlinable @inline(__always)
     public var state: State {
-        return backing.state
+        return windowBacking.state
     }
-
+    
+    @inlinable @inline(__always)
+    public var title: String? {
+        get {
+            return windowBacking.title
+        }
+        set {
+            windowBacking.title = newValue
+        }
+    }
+    
+    @inlinable @inline(__always)
+    public internal(set) var size: Size2 {
+        get {
+            return windowBacking.backingSize
+        }
+        set {
+            precondition(Game.shared.renderingIsPermitted, "Resizing a RenderTarget can only be done from a RenderingSystem.")
+            renderTargetBackend.size = newValue
+        }
+    }
+    
+    @inlinable @inline(__always)
+    public var interfaceSize: Size2 {
+        return self.size / self.interfaceScale
+    }
+    
+    @inline(__always)
+    internal func reshapeIfNeeded() {
+        if renderTargetBackend.wantsReshape || self.size != renderTargetBackend.size {
+            renderTargetBackend.size = self.size
+            renderTargetBackend.reshape()
+        }
+    }
+    
     internal init(identifier: String, style: WindowStyle) {
         self.identifier = identifier
         self.style = style
@@ -54,7 +94,6 @@ public enum WindowStyle {
         // Positive time change and miniumum of 10 fps
         guard delta > 0 && delta < 0.1 else {return}
         if let delegate: WindowDelegate = self.delegate {
-            self.size = self.backing.backingSize
             delegate.window(self, wantsUpdateForTimePassed: Float(delta))
             self.draw()
         }
@@ -62,16 +101,27 @@ public enum WindowStyle {
     
     @inlinable @inline(__always)
     public var interfaceScale: Float {
-        return backing.backingSize.width / backing.frame.size.width
+        return windowBacking.backingSize.width / windowBacking.frame.size.width
     }
     
     @inlinable @inline(__always)
     public var safeAreaInsets: Insets {
-        return backing.safeAreaInsets
+        return windowBacking.safeAreaInsets
+    }
+    
+    @usableFromInline @inline(__always)
+    func setMouseHidden(_ hidden: Bool) {
+        self.windowBacking.setMouseHidden(hidden)
+    }
+    @usableFromInline @inline(__always)
+    func setMousePosition(_ position: Position2) {
+        let windowFrame = Rect(size: self.size)
+        let clampedToWindowFrame = position.clamped(within: windowFrame)
+        self.windowBacking.setMousePosition(clampedToWindowFrame)
     }
     
     func show() {
-        self.backing.show()
+        self.windowBacking.show()
     }
 }
 
@@ -86,6 +136,9 @@ internal protocol WindowBacking: AnyObject {
     
     init(identifier: String, style: WindowStyle, window: Window)
     
+    func setMouseHidden(_ hidden: Bool)
+    func setMousePosition(_ position: Position2)
+    
     func show()
     func close()
 }
@@ -94,8 +147,8 @@ internal protocol WindowBacking: AnyObject {
 protocol WindowDelegate: AnyObject {
     func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float)
 
-    func mouseChange(event: MouseChangeEvent, position: Position2)
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2)
+    func mouseChange(event: MouseChangeEvent, position: Position2, delta: Position2, window: Window?)
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2, window: Window?)
 
     func touchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2)
 
@@ -118,7 +171,7 @@ internal extension Window {
         #elseif os(WASI)
         return WASIWindow(identifier: identifier, style: style, window: self)
         #elseif os(Android)
-       #error("Not implemented")
+        #error("Not implemented")
         #else
         #error("Not implemented")
         #endif
@@ -161,7 +214,7 @@ public enum TouchKind {
     case stylus
     /// The touch happened through software
     case simulated
-    /// The touch happened on a device no necesarrily the same shape or resolution as the screen
+    /// The touch happened on a device not necesarrily the same shape or resolution as the screen
     case indirect
 }
 

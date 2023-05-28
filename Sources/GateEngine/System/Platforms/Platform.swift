@@ -12,12 +12,15 @@ public protocol Platform {
     func loadResource(from path: String) async throws -> Data
 }
 
+@usableFromInline
 @MainActor internal protocol InternalPlatform: Platform {
     func saveState(_ state: Game.State) throws
     func loadState() -> Game.State
     
     func systemTime() -> Double
     func main()
+    
+    var supportsMultipleWindows: Bool {get}
 }
 
 @_transparent

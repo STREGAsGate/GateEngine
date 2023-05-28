@@ -9,12 +9,12 @@
 public final class GLSLCodeGenerator: CodeGenerator {
     public enum GLSLVersion: CustomStringConvertible {
         case v300es
-        case v300core
+        case v330core
         
         public var description: String {
             switch self {
-            case .v300core:
-                return "#version 300 core"
+            case .v330core:
+                return "#version 330 core"
             case .v300es:
                 return "#version 300 es"
             }

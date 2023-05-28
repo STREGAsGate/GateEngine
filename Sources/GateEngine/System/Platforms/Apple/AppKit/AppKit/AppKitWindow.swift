@@ -110,17 +110,20 @@ class AppKitWindow: WindowBacking {
             UserDefaults.standard.synchronize()
         }
         
-        // Update to the best GPU
-        if #available(macOS 10.15, *) {
-            let metalView = nsWindowController.contentViewController!.view as! MTKView
-            if let device = metalView.preferredDevice {
-                Game.shared.renderer.device = device
-                metalView.device = device
-            }
-        }else if let screenID = self.nsWindowController.window?.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID {
-            if let device = CGDirectDisplayCopyCurrentMetalDevice(screenID) {
-                Game.shared.renderer.device = device
-                (nsWindowController.contentViewController!.view as! MTKView).device = device
+        if MetalRenderer.isSupported {
+            // Update to the best GPU
+            if #available(macOS 10.15, *) {
+                if let metalView = nsWindowController.contentViewController?.view as? MTKView {
+                    if let device = metalView.preferredDevice {
+                        Game.shared.renderer.device = device
+                        metalView.device = device
+                    }
+                }
+            }else if let screenID = self.nsWindowController.window?.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID {
+                if let device = CGDirectDisplayCopyCurrentMetalDevice(screenID) {
+                    Game.shared.renderer.device = device
+                    (nsWindowController.contentViewController!.view as! MTKView).device = device
+                }
             }
         }
     }
@@ -150,14 +153,16 @@ class AppKitWindow: WindowBacking {
     }
     
     @MainActor func show() {
-        nsWindowController.showWindow(NSApp)
-        self.nsWindowController.window?.makeKeyAndOrderFront(nil)
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(30)) {
             self.restoreSizeAndPosition(ofWindow: self.nsWindowController.window!)
             if UserDefaults.standard.bool(forKey: "\(self.identifier)-WasFullScreen") {
                 self.nsWindowController.window!.toggleFullScreen(NSApp)
             }
         }
+        
+        nsWindowController.showWindow(NSApp)
+        self.nsWindowController.window?.makeKeyAndOrderFront(nil)
+        
         if CVDisplayLinkIsRunning(self.displayLink) == false {
             CVDisplayLinkStart(self.displayLink)
         }
@@ -225,6 +230,31 @@ extension AppKitWindow {
             }
         }
     }
+    
+    func setMouseHidden(_ hidden: Bool) {
+        if hidden {
+            CGDisplayHideCursor(kCGNullDirectDisplay)
+        }else{
+            CGDisplayShowCursor(kCGNullDirectDisplay)
+        }
+    }
+    
+    func setMousePosition(_ position: Position2) {
+        guard let nsWindow = self.nsWindowController.window else {return}
+        guard let nsScreen = nsWindow.screen else {return}
+        let position = position / Size2(Float(nsWindow.backingScaleFactor))
+        var mousePosition: CGPoint = CGPoint(x: CGFloat(position.x), y: CGFloat(position.y))
+
+        mousePosition.y = nsWindow.frame.height - mousePosition.y
+        mousePosition.x += nsWindow.frame.origin.x
+        mousePosition.y += nsWindow.frame.minY
+        
+        // Adjust for titlebar
+        mousePosition.y -= nsWindow.frame.height - nsWindow.frame.size.height
+        
+        mousePosition.y = nsScreen.frame.height - mousePosition.y
+        CGWarpMouseCursorPosition(mousePosition)
+    }
 }
 
 class UGNSWindow: AppKit.NSWindow {
@@ -252,10 +282,15 @@ class UGNSWindow: AppKit.NSWindow {
     func positionFromEvent(_ event: NSEvent) -> Position2 {
         if let contentView = self.contentView ?? self.contentViewController?.view {
             let cgPoint = contentView.convert(event.locationInWindow, from: nil)
-            let position = Position2(Float(cgPoint.x), Float(cgPoint.y))
+            let position = Position2(cgPoint) * Size2(Float(self.backingScaleFactor))
             return position
         }
         fatalError()
+    }
+    
+    func deltaPositionFromEvent(_ event: NSEvent) -> Position2 {
+        guard event.type == .mouseMoved || event.type == .mouseEntered || event.type == .mouseExited else {return .zero}
+        return Position2(Float(event.deltaX), Float(event.deltaY)) * Size2(Float(self.backingScaleFactor))
     }
 
     func mouseButtonFromEvent(_ event: NSEvent) -> MouseButton {
@@ -277,28 +312,28 @@ class UGNSWindow: AppKit.NSWindow {
 
     override func mouseDown(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonDown, button: .button1, count: event.clickCount, position: positionFromEvent(event))
+            windowDelegate.mouseClick(event: .buttonDown, button: .button1, count: event.clickCount, position: positionFromEvent(event), window: window)
         }
         super.mouseDown(with: event)
     }
 
     override func mouseUp(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonUp, button: .button1, count: event.clickCount, position: positionFromEvent(event))
+            windowDelegate.mouseClick(event: .buttonUp, button: .button1, count: event.clickCount, position: positionFromEvent(event), window: window)
         }
         super.mouseUp(with: event)
     }
 
     override func rightMouseDown(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonDown, button: .button2, count: event.clickCount, position: positionFromEvent(event))
+            windowDelegate.mouseClick(event: .buttonDown, button: .button2, count: event.clickCount, position: positionFromEvent(event), window: window)
         }
         super.rightMouseDown(with: event)
     }
 
     override func rightMouseUp(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonUp, button: .button2, count: event.clickCount, position: positionFromEvent(event))
+            windowDelegate.mouseClick(event: .buttonUp, button: .button2, count: event.clickCount, position: positionFromEvent(event), window: window)
         }
         super.rightMouseUp(with: event)
     }
@@ -306,7 +341,7 @@ class UGNSWindow: AppKit.NSWindow {
     override func otherMouseDown(with event: NSEvent) {
         if let windowDelegate = window.delegate {
             let button: MouseButton = mouseButtonFromEvent(event)
-            windowDelegate.mouseClick(event: .buttonDown, button: button, count: event.clickCount, position: positionFromEvent(event))
+            windowDelegate.mouseClick(event: .buttonDown, button: button, count: event.clickCount, position: positionFromEvent(event), window: window)
         }
         super.otherMouseDown(with: event)
     }
@@ -314,45 +349,63 @@ class UGNSWindow: AppKit.NSWindow {
     override func otherMouseUp(with event: NSEvent) {
         if let windowDelegate = window.delegate {
             let button: MouseButton = mouseButtonFromEvent(event)
-            windowDelegate.mouseClick(event: .buttonUp, button: button, count: event.clickCount, position: positionFromEvent(event))
+            windowDelegate.mouseClick(event: .buttonUp, button: button, count: event.clickCount, position: positionFromEvent(event), window: window)
         }
         super.otherMouseUp(with: event)
     }
 
     override func mouseEntered(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseChange(event: .entered, position: positionFromEvent(event))
+            windowDelegate.mouseChange(event: .entered,
+                                       position: positionFromEvent(event),
+                                       delta: deltaPositionFromEvent(event),
+                                       window: window)
         }
         super.mouseEntered(with: event)
     }
     override func mouseMoved(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseChange(event: .moved, position: positionFromEvent(event))
+            windowDelegate.mouseChange(event: .moved,
+                                       position: positionFromEvent(event),
+                                       delta: deltaPositionFromEvent(event),
+                                       window: window)
         }
         super.mouseMoved(with: event)
     }
     override func mouseDragged(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseChange(event: .moved, position: positionFromEvent(event))
+            windowDelegate.mouseChange(event: .moved,
+                                       position: positionFromEvent(event),
+                                       delta: deltaPositionFromEvent(event),
+                                       window: window)
         }
         super.mouseDown(with: event)
     }
     override func rightMouseDragged(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseChange(event: .moved, position: positionFromEvent(event))
+            windowDelegate.mouseChange(event: .moved,
+                                       position: positionFromEvent(event),
+                                       delta: deltaPositionFromEvent(event),
+                                       window: window)
         }
         super.rightMouseDragged(with: event)
     }
     override func otherMouseDragged(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseChange(event: .moved, position: positionFromEvent(event))
+            windowDelegate.mouseChange(event: .moved,
+                                       position: positionFromEvent(event),
+                                       delta: deltaPositionFromEvent(event),
+                                       window: window)
         }
         super.otherMouseDragged(with: event)
     }
 
     override func mouseExited(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseChange(event: .exited, position: positionFromEvent(event))
+            windowDelegate.mouseChange(event: .exited,
+                                       position: positionFromEvent(event),
+                                       delta: deltaPositionFromEvent(event),
+                                       window: window)
         }
         super.mouseExited(with: event)
     }

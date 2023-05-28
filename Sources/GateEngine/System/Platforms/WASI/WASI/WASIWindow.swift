@@ -32,10 +32,10 @@ class WASIWindow: WindowBacking {
 
     var title: String? {
         get {
-            fatalError()
+            return nil
         }
         set {
-            fatalError()
+            // can't
         }
     }
 
@@ -62,14 +62,74 @@ class WASIWindow: WindowBacking {
         self.window.vSyncCalled()
         _ = globalThis.window.requestAnimationFrame(callback: vSync(_:))
     }
+    
     @MainActor func show() {
         self.state = .shown
-        print("Show")
         vSync(0)
         addListeners()
     }
     
+    func setMouseHidden(_ hidden: Bool) {
+        if hidden {
+            globalThis.document.documentElement!.attributes["cursor"]?.value = "none"
+        }else{
+            globalThis.document.documentElement!.attributes["cursor"]?.value = "default"
+        }
+    }
+    
+    func setMousePosition(_ position: Position2) {
+
+    }
+    
+    var didRequestPointerLock: Bool = false
+    func setPointerLock(_ lock: Bool) {
+        let this = canvas.jsObject
+        if lock {
+            this["requestPointerLock"].function!(this: this)
+            didRequestPointerLock = true
+        }else{
+            this["exitPointerLock"].function!(this: this)
+            didRequestPointerLock = false
+        }
+    }
+    
+    var didSetup: Bool = false
+    @MainActor func performedUserGesture() {
+        if didRequestPointerLock == false && Game.shared.hid.mouse.locked {
+            setPointerLock(true)
+        }else if didRequestPointerLock && Game.shared.hid.mouse.locked == false {
+            setPointerLock(false)
+        }
+        if didSetup == false {
+            didSetup = true
+            Game.shared.insertSystem(AudioSystem.self)
+        }
+    }
+    
+    @inline(__always)
+    func getPositionAndDelta(from event: MouseEvent) -> (position: Position2, delta: Position2) {
+        let backingScale = Float(globalThis.document.defaultView?.devicePixelRatio ?? 1)
+        let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY)) * backingScale
+        let deltaX = Float(event.jsObject["movementX"].jsValue.number ?? 0)
+        let deltaY = Float(event.jsObject["movementY"].jsValue.number ?? 0)
+        let delta: Position2 = Position2(x: deltaX, y: deltaY) * backingScale
+        return (position, delta)
+    }
+    
     func addListeners() {
+        globalThis.addEventListener(type: "pointerlockchange") { event in
+            Task {@MainActor in
+                if self.didRequestPointerLock {
+                    Game.shared.hid.mouse.locked = false
+                }
+            }
+        }
+        globalThis.addEventListener(type: "pointerlockerror") { event in
+            print("[GateEngine] Error: Mouse lock failed")
+            Task {@MainActor in
+                Game.shared.hid.mouse.locked = false
+            }
+        }
         globalThis.onresize = { event -> JSValue in
             guard let doc = globalThis.document.documentElement, let obj = JSObject.global.getComputedStyle?(doc) else {return .null}
             var insets: Insets = .zero
@@ -97,7 +157,6 @@ class WASIWindow: WindowBacking {
                     insets.trailing = value
                 }
             }
-            print("SafeArea:\(insets)")
             self.safeAreaInsets = insets
             return .null
         }
@@ -109,6 +168,9 @@ class WASIWindow: WindowBacking {
             let key = self.key(fromEvent: event)
             Task {@MainActor in
                 _ = self.window.delegate?.keyboardRequestedHandling(key: key, modifiers: modifiers, event: .keyDown)
+                if event.isTrusted && key != .escape {
+                    self.performedUserGesture()
+                }
             }
             event.preventDefault()
         }
@@ -123,43 +185,58 @@ class WASIWindow: WindowBacking {
         }
         canvas.addEventListener(type: "mouseenter") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
+            let locations = self.getPositionAndDelta(from: event)
             Task {@MainActor in
-                self.window.delegate?.mouseChange(event: .entered, position: position)
+                self.window.delegate?.mouseChange(event: .entered, position: locations.position, delta: locations.delta, window: self.window)
             }
             event.preventDefault()
         }
         canvas.addEventListener(type: "mousemove") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
+            let locations = self.getPositionAndDelta(from: event)
             Task {@MainActor in
-                self.window.delegate?.mouseChange(event: .moved, position: position)
+                self.window.delegate?.mouseChange(event: .moved, position: locations.position, delta: locations.delta, window: self.window)
             }
             event.preventDefault()
         }
         canvas.addEventListener(type: "mouseleave") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
+            let locations = self.getPositionAndDelta(from: event)
             Task {@MainActor in
-                self.window.delegate?.mouseChange(event: .exited, position: position)
+                self.window.delegate?.mouseChange(event: .exited, position: locations.position, delta: locations.delta, window: self.window)
             }
             event.preventDefault()
         }
         canvas.addEventListener(type: "mousedown") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
+            let position: Position2 = {
+                var position = Position2(x: Float(event.pageX), y: Float(event.pageY))
+                if let pixelRatio = globalThis.document.defaultView?.devicePixelRatio {
+                    position *= Float(pixelRatio)
+                }
+                return position
+            }()
             let button: MouseButton = self.mouseButton(fromEvent: event)
             Task {@MainActor in
-                self.window.delegate?.mouseClick(event: .buttonDown, button: button, count: nil, position: position)
+                self.window.delegate?.mouseClick(event: .buttonDown, button: button, count: nil, position: position, window: self.window)
+                if event.isTrusted {
+                    self.performedUserGesture()
+                }
             }
             event.preventDefault()
         }
         canvas.addEventListener(type: "mouseup") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY))
+            let position: Position2 = {
+                var position = Position2(x: Float(event.pageX), y: Float(event.pageY))
+                if let pixelRatio = globalThis.document.defaultView?.devicePixelRatio {
+                    position *= Float(pixelRatio)
+                }
+                return position
+            }()
             let button: MouseButton = self.mouseButton(fromEvent: event)
             Task {@MainActor in
-                self.window.delegate?.mouseClick(event: .buttonUp, button: button, count: nil ,position: position)
+                self.window.delegate?.mouseClick(event: .buttonUp, button: button, count: nil, position: position, window: self.window)
             }
             event.preventDefault()
         }
@@ -197,6 +274,9 @@ class WASIWindow: WindowBacking {
                     let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
                     self.window.delegate?.touchChange(id: touch.identifier, kind: .physical, event: .ended, position: position)
                     print("Touch End", position)
+                }
+                if event.isTrusted {
+                    self.performedUserGesture()
                 }
             }
             event.preventDefault()

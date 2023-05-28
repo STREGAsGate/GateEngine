@@ -279,7 +279,7 @@ fileprivate extension Win32Window {
                 event = .entered
             }
             mouseState.mouseMoved(lpParam)
-            windowDelegate.mouseChange(event: event, position: mouseState.position)        
+            windowDelegate.mouseChange(event: event, position: mouseState.position, window: self.window)
         }
     }
 
@@ -289,7 +289,7 @@ fileprivate extension Win32Window {
     func _msgMouseExited() {
         if let windowDelegate: WindowDelegate = window.delegate {
             mouseState.mouseExited()
-            windowDelegate.mouseChange(event: .exited, position: mouseState.position)        
+            windowDelegate.mouseChange(event: .exited, position: mouseState.position, window: self.window)
         }
     }
 
@@ -326,7 +326,7 @@ fileprivate extension Win32Window {
     @MainActor
     func _mouseDownLeft(_ lparam: LPARAM) {
         let position: Position2 = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonDown, button: .button1, count: nil, position: position)
+        window.delegate?.mouseClick(event: .buttonDown, button: .button1, count: nil, position: position, window: self.window)
     }
 
     @inline(__always)
@@ -334,7 +334,7 @@ fileprivate extension Win32Window {
     @MainActor
     func _mouseUpLeft(_ lparam: LPARAM) {
         let position: Position2 = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonUp, button: .button1, count: nil, position: position)
+        window.delegate?.mouseClick(event: .buttonUp, button: .button1, count: nil, position: position, window: self.window)
     }
 
     @inline(__always)
@@ -342,7 +342,7 @@ fileprivate extension Win32Window {
     @MainActor
     func _mouseDownRight(_ lparam: LPARAM) {
         let position = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonDown, button: .button2, count: nil, position: position)
+        window.delegate?.mouseClick(event: .buttonDown, button: .button2, count: nil, position: position, window: self.window)
     }
 
     @inline(__always)
@@ -350,7 +350,7 @@ fileprivate extension Win32Window {
     @MainActor
     func _mouseUpRight(_ lparam: LPARAM) {
         let position: Position2 = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonUp, button: .button2, count: nil, position: position)
+        window.delegate?.mouseClick(event: .buttonUp, button: .button2, count: nil, position: position, window: self.window)
     }
 
     @inline(__always)
@@ -358,7 +358,7 @@ fileprivate extension Win32Window {
     @MainActor
     func _mouseDownMiddle(_ lparam: LPARAM) {
         let position: Position2 = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonDown, button: .button3, count: nil, position: position)
+        window.delegate?.mouseClick(event: .buttonDown, button: .button3, count: nil, position: position, window: self.window)
     }
 
     @inline(__always)
@@ -366,7 +366,7 @@ fileprivate extension Win32Window {
     @MainActor
     func _mouseUpMiddle(_ lparam: LPARAM) {
         let position: Position2 = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonUp, button: .button3, count: nil, position: position)
+        window.delegate?.mouseClick(event: .buttonUp, button: .button3, count: nil, position: position, window: self.window)
     }
 
     @inline(__always)
@@ -376,9 +376,9 @@ fileprivate extension Win32Window {
         let wparam: Int32 = Int32(wparam)
         let position: Position2 = positionFrom(lparam)
         if wparam & XBUTTON1 == XBUTTON1 {
-            window.delegate?.mouseClick(event: .buttonDown, button: .button4, count: nil, position: position)
+            window.delegate?.mouseClick(event: .buttonDown, button: .button4, count: nil, position: position, window: self.window)
         }else if wparam & XBUTTON2 == XBUTTON2 {
-            window.delegate?.mouseClick(event: .buttonDown, button: .button5, count: nil, position: position)
+            window.delegate?.mouseClick(event: .buttonDown, button: .button5, count: nil, position: position, window: self.window)
         }
     }
 
@@ -389,9 +389,9 @@ fileprivate extension Win32Window {
         let wparam: Int32 = Int32(wparam)
         let position: Position2 = positionFrom(lparam)
         if wparam & XBUTTON1 == XBUTTON1 {
-            window.delegate?.mouseClick(event: .buttonUp, button: .button4, count: nil, position: position)
+            window.delegate?.mouseClick(event: .buttonUp, button: .button4, count: nil, position: position, window: self.window)
         }else if wparam & XBUTTON2 == XBUTTON2 {
-            window.delegate?.mouseClick(event: .buttonUp, button: .button5, count: nil, position: position)
+            window.delegate?.mouseClick(event: .buttonUp, button: .button5, count: nil, position: position, window: self.window)
         }
     }
 }

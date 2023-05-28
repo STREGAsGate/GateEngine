@@ -8,49 +8,49 @@
 import GameMath
 
 public struct DrawFlags: Hashable {
-    enum Cull: Hashable {
+    public enum Cull: Hashable {
         case disabled
         case back
         case front
     }
-    var cull: Cull
+    public var cull: Cull
     
-    enum DepthTest: Hashable {
+    public enum DepthTest: Hashable {
         case always
         case greaterThan
         case lessThan
         case never
     }
-    var depthTest: DepthTest
+    public var depthTest: DepthTest
     
-    enum DepthWrite: Hashable {
+    public enum DepthWrite: Hashable {
         case enabled
         case disabled
     }
-    var depthWrite: DepthWrite
+    public var depthWrite: DepthWrite
     
-    enum Primitive: Hashable {
+    public enum Primitive: Hashable {
         case point
         case line
         case lineStrip
         case triangle
         case triangleStrip
     }
-    var primitive: Primitive
+    public var primitive: Primitive
     
-    enum Winding {
+    public enum Winding {
         case clockwise
         case counterClockwise
     }
-    var winding: Winding
+    public var winding: Winding
     
-    enum BlendMode: Hashable {
+    public enum BlendMode: Hashable {
         case none
         case normal
     }
-    var blendMode: BlendMode
+    public var blendMode: BlendMode
 
-    init(cull: Cull = .back, depthTest: DepthTest = .lessThan, depthWrite: DepthWrite = .enabled, primitive: Primitive = .triangle, winding: Winding = .clockwise, blendMode: BlendMode = .normal) {
+    public init(cull: Cull = .back, depthTest: DepthTest = .lessThan, depthWrite: DepthWrite = .enabled, primitive: Primitive = .triangle, winding: Winding = .clockwise, blendMode: BlendMode = .normal) {
         self.cull = cull
         self.depthTest = depthTest
         self.depthWrite = depthWrite
@@ -66,6 +66,7 @@ public struct DrawCommand {
     let material: Material
     let flags: DrawFlags
 
+    @usableFromInline
     internal init(backends: ContiguousArray<GeometryBackend>, transforms: ContiguousArray<Transform3>, material: Material, flags: DrawFlags) {
         self.geometries = backends
         self.transforms = transforms
@@ -81,28 +82,28 @@ public struct DrawCommand {
 #endif
     }
     
-    @inline(__always)
+    @inlinable @inline(__always)
     @MainActor public init(lines geometries: [Lines], transforms: [Transform3], material: Material, flags: DrawFlags) {
         let backends = ContiguousArray(geometries.map({$0.backend!}))
         let transforms = ContiguousArray(transforms)
         self.init(backends: backends, transforms: transforms, material: material, flags: flags)
     }
     
-    @inline(__always)
+    @inlinable @inline(__always)
     @MainActor public init(points geometries: [Points], transforms: [Transform3], material: Material, flags: DrawFlags) {
         let backends = ContiguousArray(geometries.map({$0.backend!}))
         let transforms = ContiguousArray(transforms)
         self.init(backends: backends, transforms: transforms, material: material, flags: flags)
     }
     
-    @inline(__always)
+    @inlinable @inline(__always)
     @MainActor public init(geometries: [Geometry], transforms: [Transform3], material: Material, flags: DrawFlags) {
         let backends = ContiguousArray(geometries.map({$0.backend!}))
         let transforms = ContiguousArray(transforms)
         self.init(backends: backends, transforms: transforms, material: material, flags: flags)
     }
     
-    @inline(__always)
+    @inlinable @inline(__always)
     @MainActor public init(geometries: [SkinnedGeometry], transforms: [Transform3], material: Material, flags: DrawFlags) {
         let backends = ContiguousArray(geometries.map({$0.backend!}))
         let transforms = ContiguousArray(transforms)

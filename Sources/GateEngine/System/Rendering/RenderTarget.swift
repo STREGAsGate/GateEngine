@@ -20,7 +20,6 @@ import GameMath
     var renderTargetBackend: RenderTargetBackend {get set}
     var drawables: [Any] {get set}
     var size: Size2 {get set}
-    var previousSize: Size2? {get set}
     
     func reshapeIfNeeded()
     func draw()
@@ -98,6 +97,14 @@ extension _RenderTargetProtocol {
         }
     }
     
+    @inline(__always)
+    internal func reshapeIfNeeded() {
+        if renderTargetBackend.wantsReshape || previousSize != renderTargetBackend.size {
+            previousSize = renderTargetBackend.size
+            renderTargetBackend.reshape()
+        }
+    }
+    
     public init() {
         precondition(Game.shared.renderingIsPermitted, "RenderTarget can only be created from a RenderingSystem.")
         self.renderTargetBackend = getRenderTargetBackend(windowBacking: nil)
@@ -114,6 +121,7 @@ extension _RenderTargetProtocol {
             return renderTargetBackend.size
         }
         set {
+            precondition(Game.shared.renderingIsPermitted, "Resizing a RenderTarget can only be done from a RenderingSystem.")
             renderTargetBackend.size = newValue
         }
     }
@@ -125,14 +133,6 @@ extension _RenderTargetProtocol {
         }
         set {
             renderTargetBackend.clearColor = newValue
-        }
-    }
-    
-    @inline(__always)
-    internal func reshapeIfNeeded() {
-        if renderTargetBackend.wantsReshape || previousSize != renderTargetBackend.size {
-            previousSize = renderTargetBackend.size
-            renderTargetBackend.reshape()
         }
     }
     
@@ -256,7 +256,14 @@ extension RenderTargetBackend {
 
 @_transparent
 @MainActor func getRenderTargetBackend(windowBacking: WindowBacking?) -> RenderTargetBackend {
-#if canImport(MetalKit)
+#if GATEENGINE_FORCE_OPNEGL_APPLE
+    return OpenGLRenderTarget(isWindow: windowBacking != nil)
+#elseif canImport(MetalKit)
+    #if canImport(GLKit) && !targetEnvironment(macCatalyst)
+    if MetalRenderer.isSupported == false {
+        return OpenGLRenderTarget(isWindow: windowBacking != nil)
+    }
+    #endif
     return MetalRenderTarget(windowBacking: windowBacking)
 #elseif canImport(WebGL2)
     return WebGL2RenderTarget(isWindow: windowBacking != nil)

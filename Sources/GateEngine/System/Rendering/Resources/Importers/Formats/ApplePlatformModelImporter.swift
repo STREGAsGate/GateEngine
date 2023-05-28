@@ -49,7 +49,14 @@ public class ApplePlatformModelImporter: GeometryImporter {
                 values.reserveCapacity(mesh.vertexCount * 2)
                 for index in 0 ..< mesh.vertexCount {
                     let start = attributeData.dataStart.advanced(by: attributeData.stride * index).assumingMemoryBound(to: Float.self)
-                    let buffer = UnsafeBufferPointer<Float>(start: start, count: 2)
+                    var buffer = UnsafeMutableBufferPointer<Float>(start: start, count: 2)
+                    withUnsafeMutableBytes(of: &buffer) { buffer in
+                        // Flip vertical coordinate
+                        for index in stride(from: 0, to: buffer.count, by: 2) {
+                            buffer[index] = 1 - buffer[index]
+                        }
+                    }
+ 
                     values.append(contentsOf: buffer)
                 }
                 return [values]
@@ -70,6 +77,7 @@ public class ApplePlatformModelImporter: GeometryImporter {
             
             @inline(__always)
             func tangents() -> [Float]? {
+                // TODO: tangents might be float4 and we are just clipping the last value. Need to convert if that's the case
                 guard let attributeData = mesh.vertexAttributeData(forAttributeNamed: MDLVertexAttributeTangent, as: .float3) else {return nil}
                 var values: [Float] = []
                 values.reserveCapacity(mesh.vertexCount * 3)
