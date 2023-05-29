@@ -33,8 +33,8 @@ public final class Collision3DComponent: Component {
     
     public var options: Options = []
     
-    @available(*, unavailable /*0.0.5*/, message: "Primitive colliders are generated automatically now.")
-    public var primitiveCollider: AxisAlignedBoundingBox3D = AxisAlignedBoundingBox3D(center: .zero, offset: .zero, radius: .one)
+    @available(*, deprecated /*0.0.5*/, message: "Primitive colliders are generated automatically now.")
+    public var primitiveCollider: AxisAlignedBoundingBox3D {collider.boundingBox}
     @available(*, deprecated /*0.0.5*/, renamed: "collider", message: "Set the collider property directly.")
     @inlinable @inline(__always)
     public var detailCollider: Collider3D! {

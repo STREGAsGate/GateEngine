@@ -26,7 +26,7 @@ import Direct3D12
                 sampleDescription: sampleDesc,
                 bufferUsage: .renderTargetOutput,
                 bufferCount: UInt32(bufferCount),
-                scaling: .stretch,
+                scaling: .none,
                 swapEffect: .flipDiscard,
                 alphaMode: .unspecified,
                 flags: [.allowTearing])

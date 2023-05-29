@@ -5,9 +5,9 @@
  * http://stregasgate.com
  */
 
-#if canImport(WinSDK)
-import Foundation
+#if canImport(WinSDK) && canImport(XAudio29)
 import WinSDK
+import XAudio29
 
 internal class XAAudioTrackReference: AudioTrackReference {
     unowned let mixerReference: XAAudioMixerReference

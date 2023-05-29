@@ -135,10 +135,6 @@ let package = Package(
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
                         .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows]))
-                    ],
-                    linkerSettings: [
-                        // SR-14728
-                        .linkedLibrary("swiftCore", .when(platforms: [.windows])),
                     ]),
             
             // miniz
@@ -148,10 +144,6 @@ let package = Package(
                         .unsafeFlags(["-Wno-everything"]),
                         // Silence warnings
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
-                    ],
-                    linkerSettings: [
-                        // SR-14728
-                        .linkedLibrary("swiftCore", .when(platforms: [.windows])),
                     ]),
             
             // libspng
@@ -166,10 +158,6 @@ let package = Package(
                         .headerSearchPath("src/"),
                         // Silence warnings
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
-                    ],
-                    linkerSettings: [
-                        // SR-14728
-                        .linkedLibrary("swiftCore", .when(platforms: [.windows])),
                     ]),
             
             // TrueType
@@ -180,10 +168,6 @@ let package = Package(
                         .define("STB_TRUETYPE_IMPLEMENTATION"), .define("STB_RECT_PACK_IMPLEMENTATION"),
                         .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows])),
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])), // Silence warnings
-                    ],
-                    linkerSettings: [
-                        // SR-14728
-                        .linkedLibrary("swiftCore", .when(platforms: [.windows])),
                     ]),
         ])
         
@@ -194,14 +178,6 @@ let package = Package(
                     path: "Sources/GateEngineDependencies/Direct3D12",
                     swiftSettings: [
                         .define("Direct3D12ExcludeOriginalStyleAPI", .when(configuration: .release)),
-                    ],
-                    linkerSettings: [
-                        .linkedLibrary("User32"),
-                        .linkedLibrary("Ole32"),
-                        .linkedLibrary("PortableDeviceGuids"),
-                        .linkedLibrary("DXGI"),
-                        .linkedLibrary("D3D12"),
-                        .linkedLibrary("D3DCompiler"),
                     ])
         )
         #endif
@@ -211,7 +187,7 @@ let package = Package(
             .target(name: "OpenGL_GateEngine",
                     path: "Sources/GateEngineDependencies/OpenGL/OpenGL_GateEngine",
                     cSettings: [
-                        .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS, .iOS, .tvOS])),
+                        .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS])),
                         .define("GLES_SILENCE_DEPRECATION", .when(platforms: [.iOS, .tvOS])),
                     ])
         ])
@@ -278,26 +254,25 @@ let package = Package(
 var openALLinkerSettings: [LinkerSetting] {
     var array: [LinkerSetting] = []
     
-    array.append(.linkedFramework("AudioToolbox", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])))
-    array.append(.linkedFramework("CoreFoundation", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])))
-    array.append(.linkedFramework("CoreAudio", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])))
-
-    // SR-14728
-    array.append(.linkedLibrary("swiftCore", .when(platforms: [.windows])))
-    
     array.append(contentsOf: [
-        .linkedLibrary("winmm", .when(platforms: [.windows])),
-        .linkedLibrary("kernel32", .when(platforms: [.windows])),
-        .linkedLibrary("user32", .when(platforms: [.windows])),
-        .linkedLibrary("gdi32", .when(platforms: [.windows])),
-        .linkedLibrary("winspool", .when(platforms: [.windows])),
-        .linkedLibrary("shell32", .when(platforms: [.windows])),
-        .linkedLibrary("ole32", .when(platforms: [.windows])),
-        .linkedLibrary("oleaut32", .when(platforms: [.windows])),
-        .linkedLibrary("uuid", .when(platforms: [.windows])),
-        .linkedLibrary("comdlg32", .when(platforms: [.windows])),
-        .linkedLibrary("advapi32", .when(platforms: [.windows])),
+        .linkedFramework("AudioToolbox", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])),
+        .linkedFramework("CoreFoundation", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])),
+        .linkedFramework("CoreAudio", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])),
     ])
+    // array.append(contentsOf: [
+    //     .linkedLibrary("winmm", .when(platforms: [.windows])),
+    //     .linkedLibrary("kernel32", .when(platforms: [.windows])),
+    //     .linkedLibrary("user32", .when(platforms: [.windows])),
+    //     .linkedLibrary("gdi32", .when(platforms: [.windows])),
+    //     .linkedLibrary("winspool", .when(platforms: [.windows])),
+    //     .linkedLibrary("shell32", .when(platforms: [.windows])),
+    //     .linkedLibrary("ole32", .when(platforms: [.windows])),
+    //     .linkedLibrary("oleaut32", .when(platforms: [.windows])),
+    //     .linkedLibrary("uuid", .when(platforms: [.windows])),
+    //     .linkedLibrary("comdlg32", .when(platforms: [.windows])),
+    //     .linkedLibrary("advapi32", .when(platforms: [.windows])),
+    // ])
+
     return array
 }
 

@@ -67,7 +67,7 @@ final class Win32Window: WindowBacking {
     var frame: Rect {
         get {
             var rect: RECT = RECT()
-            WinSDK.GetClientRect(self.hWnd, &rect)
+            WinSDK.GetWindowRect(self.hWnd, &rect)
             return Rect(rect)
         }
         set {
@@ -77,8 +77,15 @@ final class Win32Window: WindowBacking {
         }
     }
 
+    @inline(__always)
     var backingSize: Size2 {
         return self.frame.size
+    }
+
+    @inline(__always)
+    var backingScaleFactor: Float {
+        let dpi: UINT = GetDpiForWindow(hWnd)
+        return Float(dpi) / Float(USER_DEFAULT_SCREEN_DPI)
     }
 
     let safeAreaInsets: Insets = .zero
@@ -108,8 +115,30 @@ final class Win32Window: WindowBacking {
         Game.shared.windowManager.removeWindow(self.identifier)
     }
 
+    @MainActor func setMouseHidden(_ hidden: Bool) {
+        let count: Int32 = hidden ? -1 : 0
+        while WinSDK.ShowCursor(!hidden) != count {}
+    }
+
+    @MainActor func setMousePosition(_ position: Position2) {
+        var p: POINT = WinSDK.POINT(x: Int32(position.x), y: Int32(position.y))
+        if WinSDK.ClientToScreen(hWnd, &p) == false {
+            print("[GateEngine] Error: Failed to set mouse position. Failed to obtain screen position")
+            return
+        }
+        if WinSDK.SetCursorPos(p.x, p.y) == false {
+            print("[GateEngine] Error: Failed to set mouse position")
+        }else{
+            mouseState.setMousePosition(to: position)
+        }
+    }
+
     deinit {
-        Self.windowClass.unregister()
+        Task {@MainActor in
+            if Game.shared.windowManager.windows.isEmpty {
+                Self.windowClass.unregister()
+            }
+        }
         WinSDK.DestroyWindow(hWnd)
     }
 }
@@ -117,7 +146,7 @@ final class Win32Window: WindowBacking {
 fileprivate extension Win32Window {
     class func makeHWND(withSize size: Size2, style: Win32WindowStyle) -> HWND {
         let dwExStyle: DWORD = 0
-        let lpClassName = "\(type(of: Win32Window.self))".windowsUTF16
+        let lpClassName: [WCHAR] = "\(type(of: Win32Window.self))".windowsUTF16
         let lpWindowName: [WCHAR] = ProcessInfo.processInfo.processName.windowsUTF16
         let dwStyle: DWORD = DWORD(style.rawValue)
         let screen: MSRect = MSRect.mainScreenBounds()
@@ -129,7 +158,7 @@ fileprivate extension Win32Window {
         let hMenu: HMENU? = nil
         let hInstance: HINSTANCE = WinSDK.GetModuleHandleW(nil)
         let lpParam: LPVOID? = nil
-        guard let hWnd = WinSDK.CreateWindowExW(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam) else {
+        guard let hWnd: HWND = WinSDK.CreateWindowExW(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam) else {
             fatalError(GetLastError().errorMessage)
         }
         return hWnd
@@ -231,7 +260,7 @@ fileprivate extension Win32Window {
     @preconcurrency 
     @MainActor
     func _msgResized() {
-        self.window.renderTargetBackend.size = self.frame.size
+        self.window.size = self.frame.size
     }
 
     @inline(__always)
@@ -279,7 +308,7 @@ fileprivate extension Win32Window {
                 event = .entered
             }
             mouseState.mouseMoved(lpParam)
-            windowDelegate.mouseChange(event: event, position: mouseState.position, window: self.window)
+            windowDelegate.mouseChange(event: event, position: mouseState.position, delta: mouseState.delta, window: self.window)
         }
     }
 
@@ -289,7 +318,7 @@ fileprivate extension Win32Window {
     func _msgMouseExited() {
         if let windowDelegate: WindowDelegate = window.delegate {
             mouseState.mouseExited()
-            windowDelegate.mouseChange(event: .exited, position: mouseState.position, window: self.window)
+            windowDelegate.mouseChange(event: .exited, position: mouseState.position, delta: mouseState.delta, window: self.window)
         }
     }
 
@@ -524,8 +553,9 @@ fileprivate typealias WindowProc = @MainActor @convention(c) (HWND?, UINT, WPARA
         case SIZE_MINIMIZED:
             window._msgHide()
         default:
-            window._msgResized()
+            break
         }
+        window._msgResized()
         return 0
     case WM_MOUSEMOVE:
         window._msgMouseMoved(lpParam: lParam)
@@ -593,7 +623,13 @@ fileprivate struct MouseState {
     init(_ hwnd: HWND) {
         self.hwnd = hwnd
     }
+    var deltaPosition: Position2 = .zero
+    @inline(__always)
+    mutating func setMousePosition(to newPosition: Position2) {
+        self.deltaPosition = floor(newPosition)
+    }
     var position: Position2 = .zero
+    var delta: Position2 = .zero
     enum State {
         case outside
         case inside
@@ -601,17 +637,21 @@ fileprivate struct MouseState {
     private(set) var state: State = .outside
 
     private var tracking: Bool = false
+    @inline(__always)
     mutating func mouseMoved(_ lpParam: LPARAM) {
         guard tracking == false else {return}
         state = .inside
-
-        self.position = positionFrom(lpParam)
+        let newPosition = positionFrom(lpParam)
+        self.delta = newPosition - deltaPosition
+        self.position = newPosition
         var event = TRACKMOUSEEVENT()
         event.cbSize = DWORD(MemoryLayout<TRACKMOUSEEVENT>.size)
         event.dwFlags = DWORD(TME_LEAVE)
         event.hwndTrack = hwnd
         TrackMouseEvent(&event);
     }
+
+    @inline(__always)
     mutating func mouseExited() {
         tracking = false
         state = .outside
@@ -649,13 +689,13 @@ fileprivate extension Rect {
     func RECT() -> WinSDK.RECT {
         let left: Int32 = Int32(position.x)
         let top: Int32 = Int32(position.y)
-        let right: Int32 = Int32(size.width)
-        let bottom: Int32 = Int32(size.height)
+        let right: Int32 = Int32(position.x + size.width)
+        let bottom: Int32 = Int32(position.y + size.height)
         return WinSDK.RECT(left: left, top: top, right: right, bottom: bottom)
     }
 
     init(_ RECT: WinSDK.RECT) {
-        let position: Position2 = Position2(x: Float(RECT.x), y: Float(RECT.y))
+        let position: Position2 = Position2(x: Float(RECT.left), y: Float(RECT.top))
         let size: Size2 = Size2(width: Float(RECT.width), height: Float(RECT.height))
         self.init(position: position, size: size)
     }

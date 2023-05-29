@@ -64,8 +64,12 @@ class DX12RenderTarget: RenderTargetBackend {
     }()
     
     init(windowBacking: WindowBacking?) {
-        let windowBacking: Win32Window? = windowBacking as? Win32Window
-        self.swapChain = windowBacking?.swapChain
+        if let windowBacking {
+            let windowBacking: Win32Window = windowBacking as! Win32Window
+            self.swapChain = windowBacking.swapChain
+        }else{
+            self.swapChain = nil
+        }
         do {
             let device: D3DDevice = Game.shared.renderer.device
             let commandAllocator: D3DCommandAllocator = try device.createCommandAllocator(type: .direct)

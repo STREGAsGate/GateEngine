@@ -99,7 +99,7 @@ extension _RenderTargetProtocol {
     
     @inline(__always)
     internal func reshapeIfNeeded() {
-        if renderTargetBackend.wantsReshape || previousSize != renderTargetBackend.size {
+        if previousSize != renderTargetBackend.size || renderTargetBackend.wantsReshape {
             previousSize = renderTargetBackend.size
             renderTargetBackend.reshape()
         }

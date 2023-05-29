@@ -55,14 +55,15 @@ public enum WindowStyle {
         }
     }
     
+    @usableFromInline
+    internal lazy var newSize: Size2 = self.size
     @inlinable @inline(__always)
     public internal(set) var size: Size2 {
         get {
             return windowBacking.backingSize
         }
         set {
-            precondition(Game.shared.renderingIsPermitted, "Resizing a RenderTarget can only be done from a RenderingSystem.")
-            renderTargetBackend.size = newValue
+            newSize = newValue
         }
     }
     
@@ -73,8 +74,8 @@ public enum WindowStyle {
     
     @inline(__always)
     internal func reshapeIfNeeded() {
-        if renderTargetBackend.wantsReshape || self.size != renderTargetBackend.size {
-            renderTargetBackend.size = self.size
+        if self.newSize != renderTargetBackend.size || renderTargetBackend.wantsReshape {
+            renderTargetBackend.size = self.newSize
             renderTargetBackend.reshape()
         }
     }
@@ -101,7 +102,7 @@ public enum WindowStyle {
     
     @inlinable @inline(__always)
     public var interfaceScale: Float {
-        return windowBacking.backingSize.width / windowBacking.frame.size.width
+        return windowBacking.backingScaleFactor
     }
     
     @inlinable @inline(__always)
@@ -132,6 +133,7 @@ internal protocol WindowBacking: AnyObject {
     var frame: Rect {get set}
     var safeAreaInsets: Insets {get}
     var backingSize: Size2 {get}
+    var backingScaleFactor: Float {get}
     var state: Window.State {get}
     
     init(identifier: String, style: WindowStyle, window: Window)
