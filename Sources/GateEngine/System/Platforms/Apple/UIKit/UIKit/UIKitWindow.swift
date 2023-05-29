@@ -81,8 +81,15 @@ extension UIKitWindow {
             return .zero
         }
     }
+    
+    @inline(__always)
     var backingSize: Size2 {
         return frame.size * Float(uiWindow.traitCollection.displayScale)
+    }
+    
+    @inline(__always)
+    var backingScaleFactor: Float {
+        return Float(uiWindow.traitCollection.displayScale)
     }
     
     func setMouseHidden(_ hidden: Bool) {

@@ -48,12 +48,18 @@ class WASIWindow: WindowBacking {
         }
     }
 
+    @inline(__always)
     var backingSize: Size2 {
-        var size = Size2(Float(globalThis.window.innerWidth), Float(globalThis.window.innerHeight))
+        let size = Size2(Float(globalThis.window.innerWidth), Float(globalThis.window.innerHeight))
+        return size * backingScaleFactor
+    }
+    
+    @inline(__always)
+    var backingScaleFactor: Float {
         if let pxRatio = globalThis.document.defaultView?.devicePixelRatio {
-            size *= Float(pxRatio)
+            return Float(pxRatio)
         }
-        return size
+        return 1
     }
 
     var safeAreaInsets: Insets = .zero

@@ -32,7 +32,7 @@ internal class MetalView: MTKView, MTKViewDelegate {
     }
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-
+        self.viewController.window.window.newSize = Size2(size)
     }
 
     func draw(in view: MTKView) {

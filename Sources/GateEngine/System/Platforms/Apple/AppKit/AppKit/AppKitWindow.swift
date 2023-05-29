@@ -171,9 +171,16 @@ class AppKitWindow: WindowBacking {
         self.state = .shown
     }
     
+    @inline(__always)
     var backingSize: Size2 {
         guard let layer = self.nsWindowController.window?.contentView?.layer ?? self.nsWindowController.contentViewController?.view.layer else {fatalError()}
         return Size2(layer.bounds.size) * Float(layer.contentsScale)
+    }
+    
+    @inline(__always)
+    var backingScaleFactor: Float {
+        guard let layer = self.nsWindowController.window?.contentView?.layer ?? self.nsWindowController.contentViewController?.view.layer else {fatalError()}
+        return Float(layer.contentsScale)
     }
     
     public func close() {

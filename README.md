@@ -1,9 +1,6 @@
 # Gate Engine
-Gate Engine is a cross platform game engine for Swift that allows you to build 2D and 3D games.</br>
-It includes simple APIs for loading resources, handling user inputs, and rendering content.
-* **Data Model**: A specialized **Entity**/**Component**/**System** designed for convenience and simplicity.</br>
-* **Math**: <a href="https://github.com/STREGAsGate/GameMath" target="_blank"> GameMath </a> 
-is a custom package written specifically for Gate Engine that is designed to make doing math easy to read and write without needing to know the names of special functions and algorithms.
+A cross platform game engine for Swift that allows you to build 2D and 3D games.</br>
+Gate Engine includes intuitive APIs for loading resources, handling user inputs, and rendering content.
 
 ## Platform Support:
 | Platform | CI | Dependencies¹ | Render | Sound | Keyboard | Mouse | Touch | Gamepad |
