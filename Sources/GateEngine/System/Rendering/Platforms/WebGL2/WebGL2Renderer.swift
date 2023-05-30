@@ -15,6 +15,8 @@ import Shaders
 public typealias GL = WebGL2RenderingContext
 
 class WebGL2Renderer: RendererBackend {
+    @inline(__always)
+    var renderingAPI: RenderingAPI {.webGL2}
 #if GATEENGINE_DEBUG_RENDERING
     var singleWarnings: Set<String> = []
     func printOnce(_ string: String) {

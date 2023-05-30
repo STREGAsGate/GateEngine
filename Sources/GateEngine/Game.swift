@@ -22,6 +22,8 @@ import GameMath
         self.isHeadless = delegate.isHeadless()
     }
     
+    /// The graphics library being used to render.
+    public var renderingAPI: RenderingAPI {renderer.api}
     @usableFromInline let renderer: Renderer = Renderer()
     @usableFromInline internal var renderingIsPermitted: Bool = false
     

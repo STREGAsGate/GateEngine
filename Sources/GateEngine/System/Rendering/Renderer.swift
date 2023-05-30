@@ -7,8 +7,18 @@
 
 import GameMath
 
+public enum RenderingAPI {
+    case metal
+    case openGL
+    case openGLES
+    case webGL2
+    case d3d12
+}
+
 @MainActor public final class Renderer {
     let _backend: RendererBackend = getDefaultBackend()
+    @inline(__always)
+    public var api: RenderingAPI {_backend.renderingAPI}
     
     @usableFromInline
     lazy var rectOriginCentered: Geometry = {
@@ -96,7 +106,7 @@ import GameMath
 }
 
 @MainActor internal protocol RendererBackend {
-    var api: Renderer.BackendAPI {get}
+    var renderingAPI: RenderingAPI {get}
     func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: any _RenderTargetProtocol)
 }
 

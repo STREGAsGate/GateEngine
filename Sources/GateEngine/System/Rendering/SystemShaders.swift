@@ -7,18 +7,19 @@
 
 import Shaders
 
-public extension VertexShader {
+@MainActor public extension VertexShader {
     @usableFromInline
     internal static let renderTarget: VertexShader = {
         let vsh = VertexShader()
         vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
-        #if os(WASI)
-        let texCood = vsh.input.geometry(0).textureCoordinate0
-        let y = 1.0 - texCood.y
-        vsh.output["texCoord0"] = Vec2(x: texCood.x, y: y) * vsh.channel(0).scale + vsh.channel(0).offset
-        #else
-        vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
-        #endif
+        switch Game.shared.renderer.api {
+        case .metal, .d3d12:
+            vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
+        case .openGL, .openGLES, .webGL2:
+            let texCood = vsh.input.geometry(0).textureCoordinate0
+            let y = 1.0 - texCood.y
+            vsh.output["texCoord0"] = Vec2(x: texCood.x, y: y) * vsh.channel(0).scale + vsh.channel(0).offset
+        }
         return vsh
     }()
     static let standard: VertexShader = {
@@ -78,7 +79,7 @@ public extension VertexShader {
     }()
 }
 
-public extension FragmentShader {
+@MainActor public extension FragmentShader {
     /// The same as `textureSample` but with an additonal channel for a second geometry
     ///  Inteded to be used with `VertexShader.morph`
     @usableFromInline

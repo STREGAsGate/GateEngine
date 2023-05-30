@@ -10,6 +10,8 @@ import OpenGL_GateEngine
 import Shaders
 
 class OpenGLRenderer: RendererBackend {
+    @inline(__always)
+    var renderingAPI: RenderingAPI {.openGL}
     init() {
         self.setup()
     }

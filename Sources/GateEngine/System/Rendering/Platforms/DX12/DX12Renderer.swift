@@ -11,6 +11,8 @@ import GameMath
 import Shaders
 
 final class DX12Renderer: RendererBackend {
+    @inline(__always)
+    var renderingAPI: RenderingAPI {.d3d12}
     let factory: DGIFactory
     let device: D3DDevice
 
