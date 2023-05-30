@@ -14,12 +14,38 @@ import System
         let url = Bundle.module.bundleURL.deletingLastPathComponent()
         do {
             var files = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
-            files = files.filter({$0.pathExtension.caseInsensitiveCompare("bundle") == .orderedSame})
-            return files.compactMap({Bundle(url: $0)?.resourceURL})
+            files = files.filter({$0.pathExtension.caseInsensitiveCompare("bundle") == .orderedSame}).compactMap({Bundle(url: $0)?.resourceURL})
+            files = files.compactMap({
+                do {
+                    if try $0.checkResourceIsReachable() {
+                        return $0
+                    }
+                }catch{
+                    Log.info("Failed to load resource bundle \"\($0)\"")
+                }
+                return nil
+            })
+            if files.isEmpty == false {
+                return files
+            }
         }catch{
-            print("[GateEngine] Error: Failed to load resource bundles!\n", error)
+            Log.error("Failed to load resource bundles!\n", error)
         }
-        return [Bundle.main, Bundle.module].compactMap({$0.resourceURL})
+
+        let files = [Bundle.main, Bundle.module].compactMap({$0.resourceURL}).compactMap({
+            do {
+                if try $0.checkResourceIsReachable() {
+                    return $0
+                }
+            }catch{
+                Log.info("Failed to load resource bundle \"\($0)\"")
+            }
+            return nil
+        })
+        if files.isEmpty {
+            Log.error("Failed to load resource bundles! Probably Sandboxing.")
+        }
+        return files
     }()
     
     var pathCache: [String:String] = [:]
@@ -49,11 +75,11 @@ import System
                 }
                 return try Data(contentsOf: url, options: .mappedIfSafe)
             }catch{
-                print("[GateEngine] Error: Failed to load resource \(path).")
+                Log.error("Failed to load resource \"\(path)\".")
                 throw error
             }
         }
-        throw "[GateEngine] Error: Failed to load resource " + path + "."
+        throw "failed to locate."
     }
     
     func saveStateURL() throws -> URL {
@@ -67,7 +93,7 @@ import System
             let data = try Data(contentsOf: try saveStateURL())
             return try JSONDecoder().decode(Game.State.self, from: data)
         }catch{
-            print(error.localizedDescription)
+            Log.error("Game.State failed to restore:", error)
             return Game.State()
         }
     }
@@ -154,7 +180,7 @@ extension AppKitPlatform {
             url.deleteLastPathComponent()
             url.appendPathComponent("Info.plist")
             try? plist.write(to: url, atomically: false, encoding: .utf8)
-            print("Creating Info.plist then quitting...")
+            Log.info("Creating generic Info.plist")
             let alert = NSAlert()
             alert.messageText = "Created mock Info.plist in the build directory. This required to trick macOS into thinking your executable is an App. Game Controllers may not function without it.\n\nClick continue to ignore. Quit and launch again to ensure everything functions correctly."
             alert.addButton(withTitle: "Quit")

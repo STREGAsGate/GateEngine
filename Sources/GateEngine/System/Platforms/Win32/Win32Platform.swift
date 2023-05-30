@@ -21,7 +21,7 @@ import Foundation
                 return files
             }
         }catch{
-            print("[GateEngine] Error: Failed to load resource bundles!\n", error)
+            Log.error("Failed to load resource bundles!\n", error)
         }
 
         do {
@@ -32,7 +32,7 @@ import Foundation
                 return urls
             }
         }catch{
-            print("[GateEngine] Error: Failed to load resource bundles!\n", error)
+            Log.error("Failed to load resource bundles!\n", error)
         }
 
         let correct: [URL] = [Bundle.main, Bundle.module].compactMap({$0.resourceURL})
@@ -66,11 +66,11 @@ import Foundation
                 let url: URL = URL(fileURLWithPath: path)
                 return try Data(contentsOf: url, options: .mappedIfSafe)
             }catch{
-                print("[GateEngine] Error: Failed to load resource \(path).")
+                Log.error("Failed to load resource \"\(path)\".")
                 throw error
             }
         }
-        throw "[GateEngine] Error: Failed to load resource " + path + "."
+        throw "failed to locate."
     }
     
     func saveStateURL() throws -> URL {
@@ -84,7 +84,7 @@ import Foundation
             let data: Data = try Data(contentsOf: try saveStateURL())
             return try JSONDecoder().decode(Game.State.self, from: data)
         }catch{
-            print(error.localizedDescription)
+            Log.error("Game.State failed to restore:", error)
             return Game.State()
         }
     }
@@ -123,7 +123,7 @@ extension Win32Platform {
                 try manifest.write(to: url, atomically: false, encoding: .utf8)
             }
         }catch{
-            print("[GateEngine] Error: Failed to create manifest: \(name)\n", error)
+            Log.error("Failed to create manifest: \(name)\n", error)
         }
     }
     @MainActor func main() {

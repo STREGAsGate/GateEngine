@@ -106,9 +106,6 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
                 //Use our generated guid with vendor and product IDs
                 map.id = guid
                 
-                #if DEBUG
-                print("Connected:", map.name ?? "[Unknown]" + ",", "GUID:", guid, val)
-                #endif
                 let gamePad = GamePad(interpreter: self, identifier: HIDController(map: map, path: val))
                 manager.addNewlyConnectedGamePad(gamePad)
             }
@@ -313,6 +310,10 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
 
         gamePad.menu.tertiary.value = value(from: controller, for: .menuGuid)
         gamePad.menu.tertiary.isPressed = gamePad.menu.tertiary.value > 0.1
+    }
+    
+    func description(of gamePad: GamePad) -> String {
+        return (map.name ?? "[Unknown]") + ", GUID: \(guid)"
     }
 }
 

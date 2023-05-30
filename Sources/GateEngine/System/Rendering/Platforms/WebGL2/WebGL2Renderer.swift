@@ -17,14 +17,6 @@ public typealias GL = WebGL2RenderingContext
 class WebGL2Renderer: RendererBackend {
     @inline(__always)
     var renderingAPI: RenderingAPI {.webGL2}
-#if GATEENGINE_DEBUG_RENDERING
-    var singleWarnings: Set<String> = []
-    func printOnce(_ string: String) {
-        guard singleWarnings.contains(string) == false else {return}
-        singleWarnings.insert(string)
-        print(string)
-    }
-#endif
     
     lazy private var instanceMatriciesVBO: WebGLBuffer = WebGL2Renderer.context.createBuffer()!
     let generator = GLSLCodeGenerator(version: .v300es)
@@ -64,24 +56,24 @@ class WebGL2Renderer: RendererBackend {
             let sources = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: attributes)
             
 #if GATEENGINE_LOG_SHADERS
-            print("[GateEngine] Generated OpenGL ES Vertex Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.vertexSource))\n")
+            Log.info("Generated OpenGL ES Vertex Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.vertexSource))\n")
 #endif
             let _vsh = gl.createShader(type: WebGL2RenderingContext.VERTEX_SHADER)!
             gl.shaderSource(shader: _vsh, source: sources.vertexSource)
             gl.compileShader(shader: _vsh)
             if let error = Self.context.getShaderInfoLog(shader: _vsh), error.isEmpty == false {
-                print("[GateEngine] Error \(self.self).\(#function):\(#line), WebGL Error:\n\(error)")
+                Log.error("\(self.self).\(#function):\(#line), WebGL Error:\n\(error)")
             }
             
 #if GATEENGINE_LOG_SHADERS
-            print("[GateEngine] Generated OpenGL ES Fragment Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.fragmentSource))\n")
+            Log.info("Generated OpenGL ES Fragment Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.fragmentSource))\n")
 #endif
             let _fsh = gl.createShader(type: WebGL2RenderingContext.FRAGMENT_SHADER)!
             gl.shaderSource(shader: _fsh, source: sources.fragmentSource)
             gl.compileShader(shader: _fsh)
 #if GATEENGINE_DEBUG_RENDERING
             if let error = Self.context.getShaderInfoLog(shader: _fsh), error.isEmpty == false {
-                print("[GateEngine] Error \(self.self).\(#function):\(#line), WebGL Error:\n\(error)")
+                Log.error("\(self.self).\(#function):\(#line), WebGL Error:\n\(error)")
             }
 #endif
             
@@ -93,16 +85,16 @@ class WebGL2Renderer: RendererBackend {
 #if GATEENGINE_DEBUG_RENDERING
             if gl.getProgramParameter(program: program, pname: GL.VALIDATE_STATUS).boolean == false {
                 if let error = gl.getProgramInfoLog(program: program), error.isEmpty == false {
-                    print("[GateEngine] Error \(self.self).\(#function):\(#line), WebGL Error:\n\(error)")
+                    Log.error("\(self.self).\(#function):\(#line), WebGL Error:\n\(error)")
                 }else{
-                    print("[GateEngine] GL Error: Link Failed")
+                    Log.error("WebGL2 Shader Linking Failed: Reason Unknown")
                 }
             }
             checkError()
 #endif
             return program
         }catch{
-            fatalError("\(error)")
+            Log.fatalError("\(error)")
         }
     }
     
@@ -289,7 +281,7 @@ extension WebGL2Renderer {
                     gl.uniform1i(location: location, x: GLint(index))
                 }else{
 #if GATEENGINE_DEBUG_RENDERING
-                    printOnce("[GateEngine] Warning: OpenGL attribute [\(textureName)] not found.")
+                    Log.warnOnce("OpenGL attribute [\(textureName)] not found.")
 #endif
                 }
             }
@@ -299,7 +291,7 @@ extension WebGL2Renderer {
                 gl.uniform2f(location: location, x: channel.scale.x, y: channel.scale.y)
             }else{
 #if GATEENGINE_DEBUG_RENDERING
-                printOnce("[GateEngine] Warning: OpenGL attribute [\(scaleName)] not found.")
+                Log.warnOnce("OpenGL attribute [\(scaleName)] not found.")
 #endif
             }
             let offsetName = generator.variable(for: .channelOffset(UInt8(index)))
@@ -307,7 +299,7 @@ extension WebGL2Renderer {
                 gl.uniform2f(location: location, x: channel.offset.x, y: channel.offset.y)
             }else{
 #if GATEENGINE_DEBUG_RENDERING
-                printOnce("[GateEngine] Warning: OpenGL attribute [\(offsetName)] not found.")
+                Log.warnOnce("OpenGL attribute [\(offsetName)] not found.")
 #endif
             }
             let colorName = generator.variable(for: .channelColor(UInt8(index)))
@@ -315,7 +307,7 @@ extension WebGL2Renderer {
                 gl.uniform4f(location: location, x: channel.color.red, y: channel.color.green, z: channel.color.blue, w: channel.color.alpha)
             }else{
 #if GATEENGINE_DEBUG_RENDERING
-                printOnce("[GateEngine] Warning: OpenGL attribute [\(colorName)] not found.")
+                Log.warnOnce("OpenGL attribute [\(colorName)] not found.")
 #endif
             }
         }
@@ -330,7 +322,7 @@ extension WebGL2Renderer {
                         gl.uniform1i(location: location, x: value ? 1 : 0)
                     }else{
 #if GATEENGINE_DEBUG_RENDERING
-                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                        Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                     }
                 case let value as Int:
@@ -338,7 +330,7 @@ extension WebGL2Renderer {
                         gl.uniform1i(location: location, x: GLint(value))
                     }else{
 #if GATEENGINE_DEBUG_RENDERING
-                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                        Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                     }
                 case let value as Float:
@@ -346,7 +338,7 @@ extension WebGL2Renderer {
                         gl.uniform1f(location: location, x: value)
                     }else{
 #if GATEENGINE_DEBUG_RENDERING
-                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                        Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                     }
                 case let value as any Vector2:
@@ -354,7 +346,7 @@ extension WebGL2Renderer {
                         gl.uniform2f(location: location, x: value.x, y: value.y)
                     }else{
 #if GATEENGINE_DEBUG_RENDERING
-                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                        Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                     }
                 case let value as any Vector3:
@@ -362,7 +354,7 @@ extension WebGL2Renderer {
                         gl.uniform3f(location: location, x: value.x, y: value.y, z: value.z)
                     }else{
 #if GATEENGINE_DEBUG_RENDERING
-                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                        Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                     }
                 case let value as Matrix3x3:
@@ -371,7 +363,7 @@ extension WebGL2Renderer {
                         gl.uniformMatrix3fv(location: location, transpose: false, data: data)
                     }else{
 #if GATEENGINE_DEBUG_RENDERING
-                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                        Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                     }
                 case let value as Matrix4x4:
@@ -380,7 +372,7 @@ extension WebGL2Renderer {
                         gl.uniformMatrix4fv(location: location, transpose: false, data: data)
                     }else{
 #if GATEENGINE_DEBUG_RENDERING
-                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                        Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                     }
                 case let value as Array<Matrix4x4>:
@@ -397,7 +389,7 @@ extension WebGL2Renderer {
                         gl.uniformMatrix4fv(location: location, transpose: false, data: data)
                     }else{
 #if GATEENGINE_DEBUG_RENDERING
-                        printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                        Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                     }
                 default:
@@ -476,23 +468,23 @@ extension WebGL2Renderer {
         case GL.FRAMEBUFFER_COMPLETE:
             return
         case GL.FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-            printOnce("GL Error \(function):\(line): FRAMEBUFFER_INCOMPLETE_ATTACHMENT")
+            Log.errorOnce("WebGL2: FRAMEBUFFER_INCOMPLETE_ATTACHMENT")
         case GL.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-            printOnce("GL Error \(function):\(line): FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT")
+            Log.errorOnce("WebGL2: FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT")
         case GL.FRAMEBUFFER_UNSUPPORTED:
-            printOnce("GL Error \(function):\(line): FRAMEBUFFER_UNSUPPORTED")
+            Log.errorOnce("WebGL2: FRAMEBUFFER_UNSUPPORTED")
         case GL.INVALID_OPERATION:
-            printOnce("GL Error \(function):\(line): INVALID_OPERATION")
+            Log.errorOnce("WebGL2: INVALID_OPERATION")
         case GL.INVALID_VALUE:
-            printOnce("GL Error \(function):\(line): INVALID_VALUE")
+            Log.errorOnce("WebGL2: INVALID_VALUE")
         case GL.INVALID_ENUM:
-            printOnce("GL Error \(function):\(line): INVALID_ENUM")
+            Log.errorOnce("WebGL2: INVALID_ENUM")
         case GL.OUT_OF_MEMORY:
-            printOnce("GL Error \(function):\(line): OUT_OF_MEMORY")
+            Log.errorOnce("WebGL2: OUT_OF_MEMORY")
         case GL.NO_ERROR:
             return
         default:
-            printOnce("GL Error \(function):\(line): \(error)")
+            Log.errorOnce("\(error)")
         }
     }
 #endif

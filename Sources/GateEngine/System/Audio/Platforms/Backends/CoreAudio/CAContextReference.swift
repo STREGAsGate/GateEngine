@@ -15,7 +15,7 @@ internal class CAContextReference: AudioContextBackend {
         do {
             try engine.start()
         }catch{
-            print("[GateEngine] AVAudioEngine Error:", error)
+            Log.fatalError("AVAudioEngine Error: \(error)")
         }
     }
     

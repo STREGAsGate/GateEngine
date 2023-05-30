@@ -84,18 +84,14 @@ public class ResourceManager {
             case .whileReferenced:
                 if cache.referenceCount == 0 {
                     self.cache.textures.removeValue(forKey: key)
-                    #if DEBUG
-                    print("[GateEngine] Removing cache (no longer referenced)", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
-                    #endif
+                    Log.debug("Removing cache (no longer referenced)", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
                 }
             case .until(minutes: let minutes):
                 if cache.referenceCount == 0 {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.textures.removeValue(forKey: key)
-                        #if DEBUG
-                        print("[GateEngine] Removing cache (unsused for \(cache.minutesDead) min)", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
-                        #endif
+                        Log.debug("Removing cache (unsused for \(cache.minutesDead) min)", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
                     }
                 }else{
                     cache.minutesDead = 0
@@ -112,18 +108,14 @@ public class ResourceManager {
             case .whileReferenced:
                 if cache.referenceCount == 0 {
                     self.cache.geometries.removeValue(forKey: key)
-                    #if DEBUG
-                    print("[GateEngine] Removing cache (no longer referenced)", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
-                    #endif
+                    Log.debug("Removing cache (no longer referenced)", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
                 }
             case .until(minutes: let minutes):
                 if cache.referenceCount == 0 {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.geometries.removeValue(forKey: key)
-                        #if DEBUG
-                        print("[GateEngine] Removing cache (unsused for \(cache.minutesDead) min)", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
-                        #endif
+                        Log.debug("Removing cache (unsused for \(cache.minutesDead) min)", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
                     }
                 }else{
                     cache.minutesDead = 0
@@ -208,9 +200,7 @@ internal extension ResourceManager {
                     }
                 }catch{
                     Task {@MainActor in
-                        #if DEBUG
-                        print("[GateEngine] Resource \(path) failed:", error)
-                        #endif
+                        Log.warn("Resource \"\(path)\"", error)
                         self.cache.geometries[key]!.state = .failed(reason: "\(error)")
                     }
                 }
@@ -276,7 +266,7 @@ internal extension ResourceManager {
                 return false
             }
         }catch{
-            print(error.localizedDescription)
+            Log.error(error)
             return false
         }
         #else
@@ -356,9 +346,7 @@ internal extension ResourceManager {
                     }
                 }catch{
                     Task {@MainActor in
-                        #if DEBUG
-                        print("[GateEngine] Resource \(path) failed:", error)
-                        #endif
+                        Log.warn("Resource \"\(path)\"", error)
                         self.cache.skinnedGeometries[key]!.state = .failed(reason: "\(error)")
                     }
                 }
@@ -428,7 +416,7 @@ internal extension ResourceManager {
                 return false
             }
         }catch{
-            print(error.localizedDescription)
+            Log.error(error)
             return false
         }
         #else
@@ -657,9 +645,7 @@ internal extension ResourceManager {
                 }
             }catch{
                 Task {@MainActor in
-                    #if DEBUG
-                    print("[GateEngine] Resource \(key.requestedPath) failed:", error)
-                    #endif
+                    Log.warn("Resource \"\(key.requestedPath)\"", error)
                     self.cache.textures[key]!.state = .failed(reason: "\(error)")
                 }
             }
@@ -679,7 +665,7 @@ internal extension ResourceManager {
                 return false
             }
         }catch{
-            print(error.localizedDescription)
+            Log.error(error)
             return false
         }
         #else

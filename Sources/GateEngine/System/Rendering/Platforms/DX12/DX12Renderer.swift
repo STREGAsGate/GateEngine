@@ -107,7 +107,7 @@ final class DX12Renderer: RendererBackend {
         do {
             #if GATEENGINE_DEBUG_RENDERING
             try D3DDebug().enableDebugLayer()
-            print("D3DDebug: Debug layer enabled.")
+            Log.info("D3DDebug: Debug layer enabled.")
             #endif
             let factory: DGIFactory = try DGIFactory()
             let device: D3DDevice = try factory.createDefaultDevice()
@@ -511,8 +511,8 @@ extension DX12Renderer {
             let shaderAttributes: ContiguousArray<CodeGenerator.InputAttribute> = DX12Geometry.shaderAttributes(from: geometries)
             let shaders: (vsh: String, fsh: String) = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: shaderAttributes)
             #if GATEENGINE_LOG_SHADERS
-            print("[GateEngine] Generated DirectX Vertex Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.vsh))\n")
-            print("[GateEngine] Generated DirectX Fragment Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.fsh))\n")
+            Log.info("Generated DirectX Vertex Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.vsh))\n")
+            Log.info("Generated DirectX Fragment Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.fsh))\n")
             #endif
             #if GATEENGINE_DEBUG_RENDERING
             let debug: Bool = true
@@ -656,7 +656,7 @@ extension DX12Renderer {
 
     @_optimize(none) // Prevent compiler crash on release builds
     static func checkError(_ error: Swift.Error, function: String = #function, line: Int = #line) -> Never {
-        print("[GateEngine] Error:", error)
+        Log.error(error)
 
         #if GATEENGINE_DEBUG_RENDERING
         if let infoQueue: D3DInfoQueue = Game.shared.renderer.device.queryInterface(D3DInfoQueue.self) {
@@ -665,7 +665,7 @@ extension DX12Renderer {
                     if let message {
                         print(message)
                     }else{
-                       print("---failed to load error message---")
+                        print("---failed to load error message---")
                     }
                 }
             }
@@ -675,7 +675,7 @@ extension DX12Renderer {
         do {
             try Game.shared.renderer.device.checkDeviceRemovedReason()
         }catch{
-            print("[GateEngine] Device Removed Reason:", error)
+            Log.error("Device Removed Reason ->", error)
         }
         fatalError()
     }

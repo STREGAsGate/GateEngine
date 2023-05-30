@@ -59,7 +59,7 @@ class OpenGLRenderTarget: RenderTargetBackend {
         
         assert(self.framebuffer > 0)
         assert(glCheckFramebufferStatus(target: .draw) == .complete)
-        assert({let error = glGetError(); if error != .none {print(error)}; return error == .none}())
+        assert({let error = glGetError(); if error != .none {Log.error(error)}; return error == .none}())
     }
     
     deinit {

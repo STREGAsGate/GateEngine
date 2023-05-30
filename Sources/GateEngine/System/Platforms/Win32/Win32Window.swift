@@ -123,11 +123,11 @@ final class Win32Window: WindowBacking {
     @MainActor func setMousePosition(_ position: Position2) {
         var p: POINT = WinSDK.POINT(x: Int32(position.x), y: Int32(position.y))
         if WinSDK.ClientToScreen(hWnd, &p) == false {
-            print("[GateEngine] Error: Failed to set mouse position. Failed to obtain screen position")
+            Log.error("Failed to set mouse position.", "Failed to obtain screen position.")
             return
         }
         if WinSDK.SetCursorPos(p.x, p.y) == false {
-            print("[GateEngine] Error: Failed to set mouse position")
+            Log.error("Failed to set mouse position.")
         }else{
             mouseState.setMousePosition(to: position)
         }
@@ -525,11 +525,7 @@ extension Win32Window {
             }
         }
 
-        #if DEBUG
-        if key == nil {
-            print("UniversalGraphics is not handling key code:", param)
-        }
-        #endif
+        Log.warn("Key Code \(event.keyCode) is unhandled!")
 
         return key ?? .nothing
     }

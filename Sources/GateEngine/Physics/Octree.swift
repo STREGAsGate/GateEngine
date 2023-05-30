@@ -48,7 +48,7 @@ public final class Octree: Codable {
     }
     
     fileprivate func nodesNear(_ box: AxisAlignedBoundingBox3D, visibleTo frustum: ViewFrustum3D?) -> [Node] {
-        guard rootNode.boundingBox.isColiding(with: box) else {print("No collision"); return []}
+        guard rootNode.boundingBox.isColiding(with: box) else {Log.debug("No collision"); return []}
         var nodes: [Node] = []
         if let children = rootNode.childrenNear(box, visibleTo: frustum) {
             nodes.append(contentsOf: children)

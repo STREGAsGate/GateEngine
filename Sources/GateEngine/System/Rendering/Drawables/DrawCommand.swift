@@ -76,7 +76,7 @@ public struct DrawCommand {
 #if GATEENGINE_DEBUG_RENDERING || DEBUG
         for backend1 in backends {
             for backend2 in backends {
-                assert(backend1.isDrawCommandValid(sharedWith: backend2), "[GateEngine] Error: Multiple geometries in the same DrawCommand must have similar topology.")
+                Log.assert(backend1.isDrawCommandValid(sharedWith: backend2), "Multiple geometries in the same DrawCommand must have similar topology.")
             }
         }
 #endif

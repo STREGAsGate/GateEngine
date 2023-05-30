@@ -45,7 +45,7 @@ internal enum OpenALError {
 internal func alCheckError() -> OpenALError {
     let error = OpenALError.from(alGetError())
     if error != .noError {
-        print("OpenAL Error:", error)
+        Log.error("OpenAL", error)
     }
     return error
 }

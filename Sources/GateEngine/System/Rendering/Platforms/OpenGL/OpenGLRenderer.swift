@@ -11,19 +11,19 @@ import Shaders
 
 class OpenGLRenderer: RendererBackend {
     @inline(__always)
-    var renderingAPI: RenderingAPI {.openGL}
+    var renderingAPI: RenderingAPI {
+        #if os(macOS) || os(Windows) || (os(Linux) && !os(Android))
+        return .openGL
+        #elseif os(iOS) || os(tvOS) || os(Android)
+        return .openGLES
+        #else
+        #error("Unhandled Platfrom")
+        #endif
+    }
+    
     init() {
         self.setup()
     }
-    
-#if GATEENGINE_DEBUG_RENDERING
-    var singleWarnings: Set<String> = []
-    func printOnce(_ string: String) {
-        guard singleWarnings.contains(string) == false else {return}
-        singleWarnings.insert(string)
-        print(string)
-    }
-#endif
     
     lazy private var instanceMatriciesVBO: GLuint = glGenBuffer()
     let generator = GLSLCodeGenerator(version: .v330core)
@@ -63,20 +63,20 @@ class OpenGLRenderer: RendererBackend {
 
             let vsh = compileShader(sources.vertexSource, shared: "", withType: .vertex)!
 #if GATEENGINE_LOG_SHADERS
-            print("[GateEngine] Generated OpenGL Vertex Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.vertexSource))\n")
+            Log.info("Generated OpenGL Vertex Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.vertexSource))\n")
 #endif
 #if GATEENGINE_DEBUG_RENDERING
             if let error = try glGetShaderInfoLog(shader: vsh), error.isEmpty == false {
-                print("[GateEngine] Error \(self.self).\(#function):\(#line), OpenGL Error:\n\(error)")
+                Log.error("\(self.self).\(#function):\(#line), OpenGL Error:\n\(error)")
             }
 #endif
             let fsh = compileShader(sources.fragmentSource, shared: "", withType: .fragment)!
 #if GATEENGINE_LOG_SHADERS
-            print("[GateEngine] Generated OpenGL Fragment Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.fragmentSource))\n")
+            Log.info("Generated OpenGL Fragment Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.fragmentSource))\n")
 #endif
 #if GATEENGINE_DEBUG_RENDERING
             if let error = try glGetShaderInfoLog(shader: fsh), error.isEmpty == false {
-                print("[GateEngine] Error \(self.self).\(#function):\(#line), OpenGL Error:\n\(error)")
+                Log.error("\(self.self).\(#function):\(#line), OpenGL Error:\n\(error)")
             }
 #endif
             
@@ -90,16 +90,16 @@ class OpenGLRenderer: RendererBackend {
             if status == 0 {
                 let error = glGetProgramInfoLog(forProgram: program)
                 if error.isEmpty == false {
-                    print("[GateEngine] Shader Program Error \(self.self).\(#function):\(#line), OpenGL Error:\n\(error)")
+                    Log.error("Shader Program Error \(self.self).\(#function):\(#line), OpenGL Error:\n\(error)")
                 }else{
-                    print("[GateEngine] GL Error: Link Failed")
+                    Log.error("OpenGL Link Failed")
                 }
             }
             checkError()
 #endif
             return program
         }catch{
-            fatalError("\(error)")
+            Log.fatalError("\(error)")
         }
     }
     
@@ -301,7 +301,7 @@ extension OpenGLRenderer {
                         try glUniform(location: location, values: GLint(index))
                     }else{
 #if GATEENGINE_DEBUG_RENDERING
-                        printOnce("[GateEngine] Warning: OpenGL attribute [\(textureName)] not found.")
+                        Log.warnOnce("OpenGL attribute [\(textureName)] not found.")
 #endif
                     }
                 }
@@ -311,7 +311,7 @@ extension OpenGLRenderer {
                     try glUniform(location: location, values: channel.scale.x, channel.scale.y)
                 }else{
 #if GATEENGINE_DEBUG_RENDERING
-                    printOnce("[GateEngine] Warning: OpenGL attribute [\(scaleName)] not found.")
+                    Log.warnOnce("OpenGL attribute [\(scaleName)] not found.")
 #endif
                 }
                 let offsetName = generator.variable(for: .channelOffset(UInt8(index)))
@@ -319,7 +319,7 @@ extension OpenGLRenderer {
                     try glUniform(location: location, values: channel.offset.x, channel.offset.y)
                 }else{
 #if GATEENGINE_DEBUG_RENDERING
-                    printOnce("[GateEngine] Warning: OpenGL attribute [\(offsetName)] not found.")
+                    Log.warnOnce("OpenGL attribute [\(offsetName)] not found.")
 #endif
                 }
                 let colorName = generator.variable(for: .channelColor(UInt8(index)))
@@ -327,7 +327,7 @@ extension OpenGLRenderer {
                     try glUniform(location: location, values: channel.color.red, channel.color.green, channel.color.blue, channel.color.alpha)
                 }else{
 #if GATEENGINE_DEBUG_RENDERING
-                    printOnce("[GateEngine] Warning: OpenGL attribute [\(colorName)] not found.")
+                    Log.warnOnce("OpenGL attribute [\(colorName)] not found.")
 #endif
                 }
             }
@@ -342,7 +342,7 @@ extension OpenGLRenderer {
                             try glUniform(location: location, values: value ? 1 : 0)
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                         }
                     case let value as Int:
@@ -350,7 +350,7 @@ extension OpenGLRenderer {
                             try glUniform(location: location, values: GLint(value))
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                         }
                     case let value as Float:
@@ -358,7 +358,7 @@ extension OpenGLRenderer {
                             try glUniform(location: location, values: value)
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                         }
                     case let value as any Vector2:
@@ -366,7 +366,7 @@ extension OpenGLRenderer {
                             try glUniform(location: location, values: value.x, value.y)
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                         }
                     case let value as any Vector3:
@@ -374,7 +374,7 @@ extension OpenGLRenderer {
                             try glUniform(location: location, values: value.x, value.y, value.z)
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                         }
                     case let value as Matrix3x3:
@@ -382,7 +382,7 @@ extension OpenGLRenderer {
                             glUniformMatrix3fv(location: location, transpose: false, values: value.transposedArray())
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                         }
                     case let value as Matrix4x4:
@@ -390,7 +390,7 @@ extension OpenGLRenderer {
                             glUniformMatrix4fv(location: location, transpose: false, values: value.transposedArray())
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                         }
                     case let value as Array<Matrix4x4>:
@@ -406,7 +406,7 @@ extension OpenGLRenderer {
                             glUniformMatrix4fv(location: location, transpose: false, values: floats)
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            printOnce("[GateEngine] Warning: OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
 #endif
                         }
                     default:
@@ -416,7 +416,7 @@ extension OpenGLRenderer {
             }
         }catch{
 #if GATEENGINE_DEBUG_RENDERING
-            printOnce("[GateEngine] Error: \(error).")
+            Log.errorOnce(error)
 #endif
         }
         
@@ -458,7 +458,7 @@ extension OpenGLRenderer {
     @_transparent
     func checkError(_ function: String = #function, _ line: Int = #line) {
         assert(glCheckFramebufferStatus(target: .draw) == .complete)
-        assert({let error = glGetError(); if error != .none {print(error)}; return error == .none}())
+        assert({let error = glGetError(); if error != .none {Log.error(error)}; return error == .none}())
     }
 #endif
 }
@@ -486,7 +486,7 @@ extension OpenGLRenderer {
             try glShaderSource(shader: shader, source: source)
             glCompileShader(shader)
         }catch{
-            assertionFailure("\(error)")
+            Log.fatalError("\(error)")
         }
         
         #if GATEENGINE_DEBUG_RENDERING
@@ -507,9 +507,9 @@ extension OpenGLRenderer {
                 }
                 error += "\n"
             }
-            print("[GateEngine] Error \(self.self).\(#function):\(#line), OpenGL Error:\n\(error)")
+            Log.error("\(self.self).\(#function):\(#line), OpenGL Error:\n\(error)")
             #else
-            print("[GateEngine] Error \(self.self).\(#function):\(#line), OpenGL Error")
+            Log.error("\(self.self).\(#function):\(#line), OpenGL Error")
             #endif
             return "Shader compiler error."
         }
@@ -524,7 +524,7 @@ extension OpenGLRenderer {
             }
             #endif
         }catch{
-            fatalError("\(error)")
+            Log.fatalError("\(error)")
         }
         return shader
     }

@@ -25,7 +25,7 @@ import GameMath
 
     @discardableResult
     public func createWindow(identifier: String, style: WindowStyle) throws -> Window {
-        guard game.isHeadless == false else {throw "[GateEngine] Cannot create a window when running headless."}
+        guard game.isHeadless == false else {throw "Cannot create a window when running headless."}
         precondition(game.renderingIsPermitted, "A window can only be created from a RenderingSystem.")
         #if GATEENGINE_PLATFORM_SINGLETHREADED
         // Single threaded platforms can only ever have 1 window

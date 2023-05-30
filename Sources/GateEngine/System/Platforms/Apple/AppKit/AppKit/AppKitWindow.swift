@@ -599,9 +599,7 @@ class UGNSWindow: AppKit.NSWindow {
             return .character(character)
         }
 
-        #if DEBUG
-        print("UniversalGraphics is not handling key code:", event.keyCode)
-        #endif
+        Log.warn("Key Code \(event.keyCode) is unhandled!")
 
         return .nothing
     }

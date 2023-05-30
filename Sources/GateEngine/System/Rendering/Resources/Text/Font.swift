@@ -52,18 +52,14 @@ public class Font: OldResource {
                 }
             }catch{
                 Task { @MainActor in
-                    #if DEBUG
-                    print("[GateEngine] Resource \(regular) failed:", error)
-                    #endif
+                    Log.debug("Resource \(regular) failed ->", error)
                     self.state = .failed(reason: "\(error)")
                 }
             }
         }
         #else
         Task { @MainActor in
-            #if DEBUG
-            print("[GateEngine] Resource \(regular) failed: Cannot load ttf fonts on this platform.")
-            #endif
+            Log.debug("Resource \(regular) failed: Cannot load ttf fonts on this platform.")
             self.state = .failed(reason: "Cannot load ttf fonts on this platform.")
         }
         #endif
@@ -83,9 +79,7 @@ public class Font: OldResource {
                 }
             }catch{
                 Task { @MainActor in
-                    #if DEBUG
-                    print("[GateEngine] Resource \(regular) failed:", error)
-                    #endif
+                    Log.debug("Resource \(regular) failed ->", error)
                     self.state = .failed(reason: "\(error)")
                 }
             }

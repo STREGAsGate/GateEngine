@@ -77,7 +77,7 @@ private extension OctreeComponent {
     
     @_transparent
     func nodesNear(_ box: AxisAlignedBoundingBox3D, visibleTo frustum: ViewFrustum3D? = nil) -> [Node] {
-        guard rootNode.boundingBox.isColiding(with: box) else {print("No collision"); return []}
+        guard rootNode.boundingBox.isColiding(with: box) else {Log.debug("No collision"); return []}
         var nodes: [Node] = []
         if let children = rootNode.childrenNear(box) {
             nodes.append(contentsOf: children)
@@ -87,7 +87,7 @@ private extension OctreeComponent {
     
     @_transparent
     func nodesHit(by ray: Ray3D) -> [Node] {
-        guard rootNode.boundingBox.isColiding(with: ray) else {print("No collision"); return []}
+        guard rootNode.boundingBox.isColiding(with: ray) else {Log.debug("No collision"); return []}
         var nodes: [Node] = []
         if let children = rootNode.childrenHit(by: ray) {
             nodes.append(contentsOf: children)
@@ -207,7 +207,7 @@ internal extension OctreeComponent {
         }
         var removed = 0
         while removeAnyNode() {removed += 1}
-        print("Octree nodes cleaned: \(removed), checkes: \(checkes)")
+        Log.debug("Octree nodes cleaned: \(removed), checkes: \(checkes)")
     }
 }
 

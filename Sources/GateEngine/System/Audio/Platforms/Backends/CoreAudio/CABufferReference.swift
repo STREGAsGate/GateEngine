@@ -38,7 +38,7 @@ internal class CABufferReference: AudioBufferBackend {
         self.audioBuffer = audioBuffer
         Task(priority: .utility) {
             do {
-                guard let path = await Game.shared.internalPlatform.locateResource(from: path) else {throw "[GateEngine] Failed to locate resource: \(path)"}
+                guard let path = await Game.shared.internalPlatform.locateResource(from: path) else {throw "Failed to locate resource: \(path)"}
                 do {// Allow CoreAudio an chance to load files the way it prefers
                     let file = try AVAudioFile(forReading: URL(fileURLWithPath: path))
                     if let buffer = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(file.length)) {
@@ -67,9 +67,7 @@ internal class CABufferReference: AudioBufferBackend {
                 }
                 throw "Audio format not supported for resource: \(path)"
             }catch{
-                #if DEBUG
-                print("[GateEngine] Resource \(path) failed:", error)
-                #endif
+                Log.warn("Resource \"\(path)\" failed ->", error)
                 self.audioBuffer.state = .failed(reason: error.localizedDescription)
             }
         }

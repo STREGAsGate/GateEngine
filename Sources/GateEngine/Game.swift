@@ -41,7 +41,7 @@ import GameMath
                 assert(windowManager.mainWindow?.identifier == windowManager.mainWindowIdentifier, "Must use the provided identifier to make the mainWindow.")
                 self.renderingIsPermitted = false
             }catch{
-                fatalError("[GateEngine] Failed to create main window. \(error)")
+                Log.fatalError("Failed to create main window. \(error)")
             }
         }
         #if !os(WASI)

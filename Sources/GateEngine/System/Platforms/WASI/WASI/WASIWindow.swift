@@ -131,7 +131,7 @@ class WASIWindow: WindowBacking {
             }
         }
         globalThis.addEventListener(type: "pointerlockerror") { event in
-            print("[GateEngine] Error: Mouse lock failed")
+            Log.error("Mouse lock failed")
             Task {@MainActor in
                 Game.shared.hid.mouse.locked = false
             }
@@ -256,7 +256,6 @@ class WASIWindow: WindowBacking {
                     guard let touch = event.changedTouches.item(index: index) else {continue}
                     let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
                     self.window.delegate?.touchChange(id: touch.identifier, kind: .physical, event: .began, position: position)
-                    print("Touch Start", position)
                 }
             }
             event.preventDefault()
@@ -279,7 +278,6 @@ class WASIWindow: WindowBacking {
                     guard let touch = event.changedTouches.item(index: index) else {continue}
                     let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
                     self.window.delegate?.touchChange(id: touch.identifier, kind: .physical, event: .ended, position: position)
-                    print("Touch End", position)
                 }
                 if event.isTrusted {
                     self.performedUserGesture()

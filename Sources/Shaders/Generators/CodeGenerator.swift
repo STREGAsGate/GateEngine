@@ -26,7 +26,7 @@ public class CodeGenerator {
         
         for fshKey in fshKeys {
             if vshKeys.contains(fshKey) == false {
-                throw ShaderError("[GateEngine] Shaders can't be linked becuase the vsh doesn't have \(fshKey) required by fsh.")
+                throw ShaderError("Shaders can't be linked becuase the vsh doesn't have \(fshKey) required by fsh.")
             }
         }
     }

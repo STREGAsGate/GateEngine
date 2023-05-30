@@ -139,7 +139,7 @@ class VorbisFile {
             if (ret == 0) {
                 end = true
             }else if ret < 0 {
-                print("Error reading Vorbis stream.")
+                Log.error("Failed to read Vorbis stream.")
                 return nil
             }else{
                 position += ret

@@ -17,7 +17,7 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
     }
     
     func beginInterpreting() {
-        print("[GateEngine] Looking for gamepads")
+        Log.info("Looking for gamepads")
 
         func addGamepad(_ event: Event) {
             let event = GamepadEvent(unsafelyWrapping: event.jsObject)
@@ -25,7 +25,7 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
                 let controller = GamePad(interpreter: self, identifier: event.gamepad.id)
                 self.hid.gamePads.addNewlyConnectedGamePad(controller)
             }else{
-                print("[GateEngine] Ignoring non-standard gamepad:", event.gamepad.id)
+                Log.warn("Ignoring non-standard gamepad:", event.gamepad.id)
             }
         }
         func removeGamepad(_ event: Event) {

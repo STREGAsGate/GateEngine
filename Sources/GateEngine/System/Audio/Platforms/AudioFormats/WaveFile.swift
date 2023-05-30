@@ -53,7 +53,7 @@ class WaveFile {
     required init?(_ data: Data, context: AudioContext) {
         guard String(bytes: data[0 ..< 4], encoding: .ascii) == "RIFF" else {return nil}
         guard String(bytes: data[8 ..< 12], encoding: .ascii) == "WAVE" else {return nil}
-        guard String(bytes: data[12 ..< 16], encoding: .ascii) == "fmt " else {print("Failed to read WAVE file."); return nil}
+        guard String(bytes: data[12 ..< 16], encoding: .ascii) == "fmt " else {Log.error("Failed to read WAVE file."); return nil}
         
         if data[20 ..< 22].boundTo(Int16.self) == 0x0001 || data[20 ..< 22].boundTo(Int16.self) == 0x0003 {
             let channelCount = data[22 ..< 24].boundTo(Int16.self) ?? 0
@@ -79,7 +79,7 @@ class WaveFile {
             
             self.isIEEEFloat = data[20 ..< 22].boundTo(Int16.self) == 0x0003
         }else{
-            print("WAVE file must be PCM or IEEE-Float encoded (uncompressed).")
+            Log.error("WAV file must be PCM or IEEE-Float encoded (uncompressed).")
             return nil
         }
     }

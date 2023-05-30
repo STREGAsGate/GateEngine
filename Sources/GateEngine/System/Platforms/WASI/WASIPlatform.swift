@@ -22,7 +22,7 @@ class WASIPlatform: InternalPlatform {
             do {
                 return try JSONDecoder().decode(Game.State.self, from: data)
             }catch{
-                print(error.localizedDescription)
+                Log.error("Game.State failed to restore:", error)
             }
         }
         return Game.State()
@@ -51,9 +51,7 @@ class WASIPlatform: InternalPlatform {
     
     func locateResource(from path: String) async -> String? {
         if let existing = pathCache[path] {
-            #if DEBUG
-            print("[GateEngine] Located Resource: \"\(path)\" at \"\(existing)\"")
-            #endif
+            Log.info("Located Resource: \"\(path)\" at \"\(existing)\"")
             return existing
         }
         let delegatePaths = Game.shared.delegate.resourceSearchPaths()
@@ -63,7 +61,7 @@ class WASIPlatform: InternalPlatform {
             let builtInPaths = Set(searchPaths)
             let dups = delegatePaths.intersection(builtInPaths)
             if dups.isEmpty == false {
-                print("[GateEngine] Warning: The following search paths are duplicates:\(dups.map({"\n- \($0)"}).joined(separator: "\n- "))\n")
+                Log.warn("The following search paths are duplicates:\(dups.map({"\n- \($0)"}).joined(separator: "\n- "))\n")
             }
         }
         #endif
@@ -73,34 +71,32 @@ class WASIPlatform: InternalPlatform {
             if let object = try? await fetch(newPath, ["method": "HEAD"]).object {
                 if Response(from: object)?.ok == true {
                     pathCache[path] = newPath
-                    
-                    #if DEBUG
-                    print("[GateEngine] Located Resource: \"\(path)\" at \"\(newPath)\"")
-                    #endif
-                    
+                    Log.debug("Located Resource: \"\(path)\" at \"\(newPath)\"")
                     return newPath
                 }
             }
         }
-        #if DEBUG
-        print("[GateEngine] Failed to located Resource: \"\(path)\"")
-        #endif
+        
+        Log.debug("Failed to located Resource: \"\(path)\"")
         return nil
     }
     
     func loadResource(from path: String) async throws -> ArrayBuffer {
         if let path = await locateResource(from: path) {
-            #if DEBUG
-            print("[GateEngine] Loading Resource: \"\(path)\"")
-            #endif
-            if let object = try? await fetch(path).object {
-                if let response = Response(from: object) {
-                    return try await response.arrayBuffer()
+            Log.debug("Loading Resource: \"\(path)\"")
+            do {
+                if let object = try await fetch(path).object {
+                    if let response = Response(from: object) {
+                        return try await response.arrayBuffer()
+                    }
                 }
+            }catch{
+                Log.error("Failed to load resource \"\(path)\".")
+                throw error
             }
         }
-       
-        throw "[GateEngine] Error: Failed to load resource " + path + "."
+
+        throw "failed to locate."
     }
     
     func loadResource(from path: String) async throws -> Data {

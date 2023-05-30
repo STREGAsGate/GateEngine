@@ -245,8 +245,7 @@ class MetalRenderer: RendererBackend {
             do {
                 return try device.makeRenderPipelineState(descriptor: pipelineDescriptor)
             }catch{
-                print(error)
-                fatalError()
+                Log.fatalError("\(error)")
             }
         }
     }
@@ -294,7 +293,7 @@ extension MetalRenderer {
             let attributes = MetalGeometry.shaderAttributes(from: geometries)
             let source = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: attributes)
             #if GATEENGINE_LOG_SHADERS
-            print("Generated Metal Shaders:\n\n\(source)\n")
+            Log.info("Generated Metal Shaders:\n\n\(source)\n")
             #endif
             let library = try self.device.makeLibrary(source: source, options: nil)
             let pipelineState = self.getRenderPipelineState(vsh: vsh, fsh: fsh, flags: flags, geometries: geometries, library: library)
@@ -302,8 +301,7 @@ extension MetalRenderer {
             _shaders[key] = shader
             return shader
         }catch{
-            print(error)
-            fatalError()
+            Log.fatalError("\(error)")
         }
     }
     
@@ -345,7 +343,7 @@ extension MetalRenderer {
                 encoder.setVertexBuffer(instancedBuffer, offset: 0, index: vertexIndex)
                 encoder.setFragmentBuffer(instancedBuffer, offset: 0, index: fragmentIndex)
             }else{
-                print("[GateEngine]: \(type(of: self)) Failed to attach uniforms to shader.")
+                Log.error("\(type(of: self)) Failed to attach uniforms to shader.")
             }
             vertexIndex += 1
             fragmentIndex += 1
@@ -480,7 +478,7 @@ extension MetalRenderer {
             }else if let instancedBuffer = device.makeBuffer(bytes: instancedUniforms.baseAddress!, length: instanceUniformsSize, options: .storageModeShared) {
                 encoder.setVertexBuffer(instancedBuffer, offset: 0, index: vertexIndex)
             }else{
-                print("GateEngine: \(type(of: self)) Failed to attach modelMatrix(s) to shader.")
+                Log.error("\(type(of: self)) Failed to attach modelMatrix(s) to shader.")
             }
         }
         vertexIndex += 1
@@ -498,7 +496,7 @@ extension MetalRenderer {
                 encoder.setVertexBuffer(instancedBuffer, offset: 0, index: vertexIndex)
                 encoder.setFragmentBuffer(instancedBuffer, offset: 0, index: fragmentIndex)
             }else{
-                print("GateEngine: \(type(of: self)) Failed to attach materials(s) to shader.")
+                Log.error("\(type(of: self)) Failed to attach materials(s) to shader.")
             }
         }
         vertexIndex += 1

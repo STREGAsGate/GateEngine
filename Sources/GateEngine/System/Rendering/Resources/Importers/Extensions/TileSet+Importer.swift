@@ -62,15 +62,15 @@ extension TileSet {
                       tileSize: copy.tileSize,
                       tiles: copy.tiles)
         }catch let DecodingError.dataCorrupted(context) {
-            throw "Failed to load \(Swift.type(of: self)): \(context)"
+            throw "corrupt data (\(Swift.type(of: self)): \(context))"
         }catch let DecodingError.keyNotFound(key, context) {
-            throw "Failed to load \(Swift.type(of: self)): Key '\(key)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
+            throw "key '\(key)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
         }catch let DecodingError.valueNotFound(value, context) {
-            throw "Failed to load \(Swift.type(of: self)): Value '\(value)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
+            throw "value '\(value)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
         }catch let DecodingError.typeMismatch(type, context)  {
-            throw "Failed to load \(Swift.type(of: self)): Type '\(type)' mismatch: \(context.debugDescription), codingPath: \(context.codingPath)"
+            throw "type '\(type)' mismatch: \(context.debugDescription), codingPath: \(context.codingPath)"
         }catch {
-            throw "Failed to load \(Swift.type(of: self)): \(error)"
+            throw "\(error)"
         }
     }
 }

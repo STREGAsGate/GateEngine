@@ -157,7 +157,7 @@ extension _RenderTargetProtocol {
             case let container as RenderTargetFillContainer:
                 drawRenderTarget(container)
             default:
-                print("\(type(of: drawable)) cannot be drawn and was skipped.")
+                Log.warn("\(type(of: drawable)) cannot be drawn and was skipped.")
                 continue
             }
         }
