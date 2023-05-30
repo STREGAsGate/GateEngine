@@ -28,13 +28,13 @@ class OpenGLRenderTarget: RenderTargetBackend {
         glTexImage2D(internalFormat: .depth, width: width, height: height, format: .depth, type: .float)
     }
     
-    let isWindow: Bool
-    init(isWindow: Bool) {
-        self.isWindow = isWindow
-        
+    var windowRenderTarget: RenderTarget? = nil
+    init(windowBacking: WindowBacking?) {
         self.framebuffer = glGenFramebuffers(count: 1)[0]
         self.colorTexture = glGenTextures(count: 1)[0]
         self.depthTexture = glGenTextures(count: 1)[0]
+        
+        self.windowRenderTarget = windowBacking != nil ? RenderTarget(backend: self) : nil
         
         glBindFramebuffer(framebuffer)
         
@@ -83,6 +83,16 @@ extension OpenGLRenderTarget {
     
     func didEndFrame() {
         glFlush()
+        if let windowRenderTarget {
+            glBindFramebuffer(0)
+            glViewport(x: 0, y: 0, width: Int(size.width), height: Int(size.height))
+            clear()
+            let renderer = Game.shared.renderer
+            let sizeOnlyRenderTarget = renderer.openGLBackend.sizeOnlyRenderTarget
+            sizeOnlyRenderTarget.size = self.size
+            renderer.draw(windowRenderTarget, into: sizeOnlyRenderTarget, options: [], sampler: .nearest)
+            glFlush()
+        }
     }
     
     func willBeginContent(matrices: Matrices?, viewport: Rect?) {
@@ -93,6 +103,7 @@ extension OpenGLRenderTarget {
             glViewport(x: 0, y: 0, width: Int(size.width), height: Int(size.height))
         }
     }
+    
     func didEndContent() {
         glFlush()
     }

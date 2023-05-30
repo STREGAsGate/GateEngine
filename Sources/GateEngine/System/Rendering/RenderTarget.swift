@@ -111,6 +111,10 @@ extension _RenderTargetProtocol {
         self.clearColor = .black
     }
     
+    internal init(backend: RenderTargetBackend) {
+        self.renderTargetBackend = backend
+    }
+    
     public private(set) lazy var texture: Texture = Texture(renderTarget: self)
 }
 
@@ -156,6 +160,9 @@ extension _RenderTargetProtocol {
                 print("\(type(of: drawable)) cannot be drawn and was skipped.")
                 continue
             }
+        }
+        if let window = self as? Window {
+            window.didDrawSomething = drawables.isEmpty == false
         }
         drawables.removeAll(keepingCapacity: true)
         renderTargetBackend.didEndFrame()
@@ -257,11 +264,11 @@ extension RenderTargetBackend {
 @_transparent
 @MainActor func getRenderTargetBackend(windowBacking: WindowBacking?) -> RenderTargetBackend {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
-    return OpenGLRenderTarget(isWindow: windowBacking != nil)
+    return OpenGLRenderTarget(windowBacking: windowBacking)
 #elseif canImport(MetalKit)
     #if canImport(GLKit) && !targetEnvironment(macCatalyst)
     if MetalRenderer.isSupported == false {
-        return OpenGLRenderTarget(isWindow: windowBacking != nil)
+        return OpenGLRenderTarget(windowBacking: windowBacking)
     }
     #endif
     return MetalRenderTarget(windowBacking: windowBacking)

@@ -49,6 +49,13 @@ internal class GLKitView: NSOpenGLView {
         CGLFlushDrawable(obj)
     }
     
+    override func update() {
+        super.update()
+        guard self.window != nil else {return}
+        let scale = Float(self.layer?.contentsScale ?? 1)
+        self.viewController.window.window.size = Size2(Float(self.bounds.size.width), Float(self.bounds.size.height)) * scale
+    }
+
     override open func draw(_ dirtyRect: NSRect) {
         drawOpenGL()
     }

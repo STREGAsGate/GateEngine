@@ -160,6 +160,16 @@ class OpenGLRenderer: RendererBackend {
         checkError()
 #endif
     }
+    
+    final class OpenGLSizeOnlyRenderTarget: _RenderTargetProtocol {
+        var texture: Texture {get {fatalError()}set{}}
+        var renderTargetBackend: RenderTargetBackend {get{fatalError()}set{}}
+        var drawables: [Any] {get{fatalError()}set{}}
+        func reshapeIfNeeded() {}
+        var size: Size2 = .zero
+        init() {}
+    }
+    let sizeOnlyRenderTarget = OpenGLSizeOnlyRenderTarget()
 }
 
 extension OpenGLRenderer {
@@ -515,6 +525,13 @@ extension OpenGLRenderer {
             fatalError("\(error)")
         }
         return shader
+    }
+}
+
+extension Renderer {
+    @_transparent
+    var openGLBackend: OpenGLRenderer {
+        return _backend as! OpenGLRenderer
     }
 }
 

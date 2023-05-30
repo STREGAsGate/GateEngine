@@ -48,8 +48,10 @@ import GameMath
         return Geometry(raw)
     }()
     
+    @inline(__always)
     func draw(_ renderTarget: any _RenderTargetProtocol, into destinationRenderTarget: any _RenderTargetProtocol, options: RenderTargetFillOptions, sampler: RenderTargetFillSampleFilter) {
         guard rectOriginCentered.state == .ready else {return}
+        guard let geometryBackend = Game.shared.resourceManager.geometryCache(for: rectOriginCentered.cacheKey)?.geometryBackend else {return}
         
         @_transparent
         func matrices(withSize size: Size2) -> Matrices {
@@ -78,15 +80,13 @@ import GameMath
         }
         let size = destinationRenderTarget.size
         
-        let scale = Size3(width: destinationRenderTarget.size.width, height: destinationRenderTarget.size.height, depth: 1)
+        let scale = Size3(width: size.width, height: size.height, depth: 1)
         let transform = Transform3(position: Position3(size.width / 2, size.height/2, 0), scale: scale)
         let matrices = matrices(withSize: size)
         let flags = DrawFlags(depthTest: .always, depthWrite: .disabled, winding: .clockwise)
         
-        if let geometryBackend = Game.shared.resourceManager.geometryCache(for: rectOriginCentered.cacheKey)?.geometryBackend {
-            let command = DrawCommand(backends: [geometryBackend], transforms: [transform], material: material, flags: flags)
-            _backend.draw(command, camera: nil, matrices: matrices, renderTarget: destinationRenderTarget)
-        }
+        let command = DrawCommand(backends: [geometryBackend], transforms: [transform], material: material, flags: flags)
+        _backend.draw(command, camera: nil, matrices: matrices, renderTarget: destinationRenderTarget)
     }
     
     @inline(__always)
@@ -96,6 +96,7 @@ import GameMath
 }
 
 @MainActor internal protocol RendererBackend {
+    var api: Renderer.BackendAPI {get}
     func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: any _RenderTargetProtocol)
 }
 
