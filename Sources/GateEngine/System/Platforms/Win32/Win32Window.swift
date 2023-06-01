@@ -528,6 +528,7 @@ extension Win32Window {
         if pressedModifiers.contains(.shift) {
             keyboardState[Array<UInt8>.Index(VK_SHIFT)] = 0xff
         }
+        
         var data: [WCHAR] = Array(repeating: 0, count: 256)
         if ToUnicode(UInt32(param), 0, keyboardState, &data, 256, 0) == 1 {
             if let character = String(windowsUTF16: data).first {
@@ -546,7 +547,7 @@ extension Win32Window {
 
         Log.warn("Key Code \(param) is unhandled!")
         
-        return .unhandledPlatformKeyCode(Int(param))
+        return .unhandledPlatformKeyCode(Int(param), nil)
     }
 }
 

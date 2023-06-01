@@ -5,13 +5,12 @@ Gate Engine includes intuitive APIs for loading resources, handling user inputs,
 ## Platform Support:
 | Platform | CI | Dependencies¹ | Render | Sound | Keyboard | Mouse | Touch | Gamepad |
 |---------:|:---|:--------------|:-------|:------|:----------|:-----|:------|:--------|
-| [**Windows**](https://www.swift.org/getting-started/#on-windows)² | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Windows.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) | None³ | ✔︎ | ◑ | ✔︎ | ✔︎ | ⛌ | ◑ Buggy |
+| [**Windows**](https://www.swift.org/getting-started/#on-windows)² | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Windows.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) | None | ✔︎ | ◑ | ✔︎ | ✔︎ | ⛌ | ◑ Buggy |
 | [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | None | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
 | [**Linux**](https://www.swift.org/getting-started/#on-linux)     | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Linux.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml) | *TBD* | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
-| [**iOS**/**tvOS**](https://apps.apple.com/us/app/xcode/id497799835)  | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | None | ✔︎ | ✔︎ | ⛌ | ⛌ | ✔︎ | ✔︎
+| [**iOS**/**tvOS**](https://apps.apple.com/us/app/xcode/id497799835)  | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | None | ✔︎ | ✔︎ | ✔︎ | ⛌ | ✔︎ | ✔︎
 | [**Android**](https://github.com/readdle/swift-android-toolchain)   | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Android.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Android.yml) | *TBD* | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
 | [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/HTML5.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/HTML5.yml) | None | ✔︎| ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
-
 
 Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
 <sub>
@@ -29,7 +28,13 @@ Add the package to your project like any other package and you're done.
 A suite of example projects is available at <a href="https://github.com/STREGAsGate/GateEngineDemos" target="_blank">Gate Engine Demos</a>.
 
 # History
-Gate Engine started it's life in 2016 as a "for fun" project. It used a basic scene graph and only worked on Apple devices. Over the years it's been worked on and refactored repeatedly with a goal of building a powerful API that is very easy to use.
+Gate Engine started it's life in 2016 as a "for fun" project that used the typical strategy, for hobby game engine projects, of high performance and small footprint. It used a basic scene graph and only worked on Apple devices.
+
+After years of frustration over the amount of time spent building games using "efficient" code, I decided to try making an engine that focused on making the process of building a game more fun. This lead to a custom math library that uses spoken language APIs instead like `let movedPosition = position.move(units, toward: direction)`. Then I added a high level renderer which allows loading content with a single initializer `let model = Geometry(path: "model.obj")`, and a drawing API that uses primitives in a layer style to easily reason about the outcome.
+
+After several years of slowly adding and replacing more and more APIs with approachable and fun ones, GateEngine was born. This repository is a fresh project and I'm slowly moving over features from my private engine, while fixing things that are less polished along the way.
+
+This project was a massive undertaking, and was created to be enjoyed. So go make something awesome!
 
 ## Community & Followables
 [![Discord](https://img.shields.io/discord/641809158051725322?label=Hang%20Out&logo=Discord&style=social)](https://discord.gg/5JdRJhD)
@@ -42,4 +47,4 @@ If you appreciate this project, and want it to continue, then please consider pu
 Every little bit helps! Support With:
 <a href="https://github.com/sponsors/STREGAsGate" target="_blank">GitHub</a>,
 <a href="https://ko-fi.com/STREGAsGate" target="_blank">Ko-fi</a>,
-<a href="https://www.patreon.com/STREGAsGate" target="_blank">Pateron</a>
+<a href="https://www.patreon.com/STREGAsGate" target="_blank">Patreon</a>
