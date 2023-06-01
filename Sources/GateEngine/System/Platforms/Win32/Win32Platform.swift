@@ -95,8 +95,8 @@ import Foundation
     }
     
     func systemTime() -> Double {
-        var time = timespec()
-        if clock_gettime(CLOCK_MONOTONIC_RAW, &time) != 0 {
+        var time: timespec = timespec()
+        if clock_gettime(1, &time) != 0 {
             return -1
         }
         return Double(time.tv_sec) + (Double(time.tv_nsec) / 1e+9)

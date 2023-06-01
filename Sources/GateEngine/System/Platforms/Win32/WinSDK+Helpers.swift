@@ -19,9 +19,9 @@ internal var QS_ALLINPUT: DWORD {
 
 @inline(__always)
 func getFILETIMEoffset() -> WinSDK.LARGE_INTEGER {
-    var s = WinSDK.SYSTEMTIME()
-    var f = WinSDK.FILETIME()
-    var t = WinSDK.LARGE_INTEGER()
+    var s: SYSTEMTIME = WinSDK.SYSTEMTIME()
+    var f: FILETIME = WinSDK.FILETIME()
+    var t: LARGE_INTEGER = WinSDK.LARGE_INTEGER()
 
     s.wYear = 1970
     s.wMonth = 1
@@ -31,26 +31,30 @@ func getFILETIMEoffset() -> WinSDK.LARGE_INTEGER {
     s.wSecond = 0
     s.wMilliseconds = 0
     WinSDK.SystemTimeToFileTime(&s, &f)
-    t.QuadPart = f.dwHighDateTime
+    t.QuadPart = WinSDK.LONGLONG(f.dwHighDateTime)
     t.QuadPart <<= 32
-    t.QuadPart |= f.dwLowDateTime
+    t.QuadPart |= Int64(f.dwLowDateTime)
     return t
 }
 
-fileprivate var offset = WinSDK.LARGE_INTEGER()
+fileprivate var offset: WinSDK.LARGE_INTEGER = WinSDK.LARGE_INTEGER()
 fileprivate var frequencyToMicroseconds: Double = 0
-fileprivate var initialized = false
-fileprivate var usePerformanceCounter = false
+fileprivate var initialized: Bool = false
+fileprivate var usePerformanceCounter: Bool = false
+internal struct timespec { 
+    var tv_sec: Double = 0
+    var tv_nsec: Double = 0
+}
 @inline(__always)
-internal func clock_gettime(_ X: Int, tv: inout WinSDK.timeval) -> Int {
-    var t = LARGE_INTEGER()
-    var f = FILETIME()
+internal func clock_gettime(_ X: Int, _ tv: inout timespec) -> Int {
+    var t: WinSDK.LARGE_INTEGER = LARGE_INTEGER()
+    var f: WinSDK.FILETIME = FILETIME()
     var microseconds: Double = 0
 
     if (!initialized) {
-        var performanceFrequency = WinSDK.LARGE_INTEGER()
+        var performanceFrequency: WinSDK.LARGE_INTEGER = WinSDK.LARGE_INTEGER()
         initialized = true
-        usePerformanceCounter = WinSDK.QueryPerformanceFrequency(&performanceFrequency) != 0
+        usePerformanceCounter = WinSDK.QueryPerformanceFrequency(&performanceFrequency)
         if (usePerformanceCounter) {
             WinSDK.QueryPerformanceCounter(&offset)
             frequencyToMicroseconds = Double(performanceFrequency.QuadPart) / 1000000
@@ -63,16 +67,16 @@ internal func clock_gettime(_ X: Int, tv: inout WinSDK.timeval) -> Int {
         WinSDK.QueryPerformanceCounter(&t)
     }else{
         WinSDK.GetSystemTimeAsFileTime(&f)
-        t.QuadPart = f.dwHighDateTime
+        t.QuadPart = LONGLONG(f.dwHighDateTime)
         t.QuadPart <<= 32
-        t.QuadPart |= f.dwLowDateTime
+        t.QuadPart |= Int64(f.dwLowDateTime)
     }
 
     t.QuadPart -= offset.QuadPart
     microseconds = Double(t.QuadPart) / frequencyToMicroseconds
-    t.QuadPart = microseconds
-    tv->tv_sec = t.QuadPart / 1000000
-    tv->tv_usec = t.QuadPart % 1000000
+    t.QuadPart = LONGLONG(microseconds)
+    tv.tv_sec = Double(t.QuadPart) / 1000000
+    tv.tv_nsec = Double(t.QuadPart).truncatingRemainder(dividingBy: 1000000)
     return 0
 }
 
