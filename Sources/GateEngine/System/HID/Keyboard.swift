@@ -38,6 +38,28 @@ public extension Keyboard {
         internal var currentRecipt: UInt8 = 0
         
         nonisolated public var description: String {
+            if case .unhandledPlatformKeyCode(let keyCode, let character) = key {
+                let keyCodeString: String
+                if let keyCode {
+                    keyCodeString = "\(keyCode)"
+                }else{
+                    keyCodeString = "nil"
+                }
+                var characterString: String
+                if let character, character.isEmpty == false {
+                    switch character {
+                    case "\r":
+                        characterString = "\\r"
+                    case "\n":
+                        characterString = "\\n"
+                    default:
+                        characterString = character
+                    }
+                }else{
+                    characterString = "nil"
+                }
+                return "unhandledPlatformKeyCode(\(keyCodeString), \(characterString))"
+            }
             return "\(key)"
         }
         

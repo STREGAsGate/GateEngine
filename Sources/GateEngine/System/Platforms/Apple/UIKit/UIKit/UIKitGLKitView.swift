@@ -10,6 +10,10 @@
 import Foundation
 import GLKit
 
+class VK: GLKViewController {
+    
+}
+
 internal class GLKitView: GLKView {
     unowned let viewController: UIKitViewController
     static let shareGroup = EAGLSharegroup()
@@ -18,13 +22,7 @@ internal class GLKitView: GLKView {
         self.viewController = viewController
         let context = EAGLContext(api: .openGLES3, sharegroup: Self.shareGroup)!
         super.init(frame: CGRect(origin: .zero, size: size), context: context)
-            
         self.setup()
-        
-        #if os(iOS)
-        self.isMultipleTouchEnabled = true
-        self.isExclusiveTouch = true
-        #endif
     }
     
     required init(coder: NSCoder) {
@@ -32,18 +30,23 @@ internal class GLKitView: GLKView {
     }
     
     func setup() {
+        #if os(iOS)
+        self.isMultipleTouchEnabled = true
+        self.isExclusiveTouch = true
+        #endif
         EAGLContext.setCurrent(context)
         self.bindDrawable()
         glFlush()
     }
     
-    override func draw(_ rect: CGRect) {
-        drawOpenUG()
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        self.viewController.window.window.newSize = Size2(Float(self.drawableWidth), Float(self.drawableHeight))
     }
     
-    func drawOpenUG() {        
-        EAGLContext.setCurrent(context)
+    override func draw(_ rect: CGRect) {
         self.bindDrawable()
+        viewController.window.window?.vSyncCalled()
         glFlush()
     }
 }

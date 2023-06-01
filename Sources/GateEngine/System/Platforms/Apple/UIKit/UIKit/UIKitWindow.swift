@@ -37,7 +37,7 @@ class UIKitWindow: WindowBacking {
         displayLink.add(to: .main, forMode: .default)
         if #available(iOS 15.0, tvOS 15.0, *) {
             displayLink.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: Float(self.uiWindow.screen.maximumFramesPerSecond))
-        } else {
+        }else{
             displayLink.preferredFramesPerSecond = self.uiWindow.screen.maximumFramesPerSecond
         }
         return displayLink
