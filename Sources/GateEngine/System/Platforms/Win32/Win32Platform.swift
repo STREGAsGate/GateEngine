@@ -95,7 +95,11 @@ import Foundation
     }
     
     func systemTime() -> Double {
-        return Date.timeIntervalSinceReferenceDate
+        var time: timespec = timespec()
+        if clock_gettime(1, &time) != 0 {
+            return -1
+        }
+        return Double(time.tv_sec) + (Double(time.tv_nsec) / 1e+9)
     }
     
     var supportsMultipleWindows: Bool {
