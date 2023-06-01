@@ -77,11 +77,16 @@ class UIKitPlatform: InternalPlatform {
     }
     
     var supportsMultipleWindows: Bool {
-        return false
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad, .mac:
+            return true
+        default:
+            return false
+        }
     }
 }
 
-internal final class UIKItAppDelegate: NSObject, UIApplicationDelegate {
+internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
     func applicationDidFinishLaunching(_ application: UIApplication) {
         Game.shared.didFinishLaunching()
         
@@ -119,14 +124,45 @@ internal final class UIKItAppDelegate: NSObject, UIApplicationDelegate {
         }
     }
     
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        let config = UISceneConfiguration(name: connectingSceneSession.configuration.name, sessionRole: connectingSceneSession.role)
+        config.delegateClass = UIKitWindowSceneDelegate.self
+        return config
+    }
+    
+    func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
+        
+    }
+    
     func applicationWillTerminate(_ application: UIApplication) {
         Game.shared.willTerminate()
+    }
+}
+
+internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        guard let windowScene = (scene as? UIWindowScene) else {return}
+        do {
+            Game.shared.renderingIsPermitted = true
+            let window: Window
+            if Game.shared.windowManager.windows.isEmpty {
+                window = try Game.shared.delegate.createMainWindow(game: Game.shared, identifier: Game.shared.windowManager.mainWindowIdentifier)
+            }else{
+                window = try Game.shared.windowManager.createWindow(identifier: session.persistentIdentifier, style: .system)
+            }
+            let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
+            uiWindow.windowScene = windowScene
+            Game.shared.renderingIsPermitted = false
+        }catch{
+            Log.error(error)
+        }
     }
 }
 
 extension UIKitPlatform {
     @MainActor func main() {
         if Bundle.main.bundleIdentifier == nil {
+            Log.error("Info.plist not found.")
             var url = URL(fileURLWithPath: CommandLine.arguments[0])
             let plist = """
             <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -152,11 +188,11 @@ extension UIKitPlatform {
             url.deleteLastPathComponent()
             url.appendPathComponent("Info.plist")
             try? plist.write(to: url, atomically: false, encoding: .utf8)
-            Log.info("Creating generic Info.plist then quitting...")
+            Log.info("Creating generic Info.plist then quitting... You need to manually start the Game again.")
             exit(0)
         }
         
-        UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, nil, NSStringFromClass(UIKItAppDelegate.self))
+        UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, nil, NSStringFromClass(UIKitApplicationDelegate.self))
     }
 }
 

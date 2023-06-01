@@ -36,11 +36,11 @@ internal class MetalView: MTKView, MTKViewDelegate {
     }
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        (self.window as? UGNSWindow)?.window.newSize = Size2(size)
+        self.viewController.window.window?.newSize = Size2(size)
     }
 
     func draw(in view: MTKView) {
-        viewController.window.window.vSyncCalled()
+        viewController.window.window?.vSyncCalled()
     }
 
     override var isFlipped: Bool {

@@ -50,12 +50,12 @@ public extension HID {
 }
 extension HID.GamePadManger {
     internal func addNewlyConnectedGamePad(_ gamePad: GamePad) {
-        Log.info("GamePad connected: \(gamePad.interpreter.description(of: gamePad)), symbols: \(gamePad.symbols)")
+        Log.info("GamePad Connected: \(gamePad.interpreter.description(of: gamePad)), Symbols: \(gamePad.symbols)")
         self.all.append(gamePad)
     }
     
     internal func removedDisconnectedGamePad(_ gamePad: GamePad) {
-        Log.info("GamePad disconnected:", gamePad.interpreter.description(of: gamePad))
+        Log.info("GamePad Disconnected:", gamePad.interpreter.description(of: gamePad))
         gamePad.state = .disconnected
         all.removeAll(where: {$0 === gamePad})
     }

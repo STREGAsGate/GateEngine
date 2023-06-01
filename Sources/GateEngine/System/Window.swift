@@ -224,11 +224,17 @@ public struct KeyboardModifierMask: OptionSet {
     public typealias RawValue = UInt32
     public let rawValue: RawValue
 
+    /// The Platform specific key Command for Apple, Flag for Windows, etc...
     public static let host = KeyboardModifierMask(rawValue: 1 << 1)
+    /// Any shift key is down
     public static let shift = KeyboardModifierMask(rawValue: 1 << 2)
+    /// Any control key is down
     public static let control = KeyboardModifierMask(rawValue: 1 << 3)
+    /// Any alt key is down. This is option for Apple
     public static let alt = KeyboardModifierMask(rawValue: 1 << 4)
-
+    /// capslock is enabled
+    public static let capsLock = KeyboardModifierMask(rawValue: 1 << 5)
+    
     public init(rawValue: UInt32) {
         self.rawValue = rawValue
     }
@@ -257,18 +263,38 @@ extension KeyboardModifierMask: CustomStringConvertible {
 }
 
 public enum KeyboardKey: Hashable {
-    case nothing
+    /// The Esc key
     case escape
-    case function(Int)
+    /**
+     F keys on the top of a keyboard
+     - parameter number: The F key's number F1, F2, F3, etc...
+     */
+    case function(_ number: Int)
+    /// An alphabet or punctuation character
     case character(Character)
+    /// The backspace or delete key
     case backspace
+    /// The spacebar
     case space
+    /// Any return key
     case `return`
+    /// The tab key
     case tab
+    /// The up arrow
     case up
+    /// The down arrow
     case down
+    /// The left arrow
     case left
+    ///  The right arrow
     case right
+    /**
+     Gives an opportunity to handle keyboard events not handled by GateEngine.
+     
+     - parameter int: A key code represented as an Int
+     - parameter string: A key represented as a String
+     */
+    case unhandledPlatformKeyCode(_ int: Int?, _ string: String?)
 }
 
 extension KeyboardKey: ExpressibleByStringLiteral {

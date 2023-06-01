@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public extension Game {
+@MainActor public extension Game {
     @inlinable @inline(__always)
     var entities: ContiguousArray<Entity> {
         return ecs.sortedEntities()
@@ -80,7 +80,7 @@ public extension Game {
     }
 }
 
-internal extension Game {
+@MainActor internal extension Game {
     @_transparent
     func system<T: PlatformSystem>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType) as! T

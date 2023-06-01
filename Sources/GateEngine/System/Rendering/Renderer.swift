@@ -18,7 +18,7 @@ public enum RenderingAPI {
 @MainActor public final class Renderer {
     let _backend: RendererBackend = getDefaultBackend()
     @inline(__always)
-    public var api: RenderingAPI {_backend.renderingAPI}
+    nonisolated public var api: RenderingAPI {_backend.renderingAPI}
     
     @usableFromInline
     lazy var rectOriginCentered: Geometry = {
@@ -106,7 +106,7 @@ public enum RenderingAPI {
 }
 
 @MainActor internal protocol RendererBackend {
-    var renderingAPI: RenderingAPI {get}
+    nonisolated var renderingAPI: RenderingAPI {get}
     func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: any _RenderTargetProtocol)
 }
 

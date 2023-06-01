@@ -337,7 +337,7 @@ class WASIWindow: WindowBacking {
         case "arrowdown": return .down
         case "arrowleft": return .left
         case "arrowright": return .right
-        default: return .nothing
+        default: return .unhandledPlatformKeyCode(nil, key)
         }
     }
     

@@ -155,6 +155,8 @@ fileprivate class AppDelegate: NSObject, NSApplicationDelegate {
 extension AppKitPlatform {
     @MainActor func main() {
         if Bundle.main.bundleIdentifier == nil {
+            Log.info("Info.plist not found.")
+            Log.info("Creating generic Info.plist")
             var url = URL(fileURLWithPath: CommandLine.arguments[0])
             let plist = """
             <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -180,16 +182,28 @@ extension AppKitPlatform {
             url.deleteLastPathComponent()
             url.appendPathComponent("Info.plist")
             try? plist.write(to: url, atomically: false, encoding: .utf8)
-            Log.info("Creating generic Info.plist")
-            let alert = NSAlert()
-            alert.messageText = "Created mock Info.plist in the build directory. This required to trick macOS into thinking your executable is an App. Game Controllers may not function without it.\n\nClick continue to ignore. Quit and launch again to ensure everything functions correctly."
-            alert.addButton(withTitle: "Quit")
-            alert.addButton(withTitle: "Continue")
-            switch alert.runModal() {
-            case .alertFirstButtonReturn:
-                exit(0)
-            default:
-                break
+            
+            do {
+                if Log.isXcode {
+                    let alert = NSAlert()
+                    alert.messageText = "Created mock Info.plist in the build directory. This is required so macOS see's your executable as an App. Game Controllers may not function without it.\n\nClick continue to ignore. Quit and launch again to ensure everything functions correctly."
+                    alert.addButton(withTitle: "Quit")
+                    alert.addButton(withTitle: "Continue")
+                    switch alert.runModal() {
+                    case .alertFirstButtonReturn:
+                        exit(0)
+                    default:
+                        break
+                    }
+                }else{
+                    // Restart now if this is not being debugged by Xcode
+                    Log.info("Restarting...")
+                    let task = Process()
+                    task.launchPath = "/usr/bin/open"
+                    task.arguments = [CommandLine.arguments[0]]
+                    task.launch()
+                    exit(0)
+                }
             }
         }
         

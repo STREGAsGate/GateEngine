@@ -26,7 +26,7 @@ public struct LaunchOptions: OptionSet {
      - parameter game: The game to create the window from
      - parameter identifier: The identifier to give the window. You must use this identifier.
      */
-    func createMainWindow(game: Game, identifier: String) throws
+    func createMainWindow(game: Game, identifier: String) throws -> Window
     
     /// Might be called immediatley before the app closes.
     func willTerminate(game: Game)
@@ -69,8 +69,8 @@ public extension GameDelegate {
         Game.shared.internalPlatform.main()
     }
     
-    func createMainWindow(game: Game, identifier: String) throws {
-        try game.windowManager.createWindow(identifier: identifier, style: .system)
+    func createMainWindow(game: Game, identifier: String) throws -> Window {
+        return try game.windowManager.createWindow(identifier: identifier, style: .system)
     }
 }
 

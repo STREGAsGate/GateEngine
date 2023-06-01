@@ -14,16 +14,20 @@ import AppKit
 @available(macOS 10.11, *)
 internal class AppKitViewController: GCEventViewController {
     unowned let window: AppKitWindow
-    init(window: AppKitWindow, size: Size2) {
+    init(window: AppKitWindow) {
         self.window = window
         super.init(nibName: nil, bundle: nil)
+    }
+    
+    override func loadView() {
+        let size = window.frame.size.cgSize
         #if GATEENGINE_FORCE_OPNEGL_APPLE
-        self.view = GLKitView(viewController: self, size: CGSize(size))
+        self.view = GLKitView(viewController: self, size: size)
         #else
         if MetalRenderer.isSupported {
-            self.view = MetalView(viewController: self, size: CGSize(size))
+            self.view = MetalView(viewController: self, size: size)
         }else{
-            self.view = GLKitView(viewController: self, size: CGSize(size))
+            self.view = GLKitView(viewController: self, size: size)
         }
         #endif
     }

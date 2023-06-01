@@ -444,90 +444,109 @@ extension Win32Window {
 
     @inline(__always)
     func keyFromWPARAM(_ param: WPARAM) -> KeyboardKey {
-        var key: KeyboardKey?
-
-        switch Int32(param) {
-        case VK_ESCAPE:
-            key = .escape
-        case VK_BACK:
-            key = .backspace
-        case VK_UP:
-            key = .up
-        case VK_DOWN:
-            key = .down
-        case VK_LEFT:
-            key = .left
-        case VK_RIGHT:
-            key = .right
-        case VK_F1:
-            key = .function(1)
-        case VK_F2:
-            key = .function(2)
-        case VK_F3:
-            key = .function(3)
-        case VK_F4:
-            key = .function(4)
-        case VK_F5:
-            key = .function(5)
-        case VK_F6:
-            key = .function(6)
-        case VK_F7:
-            key = .function(7)
-        case VK_F8:
-            key = .function(8)
-        case VK_F9:
-            key = .function(9)
-        case VK_F10:
-            key = .function(10)
-        case VK_F11:
-            key = .function(11)
-        case VK_F12:
-            key = .function(12)
-        case VK_F13:
-            key = .function(13)
-        case VK_F14:
-            key = .function(14)
-        case VK_F15:
-            key = .function(15)
-        case VK_F16:
-            key = .function(16)
-        case VK_F17:
-            key = .function(17)
-        case VK_F18:
-            key = .function(18)
-        case VK_F19:
-            key = .function(19)
-        case VK_F20:
-            key = .function(20)
-        default:
-            break
+        let key = Int32(param)
+        if key == WinSDK.VK_ESCAPE {
+            return .escape
+        }
+        if key == WinSDK.VK_BACK {
+            return .backspace
+        }
+        if key == WinSDK.VK_UP {
+            return .up
+        }
+        if key == WinSDK.VK_DOWN {
+            return .down
+        }
+        if key == WinSDK.VK_LEFT {
+            return .left
+        }
+        if key == WinSDK.VK_RIGHT {
+            return .right
+        }
+        if key == WinSDK.VK_F1 {
+            return .function(1)
+        }
+        if key == WinSDK.VK_F2 {
+            return .function(2)
+        }
+        if key == WinSDK.VK_F3 {
+            return .function(3)
+        }
+        if key == WinSDK.VK_F4 {
+            return .function(4)
+        }
+        if key == WinSDK.VK_F5 {
+            return .function(5)
+        }
+        if key == WinSDK.VK_F6 {
+            return .function(6)
+        }
+        if key == WinSDK.VK_F7 {
+            return .function(7)
+        }
+        if key == WinSDK.VK_F8 {
+            return .function(8)
+        }
+        if key == WinSDK.VK_F9 {
+            return .function(9)
+        }
+        if key == WinSDK.VK_F10 {
+            return .function(10)
+        }
+        if key == WinSDK.VK_F11 {
+            return .function(11)
+        }
+        if key == WinSDK.VK_F12 {
+            return .function(12)
+        }
+        if key == WinSDK.VK_F13 {
+            return .function(13)
+        }
+        if key == WinSDK.VK_F14 {
+            return .function(14)
+        }
+        if key == WinSDK.VK_F15 {
+            return .function(15)
+        }
+        if key == WinSDK.VK_F16 {
+            return .function(16)
+        }
+        if key == WinSDK.VK_F17 {
+            return .function(17)
+        }
+        if key == WinSDK.VK_F18 {
+            return .function(18)
+        }
+        if key == WinSDK.VK_F19 {
+            return .function(19)
+        }
+        if key == WinSDK.VK_F20 {
+            return .function(20)
         }
 
-        if key == nil {
-            var keyboardState = Array<UInt8>(repeating: 0, count: 256)
-            if pressedModifiers.contains(.shift) {
-                keyboardState[Array<UInt8>.Index(VK_SHIFT)] = 0xff
-            }
-            var data: [WCHAR] = Array(repeating: 0, count: 256)
-            if ToUnicode(UInt32(param), 0, keyboardState, &data, 256, 0) == 1 {
-                if let character = String(windowsUTF16: data).first {
-                    switch character {
-                    case "\r":
-                        key = .return
-                    case "\t":
-                        key = .tab
-                    case " ":
-                        key = .space
-                    default:
-                        key = .character(character)
-                    }
+        var keyboardState = Array<UInt8>(repeating: 0, count: 256)
+        if pressedModifiers.contains(.shift) {
+            keyboardState[Array<UInt8>.Index(VK_SHIFT)] = 0xff
+        }
+        var data: [WCHAR] = Array(repeating: 0, count: 256)
+        if ToUnicode(UInt32(param), 0, keyboardState, &data, 256, 0) == 1 {
+            if let character = String(windowsUTF16: data).first {
+                if character == "\r" {
+                    return .return
                 }
+                if character == "\t" {
+                    return .tab
+                }
+                if character == " " {
+                    return .space
+                }
+                return .character(character)
             }
         }
 
-
-        return key ?? .nothing
         Log.warn("Key Code \(param) is unhandled!")
+        
+        return .unhandledPlatformKeyCode(Int(param))
     }
 }
 

@@ -19,7 +19,7 @@ public final class CameraComponent: Component {
     public static let componentID: ComponentID = ComponentID()
 }
 
-public extension Game {
+@MainActor public extension Game {
     var cameraEntity: Entity? {
         return self.entities.first(where: {$0.component(ofType: CameraComponent.self)?.isActive == true})
     }

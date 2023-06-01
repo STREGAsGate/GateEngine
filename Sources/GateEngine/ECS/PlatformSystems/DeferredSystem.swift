@@ -42,7 +42,7 @@ internal extension PlatformSystem {
     }
 }
 
-internal extension Game {
+@MainActor internal extension Game {
     @usableFromInline @inline(__always)
     func `defer`(_ block: @escaping DeferredBlock) {
         let system = self.system(ofType: DeferredSystem.self)

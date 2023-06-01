@@ -12,7 +12,7 @@ import MetalKit
 import GameMath
 
 class UIKitWindow: WindowBacking {
-    unowned let window: Window
+    weak var window: Window!
     let uiWindow: UIWindow
     let identifier: String
     let style: WindowStyle
@@ -23,22 +23,34 @@ class UIKitWindow: WindowBacking {
         self.uiWindow = UIWindow()
         self.identifier = identifier
         self.style = style
-        
         self.uiWindow.rootViewController = UIKitViewController(window: self)
+        self.uiWindow.translatesAutoresizingMaskIntoConstraints = true
     }
     
     lazy private(set) var displayLink: CADisplayLink = {
-        let displayLink = CADisplayLink(target: self, selector: #selector(getFrame(_ :)))
+        if let displayLink = self.uiWindow.screen.displayLink(withTarget: self, selector: #selector(self.getFrame(_ :))) {
+            displayLink.add(to: .main, forMode: .default)
+            return displayLink
+        }
+        // Fallback
+        let displayLink = CADisplayLink(target: self, selector: #selector(self.getFrame(_ :)))
         displayLink.add(to: .main, forMode: .default)
+        if #available(iOS 15.0, tvOS 15.0, *) {
+            displayLink.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: Float(self.uiWindow.screen.maximumFramesPerSecond))
+        } else {
+            displayLink.preferredFramesPerSecond = self.uiWindow.screen.maximumFramesPerSecond
+        }
         return displayLink
     }()
-    
+
     @objc func getFrame(_ displayLink: CADisplayLink) {
-        self.uiWindow.rootViewController!.view.setNeedsDisplay()
+        self.uiWindow.rootViewController?.view.setNeedsDisplay()
     }
     
     func show() {
-        _ = displayLink
+        if Game.shared.renderingAPI == .openGL {
+            _ = displayLink
+        }
         uiWindow.makeKeyAndVisible()
         self.state = .shown
     }
@@ -48,7 +60,9 @@ class UIKitWindow: WindowBacking {
     }
     
     deinit {
-        displayLink.invalidate()
+        if Game.shared.renderingAPI == .openGL {
+            displayLink.invalidate()
+        }
     }
 }
 
@@ -69,22 +83,20 @@ extension UIKitWindow {
             return Rect(uiWindow.frame)
         }
         set {
-            // Can't set a UIKit window frame
+            uiWindow.frame = newValue.cgRect
         }
     }
     var safeAreaInsets: Insets {
-        get {
-            if #available(iOS 11, tvOS 11, *) {
-                let insets = uiWindow.safeAreaInsets
-                return Insets(top: Float(insets.top), leading: Float(insets.left), bottom: Float(insets.bottom), trailing: Float(insets.right))
-            }
-            return .zero
+        if #available(iOS 11, tvOS 11, macCatalyst 13, *) {
+            let insets = uiWindow.safeAreaInsets
+            return Insets(top: Float(insets.top), leading: Float(insets.left), bottom: Float(insets.bottom), trailing: Float(insets.right))
         }
+        return .zero
     }
     
     @inline(__always)
     var backingSize: Size2 {
-        return frame.size * Float(uiWindow.traitCollection.displayScale)
+        return frame.size * backingScaleFactor
     }
     
     @inline(__always)

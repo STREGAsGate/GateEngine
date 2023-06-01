@@ -443,7 +443,7 @@ public extension Entity {
 //    }
 }
 
-internal extension Game {
+@MainActor internal extension Game {
     @_transparent
     var audio: AudioSystem {
         return system(ofType: AudioSystem.self)

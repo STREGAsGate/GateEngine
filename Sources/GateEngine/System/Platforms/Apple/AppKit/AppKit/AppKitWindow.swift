@@ -12,7 +12,7 @@ import AppKit
 import MetalKit
 
 class AppKitWindow: WindowBacking {
-    unowned let window: Window
+    weak var window: Window!
     let nsWindowController: NSWindowController
     let style: WindowStyle
     let identifier: String
@@ -46,7 +46,7 @@ class AppKitWindow: WindowBacking {
             nsWindow.titleVisibility = .hidden
         }
         
-        nsWindow.contentViewController = AppKitViewController(window: self, size: size)
+        nsWindow.contentViewController = AppKitViewController(window: self)
 
         nsWindow.center()
         nsWindow.setFrameAutosaveName(identifier)
@@ -264,8 +264,8 @@ extension AppKitWindow {
     }
 }
 
-class UGNSWindow: AppKit.NSWindow {
-    unowned let window: Window
+final class UGNSWindow: AppKit.NSWindow {
+    weak var window: Window!
 
     init(window: Window, contentRect: NSRect, styleMask style: NSWindow.StyleMask, backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool) {
         self.window = window
@@ -601,22 +601,26 @@ class UGNSWindow: AppKit.NSWindow {
 
         Log.warn("Key Code \(event.keyCode) is unhandled!")
 
-        return .nothing
+        return .unhandledPlatformKeyCode(Int(event.keyCode), nil)
     }
 
     func modifiersFromEvent(_ event: NSEvent) -> KeyboardModifierMask {
+        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         var modifiers: KeyboardModifierMask = []
-        if event.modifierFlags.contains(.command) {
+        if flags.contains(.command) {
             modifiers.insert(.host)
         }
-        if event.modifierFlags.contains(.control) {
+        if flags.contains(.control) {
             modifiers.insert(.control)
         }
-        if event.modifierFlags.contains(.option) {
+        if flags.contains(.option) {
             modifiers.insert(.alt)
         }
-        if event.modifierFlags.contains(.shift) {
+        if flags.contains(.shift) {
             modifiers.insert(.shift)
+        }
+        if flags.contains(.capsLock) {
+            modifiers.insert(.capsLock)
         }
         return modifiers
     }

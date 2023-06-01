@@ -461,7 +461,7 @@ public extension Collision3DSystem {
     }
 }
 
-public extension Game {
+@MainActor public extension Game {
     @_transparent
     var collision3DSystem: Collision3DSystem {
         return self.system(ofType: Collision3DSystem.self)

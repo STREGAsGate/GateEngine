@@ -8,31 +8,32 @@
 import Foundation
 import GameMath
 
-@MainActor public final class Game {
+public final class Game {
     @usableFromInline
-    internal let internalPlatform: InternalPlatform = makeDefaultPlatform()
-    public var platform: Platform {return internalPlatform}
-    public let delegate: GameDelegate
+    @MainActor internal let internalPlatform: InternalPlatform = makeDefaultPlatform()
+    @MainActor public var platform: Platform {return internalPlatform}
+    @MainActor public let delegate: GameDelegate
     
-    public private(set) lazy var state: State = internalPlatform.loadState()
+    @MainActor public private(set) lazy var state: State = internalPlatform.loadState()
     
-    public let isHeadless: Bool
-    internal init(delegate: GameDelegate) {
+    nonisolated public let isHeadless: Bool
+    @MainActor internal init(delegate: GameDelegate) {
         self.delegate = delegate
         self.isHeadless = delegate.isHeadless()
     }
     
     /// The graphics library being used to render.
-    public var renderingAPI: RenderingAPI {renderer.api}
-    @usableFromInline let renderer: Renderer = Renderer()
-    @usableFromInline internal var renderingIsPermitted: Bool = false
+    nonisolated public var renderingAPI: RenderingAPI {renderer.api}
+    @MainActor @usableFromInline let renderer: Renderer = Renderer()
+    @MainActor @usableFromInline internal var renderingIsPermitted: Bool = false
     
-    public private(set) lazy var windowManager: WindowManager = WindowManager(self)
-    @usableFromInline private(set) lazy var ecs: ECSContext = ECSContext(game: self)
-    @usableFromInline private(set) lazy var hid: HID = HID()
-    @usableFromInline private(set) lazy var resourceManager: ResourceManager = ResourceManager(game: self)
+    @MainActor public private(set) lazy var windowManager: WindowManager = WindowManager(self)
+    @MainActor @usableFromInline private(set) lazy var ecs: ECSContext = ECSContext(game: self)
+    @MainActor @usableFromInline private(set) lazy var hid: HID = HID()
+    @MainActor @usableFromInline private(set) lazy var resourceManager: ResourceManager = ResourceManager(game: self)
     
-    func didFinishLaunching() {
+    @MainActor func didFinishLaunching() {
+        #if !GATEENGINE_PLATFORM_CREATES_MAINWINDOW
         if isHeadless == false {
             do {
                 // Allow the main window to be created even though we're not rendering
@@ -44,7 +45,8 @@ import GameMath
                 Log.fatalError("Failed to create main window. \(error)")
             }
         }
-        #if !os(WASI)
+        #endif
+        #if !GATEENGINE_PLATFORM_DEFERS_LAUNCH
         self.addPlatformSystems()
         self.delegate.didFinishLaunching(game: self, options: [])
         #endif
@@ -52,19 +54,19 @@ import GameMath
         self.gameLoop()
         #endif
     }
-    func willTerminate() {
+    @MainActor func willTerminate() {
         self.delegate.willTerminate(game: self)
     }
     
-    internal func addPlatformSystems() {
+    @MainActor internal func addPlatformSystems() {
         self.insertSystem(HIDSystem.self)
         self.insertSystem(AudioSystem.self)
         self.insertSystem(CacheSystem.self)
     }
     
     #if !GATEENGINE_PLATFORM_SINGLETHREADED
-    private var previousTime: Double = 0
-    internal func gameLoop() {
+    @MainActor private var previousTime: Double = 0
+    @MainActor internal func gameLoop() {
         Task(priority: .high) {@MainActor in
             let now: Double = Game.shared.internalPlatform.systemTime()
             let deltaTime: Double = now - self.previousTime
@@ -76,12 +78,14 @@ import GameMath
         }
     }
     #endif
-    
+}
+
+extension Game {
     @usableFromInline
     static var shared: Game! = nil
 }
 
-extension Game {
+@MainActor extension Game {
     public func saveState() throws {
         try internalPlatform.saveState(state)
     }

@@ -16,27 +16,45 @@ internal class MetalView: MTKView, MTKViewDelegate {
     
     init(viewController: UIKitViewController, size: CGSize) {
         self.viewController = viewController
-        super.init(frame: CGRect(origin: .zero, size: size), device: Game.shared.renderer.device)
-        self.delegate = self
-        
-        #if os(iOS)
-        self.isMultipleTouchEnabled = true
-        self.isExclusiveTouch = true
-        #endif
-
-        self.translatesAutoresizingMaskIntoConstraints = false
+        super.init(frame: viewController.window.uiWindow.bounds, device: Game.shared.renderer.device)
+        self.setup()
     }
     
     required init(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func setup() {
+        self.delegate = self
+        self.preferredFramesPerSecond = self.window?.screen.maximumFramesPerSecond ?? 60
+        self.clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 1)
+        #if os(iOS)
+        self.isMultipleTouchEnabled = true
+        self.isExclusiveTouch = true
+        #endif
+        self.colorPixelFormat = .bgra8Unorm
+        self.translatesAutoresizingMaskIntoConstraints = true
+        self.autoResizeDrawable = false
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        self.drawableSize = CGSize(width: bounds.size.width * layer.contentsScale, height: bounds.size.height * layer.contentsScale)
+    }
+    
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        self.viewController.window.window.newSize = Size2(size)
+        var size = Size2(size)
+        if size.isFinite == false {
+            size = Size2(view.bounds.size) * Float(view.layer.rasterizationScale)
+        }
+        self.viewController.window.window?.newSize = Size2(size)
     }
 
     func draw(in view: MTKView) {
-        viewController.window.window.vSyncCalled()
+        if let preferredDevice = view.preferredDevice, preferredDevice !== Game.shared.renderer.device {
+            Game.shared.renderer.device = preferredDevice
+        }
+        viewController.window.window?.vSyncCalled()
     }
 
     override func updateConstraints() {

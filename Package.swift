@@ -86,6 +86,8 @@ let package = Package(
                             .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
                             .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
                             .define("GATEENGINE_PLATFORM_SINGLETHREADED", .when(platforms: [.wasi])),
+                            .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
+                            .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH", .when(platforms: [.wasi])),
                         ])
                         
                         #if false

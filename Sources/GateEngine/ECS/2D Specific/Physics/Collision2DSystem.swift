@@ -48,7 +48,7 @@ public final class Collision2DSystem: System {
     }
 }
 
-public extension Game {
+@MainActor public extension Game {
     var collision2DSystem: Collision2DSystem {
         return self.system(ofType: Collision2DSystem.self)
     }

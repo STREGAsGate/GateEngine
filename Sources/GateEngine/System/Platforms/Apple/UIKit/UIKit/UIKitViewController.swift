@@ -15,19 +15,32 @@ internal class UIKitViewController: GCEventViewController {
     init(window: UIKitWindow) {
         self.window = window
         super.init(nibName: nil, bundle: nil)
-
-        let startingSize = CGSize(width: 2, height: 2)
+    }
+    
+    override func loadView() {
+        let size = window.uiWindow.bounds.size
         #if GATEENGINE_FORCE_OPNEGL_APPLE
-        self.view = GLKitView(viewController: self, size: startingSize)
+        self.view = GLKitView(viewController: self, size: size)
         #else
         if MetalRenderer.isSupported {
-            self.view = MetalView(viewController: self, size: startingSize)
+            self.view = MetalView(viewController: self, size: size)
         }else{
             #if canImport(GLKit)
-            self.view = GLKitView(viewController: self, size: startingSize)
+            self.view = GLKitView(viewController: self, size: size)
             #endif
         }
         #endif
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        #if os(iOS)
+        if #available(iOS 11.0, *) {
+            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+            self.setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
+        }
+        #endif
+        self.view.setNeedsLayout()
     }
     
     #if os(iOS)
@@ -46,15 +59,6 @@ internal class UIKitViewController: GCEventViewController {
             return []
         case .bestForGames:
             return .all
-        }
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        if #available(iOS 11.0, *) {
-            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
-            self.setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
         }
     }
     #endif
@@ -130,6 +134,113 @@ internal class UIKitViewController: GCEventViewController {
             let position = locationOfTouch(touch, from: event)
             window.window.delegate?.touchChange(id: id, kind: type, event: .canceled, position: position)
             touchesIDs[ObjectIdentifier(touch)] = nil
+        }
+    }
+    
+    // MARK: - Keyboard
+    @inline(__always)
+    func keysFromEvent(_ event: UIPressesEvent) -> Set<KeyboardKey> {
+        var keys: Set<KeyboardKey> = []
+        for press in event.allPresses {
+            guard let key = press.key else {continue}
+
+            switch key.keyCode {
+            case .keyboardEscape:
+                keys.insert(.escape)
+            case .keyboardDeleteOrBackspace:
+                keys.insert(.escape)
+            case .keyboardUpArrow:
+                keys.insert(.up)
+            case .keyboardDownArrow:
+                keys.insert(.down)
+            case .keyboardLeftArrow:
+                keys.insert(.left)
+            case .keyboardRightArrow:
+                keys.insert(.right)
+            case .keyboardReturn:
+                keys.insert(.return)
+            case .keyboardTab:
+                keys.insert(.tab)
+            case .keyboardSpacebar:
+                keys.insert(.space)
+            default:
+                switch key.keyCode.rawValue {
+                case 58 ... 69, 104 ... 115:
+                    keys.insert(.function(key.keyCode.rawValue))
+                case 4 ... 39, 45 ... 56, 84 ... 100, 103, 133 ... 134:
+                    keys.insert(.character(key.charactersIgnoringModifiers.first!))
+                default:
+                    break
+                }
+            }
+            
+            if keys.isEmpty {
+                Log.warnOnce("Key Code \(key.keyCode.rawValue) is unhandled!")
+                keys.insert(.unhandledPlatformKeyCode(key.keyCode.rawValue, key.characters))
+            }
+        }
+        return keys
+    }
+    
+    @inline(__always)
+    func modifiersFromEvent(_ event: UIPressesEvent) -> KeyboardModifierMask {
+        var modifiers: KeyboardModifierMask = []
+        for press in event.allPresses {
+            guard let key = press.key else {continue}
+            if key.modifierFlags.contains(.command) {
+                modifiers.insert(.host)
+            }
+            if key.modifierFlags.contains(.control) {
+                modifiers.insert(.control)
+            }
+            if key.modifierFlags.contains(.alternate) {
+                modifiers.insert(.alt)
+            }
+            if key.modifierFlags.contains(.shift) {
+                modifiers.insert(.shift)
+            }
+            if key.modifierFlags.contains(.alphaShift) {
+                modifiers.insert(.capsLock)
+            }
+        }
+        return modifiers
+    }
+    
+    @inline(__always)
+    func didHandlePressEvent(_ event: UIPressesEvent?, _ keyEvent: KeyboardEvent) -> Bool {
+        var handled: Bool = false
+        guard let event else {return handled}
+        if let windowDelegate = window.window?.delegate {
+            let keys = keysFromEvent(event)
+            let modifiers = modifiersFromEvent(event)
+            for key in keys {
+                if windowDelegate.keyboardRequestedHandling(key: key, modifiers: modifiers, event: keyEvent) {
+                    handled = true
+                }
+            }
+        }
+        return handled
+    }
+    
+    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        if didHandlePressEvent(event, .keyDown) == false {
+            super.pressesBegan(presses, with: event)
+        }
+    }
+    
+    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        if didHandlePressEvent(event, .keyUp) == false {
+            super.pressesEnded(presses, with: event)
+        }
+    }
+    
+    override func pressesChanged(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        super.pressesChanged(presses, with: event)
+    }
+    
+    override func pressesCancelled(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        if didHandlePressEvent(event, .keyUp) == false {
+            super.pressesCancelled(presses, with: event)
         }
     }
 }
