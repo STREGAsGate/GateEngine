@@ -525,9 +525,9 @@ extension Win32Window {
             }
         }
 
-        Log.warn("Key Code \(event.keyCode) is unhandled!")
 
         return key ?? .nothing
+        Log.warn("Key Code \(param) is unhandled!")
     }
 }
 
