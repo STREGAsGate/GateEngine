@@ -26,13 +26,15 @@ public struct InputRecipts {
     public let keyboard: Keyboard = Keyboard()
     public let mouse: Mouse = Mouse()
     public let screen: Screen = Screen()
+    public let surfaces: SurfaceDevices = SurfaceDevices()
     public internal(set) lazy var gamePads: GamePadManger = GamePadManger(hid: self)
     
     @inline(__always)
     func update(_ deltaTime: Float) {
-        self.gamePads.update()
-        self.screen.update()
         self.mouse.update()
+        self.screen.update()
+        self.surfaces.update()
+        self.gamePads.update()
     }
     
     internal init() {}
@@ -44,13 +46,17 @@ extension HID /*WindowDelegate*/ {
         mouse.mouseChange(event: event, position: position, delta: delta, window: window)
     }
     @_transparent
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2, window: Window?) {
-        mouse.mouseClick(event: event, button: button, count: count, position: position, window: window)
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?) {
+        mouse.mouseClick(event: event, button: button, count: count)
     }
 
     @_transparent
-    func touchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2) {
+    func screenTouchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2) {
         screen.touchChange(id: id, kind: kind, event: event, position: position)
+    }
+    @_transparent
+    func surfaceTouchChange(id: AnyHashable, event: TouchChangeEvent, surfaceID: AnyHashable, normalizedPosition: Position2) {
+        surfaces.surfaceTouchChange(id: id, event: event, surfaceID: surfaceID, normalizedPosition: normalizedPosition)
     }
 
     @_transparent

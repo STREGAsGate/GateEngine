@@ -286,20 +286,23 @@ final class UGNSWindow: AppKit.NSWindow {
 
     //MARK: - Mouse
 
-    func positionFromEvent(_ event: NSEvent) -> Position2 {
+    @inline(__always)
+    func positionFromEvent(_ event: NSEvent) -> Position2? {
         if let contentView = self.contentView ?? self.contentViewController?.view {
             let cgPoint = contentView.convert(event.locationInWindow, from: nil)
             let position = Position2(cgPoint) * Size2(Float(self.backingScaleFactor))
             return position
         }
-        fatalError()
+        return nil
     }
     
+    @inline(__always)
     func deltaPositionFromEvent(_ event: NSEvent) -> Position2 {
         guard event.type == .mouseMoved || event.type == .mouseEntered || event.type == .mouseExited else {return .zero}
         return Position2(Float(event.deltaX), Float(event.deltaY)) * Size2(Float(self.backingScaleFactor))
     }
 
+    @inline(__always)
     func mouseButtonFromEvent(_ event: NSEvent) -> MouseButton {
         switch event.buttonNumber {
         case 0:
@@ -313,34 +316,34 @@ final class UGNSWindow: AppKit.NSWindow {
         case 4:
             return .button5
         default:
-            return .unknown
+            return .unknown(event.buttonNumber)
         }
     }
 
     override func mouseDown(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonDown, button: .button1, count: event.clickCount, position: positionFromEvent(event), window: window)
+            windowDelegate.mouseClick(event: .buttonDown, button: .button1, count: event.clickCount)
         }
         super.mouseDown(with: event)
     }
 
     override func mouseUp(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonUp, button: .button1, count: event.clickCount, position: positionFromEvent(event), window: window)
+            windowDelegate.mouseClick(event: .buttonUp, button: .button1, count: event.clickCount)
         }
         super.mouseUp(with: event)
     }
 
     override func rightMouseDown(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonDown, button: .button2, count: event.clickCount, position: positionFromEvent(event), window: window)
+            windowDelegate.mouseClick(event: .buttonDown, button: .button2, count: event.clickCount)
         }
         super.rightMouseDown(with: event)
     }
 
     override func rightMouseUp(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonUp, button: .button2, count: event.clickCount, position: positionFromEvent(event), window: window)
+            windowDelegate.mouseClick(event: .buttonUp, button: .button2, count: event.clickCount)
         }
         super.rightMouseUp(with: event)
     }
@@ -348,7 +351,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func otherMouseDown(with event: NSEvent) {
         if let windowDelegate = window.delegate {
             let button: MouseButton = mouseButtonFromEvent(event)
-            windowDelegate.mouseClick(event: .buttonDown, button: button, count: event.clickCount, position: positionFromEvent(event), window: window)
+            windowDelegate.mouseClick(event: .buttonDown, button: button, count: event.clickCount)
         }
         super.otherMouseDown(with: event)
     }
@@ -356,51 +359,51 @@ final class UGNSWindow: AppKit.NSWindow {
     override func otherMouseUp(with event: NSEvent) {
         if let windowDelegate = window.delegate {
             let button: MouseButton = mouseButtonFromEvent(event)
-            windowDelegate.mouseClick(event: .buttonUp, button: button, count: event.clickCount, position: positionFromEvent(event), window: window)
+            windowDelegate.mouseClick(event: .buttonUp, button: button, count: event.clickCount)
         }
         super.otherMouseUp(with: event)
     }
 
     override func mouseEntered(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
+        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
             windowDelegate.mouseChange(event: .entered,
-                                       position: positionFromEvent(event),
+                                       position: position,
                                        delta: deltaPositionFromEvent(event),
                                        window: window)
         }
         super.mouseEntered(with: event)
     }
     override func mouseMoved(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
+        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
             windowDelegate.mouseChange(event: .moved,
-                                       position: positionFromEvent(event),
+                                       position: position,
                                        delta: deltaPositionFromEvent(event),
                                        window: window)
         }
         super.mouseMoved(with: event)
     }
     override func mouseDragged(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
+        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
             windowDelegate.mouseChange(event: .moved,
-                                       position: positionFromEvent(event),
+                                       position: position,
                                        delta: deltaPositionFromEvent(event),
                                        window: window)
         }
         super.mouseDown(with: event)
     }
     override func rightMouseDragged(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
+        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
             windowDelegate.mouseChange(event: .moved,
-                                       position: positionFromEvent(event),
+                                       position: position,
                                        delta: deltaPositionFromEvent(event),
                                        window: window)
         }
         super.rightMouseDragged(with: event)
     }
     override func otherMouseDragged(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
+        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
             windowDelegate.mouseChange(event: .moved,
-                                       position: positionFromEvent(event),
+                                       position: position,
                                        delta: deltaPositionFromEvent(event),
                                        window: window)
         }
@@ -408,9 +411,9 @@ final class UGNSWindow: AppKit.NSWindow {
     }
 
     override func mouseExited(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
+        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
             windowDelegate.mouseChange(event: .exited,
-                                       position: positionFromEvent(event),
+                                       position: position,
                                        delta: deltaPositionFromEvent(event),
                                        window: window)
         }
@@ -423,23 +426,21 @@ final class UGNSWindow: AppKit.NSWindow {
         switch touch.type {
         case .direct:
             return .physical
-        case .indirect:
-            return .indirect
-        @unknown default:
+        default:
             return .unknown
         }
     }
 
-    func locationOfTouch(_ touch: NSTouch, from event: NSEvent) -> Position2 {
-        switch type(for: touch) {
-        case .physical:
+    func locationOfTouch(_ touch: NSTouch, from event: NSEvent) -> Position2? {
+        switch touch.type {
+        case .direct:
             let cgPoint = touch.location(in: nil)
             return Position2(Float(cgPoint.x), Float(cgPoint.y))
         case .indirect:
             let cgPoint = touch.normalizedPosition
             return Position2(Float(cgPoint.x), Float(1 - cgPoint.y))
         default:
-            fatalError()
+            return nil
         }
     }
 
@@ -453,8 +454,18 @@ final class UGNSWindow: AppKit.NSWindow {
                 let id = UUID()
                 touchesIDs[ObjectIdentifier(touch.identity)] = id
                 let type = type(for: touch)
-                let position = locationOfTouch(touch, from: event)
-                windowDelegate.touchChange(id: id, kind: type, event: .began, position: position)
+                if let position = locationOfTouch(touch, from: event) {
+                    switch touch.type {
+                    case .direct:
+                        windowDelegate.screenTouchChange(id: id, kind: type, event: .began, position: position)
+                    case .indirect:
+                        if let device = touch.device as? AnyObject {
+                            windowDelegate.surfaceTouchChange(id: id, event: .began, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
+                        }
+                    default:
+                        break
+                    }
+                }
             }
         }
     }
@@ -467,8 +478,18 @@ final class UGNSWindow: AppKit.NSWindow {
             for touch in touches {
                 guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else {continue}
                 let type = type(for: touch)
-                let position = locationOfTouch(touch, from: event)
-                windowDelegate.touchChange(id: id, kind: type, event: .moved, position: position)
+                if let position = locationOfTouch(touch, from: event) {
+                    switch touch.type {
+                    case .direct:
+                        windowDelegate.screenTouchChange(id: id, kind: type, event: .moved, position: position)
+                    case .indirect:
+                        if let device = touch.device as? AnyObject {
+                            windowDelegate.surfaceTouchChange(id: id, event: .moved, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
+                        }
+                    default:
+                        break
+                    }
+                }
             }
         }
     }
@@ -482,8 +503,18 @@ final class UGNSWindow: AppKit.NSWindow {
             for touch in touches {
                 guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else {continue}
                 let type = type(for: touch)
-                let position = locationOfTouch(touch, from: event)
-                windowDelegate.touchChange(id: id, kind: type, event: .ended, position: position)
+                if let position = locationOfTouch(touch, from: event) {
+                    switch touch.type {
+                    case .direct:
+                        windowDelegate.screenTouchChange(id: id, kind: type, event: .ended, position: position)
+                    case .indirect:
+                        if let device = touch.device as? AnyObject {
+                            windowDelegate.surfaceTouchChange(id: id, event: .ended, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
+                        }
+                    default:
+                        break
+                    }
+                }
                 touchesIDs[ObjectIdentifier(touch)] = nil
             }
         }
@@ -498,8 +529,18 @@ final class UGNSWindow: AppKit.NSWindow {
             for touch in touches {
                 guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else {continue}
                 let type = type(for: touch)
-                let position = locationOfTouch(touch, from: event)
-                windowDelegate.touchChange(id: id, kind: type, event: .canceled, position: position)
+                if let position = locationOfTouch(touch, from: event) {
+                    switch touch.type {
+                    case .direct:
+                        windowDelegate.screenTouchChange(id: id, kind: type, event: .canceled, position: position)
+                    case .indirect:
+                        if let device = touch.device as? AnyObject {
+                            windowDelegate.surfaceTouchChange(id: id, event: .canceled, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
+                        }
+                    default:
+                        break
+                    }
+                }
                 touchesIDs[ObjectIdentifier(touch)] = nil
             }
         }

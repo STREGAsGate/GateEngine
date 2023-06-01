@@ -10,7 +10,7 @@ import Foundation
 import GameController
 import GameMath
 
-internal class UIKitViewController: GCEventViewController {
+internal class UIKitViewController: GCEventViewController, UIPointerInteractionDelegate {
     unowned let window: UIKitWindow
     init(window: UIKitWindow) {
         self.window = window
@@ -34,6 +34,9 @@ internal class UIKitViewController: GCEventViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        if #available(iOS 13.4, *) {
+            self.view.interactions.append(UIPointerInteraction(delegate: self))
+        }
         #if os(iOS)
         if #available(iOS 11.0, *) {
             self.setNeedsUpdateOfHomeIndicatorAutoHidden()
@@ -66,30 +69,57 @@ internal class UIKitViewController: GCEventViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
-    private var touchesIDs: [ObjectIdentifier:UUID] = [:]
+    
+    @inline(__always)
     private func type(for touch: UITouch) -> TouchKind {
         switch touch.type {
         case .direct:
             return .physical
         case .pencil, .stylus:
             return .stylus
-        case .indirect, .indirectPointer:
-            return .indirect
-        @unknown default:
+        default:
             return .unknown
         }
     }
-    func locationOfTouch(_ touch: UITouch, from event: UIEvent?) -> Position2 {
-        switch type(for: touch) {
-        case .physical:
-            let p = touch.location(in: nil)
+    
+    @inline(__always)
+    func locationOfTouch(_ touch: UITouch, from event: UIEvent?) -> Position2? {
+        switch touch.type {
+        case .direct, .pencil, .indirectPointer:
+            let p = touch.preciseLocation(in: nil)
             return Position2(Float(p.x), Float(p.y))
         case .indirect:
-            let p = touch.location(in: nil)
+            let p = touch.preciseLocation(in: nil)
             return Position2(Float(p.x), Float(p.y))
         default:
-            fatalError()
+            return nil
+        }
+    }
+    
+    @inline(__always)
+    func deltaLocationOfTouch(_ touch: UITouch, from event: UIEvent?) -> Position2 {
+        let cgL = touch.preciseLocation(in: nil)
+        let cgPL = touch.precisePreviousLocation(in: nil)
+        return Position2(Float(cgPL.x - cgL.x), Float(cgPL.y - cgL.y))
+    }
+    
+    @available(iOS 13.4, *) @inline(__always)
+    func mouseButtonFromEvent(_ event: UIEvent?) -> MouseButton {
+        guard let event else {return .unknown(nil)}
+        switch event.buttonMask {
+        case .button(1):
+            return .button1
+        case .button(2):
+            return .button2
+        case .button(3):
+            return .button3
+        case .button(4):
+            return .button4
+        case .button(5):
+            return .button5
+        default:
+            // TODO: Figure out the button number
+            return .unknown(nil)
         }
     }
     
@@ -97,44 +127,119 @@ internal class UIKitViewController: GCEventViewController {
         super.touchesBegan(touches, with: event)
 
         for touch in touches {
-            let id = UUID()
-            touchesIDs[ObjectIdentifier(touch)] = id
-            let type = type(for: touch)
-            let position = locationOfTouch(touch, from: event)
-            window.window.delegate?.touchChange(id: id, kind: type, event: .began, position: position)
+            guard let position = locationOfTouch(touch, from: event) else {continue}
+            if #available(iOS 13.4, *), touch.type == .indirectPointer {
+                if let event = event {
+                    let button = mouseButtonFromEvent(event)
+                    Game.shared.windowManager.mouseClick(event: .buttonDown, button: button, count: touch.tapCount)
+                }
+            }else{
+                let id = ObjectIdentifier(touch)
+                switch touch.type {
+                case .direct, .pencil:
+                    let type = type(for: touch)
+                    Game.shared.windowManager.screenTouchChange(id: id, kind: type, event: .began, position: position)
+                case .indirect:
+                    Game.shared.windowManager.surfaceTouchChange(id: id, event: .began, surfaceID: ObjectIdentifier(UIDevice.current), normalizedPosition: position)
+                default:
+                    break
+                }
+            }
         }
     }
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesMoved(touches, with: event)
 
         for touch in touches {
-            let id = touchesIDs[ObjectIdentifier(touch)]!
-            let type = type(for: touch)
-            let position = locationOfTouch(touch, from: event)
-            window.window.delegate?.touchChange(id: id, kind: type, event: .moved, position: position)
+            guard let position = locationOfTouch(touch, from: event) else {continue}
+            if #available(iOS 13.4, *), touch.type == .indirectPointer {
+                let deltaPosition = deltaLocationOfTouch(touch, from: event)
+                Game.shared.windowManager.mouseChange(event: .moved, position: position, delta: deltaPosition, window: self.window.window)
+            }else{
+                let id = ObjectIdentifier(touch)
+                switch touch.type {
+                case .direct, .pencil:
+                    let type = type(for: touch)
+                    Game.shared.windowManager.screenTouchChange(id: id, kind: type, event: .moved, position: position)
+                case .indirect:
+                    Game.shared.windowManager.surfaceTouchChange(id: id, event: .moved, surfaceID: ObjectIdentifier(UIDevice.current), normalizedPosition: position)
+                default:
+                    break
+                }
+            }
         }
     }
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
 
         for touch in touches {
-            let id = touchesIDs[ObjectIdentifier(touch)]!
-            let type = type(for: touch)
-            let position = locationOfTouch(touch, from: event)
-            window.window.delegate?.touchChange(id: id, kind: type, event: .ended, position: position)
-            touchesIDs[ObjectIdentifier(touch)] = nil
+            guard let position = locationOfTouch(touch, from: event) else {continue}
+            if #available(iOS 13.4, *), touch.type == .indirectPointer {
+                let button = mouseButtonFromEvent(event)
+                Game.shared.windowManager.mouseClick(event: .buttonUp, button: button, count: touch.tapCount)
+            }else{
+                let id = ObjectIdentifier(touch)
+                switch touch.type {
+                case .direct, .pencil:
+                    let type = type(for: touch)
+                    Game.shared.windowManager.screenTouchChange(id: id, kind: type, event: .ended, position: position)
+                case .indirect:
+                    Game.shared.windowManager.surfaceTouchChange(id: id, event: .ended, surfaceID: ObjectIdentifier(UIDevice.current), normalizedPosition: position)
+                default:
+                    break
+                }
+            }
         }
     }
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesCancelled(touches, with: event)
 
         for touch in touches {
-            let id = touchesIDs[ObjectIdentifier(touch)]!
-            let type = type(for: touch)
-            let position = locationOfTouch(touch, from: event)
-            window.window.delegate?.touchChange(id: id, kind: type, event: .canceled, position: position)
-            touchesIDs[ObjectIdentifier(touch)] = nil
+            guard let position = locationOfTouch(touch, from: event) else {continue}
+            if #available(iOS 13.4, *), touch.type == .indirectPointer {
+                let button = mouseButtonFromEvent(event)
+                Game.shared.windowManager.mouseClick(event: .buttonUp, button: button, count: touch.tapCount)
+            }else{
+                let id = ObjectIdentifier(touch)
+                switch touch.type {
+                case .direct, .pencil:
+                    let type = type(for: touch)
+                    Game.shared.windowManager.screenTouchChange(id: id, kind: type, event: .canceled, position: position)
+                case .indirect:
+                    Game.shared.windowManager.surfaceTouchChange(id: id, event: .canceled, surfaceID: ObjectIdentifier(UIDevice.current), normalizedPosition: position)
+                default:
+                    break
+                }
+            }
         }
+    }
+    
+    // MARK: - Mouse
+    @available(iOS 13.4, *)
+    func pointerInteraction(_ interaction: UIPointerInteraction, regionFor request: UIPointerRegionRequest, defaultRegion: UIPointerRegion) -> UIPointerRegion? {
+        Game.shared.windowManager.mouseChange(event: .moved, position: Position2(request.location), delta: .zero, window: self.window.window)
+        return defaultRegion
+    }
+
+    // Called after the interaction receives a new UIPointerRegion from pointerInteraction:regionForRequest:defaultRegion:.
+    @available(iOS 13.4, *)
+    func pointerInteraction(_ interaction: UIPointerInteraction, styleFor region: UIPointerRegion) -> UIPointerStyle? {
+        if Game.shared.hid.mouse.hidden {
+            return UIPointerStyle.hidden()
+        }
+        return nil
+    }
+    
+    // Called when the pointer enters a given region.
+    @available(iOS 13.4, *)
+    func pointerInteraction(_ interaction: UIPointerInteraction, willEnter region: UIPointerRegion, animator: UIPointerInteractionAnimating) {
+        Game.shared.windowManager.mouseChange(event: .entered, position: .zero, delta: .zero, window: self.window.window)
+    }
+
+    // Called when the pointer exists a given region.
+    @available(iOS 13.4, *)
+    func pointerInteraction(_ interaction: UIPointerInteraction, willExit region: UIPointerRegion, animator: UIPointerInteractionAnimating) {
+        Game.shared.windowManager.mouseChange(event: .exited, position: .zero, delta: .zero, window: self.window.window)
     }
     
     // MARK: - Keyboard

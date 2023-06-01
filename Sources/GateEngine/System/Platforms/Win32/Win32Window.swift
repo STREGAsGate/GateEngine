@@ -355,47 +355,42 @@ fileprivate extension Win32Window {
     @MainActor
     func _mouseDownLeft(_ lparam: LPARAM) {
         let position: Position2 = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonDown, button: .button1, count: nil, position: position, window: self.window)
+        window.delegate?.mouseClick(event: .buttonDown, button: .button1, count: nil)
     }
 
     @inline(__always)
     @preconcurrency 
     @MainActor
     func _mouseUpLeft(_ lparam: LPARAM) {
-        let position: Position2 = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonUp, button: .button1, count: nil, position: position, window: self.window)
+        window.delegate?.mouseClick(event: .buttonUp, button: .button1, count: nil)
     }
 
     @inline(__always)
     @preconcurrency 
     @MainActor
     func _mouseDownRight(_ lparam: LPARAM) {
-        let position = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonDown, button: .button2, count: nil, position: position, window: self.window)
+        window.delegate?.mouseClick(event: .buttonDown, button: .button2, count: nil)
     }
 
     @inline(__always)
     @preconcurrency 
     @MainActor
     func _mouseUpRight(_ lparam: LPARAM) {
-        let position: Position2 = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonUp, button: .button2, count: nil, position: position, window: self.window)
+        window.delegate?.mouseClick(event: .buttonUp, button: .button2, count: nil)
     }
 
     @inline(__always)
     @preconcurrency 
     @MainActor
     func _mouseDownMiddle(_ lparam: LPARAM) {
-        let position: Position2 = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonDown, button: .button3, count: nil, position: position, window: self.window)
+        window.delegate?.mouseClick(event: .buttonDown, button: .button3, count: nil)
     }
 
     @inline(__always)
     @preconcurrency 
     @MainActor
     func _mouseUpMiddle(_ lparam: LPARAM) {
-        let position: Position2 = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonUp, button: .button3, count: nil, position: position, window: self.window)
+        window.delegate?.mouseClick(event: .buttonUp, button: .button3, count: nil)
     }
 
     @inline(__always)
@@ -403,11 +398,10 @@ fileprivate extension Win32Window {
     @MainActor 
     func _mouseDownX(_ lparam: LPARAM, _ wparam: WPARAM) {
         let wparam: Int32 = Int32(wparam)
-        let position: Position2 = positionFrom(lparam)
         if wparam & XBUTTON1 == XBUTTON1 {
-            window.delegate?.mouseClick(event: .buttonDown, button: .button4, count: nil, position: position, window: self.window)
+            window.delegate?.mouseClick(event: .buttonDown, button: .button4, count: nil)
         }else if wparam & XBUTTON2 == XBUTTON2 {
-            window.delegate?.mouseClick(event: .buttonDown, button: .button5, count: nil, position: position, window: self.window)
+            window.delegate?.mouseClick(event: .buttonDown, button: .button5, count: nil)
         }
     }
 
@@ -416,11 +410,10 @@ fileprivate extension Win32Window {
     @MainActor
     func _mouseUpX(_ lparam: LPARAM, _ wparam: WPARAM) {
         let wparam: Int32 = Int32(wparam)
-        let position: Position2 = positionFrom(lparam)
         if wparam & XBUTTON1 == XBUTTON1 {
-            window.delegate?.mouseClick(event: .buttonUp, button: .button4, count: nil, position: position, window: self.window)
+            window.delegate?.mouseClick(event: .buttonUp, button: .button4, count: nil)
         }else if wparam & XBUTTON2 == XBUTTON2 {
-            window.delegate?.mouseClick(event: .buttonUp, button: .button5, count: nil, position: position, window: self.window)
+            window.delegate?.mouseClick(event: .buttonUp, button: .button5, count: nil)
         }
     }
 }

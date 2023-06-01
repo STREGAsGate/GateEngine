@@ -150,9 +150,10 @@ protocol WindowDelegate: AnyObject {
     func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float)
 
     func mouseChange(event: MouseChangeEvent, position: Position2, delta: Position2, window: Window?)
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2, window: Window?)
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?)
 
-    func touchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2)
+    func screenTouchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2)
+    func surfaceTouchChange(id: AnyHashable, event: TouchChangeEvent, surfaceID: AnyHashable, normalizedPosition: Position2)
 
     func keyboardRequestedHandling(key: KeyboardKey,
                                    modifiers: KeyboardModifierMask,
@@ -180,13 +181,19 @@ internal extension Window {
     }
 }
 
-public enum MouseButton {
+public enum MouseButton: Hashable {
     case button1
     case button2
     case button3
     case button4
     case button5
-    case unknown
+    case unknown(_ index: Int?)
+    
+    public static let primary: Self = .button1
+    public static let secondary: Self = .button2
+    public static let middle: Self = .button3
+    public static let forward: Self = .button4
+    public static let backward: Self = .button5
 }
 
 public enum MouseChangeEvent {
@@ -216,8 +223,6 @@ public enum TouchKind {
     case stylus
     /// The touch happened through software
     case simulated
-    /// The touch happened on a device not necesarrily the same shape or resolution as the screen
-    case indirect
 }
 
 public struct KeyboardModifierMask: OptionSet {

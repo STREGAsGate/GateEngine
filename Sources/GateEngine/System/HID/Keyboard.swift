@@ -18,22 +18,33 @@ import GameMath
         if let existing = buttons[keyboardKey] {
             return existing
         }
-        let button = ButtonState(keyboard: self)
+        let button = ButtonState(keyboard: self, key: keyboardKey)
         buttons[keyboardKey] = button
         return button
+    }
+    
+    @inlinable @inline(__always)
+    public func pressedButtons() -> [KeyboardKey:ButtonState] {
+        return buttons.filter({$0.value.isPressed})
     }
 }
 
 public extension Keyboard {
-    @MainActor final class ButtonState {
+    @MainActor final class ButtonState: CustomStringConvertible {
         @usableFromInline
         internal unowned let keyboard: Keyboard
+        let key: KeyboardKey
         @usableFromInline
         internal var currentRecipt: UInt8 = 0
         
+        nonisolated public var description: String {
+            return "\(key)"
+        }
+        
         @usableFromInline
-        internal init(keyboard: Keyboard) {
+        internal init(keyboard: Keyboard, key: KeyboardKey) {
             self.keyboard = keyboard
+            self.key = key
         }
         
         /// A mask representing special keys that might alter the behavior of this key.

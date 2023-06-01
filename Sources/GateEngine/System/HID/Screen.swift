@@ -81,12 +81,6 @@ public extension HID {
     
     @inlinable @inline(__always)
     public var normalizedPosition: Position2 {
-        #if os(macOS) && !targetEnvironment(macCatalyst)
-        // Mac trackpad is already normalized
-        if kind == .indirect {
-            return position
-        }
-        #endif
         var p = position
         if let bounds = window?.size {
             p.x = (1 / bounds.width) * p.x

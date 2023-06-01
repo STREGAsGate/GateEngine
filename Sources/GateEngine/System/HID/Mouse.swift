@@ -185,9 +185,7 @@ extension Mouse {
         }
     }
     @inline(__always)
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2, window: Window?) {
-        self._window = window
-        self._position = position
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?) {
         let button = self.button(button)
         button.isPressed = (event == .buttonDown)
         button.pressCount = count

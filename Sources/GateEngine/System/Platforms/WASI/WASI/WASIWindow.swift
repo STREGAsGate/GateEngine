@@ -224,7 +224,7 @@ class WASIWindow: WindowBacking {
             }()
             let button: MouseButton = self.mouseButton(fromEvent: event)
             Task {@MainActor in
-                self.window.delegate?.mouseClick(event: .buttonDown, button: button, count: nil, position: position, window: self.window)
+                self.window.delegate?.mouseClick(event: .buttonDown, button: button, count: nil)
                 if event.isTrusted {
                     self.performedUserGesture()
                 }
@@ -242,7 +242,7 @@ class WASIWindow: WindowBacking {
             }()
             let button: MouseButton = self.mouseButton(fromEvent: event)
             Task {@MainActor in
-                self.window.delegate?.mouseClick(event: .buttonUp, button: button, count: nil, position: position, window: self.window)
+                self.window.delegate?.mouseClick(event: .buttonUp, button: button, count: nil)
             }
             event.preventDefault()
         }
@@ -255,7 +255,7 @@ class WASIWindow: WindowBacking {
                 for index in 0 ..< event.changedTouches.length {
                     guard let touch = event.changedTouches.item(index: index) else {continue}
                     let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    self.window.delegate?.touchChange(id: touch.identifier, kind: .physical, event: .began, position: position)
+                    self.window.delegate?.screenTouchChange(id: touch.identifier, kind: .physical, event: .began, position: position)
                 }
             }
             event.preventDefault()
@@ -266,7 +266,7 @@ class WASIWindow: WindowBacking {
                 for index in 0 ..< event.changedTouches.length {
                     guard let touch = event.changedTouches.item(index: index) else {continue}
                     let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    self.window.delegate?.touchChange(id: touch.identifier, kind: .physical, event: .moved, position: position)
+                    self.window.delegate?.screenTouchChange(id: touch.identifier, kind: .physical, event: .moved, position: position)
                 }
             }
             event.preventDefault()
@@ -277,7 +277,7 @@ class WASIWindow: WindowBacking {
                 for index in 0 ..< event.changedTouches.length {
                     guard let touch = event.changedTouches.item(index: index) else {continue}
                     let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    self.window.delegate?.touchChange(id: touch.identifier, kind: .physical, event: .ended, position: position)
+                    self.window.delegate?.screenTouchChange(id: touch.identifier, kind: .physical, event: .ended, position: position)
                 }
                 if event.isTrusted {
                     self.performedUserGesture()
@@ -291,7 +291,7 @@ class WASIWindow: WindowBacking {
                 for index in 0 ..< event.changedTouches.length {
                     guard let touch = event.changedTouches.item(index: index) else {continue}
                     let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    self.window.delegate?.touchChange(id: touch.identifier, kind: .physical, event: .canceled, position: position)
+                    self.window.delegate?.screenTouchChange(id: touch.identifier, kind: .physical, event: .canceled, position: position)
                 }
             }
             event.preventDefault()
@@ -308,12 +308,12 @@ class WASIWindow: WindowBacking {
             button = .button3
         case 2:// Mouse Secondary
             button = .button2
-        case 3:
+        case 3: // Backward
             button = .button4
-        case 4:
+        case 4: // Forawrd
             button = .button5
         default:
-            button = .unknown
+            button = .unknown(Int(event.button))
         }
         return button
     }
