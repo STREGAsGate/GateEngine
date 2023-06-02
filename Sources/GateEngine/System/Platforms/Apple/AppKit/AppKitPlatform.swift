@@ -137,6 +137,38 @@ extension AppKitPlatform {
             }
         }
         
+        if Bundle.main.infoDictionary?["CFBundleIconFile"] == nil && Bundle.main.infoDictionary?["CFBundleIconName"] == nil {
+            Game.shared.defer {
+                guard let rasterizationScale = Game.shared.windowManager.mainWindow?.windowBacking.backingScaleFactor else {return}
+                Task {@MainActor in
+                    let filePath = URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent().path
+                    let iconPath = await Game.shared.platform.locateResource(from: "GateEngine/Branding/Square Logo.png")!
+                    if let image = NSImage(contentsOf: URL(fileURLWithPath: iconPath)) {
+                        NSGraphicsContext.current?.saveGraphicsState()
+                        if let bitmapRepresentation = NSBitmapImageRep(bitmapDataPlanes: nil,
+                                                                       pixelsWide: 512 / Int(rasterizationScale),
+                                                                       pixelsHigh: 512 / Int(rasterizationScale),
+                                                                       bitsPerSample: 8,
+                                                                       samplesPerPixel: 4,
+                                                                       hasAlpha: true,
+                                                                       isPlanar: false,
+                                                                       colorSpaceName: .deviceRGB,
+                                                                       bytesPerRow: 0, bitsPerPixel: 0) {
+                            NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRepresentation)
+                            let resizedImage = NSImage(size: NSSize(width: 512 / Int(rasterizationScale), height: 512 / Int(rasterizationScale)))
+                            
+                            resizedImage.lockFocus()
+                            NSGraphicsContext.current?.imageInterpolation = .high
+                            image.draw(in: NSRect(origin: .zero, size: resizedImage.size), from: .zero, operation: .copy, fraction: 1)
+                            resizedImage.unlockFocus()
+                            NSWorkspace.shared.setIcon(resizedImage, forFile: filePath)
+                        }
+                        NSGraphicsContext.current?.restoreGraphicsState()
+                    }
+                }
+            }
+        }
+        
         let app = NSApplication.shared
         let delegate = AppDelegate()
         app.delegate = delegate
