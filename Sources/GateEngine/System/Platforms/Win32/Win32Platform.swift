@@ -9,11 +9,11 @@
 import WinSDK
 import Foundation
 
-final class Win32Platform: InternalPlatform {
+public final class Win32Platform: InternalPlatform {
     static let staticSearchPaths: [URL] = getStaticSearchPaths()
     var pathCache: [String:String] = [:]
     
-    var supportsMultipleWindows: Bool {
+    public var supportsMultipleWindows: Bool {
         return true
     }
     

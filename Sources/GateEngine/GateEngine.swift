@@ -73,10 +73,11 @@ internal enum Log {
             return false
         }
         #endif
-        #if os(WASI)
+        #if os(WASI) || os(Windows)
         return false
-        #endif
+        #else
         return true
+        #endif
     }
     
     @_transparent

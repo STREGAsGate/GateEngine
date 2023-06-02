@@ -37,25 +37,24 @@ extension InternalPlatform {
         #endif
 
         let resourceBundleSearchURLs: Set<URL> = {
-            var urls = [Bundle.main.resourceURL, Bundle.module.bundleURL.deletingLastPathComponent()].compactMap({$0})
+            var urls: [URL] = [Bundle.main.bundleURL, Bundle.main.resourceURL, Bundle.module.bundleURL.deletingLastPathComponent()].compactMap({$0})
             urls.append(contentsOf: Bundle.allBundles.compactMap({$0.resourceURL}))
             return Set(urls)
         }()
         
-        // Add the application and GateEngine resource bundles if they exist
-        var files: [URL] = [Bundle.main, Bundle.module].compactMap({$0.resourceURL})
+        var files: [URL] = []
         
-        for searchURL in resourceBundleSearchURLs {
+        for searchURL: URL in resourceBundleSearchURLs {
             do {
-                let urls = try FileManager.default.contentsOfDirectory(at: searchURL, includingPropertiesForKeys: nil, options: [])
+                let urls: [URL] = try FileManager.default.contentsOfDirectory(at: searchURL, includingPropertiesForKeys: nil, options: [])
                 files.append(contentsOf: urls)
             }catch{
                 Log.info(error)
             }
             
-            // Sometimes the URL varient returns empty arrays, use the path varient too and clear the duplicates
+            // Sometimes the URL varient returns empty arrays, use the path varient too and clear the duplicates later
             do {
-                let paths = try FileManager.default.contentsOfDirectory(atPath: searchURL.path)
+                let paths: [String] = try FileManager.default.contentsOfDirectory(atPath: searchURL.path)
                 files.append(contentsOf: paths.map({searchURL.appendingPathComponent($0)}))
             }catch{
                 Log.info(error)
@@ -63,16 +62,25 @@ extension InternalPlatform {
         }
         
         // Filter out non-resource bundles
+        #if canImport(Darwin)
         files = files.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame}).compactMap({Bundle(url: $0)?.resourceURL})
-        
+        #else
+        files = files.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame})
+        #endif
+
         // Add the executables own path
         files.insert(URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent(), at: 0)
         
+        // Add GateEngine bundles resource path
+        if let gateEnigneResources: URL = Bundle.module.resourceURL {
+            files.insert(gateEnigneResources, at: 0)
+        }
+
         // Add the main bundles resource path
-        if let mainResources = Bundle.main.resourceURL {
+        if let mainResources: URL = Bundle.main.resourceURL {
             files.insert(mainResources, at: 0)
         }
-        
+
         // Add the main bundles path
         files.append(Bundle.main.bundleURL)
 
@@ -80,15 +88,15 @@ extension InternalPlatform {
         files = files.map({$0.resolvingSymlinksInPath()})
         
         // Expand tilde
-        #if os(macOS)
+        #if !os(iOS) && !os(tvOS)
         files = files.map({
             @_transparent
             func expandTilde(_ path: String) -> String {
-                var components = path.components(separatedBy: "/")
+                var components: [String] = path.components(separatedBy: "/")
                 guard components.first == "~" else {return path}
                 components.remove(at: 0)
                 
-                let home = FileManager.default.homeDirectoryForCurrentUser.path.components(separatedBy: "/")
+                let home: [String] = FileManager.default.homeDirectoryForCurrentUser.path.components(separatedBy: "/")
                 components.insert(contentsOf: home, at: 0)
                 return components.joined(separator: "/")
             }
@@ -96,21 +104,24 @@ extension InternalPlatform {
         })
         #endif
         
-        // Remove duplicates and unreachable directories
-        files = OrderedSet(files).compactMap({
-            do {
-                if try $0.checkResourceIsReachable() {
-                    return $0
-                }
-            }catch{
-                Log.info("Resource bundle \"\($0)\" is unreachable.")
+        // Remove duplicates
+        files = Array(OrderedSet(files))
+        
+        // Remove unreachable
+        files = files.compactMap({
+            var isDirectory: ObjCBool = false
+            if FileManager.default.fileExists(atPath: $0.path, isDirectory: &isDirectory), isDirectory.boolValue {
+                return $0
             }
             return nil
         })
-        
-        if files.isEmpty == false {
+
+        if files.isEmpty {
             Log.error("Failed to load any resource bundles! Check code signing and directory premissions.")
+        }else{
+            Log.debug("Loaded resource bundles\n:", files.map({$0.path}).joined(separator: "\n"), "\n")
         }
+
         return files
     }
 }
