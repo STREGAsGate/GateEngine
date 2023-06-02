@@ -31,7 +31,7 @@ import GameMath
         // Single threaded platforms can only ever have 1 window
         guard windows.isEmpty else {throw "This platform doesn't support multiple windows."}
         #else
-        guard game.internalPlatform.supportsMultipleWindows || windows.isEmpty else {throw "This platform doesn't support multiple windows."}
+        guard game.platform.supportsMultipleWindows || windows.isEmpty else {throw "This platform doesn't support multiple windows."}
         #endif
         guard identifierIsUnused(identifier) else {throw "Window with identifier \"\(identifier)\" already exists."}
         let window: Window = Window(identifier: identifier, style: style)

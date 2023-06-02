@@ -225,7 +225,7 @@ fileprivate class GLTF: Decodable {
             let base64String = uri[uri.index(after: index)...]
             buffer = Data(base64Encoded: String(base64String))
         }else{
-            buffer = try? await Game.shared.internalPlatform.loadResource(from: self.baseURL!.appendingPathComponent(uri).path)
+            buffer = try? await Game.shared.platform.loadResource(from: self.baseURL!.appendingPathComponent(uri).path)
         }
 
         cachedBuffers[index] = buffer

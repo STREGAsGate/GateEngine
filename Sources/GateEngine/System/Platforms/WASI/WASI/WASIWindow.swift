@@ -30,12 +30,14 @@ class WASIWindow: WindowBacking {
         _ = document.body!.appendChild(node: canvas)
     }
 
+    lazy var originalTitle = globalThis.document.title
     var title: String? {
         get {
-            return nil
+            return globalThis.document.title
         }
         set {
-            // can't
+            _ = originalTitle
+            globalThis.document.title = newValue ?? originalTitle
         }
     }
 

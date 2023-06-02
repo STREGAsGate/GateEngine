@@ -9,12 +9,11 @@ import Foundation
 import GameMath
 
 public final class Game {
-    @usableFromInline
-    @MainActor internal let internalPlatform: InternalPlatform = makeDefaultPlatform()
-    @MainActor public var platform: Platform {return internalPlatform}
+    public let platform: CurrentPlatform = CurrentPlatform()
+    
     @MainActor public let delegate: GameDelegate
     
-    @MainActor public private(set) lazy var state: State = internalPlatform.loadState()
+    @MainActor public private(set) lazy var state: State = platform.loadState()
     
     nonisolated public let isHeadless: Bool
     @MainActor internal init(delegate: GameDelegate) {
@@ -68,7 +67,7 @@ public final class Game {
     @MainActor private var previousTime: Double = 0
     @MainActor internal func gameLoop() {
         Task(priority: .high) {@MainActor in
-            let now: Double = Game.shared.internalPlatform.systemTime()
+            let now: Double = Game.shared.platform.systemTime()
             let deltaTime: Double = now - self.previousTime
             self.previousTime = now
             if self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
@@ -87,7 +86,7 @@ extension Game {
 
 @MainActor extension Game {
     public func saveState() throws {
-        try internalPlatform.saveState(state)
+        try platform.saveState(state)
     }
     public class State: Codable {
         let encoder = JSONEncoder()
@@ -177,7 +176,7 @@ extension Game {
         }
         
         @MainActor public func save() throws {
-            try Game.shared.internalPlatform.saveState(self)
+            try Game.shared.platform.saveState(self)
         }
     }
 }

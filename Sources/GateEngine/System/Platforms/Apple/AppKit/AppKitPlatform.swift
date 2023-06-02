@@ -9,12 +9,40 @@
 import AppKit
 import System
 
-@MainActor struct AppKitPlatform: InternalPlatform {
-    let searchPaths: [URL] = getStaticSearchPaths()
+public final class AppKitPlatform: InternalPlatform {
+    static let staticSearchPaths: [URL] = getStaticSearchPaths()
     var pathCache: [String:String] = [:]
     
-    var supportsMultipleWindows: Bool {
+    public var supportsMultipleWindows: Bool {
         return true
+    }
+    
+    public func locateResource(from path: String) async -> String? {
+        if let existing = pathCache[path] {
+            return existing
+        }
+        let searchPaths = await Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
+        for searchPath in searchPaths {
+            let file = searchPath.appendingPathComponent(path)
+            let path = file.path
+            if FileManager.default.fileExists(atPath: path) {
+                return path
+            }
+        }
+        return nil
+    }
+    
+    public func loadResource(from path: String) async throws -> Data {
+        if let path = await locateResource(from: path) {
+            do {
+                let url: URL = URL(fileURLWithPath: path)
+                return try Data(contentsOf: url, options: .mappedIfSafe)
+            }catch{
+                Log.error("Failed to load resource \"\(path)\".")
+                throw error
+            }
+        }
+        throw "failed to locate."
     }
 }
 

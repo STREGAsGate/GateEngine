@@ -36,7 +36,7 @@ fileprivate func getBakedQuad(characterData: [CharData], pixelsWidth: Int32, pix
     internal var characterDatas: [Font.Key:[CharData]] = [:]
     
     init(regular: String) async throws {
-        let regular = try await Game.shared.internalPlatform.loadResource(from: regular)
+        let regular = try await Game.shared.platform.loadResource(from: regular)
         
         let fontData: [Font.Style:Data] = [.regular : regular]
 //        fontData[.bold] = bold

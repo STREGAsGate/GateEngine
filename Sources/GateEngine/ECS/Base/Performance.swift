@@ -101,35 +101,35 @@ extension ECSContext {
                 let type = type(of: system)
                 self.kind = .platform(type.phase)
                 self.system = "[P] \(type)"
-                self.startDate = Game.shared.internalPlatform.systemTime()
+                self.startDate = Game.shared.platform.systemTime()
             }
             init(startWithSystem system: System) {
                 let type = type(of: system)
                 self.kind = .project(type.phase)
                 self.system = "\(type)"
-                self.startDate = Game.shared.internalPlatform.systemTime()
+                self.startDate = Game.shared.platform.systemTime()
             }
             init(startWithSystem system: RenderingSystem) {
                 let type = type(of: system)
                 self.kind = .rendering
                 self.system = "[R] \(type)"
-                self.startDate = Game.shared.internalPlatform.systemTime()
+                self.startDate = Game.shared.platform.systemTime()
             }
 
             @inlinable
             mutating func end() {
-                self.endDate = Game.shared.internalPlatform.systemTime()
+                self.endDate = Game.shared.platform.systemTime()
             }
         }
         
 
         @inlinable
         func startSystems() {
-            _systemsStart = Game.shared.internalPlatform.systemTime()
+            _systemsStart = Game.shared.platform.systemTime()
         }
         @inlinable
         func endSystems() {
-            _systemsFrameTime += Game.shared.internalPlatform.systemTime() - _systemsStart
+            _systemsFrameTime += Game.shared.platform.systemTime() - _systemsStart
         }
         @inlinable
         func finalizeSystemsFrameTime() {
@@ -139,14 +139,14 @@ extension ECSContext {
         
         @inlinable
         func startRenderingSystems() {
-            _renderingSystemsStart = Game.shared.internalPlatform.systemTime()
+            _renderingSystemsStart = Game.shared.platform.systemTime()
         }
         @inlinable
         func endRenderingSystems() {
-            _renderingSystemsFrameTime += Game.shared.internalPlatform.systemTime() - _systemsStart
+            _renderingSystemsFrameTime += Game.shared.platform.systemTime() - _systemsStart
             
             _fpsCount += 1
-            let now = Game.shared.internalPlatform.systemTime()
+            let now = Game.shared.platform.systemTime()
             let duration = now - _fpsStart
             if duration > 1 {
                 fps = _fpsCount

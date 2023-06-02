@@ -13,7 +13,7 @@ public class ApplePlatformModelImporter: GeometryImporter {
     public required init() {}
     
     public func loadData(path: String, options: GeometryImporterOptions) async throws -> Data {
-        guard let path = await Game.shared.internalPlatform.locateResource(from: path) else {throw "Failed to locate resource."}
+        guard let path = await Game.shared.platform.locateResource(from: path) else {throw "Failed to locate resource."}
         return path.data(using: .utf8)!
     }
     

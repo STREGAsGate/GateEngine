@@ -46,7 +46,7 @@ public protocol SkinImporter: AnyObject {
 
 public extension SkinImporter {
     func loadData(path: String, options: SkinImporterOptions) async throws -> Data {
-        return try await Game.shared.internalPlatform.loadResource(from: path)
+        return try await Game.shared.platform.loadResource(from: path)
     }
 }
 

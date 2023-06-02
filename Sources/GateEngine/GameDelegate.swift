@@ -66,7 +66,7 @@ public extension GameDelegate {
 public extension GameDelegate {
     static func main() {
         Game.shared = Game(delegate: Self())
-        Game.shared.internalPlatform.main()
+        Game.shared.platform.main()
     }
     
     func createMainWindow(game: Game, identifier: String) throws -> Window {

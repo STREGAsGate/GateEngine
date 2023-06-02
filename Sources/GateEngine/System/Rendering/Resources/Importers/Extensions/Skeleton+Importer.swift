@@ -46,7 +46,7 @@ public protocol SkeletonImporter: AnyObject {
 
 public extension SkeletonImporter {
     func loadData(path: String, options: SkeletonImporterOptions) async throws -> Data {
-        return try await Game.shared.internalPlatform.loadResource(from: path)
+        return try await Game.shared.platform.loadResource(from: path)
     }
 }
 

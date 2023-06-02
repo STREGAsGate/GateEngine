@@ -11,33 +11,39 @@ import DOM
 import JavaScriptKit
 import JavaScriptEventLoop
 
-class WASIPlatform: InternalPlatform {
+public final class WASIPlatform: Platform, InternalPlatform {
     var pathCache: [String:String] = [:]
-    lazy var searchPaths: [Foundation.URL] = {
-        @inline(__always)
+    static let staticSearchPaths: [Foundation.URL] = {
         func getGameModuleName(_ delegate: AnyObject) -> String {
             let ref = String(reflecting: type(of: delegate))
             return String(ref.split(separator: ".")[0])
         }
         let gameModule = getGameModuleName(Game.shared.delegate)
-        let engineModule = getGameModuleName(self)
+        final class GateEngineModuleLocator {}
+        let engineModule = getGameModuleName(GateEngineModuleLocator())
         return [
-            // Engine resources.
-            // - First so projects with delegate defined paths are the most efficient
-            Foundation.URL(string: "\(engineModule)_\(engineModule).resources")!,
+            /*
+             Engine resources.
+             - First so projects with delegate defined paths are the most efficient
+             */
+            Foundation.URL(fileURLWithPath: "\(engineModule)_\(engineModule).resources"),
+            
             // For when the package and target share a name for convenience
-            Foundation.URL(string: "\(gameModule)_\(gameModule).resources")!,
+            Foundation.URL(fileURLWithPath: "\(gameModule)_\(gameModule).resources"),
+            
+            // Root
+            Foundation.URL(fileURLWithPath: Bundle.main.bundlePath),
         ]
     }()
 
-    func locateResource(from path: String) async -> String? {
+    public func locateResource(from path: String) async -> String? {
         if let existing = pathCache[path] {
             Log.info("Located Resource: \"\(path)\" at \"\(existing)\"")
             return existing
         }
-        let delegatePaths = Game.shared.delegate.resourceSearchPaths()
+        let delegatePaths = await Game.shared.delegate.resourceSearchPaths()
 
-        let searchPaths = OrderedSet(delegatePaths + searchPaths)
+        let searchPaths = OrderedSet(delegatePaths + Self.staticSearchPaths)
         for searchPath in searchPaths {
             let newPath = searchPath.appendingPathComponent(path).path
             if let object = try? await fetch(newPath, ["method": "HEAD"]).object {
@@ -53,7 +59,7 @@ class WASIPlatform: InternalPlatform {
         return nil
     }
     
-    func loadResource(from path: String) async throws -> ArrayBuffer {
+    public func loadResourceAsArrayBuffer(from path: String) async throws -> ArrayBuffer {
         if let path = await locateResource(from: path) {
             Log.debug("Loading Resource: \"\(path)\"")
             do {
@@ -71,8 +77,8 @@ class WASIPlatform: InternalPlatform {
         throw "failed to locate."
     }
     
-    func loadResource(from path: String) async throws -> Data {
-        let arrayBuffer: ArrayBuffer = try await loadResource(from: path)
+    public func loadResource(from path: String) async throws -> Data {
+        let arrayBuffer: ArrayBuffer = try await loadResourceAsArrayBuffer(from: path)
         return Data(arrayBuffer)
     }
     
@@ -116,13 +122,13 @@ class WASIPlatform: InternalPlatform {
 #endif
     }
     
-    var supportsMultipleWindows: Bool {
+    public var supportsMultipleWindows: Bool {
         return false
     }
 }
 
 extension WASIPlatform {
-    func setupDocument() {
+    @MainActor func setupDocument() {
         globalThis.onbeforeunload = { event -> String? in
             Game.shared.willTerminate()
             return nil

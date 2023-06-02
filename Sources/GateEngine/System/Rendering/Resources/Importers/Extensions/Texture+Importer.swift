@@ -61,6 +61,6 @@ public protocol TextureImporter: AnyObject {
 
 public extension TextureImporter {
     func loadData(path: String, options: TextureImporterOptions) async throws -> (data: Data, size: Size2?) {
-        return (try await Game.shared.internalPlatform.loadResource(from: path), nil)
+        return (try await Game.shared.platform.loadResource(from: path), nil)
     }
 }

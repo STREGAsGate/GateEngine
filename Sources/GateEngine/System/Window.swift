@@ -89,7 +89,7 @@ public enum WindowStyle {
     private var previousTime: Double = 0
 
     internal func vSyncCalled() {
-        let now: Double = Game.shared.internalPlatform.systemTime()
+        let now: Double = Game.shared.platform.systemTime()
         let delta: Double = now - previousTime
         self.previousTime = now
         // Positive time change and miniumum of 10 fps

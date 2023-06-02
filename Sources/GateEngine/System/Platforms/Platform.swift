@@ -8,15 +8,16 @@
 import Foundation
 import Collections
 
-public protocol Platform {
+public protocol Platform: AnyObject {
     func locateResource(from path: String) async -> String?
     func loadResource(from path: String) async throws -> Data
+    
+    var supportsMultipleWindows: Bool {get}
 }
 
-@usableFromInline
-@MainActor internal protocol InternalPlatform: Platform {
+internal protocol InternalPlatform: AnyObject, Platform {
     var pathCache: [String:String] {get set}
-    var searchPaths: [URL] {get}
+    static var staticSearchPaths: [URL] {get}
     
     func saveStateURL() throws -> URL
     func saveState(_ state: Game.State) throws
@@ -24,50 +25,76 @@ public protocol Platform {
     
     func systemTime() -> Double
     func main()
-    
-    var supportsMultipleWindows: Bool {get}
 }
 
+#if !os(WASI)
 extension InternalPlatform {
-    static func getStaticSearchPaths() -> [URL] {
-#if os(iOS) || os(tvOS) || os(macOS)
+    public static func getStaticSearchPaths() -> [URL] {
+        #if canImport(Darwin)
         let bundleExtension: String = "bundle"
-#else
+        #else
         let bundleExtension: String = "resources"
-#endif
-        let searchURL = Bundle.main.resourceURL ?? Bundle.module.bundleURL.deletingLastPathComponent()
+        #endif
+
+        let resourceBundleSearchURLs: Set<URL> = {
+            var urls = [Bundle.main.resourceURL, Bundle.module.bundleURL.deletingLastPathComponent()].compactMap({$0})
+            urls.append(contentsOf: Bundle.allBundles.compactMap({$0.resourceURL}))
+            return Set(urls)
+        }()
         
         // Add the application and GateEngine resource bundles if they exist
         var files: [URL] = [Bundle.main, Bundle.module].compactMap({$0.resourceURL})
         
-        do {
-            let urls = try FileManager.default.contentsOfDirectory(at: searchURL, includingPropertiesForKeys: nil)
-            files.append(contentsOf: urls)
-        }catch{
-            Log.info(error)
+        for searchURL in resourceBundleSearchURLs {
+            do {
+                let urls = try FileManager.default.contentsOfDirectory(at: searchURL, includingPropertiesForKeys: nil, options: [])
+                files.append(contentsOf: urls)
+            }catch{
+                Log.info(error)
+            }
+            
+            // Sometimes the URL varient returns empty arrays, use the path varient too and clear the duplicates
+            do {
+                let paths = try FileManager.default.contentsOfDirectory(atPath: searchURL.path)
+                files.append(contentsOf: paths.map({searchURL.appendingPathComponent($0)}))
+            }catch{
+                Log.info(error)
+            }
         }
         
-        // Sometimes the URL varient returns empty arrays, use the path varient too and clear the duplicates
-        do {
-            let paths = try FileManager.default.contentsOfDirectory(atPath: searchURL.path)
-            files.append(contentsOf: paths.map({URL(fileURLWithPath: $0)}))
-        }catch{
-            Log.info(error)
-        }
-        
-        // Filter out non resource bundles
+        // Filter out non-resource bundles
         files = files.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame}).compactMap({Bundle(url: $0)?.resourceURL})
         
-        // Add the main bundles path
+        // Add the executables own path
+        files.insert(URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent(), at: 0)
+        
+        // Add the main bundles resource path
         if let mainResources = Bundle.main.resourceURL {
-            files.append(mainResources)
+            files.insert(mainResources, at: 0)
         }
         
-        // Add the executables path
-        files.append(URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent())
-        
+        // Add the main bundles path
+        files.append(Bundle.main.bundleURL)
+
         // Resolve simlinks so duplicates can be removed
         files = files.map({$0.resolvingSymlinksInPath()})
+        
+        // Expand tilde
+        #if os(macOS)
+        files = files.map({
+            @_transparent
+            func expandTilde(_ path: String) -> String {
+                var components = path.components(separatedBy: "/")
+                guard components.first == "~" else {return path}
+                components.remove(at: 0)
+                
+                let home = FileManager.default.homeDirectoryForCurrentUser.path.components(separatedBy: "/")
+                components.insert(contentsOf: home, at: 0)
+                return components.joined(separator: "/")
+            }
+            return URL(fileURLWithPath: expandTilde($0.path))
+        })
+        #endif
         
         // Remove duplicates and unreachable directories
         files = OrderedSet(files).compactMap({
@@ -86,7 +113,9 @@ extension InternalPlatform {
         }
         return files
     }
-    
+}
+
+extension InternalPlatform {
     func saveStateURL() throws -> URL {
         var url: URL = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
         url.appendPathComponent(Bundle.main.bundleIdentifier ?? CommandLine.arguments[0])
@@ -94,6 +123,7 @@ extension InternalPlatform {
         return url
     }
     
+    #if os(macOS) || os(iOS) || os(Windows)
     func systemTime() -> Double {
         var time = timespec()
         if clock_gettime(CLOCK_MONOTONIC_RAW, &time) != 0 {
@@ -101,36 +131,7 @@ extension InternalPlatform {
         }
         return Double(time.tv_sec) + (Double(time.tv_nsec) / 1e+9)
     }
-}
-
-extension Platform where Self: InternalPlatform {
-    func locateResource(from path: String) async -> String? {
-        if let existing = await pathCache[path] {
-            return existing
-        }
-        let searchPaths = await Game.shared.delegate.resourceSearchPaths() + searchPaths
-        for searchPath in searchPaths {
-            let file = searchPath.appendingPathComponent(path)
-            let path = file.path
-            if FileManager.default.fileExists(atPath: path) {
-                return path
-            }
-        }
-        return nil
-    }
-    
-    func loadResource(from path: String) async throws -> Data {
-        if let path = await locateResource(from: path) {
-            do {
-                let url: URL = URL(fileURLWithPath: path)
-                return try Data(contentsOf: url, options: .mappedIfSafe)
-            }catch{
-                Log.error("Failed to load resource \"\(path)\".")
-                throw error
-            }
-        }
-        throw "failed to locate."
-    }
+    #endif
 }
 
 extension InternalPlatform {
@@ -143,28 +144,27 @@ extension InternalPlatform {
             return Game.State()
         }
     }
+    
     func saveState(_ state: Game.State) throws {
         let url = try saveStateURL()
         let data = try JSONEncoder().encode(state)
         try data.write(to: url, options: .atomic)
     }
 }
-
-@_transparent
-@MainActor func makeDefaultPlatform() -> InternalPlatform {
-#if canImport(UIKit)
-    return UIKitPlatform()
-#elseif canImport(AppKit)
-    return AppKitPlatform()
-#elseif canImport(WinSDK)
-    return Win32Platform()
-#elseif os(Linux)
-    return LinuxPlatform()
-#elseif os(WASI)
-    return WASIPlatform()
-#elseif os(Android)
-    return AndroidPlatform()
-#else
-    fatalError("The target platform is not supported.")
 #endif
-}
+
+#if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+public typealias CurrentPlatform = WASIPlatform
+#elseif canImport(UIKit)
+public typealias CurrentPlatform = UIKitPlatform
+#elseif canImport(AppKit)
+public typealias CurrentPlatform = AppKitPlatform
+#elseif canImport(WinSDK)
+public typealias CurrentPlatform = Win32Platform
+#elseif os(Linux)
+public typealias CurrentPlatform = LinuxPlatform
+#elseif os(Android)
+public typealias CurrentPlatform = AndroidPlatform
+#else
+    #error("The target platform is not supported.")
+#endif

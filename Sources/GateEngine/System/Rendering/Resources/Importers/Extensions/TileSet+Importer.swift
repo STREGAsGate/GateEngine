@@ -53,7 +53,7 @@ extension TileSet {
         }
 
         do {
-            let data = try await Game.shared.internalPlatform.loadResource(from: path)
+            let data = try await Game.shared.platform.loadResource(from: path)
             let copy = try await importer.process(data: data, baseURL: URL(string: path)!.deletingLastPathComponent(), options: options)
             self.init(textureName: copy.textureName,
                       textureSize: copy.textureSize,

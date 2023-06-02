@@ -9,16 +9,45 @@
 import UIKit
 import AVFoundation
 
-class UIKitPlatform: InternalPlatform {
-    let searchPaths: [URL] = getStaticSearchPaths()
-
-    var supportsMultipleWindows: Bool {
+public final class UIKitPlatform: Platform, InternalPlatform {
+    public static let staticSearchPaths: [URL] = getStaticSearchPaths()
+    var pathCache: [String:String] = [:]
+    
+    public var supportsMultipleWindows: Bool {
         switch UIDevice.current.userInterfaceIdiom {
         case .pad, .mac:
             return true
         default:
             return false
         }
+    }
+    
+    public func locateResource(from path: String) async -> String? {
+        if let existing = pathCache[path] {
+            return existing
+        }
+        let searchPaths = await Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
+        for searchPath in searchPaths {
+            let file = searchPath.appendingPathComponent(path)
+            let path = file.path
+            if FileManager.default.fileExists(atPath: path) {
+                return path
+            }
+        }
+        return nil
+    }
+    
+    public func loadResource(from path: String) async throws -> Data {
+        if let path = await locateResource(from: path) {
+            do {
+                let url: URL = URL(fileURLWithPath: path)
+                return try Data(contentsOf: url, options: .mappedIfSafe)
+            }catch{
+                Log.error("Failed to load resource \"\(path)\".")
+                throw error
+            }
+        }
+        throw "failed to locate."
     }
 }
 

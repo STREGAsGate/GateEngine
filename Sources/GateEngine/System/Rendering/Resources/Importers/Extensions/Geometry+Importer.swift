@@ -66,7 +66,7 @@ public protocol GeometryImporter: AnyObject {
 
 public extension GeometryImporter {
     func loadData(path: String, options: GeometryImporterOptions) async throws -> Data {
-        return try await Game.shared.internalPlatform.loadResource(from: path)
+        return try await Game.shared.platform.loadResource(from: path)
     }
 }
 

@@ -20,9 +20,9 @@ internal class OABufferReference: AudioBufferBackend {
         self.audioBuffer = audioBuffer
         Task(priority: .utility) {
             do {
-                guard let path = await Game.shared.internalPlatform.locateResource(from: path) else {throw "Failed to locate resource: \"\(path)\""}
+                guard let path = await Game.shared.platform.locateResource(from: path) else {throw "Failed to locate resource: \"\(path)\""}
 
-                let data = try await Game.shared.internalPlatform.loadResource(from: path)
+                let data = try await Game.shared.platform.loadResource(from: path)
                 #if canImport(Vorbis)
                 if let ogg = VorbisFile(data, context: context) {
                     self.load(data: ogg.audio, format: ogg.format())
