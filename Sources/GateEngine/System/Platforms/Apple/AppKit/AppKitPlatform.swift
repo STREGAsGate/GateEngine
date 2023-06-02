@@ -86,7 +86,7 @@ extension AppKitPlatform {
             try? plist.write(to: url, atomically: false, encoding: .utf8)
             
             do {
-                if Log.isXcode {
+                if CommandLine.isDebuggingWithXcode {
                     let alert = NSAlert()
                     alert.messageText = "Created mock Info.plist in the build directory. This is required so macOS see's your executable as an App. Game Controllers may not function without it.\n\nClick continue to ignore. Quit and launch again to ensure everything functions correctly."
                     alert.addButton(withTitle: "Quit")

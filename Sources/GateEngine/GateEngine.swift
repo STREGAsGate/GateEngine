@@ -35,14 +35,21 @@ public extension GameMath.Color {
     static let defaultDirectionalLightColor = Color(red: 0.7, green: 0.7, blue: 1.0, alpha: 1.0)
 }
 
+internal extension GameMath.Color {
+    static let stregasgateBackground: Color = #colorLiteral(red: 0.094117634, green: 0.0941176638, blue: 0.094117634, alpha: 1)
+}
+
 extension String: Error {}
+
+internal extension CommandLine {
+#if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
+    static let isDebuggingWithXcode: Bool = ProcessInfo.processInfo.environment.keys.first(where: {$0.lowercased().contains("xcode")}) != nil
+#endif
+}
 
 internal enum Log {
     static var onceHashes: Set<Int> = []
-    #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
-    static let isXcode = ProcessInfo.processInfo.environment.keys.first(where: {$0.lowercased().contains("xcode")}) != nil
-    #endif
-    
+
     enum ANSIColors: String, CustomStringConvertible {
         var description: String {
             return self.rawValue
@@ -60,6 +67,19 @@ internal enum Log {
     }
     
     @_transparent
+    static var supportsColor: Bool {
+        #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
+        if CommandLine.isDebuggingWithXcode {
+            return false
+        }
+        #endif
+        #if os(WASI)
+        return false
+        #endif
+        return true
+    }
+    
+    @_transparent
     private static func message(prefix: String, _ items: Any..., separator: String) -> String {
         var message = prefix
         for item in items {
@@ -71,12 +91,6 @@ internal enum Log {
     
     @_transparent
     static func info(_ items: Any..., separator: String = " ", terminator: String = "\n") {
-        #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
-        if isXcode {
-            Swift.print(message(prefix: "[GateEngine]", items, separator: separator), terminator: terminator)
-            return
-        }
-        #endif
         let message = message(prefix: "[GateEngine]", items, separator: separator)
         Swift.print(message, terminator: terminator)
         #if os(Windows)
@@ -113,16 +127,15 @@ internal enum Log {
     
     @_transparent
     static func warn(_ items: Any..., separator: String = " ", terminator: String = "\n") {
-        #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
-        if isXcode {
-            Swift.print(message(prefix: "[GateEngine] warning:", items, separator: separator), terminator: terminator)
-            return
+        let resolvedMessage: String
+        if supportsColor {
+            resolvedMessage = message(prefix: "[GateEngine] warning:", items, separator: separator)
+        }else{
+            resolvedMessage = message(prefix: "[GateEngine] \(ANSIColors.magenta)warning\(ANSIColors.default):", items, separator: separator)
         }
-        #endif
-        let message = message(prefix: "[GateEngine] \(ANSIColors.magenta)warning\(ANSIColors.default):", items, separator: separator)
-        Swift.print(message, separator: separator, terminator: terminator)
+        Swift.print(resolvedMessage, separator: separator, terminator: terminator)
         #if os(Windows)
-        WinSDK.OutputDebugStringW((message + terminator).windowsUTF16)
+        WinSDK.OutputDebugStringW((resolvedMessage + terminator).windowsUTF16)
         #endif
     }
     
@@ -137,16 +150,15 @@ internal enum Log {
     
     @_transparent
     static func error(_ items: Any..., separator: String = " ", terminator: String = "\n") {
-        #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
-        if isXcode {
-            Swift.print(message(prefix: "[GateEngine] error:", items, separator: separator), terminator: terminator)
-            return
+        let resolvedMessage: String
+        if supportsColor {
+            resolvedMessage = self.message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", items, separator: separator)
+        }else{
+            resolvedMessage = self.message(prefix: "[GateEngine] error:", items, separator: separator)
         }
-        #endif
-        let message = message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", items, separator: separator)
-        Swift.print(message, separator: separator, terminator: terminator)
+        Swift.print(resolvedMessage, separator: separator, terminator: terminator)
         #if canImport(WinSDK)
-        WinSDK.OutputDebugStringW((message + terminator).windowsUTF16)
+        WinSDK.OutputDebugStringW((resolvedMessage + terminator).windowsUTF16)
         #endif
     }
     
@@ -162,30 +174,32 @@ internal enum Log {
     @_transparent
     static func assert(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> String, file: StaticString = #file, line: UInt = #line) {
         #if DEBUG
-        #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
-        if isXcode {
-            Swift.assert(condition(), self.message(prefix: "[GateEngine] error:", message(), separator: " "), file: file, line: line)
-            return
+        let condition = condition()
+        guard condition else {return}
+
+        let resolvedMessage: String
+        if supportsColor {
+            resolvedMessage = self.message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", message(), separator: " ")
+        }else{
+            resolvedMessage = self.message(prefix: "[GateEngine] error:", message(), separator: " ")
         }
-        #endif
-        let message = self.message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", message(), separator: " ")
         #if canImport(WinSDK)
-        WinSDK.OutputDebugStringW((message + "/n").windowsUTF16)
+        WinSDK.OutputDebugStringW((resolvedMessage + "/n").windowsUTF16)
         #endif
-        Swift.assert(condition(), message, file: file, line: line)
+        Swift.assert(condition, resolvedMessage, file: file, line: line)
         #endif
     }
     
     static func fatalError(_ message: String, file: StaticString = #file, line: UInt = #line) -> Never {
-        #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
-        if isXcode {
-            return Swift.fatalError(self.message(prefix: "[GateEngine] error:", message, separator: " "), file: file, line: line)
+        let resolvedMessage: String
+        if supportsColor {
+            resolvedMessage = self.message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", message, separator: " ")
+        }else{
+            resolvedMessage = self.message(prefix: "[GateEngine] error:", message, separator: " ")
         }
-        #endif
-        let message = self.message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", message, separator: " ")
         #if canImport(WinSDK)
-        WinSDK.OutputDebugStringW((message + "/n").windowsUTF16)
+        WinSDK.OutputDebugStringW((resolvedMessage + "/n").windowsUTF16)
         #endif
-        return Swift.fatalError(message, file: file, line: line)
+        return Swift.fatalError(resolvedMessage, file: file, line: line)
     }
 }
