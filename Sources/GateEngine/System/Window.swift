@@ -150,7 +150,7 @@ protocol WindowDelegate: AnyObject {
     func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float)
 
     func mouseChange(event: MouseChangeEvent, position: Position2, delta: Position2, window: Window?)
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?)
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2?, delta: Position2?, window: Window?)
 
     func screenTouchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2)
     func surfaceTouchChange(id: AnyHashable, event: TouchChangeEvent, surfaceID: AnyHashable, normalizedPosition: Position2)
@@ -192,8 +192,8 @@ public enum MouseButton: Hashable {
     public static let primary: Self = .button1
     public static let secondary: Self = .button2
     public static let middle: Self = .button3
-    public static let forward: Self = .button4
-    public static let backward: Self = .button5
+    public static let backward: Self = .button4
+    public static let forward: Self = .button5
 }
 
 public enum MouseChangeEvent {

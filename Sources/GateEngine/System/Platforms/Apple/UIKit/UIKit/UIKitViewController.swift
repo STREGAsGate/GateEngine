@@ -137,7 +137,12 @@ internal class UIKitViewController: GCEventViewController {
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
                 if let event = event {
                     let button = mouseButtonFromEvent(event)
-                    Game.shared.windowManager.mouseClick(event: .buttonDown, button: button, count: touch.tapCount)
+                    Game.shared.windowManager.mouseClick(event: .buttonDown,
+                                                         button: button,
+                                                         count: touch.tapCount,
+                                                         position: position,
+                                                         delta: self.deltaLocationOfTouch(touch, from: event),
+                                                         window: self.window.window)
                 }
                 continue
             }
@@ -186,7 +191,12 @@ internal class UIKitViewController: GCEventViewController {
             #if !os(tvOS)
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
                 let button = mouseButtonFromEvent(event)
-                Game.shared.windowManager.mouseClick(event: .buttonUp, button: button, count: touch.tapCount)
+                Game.shared.windowManager.mouseClick(event: .buttonUp,
+                                                     button: button,
+                                                     count: touch.tapCount,
+                                                     position: position,
+                                                     delta: self.deltaLocationOfTouch(touch, from: event),
+                                                     window: self.window.window)
                 continue
             }
             #endif
@@ -210,7 +220,12 @@ internal class UIKitViewController: GCEventViewController {
             #if !os(tvOS)
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
                 let button = mouseButtonFromEvent(event)
-                Game.shared.windowManager.mouseClick(event: .buttonUp, button: button, count: touch.tapCount)
+                Game.shared.windowManager.mouseClick(event: .buttonUp,
+                                                     button: button,
+                                                     count: touch.tapCount,
+                                                     position: position,
+                                                     delta: self.deltaLocationOfTouch(touch, from: event),
+                                                     window: self.window.window)
                 continue
             }
             #endif

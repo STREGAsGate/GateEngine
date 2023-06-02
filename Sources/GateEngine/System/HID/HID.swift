@@ -46,8 +46,8 @@ extension HID /*WindowDelegate*/ {
         mouse.mouseChange(event: event, position: position, delta: delta, window: window)
     }
     @_transparent
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?) {
-        mouse.mouseClick(event: event, button: button, count: count)
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2?, delta: Position2?, window: Window?) {
+        mouse.mouseClick(event: event, button: button, count: count, position: position, delta: delta, window: window)
     }
 
     @_transparent

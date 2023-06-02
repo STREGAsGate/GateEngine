@@ -185,7 +185,16 @@ extension Mouse {
         }
     }
     @inline(__always)
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?) {
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2?, delta: Position2?, window: Window?) {
+        if let position {
+            self._position = position
+        }
+        if let delta {
+            self._nextDeltaPosition = delta
+        }
+        if let window {
+            self._window = window
+        }
         let button = self.button(button)
         button.isPressed = (event == .buttonDown)
         button.pressCount = count

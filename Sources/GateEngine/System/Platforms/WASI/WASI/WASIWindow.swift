@@ -223,8 +223,14 @@ class WASIWindow: WindowBacking {
                 return position
             }()
             let button: MouseButton = self.mouseButton(fromEvent: event)
+            let locations = self.getPositionAndDelta(from: event)
             Task {@MainActor in
-                self.window.delegate?.mouseClick(event: .buttonDown, button: button, count: nil)
+                self.window.delegate?.mouseClick(event: .buttonDown,
+                                                 button: button,
+                                                 count: nil,
+                                                 position: locations.position,
+                                                 delta: locations.delta,
+                                                 window: self.window)
                 if event.isTrusted {
                     self.performedUserGesture()
                 }
@@ -233,16 +239,15 @@ class WASIWindow: WindowBacking {
         }
         canvas.addEventListener(type: "mouseup") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = {
-                var position = Position2(x: Float(event.pageX), y: Float(event.pageY))
-                if let pixelRatio = globalThis.document.defaultView?.devicePixelRatio {
-                    position *= Float(pixelRatio)
-                }
-                return position
-            }()
             let button: MouseButton = self.mouseButton(fromEvent: event)
+            let locations = self.getPositionAndDelta(from: event)
             Task {@MainActor in
-                self.window.delegate?.mouseClick(event: .buttonUp, button: button, count: nil)
+                self.window.delegate?.mouseClick(event: .buttonUp,
+                                                 button: button,
+                                                 count: nil,
+                                                 position: locations.position,
+                                                 delta: locations.delta,
+                                                 window: self.window)
             }
             event.preventDefault()
         }

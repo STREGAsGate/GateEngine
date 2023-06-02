@@ -102,8 +102,8 @@ extension WindowManager: WindowDelegate {
         game.hid.mouseChange(event: event, position: position, delta: delta, window: window)
     }
     @_transparent
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?) {
-        game.hid.mouseClick(event: event, button: button, count: count)
+    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2?, delta: Position2?, window: Window?) {
+        game.hid.mouseClick(event: event, button: button, count: count, position: position, delta: delta, window: window)
     }
     
     @_transparent

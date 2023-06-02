@@ -322,28 +322,48 @@ final class UGNSWindow: AppKit.NSWindow {
 
     override func mouseDown(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonDown, button: .button1, count: event.clickCount)
+            windowDelegate.mouseClick(event: .buttonDown,
+                                      button: .button1,
+                                      count: event.clickCount,
+                                      position: positionFromEvent(event),
+                                      delta: deltaPositionFromEvent(event),
+                                      window: window)
         }
         super.mouseDown(with: event)
     }
 
     override func mouseUp(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonUp, button: .button1, count: event.clickCount)
+            windowDelegate.mouseClick(event: .buttonUp,
+                                      button: .button1,
+                                      count: event.clickCount,
+                                      position: positionFromEvent(event),
+                                      delta: deltaPositionFromEvent(event),
+                                      window: window)
         }
         super.mouseUp(with: event)
     }
 
     override func rightMouseDown(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonDown, button: .button2, count: event.clickCount)
+            windowDelegate.mouseClick(event: .buttonDown,
+                                      button: .button2,
+                                      count: event.clickCount,
+                                      position: positionFromEvent(event),
+                                      delta: deltaPositionFromEvent(event),
+                                      window: window)
         }
         super.rightMouseDown(with: event)
     }
 
     override func rightMouseUp(with event: NSEvent) {
         if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonUp, button: .button2, count: event.clickCount)
+            windowDelegate.mouseClick(event: .buttonUp,
+                                      button: .button2,
+                                      count: event.clickCount,
+                                      position: positionFromEvent(event),
+                                      delta: deltaPositionFromEvent(event),
+                                      window: window)
         }
         super.rightMouseUp(with: event)
     }
@@ -351,7 +371,12 @@ final class UGNSWindow: AppKit.NSWindow {
     override func otherMouseDown(with event: NSEvent) {
         if let windowDelegate = window.delegate {
             let button: MouseButton = mouseButtonFromEvent(event)
-            windowDelegate.mouseClick(event: .buttonDown, button: button, count: event.clickCount)
+            windowDelegate.mouseClick(event: .buttonDown,
+                                      button: button,
+                                      count: event.clickCount,
+                                      position: positionFromEvent(event),
+                                      delta: deltaPositionFromEvent(event),
+                                      window: window)
         }
         super.otherMouseDown(with: event)
     }
@@ -359,7 +384,12 @@ final class UGNSWindow: AppKit.NSWindow {
     override func otherMouseUp(with event: NSEvent) {
         if let windowDelegate = window.delegate {
             let button: MouseButton = mouseButtonFromEvent(event)
-            windowDelegate.mouseClick(event: .buttonUp, button: button, count: event.clickCount)
+            windowDelegate.mouseClick(event: .buttonUp,
+                                      button: button,
+                                      count: event.clickCount,
+                                      position: positionFromEvent(event),
+                                      delta: deltaPositionFromEvent(event),
+                                      window: window)
         }
         super.otherMouseUp(with: event)
     }
