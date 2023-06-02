@@ -166,12 +166,21 @@ extension WASIPlatform {
 }
 
 fileprivate final class WASIUserActivationRenderingSystem: RenderingSystem {
-    let text = Text(string: "Click to Start", pointSize: 32, color: .white)
+    let text = Text(string: "Click to Start", pointSize: 64, style: .bold, color: .white)
+    let banner = Sprite(texture: Texture(path: "GateEngine/Branding/Banner Logo Transparent.png", sizeHint: Size2(1200, 244)), bounds: Rect(size: Size2(1200, 244)), sampleFilter: .linear)
+    
+    override func setup(game: Game) {
+        game.windowManager.mainWindow?.clearColor = .stregasgateBackground
+    }
     
     override func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
         var canvas = Canvas(window: window)
         
-        canvas.insert(text, at: Position2((window.interfaceSize / 2) - (text.size / 2)))
+        canvas.insert(banner, at: Position2(window.interfaceSize / 2), scale: Size2(window.interfaceSize.width / (banner.bounds.size.width * 1.25)))
+        
+        var textPosition = Position2((window.interfaceSize / 2) - (text.size / 2))
+        textPosition.y = window.interfaceSize.height - text.size.height - max(window.safeAreaInsets.bottom, 60)
+        canvas.insert(text, at: textPosition)
         
         window.insert(canvas)
         
@@ -181,6 +190,10 @@ fileprivate final class WASIUserActivationRenderingSystem: RenderingSystem {
             game.addPlatformSystems()
             game.delegate.didFinishLaunching(game: game, options: [])
         }
+    }
+    
+    override func teardown(game: Game) {
+        game.windowManager.mainWindow?.clearColor = .black
     }
 }
 
