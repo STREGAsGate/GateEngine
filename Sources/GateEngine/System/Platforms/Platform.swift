@@ -119,7 +119,10 @@ extension InternalPlatform {
         if files.isEmpty {
             Log.error("Failed to load any resource bundles! Check code signing and directory premissions.")
         }else{
-            Log.debug("Loaded resource bundles\n:", files.map({$0.path}).joined(separator: "\n"), "\n")
+            let relativePath = Bundle.main.bundleURL.path
+            Log.debug("Loaded static resource search paths:", files.map({
+                return $0.path.replacingOccurrences(of: relativePath, with: "\n  \"[MainBundle]") + "\","
+            }).joined(), "\n  (note: These do not include any GameDelegate provided search paths)\n")
         }
 
         return files

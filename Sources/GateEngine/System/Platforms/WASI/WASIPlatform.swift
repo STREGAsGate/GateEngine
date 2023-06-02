@@ -21,7 +21,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
         let gameModule = getGameModuleName(Game.shared.delegate)
         final class GateEngineModuleLocator {}
         let engineModule = getGameModuleName(GateEngineModuleLocator())
-        return [
+        let files = [
             /*
              Engine resources.
              - First so projects with delegate defined paths are the most efficient
@@ -34,6 +34,14 @@ public final class WASIPlatform: Platform, InternalPlatform {
             // Root
             Foundation.URL(fileURLWithPath: Bundle.main.bundlePath),
         ]
+        if files.isEmpty {
+            Log.error("Failed to load any resource bundles! Check code signing and directory premissions.")
+        }else{
+            Log.debug("Loaded static resource search paths:", files.map({
+                return "\n\"" + $0.path + "/\","
+            }).joined(), "\n  (note: These do not include any GameDelegate provided search paths)\n")
+        }
+        return files
     }()
 
     public func locateResource(from path: String) async -> String? {
@@ -166,6 +174,7 @@ extension WASIPlatform {
     @MainActor func main() {
         JavaScriptEventLoop.installGlobalExecutor()
         setupDocument()
+        Log.info("Notice: Failed resource errors emitted from the browser are normal. Ignore them. Only rely on the logs starting with \"[GateEngine]\".")
         Game.shared.didFinishLaunching()
         Game.shared.insertSystem(WASIUserActivationRenderingSystem.self)
     }
