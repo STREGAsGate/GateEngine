@@ -321,12 +321,12 @@ public extension GamePad {
     }
     
     @MainActor @propertyWrapper public struct Polled<T> {
-        unowned var gamePad: GamePad! = nil
+        weak var gamePad: GamePad? = nil
         var _wrappedValue: T
         public var wrappedValue: T {
             get {
                 Task(priority: .userInitiated) {
-                    gamePad.interpreter.hid.gamePads.pollIfNeeded()
+                    gamePad?.interpreter.hid.gamePads.pollIfNeeded()
                 }
                 return _wrappedValue
             }
@@ -337,14 +337,14 @@ public extension GamePad {
         public init(wrappedValue: T) {
             _wrappedValue = wrappedValue
         }
-        mutating func configureWith(gamePad: GamePad) {
+        mutating func configureWith(gamePad: GamePad?) {
             self.gamePad = gamePad
         }
     }
     
     @MainActor @propertyWrapper public struct AnalogUpdatingPolled {
-        unowned var gamePad: GamePad! = nil
-        unowned var button: ButtonState! = nil
+        weak var gamePad: GamePad? = nil
+        weak var button: ButtonState? = nil
         
         var _wrappedValue: Float
         
@@ -354,22 +354,20 @@ public extension GamePad {
         var minHitCount: Int = 0
         var maxHitCount: Int = 0
         
-        public var wrappedValue: Float {
+        @MainActor public var wrappedValue: Float {
             get {
-                Task(priority: .userInitiated) {
-                    gamePad.interpreter.hid.gamePads.pollIfNeeded()
-                }
+                gamePad?.interpreter.hid.gamePads.pollIfNeeded()
                 return _wrappedValue
             }
             set {
                 _wrappedValue = newValue
-                guard self.button.isAnalog == false else {return}
+                guard self.button?.isAnalog == false else {return}
                 guard self.neverAnalog == false else {return}
                 
                 let value = _wrappedValue
                 if value > 0 && value < 1 {
                     // If there is an inbetween it is analog
-                    button.isAnalog = true
+                    button?.isAnalog = true
                 }else{
                     let min = Swift.min(min, value)
                     if self.min != min {
@@ -397,18 +395,18 @@ public extension GamePad {
         public init(wrappedValue: Float) {
             _wrappedValue = wrappedValue
         }
-        mutating func configureWith(gamePad: GamePad, button: ButtonState) {
+        mutating func configureWith(gamePad: GamePad?, button: ButtonState) {
             self.gamePad = gamePad
             self.button = button
         }
     }
     
     @MainActor public class ButtonState {
-        unowned let gamePad: GamePad
+        weak var gamePad: GamePad?
         let id: InternalID
         var currentRecipt: UInt8 = 0
 
-        init(gamePad: GamePad, id: InternalID) {
+        init(gamePad: GamePad?, id: InternalID) {
             self.gamePad = gamePad
             self.id = id
             
@@ -445,7 +443,7 @@ public extension GamePad {
         /// The buttons pressed state 0 being not pressed and 1 being fully pressed
         @AnalogUpdatingPolled public internal(set) var value: Float = 0
         
-        public internal(set) lazy var symbol: GamePadSymbol = GamePadSymbol(map: gamePad.symbols, id: id)
+        public internal(set) lazy var symbol: GamePadSymbol = GamePadSymbol(map: gamePad?.symbols ?? .unknown, id: id)
         
         internal func resetInputStates() {
             self.isPressed = false
@@ -454,9 +452,9 @@ public extension GamePad {
     }
     
     @MainActor public class StickState {
-        unowned let gamePad: GamePad
+        weak var gamePad: GamePad?
         let id: InternalID
-        init(gamePad: GamePad, id: InternalID) {
+        init(gamePad: GamePad?, id: InternalID) {
             self.gamePad = gamePad
             self.id = id
             
@@ -505,8 +503,8 @@ public extension GamePad {
     }
     
     @MainActor public class DPad {
-        unowned let gamePad: GamePad
-        init(gamePad: GamePad) {
+        weak var gamePad: GamePad?
+        init(gamePad: GamePad?) {
             self.gamePad = gamePad
         }
         
@@ -528,8 +526,8 @@ public extension GamePad {
     }
     
     @MainActor public class Buttons {
-        unowned let gamePad: GamePad
-        init(gamePad: GamePad) {
+        weak var gamePad: GamePad?
+        init(gamePad: GamePad?) {
             self.gamePad = gamePad
         }
         
@@ -565,8 +563,8 @@ public extension GamePad {
     }
     
     @MainActor public class Shoulders {
-        unowned let gamePad: GamePad
-        init(gamePad: GamePad) {
+        weak var gamePad: GamePad?
+        init(gamePad: GamePad?) {
             self.gamePad = gamePad
         }
         
@@ -584,8 +582,8 @@ public extension GamePad {
     }
     
     @MainActor public class Triggers {
-        unowned let gamePad: GamePad
-        init(gamePad: GamePad) {
+        weak var gamePad: GamePad?
+        init(gamePad: GamePad?) {
             self.gamePad = gamePad
         }
         
@@ -603,8 +601,8 @@ public extension GamePad {
     }
     
     @MainActor public class Sticks {
-        unowned let gamePad: GamePad
-        init(gamePad: GamePad) {
+        weak var gamePad: GamePad?
+        init(gamePad: GamePad?) {
             self.gamePad = gamePad
         }
         
@@ -626,8 +624,8 @@ public extension GamePad {
     }
     
     @MainActor public class Menu {
-        unowned let gamePad: GamePad
-        init(gamePad: GamePad) {
+        weak var gamePad: GamePad?
+        init(gamePad: GamePad?) {
             self.gamePad = gamePad
         }
         
