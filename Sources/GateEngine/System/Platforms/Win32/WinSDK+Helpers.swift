@@ -45,6 +45,7 @@ internal struct timespec {
     var tv_sec: Double = 0
     var tv_nsec: Double = 0
 }
+let CLOCK_MONOTONIC_RAW = 1
 @inline(__always)
 internal func clock_gettime(_ X: Int, _ tv: inout timespec) -> Int {
     var t: WinSDK.LARGE_INTEGER = LARGE_INTEGER()

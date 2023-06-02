@@ -6,29 +6,15 @@
  */
 #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 import Foundation
+import Collections
 import DOM
 import JavaScriptKit
 import JavaScriptEventLoop
 
 class WASIPlatform: InternalPlatform {
-    func saveState(_ state: Game.State) throws {
-        let window: DOM.Window = globalThis
-        window.localStorage["SaveState.data"] = try JSONEncoder().encode(state).base64EncodedString()
-    }
-    
-    func loadState() -> Game.State {
-        let window: DOM.Window = globalThis
-        if let base64 = window.localStorage["SaveState.data"], let data = Data(base64Encoded: base64) {
-            do {
-                return try JSONDecoder().decode(Game.State.self, from: data)
-            }catch{
-                Log.error("Game.State failed to restore:", error)
-            }
-        }
-        return Game.State()
-    }
-    
+    var pathCache: [String:String] = [:]
     lazy var searchPaths: [Foundation.URL] = {
+        @inline(__always)
         func getGameModuleName(_ delegate: AnyObject) -> String {
             let ref = String(reflecting: type(of: delegate))
             return String(ref.split(separator: ".")[0])
@@ -36,36 +22,22 @@ class WASIPlatform: InternalPlatform {
         let gameModule = getGameModuleName(Game.shared.delegate)
         let engineModule = getGameModuleName(self)
         return [
-            // Engine reseources.
+            // Engine resources.
             // - First so projects with delegate defined paths are the most efficient
             Foundation.URL(string: "\(engineModule)_\(engineModule).resources")!,
-            // Assume the package and target share a name for convenience
+            // For when the package and target share a name for convenience
             Foundation.URL(string: "\(gameModule)_\(gameModule).resources")!,
-            // Enables the included Demo executable to function without delegate search paths.
-            // - Last so it's never called unless a resource is missing
-            Foundation.URL(string: "\(engineModule)_\(gameModule).resources")!,
         ]
     }()
-    
-    var pathCache: [String:String] = [:]
-    
+
     func locateResource(from path: String) async -> String? {
         if let existing = pathCache[path] {
             Log.info("Located Resource: \"\(path)\" at \"\(existing)\"")
             return existing
         }
         let delegatePaths = Game.shared.delegate.resourceSearchPaths()
-        #if DEBUG
-        do {
-            let delegatePaths = Set(delegatePaths)
-            let builtInPaths = Set(searchPaths)
-            let dups = delegatePaths.intersection(builtInPaths)
-            if dups.isEmpty == false {
-                Log.warn("The following search paths are duplicates:\(dups.map({"\n- \($0)"}).joined(separator: "\n- "))\n")
-            }
-        }
-        #endif
-        let searchPaths = (delegatePaths + searchPaths)
+
+        let searchPaths = OrderedSet(delegatePaths + searchPaths)
         for searchPath in searchPaths {
             let newPath = searchPath.appendingPathComponent(path).path
             if let object = try? await fetch(newPath, ["method": "HEAD"]).object {
@@ -95,7 +67,7 @@ class WASIPlatform: InternalPlatform {
                 throw error
             }
         }
-
+        
         throw "failed to locate."
     }
     
@@ -104,28 +76,52 @@ class WASIPlatform: InternalPlatform {
         return Data(arrayBuffer)
     }
     
+    @inline(__always)
     func fetch(_ url: String, _ options: [String: JSValue] = [:]) async throws -> JSValue {
         let jsFetch = JSObject.global.fetch.function!
         return try await JSPromise(jsFetch(url, options).object!)!.value
     }
-
+    
+    func saveStateURL() throws -> URL {
+        fatalError()
+    }
+    
+    func saveState(_ state: Game.State) throws {
+        let window: DOM.Window = globalThis
+        window.localStorage["SaveState.data"] = try JSONEncoder().encode(state).base64EncodedString()
+    }
+    
+    func loadState() -> Game.State {
+        let window: DOM.Window = globalThis
+        if let base64 = window.localStorage["SaveState.data"], let data = Data(base64Encoded: base64) {
+            do {
+                return try JSONDecoder().decode(Game.State.self, from: data)
+            }catch{
+                Log.error("Game.State failed to restore:", error)
+            }
+        }
+        return Game.State()
+    }
+    
     func systemTime() -> Double {
-        #if os(WASI)
+#if os(WASI)
         var time = timespec()
         let CLOCK_MONOTONIC = clockid_t(bitPattern: 1)
         if clock_gettime(CLOCK_MONOTONIC, &time) != 0 {
             return -1
         }
         return Double(time.tv_sec) + (Double(time.tv_nsec) / 1e+9)
-        #else
+#else
         return Date().timeIntervalSinceReferenceDate
-        #endif
+#endif
     }
     
     var supportsMultipleWindows: Bool {
         return false
     }
-    
+}
+
+extension WASIPlatform {
     func setupDocument() {
         globalThis.onbeforeunload = { event -> String? in
             Game.shared.willTerminate()

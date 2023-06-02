@@ -215,13 +215,6 @@ class WASIWindow: WindowBacking {
         }
         canvas.addEventListener(type: "mousedown") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
-            let position: Position2 = {
-                var position = Position2(x: Float(event.pageX), y: Float(event.pageY))
-                if let pixelRatio = globalThis.document.defaultView?.devicePixelRatio {
-                    position *= Float(pixelRatio)
-                }
-                return position
-            }()
             let button: MouseButton = self.mouseButton(fromEvent: event)
             let locations = self.getPositionAndDelta(from: event)
             Task {@MainActor in
