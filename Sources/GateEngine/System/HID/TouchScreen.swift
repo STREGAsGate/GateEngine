@@ -8,7 +8,7 @@
 import GameMath
 
 public extension HID {
-    @MainActor final class Screen {
+    @MainActor final class TouchScreen {
         public internal(set) var touches: Set<Touch> = []
         internal var nextTouches: Set<Touch> = []
         

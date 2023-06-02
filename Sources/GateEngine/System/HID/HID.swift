@@ -25,7 +25,7 @@ public struct InputRecipts {
 @MainActor public final class HID {
     public let keyboard: Keyboard = Keyboard()
     public let mouse: Mouse = Mouse()
-    public let screen: Screen = Screen()
+    public let screen: TouchScreen = TouchScreen()
     public let surfaces: SurfaceDevices = SurfaceDevices()
     public internal(set) lazy var gamePads: GamePadManger = GamePadManger(hid: self)
     
