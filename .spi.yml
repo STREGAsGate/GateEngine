@@ -1,0 +1,9 @@
+version: 1
+builder:
+  configs:
+  - platform: linux
+    swift_version: '5.7'
+    image: registry.gitlab.com/finestructure/spi-images:AppKid-5.7-latest
+  - platform: linux
+    swift_version: '5.8'
+    image: registry.gitlab.com/finestructure/spi-images:AppKid-5.8-latest
