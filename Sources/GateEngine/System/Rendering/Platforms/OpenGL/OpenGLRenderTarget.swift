@@ -51,7 +51,7 @@ class OpenGLRenderTarget: RenderTargetBackend {
         glTexParameter(filtering: .minimize, by: .nearest)
         glTexParameter(wrapping: .horizontal, by: .repeat)
         glTexParameter(wrapping: .vertical, by: .repeat)
-        glTexParameter(comparingBy: .greaterThanOrEqualTo)
+        glTexParameter(comparingBy: .lessThanOrEqualTo)
         glFramebufferTexture2D(attachment: .depth, texture: depthTexture)
         
         self.reshape()
@@ -68,11 +68,11 @@ class OpenGLRenderTarget: RenderTargetBackend {
 }
 
 extension OpenGLRenderTarget {
-    @inline(__always)
+    @_transparent
     func clear() {
         glClearColor(clearColor.red, clearColor.green, clearColor.blue, clearColor.alpha)
-        glClearDepth(0)
-        glClear([.color, .depth, .stencil])
+        glClearDepth(1)
+        glClear([.color, .depth])
     }
     
     func willBeginFrame(_ frame: UInt) {
@@ -81,7 +81,6 @@ extension OpenGLRenderTarget {
     }
     
     func didEndFrame(_ frame: UInt) {
-        glFlush()
         if let windowRenderTarget {
             glBindFramebuffer(0)
             glViewport(x: 0, y: 0, width: Int(size.width), height: Int(size.height))
@@ -91,8 +90,8 @@ extension OpenGLRenderTarget {
             let sizeOnlyRenderTarget = renderer.openGLBackend.sizeOnlyRenderTarget
             sizeOnlyRenderTarget.size = self.size
             renderer.draw(windowRenderTarget, into: sizeOnlyRenderTarget, options: [], sampler: .nearest)
-            glFlush()
         }
+        glFlush()
     }
     
     func willBeginContent(matrices: Matrices?, viewport: Rect?) {
@@ -105,7 +104,7 @@ extension OpenGLRenderTarget {
     }
     
     func didEndContent() {
-        glFlush()
+        
     }
 }
 
