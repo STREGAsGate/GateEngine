@@ -25,4 +25,5 @@ public func EVIOCGKEY(_ len: Int32) -> Int32 {
     return LinuxExtensions.EVIOCGKEY(len)
 }
 
-public let EVIOCGID: Int32 = LinuxExtensions.EVIOCGID()
+@_transparent
+public var EVIOCGID: Int32 {return LinuxExtensions.EVIOCGID()}

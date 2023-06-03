@@ -109,7 +109,7 @@ extension _RenderTargetProtocol {
     
     public init() {
         precondition(Game.shared.renderingIsPermitted, "RenderTarget can only be created from a RenderingSystem.")
-        self.renderTargetBackend = getRenderTargetBackend(windowBacking: nil)
+        self.renderTargetBackend = getRenderTargetBackend()
         self.clearColor = .black
     }
     
@@ -269,20 +269,22 @@ extension RenderTargetBackend {
 }
 
 @_transparent
-@MainActor func getRenderTargetBackend(windowBacking: WindowBacking?) -> RenderTargetBackend {
+@MainActor func getRenderTargetBackend() -> RenderTargetBackend {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
-    return OpenGLRenderTarget(windowBacking: windowBacking)
+    return OpenGLRenderTarget(windowBacking: nil)
 #elseif canImport(MetalKit)
     #if canImport(GLKit) && !targetEnvironment(macCatalyst)
     if MetalRenderer.isSupported == false {
-        return OpenGLRenderTarget(windowBacking: windowBacking)
+        return OpenGLRenderTarget(windowBacking: nil)
     }
     #endif
-    return MetalRenderTarget(windowBacking: windowBacking)
+    return MetalRenderTarget(windowBacking: nil)
 #elseif canImport(WebGL2)
-    return WebGL2RenderTarget(isWindow: windowBacking != nil)
+    return WebGL2RenderTarget(isWindow: false)
 #elseif canImport(WinSDK)
-    return DX12RenderTarget(windowBacking: windowBacking)
+    return DX12RenderTarget(windowBacking: nil)
+#elseif os(Linux)
+    return OpenGLRenderTarget(windowBacking: nil)
 #else
     #error("Not implemented.")
 #endif

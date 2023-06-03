@@ -133,6 +133,10 @@ final class Win32Window: WindowBacking {
         }
     }
 
+    @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
+        return DX12RenderTarget(windowBacking: windowBacking)
+    }
+
     deinit {
         Task {@MainActor in
             if Game.shared.windowManager.windows.isEmpty {

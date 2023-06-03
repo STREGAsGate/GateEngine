@@ -4,10 +4,14 @@
  *
  * http://stregasgate.com
  */
-#if canImport(OpenALSoft) && !os(WASI)
+#if (canImport(OpenALSoft) || canImport(LinuxSupport)) && !os(WASI)
 
 import Foundation
+#if canImport(OpenALSoft) 
 import OpenALSoft
+#elseif canImport(LinuxSupport)
+import LinuxSupport
+#endif
 
 internal class OASourceReference: SpatialAudioSourceReference {
     unowned let mixerReference: OASpacialMixerReference

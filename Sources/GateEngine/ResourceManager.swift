@@ -278,7 +278,7 @@ internal extension ResourceManager {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
         return await OpenGLGeometry(geometry: raw)
 #elseif canImport(MetalKit)
-        #if canImport(GLKit)
+        #if canImport(OpenGL_GateEngine)
         if await MetalRenderer.isSupported == false {
             return await OpenGLGeometry(geometry: raw)
         }
@@ -288,6 +288,8 @@ internal extension ResourceManager {
         return await WebGL2Geometry(geometry: raw)
 #elseif canImport(WinSDK)
         return await DX12Geometry(geometry: raw)
+#elseif canImport(OpenGL_GateEngine)
+        return await OpenGLGeometry(geometry: raw)
 #else
         #error("Not implemented")
 #endif
@@ -428,7 +430,7 @@ internal extension ResourceManager {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
         return await OpenGLGeometry(geometry: raw, skin: skin)
 #elseif canImport(MetalKit)
-    #if canImport(GLKit)
+    #if canImport(OpenGL_GateEngine)
         if await MetalRenderer.isSupported == false {
             return await OpenGLGeometry(geometry: raw, skin: skin)
         }
@@ -438,6 +440,8 @@ internal extension ResourceManager {
         return await WebGL2Geometry(geometry: raw, skin: skin)
 #elseif canImport(WinSDK)        
         return await DX12Geometry(geometry: raw, skin: skin)
+#elseif canImport(OpenGL_GateEngine)        
+        return await OpenGLGeometry(geometry: raw, skin: skin)
 #else
         #error("Not implemented")
 #endif
@@ -478,6 +482,8 @@ internal extension ResourceManager {
         return await WebGL2Geometry(lines: raw)
 #elseif canImport(WinSDK)
         return await DX12Geometry(lines: raw)
+#elseif canImport(OpenGL_GateEngine)
+        return await OpenGLGeometry(lines: raw)
 #else
 #error("Not implemented")
 #endif
@@ -518,6 +524,8 @@ internal extension ResourceManager {
         return await WebGL2Geometry(points: raw)
 #elseif canImport(WinSDK)
         return await DX12Geometry(points: raw)
+#elseif canImport(OpenGL_GateEngine)
+        return await OpenGLGeometry(points: raw)
 #else
 #error("Not implemented")
 #endif
@@ -687,6 +695,8 @@ internal extension ResourceManager {
         return await WebGL2Texture(data: data, size: size, mipMapping: mipMapping)
 #elseif canImport(WinSDK)
         return await DX12Texture(data: data, size: size, mipMapping: mipMapping)
+#elseif canImport(OpenGL_GateEngine)
+        return await OpenGLTexture(data: data, size: size, mipMapping: mipMapping)
 #else
         #error("Not implemented")
 #endif
@@ -705,6 +715,8 @@ internal extension ResourceManager {
         return await WebGL2Texture(renderTargetBackend: renderTargetBackend)
 #elseif canImport(WinSDK)
         return await DX12Texture(renderTargetBackend: renderTargetBackend)
+#elseif canImport(OpenGL_GateEngine)
+        return await OpenGLTexture(renderTargetBackend: renderTargetBackend)
 #else
         #error("Not implemented")
 #endif

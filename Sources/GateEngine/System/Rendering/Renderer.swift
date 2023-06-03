@@ -125,6 +125,8 @@ public enum RenderingAPI {
     return WebGL2Renderer()
 #elseif canImport(WinSDK)
     return DX12Renderer()
+#elseif canImport(OpenGL_GateEngine)
+    return OpenGLRenderer()
 #else
     #error("Not implemented.")
 #endif
