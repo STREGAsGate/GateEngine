@@ -8,7 +8,7 @@
 
 import Foundation
 import FoundationNetworking
-import LinuxSupportIO
+import LinuxSupport
 
 fileprivate class HIDController {
     var guid: SDL2ControllerGUID {
