@@ -61,14 +61,14 @@ final class UIKitWindow: WindowBacking {
 
     @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
         #if GATEENGINE_FORCE_OPNEGL_APPLE
-            return OpenGLRenderTarget(windowBacking: windowBacking)
+            return OpenGLRenderTarget(windowBacking: self)
         #else
         #if canImport(GLKit) && !targetEnvironment(macCatalyst)
         if MetalRenderer.isSupported == false {
-            return OpenGLRenderTarget(windowBacking: windowBacking)
+            return OpenGLRenderTarget(windowBacking: self)
         }
         #endif
-        return MetalRenderTarget(windowBacking: windowBacking)
+        return MetalRenderTarget(windowBacking: self)
         #endif
     }
     

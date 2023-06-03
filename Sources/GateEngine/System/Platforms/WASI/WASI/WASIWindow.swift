@@ -90,7 +90,7 @@ final class WASIWindow: WindowBacking {
     }
 
     @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
-        return WebGL2RenderTarget(isWindow: windowBacking != nil)
+        return WebGL2RenderTarget(isWindow: true)
     }
     
     var didRequestPointerLock: Bool = false
