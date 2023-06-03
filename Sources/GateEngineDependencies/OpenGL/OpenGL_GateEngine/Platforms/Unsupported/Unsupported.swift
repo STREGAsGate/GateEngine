@@ -434,6 +434,10 @@ public typealias GLdouble = Double
     fatalError("OpenGL Not Supported")
 }
 
+@_transparent @usableFromInline internal func _glClearDepth(_ value: GLfloat) {
+    fatalError("OpenGL Not Supported")
+}
+
 @_transparent @usableFromInline internal func _glClear(_ mask: GLbitfield) {
     fatalError("OpenGL Not Supported")
 }

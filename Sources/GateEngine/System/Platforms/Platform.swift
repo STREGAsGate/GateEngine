@@ -88,6 +88,7 @@ extension InternalPlatform {
         files = files.map({$0.resolvingSymlinksInPath()})
         
         // Expand tilde
+        // TODO: There's probably never going to be a tilde?
         #if !os(iOS) && !os(tvOS)
         files = files.map({
             @_transparent

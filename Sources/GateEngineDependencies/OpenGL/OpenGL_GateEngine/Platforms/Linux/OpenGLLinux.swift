@@ -432,6 +432,10 @@ public typealias GLdouble = OpenGL_Linux.GLdouble
     OpenGL_Linux.glClearColor(red, green, blue, alpha)
 }
 
+@_transparent @usableFromInline internal func _glClearDepth(_ value: GLfloat) {
+    OpenGL_Linux.glClearDepthf(value)
+}
+
 @_transparent @usableFromInline internal func _glClear(_ mask: GLbitfield) {
     OpenGL_Linux.glClear(mask)
 }

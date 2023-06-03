@@ -1021,18 +1021,12 @@ public let glBackBuffer = GL_BACK
     }
 }
 
-@inlinable @inline(__always) public func glClearColor(_ color: GLfloat...) {
-    if color.count == 0 {
-        _glClearColor(0, 0, 0, 0)
-    }else if color.count == 1 {
-        _glClearColor(color[0], color[0], color[0], color[0])
-    }else{
-        let red = color[0]
-        let green = color.count >= 2 ? color[1] : 0
-        let blue = color.count >= 3 ? color[2] : 0
-        let alpha = color.count >= 4 ? color[3] : 0
-        _glClearColor(red, green, blue, alpha)
-    }
+@inlinable @inline(__always) public func glClearColor(_ red: GLfloat, _ green: GLfloat, _ blue: GLfloat, _ alpha: GLfloat) {
+    _glClearColor(red, green, blue, alpha)
+}
+
+@inlinable @inline(__always) public func glClearDepth(_ value: GLfloat) {
+    _glClearDepth(value)
 }
 
 @inlinable @inline(__always) public func glClear(_ mask: OpenGL.ClearMask) {

@@ -58,13 +58,11 @@ class OpenGLTexture: TextureBackend {
         
         let width = Int(size.width)
         let height = Int(size.height)
+        glTexImage2D(internalFormat: .rgba, width: width, height: height, format: .rgba, type: .uint8, pixels: data)
         if case let .auto(levels) = mipMapping, levels > 1  {
             data.withUnsafeBytes { (pointer) -> Void in
-                glTexImage2D(internalFormat: .rgba, width: width, height: height, format: .rgba, type: .uint8, pixels: data)
                 glGenerateMipmap(target: .texture2D)
             }
-        }else{
-            glTexImage2D(internalFormat: .rgba, width: width, height: height, format: .rgba, type: .uint8, pixels: data)
         }
     }
     

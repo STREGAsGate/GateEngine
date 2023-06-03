@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 #if os(Linux)
-import LinuxSupportGFX
+import LinuxSupport
 
 internal extension OpenGLRenderer {
     func setup() {

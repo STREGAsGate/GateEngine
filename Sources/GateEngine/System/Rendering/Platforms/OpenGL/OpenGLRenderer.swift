@@ -25,7 +25,7 @@ class OpenGLRenderer: RendererBackend {
         self.setup()
     }
     
-    lazy private var instanceMatriciesVBO: GLuint = glGenBuffer()
+    
     let generator = GLSLCodeGenerator(version: .v330core)
     
     var _shaders: [ShaderKey:OpenGLShader] = [:]
@@ -111,7 +111,7 @@ class OpenGLRenderer: RendererBackend {
             assert(drawCommand.flags.primitive == geometry.primitive)
         }
 #endif
-      
+        let instanceMatriciesVBO: GLuint = glGenBuffer()
         let vao = glGenVertexArrays(count: 1)[0]
         glBindVertexArray(vao)
         
@@ -136,7 +136,7 @@ class OpenGLRenderer: RendererBackend {
         
         var vertexIndex: Int = 0
         setGeometries(geometries, at: &vertexIndex)
-        setTransforms(drawCommand.transforms, at: &vertexIndex)
+        setTransforms(drawCommand.transforms, vbo: instanceMatriciesVBO, at: &vertexIndex)
         
         glBindBuffer(geometries[0].buffers.last!, as: .elementArray)
         
@@ -157,6 +157,7 @@ class OpenGLRenderer: RendererBackend {
 #endif
         
         glDeleteVertexArrays([vao])
+        glDeleteBuffers([instanceMatriciesVBO])
         
 #if GATEENGINE_DEBUG_RENDERING
         checkError()
@@ -164,6 +165,7 @@ class OpenGLRenderer: RendererBackend {
     }
     
     final class OpenGLSizeOnlyRenderTarget: _RenderTargetProtocol {
+        var lastDrawnFrame: UInt = .max
         var texture: Texture {get {fatalError()}set{}}
         var renderTargetBackend: RenderTargetBackend {get{fatalError()}set{}}
         var drawables: [Any] {get{fatalError()}set{}}
@@ -263,14 +265,14 @@ extension OpenGLRenderer {
     }
     
     @inline(__always)
-    private func setTransforms(_ transforms: ContiguousArray<Transform3>, at index: inout Int) {
+    private func setTransforms(_ transforms: ContiguousArray<Transform3>, vbo: GLuint, at index: inout Int) {
         var data: [Float] = []
         data.reserveCapacity(16 * transforms.count)
         for transform in transforms {
             data.append(contentsOf: transform.createMatrix().transposedArray())
         }
         
-        glBindBuffer(instanceMatriciesVBO, as: .array)
+        glBindBuffer(vbo, as: .array)
         glBufferData(data, withUsage: .static, as: .array)
         
         let atributeLocation = index
@@ -439,7 +441,7 @@ extension OpenGLRenderer {
                 case .float:
                     glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .float)
                 case .uInt16:
-                    glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .uint16)
+                    glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .float)
                 case .uInt32:
                     glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .float)
                 }

@@ -434,6 +434,10 @@ public typealias GLdouble = GLKit.GLdouble
     GLKit.glClearColor(red, green, blue, alpha)
 }
 
+@_transparent @usableFromInline internal func _glClearDepth(_ value: GLfloat) {
+    GLKit.glClearDepthf(value)
+}
+
 @_transparent @usableFromInline internal func _glClear(_ mask: GLbitfield) {
     GLKit.glClear(mask)
 }

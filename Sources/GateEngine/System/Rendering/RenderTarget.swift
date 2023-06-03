@@ -16,13 +16,14 @@ import GameMath
 }
 
 @MainActor protocol _RenderTargetProtocol: RenderTargetProtocol {
+    var lastDrawnFrame: UInt {get set}
     var texture: Texture {get}
     var renderTargetBackend: RenderTargetBackend {get set}
     var drawables: [Any] {get set}
     var size: Size2 {get set}
     
     func reshapeIfNeeded()
-    func draw()
+    func draw(_ frame: UInt)
 }
 
 extension RenderTargetProtocol {
@@ -85,6 +86,7 @@ extension _RenderTargetProtocol {
     var renderTargetBackend: RenderTargetBackend
     var drawables: [Any] = []
     var previousSize: Size2? = nil
+    var lastDrawnFrame: UInt = .max
     
     @inlinable @inline(__always)
     public var size: Size2 {
@@ -140,32 +142,37 @@ extension _RenderTargetProtocol {
         }
     }
     
-    internal func draw() {
+    internal func draw(_ frame: UInt) {
+        guard self.lastDrawnFrame != frame else {return}
+        self.lastDrawnFrame = frame
+        
         for renderTarget in renderTargets {
             assert(renderTarget !== self, "You created a RenderTarget infinite loop")
-            renderTarget.draw()
+            renderTarget.draw(frame)
         }
-        self.reshapeIfNeeded()
-        renderTargetBackend.willBeginFrame()
-
-        for drawable in drawables {
-            switch drawable {
-            case let scene as Scene:
-                drawScene(scene)
-            case let canvas as Canvas:
-                drawCanvas(canvas)
-            case let container as RenderTargetFillContainer:
-                drawRenderTarget(container)
-            default:
-                Log.warn("\(type(of: drawable)) cannot be drawn and was skipped.")
-                continue
+        if drawables.isEmpty == false {
+            self.reshapeIfNeeded()
+            renderTargetBackend.willBeginFrame(frame)
+            
+            for drawable in drawables {
+                switch drawable {
+                case let scene as Scene:
+                    drawScene(scene)
+                case let canvas as Canvas:
+                    drawCanvas(canvas)
+                case let container as RenderTargetFillContainer:
+                    drawRenderTarget(container, frame: frame)
+                default:
+                    Log.warn("\(type(of: drawable)) cannot be drawn and was skipped.")
+                    continue
+                }
             }
+            if let window = self as? Window {
+                window.didDrawSomething = drawables.isEmpty == false
+            }
+            drawables.removeAll(keepingCapacity: true)
+            renderTargetBackend.didEndFrame(frame)
         }
-        if let window = self as? Window {
-            window.didDrawSomething = drawables.isEmpty == false
-        }
-        drawables.removeAll(keepingCapacity: true)
-        renderTargetBackend.didEndFrame()
     }
     
     @inline(__always)
@@ -191,8 +198,8 @@ extension _RenderTargetProtocol {
     }
     
     @inline(__always)
-    private func drawRenderTarget(_ container: RenderTargetFillContainer) {
-        container.renderTarget.draw()
+    private func drawRenderTarget(_ container: RenderTargetFillContainer, frame: UInt) {
+        container.renderTarget.draw(frame)
         renderTargetBackend.willBeginContent(matrices: nil, viewport: nil)
         Game.shared.renderer.draw(container.renderTarget, into: self, options: container.options, sampler: container.filter)
         renderTargetBackend.didEndContent()
@@ -249,8 +256,8 @@ extension RenderTargetProtocol {
     var wantsReshape: Bool {get}
     func reshape()
     
-    func willBeginFrame()
-    func didEndFrame()
+    func willBeginFrame(_ frame: UInt)
+    func didEndFrame(_ frame: UInt)
     
     func willBeginContent(matrices: Matrices?, viewport: Rect?)
     func didEndContent()

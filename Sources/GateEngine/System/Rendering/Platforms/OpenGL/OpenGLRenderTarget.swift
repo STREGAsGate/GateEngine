@@ -31,8 +31,9 @@ class OpenGLRenderTarget: RenderTargetBackend {
     var windowRenderTarget: RenderTarget? = nil
     init(windowBacking: WindowBacking?) {
         self.framebuffer = glGenFramebuffers(count: 1)[0]
-        self.colorTexture = glGenTextures(count: 1)[0]
-        self.depthTexture = glGenTextures(count: 1)[0]
+        let textures = glGenTextures(count: 2)
+        self.colorTexture = textures[0]
+        self.depthTexture = textures[1]
         
         self.windowRenderTarget = windowBacking != nil ? RenderTarget(backend: self) : nil
         
@@ -41,23 +42,21 @@ class OpenGLRenderTarget: RenderTargetBackend {
         glBindTexture(colorTexture)
         glTexParameter(filtering: .magnify, by: .nearest)
         glTexParameter(filtering: .minimize, by: .nearest)
-        glTexParameter(wrapping: .horizontal, by: .clampToEdge)
-        glTexParameter(wrapping: .vertical, by: .clampToEdge)
+        glTexParameter(wrapping: .horizontal, by: .repeat)
+        glTexParameter(wrapping: .vertical, by: .repeat)
         glFramebufferTexture2D(attachment: .color(0), texture: colorTexture)
-        
+ 
         glBindTexture(depthTexture)
-        glTexParameter(filtering: .magnify, by: .linear)
-        glTexParameter(filtering: .minimize, by: .linear)
-        glTexParameter(wrapping: .horizontal, by: .clampToEdge)
-        glTexParameter(wrapping: .vertical, by: .clampToEdge)
-        glTexParameter(comparingBy: .lessThan)
+        glTexParameter(filtering: .magnify, by: .nearest)
+        glTexParameter(filtering: .minimize, by: .nearest)
+        glTexParameter(wrapping: .horizontal, by: .repeat)
+        glTexParameter(wrapping: .vertical, by: .repeat)
+        glTexParameter(comparingBy: .greaterThanOrEqualTo)
         glFramebufferTexture2D(attachment: .depth, texture: depthTexture)
-        
-        glDrawBuffers([.color(0)])
         
         self.reshape()
         
-        assert(self.framebuffer > 0)
+        assert(self.framebuffer != 0)
         assert(glCheckFramebufferStatus(target: .draw) == .complete)
         assert({let error = glGetError(); if error != .none {Log.error(error)}; return error == .none}())
     }
@@ -72,21 +71,22 @@ extension OpenGLRenderTarget {
     @inline(__always)
     func clear() {
         glClearColor(clearColor.red, clearColor.green, clearColor.blue, clearColor.alpha)
+        glClearDepth(0)
         glClear([.color, .depth, .stencil])
     }
     
-    func willBeginFrame() {
+    func willBeginFrame(_ frame: UInt) {
         glBindFramebuffer(framebuffer)
-        glViewport(x: 0, y: 0, width: Int(size.width), height: Int(size.height))
         clear()
     }
     
-    func didEndFrame() {
+    func didEndFrame(_ frame: UInt) {
         glFlush()
         if let windowRenderTarget {
             glBindFramebuffer(0)
             glViewport(x: 0, y: 0, width: Int(size.width), height: Int(size.height))
-            clear()
+            glClearColor(0, 0, 0, 1)
+            glClear([.color])
             let renderer = Game.shared.renderer
             let sizeOnlyRenderTarget = renderer.openGLBackend.sizeOnlyRenderTarget
             sizeOnlyRenderTarget.size = self.size

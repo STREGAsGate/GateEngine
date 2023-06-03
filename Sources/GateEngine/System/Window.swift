@@ -15,6 +15,7 @@ public enum WindowStyle {
 }
 
 @MainActor public final class Window: RenderTargetProtocol, _RenderTargetProtocol {
+    public var lastDrawnFrame: UInt = .max
     public let identifier: String
     public let style: WindowStyle
     
@@ -88,6 +89,7 @@ public enum WindowStyle {
     
     private var previousTime: Double = 0
 
+    var frame: UInt = 0
     internal func vSyncCalled() {
         let now: Double = Game.shared.platform.systemTime()
         let delta: Double = now - previousTime
@@ -96,8 +98,9 @@ public enum WindowStyle {
         guard delta > 0 && delta < 0.1 else {return}
         if let delegate: WindowDelegate = self.delegate {
             delegate.window(self, wantsUpdateForTimePassed: Float(delta))
-            self.draw()
+            self.draw(frame)
         }
+        frame &+= 1
     }
     
     @inlinable @inline(__always)

@@ -431,6 +431,10 @@ public func glewInit() {
     GLEW.__glewClearColor(red, green, blue, alpha)
 }
 
+@_transparent @usableFromInline internal func _glClearDepth(_ value: GLfloat) {
+    GLEW.__glewClearDepthf(value)
+}
+
 @_transparent @usableFromInline internal func _glClear(_ mask: GLbitfield) {
     GLEW.__glewClear(mask)
 }

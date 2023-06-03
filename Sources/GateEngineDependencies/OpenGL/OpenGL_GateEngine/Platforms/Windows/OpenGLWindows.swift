@@ -431,6 +431,10 @@ public typealias GLdouble = OpenGL_Windows.GLdouble
     OpenGL_Windows.glClearColor(red, green, blue, alpha)
 }
 
+@_transparent @usableFromInline internal func _glClearDepth(_ value: GLfloat) {
+    OpenGL_Windows.glClearDepthf(value)
+}
+
 @_transparent @usableFromInline internal func _glClear(_ mask: GLbitfield) {
     OpenGL_Windows.glClear(mask)
 }

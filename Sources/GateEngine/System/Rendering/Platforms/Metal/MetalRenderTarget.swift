@@ -69,12 +69,12 @@ class MetalRenderTarget: RenderTargetBackend {
         self.depthTexture = Game.shared.renderer.device.makeTexture(descriptor: reshapeDescriptor)!
     }
     
-    func willBeginFrame() {
+    func willBeginFrame(_ frame: UInt) {
         self.isFirstPass = true
         self.commandBuffer = Game.shared.renderer.commandQueue.makeCommandBuffer()!
     }
     
-    func didEndFrame() {
+    func didEndFrame(_ frame: UInt) {
         if let drawable = metalView?.currentDrawable {
             commandBuffer.present(drawable)
         }
