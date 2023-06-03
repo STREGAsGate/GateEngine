@@ -49,9 +49,9 @@ class OpenGLRenderTarget: RenderTargetBackend {
         glBindTexture(depthTexture)
         glTexParameter(filtering: .magnify, by: .nearest)
         glTexParameter(filtering: .minimize, by: .nearest)
-        glTexParameter(wrapping: .horizontal, by: .repeat)
-        glTexParameter(wrapping: .vertical, by: .repeat)
-        glTexParameter(comparingBy: .lessThanOrEqualTo)
+        glTexParameter(wrapping: .horizontal, by: .clampToEdge)
+        glTexParameter(wrapping: .vertical, by: .clampToEdge)
+        glTexParameter(comparingBy: .lessThan)
         glFramebufferTexture2D(attachment: .depth, texture: depthTexture)
         
         self.reshape()
@@ -72,6 +72,7 @@ extension OpenGLRenderTarget {
     func clear() {
         glClearColor(clearColor.red, clearColor.green, clearColor.blue, clearColor.alpha)
         glClearDepth(1)
+        glDepthMask(true)
         glClear([.color, .depth])
     }
     
