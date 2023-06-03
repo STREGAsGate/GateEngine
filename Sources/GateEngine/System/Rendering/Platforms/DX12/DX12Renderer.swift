@@ -296,7 +296,7 @@ extension DX12Renderer {
         withUnsafeBytes(of: matricies.view.transposedSIMD) { pointer in
             uniforms.append(contentsOf: pointer)
         }
-        let customValues: [CustomUniformType] = material.sortedCustomUniforms()
+        let customValues = material.sortedCustomUniforms()
         if customValues.isEmpty == false {
             for pair in customValues {
                 let value = pair.value
