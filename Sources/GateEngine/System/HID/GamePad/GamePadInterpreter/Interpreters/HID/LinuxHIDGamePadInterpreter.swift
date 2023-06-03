@@ -5,10 +5,8 @@
  * http://stregasgate.com
  */
 #if os(Linux)
-
 import Foundation
-import FoundationNetworking
-import LinuxSupportIO
+import LinuxSupport
 
 fileprivate class HIDController {
     var guid: SDL2ControllerGUID {
@@ -31,17 +29,19 @@ fileprivate class HIDController {
     }
 }
 
-fileprivate let BITS_PER_LONG = MemoryLayout<CUnsignedLong>.size * 8
+fileprivate let BITS_PER_LONG: Int = MemoryLayout<CUnsignedLong>.size * 8
 fileprivate func NBITS(_ x: Int) -> Int {((((x)-1)/BITS_PER_LONG)+1)}
 fileprivate func EVDEV_OFF(_ x: Int) -> Int {((x)%BITS_PER_LONG)}
 fileprivate func EVDEV_LONG(_ x: Int) -> Int {((x)/BITS_PER_LONG)}
 fileprivate func test_bit(_ bit: Int, _ array: Array<UInt32>) -> Bool {((array[EVDEV_LONG(bit)] >> EVDEV_OFF(bit)) & 1) != 0}
 
 internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
-    unowned let manager: GamePadManager
-    required init(manager: GamePadManager) {
-        self.manager = manager
+    unowned let hid: HID
+    required init(hid: HID) {
+        self.hid = hid
     }
+
+    let sdl2Database: SDL2Database? = try? SDL2Database()
 
     var connected: [String:Int32] = [:]
     
@@ -78,22 +78,22 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
     }
 
     func checkConnectedJoysticks() {
-        guard let joysticks = try? FileManager.default.contentsOfDirectory(atPath: "/dev/input").map({"/dev/input/" + $0}) else {return}
-        let old = self.connected.keys
-        for val in old {
+        guard let joysticks: [String] = try? FileManager.default.contentsOfDirectory(atPath: "/dev/input").map({"/dev/input/" + $0}) else {return}
+        let old: Dictionary<String, Int32>.Keys = self.connected.keys
+        for val: String in old {
             if joysticks.contains(val) == false {
-                if let gamePad = manager.gamePads.first(where: {($0.identifier as! HIDController).path == val}) {
-                    manager.removedDisconnectedGamePad(gamePad)
+                if let gamePad: GamePad = hid.gamePads.all.first(where: {($0.identifier as! HIDController).path == val}) {
+                    hid.gamePads.removedDisconnectedGamePad(gamePad)
                 }
-                if let fd = connected[val] {
+                if let fd: Int32 = connected[val] {
                     close(fd)
                 }
                 connected[val] = nil
             }
         }
-        for val in joysticks {
+        for val: String in joysticks {
             if self.connected.keys.contains(val) == false {                
-                let fd = open(val, O_RDONLY, 0)
+                let fd: Int32 = open(val, O_RDONLY, 0)
                 self.connected[val] = fd
 
                 func failed() {
@@ -101,13 +101,13 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
                     self.connected[val] = nil
                 }
 
-                guard let guid = guidFromPath(val, fd) else {failed(); continue}
-                guard var map = SDL2Database.shared?.controllers[guid] else {failed(); continue}
+                guard let guid: SDL2ControllerGUID = guidFromPath(val, fd) else {failed(); continue}
+                guard var map: SDL2ControllerMap = sdl2Database?.controllers[guid] else {failed(); continue}
                 //Use our generated guid with vendor and product IDs
                 map.id = guid
                 
-                let gamePad = GamePad(interpreter: self, identifier: HIDController(map: map, path: val))
-                manager.addNewlyConnectedGamePad(gamePad)
+                let gamePad: GamePad = GamePad(interpreter: self, identifier: HIDController(map: map, path: val))
+                hid.gamePads.addNewlyConnectedGamePad(gamePad)
             }
         }
     }
@@ -313,7 +313,8 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
     }
     
     func description(of gamePad: GamePad) -> String {
-        return (map.name ?? "[Unknown]") + ", GUID: \(guid)"
+        let identifier: HIDController = gamePad.identifier as! HIDController
+        return (identifier.map.name ?? "[Unknown]") + ", GUID: \(identifier.guid)"
     }
 }
 

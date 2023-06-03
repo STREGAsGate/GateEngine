@@ -1,5 +1,5 @@
 // Game Controllers
-#include "include/ioctl.h"
+#include "ioctl.h"
 #include <linux/types.h>
 
 struct input_absinfo {

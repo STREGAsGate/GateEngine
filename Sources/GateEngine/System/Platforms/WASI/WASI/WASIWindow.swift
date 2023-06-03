@@ -11,7 +11,7 @@ import GameMath
 import JavaScriptKit
 import DOM
 
-class WASIWindow: WindowBacking {
+final class WASIWindow: WindowBacking {
     unowned let window: Window
     let style: WindowStyle
     let identifier: String
@@ -87,6 +87,10 @@ class WASIWindow: WindowBacking {
     
     func setMousePosition(_ position: Position2) {
 
+    }
+
+    @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
+        return WebGL2RenderTarget(isWindow: true)
     }
     
     var didRequestPointerLock: Bool = false

@@ -100,7 +100,7 @@ class WebGL2RenderTarget: RenderTargetBackend {
 }
 
 extension WebGL2RenderTarget {
-    func willBeginFrame() {
+    func willBeginFrame(_ frame: UInt) {
         context.bindFramebuffer(target: GL.FRAMEBUFFER, framebuffer: framebuffer)
         context.clearColor(red: clearColor.red, green: clearColor.green, blue: clearColor.blue, alpha: clearColor.alpha)
         context.clear(mask: GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
@@ -108,7 +108,7 @@ extension WebGL2RenderTarget {
         context.blendFunc(sfactor: GL.SRC_ALPHA, dfactor: GL.ONE_MINUS_SRC_ALPHA)
     }
     
-    func didEndFrame() {
+    func didEndFrame(_ frame: UInt) {
         if isWindow {
             context.flush()
         }

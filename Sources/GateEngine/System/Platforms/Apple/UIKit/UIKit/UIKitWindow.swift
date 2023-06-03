@@ -11,7 +11,7 @@ import UIKit
 import MetalKit
 import GameMath
 
-class UIKitWindow: WindowBacking {
+final class UIKitWindow: WindowBacking {
     weak var window: Window!
     let uiWindow: UIWindow
     let identifier: String
@@ -57,6 +57,19 @@ class UIKitWindow: WindowBacking {
     
     func close() {
         assertionFailure("UIKit windows can't be closed.")
+    }
+
+    @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
+        #if GATEENGINE_FORCE_OPNEGL_APPLE
+            return OpenGLRenderTarget(windowBacking: self)
+        #else
+        #if canImport(GLKit) && !targetEnvironment(macCatalyst)
+        if MetalRenderer.isSupported == false {
+            return OpenGLRenderTarget(windowBacking: self)
+        }
+        #endif
+        return MetalRenderTarget(windowBacking: self)
+        #endif
     }
     
     deinit {

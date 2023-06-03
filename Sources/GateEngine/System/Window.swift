@@ -22,7 +22,7 @@ public enum WindowStyle {
     @usableFromInline
     internal lazy var windowBacking: WindowBacking = createWindowBacking()
     @usableFromInline
-    lazy var renderTargetBackend: RenderTargetBackend = getRenderTargetBackend(windowBacking: self.windowBacking)
+    lazy var renderTargetBackend: RenderTargetBackend = windowBacking.createWindowRenderTargetBackend()
     
     var drawables: [Any] = []
     public private(set) lazy var texture: Texture = Texture(renderTarget: self)
@@ -146,6 +146,8 @@ internal protocol WindowBacking: AnyObject {
     
     func show()
     func close()
+
+    @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend
 }
 
 
@@ -173,7 +175,7 @@ internal extension Window {
         #elseif canImport(WinSDK)
         return Win32Window(identifier: identifier, style: style, window: self)
         #elseif os(Linux)
-        #error("Not implemented")
+        return X11Window(identifier: identifier, style: style, window: self)
         #elseif os(WASI)
         return WASIWindow(identifier: identifier, style: style, window: self)
         #elseif os(Android)

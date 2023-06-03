@@ -52,7 +52,7 @@ let package = Package(
                         
                         #if os(Linux)
                         dependencies.append(.target(name: "LinuxSupport", condition: .when(platforms: [.linux, .android])))
-                        dependencies.append(.target(name: "OpenALSoft", condition: .when(platforms: [.linux, .android])))
+                        // dependencies.append(.target(name: "OpenALSoft", condition: .when(platforms: [.linux, .android])))
                         #endif
                         
                         dependencies.append(.product(name: "Atomics", package: "swift-atomics", condition: .when(platforms: [.macOS, .linux, .iOS, .tvOS, .android, .wasi])))

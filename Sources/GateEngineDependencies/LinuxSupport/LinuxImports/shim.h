@@ -1,6 +1,16 @@
 // Window & Rendering
 #include <GL/glx.h>
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#include <X11/Xresource.h>
+
+// Audio
+#include <AL/al.h>
+#include <AL/alc.h>
+
+// Game Controllers
+#include <sys/ioctl.h>
+#include <linux/joystick.h>
 
 /* This isn't defined in older Linux kernel headers */
 #ifndef SYN_DROPPED

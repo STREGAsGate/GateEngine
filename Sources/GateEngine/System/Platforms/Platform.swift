@@ -138,9 +138,9 @@ extension InternalPlatform {
         return url
     }
     
-    #if os(macOS) || os(iOS) || os(Windows)
+    #if os(macOS) || os(iOS) || os(Windows) || os(Linux)
     func systemTime() -> Double {
-        var time = timespec()
+        var time: timespec = timespec()
         if clock_gettime(CLOCK_MONOTONIC_RAW, &time) != 0 {
             return -1
         }
