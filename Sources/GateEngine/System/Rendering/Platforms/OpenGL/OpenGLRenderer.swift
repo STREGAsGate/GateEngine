@@ -442,6 +442,7 @@ extension OpenGLRenderer {
                 glBindBuffer(geometry.buffers[attributeIndex], as: .array)
                 glEnableVertexAttribArray(attributeIndex: glIndex)
                 
+                #if os(iOS) || os(tvOS) || os(macOS) //Apples Metal wrapper appears to require actual correct types
                 switch attribute.type {
                 case .float:
                     glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .float)
@@ -450,6 +451,10 @@ extension OpenGLRenderer {
                 case .uInt32:
                     glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .uint32)
                 }
+                #else
+                // Standard OpenGL requires only float be used here
+                glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .float)
+                #endif
                 
                 index += 1
             }
