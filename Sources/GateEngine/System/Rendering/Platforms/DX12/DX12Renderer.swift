@@ -300,7 +300,7 @@ extension DX12Renderer {
         if customValues.isEmpty == false {
             for pair in customValues {
                 let value = pair.value
-                let name = pair.name
+                let name = pair.key
                 switch value {
                 case let value as Bool:
                     withUnsafeBytes(of: value) { pointer in
