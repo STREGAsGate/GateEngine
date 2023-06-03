@@ -130,7 +130,7 @@ class DX12RenderTarget: RenderTargetBackend {
         }
     }
     
-    func willBeginFrame() {
+    func willBeginFrame(_ frame: UInt) {
         self.isFirstPass = true
         if let swapChain: DX12SwapChain = swapChain {
             colorTexture = swapChain.currentBuffer
@@ -157,7 +157,7 @@ class DX12RenderTarget: RenderTargetBackend {
         }
     }
     
-    func didEndFrame() {
+    func didEndFrame(_ frame: UInt) {
        do {
             try self.commandList.reset(usingOriginalAllocator: commandAllocator, withInitialState: nil)
 
