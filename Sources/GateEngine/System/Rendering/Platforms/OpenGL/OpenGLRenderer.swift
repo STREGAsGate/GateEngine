@@ -336,79 +336,84 @@ extension OpenGLRenderer {
             let customValues = material.sortedCustomUniforms()
             if customValues.isEmpty == false {
                 for index in customValues.indices {
-                    let value = customValues[index]
-                    let name = generator.variable(for: .uniformCustom(UInt8(index), type: .bool))
+                    let pair = customValues[index]
+                    let value = pair.value
+                    let name = pair.key
+                    let variable = generator.variable(for: .uniformCustom(UInt8(index), type: .bool))
                     switch value {
                     case let value as Bool:
-                        if let location = try? glGetUniformLocation(inProgram: program, named: name) {
+                        if let location = try? glGetUniformLocation(inProgram: program, named: variable) {
                             try glUniform(location: location, values: value ? 1 : 0)
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
 #endif
                         }
                     case let value as Int:
-                        if let location = try? glGetUniformLocation(inProgram: program, named: name) {
+                        if let location = try? glGetUniformLocation(inProgram: program, named: variable) {
                             try glUniform(location: location, values: GLint(value))
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
 #endif
                         }
                     case let value as Float:
-                        if let location = try? glGetUniformLocation(inProgram: program, named: name) {
+                        if let location = try? glGetUniformLocation(inProgram: program, named: variable) {
                             try glUniform(location: location, values: value)
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
 #endif
                         }
                     case let value as any Vector2:
-                        if let location = try? glGetUniformLocation(inProgram: program, named: name) {
+                        if let location = try? glGetUniformLocation(inProgram: program, named: variable) {
                             try glUniform(location: location, values: value.x, value.y)
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
 #endif
                         }
                     case let value as any Vector3:
-                        if let location = try? glGetUniformLocation(inProgram: program, named: name) {
+                        if let location = try? glGetUniformLocation(inProgram: program, named: variable) {
                             try glUniform(location: location, values: value.x, value.y, value.z)
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
 #endif
                         }
                     case let value as Matrix3x3:
-                        if let location = try? glGetUniformLocation(inProgram: program, named: name) {
+                        if let location = try? glGetUniformLocation(inProgram: program, named: variable) {
                             glUniformMatrix3fv(location: location, transpose: false, values: value.transposedArray())
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
 #endif
                         }
                     case let value as Matrix4x4:
-                        if let location = try? glGetUniformLocation(inProgram: program, named: name) {
+                        if let location = try? glGetUniformLocation(inProgram: program, named: variable) {
                             glUniformMatrix4fv(location: location, transpose: false, values: value.transposedArray())
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
 #endif
                         }
                     case let value as Array<Matrix4x4>:
-                        if let location = try? glGetUniformLocation(inProgram: program, named: name) {
+                        if let location = try? glGetUniformLocation(inProgram: program, named: variable) {
                             var floats: [Float] = []
-                            floats.reserveCapacity(value.count * 16 * 24)
+                            let capacity = material.vertexShader.arrayCapacityForUniform(named: name) ?? material.fragmentShader.arrayCapacityForUniform(named: name)!
+                            floats.reserveCapacity(value.count * 16)
                             for mtx in value {
                                 floats.append(contentsOf: mtx.transposedArray())
                             }
-                            while floats.count < 16 * 24 {
-                                floats.append(0)
+                            
+                            if floats.count > capacity * 16 {
+                                floats = Array(floats[..<capacity])
+                                Log.warnOnce("Custom uniform \(name) exceeded max array capacity \(capacity) and was truncated.")
                             }
                             glUniformMatrix4fv(location: location, transpose: false, values: floats)
                         }else{
 #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(name)] not found.")
+                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
 #endif
                         }
                     default:
@@ -441,9 +446,9 @@ extension OpenGLRenderer {
                 case .float:
                     glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .float)
                 case .uInt16:
-                    glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .float)
+                    glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .uint16)
                 case .uInt32:
-                    glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .float)
+                    glVertexAttribPointer(attributeIndex: glIndex, unitsPerComponent: GLint(attribute.componentLength), unitType: .uint32)
                 }
                 
                 index += 1

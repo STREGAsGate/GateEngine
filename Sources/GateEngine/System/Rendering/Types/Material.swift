@@ -27,8 +27,8 @@ public struct Material {
     public var fragmentShader: FragmentShader = .textureSample
     
     private var customUniformValues: [String:any CustomUniformType] = [:]
-    internal func sortedCustomUniforms() -> [any CustomUniformType] {
-        return customUniformValues.sorted(by: {$0.key.compare($1.key) == .orderedAscending}).map({$0.value})
+    internal func sortedCustomUniforms() -> [Dictionary<String, any CustomUniformType>.Element] {
+        return customUniformValues.sorted(by: {$0.key.compare($1.key) == .orderedAscending})
     }
     public mutating func setCustomUniformValue(_ value: any CustomUniformType, forUniform name: String) {
         customUniformValues[name] = value

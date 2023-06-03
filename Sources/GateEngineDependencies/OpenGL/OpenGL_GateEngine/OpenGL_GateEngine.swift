@@ -827,18 +827,17 @@ public let glBackBuffer = GL_BACK
 
 @inlinable @inline(__always) public func glUniformMatrix4fv(location: GLint, transpose: Bool, values: [[GLfloat]]) {
     var floats: [GLfloat] = []
+    floats.reserveCapacity(values.count * 16)
     for array in values {
         floats.append(contentsOf: array)
     }
     _glUniformMatrix4fv(location, GLsizei(values.count), transpose ? GLboolean(GL_TRUE) : GLboolean(GL_FALSE), floats)
 }
 
-@inlinable @inline(__always) public func glUniformMatrix4fv(location: GLint, transpose: Bool, values: [GLfloat]...) {
-    var floats: [GLfloat] = []
-    for array in values {
-        floats.append(contentsOf: array)
+@inlinable @inline(__always) public func glUniformMatrix4fv(location: GLint, transpose: Bool, values: [GLfloat]) {
+    values.withUnsafeBufferPointer { floats in
+        _glUniformMatrix4fv(location, GLsizei(values.count / 16), transpose ? GLboolean(GL_TRUE) : GLboolean(GL_FALSE), floats.baseAddress)
     }
-    _glUniformMatrix4fv(location, GLsizei(values.count), transpose ? GLboolean(GL_TRUE) : GLboolean(GL_FALSE), floats)
 }
 
 @inlinable @inline(__always) public func glGetShaderInfoLog(shader: GLuint) throws -> String? {
@@ -964,7 +963,6 @@ public let glBackBuffer = GL_BACK
 }
 
 @inlinable @inline(__always) public func glVertexAttribPointer(attributeIndex index: GLuint, unitsPerComponent size: GLint, unitType type: OpenGL.Types, componentsAreNormalized normalized: Bool = false, stride: GLsizei = 0, pointer: UnsafeMutableRawPointer! = nil) {
-    assert(type == .float, "Only float works.")
     _glVertexAttribPointer(index, size, GLenum(type.value), normalized ? GLboolean(GL_TRUE) : GLboolean(GL_FALSE), stride, pointer)
 }
 

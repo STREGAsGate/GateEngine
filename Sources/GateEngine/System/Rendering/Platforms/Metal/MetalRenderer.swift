@@ -385,7 +385,9 @@ extension MetalRenderer {
         }
         let customValues = material.sortedCustomUniforms()
         if customValues.isEmpty == false {
-            for value in customValues {
+            for pair in customValues {
+                let value = pair.value
+                let name = pair.key
                 switch value {
                 case let value as Bool:
                     withUnsafeBytes(of: value) { pointer in
@@ -416,13 +418,18 @@ extension MetalRenderer {
                         uniforms.append(contentsOf: pointer)
                     }
                 case let value as Array<Matrix4x4>:
+                    let capacity = material.vertexShader.arrayCapacityForUniform(named: name) ?? material.fragmentShader.arrayCapacityForUniform(named: name)!
                     var floats: [Float] = []
-                    floats.reserveCapacity(value.count * 16 * 24)
+                    floats.reserveCapacity(value.count * 16 * capacity)
                     for mtx in value {
                         floats.append(contentsOf: mtx.transposedArray())
                     }
-                    while floats.count < 16 * 24 {
+                    while floats.count < 16 * capacity {
                         floats.append(0)
+                    }
+                    if floats.count > capacity * 16 {
+                        floats = Array(floats[..<capacity])
+                        Log.warnOnce("Custom uniform \(name) exceeded max array capacity \(capacity) and was truncated.")
                     }
                     floats.withUnsafeBytes { pointer in
                         uniforms.append(contentsOf: pointer)

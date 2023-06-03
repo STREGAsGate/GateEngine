@@ -32,7 +32,7 @@ import Shaders
     @usableFromInline
     internal static let skinned: VertexShader = {
         let vsh = VertexShader()
-        let bones = vsh.uniform(named: "bones", as: Mat4Array.self, arrayCapacity: 24)
+        let bones = vsh.uniform(named: "bones", as: Mat4Array.self, arrayCapacity: 64)
         let jointIndicies = vsh.input.geometry(0).jointIndicies
         let jointWeights = vsh.input.geometry(0).jointWeights
         var position = Vec4(vsh.input.geometry(0).position, 1)

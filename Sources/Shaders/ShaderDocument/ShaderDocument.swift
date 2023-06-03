@@ -61,6 +61,12 @@ public class ShaderDocument: Identifiable {
             }
         }
     }
+    
+    internal var arrayCapacities: [String:Int] = [:]
+    public func arrayCapacityForUniform(named name: String) -> Int? {
+        return arrayCapacities[name]
+    }
+    
     /// Creates or returns an existing custom uniform
     public func uniform<T: ShaderValue>(named name: String, as type: T.Type, scalarType: CustomUniformScalarType = .float, arrayCapacity: Int? = nil) -> T {
         if let existing = customUniforms[name] as? T {
@@ -88,6 +94,7 @@ public class ShaderDocument: Identifiable {
             v = Mat4(representation: .uniformCustom(index, type: .mat4), type: .float4x4) as! T
         case is Mat4Array.Type:
             precondition(arrayCapacity != nil, "\(type) is an array and needs an arrayCapacity value in \(#function).")
+            arrayCapacities[name] = arrayCapacity
             v = Mat4Array(representation: .uniformCustom(index, type: .mat4Array(arrayCapacity!)), type: .float4x4Array(arrayCapacity!)) as! T
         default:
             fatalError()
