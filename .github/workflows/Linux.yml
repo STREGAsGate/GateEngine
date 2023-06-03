@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Deps
-      run: apt-get install freeglut3-dev
+      run: sudo apt-get install freeglut3-dev
     - name: Build
       run: swift build
     - name: Test
