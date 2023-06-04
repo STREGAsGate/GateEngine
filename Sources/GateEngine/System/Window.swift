@@ -361,6 +361,110 @@ extension KeyboardKey: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {
         self = .character(value.first!)
     }
+    
+    @_transparent
+    public static func qwerty(_ character: Character, origin: KeyOrigin? = nil) -> Self {
+        return .character(character, origin)
+    }
+    
+    public static func qwertz(_ character: Character, origin: KeyOrigin? = nil) -> Self {
+        switch character {
+        case "<":
+            return .character("`", origin)
+            
+        case "ß":
+            return .character("-", origin)
+        case "´":
+            return .character("=", origin)
+            
+        case "z":
+            return .character("y", origin)
+            
+        case "ü":
+            return .character("[", origin)
+        case "+":
+            return .character("]", origin)
+        case "#":
+            return .character("\\", origin)
+            
+        case "ö":
+            return .character(";", origin)
+        case "ä":
+            return .character("'", origin)
+            
+        case "y":
+            return .character("z", origin)
+            
+        case "-":
+            return .character("/", origin)
+            
+        default:
+            return .character(character, origin)
+        }
+    }
+    
+    public static func azerty(_ character: Character, origin: KeyOrigin? = nil) -> Self {
+        switch character {
+        case "<":
+            return .character("`", origin)
+        case "&":
+            return .character("1", origin)
+        case "é":
+            return .character("2", origin)
+        case "\"":
+            return .character("3", origin)
+        case "'":
+            return .character("4", origin)
+        case "(":
+            return .character("5", origin)
+        case "§":
+            return .character("6", origin)
+        case "è":
+            return .character("7", origin)
+        case "!":
+            return .character("8", origin)
+        case "ç":
+            return .character("9", origin)
+        case "à":
+            return .character("0", origin)
+        case ")":
+            return .character("-", origin)
+        case "-":
+            return .character("=", origin)
+            
+        case "a":
+            return .character("q", origin)
+        case "z":
+            return .character("w", origin)
+            
+        case "^":
+            return .character("[", origin)
+        case "$":
+            return .character("]", origin)
+        case "`":
+            return .character("\\", origin)
+            
+        case "q":
+            return .character("a", origin)
+        case "m":
+            return .character(";", origin)
+        case "ù":
+            return .character("'", origin)
+            
+        case "w":
+            return .character("z", origin)
+            
+        case ";":
+            return .character(",", origin)
+        case ":":
+            return .character(".", origin)
+        case "=":
+            return .character("/", origin)
+            
+        default:
+            return .character(character, origin)
+        }
+    }
 }
 
 public enum KeyboardEvent {
