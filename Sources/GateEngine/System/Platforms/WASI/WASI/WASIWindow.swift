@@ -335,25 +335,25 @@ final class WASIWindow: WindowBacking {
         case "Backquote":
             return .character("`", .main)
         case "Digit1":
-            return .number(1, .main)
+            return .character("1", .main)
         case "Digit2":
-            return .number(2, .main)
+            return .character("2", .main)
         case "Digit3":
-            return .number(3, .main)
+            return .character("3", .main)
         case "Digit4":
-            return .number(4, .main)
+            return .character("4", .main)
         case "Digit5":
-            return .number(5, .main)
+            return .character("5", .main)
         case "Digit6":
-            return .number(6, .main)
+            return .character("6", .main)
         case "Digit7":
-            return .number(7, .main)
+            return .character("7", .main)
         case "Digit8":
-            return .number(8, .main)
+            return .character("8", .main)
         case "Digit9":
-            return .number(9, .main)
+            return .character("9", .main)
         case "Digit0":
-            return .number(0, .main)
+            return .character("0", .main)
         case "Minus":
             return .character("-", .main)
         case "Equal":
@@ -479,31 +479,31 @@ final class WASIWindow: WindowBacking {
         case "NumpadMultiply":
             return .character("*", .pad)
         case "Numpad7":
-            return .number(7, .pad)
+            return .character("7", .pad)
         case "Numpad8":
-            return .number(8, .pad)
+            return .character("8", .pad)
         case "Numpad9":
-            return .number(9, .pad)
+            return .character("9", .pad)
         case "NumpadSubtract":
             return .character("-", .pad)
         case "Numpad4":
-            return .number(4, .pad)
+            return .character("4", .pad)
         case "Numpad5":
-            return .number(5, .pad)
+            return .character("5", .pad)
         case "Numpad6":
-            return .number(6, .pad)
+            return .character("6", .pad)
         case "NumpadAdd":
             return .character("+", .pad)
         case "Numpad1":
-            return .number(1, .pad)
+            return .character("1", .pad)
         case "Numpad2":
-            return .number(2, .pad)
+            return .character("2", .pad)
         case "Numpad3":
-            return .number(3, .pad)
+            return .character("3", .pad)
         case "NumpadEnter":
             return .enter(.pad)
         case "Numpad0":
-            return .number(0, .pad)
+            return .character("0", .pad)
         case "NumpadDecimal":
             return .character(".", .pad)
         case "Escape":

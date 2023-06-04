@@ -276,6 +276,18 @@ extension KeyboardModifierMask: CustomStringConvertible {
     }
 }
 
+/**
+ A physical key represenation. All values are stored as qwerty layout characters.
+ These keys are for development use for binding actions. Do not use this for text input!
+ 
+ If you use a layout that is not qwerty, you can use the translation API.
+ ```
+ input.keyboard.button(.qwerty("w")).isPressed
+ input.keyboard.button(.qwertz("w")).isPressed
+ input.keyboard.button(.azerty("z")).isPressed
+ ```
+ The underlying key is still the qwerty representation.
+ */
 public enum KeyboardKey: Hashable {
     /// The Esc key
     case escape
