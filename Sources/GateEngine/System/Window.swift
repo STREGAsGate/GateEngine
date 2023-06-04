@@ -294,14 +294,13 @@ public enum KeyboardKey: Hashable {
      - parameter number: The F key's number F1, F2, F3, etc...
      */
     case function(_ number: Int)
-    /// An alphabet or punctuation character
-    case character(Character, _ origin: KeyOrigin? = nil)
-    
+
     public enum KeyOrigin {
         case main
         case pad
     }
-    case number(_ number: Int, _ origin: KeyOrigin? = nil)
+    case character(Character, _ origin: KeyOrigin? = nil)
+    
     /// The backspace or delete key
     case backspace
     /// The spacebar
@@ -360,9 +359,6 @@ extension KeyboardKey: ExpressibleByStringLiteral {
     public typealias StringLiteralType = String
     
     public init(stringLiteral value: String) {
-        if (value.hasPrefix("f") || value.hasPrefix("F")), let value = Int(value[value.index(after: value.startIndex)...]) {
-            self = .function(value)
-        }
         self = .character(value.first!)
     }
 }

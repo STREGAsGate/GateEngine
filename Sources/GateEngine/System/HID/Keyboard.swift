@@ -30,16 +30,6 @@ import GameMath
                 }
                 return false
             }
-            if case let .number(number1, origin1) = keyboardKey {
-                if case let .number(number2, origin2) = key {
-                    guard number1 == number2 else {return false}
-                    if  origin1 == nil || origin2 == nil {
-                        return true
-                    }
-                    return origin1 == origin2
-                }
-                return false
-            }
             if case let .enter(origin1) = keyboardKey {
                 if case let .enter(origin2) = key {
                     if  origin1 == nil || origin2 == nil {
@@ -95,7 +85,7 @@ public final class CharacterStream {
             }
         }
         switch key {
-        case .character(_, _), .number(_, _):
+        case .character(_, _):
             if let character {
                 insertCharacter(character)
             }

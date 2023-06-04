@@ -630,29 +630,29 @@ final class UGNSWindow: AppKit.NSWindow {
         case 17:// T
             return .character("t", .main)
         case 18:// 1
-            return .number(1, .main)
+            return .character("1", .main)
         case 19:// 2
-            return .number(2, .main)
+            return .character("2", .main)
         case 20:// 3
-            return .number(3, .main)
+            return .character("3", .main)
         case 21:// 4
-            return .number(4, .main)
+            return .character("4", .main)
         case 22:// 6
-            return .number(6, .main)
+            return .character("6", .main)
         case 23:// 5
-            return .number(5, .main)
+            return .character("5", .main)
         case 24:// =
             return .character("=", .main)
         case 25:// 9
-            return .number(9, .main)
+            return .character("9", .main)
         case 26:// 7
-            return .number(7, .main)
+            return .character("7", .main)
         case 27:// -
             return .character("-", .main)
         case 28:// 8
-            return .number(8, .main)
+            return .character("8", .main)
         case 29:// 0
-            return .number(0, .main)
+            return .character("0", .main)
         case 30:// ]
             return .character("]", .main)
         case 31:// O
@@ -754,27 +754,27 @@ final class UGNSWindow: AppKit.NSWindow {
         case 81:// =
             return .character("=", .pad)
         case 82:// 0
-            return .number(0, .pad)
+            return .character("0", .pad)
         case 83:// 1
-            return .number(1, .pad)
+            return .character("1", .pad)
         case 84:// 2
-            return .number(2, .pad)
+            return .character("2", .pad)
         case 85:// 3
-            return .number(3, .pad)
+            return .character("3", .pad)
         case 86:// 4
-            return .number(4, .pad)
+            return .character("4", .pad)
         case 87:// 5
-            return .number(5, .pad)
+            return .character("5", .pad)
         case 88:// 6
-            return .number(6, .pad)
+            return .character("6", .pad)
         case 89:// 7
-            return .number(7, .pad)
+            return .character("7", .pad)
         case 90:// F20
             return .function(20)
         case 91:// 8
-            return .number(8, .pad)
+            return .character("8", .pad)
         case 92:// 9
-            return .number(9, .pad)
+            return .character("9", .pad)
         case 93...95:// ??
             break
         case 96:// F5
