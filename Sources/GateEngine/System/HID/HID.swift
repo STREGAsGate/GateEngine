@@ -60,8 +60,15 @@ extension HID /*WindowDelegate*/ {
     }
 
     @_transparent
-    func keyboardRequestedHandling(key: KeyboardKey,
-                                   event: KeyboardEvent) -> Bool {
-        return keyboard.keyboardRequestedHandling(key: key, event: event)
+    func keyboardDidhandle(key: KeyboardKey,
+                           character: Character?,
+                           modifiers: KeyboardModifierMask,
+                           isRepeat: Bool,
+                           event: KeyboardEvent) -> Bool {
+        return keyboard.keyboardDidhandle(key: key,
+                                          character: character,
+                                          modifiers: modifiers,
+                                          isRepeat: isRepeat,
+                                          event: event)
     }
 }

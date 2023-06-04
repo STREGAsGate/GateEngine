@@ -160,8 +160,11 @@ protocol WindowDelegate: AnyObject {
     func screenTouchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2)
     func surfaceTouchChange(id: AnyHashable, event: TouchChangeEvent, surfaceID: AnyHashable, normalizedPosition: Position2)
 
-    func keyboardRequestedHandling(key: KeyboardKey,
-                                   event: KeyboardEvent) -> Bool
+    func keyboardDidhandle(key: KeyboardKey,
+                           character: Character?,
+                           modifiers: KeyboardModifierMask,
+                           isRepeat: Bool,
+                           event: KeyboardEvent) -> Bool
 }
 
 internal extension Window {

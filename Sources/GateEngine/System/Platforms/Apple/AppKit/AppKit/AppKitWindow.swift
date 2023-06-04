@@ -873,11 +873,17 @@ final class UGNSWindow: AppKit.NSWindow {
     }
 
     override func keyDown(with event: NSEvent) {
-        guard event.isARepeat == false else {return}
         var forward: Bool = true
         if let windowDelegate = window.delegate {
             let key = keyFromEvent(event)
-            forward = windowDelegate.keyboardRequestedHandling(key: key, event: .keyDown) == false
+            let modifiers = modifiersFromEvent(event)
+            if windowDelegate.keyboardDidhandle(key: key,
+                                                character: event.characters?.first,
+                                                modifiers: modifiers,
+                                                isRepeat: event.isARepeat,
+                                                event: .keyDown) {
+                forward = false
+            }
         }
         if forward {
             super.keyDown(with: event)
@@ -889,7 +895,14 @@ final class UGNSWindow: AppKit.NSWindow {
         var forward: Bool = true
         if let windowDelegate = window.delegate {
             let key = keyFromEvent(event)
-            forward = windowDelegate.keyboardRequestedHandling(key: key, event: .keyUp) == false
+            let modifiers = modifiersFromEvent(event)
+            if windowDelegate.keyboardDidhandle(key: key,
+                                                character: event.characters?.first,
+                                                modifiers: modifiers,
+                                                isRepeat: event.isARepeat,
+                                                event: .keyUp) {
+                forward = false
+            }
         }
         if forward {
             super.keyUp(with: event)
@@ -903,22 +916,46 @@ final class UGNSWindow: AppKit.NSWindow {
             switch keyCode {
             case 56, 60:
                 let key: KeyboardKey = keyCode == 56 ? .shift(.left) : .shift(.right)
-                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+                forward = windowDelegate.keyboardDidhandle(key: key,
+                                                           character: nil,
+                                                           modifiers: [],
+                                                           isRepeat: false,
+                                                           event: .toggle) == false
             case 55, 54:
                 let key: KeyboardKey = keyCode == 55 ? .host(.left) : .host(.right)
-                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+                forward = windowDelegate.keyboardDidhandle(key: key,
+                                                           character: nil,
+                                                           modifiers: [],
+                                                           isRepeat: false,
+                                                           event: .toggle) == false
             case 59, 62:
                 let key: KeyboardKey = keyCode == 59 ? .control(.left) : .control(.right)
-                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+                forward = windowDelegate.keyboardDidhandle(key: key,
+                                                           character: nil,
+                                                           modifiers: [],
+                                                           isRepeat: false,
+                                                           event: .toggle) == false
             case 58, 61:
                 let key: KeyboardKey = keyCode == 58 ? .alt(.left) : .alt(.right)
-                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+                forward = windowDelegate.keyboardDidhandle(key: key,
+                                                           character: nil,
+                                                           modifiers: [],
+                                                           isRepeat: false,
+                                                           event: .toggle) == false
             case 63:
                 let key: KeyboardKey = .functionModifier
-                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+                forward = windowDelegate.keyboardDidhandle(key: key,
+                                                           character: nil,
+                                                           modifiers: [],
+                                                           isRepeat: false,
+                                                           event: .toggle) == false
             case 57:
                 let key: KeyboardKey = .capsLock
-                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+                forward = windowDelegate.keyboardDidhandle(key: key,
+                                                           character: nil,
+                                                           modifiers: [],
+                                                           isRepeat: false,
+                                                           event: .toggle) == false
             default:
                 Log.info("Unhandled Modfier Key", event.keyCode)
                 break

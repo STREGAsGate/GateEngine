@@ -175,11 +175,14 @@ final class WASIWindow: WindowBacking {
         
         globalThis.addEventListener(type: "keydown") { event in
             let event = DOM.KeyboardEvent(unsafelyWrapping: event.jsObject)
-            guard event.repeat == false else {return}
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
             Task {@MainActor in
-                _ = self.window.delegate?.keyboardRequestedHandling(key: key, event: .keyDown)
+                _ = self.window.delegate?.keyboardDidhandle(key: key,
+                                                            character: event.key.first,
+                                                            modifiers: modifiers,
+                                                            isRepeat: event.repeat,
+                                                            event: .keyDown)
                 if event.isTrusted && key != .escape {
                     self.performedUserGesture()
                 }
@@ -191,7 +194,11 @@ final class WASIWindow: WindowBacking {
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
             Task {@MainActor in
-                _ = self.window.delegate?.keyboardRequestedHandling(key: key, event: .keyUp)
+                _ = self.window.delegate?.keyboardDidhandle(key: key,
+                                                            character: event.key.first,
+                                                            modifiers: modifiers,
+                                                            isRepeat: event.repeat,
+                                                            event: .keyUp)
             }
             event.preventDefault()
         }
@@ -324,35 +331,181 @@ final class WASIWindow: WindowBacking {
     
     @inlinable
     func key(fromEvent event: DOM.KeyboardEvent) -> KeyboardKey {
-        let origin: KeyboardKey.KeyOrigin = event.location == DOM.KeyboardEvent.DOM_KEY_LOCATION_NUMPAD ? .pad : .main
-        switch event.key {
-        case "`":
-            return .character("`", origin)
-        case "1":
-            return .number(1, origin)
-        case "2":
-            return .number(2, origin)
-        case "3":
-            return .number(3, origin)
-        case "4":
-            return .number(4, origin)
-        case "5":
-            return .number(5, origin)
-        case "6":
-            return .number(6, origin)
-        case "7":
-            return .number(7, origin)
-        case "8":
-            return .number(8, origin)
-        case "9":
-            return .number(9, origin)
-        case "0":
-            return .number(0, origin)
-        case "-":
-            if event.location == DOM.KeyboardEvent.DOM_KEY_LOCATION_NUMPAD {
-                return .character("-", .pad)
-            }
+        switch event.code {
+        case "Backquote":
+            return .character("`", .main)
+        case "Digit1":
+            return .number(1, .main)
+        case "Digit2":
+            return .number(2, .main)
+        case "Digit3":
+            return .number(3, .main)
+        case "Digit4":
+            return .number(4, .main)
+        case "Digit5":
+            return .number(5, .main)
+        case "Digit6":
+            return .number(6, .main)
+        case "Digit7":
+            return .number(7, .main)
+        case "Digit8":
+            return .number(8, .main)
+        case "Digit9":
+            return .number(9, .main)
+        case "Digit0":
+            return .number(0, .main)
+        case "Minus":
             return .character("-", .main)
+        case "Equal":
+            return .character("=", .main)
+        case "Backspace":
+            return .backspace
+        case "Tab":
+            return .tab
+        case "KeyQ":
+            return .character("q", .main)
+        case "KeyW":
+            return .character("w", .main)
+        case "KeyE":
+            return .character("e", .main)
+        case "KeyR":
+            return .character("r", .main)
+        case "KeyT":
+            return .character("t", .main)
+        case "KeyY":
+            return .character("y", .main)
+        case "KeyU":
+            return .character("u", .main)
+        case "KeyI":
+            return .character("i", .main)
+        case "KeyO":
+            return .character("o", .main)
+        case "KeyP":
+            return .character("p", .main)
+        case "BracketLeft":
+            return .character("[", .main)
+        case "BracketRight":
+            return .character("]", .main)
+        case "Backslash":
+            return .character("\\", .main)
+        case "CapsLock":
+            return .capsLock
+        case "KeyA":
+            return .character("a", .main)
+        case "KeyS":
+            return .character("s", .main)
+        case "KeyD":
+            return .character("d", .main)
+        case "KeyF":
+            return .character("f", .main)
+        case "KeyG":
+            return .character("g", .main)
+        case "KeyH":
+            return .character("h", .main)
+        case "KeyJ":
+            return .character("j", .main)
+        case "KeyK":
+            return .character("k", .main)
+        case "KeyL":
+            return .character("l", .main)
+        case "Semicolon":
+            return .character(";", .main)
+        case "Quote":
+            return .character("'", .main)
+        case "Enter":
+            return .enter(.main)
+        case "ShiftLeft":
+            return .shift(.left)
+        case "KeyZ":
+            return .character("z", .main)
+        case "KeyX":
+            return .character("x", .main)
+        case "KeyC":
+            return .character("c", .main)
+        case "KeyV":
+            return .character("v", .main)
+        case "KeyB":
+            return .character("b", .main)
+        case "KeyN":
+            return .character("n", .main)
+        case "KeyM":
+            return .character("m", .main)
+        case "Comma":
+            return .character(",", .main)
+        case "Period":
+            return .character(".", .main)
+        case "Slash":
+            return .character("/", .main)
+        case "ShiftRight":
+            return .shift(.right)
+        case "ControlLeft":
+            return .control(.left)
+        case "AltLeft":
+            return .alt(.left)
+        case "MetaLeft":
+            return .host(.left)
+        case "Space":
+            return .space
+        case "MetaRight":
+            return .host(.right)
+        case "AltRight":
+            return .alt(.right)
+        case "ControlRight":
+            return .control(.right)
+        case "Home":
+            return .home
+        case "PageUp":
+            return .pageUp
+        case "Delete":
+            return .delete
+        case "End":
+            return .end
+        case "PageDown":
+            return .pageDown
+        case "ArrowUp":
+            return .up
+        case "ArrowDown":
+            return .down
+        case "ArrowLeft":
+            return .left
+        case "ArrowRight":
+            return .right
+        case "NumLock":
+            return .numLock
+        case "NumpadEqual":
+            return .character("=", .pad)
+        case "NumpadDivide":
+            return .character("/", .pad)
+        case "NumpadMultiply":
+            return .character("*", .pad)
+        case "Numpad7":
+            return .number(7, .pad)
+        case "Numpad8":
+            return .number(8, .pad)
+        case "Numpad9":
+            return .number(9, .pad)
+        case "NumpadSubtract":
+            return .character("-", .pad)
+        case "Numpad4":
+            return .number(4, .pad)
+        case "Numpad5":
+            return .number(5, .pad)
+        case "Numpad6":
+            return .number(6, .pad)
+        case "NumpadAdd":
+            return .character("+", .pad)
+        case "Numpad1":
+            return .number(1, .pad)
+        case "Numpad2":
+            return .number(2, .pad)
+        case "Numpad3":
+            return .number(3, .pad)
+        case "NumpadEnter":
+            return .enter(.pad)
+        case "Numpad0":
+            return .number(0, .pad)
+        case "NumpadDecimal":
+            return .character(".", .pad)
         case "Escape":
             return .escape
         case "F1":
@@ -396,7 +549,7 @@ final class WASIWindow: WindowBacking {
         case "F20":
             return .function(20)
         default:
-            return .unhandledPlatformKeyCode(Int(event.keyCode), event.key)
+            return .unhandledPlatformKeyCode(Int(event.keyCode), event.code)
         }
     }
     
@@ -414,6 +567,9 @@ final class WASIWindow: WindowBacking {
         }
         if event.metaKey {
             modifiers.insert(.host)
+        }
+        if event.getModifierState(keyArg: "CapsLock") {
+            modifiers.insert(.capsLock)
         }
         return modifiers
     }
