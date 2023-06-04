@@ -161,7 +161,6 @@ protocol WindowDelegate: AnyObject {
     func surfaceTouchChange(id: AnyHashable, event: TouchChangeEvent, surfaceID: AnyHashable, normalizedPosition: Position2)
 
     func keyboardRequestedHandling(key: KeyboardKey,
-                                   modifiers: KeyboardModifierMask,
                                    event: KeyboardEvent) -> Bool
 }
 
@@ -244,6 +243,8 @@ public struct KeyboardModifierMask: OptionSet {
     public static let alt = KeyboardModifierMask(rawValue: 1 << 4)
     /// capslock is enabled
     public static let capsLock = KeyboardModifierMask(rawValue: 1 << 5)
+    /// fn is down
+    public static let function = KeyboardModifierMask(rawValue: 1 << 5)
     
     public init(rawValue: UInt32) {
         self.rawValue = rawValue
@@ -275,19 +276,35 @@ extension KeyboardModifierMask: CustomStringConvertible {
 public enum KeyboardKey: Hashable {
     /// The Esc key
     case escape
+    
+    /// Clear on Apple
+    case numLock
+    
+    case home
+    case end
+    case delete
+    case pageUp
+    case pageDown
+    
     /**
      F keys on the top of a keyboard
      - parameter number: The F key's number F1, F2, F3, etc...
      */
     case function(_ number: Int)
     /// An alphabet or punctuation character
-    case character(Character)
+    case character(Character, _ origin: KeyOrigin? = nil)
+    
+    public enum KeyOrigin {
+        case main
+        case pad
+    }
+    case number(_ number: Int, _ origin: KeyOrigin? = nil)
     /// The backspace or delete key
     case backspace
     /// The spacebar
     case space
-    /// Any return key
-    case `return`
+    /// An enter / return key
+    case enter(_ origin: KeyOrigin? = nil)
     /// The tab key
     case tab
     /// The up arrow
@@ -305,6 +322,35 @@ public enum KeyboardKey: Hashable {
      - parameter string: A key represented as a String
      */
     case unhandledPlatformKeyCode(_ int: Int?, _ string: String?)
+    
+    public enum Alignment {
+        case left
+        case right
+    }
+    case alt(_ alignment: Alignment)
+    case host(_ alignment: Alignment)
+    case control(_ alignment: Alignment)
+    case shift(_ alignment: Alignment)
+    // The Fn key
+    case functionModifier
+    case capsLock
+    
+    var asModifierMask: KeyboardModifierMask {
+        switch self {
+        case .alt(_):
+            return .alt
+        case .host(_):
+            return .host
+        case .control(_):
+            return .control
+        case .shift(_):
+            return .shift
+        case .functionModifier:
+            return .function
+        default:
+            return []
+        }
+    }
 }
 
 extension KeyboardKey: ExpressibleByStringLiteral {
@@ -321,4 +367,5 @@ extension KeyboardKey: ExpressibleByStringLiteral {
 public enum KeyboardEvent {
     case keyDown
     case keyUp
+    case toggle
 }

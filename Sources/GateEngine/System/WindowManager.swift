@@ -117,8 +117,7 @@ extension WindowManager: WindowDelegate {
 
     @_transparent
     func keyboardRequestedHandling(key: KeyboardKey,
-                                   modifiers: KeyboardModifierMask,
                                    event: KeyboardEvent) -> Bool {
-        return game.hid.keyboardRequestedHandling(key: key, modifiers: modifiers, event: event)
+        return game.hid.keyboardRequestedHandling(key: key, event: event)
     }
 }

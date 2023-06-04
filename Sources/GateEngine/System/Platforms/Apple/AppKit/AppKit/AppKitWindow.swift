@@ -591,96 +591,256 @@ final class UGNSWindow: AppKit.NSWindow {
 
     // MARK: - Keyboard
     func keyFromEvent(_ event: NSEvent) -> KeyboardKey {
-        if event.keyCode == 53 {
-            return .escape
-        }
-        if event.keyCode == 51 {
+        let keyCode = Int(event.keyCode)
+        switch keyCode {
+        case 0:// A
+            return .character("a", .main)
+        case 1:// S
+            return .character("s", .main)
+        case 2:// D
+            return .character("d", .main)
+        case 3:// F
+            return .character("f", .main)
+        case 4:// H
+            return .character("h", .main)
+        case 5:// G
+            return .character("g", .main)
+        case 6:// Z
+            return .character("z", .main)
+        case 7:// X
+            return .character("x", .main)
+        case 8:// C
+            return .character("c", .main)
+        case 9:// V
+            return .character("v", .main)
+        case 10:// ??
+            break;
+        case 11:// B
+            return .character("b", .main)
+        case 12:// Q
+            return .character("q", .main)
+        case 13:// W
+            return .character("w", .main)
+        case 14:// E
+            return .character("e", .main)
+        case 15:// R
+            return .character("r", .main)
+        case 16:// Y
+            return .character("y", .main)
+        case 17:// T
+            return .character("t", .main)
+        case 18:// 1
+            return .number(1, .main)
+        case 19:// 2
+            return .number(2, .main)
+        case 20:// 3
+            return .number(3, .main)
+        case 21:// 4
+            return .number(4, .main)
+        case 22:// 6
+            return .number(6, .main)
+        case 23:// 5
+            return .number(5, .main)
+        case 24:// =
+            return .character("=", .main)
+        case 25:// 9
+            return .number(9, .main)
+        case 26:// 7
+            return .number(7, .main)
+        case 27:// -
+            return .character("-", .main)
+        case 28:// 8
+            return .number(8, .main)
+        case 29:// 0
+            return .number(0, .main)
+        case 30:// ]
+            return .character("]", .main)
+        case 31:// O
+            return .character("o", .main)
+        case 32:// U
+            return .character("u", .main)
+        case 33:// [
+            return .character("[", .main)
+        case 34:// I
+            return .character("i", .main)
+        case 35:// P
+            return .character("p", .main)
+        case 36:// return
+            return .enter(.main)
+        case 37:// L
+            return .character("l", .main)
+        case 38:// J
+            return .character("j", .main)
+        case 39:// '
+            return .character("'", .main)
+        case 40:// K
+            return .character("k", .main)
+        case 41:// ;
+            return .character(";", .main)
+        case 42:// \
+            return .character("\\", .main)
+        case 43:// ,
+            return .character(",", .main)
+        case 44:// /
+            return .character("/", .main)
+        case 45:// N
+            return .character("n", .main)
+        case 46:// M
+            return .character("m", .main)
+        case 47:// .
+            return .character(".", .main)
+        case 48:// \t
+            return .tab
+        case 49:// space
+            return .space
+        case 50:// `
+            return .character("`", .main)
+        case 51:// delete
             return .backspace
-        }
-        if event.keyCode == 126 {
-            return .up
-        }
-        if event.keyCode == 125 {
-            return .down
-        }
-        if event.keyCode == 123 {
-            return .left
-        }
-        if event.keyCode == 124 {
-            return .right
-        }
-        if event.keyCode == 122 {
-            return .function(1)
-        }
-        if event.keyCode == 120 {
-            return .function(2)
-        }
-        if event.keyCode == 99 {
-            return .function(3)
-        }
-        if event.keyCode == 118 {
-            return .function(4)
-        }
-        if event.keyCode == 96 {
-            return .function(5)
-        }
-        if event.keyCode == 97 {
-            return .function(6)
-        }
-        if event.keyCode == 98 {
-            return .function(7)
-        }
-        if event.keyCode == 100 {
-            return .function(8)
-        }
-        if event.keyCode == 101 {
-            return .function(9)
-        }
-        if event.keyCode == 109 {
-            return .function(10)
-        }
-        if event.keyCode == 103 {
-            return .function(11)
-        }
-        if event.keyCode == 111 {
-            return .function(12)
-        }
-        if event.keyCode == 105 {
-            return .function(13)
-        }
-        if event.keyCode == 107 {
-            return .function(14)
-        }
-        if event.keyCode == 113 {
-            return .function(15)
-        }
-        if event.keyCode == 106 {
-            return .function(16)
-        }
-        if event.keyCode == 64 {
+        case 52:// ??
+            break
+        case 53:// esc
+            return .escape
+        case 54:// r-cmd
+            return .host(.right)
+        case 55:// l-cmd
+            return .host(.left)
+        case 56:// l-shift
+            return .shift(.left)
+        case 57:// capslock
+            return .capsLock
+        case 58:// l-alt
+            return .alt(.left)
+        case 59:// l-ctrl
+            return .control(.left)
+        case 60:// r-shift
+            return .shift(.right)
+        case 61:// r-alt
+            return .alt(.right)
+        case 62:// r-ctrl
+            return .control(.right)
+        case 63:// Fn
+            return .functionModifier
+        case 64:// F17
             return .function(17)
-        }
-        if event.keyCode == 79 {
+        case 65:// .
+            return .character(".", .pad)
+        case 66:// ??
+            break
+        case 67:// *
+            return .character("*", .pad)
+        case 68:// ??
+            break
+        case 69:// +
+            return .character("+", .pad)
+        case 70:// ??
+            break
+        case 71:// clear/numlock
+            return .numLock
+        case 72...74:// ??
+            break
+        case 75:// /
+            return .character("/", .pad)
+        case 76:// enter
+            return .enter(.pad)
+        case 77:// ??
+            break
+        case 78:// -
+            return .character("-", .pad)
+        case 79:// F18
             return .function(18)
-        }
-        if event.keyCode == 80 {
+        case 80:// F19
             return .function(19)
-        }
-        if event.keyCode == 90 {
+        case 81:// =
+            return .character("=", .pad)
+        case 82:// 0
+            return .number(0, .pad)
+        case 83:// 1
+            return .number(1, .pad)
+        case 84:// 2
+            return .number(2, .pad)
+        case 85:// 3
+            return .number(3, .pad)
+        case 86:// 4
+            return .number(4, .pad)
+        case 87:// 5
+            return .number(5, .pad)
+        case 88:// 6
+            return .number(6, .pad)
+        case 89:// 7
+            return .number(7, .pad)
+        case 90:// F20
             return .function(20)
-        }
-
-        if let character: Character = event.charactersIgnoringModifiers?.first {
-            if character == "\r" {
-                return .return
-            }
-            if character == "\t" {
-                return .tab
-            }
-            if character == " " {
-                return .space
-            }
-            return .character(character)
+        case 91:// 8
+            return .number(8, .pad)
+        case 92:// 9
+            return .number(9, .pad)
+        case 93...95:// ??
+            break
+        case 96:// F5
+            return .function(5)
+        case 97:// F6
+            return .function(6)
+        case 98:// F7
+            return .function(7)
+        case 99:// F3
+            return .function(3)
+        case 100:// F8
+            return .function(8)
+        case 101:// F9
+            return .function(9)
+        case 102:// ??
+            break
+        case 103:// F11
+            return .function(11)
+        case 104:// ??
+            break
+        case 105:// F13
+            return .function(13)
+        case 106:// F16
+            return .function(16)
+        case 107:// F14
+            return .function(14)
+        case 108:// ??
+            break
+        case 109:// F10
+            return .function(10)
+        case 110:// ??
+            break
+        case 111:// F12
+            return .function(12)
+        case 112:// ??
+            break
+        case 113:// F15
+            return .function(15)
+        case 114:// ??
+            break
+        case 115:// home
+            return .home
+        case 116:// page up
+            return .pageUp
+        case 117:// delete
+            return .delete
+        case 118:// F4
+            return .function(4)
+        case 119:// end
+            return .end
+        case 120:// F2
+            return .function(2)
+        case 121:// page down
+            return .pageDown
+        case 122:// F1
+            return .function(1)
+        case 123:// left
+            return .left
+        case 124:// right
+            return .right
+        case 125:// down
+            return .down
+        case 126:// up
+            return .up
+        default:
+            break
         }
 
         Log.warn("Key Code \(event.keyCode) is unhandled!")
@@ -706,30 +866,66 @@ final class UGNSWindow: AppKit.NSWindow {
         if flags.contains(.capsLock) {
             modifiers.insert(.capsLock)
         }
+        if flags.contains(.function) {
+            modifiers.insert(.function)
+        }
         return modifiers
     }
 
     override func keyDown(with event: NSEvent) {
+        guard event.isARepeat == false else {return}
         var forward: Bool = true
-        if event.isARepeat == false, let windowDelegate = window.delegate {
+        if let windowDelegate = window.delegate {
             let key = keyFromEvent(event)
-            let modifiers = modifiersFromEvent(event)
-            forward = windowDelegate.keyboardRequestedHandling(key: key, modifiers: modifiers, event: .keyDown) == false
+            forward = windowDelegate.keyboardRequestedHandling(key: key, event: .keyDown) == false
         }
-        if event.isARepeat == false && forward {
+        if forward {
             super.keyDown(with: event)
         }
     }
 
     override func keyUp(with event: NSEvent) {
+        guard event.isARepeat == false else {return}
         var forward: Bool = true
-        if event.isARepeat == false, let windowDelegate = window.delegate {
+        if let windowDelegate = window.delegate {
             let key = keyFromEvent(event)
-            let modifiers = modifiersFromEvent(event)
-            forward = windowDelegate.keyboardRequestedHandling(key: key, modifiers: modifiers, event: .keyUp) == false
+            forward = windowDelegate.keyboardRequestedHandling(key: key, event: .keyUp) == false
         }
-        if event.isARepeat == false && forward {
+        if forward {
             super.keyUp(with: event)
+        }
+    }
+    
+    override func flagsChanged(with event: NSEvent) {
+        var forward: Bool = true
+        if let windowDelegate = window.delegate {
+            let keyCode = Int(event.keyCode)
+            switch keyCode {
+            case 56, 60:
+                let key: KeyboardKey = keyCode == 56 ? .shift(.left) : .shift(.right)
+                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+            case 55, 54:
+                let key: KeyboardKey = keyCode == 55 ? .host(.left) : .host(.right)
+                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+            case 59, 62:
+                let key: KeyboardKey = keyCode == 59 ? .control(.left) : .control(.right)
+                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+            case 58, 61:
+                let key: KeyboardKey = keyCode == 58 ? .alt(.left) : .alt(.right)
+                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+            case 63:
+                let key: KeyboardKey = .functionModifier
+                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+            case 57:
+                let key: KeyboardKey = .capsLock
+                forward = windowDelegate.keyboardRequestedHandling(key: key, event: .toggle) == false
+            default:
+                Log.info("Unhandled Modfier Key", event.keyCode)
+                break
+            }
+        }
+        if forward {
+            super.flagsChanged(with: event)
         }
     }
 }

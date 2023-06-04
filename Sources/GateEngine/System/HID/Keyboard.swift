@@ -13,10 +13,43 @@ import GameMath
     @usableFromInline
     internal var buttons: [KeyboardKey:ButtonState] = [:]
     
-    @inlinable @inline(__always)
     public func button(_ keyboardKey: KeyboardKey) -> ButtonState {
-        if let existing = buttons[keyboardKey] {
-            return existing
+        if let exactMatch = buttons[keyboardKey] {
+            return exactMatch
+        }
+        if let existing = buttons.first(where: { (key: KeyboardKey, value: ButtonState) in
+            if case let .character(character1, origin1) = keyboardKey {
+                if case let .character(character2, origin2) = key {
+                    guard character1 == character2 else {return false}
+                    if  origin1 == nil || origin2 == nil {
+                        return true
+                    }
+                    return origin1 == origin2
+                }
+                return false
+            }
+            if case let .number(number1, origin1) = keyboardKey {
+                if case let .number(number2, origin2) = key {
+                    guard number1 == number2 else {return false}
+                    if  origin1 == nil || origin2 == nil {
+                        return true
+                    }
+                    return origin1 == origin2
+                }
+                return false
+            }
+            if case let .enter(origin1) = keyboardKey {
+                if case let .enter(origin2) = key {
+                    if  origin1 == nil || origin2 == nil {
+                        return true
+                    }
+                    return origin1 == origin2
+                }
+                return false
+            }
+            return false
+        }) {
+            return existing.value
         }
         let button = ButtonState(keyboard: self, key: keyboardKey)
         buttons[keyboardKey] = button
@@ -106,10 +139,24 @@ public extension Keyboard {
 extension Keyboard {
     @inline(__always)
     func keyboardRequestedHandling(key: KeyboardKey,
-                                   modifiers: KeyboardModifierMask,
                                    event: KeyboardEvent) -> Bool {
-        self.button(key).isPressed = (event == .keyDown)
-        self.modifiers = modifiers
+
+        switch event {
+        case .keyDown:
+            self.button(key).isPressed = true
+            self.modifiers.formUnion(key.asModifierMask)
+        case .keyUp:
+            self.button(key).isPressed = false
+            self.modifiers.remove(key.asModifierMask)
+        case .toggle:
+            if self.button(key).isPressed == false {
+                self.button(key).isPressed = true
+                self.modifiers.formUnion(key.asModifierMask)
+            }else{
+                self.button(key).isPressed = false
+                self.modifiers.remove(key.asModifierMask)
+            }
+        }
         return true
     }
 }

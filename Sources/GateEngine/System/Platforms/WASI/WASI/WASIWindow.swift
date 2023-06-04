@@ -179,7 +179,7 @@ final class WASIWindow: WindowBacking {
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
             Task {@MainActor in
-                _ = self.window.delegate?.keyboardRequestedHandling(key: key, modifiers: modifiers, event: .keyDown)
+                _ = self.window.delegate?.keyboardRequestedHandling(key: key, event: .keyDown)
                 if event.isTrusted && key != .escape {
                     self.performedUserGesture()
                 }
@@ -191,7 +191,7 @@ final class WASIWindow: WindowBacking {
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
             Task {@MainActor in
-                _ = self.window.delegate?.keyboardRequestedHandling(key: key, modifiers: modifiers, event: .keyUp)
+                _ = self.window.delegate?.keyboardRequestedHandling(key: key, event: .keyUp)
             }
             event.preventDefault()
         }
@@ -324,24 +324,79 @@ final class WASIWindow: WindowBacking {
     
     @inlinable
     func key(fromEvent event: DOM.KeyboardEvent) -> KeyboardKey {
-        let key = event.key
-        if key.count == 1, let char = key.first {
-            return .character(char)
-        }
-        if key.count > 1, key[key.startIndex] == "F", let index = Int(String(key[key.index(after: key.startIndex)...])) {
-            return .function(index)
-        }
-        switch key.lowercased() {
-        case "tab": return .tab
-        case "enter": return .return
-        case "space": return .space
-        case "escape": return .escape
-        case "backspace": return .backspace
-        case "arrowup": return .up
-        case "arrowdown": return .down
-        case "arrowleft": return .left
-        case "arrowright": return .right
-        default: return .unhandledPlatformKeyCode(nil, key)
+        let origin: KeyboardKey.KeyOrigin = event.location == DOM.KeyboardEvent.DOM_KEY_LOCATION_NUMPAD ? .pad : .main
+        switch event.key {
+        case "`":
+            return .character("`", origin)
+        case "1":
+            return .number(1, origin)
+        case "2":
+            return .number(2, origin)
+        case "3":
+            return .number(3, origin)
+        case "4":
+            return .number(4, origin)
+        case "5":
+            return .number(5, origin)
+        case "6":
+            return .number(6, origin)
+        case "7":
+            return .number(7, origin)
+        case "8":
+            return .number(8, origin)
+        case "9":
+            return .number(9, origin)
+        case "0":
+            return .number(0, origin)
+        case "-":
+            if event.location == DOM.KeyboardEvent.DOM_KEY_LOCATION_NUMPAD {
+                return .character("-", .pad)
+            }
+            return .character("-", .main)
+        case "Escape":
+            return .escape
+        case "F1":
+            return .function(1)
+        case "F2":
+            return .function(2)
+        case "F3":
+            return .function(3)
+        case "F4":
+            return .function(4)
+        case "F5":
+            return .function(5)
+        case "F6":
+            return .function(6)
+        case "F7":
+            return .function(7)
+        case "F8":
+            return .function(8)
+        case "F9":
+            return .function(9)
+        case "F10":
+            return .function(10)
+        case "F11":
+            return .function(11)
+        case "F12":
+            return .function(12)
+        case "F13":
+            return .function(13)
+        case "F14":
+            return .function(14)
+        case "F15":
+            return .function(15)
+        case "F16":
+            return .function(16)
+        case "F17":
+            return .function(17)
+        case "F18":
+            return .function(18)
+        case "F19":
+            return .function(19)
+        case "F20":
+            return .function(20)
+        default:
+            return .unhandledPlatformKeyCode(Int(event.keyCode), event.key)
         }
     }
     

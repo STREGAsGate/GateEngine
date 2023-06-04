@@ -61,8 +61,7 @@ extension HID /*WindowDelegate*/ {
 
     @_transparent
     func keyboardRequestedHandling(key: KeyboardKey,
-                                   modifiers: KeyboardModifierMask,
                                    event: KeyboardEvent) -> Bool {
-        return keyboard.keyboardRequestedHandling(key: key, modifiers: modifiers, event: event)
+        return keyboard.keyboardRequestedHandling(key: key, event: event)
     }
 }
