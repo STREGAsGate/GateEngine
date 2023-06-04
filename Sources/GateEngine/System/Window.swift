@@ -292,15 +292,32 @@ public enum KeyboardKey: Hashable {
     /// The Esc key
     case escape
     
-    /// Clear on Apple
+    case capsLock
     case numLock
+    case scrollLock
     
+    case clear
+
+    case applications
+
     case home
     case end
     case delete
     case pageUp
     case pageDown
+
+    case printScreen
+    case insert
+    case pauseBreak
+
+    case volumeUp
+    case volumeDown
+    case mute
     
+    case mediaPlayPause
+    case mediaStop
+    case mediaNextTrack
+    case mediaPreviousTrack
     /**
      F keys on the top of a keyboard
      - parameter number: The F key's number F1, F2, F3, etc...
@@ -347,7 +364,6 @@ public enum KeyboardKey: Hashable {
     case shift(_ alignment: Alignment)
     // The Fn key
     case functionModifier
-    case capsLock
     
     var asModifierMask: KeyboardModifierMask {
         switch self {

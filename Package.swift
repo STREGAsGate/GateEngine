@@ -97,6 +97,7 @@ let package = Package(
                             .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
                             .define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
                             .define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
+                            .define("GATEENGINE_DEBUG_HID"),
                             .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, .iOS, .tvOS])),
                         ])
                         #endif
