@@ -293,6 +293,8 @@ extension X11Window {
             key = .function(11)
         case 96:
             key = .function(12)
+        case 191...203://# F13 - F24
+            key = .function(Int(event.keycode - 190))
         case 111://# PrintScrn
             key = .printScreen
         case 78://# Scroll Lock
