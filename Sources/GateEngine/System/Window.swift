@@ -298,7 +298,7 @@ public enum KeyboardKey: Hashable {
     
     case clear
 
-    case applications
+    case contextMenu
 
     case home
     case end
@@ -325,8 +325,8 @@ public enum KeyboardKey: Hashable {
     case function(_ number: Int)
 
     public enum KeyOrigin {
-        case main
-        case pad
+        case standard
+        case numPad
     }
     case character(Character, _ origin: KeyOrigin? = nil)
     
@@ -363,8 +363,9 @@ public enum KeyboardKey: Hashable {
     case control(_ alignment: Alignment)
     case shift(_ alignment: Alignment)
     // The Fn key
-    case functionModifier
+    case fn
     
+    @inline(__always)
     var asModifierMask: KeyboardModifierMask {
         switch self {
         case .alt(_):
@@ -375,7 +376,7 @@ public enum KeyboardKey: Hashable {
             return .control
         case .shift(_):
             return .shift
-        case .functionModifier:
+        case .fn:
             return .function
         default:
             return []

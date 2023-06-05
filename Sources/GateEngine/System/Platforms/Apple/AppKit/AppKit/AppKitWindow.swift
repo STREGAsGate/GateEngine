@@ -594,107 +594,107 @@ final class UGNSWindow: AppKit.NSWindow {
         let keyCode = Int(event.keyCode)
         switch keyCode {
         case 0:// A
-            return .character("a", .main)
+            return .character("a", .standard)
         case 1:// S
-            return .character("s", .main)
+            return .character("s", .standard)
         case 2:// D
-            return .character("d", .main)
+            return .character("d", .standard)
         case 3:// F
-            return .character("f", .main)
+            return .character("f", .standard)
         case 4:// H
-            return .character("h", .main)
+            return .character("h", .standard)
         case 5:// G
-            return .character("g", .main)
+            return .character("g", .standard)
         case 6:// Z
-            return .character("z", .main)
+            return .character("z", .standard)
         case 7:// X
-            return .character("x", .main)
+            return .character("x", .standard)
         case 8:// C
-            return .character("c", .main)
+            return .character("c", .standard)
         case 9:// V
-            return .character("v", .main)
+            return .character("v", .standard)
         case 10:// ??
             break;
         case 11:// B
-            return .character("b", .main)
+            return .character("b", .standard)
         case 12:// Q
-            return .character("q", .main)
+            return .character("q", .standard)
         case 13:// W
-            return .character("w", .main)
+            return .character("w", .standard)
         case 14:// E
-            return .character("e", .main)
+            return .character("e", .standard)
         case 15:// R
-            return .character("r", .main)
+            return .character("r", .standard)
         case 16:// Y
-            return .character("y", .main)
+            return .character("y", .standard)
         case 17:// T
-            return .character("t", .main)
+            return .character("t", .standard)
         case 18:// 1
-            return .character("1", .main)
+            return .character("1", .standard)
         case 19:// 2
-            return .character("2", .main)
+            return .character("2", .standard)
         case 20:// 3
-            return .character("3", .main)
+            return .character("3", .standard)
         case 21:// 4
-            return .character("4", .main)
+            return .character("4", .standard)
         case 22:// 6
-            return .character("6", .main)
+            return .character("6", .standard)
         case 23:// 5
-            return .character("5", .main)
+            return .character("5", .standard)
         case 24:// =
-            return .character("=", .main)
+            return .character("=", .standard)
         case 25:// 9
-            return .character("9", .main)
+            return .character("9", .standard)
         case 26:// 7
-            return .character("7", .main)
+            return .character("7", .standard)
         case 27:// -
-            return .character("-", .main)
+            return .character("-", .standard)
         case 28:// 8
-            return .character("8", .main)
+            return .character("8", .standard)
         case 29:// 0
-            return .character("0", .main)
+            return .character("0", .standard)
         case 30:// ]
-            return .character("]", .main)
+            return .character("]", .standard)
         case 31:// O
-            return .character("o", .main)
+            return .character("o", .standard)
         case 32:// U
-            return .character("u", .main)
+            return .character("u", .standard)
         case 33:// [
-            return .character("[", .main)
+            return .character("[", .standard)
         case 34:// I
-            return .character("i", .main)
+            return .character("i", .standard)
         case 35:// P
-            return .character("p", .main)
+            return .character("p", .standard)
         case 36:// return
-            return .enter(.main)
+            return .enter(.standard)
         case 37:// L
-            return .character("l", .main)
+            return .character("l", .standard)
         case 38:// J
-            return .character("j", .main)
+            return .character("j", .standard)
         case 39:// '
-            return .character("'", .main)
+            return .character("'", .standard)
         case 40:// K
-            return .character("k", .main)
+            return .character("k", .standard)
         case 41:// ;
-            return .character(";", .main)
+            return .character(";", .standard)
         case 42:// \
-            return .character("\\", .main)
+            return .character("\\", .standard)
         case 43:// ,
-            return .character(",", .main)
+            return .character(",", .standard)
         case 44:// /
-            return .character("/", .main)
+            return .character("/", .standard)
         case 45:// N
-            return .character("n", .main)
+            return .character("n", .standard)
         case 46:// M
-            return .character("m", .main)
+            return .character("m", .standard)
         case 47:// .
-            return .character(".", .main)
+            return .character(".", .standard)
         case 48:// \t
             return .tab
         case 49:// space
             return .space
         case 50:// `
-            return .character("`", .main)
+            return .character("`", .standard)
         case 51:// delete
             return .backspace
         case 52:// ??
@@ -720,61 +720,61 @@ final class UGNSWindow: AppKit.NSWindow {
         case 62:// r-ctrl
             return .control(.right)
         case 63:// Fn
-            return .functionModifier
+            return .fn
         case 64:// F17
             return .function(17)
         case 65:// .
-            return .character(".", .pad)
+            return .character(".", .numPad)
         case 66:// ??
             break
         case 67:// *
-            return .character("*", .pad)
+            return .character("*", .numPad)
         case 68:// ??
             break
         case 69:// +
-            return .character("+", .pad)
+            return .character("+", .numPad)
         case 70:// ??
             break
         case 71:// clear/numlock
-            return .numLock
+            return .clear
         case 72...74:// ??
             break
         case 75:// /
-            return .character("/", .pad)
+            return .character("/", .numPad)
         case 76:// enter
-            return .enter(.pad)
+            return .enter(.numPad)
         case 77:// ??
             break
         case 78:// -
-            return .character("-", .pad)
+            return .character("-", .numPad)
         case 79:// F18
             return .function(18)
         case 80:// F19
             return .function(19)
         case 81:// =
-            return .character("=", .pad)
+            return .character("=", .numPad)
         case 82:// 0
-            return .character("0", .pad)
+            return .character("0", .numPad)
         case 83:// 1
-            return .character("1", .pad)
+            return .character("1", .numPad)
         case 84:// 2
-            return .character("2", .pad)
+            return .character("2", .numPad)
         case 85:// 3
-            return .character("3", .pad)
+            return .character("3", .numPad)
         case 86:// 4
-            return .character("4", .pad)
+            return .character("4", .numPad)
         case 87:// 5
-            return .character("5", .pad)
+            return .character("5", .numPad)
         case 88:// 6
-            return .character("6", .pad)
+            return .character("6", .numPad)
         case 89:// 7
-            return .character("7", .pad)
+            return .character("7", .numPad)
         case 90:// F20
             return .function(20)
         case 91:// 8
-            return .character("8", .pad)
+            return .character("8", .numPad)
         case 92:// 9
-            return .character("9", .pad)
+            return .character("9", .numPad)
         case 93...95:// ??
             break
         case 96:// F5
@@ -805,16 +805,16 @@ final class UGNSWindow: AppKit.NSWindow {
             break
         case 109:// F10
             return .function(10)
-        case 110:// ??
-            break
+        case 110:// Applications
+            return .contextMenu
         case 111:// F12
             return .function(12)
         case 112:// ??
             break
         case 113:// F15
             return .function(15)
-        case 114:// ??
-            break
+        case 114:// Insert
+            return .insert
         case 115:// home
             return .home
         case 116:// page up
@@ -943,7 +943,7 @@ final class UGNSWindow: AppKit.NSWindow {
                                                            isRepeat: false,
                                                            event: .toggle) == false
             case 63:
-                let key: KeyboardKey = .functionModifier
+                let key: KeyboardKey = .fn
                 forward = windowDelegate.keyboardDidhandle(key: key,
                                                            character: nil,
                                                            modifiers: [],

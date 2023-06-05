@@ -169,7 +169,98 @@ extension AppKitPlatform {
             }
         }
         
-        let app = NSApplication.shared
+        class CustomApp: NSApplication {
+            #if GATEENGINE_DEBUG_HID
+            // can't prevent the system from sending media keys to other apps, like music, so these are dead in the water for usability
+            override func sendEvent(_ event: NSEvent) {
+                var forward: Bool = true
+                if (event.type == .systemDefined && event.subtype.rawValue == 8) {
+                    let keyCode = ((event.data1 & 0xFFFF0000) >> 16)
+                    let keyFlags = (event.data1 & 0x0000FFFF)
+                    // Get the key state. 0xA is KeyDown, OxB is KeyUp
+                    let keyState: KeyboardEvent = (((keyFlags & 0xFF00) >> 8)) == 0xA ? .keyDown : .keyUp
+                    let keyRepeat: Bool = (keyFlags & 0x1) != 0
+                    
+                    let key: KeyboardKey
+                    switch Int32(keyCode) {
+//                    case NX_NOSPECIALKEY:
+//                        key =
+                    case NX_KEYTYPE_SOUND_UP:
+                        key = .volumeUp
+                    case NX_KEYTYPE_SOUND_DOWN:
+                        key = .volumeDown
+//                    case NX_KEYTYPE_BRIGHTNESS_UP:
+//                        key =
+//                    case NX_KEYTYPE_BRIGHTNESS_DOWN:
+//                        key =
+                    case NX_KEYTYPE_CAPS_LOCK:
+                        key = .capsLock
+//                    case NX_KEYTYPE_HELP:
+//                        key =
+//                    case NX_POWER_KEY:
+//                        key =
+                    case NX_KEYTYPE_MUTE:
+                        key = .mute
+//                    case NX_UP_ARROW_KEY:
+//                        key = .up
+//                    case NX_DOWN_ARROW_KEY:
+//                        key = .down
+                    case NX_KEYTYPE_NUM_LOCK:
+                        key = .numLock
+                        
+//                    case NX_KEYTYPE_CONTRAST_UP:
+//                        key =
+//                    case NX_KEYTYPE_CONTRAST_DOWN:
+//                        key =
+//                    case NX_KEYTYPE_LAUNCH_PANEL:
+//                        key =
+//                    case NX_KEYTYPE_EJECT:
+//                        key =
+//                    case NX_KEYTYPE_VIDMIRROR:
+//                        key =
+                        
+                    case NX_KEYTYPE_PLAY:
+                        key = .mediaPlayPause
+//                    case NX_KEYTYPE_NEXT:
+//                        key = .mediaNextTrack
+//                    case NX_KEYTYPE_PREVIOUS:
+//                        key = .mediaPreviousTrack
+                    case NX_KEYTYPE_FAST:
+                        key = .mediaNextTrack
+                    case NX_KEYTYPE_REWIND:
+                        key = .mediaPreviousTrack
+                        
+//                    case NX_KEYTYPE_ILLUMINATION_UP:
+//                        key =
+//                    case NX_KEYTYPE_ILLUMINATION_DOWN:
+//                        key =
+//                    case NX_KEYTYPE_ILLUMINATION_TOGGLE:
+//                        key =
+//
+//                    case NX_NUMSPECIALKEYS:
+//                        key =  /* Maximum number of special keys */
+//                    case NX_NUM_SCANNED_SPECIALKEYS:
+//                        key =  /* First 24 special keys are */
+//                        /* actively scanned in kernel */
+//
+//                    case NX_KEYTYPE_MENU:
+//                        key =
+                    default:
+                        key = .unhandledPlatformKeyCode(keyCode, nil)
+                    }
+                    
+                    if Game.shared.hid.keyboardDidhandle(key: key, character: nil, modifiers: [], isRepeat: keyRepeat, event: keyState) {
+                        forward = true
+                    }
+                }
+
+                if forward {
+                    super.sendEvent(event)
+                }
+            }
+            #endif
+        }
+        let app = CustomApp.shared
         let delegate = AppDelegate()
         app.delegate = delegate
         app.setActivationPolicy(.regular)
