@@ -333,109 +333,109 @@ final class WASIWindow: WindowBacking {
     func key(fromEvent event: DOM.KeyboardEvent) -> KeyboardKey {
         switch event.code {
         case "Backquote":
-            return .character("`", .standard)
+            return .character("`", .fromMain)
         case "Digit1":
-            return .character("1", .standard)
+            return .character("1", .fromMain)
         case "Digit2":
-            return .character("2", .standard)
+            return .character("2", .fromMain)
         case "Digit3":
-            return .character("3", .standard)
+            return .character("3", .fromMain)
         case "Digit4":
-            return .character("4", .standard)
+            return .character("4", .fromMain)
         case "Digit5":
-            return .character("5", .standard)
+            return .character("5", .fromMain)
         case "Digit6":
-            return .character("6", .standard)
+            return .character("6", .fromMain)
         case "Digit7":
-            return .character("7", .standard)
+            return .character("7", .fromMain)
         case "Digit8":
-            return .character("8", .standard)
+            return .character("8", .fromMain)
         case "Digit9":
-            return .character("9", .standard)
+            return .character("9", .fromMain)
         case "Digit0":
-            return .character("0", .standard)
+            return .character("0", .fromMain)
         case "Minus":
-            return .character("-", .standard)
+            return .character("-", .fromMain)
         case "Equal":
-            return .character("=", .standard)
+            return .character("=", .fromMain)
         case "Backspace":
             return .backspace
         case "Tab":
             return .tab
         case "KeyQ":
-            return .character("q", .standard)
+            return .character("q", .fromMain)
         case "KeyW":
-            return .character("w", .standard)
+            return .character("w", .fromMain)
         case "KeyE":
-            return .character("e", .standard)
+            return .character("e", .fromMain)
         case "KeyR":
-            return .character("r", .standard)
+            return .character("r", .fromMain)
         case "KeyT":
-            return .character("t", .standard)
+            return .character("t", .fromMain)
         case "KeyY":
-            return .character("y", .standard)
+            return .character("y", .fromMain)
         case "KeyU":
-            return .character("u", .standard)
+            return .character("u", .fromMain)
         case "KeyI":
-            return .character("i", .standard)
+            return .character("i", .fromMain)
         case "KeyO":
-            return .character("o", .standard)
+            return .character("o", .fromMain)
         case "KeyP":
-            return .character("p", .standard)
+            return .character("p", .fromMain)
         case "BracketLeft":
-            return .character("[", .standard)
+            return .character("[", .fromMain)
         case "BracketRight":
-            return .character("]", .standard)
+            return .character("]", .fromMain)
         case "Backslash":
-            return .character("\\", .standard)
+            return .character("\\", .fromMain)
         case "CapsLock":
             return .capsLock
         case "KeyA":
-            return .character("a", .standard)
+            return .character("a", .fromMain)
         case "KeyS":
-            return .character("s", .standard)
+            return .character("s", .fromMain)
         case "KeyD":
-            return .character("d", .standard)
+            return .character("d", .fromMain)
         case "KeyF":
-            return .character("f", .standard)
+            return .character("f", .fromMain)
         case "KeyG":
-            return .character("g", .standard)
+            return .character("g", .fromMain)
         case "KeyH":
-            return .character("h", .standard)
+            return .character("h", .fromMain)
         case "KeyJ":
-            return .character("j", .standard)
+            return .character("j", .fromMain)
         case "KeyK":
-            return .character("k", .standard)
+            return .character("k", .fromMain)
         case "KeyL":
-            return .character("l", .standard)
+            return .character("l", .fromMain)
         case "Semicolon":
-            return .character(";", .standard)
+            return .character(";", .fromMain)
         case "Quote":
-            return .character("'", .standard)
+            return .character("'", .fromMain)
         case "Enter":
-            return .enter(.standard)
+            return .enter(.fromMain)
         case "ShiftLeft":
             return .shift(.left)
         case "KeyZ":
-            return .character("z", .standard)
+            return .character("z", .fromMain)
         case "KeyX":
-            return .character("x", .standard)
+            return .character("x", .fromMain)
         case "KeyC":
-            return .character("c", .standard)
+            return .character("c", .fromMain)
         case "KeyV":
-            return .character("v", .standard)
+            return .character("v", .fromMain)
         case "KeyB":
-            return .character("b", .standard)
+            return .character("b", .fromMain)
         case "KeyN":
-            return .character("n", .standard)
+            return .character("n", .fromMain)
         case "KeyM":
-            return .character("m", .standard)
+            return .character("m", .fromMain)
         case "Comma":
-            return .character(",", .standard)
+            return .character(",", .fromMain)
         case "Period":
-            return .character(".", .standard)
+            return .character(".", .fromMain)
         case "Slash":
-            return .character("/", .standard)
+            return .character("/", .fromMain)
         case "ShiftRight":
             return .shift(.right)
         case "ControlLeft":
@@ -473,39 +473,39 @@ final class WASIWindow: WindowBacking {
         case "NumLock":
             return .numLock
         case "NumpadEqual":
-            return .character("=", .numPad)
+            return .character("=", .fromNumberPad)
         case "NumpadDivide":
-            return .character("/", .numPad)
+            return .character("/", .fromNumberPad)
         case "NumpadMultiply":
-            return .character("*", .numPad)
+            return .character("*", .fromNumberPad)
         case "Numpad7":
-            return .character("7", .numPad)
+            return .character("7", .fromNumberPad)
         case "Numpad8":
-            return .character("8", .numPad)
+            return .character("8", .fromNumberPad)
         case "Numpad9":
-            return .character("9", .numPad)
+            return .character("9", .fromNumberPad)
         case "NumpadSubtract":
-            return .character("-", .numPad)
+            return .character("-", .fromNumberPad)
         case "Numpad4":
-            return .character("4", .numPad)
+            return .character("4", .fromNumberPad)
         case "Numpad5":
-            return .character("5", .numPad)
+            return .character("5", .fromNumberPad)
         case "Numpad6":
-            return .character("6", .numPad)
+            return .character("6", .fromNumberPad)
         case "NumpadAdd":
-            return .character("+", .numPad)
+            return .character("+", .fromNumberPad)
         case "Numpad1":
-            return .character("1", .numPad)
+            return .character("1", .fromNumberPad)
         case "Numpad2":
-            return .character("2", .numPad)
+            return .character("2", .fromNumberPad)
         case "Numpad3":
-            return .character("3", .numPad)
+            return .character("3", .fromNumberPad)
         case "NumpadEnter":
-            return .enter(.numPad)
+            return .enter(.fromNumberPad)
         case "Numpad0":
-            return .character("0", .numPad)
+            return .character("0", .fromNumberPad)
         case "NumpadDecimal":
-            return .character(".", .numPad)
+            return .character(".", .fromNumberPad)
         case "Escape":
             return .escape
         case "F1":
