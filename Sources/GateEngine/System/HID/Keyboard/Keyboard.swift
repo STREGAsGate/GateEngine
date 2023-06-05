@@ -117,10 +117,10 @@ import GameMath
            break
         }
         #endif
-        if let exactMatch = buttons[keyboardKey] {
+        if let exactMatch: ButtonState = buttons[keyboardKey] {
             return exactMatch
         }
-        let button = ButtonState(keyboard: self, key: keyboardKey)
+        let button: ButtonState = ButtonState(keyboard: self, key: keyboardKey)
         buttons[keyboardKey] = button
         return button
     }
@@ -249,7 +249,7 @@ extension Keyboard {
             self.modifiers = modifiers
         case .toggle:
             if isRepeat == false {
-                let button = self._button(key)
+                let button: Keyboard.ButtonState = self._button(key)
                 if button.isPressed == false {
                     button.isPressed = true
                 }else{
