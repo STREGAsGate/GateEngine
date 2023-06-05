@@ -55,11 +55,11 @@ public enum KeyboardKey: Hashable {
 
     public enum KeyOrigin {
         // Any part of the keyboard
-        case fromAnywhere
+        case anyVariation
         // The main keyboard area
-        case fromMain
+        case standard
         // The numeric key pad area
-        case fromNumberPad
+        case numberPad
     }
     /**
      The primary (not shift) symbol on the face of a physical key.
@@ -68,7 +68,7 @@ public enum KeyboardKey: Hashable {
      - note: `character` is in qwerty layout. If you use another layoit for devlopment you can use the following function to translate:
      ``KeyboardKey.qwerty(_,_)``, ``KeyboardKey.qwertz(_,_)``, ``KeyboardKey.azerty(_,_)``
      */
-    case character(_ character: Character, _ origin: KeyOrigin = .fromAnywhere)
+    case character(_ character: Character, _ origin: KeyOrigin = .anyVariation)
     
     /// The backspace or delete key
     case backspace
@@ -91,15 +91,15 @@ public enum KeyboardKey: Hashable {
      - parameter int: A key code represented as an Int
      - parameter string: A key represented as a String
      */
-    case unhandledPlatformKeyCode(_ int: Int?, _ string: String?)
+    case unhandledPlatformKeyCode(_ int: Int?, _ string: Character?)
     
     public enum Alignment {
         // Any key
-        case anything
+        case anyVariation
         // On the left of the space bar
-        case left
+        case leftSide
         // On the right of the space bar
-        case right
+        case rightSide
     }
     case alt(_ alignment: Alignment)
     case host(_ alignment: Alignment)
@@ -139,8 +139,8 @@ extension KeyboardKey {
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
      - note: If you are solo and use qwerty, this function can be omitted as the unerlying representation is already \"qwerty\".
      */
-    @_transparent
-    public static func qwerty(_ character: Character, origin: KeyOrigin = .fromAnywhere) -> Self {
+    @inlinable @inline(__always) @_transparent
+    public static func qwerty(_ character: Character, origin: KeyOrigin = .anyVariation) -> Self {
         return .character(character, origin)
     }
     
@@ -153,7 +153,8 @@ extension KeyboardKey {
      - parameter character: The character on your keyboard, assuming your keyboard layout is \"qwertz\".
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
      */
-    public static func qwertz(_ character: Character, origin: KeyOrigin = .fromAnywhere) -> Self {
+    @inlinable @inline(__always)
+    public static func qwertz(_ character: Character, origin: KeyOrigin = .anyVariation) -> Self {
         switch character {
         case "<":
             return .character("`", origin)
@@ -198,7 +199,8 @@ extension KeyboardKey {
      - parameter character: The character on your keyboard, assuming your keyboard layout is \"azerty\".
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
      */
-    public static func azerty(_ character: Character, origin: KeyOrigin = .fromAnywhere) -> Self {
+    @inlinable @inline(__always)
+    public static func azerty(_ character: Character, origin: KeyOrigin = .anyVariation) -> Self {
         switch character {
         case "<":
             return .character("`", origin)

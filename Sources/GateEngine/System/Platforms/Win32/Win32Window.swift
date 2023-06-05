@@ -333,7 +333,7 @@ fileprivate extension Win32Window {
         if let windowDelegate: WindowDelegate = window.delegate {
             let key: KeyboardKey = self.keyFromWPARAM(wparam, lparam)
             return windowDelegate.keyboardDidhandle(key: key,
-                                                    character: character(from: wparam)?.first,
+                                                    character: character(from: wparam),
                                                     modifiers: modifierKeyFromWPARAM(wparam),
                                                     isRepeat: false,
                                                     event: .keyDown)
@@ -349,7 +349,7 @@ fileprivate extension Win32Window {
         if let windowDelegate: WindowDelegate = window.delegate {
             let key: KeyboardKey = self.keyFromWPARAM(wparam, lparam)
             return windowDelegate.keyboardDidhandle(key: key,
-                                                    character: character(from: wparam)?.first,
+                                                    character: character(from: wparam),
                                                     modifiers: modifierKeyFromWPARAM(wparam),
                                                     isRepeat: false,
                                                     event: .keyUp)
@@ -500,7 +500,7 @@ extension Win32Window {
     }
 
     @inline(__always)
-    func character(from param: WPARAM) -> String? {
+    func character(from param: WPARAM) -> Character? {
         var keyboardState: [UInt8] = Array<UInt8>(repeating: 0, count: 256)
         if modifierKeyFromWPARAM(param).contains(.shift) {
             keyboardState[Array<UInt8>.Index(VK_SHIFT)] = 0xff
@@ -509,7 +509,7 @@ extension Win32Window {
         if ToUnicode(UInt32(param), 0, keyboardState, &data, 256, 0) == 1 {
             let string: String = String(windowsUTF16: data)
             if string.isEmpty == false {
-                return string
+                return string.first
             }
         }
         return nil
@@ -552,7 +552,7 @@ extension Win32Window {
             return .clear
         case VK_RETURN: // 0x0D	ENTER key
             let isExtended = lparam & 0x1000000 != 0
-            return .enter(isExtended ? .fromNumberPad : .fromMain)
+            return .enter(isExtended ? .numberPad : .standard)
         #if GATEENGINE_DEBUG_HID
         case 0x0E...0x0F:// Undefined
             break
@@ -562,9 +562,9 @@ extension Win32Window {
             let key = Int32(MapVirtualKeyW(scancode, UInt32(MAPVK_VSC_TO_VK_EX)))
             switch key {
             case VK_LSHIFT:
-                return .shift(.left)
+                return .shift(.leftSide)
             case VK_RSHIFT:
-                return .shift(.right)
+                return .shift(.rightSide)
             default:
                 #if GATEENGINE_DEBUG_HID
                 keyMacro = "VK_SHIFT"
@@ -573,10 +573,10 @@ extension Win32Window {
             }
         case VK_CONTROL: // 0x11	CTRL key
             let isExtended = lparam & 0x1000000 != 0
-            return .control(isExtended ? .right : .left)
+            return .control(isExtended ? .rightSide : .leftSide)
         case VK_MENU: // 0x12	ALT key
              let isExtended = lparam & 0x1000000 != 0
-            return .alt(isExtended ? .right : .left)
+            return .alt(isExtended ? .rightSide : .leftSide)
         case VK_PAUSE: // 0x13	PAUSE key
             return .pauseBreak
         case VK_CAPITAL: // 0x14	CAPS LOCK key
@@ -648,85 +648,85 @@ extension Win32Window {
             keyMacro = "VK_HELP"
         #endif
         case 0x30:// 0 key
-            return .character("0", .fromMain)
+            return .character("0", .standard)
         case 0x31:// 1 key
-            return .character("1", .fromMain)
+            return .character("1", .standard)
         case 0x32:// 2 key
-            return .character("2", .fromMain)
+            return .character("2", .standard)
         case 0x33:// 3 key
-            return .character("3", .fromMain)
+            return .character("3", .standard)
         case 0x34:// 4 key
-            return .character("4", .fromMain)
+            return .character("4", .standard)
         case 0x35:// 5 key
-            return .character("5", .fromMain)
+            return .character("5", .standard)
         case 0x36:// 6 key
-            return .character("6", .fromMain)
+            return .character("6", .standard)
         case 0x37:// 7 key
-            return .character("7", .fromMain)
+            return .character("7", .standard)
         case 0x38:// 8 key
-            return .character("8", .fromMain)
+            return .character("8", .standard)
         case 0x39:// 9 key
-            return .character("9", .fromMain)
+            return .character("9", .standard)
         #if GATEENGINE_DEBUG_HID
         case 0x3A...0x40:// Undefined
             break
         #endif
         case 0x41:// A key
-            return .character("a", .fromMain)
+            return .character("a", .standard)
         case 0x42:// B key
-            return .character("b", .fromMain)
+            return .character("b", .standard)
         case 0x43:// C key
-            return .character("c", .fromMain)
+            return .character("c", .standard)
         case 0x44:// D key
-            return .character("d", .fromMain)
+            return .character("d", .standard)
         case 0x45:// E key
-            return .character("e", .fromMain)
+            return .character("e", .standard)
         case 0x46:// F key
-            return .character("f", .fromMain)
+            return .character("f", .standard)
         case 0x47:// G key
-            return .character("g", .fromMain)
+            return .character("g", .standard)
         case 0x48:// H key
-            return .character("h", .fromMain)
+            return .character("h", .standard)
         case 0x49:// I key
-            return .character("i", .fromMain)
+            return .character("i", .standard)
         case 0x4A:// J key
-            return .character("j", .fromMain)
+            return .character("j", .standard)
         case 0x4B:// K key
-            return .character("k", .fromMain)
+            return .character("k", .standard)
         case 0x4C:// L key
-            return .character("l", .fromMain)
+            return .character("l", .standard)
         case 0x4D:// M key
-            return .character("m", .fromMain)
+            return .character("m", .standard)
         case 0x4E:// N key
-            return .character("n", .fromMain)
+            return .character("n", .standard)
         case 0x4F:// O key
-            return .character("o", .fromMain)
+            return .character("o", .standard)
         case 0x50:// P key
-            return .character("p", .fromMain)
+            return .character("p", .standard)
         case 0x51:// Q key
-            return .character("q", .fromMain)
+            return .character("q", .standard)
         case 0x52:// R key
-            return .character("r", .fromMain)
+            return .character("r", .standard)
         case 0x53:// S key
-            return .character("s", .fromMain)
+            return .character("s", .standard)
         case 0x54:// T key
-            return .character("t", .fromMain)
+            return .character("t", .standard)
         case 0x55:// U key
-            return .character("u", .fromMain)
+            return .character("u", .standard)
         case 0x56:// V key
-            return .character("v", .fromMain)
+            return .character("v", .standard)
         case 0x57:// W key
-            return .character("w", .fromMain)
+            return .character("w", .standard)
         case 0x58:// X key
-            return .character("x", .fromMain)
+            return .character("x", .standard)
         case 0x59:// Y key
-            return .character("y", .fromMain)
+            return .character("y", .standard)
         case 0x5A:// Z key
-            return .character("z", .fromMain)
+            return .character("z", .standard)
         case VK_LWIN: // 0x5B	Left Windows key (Natural keyboard)
-            return .host(.left)
+            return .host(.leftSide)
         case VK_RWIN: // 0x5C	Right Windows key (Natural keyboard)
-            return .host(.right)
+            return .host(.rightSide)
         case VK_APPS: // 0x5D	Applications key (Natural keyboard)
             return .contextMenu
         #if GATEENGINE_DEBUG_HID
@@ -736,39 +736,39 @@ extension Win32Window {
             keyMacro = "VK_SLEEP"
         #endif
         case VK_NUMPAD0: // 0x60	Numeric keypad 0 key
-            return .character("0", .fromNumberPad)
+            return .character("0", .numberPad)
         case VK_NUMPAD1: // 0x61	Numeric keypad 1 key
-            return .character("1", .fromNumberPad)
+            return .character("1", .numberPad)
         case VK_NUMPAD2: // 0x62	Numeric keypad 2 key
-            return .character("2", .fromNumberPad)
+            return .character("2", .numberPad)
         case VK_NUMPAD3: // 0x63	Numeric keypad 3 key
-            return .character("3", .fromNumberPad)
+            return .character("3", .numberPad)
         case VK_NUMPAD4: // 0x64	Numeric keypad 4 key
-            return .character("4", .fromNumberPad)
+            return .character("4", .numberPad)
         case VK_NUMPAD5: // 0x65	Numeric keypad 5 key
-            return .character("5", .fromNumberPad)
+            return .character("5", .numberPad)
         case VK_NUMPAD6: // 0x66	Numeric keypad 6 key
-            return .character("6", .fromNumberPad)
+            return .character("6", .numberPad)
         case VK_NUMPAD7: // 0x67	Numeric keypad 7 key
-            return .character("7", .fromNumberPad)
+            return .character("7", .numberPad)
         case VK_NUMPAD8: // 0x68	Numeric keypad 8 key
-            return .character("8", .fromNumberPad)
+            return .character("8", .numberPad)
         case VK_NUMPAD9: // 0x69	Numeric keypad 9 key
-            return .character("9", .fromNumberPad)
+            return .character("9", .numberPad)
         case VK_MULTIPLY: // 0x6A	Multiply key
-            return .character("*", .fromNumberPad)
+            return .character("*", .numberPad)
         case VK_ADD: // 0x6B	Add key
-            return .character("+", .fromNumberPad)
+            return .character("+", .numberPad)
         #if GATEENGINE_DEBUG_HID
         case VK_SEPARATOR: // 0x6C	Separator key
             keyMacro = "VK_SEPARATOR"
         #endif
         case VK_SUBTRACT: // 0x6D	Subtract key
-            return .character("-", .fromNumberPad)
+            return .character("-", .numberPad)
         case VK_DECIMAL: // 0x6E	Decimal key
-            return .character(".", .fromNumberPad)
+            return .character(".", .numberPad)
         case VK_DIVIDE: // 0x6F	Divide key
-            return .character("/", .fromNumberPad)
+            return .character("/", .numberPad)
         case VK_F1...VK_F24: // 0x70 F1 key - 0x87 F24 key
             return .function(Int(key - 0x6F))
         #if GATEENGINE_DEBUG_HID
@@ -780,7 +780,7 @@ extension Win32Window {
         case VK_SCROLL: // 0x91	SCROLL LOCK key
             return .scrollLock
         case VK_OEM_NEC_EQUAL:// '=' key on numpad
-            return .character("=", .fromNumberPad)
+            return .character("=", .numberPad)
         #if GATEENGINE_DEBUG_HID
         case 0x93...0x96: // OEM specific
             break
@@ -788,17 +788,17 @@ extension Win32Window {
             break
         #endif
         case VK_LSHIFT: // 0xA0	Left SHIFT key
-            return .shift(.left)
+            return .shift(.leftSide)
         case VK_RSHIFT: // 0xA1	Right SHIFT key
-            return .shift(.right)
+            return .shift(.rightSide)
         case VK_LCONTROL: // 0xA2	Left CONTROL key
-            return .control(.left)
+            return .control(.leftSide)
         case VK_RCONTROL: // 0xA3	Right CONTROL key
-            return .control(.right)
+            return .control(.rightSide)
         case VK_LMENU: // 0xA4	Left ALT key
-            return .alt(.left)
+            return .alt(.leftSide)
         case VK_RMENU: // 0xA5	Right ALT key
-            return .alt(.right)
+            return .alt(.rightSide)
         #if GATEENGINE_DEBUG_HID
         case VK_BROWSER_BACK: // 0xA6	Browser Back key
             keyMacro = "VK_BROWSER_BACK"
@@ -842,19 +842,19 @@ extension Win32Window {
             break
         #endif
         case VK_OEM_1: // 0xBA	Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ';:' key
-            return .character(";", .fromMain)
+            return .character(";", .standard)
         case VK_OEM_PLUS: // 0xBB	For any country/region, the '+' key
-            return .character("+", .fromMain)
+            return .character("+", .standard)
         case VK_OEM_COMMA: // 0xBC	For any country/region, the ',' key
-            return .character(",", .fromMain)
+            return .character(",", .standard)
         case VK_OEM_MINUS: // 0xBD	For any country/region, the '-' key
-            return .character("-", .fromMain)
+            return .character("-", .standard)
         case VK_OEM_PERIOD: // 0xBE	For any country/region, the '.' key
-            return .character(".", .fromMain)
+            return .character(".", .standard)
         case VK_OEM_2: // 0xBF	Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '/?' key
-            return .character("/", .fromMain)
+            return .character("/", .standard)
         case VK_OEM_3: // 0xC0	Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '`~' key
-            return .character("`", .fromMain)
+            return .character("`", .standard)
         #if GATEENGINE_DEBUG_HID
         case 0xC1...0xD7:// Reserved
             break
@@ -862,13 +862,13 @@ extension Win32Window {
             break
         #endif
         case VK_OEM_4: // 0xDB	Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '[{' key
-            return .character("[", .fromMain)
+            return .character("[", .standard)
         case VK_OEM_5: // 0xDC	Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '\|' key
-            return .character("\\", .fromMain)
+            return .character("\\", .standard)
         case VK_OEM_6: // 0xDD	Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ']}' key
-            return .character("]", .fromMain)
+            return .character("]", .standard)
         case VK_OEM_7: // 0xDE	Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the 'single-quote/double-quote' key
-            return .character("'", .fromMain)
+            return .character("'", .standard)
         case VK_OEM_8: // 0xDF	Used for miscellaneous characters; it can vary by keyboard.
             Log.info("VK_OEM_8")
             break

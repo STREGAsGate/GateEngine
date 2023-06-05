@@ -594,107 +594,107 @@ final class UGNSWindow: AppKit.NSWindow {
         let keyCode = Int(event.keyCode)
         switch keyCode {
         case 0:// A
-            return .character("a", .fromMain)
+            return .character("a", .standard)
         case 1:// S
-            return .character("s", .fromMain)
+            return .character("s", .standard)
         case 2:// D
-            return .character("d", .fromMain)
+            return .character("d", .standard)
         case 3:// F
-            return .character("f", .fromMain)
+            return .character("f", .standard)
         case 4:// H
-            return .character("h", .fromMain)
+            return .character("h", .standard)
         case 5:// G
-            return .character("g", .fromMain)
+            return .character("g", .standard)
         case 6:// Z
-            return .character("z", .fromMain)
+            return .character("z", .standard)
         case 7:// X
-            return .character("x", .fromMain)
+            return .character("x", .standard)
         case 8:// C
-            return .character("c", .fromMain)
+            return .character("c", .standard)
         case 9:// V
-            return .character("v", .fromMain)
+            return .character("v", .standard)
         case 10:// ??
             break;
         case 11:// B
-            return .character("b", .fromMain)
+            return .character("b", .standard)
         case 12:// Q
-            return .character("q", .fromMain)
+            return .character("q", .standard)
         case 13:// W
-            return .character("w", .fromMain)
+            return .character("w", .standard)
         case 14:// E
-            return .character("e", .fromMain)
+            return .character("e", .standard)
         case 15:// R
-            return .character("r", .fromMain)
+            return .character("r", .standard)
         case 16:// Y
-            return .character("y", .fromMain)
+            return .character("y", .standard)
         case 17:// T
-            return .character("t", .fromMain)
+            return .character("t", .standard)
         case 18:// 1
-            return .character("1", .fromMain)
+            return .character("1", .standard)
         case 19:// 2
-            return .character("2", .fromMain)
+            return .character("2", .standard)
         case 20:// 3
-            return .character("3", .fromMain)
+            return .character("3", .standard)
         case 21:// 4
-            return .character("4", .fromMain)
+            return .character("4", .standard)
         case 22:// 6
-            return .character("6", .fromMain)
+            return .character("6", .standard)
         case 23:// 5
-            return .character("5", .fromMain)
+            return .character("5", .standard)
         case 24:// =
-            return .character("=", .fromMain)
+            return .character("=", .standard)
         case 25:// 9
-            return .character("9", .fromMain)
+            return .character("9", .standard)
         case 26:// 7
-            return .character("7", .fromMain)
+            return .character("7", .standard)
         case 27:// -
-            return .character("-", .fromMain)
+            return .character("-", .standard)
         case 28:// 8
-            return .character("8", .fromMain)
+            return .character("8", .standard)
         case 29:// 0
-            return .character("0", .fromMain)
+            return .character("0", .standard)
         case 30:// ]
-            return .character("]", .fromMain)
+            return .character("]", .standard)
         case 31:// O
-            return .character("o", .fromMain)
+            return .character("o", .standard)
         case 32:// U
-            return .character("u", .fromMain)
+            return .character("u", .standard)
         case 33:// [
-            return .character("[", .fromMain)
+            return .character("[", .standard)
         case 34:// I
-            return .character("i", .fromMain)
+            return .character("i", .standard)
         case 35:// P
-            return .character("p", .fromMain)
+            return .character("p", .standard)
         case 36:// return
-            return .enter(.fromMain)
+            return .enter(.standard)
         case 37:// L
-            return .character("l", .fromMain)
+            return .character("l", .standard)
         case 38:// J
-            return .character("j", .fromMain)
+            return .character("j", .standard)
         case 39:// '
-            return .character("'", .fromMain)
+            return .character("'", .standard)
         case 40:// K
-            return .character("k", .fromMain)
+            return .character("k", .standard)
         case 41:// ;
-            return .character(";", .fromMain)
+            return .character(";", .standard)
         case 42:// \
-            return .character("\\", .fromMain)
+            return .character("\\", .standard)
         case 43:// ,
-            return .character(",", .fromMain)
+            return .character(",", .standard)
         case 44:// /
-            return .character("/", .fromMain)
+            return .character("/", .standard)
         case 45:// N
-            return .character("n", .fromMain)
+            return .character("n", .standard)
         case 46:// M
-            return .character("m", .fromMain)
+            return .character("m", .standard)
         case 47:// .
-            return .character(".", .fromMain)
+            return .character(".", .standard)
         case 48:// \t
             return .tab
         case 49:// space
             return .space
         case 50:// `
-            return .character("`", .fromMain)
+            return .character("`", .standard)
         case 51:// delete
             return .backspace
         case 52:// ??
@@ -702,37 +702,37 @@ final class UGNSWindow: AppKit.NSWindow {
         case 53:// esc
             return .escape
         case 54:// r-cmd
-            return .host(.right)
+            return .host(.rightSide)
         case 55:// l-cmd
-            return .host(.left)
+            return .host(.leftSide)
         case 56:// l-shift
-            return .shift(.left)
+            return .shift(.leftSide)
         case 57:// capslock
             return .capsLock
         case 58:// l-alt
-            return .alt(.left)
+            return .alt(.leftSide)
         case 59:// l-ctrl
-            return .control(.left)
+            return .control(.leftSide)
         case 60:// r-shift
-            return .shift(.right)
+            return .shift(.rightSide)
         case 61:// r-alt
-            return .alt(.right)
+            return .alt(.rightSide)
         case 62:// r-ctrl
-            return .control(.right)
+            return .control(.rightSide)
         case 63:// Fn
             return .fn
         case 64:// F17
             return .function(17)
         case 65:// .
-            return .character(".", .fromNumberPad)
+            return .character(".", .numberPad)
         case 66:// ??
             break
         case 67:// *
-            return .character("*", .fromNumberPad)
+            return .character("*", .numberPad)
         case 68:// ??
             break
         case 69:// +
-            return .character("+", .fromNumberPad)
+            return .character("+", .numberPad)
         case 70:// ??
             break
         case 71:// clear/numlock
@@ -740,41 +740,41 @@ final class UGNSWindow: AppKit.NSWindow {
         case 72...74:// ??
             break
         case 75:// /
-            return .character("/", .fromNumberPad)
+            return .character("/", .numberPad)
         case 76:// enter
-            return .enter(.fromNumberPad)
+            return .enter(.numberPad)
         case 77:// ??
             break
         case 78:// -
-            return .character("-", .fromNumberPad)
+            return .character("-", .numberPad)
         case 79:// F18
             return .function(18)
         case 80:// F19
             return .function(19)
         case 81:// =
-            return .character("=", .fromNumberPad)
+            return .character("=", .numberPad)
         case 82:// 0
-            return .character("0", .fromNumberPad)
+            return .character("0", .numberPad)
         case 83:// 1
-            return .character("1", .fromNumberPad)
+            return .character("1", .numberPad)
         case 84:// 2
-            return .character("2", .fromNumberPad)
+            return .character("2", .numberPad)
         case 85:// 3
-            return .character("3", .fromNumberPad)
+            return .character("3", .numberPad)
         case 86:// 4
-            return .character("4", .fromNumberPad)
+            return .character("4", .numberPad)
         case 87:// 5
-            return .character("5", .fromNumberPad)
+            return .character("5", .numberPad)
         case 88:// 6
-            return .character("6", .fromNumberPad)
+            return .character("6", .numberPad)
         case 89:// 7
-            return .character("7", .fromNumberPad)
+            return .character("7", .numberPad)
         case 90:// F20
             return .function(20)
         case 91:// 8
-            return .character("8", .fromNumberPad)
+            return .character("8", .numberPad)
         case 92:// 9
-            return .character("9", .fromNumberPad)
+            return .character("9", .numberPad)
         case 93...95:// ??
             break
         case 96:// F5
@@ -915,28 +915,28 @@ final class UGNSWindow: AppKit.NSWindow {
             let keyCode = Int(event.keyCode)
             switch keyCode {
             case 56, 60:
-                let key: KeyboardKey = keyCode == 56 ? .shift(.left) : .shift(.right)
+                let key: KeyboardKey = keyCode == 56 ? .shift(.leftSide) : .shift(.rightSide)
                 forward = windowDelegate.keyboardDidhandle(key: key,
                                                            character: nil,
                                                            modifiers: [],
                                                            isRepeat: false,
                                                            event: .toggle) == false
             case 55, 54:
-                let key: KeyboardKey = keyCode == 55 ? .host(.left) : .host(.right)
+                let key: KeyboardKey = keyCode == 55 ? .host(.leftSide) : .host(.rightSide)
                 forward = windowDelegate.keyboardDidhandle(key: key,
                                                            character: nil,
                                                            modifiers: [],
                                                            isRepeat: false,
                                                            event: .toggle) == false
             case 59, 62:
-                let key: KeyboardKey = keyCode == 59 ? .control(.left) : .control(.right)
+                let key: KeyboardKey = keyCode == 59 ? .control(.leftSide) : .control(.rightSide)
                 forward = windowDelegate.keyboardDidhandle(key: key,
                                                            character: nil,
                                                            modifiers: [],
                                                            isRepeat: false,
                                                            event: .toggle) == false
             case 58, 61:
-                let key: KeyboardKey = keyCode == 58 ? .alt(.left) : .alt(.right)
+                let key: KeyboardKey = keyCode == 58 ? .alt(.leftSide) : .alt(.rightSide)
                 forward = windowDelegate.keyboardDidhandle(key: key,
                                                            character: nil,
                                                            modifiers: [],

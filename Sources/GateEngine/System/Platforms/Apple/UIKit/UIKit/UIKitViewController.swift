@@ -266,80 +266,80 @@ internal class UIKitViewController: GCEventViewController {
             #endif
                 
             case .keyboardA: /* a or A */
-                key = .character("a", .fromMain)
+                key = .character("a", .standard)
             case .keyboardB: /* b or B */
-                key = .character("b", .fromMain)
+                key = .character("b", .standard)
             case .keyboardC: /* c or C */
-                key = .character("c", .fromMain)
+                key = .character("c", .standard)
             case .keyboardD: /* d or D */
-                key = .character("d", .fromMain)
+                key = .character("d", .standard)
             case .keyboardE: /* e or E */
-                key = .character("e", .fromMain)
+                key = .character("e", .standard)
             case .keyboardF: /* f or F */
-                key = .character("f", .fromMain)
+                key = .character("f", .standard)
             case .keyboardG: /* g or G */
-                key = .character("g", .fromMain)
+                key = .character("g", .standard)
             case .keyboardH: /* h or H */
-                key = .character("h", .fromMain)
+                key = .character("h", .standard)
             case .keyboardI: /* i or I */
-                key = .character("i", .fromMain)
+                key = .character("i", .standard)
             case .keyboardJ: /* j or J */
-                key = .character("j", .fromMain)
+                key = .character("j", .standard)
             case .keyboardK: /* k or K */
-                key = .character("k", .fromMain)
+                key = .character("k", .standard)
             case .keyboardL: /* l or L */
-                key = .character("l", .fromMain)
+                key = .character("l", .standard)
             case .keyboardM: /* m or M */
-                key = .character("m", .fromMain)
+                key = .character("m", .standard)
             case .keyboardN: /* n or N */
-                key = .character("n", .fromMain)
+                key = .character("n", .standard)
             case .keyboardO: /* o or O */
-                key = .character("o", .fromMain)
+                key = .character("o", .standard)
             case .keyboardP: /* p or P */
-                key = .character("p", .fromMain)
+                key = .character("p", .standard)
             case .keyboardQ: /* q or Q */
-                key = .character("q", .fromMain)
+                key = .character("q", .standard)
             case .keyboardR: /* r or R */
-                key = .character("r", .fromMain)
+                key = .character("r", .standard)
             case .keyboardS: /* s or S */
-                key = .character("s", .fromMain)
+                key = .character("s", .standard)
             case .keyboardT: /* t or T */
-                key = .character("t", .fromMain)
+                key = .character("t", .standard)
             case .keyboardU: /* u or U */
-                key = .character("u", .fromMain)
+                key = .character("u", .standard)
             case .keyboardV: /* v or V */
-                key = .character("v", .fromMain)
+                key = .character("v", .standard)
             case .keyboardW: /* w or W */
-                key = .character("w", .fromMain)
+                key = .character("w", .standard)
             case .keyboardX: /* x or X */
-                key = .character("x", .fromMain)
+                key = .character("x", .standard)
             case .keyboardY: /* y or Y */
-                key = .character("y", .fromMain)
+                key = .character("y", .standard)
             case .keyboardZ: /* z or Z */
-                key = .character("z", .fromMain)
+                key = .character("z", .standard)
             case .keyboard1: /* 1 or ! */
-                key = .character("1", .fromMain)
+                key = .character("1", .standard)
             case .keyboard2: /* 2 or @ */
-                key = .character("2", .fromMain)
+                key = .character("2", .standard)
             case .keyboard3: /* 3 or # */
-                key = .character("3", .fromMain)
+                key = .character("3", .standard)
             case .keyboard4: /* 4 or $ */
-                key = .character("4", .fromMain)
+                key = .character("4", .standard)
             case .keyboard5: /* 5 or % */
-                key = .character("5", .fromMain)
+                key = .character("5", .standard)
             case .keyboard6: /* 6 or ^ */
-                key = .character("6", .fromMain)
+                key = .character("6", .standard)
             case .keyboard7: /* 7 or & */
-                key = .character("7", .fromMain)
+                key = .character("7", .standard)
             case .keyboard8: /* 8 or * */
-                key = .character("8", .fromMain)
+                key = .character("8", .standard)
             case .keyboard9: /* 9 or ( */
-                key = .character("9", .fromMain)
+                key = .character("9", .standard)
             case .keyboard0: /* 0 or ) */
-                key = .character("0", .fromMain)
+                key = .character("0", .standard)
             
             case .keyboardReturnOrEnter: /* Return (Enter) */
-                key = .enter(.fromMain)
+                key = .enter(.standard)
             case .keyboardEscape: /* Escape */
                 key = .escape
             case .keyboardDeleteOrBackspace: /* Delete (Backspace) */
@@ -349,32 +349,32 @@ internal class UIKitViewController: GCEventViewController {
             case .keyboardSpacebar: /* Spacebar */
                 key = .space
             case .keyboardHyphen: /* - or _ */
-                key = .character("-", .fromMain)
+                key = .character("-", .standard)
             case .keyboardEqualSign: /* = or + */
-                key = .character("=", .fromMain)
+                key = .character("=", .standard)
             case .keyboardOpenBracket: /* [ or { */
-                key = .character("[", .fromMain)
+                key = .character("[", .standard)
             case .keyboardCloseBracket: /* ] or } */
-                key = .character("]", .fromMain)
+                key = .character("]", .standard)
             case .keyboardBackslash: /* \ or | */
-                key = .character("\\", .fromMain)
+                key = .character("\\", .standard)
             case .keyboardNonUSPound: /* Non-US # or _ */
-                key = .character("\\", .fromMain)
+                key = .character("\\", .standard)
             /* Typical language mappings: US: \| Belg: μ`£ FrCa: <}> Dan:’* Dutch: <> Fren:*μ
                                           Ger: #’ Ital: ù§ LatAm: }`] Nor:,* Span: }Ç Swed: ,*
                                           Swiss: $£ UK: #~. */
             case .keyboardSemicolon: /* ; or : */
-                key = .character(";", .fromMain)
+                key = .character(";", .standard)
             case .keyboardQuote: /* ' or " */
-                key = .character("'", .fromMain)
+                key = .character("'", .standard)
             case .keyboardGraveAccentAndTilde: /* Grave Accent and Tilde */
-                key = .character("`", .fromMain)
+                key = .character("`", .standard)
             case .keyboardComma: /* , or < */
-                key = .character(",", .fromMain)
+                key = .character(",", .standard)
             case .keyboardPeriod: /* . or > */
-                key = .character(".", .fromMain)
+                key = .character(".", .standard)
             case .keyboardSlash: /* / or ? */
-                key = .character("/", .fromMain)
+                key = .character("/", .standard)
             case .keyboardCapsLock: /* Caps Lock */
                 key = .capsLock
             
@@ -434,39 +434,39 @@ internal class UIKitViewController: GCEventViewController {
             case .keypadNumLock: /* Keypad NumLock or Clear */
                 key = .numLock
             case .keypadSlash: /* Keypad / */
-                key = .character("/", .fromNumberPad)
+                key = .character("/", .numberPad)
             case .keypadAsterisk: /* Keypad * */
-                key = .character("*", .fromNumberPad)
+                key = .character("*", .numberPad)
             case .keypadHyphen: /* Keypad - */
-                key = .character("-", .fromNumberPad)
+                key = .character("-", .numberPad)
             case .keypadPlus: /* Keypad + */
-                key = .character("+", .fromNumberPad)
+                key = .character("+", .numberPad)
             case .keypadEnter: /* Keypad Enter */
-                key = .enter(.fromNumberPad)
+                key = .enter(.numberPad)
             case .keypad1: /* Keypad 1 or End */
-                key = .character("1", .fromNumberPad)
+                key = .character("1", .numberPad)
             case .keypad2: /* Keypad 2 or Down Arrow */
-                key = .character("2", .fromNumberPad)
+                key = .character("2", .numberPad)
             case .keypad3: /* Keypad 3 or Page Down */
-                key = .character("3", .fromNumberPad)
+                key = .character("3", .numberPad)
             case .keypad4: /* Keypad 4 or Left Arrow */
-                key = .character("4", .fromNumberPad)
+                key = .character("4", .numberPad)
             case .keypad5: /* Keypad 5 */
-                key = .character("5", .fromNumberPad)
+                key = .character("5", .numberPad)
             case .keypad6: /* Keypad 6 or Right Arrow */
-                key = .character("6", .fromNumberPad)
+                key = .character("6", .numberPad)
             case .keypad7: /* Keypad 7 or Home */
-                key = .character("7", .fromNumberPad)
+                key = .character("7", .numberPad)
             case .keypad8: /* Keypad 8 or Up Arrow */
-                key = .character("8", .fromNumberPad)
+                key = .character("8", .numberPad)
             case .keypad9: /* Keypad 9 or Page Up */
-                key = .character("9", .fromNumberPad)
+                key = .character("9", .numberPad)
             case .keypad0: /* Keypad 0 or Insert */
-                key = .character("0", .fromNumberPad)
+                key = .character("0", .numberPad)
             case .keypadPeriod: /* Keypad . or Delete */
-                key = .character(".", .fromNumberPad)
+                key = .character(".", .numberPad)
             case .keyboardNonUSBackslash: /* Non-US \ or | */
-                key = .character("\\", .fromMain)
+                key = .character("\\", .standard)
             /* On Apple ISO keyboards, this is the section symbol (§/±) */
             /* Typical language mappings: Belg:<\> FrCa:«°» Dan:<\> Dutch:]|[ Fren:<> Ger:<|>
                                           Ital:<> LatAm:<> Nor:<> Span:<> Swed:<|> Swiss:<\>
@@ -478,7 +478,7 @@ internal class UIKitViewController: GCEventViewController {
                 keyName = "keyboardPower"
             #endif
             case .keypadEqualSign: /* Keypad = */
-                key = .character("=", .fromNumberPad)
+                key = .character("=", .numberPad)
             
             /* Additional keys */
             case .keyboardF13: /* F13 */
@@ -549,9 +549,9 @@ internal class UIKitViewController: GCEventViewController {
                 keyName = "keyboardLockingScrollLock"
             #endif
             case .keypadComma: /* Keypad Comma */
-                key = .character(",", .fromNumberPad)
+                key = .character(",", .numberPad)
             case .keypadEqualSignAS400: /* Keypad Equal Sign for AS/400 */
-                key = .character("=", .fromNumberPad)
+                key = .character("=", .numberPad)
             
             /* See the footnotes in the USB specification for what keys these are commonly mapped to.
              * https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf */
@@ -621,7 +621,7 @@ internal class UIKitViewController: GCEventViewController {
                 keyName = "keyboardPrior"
             #endif
             case .keyboardReturn: /* Return */
-                key = .enter(.fromMain)
+                key = .enter(.standard)
             #if GATEENGINE_DEBUG_HID
             case .keyboardSeparator: /* Separator */
                 keyName = "keyboardSeparator"
@@ -642,21 +642,21 @@ internal class UIKitViewController: GCEventViewController {
             /* 0xA5-0xDF: Reserved */
             
             case .keyboardLeftControl: /* Left Control */
-                key = .control(.left)
+                key = .control(.leftSide)
             case .keyboardLeftShift: /* Left Shift */
-                key = .shift(.left)
+                key = .shift(.leftSide)
             case .keyboardLeftAlt: /* Left Alt */
-                key = .alt(.left)
+                key = .alt(.leftSide)
             case .keyboardLeftGUI: /* Left GUI */
-                key = .host(.left)
+                key = .host(.leftSide)
             case .keyboardRightControl: /* Right Control */
-                key = .control(.right)
+                key = .control(.rightSide)
             case .keyboardRightShift: /* Right Shift */
-                key = .shift(.right)
+                key = .shift(.rightSide)
             case .keyboardRightAlt: /* Right Alt */
-                key = .alt(.right)
+                key = .alt(.rightSide)
             case .keyboardRightGUI: /* Right GUI */
-                key = .host(.right)
+                key = .host(.rightSide)
             
             /* 0xE8-0xFFFF: Reserved */
             #if GATEENGINE_DEBUG_HID
@@ -675,7 +675,7 @@ internal class UIKitViewController: GCEventViewController {
                 #else
                 Log.warnOnce("Key Code \(pressKey.keyCode.rawValue) is unhandled!")
                 #endif
-                key = .unhandledPlatformKeyCode(pressKey.keyCode.rawValue, characters)
+                key = .unhandledPlatformKeyCode(pressKey.keyCode.rawValue, characters.first)
             }
             keys.append((key!, characters))
         }

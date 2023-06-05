@@ -49,6 +49,7 @@ final class X11Window: WindowBacking {
     private var previousKeyEvent: XKeyEvent = XKeyEvent()
     
     @MainActor func processEvent(_ event: XEvent) {
+        @_transparent
         func isRepeatedKey(_ event: XKeyEvent) -> Bool {
             return previousKeyEvent.type == KeyRelease &&
                    previousKeyEvent.time == event.time &&
@@ -61,11 +62,14 @@ final class X11Window: WindowBacking {
         }else if event.type == KeyPress {
             let event: XKeyEvent = event.xkey
             guard event.same_screen != 0 else {return}
-            guard isRepeatedKey(event) == false else {return}
             previousKeyEvent = event
             let key: KeyboardKey = keyFromEvent(event)
             let modifiers: KeyboardModifierMask = modifierKeyFromState(Int32(event.state))
-            _ = window.delegate?.keyboardRequestedHandling(key: key, modifiers: modifiers, event: .keyDown)
+            _ = window.delegate?.keyboardDidhandle(key: key,
+                                                   character: characterFromEvent(event),
+                                                   modifiers: modifiers,
+                                                   isRepeat: isRepeatedKey(event),
+                                                   event: .keyDown)
         }else if event.type == KeyRelease {
             let event: XKeyEvent = event.xkey
             guard event.same_screen != 0 else {return}
@@ -73,7 +77,11 @@ final class X11Window: WindowBacking {
             previousKeyEvent = event
             let key: KeyboardKey = keyFromEvent(event)
             let modifiers: KeyboardModifierMask = modifierKeyFromState(Int32(event.state))
-            _ = window.delegate?.keyboardRequestedHandling(key: key, modifiers: modifiers, event: .keyUp)
+            _ = window.delegate?.keyboardDidhandle(key: key,
+                                                   character: characterFromEvent(event),
+                                                   modifiers: modifiers,
+                                                   isRepeat: isRepeatedKey(event),
+                                                   event: .keyUp)
         }else if event.type == EnterNotify {
             let event: XMotionEvent = event.xmotion
             guard event.same_screen != 0 else {return}
@@ -244,28 +252,187 @@ extension X11Window {
         }
         return modifiers
     }
+    
+    func characterFromEvent(_ event: XKeyEvent) -> Character? {
+        var status: Int32 = 0
+        var keysym: KeySym = 0
+        var event = event
+        var data: [CChar] = Array(repeating: 0, count: 32)
+        Xutf8LookupString(self.xic, &event, &data, Int32(data.count - 1), &keysym, &status)
+        
+        if status == XLookupBoth {
+            let character = String(cString: data)
+            if character.isEmpty == false {
+                return character.first
+            }
+        }
+        return nil
+    }
+    
     func keyFromEvent(_ event: XKeyEvent) -> KeyboardKey {
         var key: KeyboardKey?
 
-        var status: Int32 = 0
-        var keysym: KeySym = 0
-        var event: XKeyEvent = event
-        var data: [CChar] = Array(repeating: 0, count: 32)
-        Xutf8LookupString(self.xic, &event, &data, Int32(data.count - 1), &keysym, &status)
-
-        switch Int32(keysym) {
-        case XK_Escape:
-            key = .escape
+        switch Int32(event.keycode) {
         case XK_BackSpace:
             key = .backspace
-        case XK_Up:
-            key = .up
-        case XK_Down:
-            key = .down
+        case XK_Tab:
+            key = .tab
+        case XK_Clear:
+            key = .clear
+        case XK_Return:
+            key = .enter(.standard)
+        case XK_KP_Enter:
+            key = .enter(.numberPad)
+        case XK_Shift_L:
+            key = .shift(.leftSide)
+        case XK_Shift_R:
+            key = .shift(.rightSide)
+        case XK_Control_L:
+            key = .control(.leftSide)
+        case XK_Control_R:
+            key = .control(.rightSide)
+        case XK_Alt_L:
+            key = .alt(.leftSide)
+        case XK_Alt_R:
+            key = .alt(.rightSide)
+        case XK_Pause:
+            key = .pauseBreak
+        case XK_Caps_Lock:
+            key = .capsLock
+        case XK_Escape:
+            key = .escape
+        case XK_space:
+            key = .space
+        case XK_Page_Up:
+            key = .pageUp
+        case XK_Page_Down:
+            key = .pageDown
+        case XK_End:
+            key = .end
+        case XK_Home:
+            key = .home
         case XK_Left:
             key = .left
+        case XK_Up:
+            key = .up
         case XK_Right:
             key = .right
+        case XK_Down:
+            key = .down
+//        case XK_3270_PrintScreen:
+//            key = .printScreen
+        case XK_Insert:
+            key = .insert
+        case XK_Delete:
+            key = .delete
+        case XK_0:// 0 key
+            key = .character("0", .standard)
+        case XK_1:// 1 key
+            key = .character("1", .standard)
+        case XK_2:// 2 key
+            key = .character("2", .standard)
+        case XK_3:// 3 key
+            key = .character("3", .standard)
+        case XK_4:// 4 key
+            key = .character("4", .standard)
+        case XK_5:// 5 key
+            key = .character("5", .standard)
+        case XK_6:// 6 key
+            key = .character("6", .standard)
+        case XK_7:// 7 key
+            key = .character("7", .standard)
+        case XK_8:// 8 key
+            key = .character("8", .standard)
+        case XK_9:// 9 key
+            key = .character("9", .standard)
+        case XK_A:// A key
+            key = .character("a", .standard)
+        case XK_B:// B key
+            key = .character("b", .standard)
+        case XK_C:// C key
+            key = .character("c", .standard)
+        case XK_D:// D key
+            key = .character("d", .standard)
+        case XK_E:// E key
+            key = .character("e", .standard)
+        case XK_F:// F key
+            key = .character("f", .standard)
+        case XK_G:// G key
+            key = .character("g", .standard)
+        case XK_H:// H key
+            key = .character("h", .standard)
+        case XK_I:// I key
+            key = .character("i", .standard)
+        case XK_J:// J key
+            key = .character("j", .standard)
+        case XK_K:// K key
+            key = .character("k", .standard)
+        case XK_L:// L key
+            key = .character("l", .standard)
+        case XK_M:// M key
+            key = .character("m", .standard)
+        case XK_N:// N key
+            key = .character("n", .standard)
+        case XK_O:// O key
+            key = .character("o", .standard)
+        case XK_P:// P key
+            key = .character("p", .standard)
+        case XK_Q:// Q key
+            key = .character("q", .standard)
+        case XK_R:// R key
+            key = .character("r", .standard)
+        case XK_S:// S key
+            key = .character("s", .standard)
+        case XK_T:// T key
+            key = .character("t", .standard)
+        case XK_U:// U key
+            key = .character("u", .standard)
+        case XK_V:// V key
+            key = .character("v", .standard)
+        case XK_W:// W key
+            key = .character("w", .standard)
+        case XK_X:// X key
+            key = .character("x", .standard)
+        case XK_Y:// Y key
+            key = .character("y", .standard)
+        case XK_Z:// Z key
+            key = .character("z", .standard)
+        case XK_Meta_L:
+            key = .host(.leftSide)
+        case XK_Meta_R:
+            key = .host(.rightSide)
+        case XK_Menu:
+            key = .contextMenu
+        case XK_KP_0:
+            key = .character("0", .numberPad)
+        case XK_KP_1:
+            key = .character("1", .numberPad)
+        case XK_KP_2:
+            key = .character("2", .numberPad)
+        case XK_KP_3:
+            key = .character("3", .numberPad)
+        case XK_KP_4:
+            key = .character("4", .numberPad)
+        case XK_KP_5:
+            key = .character("5", .numberPad)
+        case XK_KP_6:
+            key = .character("6", .numberPad)
+        case XK_KP_7:
+            key = .character("7", .numberPad)
+        case XK_KP_8:
+            key = .character("8", .numberPad)
+        case XK_KP_9:
+            key = .character("9", .numberPad)
+        case XK_KP_Multiply:
+            key = .character("*", .numberPad)
+        case XK_KP_Add: // 0x6B    Add key
+            key = .character("+", .numberPad)
+        case XK_KP_Subtract:
+            key = .character("-", .numberPad)
+        case XK_KP_Decimal:
+            key = .character(".", .numberPad)
+        case XK_KP_Divide:
+            key = .character("/", .numberPad)
         case XK_F1:
             key = .function(1)
         case XK_F2:
@@ -306,32 +473,51 @@ extension X11Window {
             key = .function(19)
         case XK_F20:
             key = .function(20)
+        case XK_F21:
+            key = .function(21)
+        case XK_F22:
+            key = .function(22)
+        case XK_F23:
+            key = .function(23)
+        case XK_F24:
+            key = .function(24)
+        case XK_Num_Lock:
+            key = .numLock
+        case XK_Scroll_Lock:
+            key = .scrollLock
+        case XK_semicolon:
+            key = .character(";", .standard)
+        case XK_plus:
+            key = .character("+", .standard)
+        case XK_comma:
+            key = .character(",", .standard)
+        case XK_minus:
+            key = .character("-", .standard)
+        case XK_period:
+            key = .character(".", .standard)
+        case XK_KP_Divide:
+            key = .character("/", .standard)
+        case XK_grave:
+            key = .character("`", .standard)
+        case XK_bracketleft:
+            key = .character("[", .standard)
+        case XK_backslash:
+            key = .character("\\", .standard)
+        case XK_bracketright:
+            key = .character("]", .standard)
+//        case VK_OEM_7:
+//            key = .character("'", .standard)
         default:
-            break
+            key = nil
         }
 
-        if key == nil && status == XLookupBoth {
-            if let character: String.Element = String(cString: data).first {
-                switch character {
-                case "\r":
-                    key = .return
-                case "\t":
-                    key = .tab
-                case " ":
-                    key = .space
-                default:
-                    key = .character(character)
-                }
-            }
-        }
-
-        #if DEBUG
+        #if GATEENGINE_DEBUG_HID
         if key == nil {
-            print("UniversalGraphics is not handling key code:", event.keycode)
+            Log.warnOnce("Key", event.keycode, characterFromEvent(event) ?? "", "is unhandled!")
         }
         #endif
 
-        return key ?? .unhandledPlatformKeyCode(Int(keysym), nil)
+        return .unhandledPlatformKeyCode(Int(event.keycode), characterFromEvent(event))
     }
 }
 

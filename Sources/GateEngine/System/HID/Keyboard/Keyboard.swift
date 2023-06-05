@@ -15,7 +15,19 @@ import GameMath
 
     internal var activeStreams: Set<WeakCharacterStream> = []
     
-    public func button(_ keyboardKey: KeyboardKey) -> ButtonState {
+    /**
+     Gets a ``ButtonState`` associcated with the physical key.
+     
+     When requesting a key represents multiple buttons, such as with `.character("1", .anyVariation)`, the `ButtonState` returned will be one of the represented physical keys.
+     If you keep a reference to the ``ButtonState`` you will only be checking that physical button. Request a new ``ButtonState`` each time to ensure any variation of the ``KeyboardKey`` is returned.
+     
+     When requesting with a physical ``KeyboardKey``, like `.shift(.leftSide)`,  it is okay to keep a reference to the ``ButtonState``.
+     
+     - parameter keybordKey: A ``KeyboardKey`` that represents a physical keyboard button.
+     - note: Non-physical keys are keys which have no physical button, like `.control(.anything)` or `.character("0", .anyVariation)`
+     - returns: A ``ButtonState``, or `nil` if the key is not a physical key.
+     */
+    public func button(_ keyboardKey: KeyboardKey) -> ButtonState? {
         if let exactMatch = buttons[keyboardKey] {
             return exactMatch
         }
@@ -23,19 +35,49 @@ import GameMath
             if case let .character(character1, origin1) = keyboardKey {
                 if case let .character(character2, origin2) = key {
                     guard character1 == character2 else {return false}
-                    if origin1 == .fromAnywhere || origin2 == .fromAnywhere {
-                        return true
+                    if origin1 == origin2 || origin1 == .anyVariation {
+                        return value.isPressed
                     }
-                    return origin1 == origin2
                 }
                 return false
             }
             if case let .enter(origin1) = keyboardKey {
                 if case let .enter(origin2) = key {
-                    if origin1 == .fromAnywhere || origin2 == .fromAnywhere {
-                        return true
+                    if origin1 == origin2 || origin1 == .anyVariation {
+                        return value.isPressed
                     }
-                    return origin1 == origin2
+                }
+                return false
+            }
+            if case let .shift(alignment1) = keyboardKey {
+                if case let .shift(alignment2) = key {
+                    if alignment1 == .anyVariation || alignment2 == .anyVariation {
+                        return value.isPressed
+                    }
+                }
+                return false
+            }
+            if case let .control(alignment1) = keyboardKey {
+                if case let .control(alignment2) = key {
+                    if alignment1 == .anyVariation || alignment2 == .anyVariation {
+                        return value.isPressed
+                    }
+                }
+                return false
+            }
+            if case let .alt(alignment1) = keyboardKey {
+                if case let .alt(alignment2) = key {
+                    if alignment1 == .anyVariation || alignment2 == .anyVariation {
+                        return value.isPressed
+                    }
+                }
+                return false
+            }
+            if case let .host(alignment1) = keyboardKey {
+                if case let .host(alignment2) = key {
+                    if alignment1 == .anyVariation || alignment2 == .anyVariation {
+                        return value.isPressed
+                    }
                 }
                 return false
             }
@@ -43,14 +85,44 @@ import GameMath
         }) {
             return existing.value
         }
-        let button = ButtonState(keyboard: self, key: keyboardKey)
-        buttons[keyboardKey] = button
-        return button
+        switch keyboardKey {
+        // Non-physical keys can't have a button
+        case .shift(.anyVariation), .alt(.anyVariation), .host(.anyVariation),
+             .control(.anyVariation), .enter(.anyVariation),
+             .character(_, .anyVariation), .unhandledPlatformKeyCode(_, _):
+            return nil
+        default:
+            let button = ButtonState(keyboard: self, key: keyboardKey)
+            buttons[keyboardKey] = button
+            return button
+        }
     }
     
+    /// All currently pressed keyboard keys
     @inlinable @inline(__always)
     public func pressedButtons() -> [KeyboardKey:ButtonState] {
         return buttons.filter({$0.value.isPressed})
+    }
+    
+    
+    internal func _button(_ keyboardKey: KeyboardKey) -> ButtonState {
+        #if GATEENGINE_DEBUG_HID
+        switch keyboardKey {
+        // Non-physical keys can't have a button
+        case .shift(.anyVariation), .alt(.anyVariation), .host(.anyVariation),
+             .control(.anyVariation), .enter(.anyVariation),
+             .character(_, .anyVariation), .unhandledPlatformKeyCode(_, _):
+            assertionFailure("pass physical keys only")
+        default:
+           break
+        }
+        #endif
+        if let exactMatch = buttons[keyboardKey] {
+            return exactMatch
+        }
+        let button = ButtonState(keyboard: self, key: keyboardKey)
+        buttons[keyboardKey] = button
+        return button
     }
 }
 
@@ -65,7 +137,8 @@ public extension Keyboard {
         internal var currentRecipt: UInt8 = 0
         
         nonisolated public var description: String {
-            if case .unhandledPlatformKeyCode(let keyCode, let character) = key {
+            switch key {
+            case .unhandledPlatformKeyCode(let keyCode, let character):
                 let keyCodeString: String
                 if let keyCode {
                     keyCodeString = "\(keyCode)"
@@ -73,20 +146,47 @@ public extension Keyboard {
                     keyCodeString = "nil"
                 }
                 var characterString: String
-                if let character, character.isEmpty == false {
+                if let character{
                     switch character {
                     case "\r":
                         characterString = "\\r"
                     case "\n":
                         characterString = "\\n"
                     default:
-                        characterString = character
+                        characterString = String(character)
                     }
                 }else{
                     characterString = "nil"
                 }
                 return "unhandledPlatformKeyCode(\(keyCodeString), \(characterString))"
+            case .character(let character, _):
+                return "\(character)"
+            case .function(let index):
+                return "F\(index)"
+            case .enter(.standard):
+                return "Enter"
+            case .enter(.numberPad):
+                return "Enter(NumPad)"
+            case .alt(.leftSide):
+                return "Left Alt"
+            case .alt(.rightSide):
+                return "Right Alt"
+            case .host(.leftSide):
+                return "Left Host"
+            case .host(.rightSide):
+                return "Right Host"
+            case .control(.leftSide):
+                return "Left Control"
+            case .control(.rightSide):
+                return "Right Control"
+            case .shift(.leftSide):
+                return "Left Shift"
+            case .shift(.rightSide):
+                return "Right Shift"
+            default:
+                break
             }
+
             return "\(key)"
         }
         
@@ -140,19 +240,20 @@ extension Keyboard {
         switch event {
         case .keyDown:
             if isRepeat == false {
-                self.button(key).isPressed = true
+                self._button(key).isPressed = true
                 self.modifiers = modifiers
             }
             _ = self.updateStreams(with: key, character: character)
         case .keyUp:
-            self.button(key).isPressed = false
+            self._button(key).isPressed = false
             self.modifiers = modifiers
         case .toggle:
             if isRepeat == false {
-                if self.button(key).isPressed == false {
-                    self.button(key).isPressed = true
+                let button = self._button(key)
+                if button.isPressed == false {
+                    button.isPressed = true
                 }else{
-                    self.button(key).isPressed = false
+                    button.isPressed = false
                 }
             }
         }
