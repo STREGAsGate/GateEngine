@@ -897,8 +897,10 @@ public let glBackBuffer = GL_BACK
     _glBindBuffer(GLenum(target.value), buffer)
 }
 
-@inlinable @inline(__always) public func glBufferData<D>(_ data: [D], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
-    _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<D>.stride * data.count), data, GLenum(usage.value))
+@inlinable @inline(__always) public func glBufferData<D: Collection>(_ data: D, withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
+    data.withContiguousStorageIfAvailable { buffer in
+        _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<D>.stride * data.count), buffer.baseAddress, GLenum(usage.value))
+    }
 }
 
 @inlinable @inline(__always) public func glBufferData(_ data: Data, withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {

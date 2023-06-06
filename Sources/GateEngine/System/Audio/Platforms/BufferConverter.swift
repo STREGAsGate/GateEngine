@@ -161,7 +161,7 @@ fileprivate extension BufferConverter {
             var array: [D] = []
             array.reserveCapacity(data.count)
             
-            func appendArray<S: FixedWidthInteger>(unsignedSType: S.Type) {
+            func appendArray<IntegerType: FixedWidthInteger>(unsignedSType: IntegerType.Type) {
                 for value in self.data.withUnsafeBytes({Array($0.bindMemory(to: unsignedSType))}) {
                     let m = Float(value) / Float(unsignedSType.max)
                     switch D.bitWidth {
