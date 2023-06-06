@@ -268,6 +268,6 @@ extension KeyboardKey: ExpressibleByExtendedGraphemeClusterLiteral {
     public typealias ExtendedGraphemeClusterLiteralType = Character
 
     public init(extendedGraphemeClusterLiteral value: ExtendedGraphemeClusterLiteralType) {
-        self = .character(value)
+        self = .character(value, .standard)
     }
 }
