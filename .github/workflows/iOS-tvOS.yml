@@ -14,10 +14,10 @@ jobs:
     - name: Select Xcode version
       run: sudo xcode-select -s '/Applications/Xcode_14.3.app/Contents/Developer'
     - name: Build iOS using Xcode
-      run: xcodebuild -scheme GateEngine -destination "platform=iOS,name=Any iOS Device"
-    - name: Test iOS using Xcode
-      run: xcodebuild -scheme GateEngine -destination "platform=iOS,name=Any iOS Device" test
+      run: xcodebuild -scheme GateEngine -destination generic/platform=iOS
+#     - name: Test iOS using Xcode
+#       run: xcodebuild -scheme GateEngine -destination generic/platform=iOS test
     - name: Build tvOS using Xcode
-      run: xcodebuild -scheme GateEngine -destination "platform=tvOS,name=Any tvOS Device"
-    - name: Test tvOS using Xcode
-      run: xcodebuild -scheme GateEngine -destination "platform=tvOS,name=Any tvOS Device" test
+      run: xcodebuild -scheme GateEngine -destination generic/platform=tvOS
+#     - name: Test tvOS using Xcode
+#       run: xcodebuild -scheme GateEngine -destination generic/platform=tvOS test

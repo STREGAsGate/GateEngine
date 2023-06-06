@@ -15,11 +15,13 @@ jobs:
       run: sudo xcode-select -s '/Applications/Xcode_14.3.app/Contents/Developer'
     - name: Swift Version
       run: swift --version
-    - name: Build using Swift
-      run: swift build
+    - name: Build using Swift x86_64
+      run: swift build --triple x86_64-apple-macos
+    - name: Build using Swift arm64
+      run: swift build --triple arm64-apple-macos
     - name: Test using Swift
       run: swift test
     - name: Build using Xcode
-      run: xcodebuild -scheme GateEngine -destination "platform=macOS,name=Any Mac"
+      run: xcodebuild -scheme GateEngine ONLY_ACTIVE_ARCH=NO -destination platform=macOS -configuration Release
     - name: Test using Xcode
-      run: xcodebuild -scheme GateEngine -destination "platform=macOS,name=Any Mac" test
+      run: xcodebuild -scheme GateEngine -destination platform=macOS test
