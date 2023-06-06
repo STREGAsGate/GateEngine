@@ -114,11 +114,11 @@ extension System {
             return state == .running
         }
         
-        @MainActor public func run(_ block: @escaping ()->Void) {
+        @MainActor public func run(_ block: @escaping () async -> Void) {
             assert(self.isRunning == false, "A Task cannot be run when it's running.")
             self.state = .running
-            Task(priority: .background) {
-                block()
+            Task.detached(priority: .low) {
+                await block()
                 Task { @MainActor in
                     //Update the state between simulation ticks
                     self.state = .finished
