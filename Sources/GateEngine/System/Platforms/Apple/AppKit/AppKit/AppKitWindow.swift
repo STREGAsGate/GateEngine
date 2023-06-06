@@ -613,8 +613,10 @@ final class UGNSWindow: AppKit.NSWindow {
             return .character("c", .standard)
         case 9:// V
             return .character("v", .standard)
+        #if GATEENGINE_DEBUG_HID
         case 10:// ??
-            break;
+            break
+        #endif
         case 11:// B
             return .character("b", .standard)
         case 12:// Q
@@ -697,8 +699,10 @@ final class UGNSWindow: AppKit.NSWindow {
             return .character("`", .standard)
         case 51:// delete
             return .backspace
+        #if GATEENGINE_DEBUG_HID
         case 52:// ??
             break
+        #endif
         case 53:// esc
             return .escape
         case 54:// r-cmd
@@ -725,26 +729,36 @@ final class UGNSWindow: AppKit.NSWindow {
             return .function(17)
         case 65:// .
             return .character(".", .numberPad)
+        #if GATEENGINE_DEBUG_HID
         case 66:// ??
             break
+        #endif
         case 67:// *
             return .character("*", .numberPad)
+        #if GATEENGINE_DEBUG_HID
         case 68:// ??
             break
+        #endif
         case 69:// +
             return .character("+", .numberPad)
+        #if GATEENGINE_DEBUG_HID
         case 70:// ??
             break
+        #endif
         case 71:// clear/numlock
             return .clear
+        #if GATEENGINE_DEBUG_HID
         case 72...74:// ??
             break
+        #endif
         case 75:// /
             return .character("/", .numberPad)
         case 76:// enter
             return .enter(.numberPad)
+        #if GATEENGINE_DEBUG_HID
         case 77:// ??
             break
+        #endif
         case 78:// -
             return .character("-", .numberPad)
         case 79:// F18
@@ -775,8 +789,10 @@ final class UGNSWindow: AppKit.NSWindow {
             return .character("8", .numberPad)
         case 92:// 9
             return .character("9", .numberPad)
+        #if GATEENGINE_DEBUG_HID
         case 93...95:// ??
             break
+        #endif
         case 96:// F5
             return .function(5)
         case 97:// F6
@@ -789,8 +805,10 @@ final class UGNSWindow: AppKit.NSWindow {
             return .function(8)
         case 101:// F9
             return .function(9)
+        #if GATEENGINE_DEBUG_HID
         case 102:// ??
             break
+        #endif
         case 103:// F11
             return .function(11)
         case 104:// ??
@@ -809,8 +827,10 @@ final class UGNSWindow: AppKit.NSWindow {
             return .contextMenu
         case 111:// F12
             return .function(12)
+        #if GATEENGINE_DEBUG_HID
         case 112:// ??
             break
+        #endif
         case 113:// F15
             return .function(15)
         case 114:// Insert

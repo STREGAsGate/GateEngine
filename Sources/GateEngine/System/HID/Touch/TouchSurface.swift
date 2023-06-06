@@ -9,14 +9,14 @@ import GameMath
 
 public extension HID {
     @MainActor final class SurfaceDevices {
-        public private(set) var surfaces: Set<Surface> = []
+        public private(set) var surfaces: Set<TouchSurface> = []
         
         @inline(__always)
-        internal func surfaceForID(_ surfaceID: AnyHashable) -> Surface {
+        internal func surfaceForID(_ surfaceID: AnyHashable) -> TouchSurface {
             if let existing = surfaces.first(where: {$0.id == surfaceID}) {
                 return existing
             }
-            let new = Surface(id: surfaceID)
+            let new = TouchSurface(id: surfaceID)
             surfaces.insert(new)
             return new
         }
@@ -27,7 +27,7 @@ public extension HID {
         }
         
         @inlinable @inline(__always)
-        public var any: Surface? {
+        public var any: TouchSurface? {
             return surfaces.first
         }
         
@@ -37,7 +37,7 @@ public extension HID {
         }
     }
     
-    @MainActor final class Surface {
+    @MainActor final class TouchSurface {
         @usableFromInline
         nonisolated let id: AnyHashable
         public internal(set) var touches: Set<SurfaceTouch> = []
@@ -102,12 +102,12 @@ public extension HID {
     }
 }
 
-extension HID.Surface: Hashable {
+extension HID.TouchSurface: Hashable {
     nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
     @_transparent
-    nonisolated public static func ==(lhs: HID.Surface, rhs: HID.Surface) -> Bool {
+    nonisolated public static func ==(lhs: HID.TouchSurface, rhs: HID.TouchSurface) -> Bool {
         return lhs.id == rhs.id
     }
 }
