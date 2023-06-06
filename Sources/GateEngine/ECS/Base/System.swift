@@ -7,56 +7,11 @@
 
 import GameMath
 
-public extension System {
-    enum Phase: UInt {
-        /// Handle cache, memory managment, and game state changes.
-        case updating
-        /// Retrieve and parse network data.
-        case networking
-        /// Update non-player states.
-        case artificialIntelligence
-        /// Update anything that moves.
-        case simulation
-        /// Perform 2D layout and related user input.
-        case userInterface
-        /// Any system marked as deffered will update last, but before rendering.
-        case deferred
-    }
-}
-
 @MainActor open class System {
-    required public init() {}
-    
+    private var didSetup = false
     public private(set) lazy var backgroundTask = BackgroundTask(system: self)
-    public class BackgroundTask {
-        unowned let system: System
-        init(system: System) {
-            self.system = system
-        }
-        public enum State {
-            ///Not running and never finished
-            case initial
-            case running
-            case finished
-        }
-        public private(set) var state: State = .initial
-        @inline(__always)
-        nonisolated public var isRunning: Bool {
-            return state == .running
-        }
-        
-        @MainActor public func run(_ block: @escaping ()->Void) {
-            assert(self.isRunning == false, "A Task cannot be run when it's running.")
-            self.state = .running
-            Task(priority: .background) {
-                block()
-                Task { @MainActor in
-                    //Update the state between simulation ticks
-                    self.state = .finished
-                }
-            }
-        }
-    }
+    
+    required public init() {}
     
     @inlinable @inline(__always)
     public var entities: ContiguousArray<Entity> {
@@ -72,8 +27,6 @@ public extension System {
             update(game: game, input: input, withTimePassed: deltaTime)
         }
     }
-
-    private var didSetup = false
     
     /**
      Called once when the system is first inserted into the game.
@@ -123,6 +76,55 @@ public extension System {
     /// The minor sort order for systems
     nonisolated open class func sortOrder() -> SystemSortOrder? {
         return nil
+    }
+}
+
+public extension System {
+    enum Phase: UInt {
+        /// Handle cache, memory managment, and game state changes.
+        case updating
+        /// Retrieve and parse network data.
+        case networking
+        /// Update non-player states.
+        case artificialIntelligence
+        /// Update anything that moves.
+        case simulation
+        /// Perform 2D layout and related user input.
+        case userInterface
+        /// Any system marked as deffered will update last, but before rendering.
+        case deferred
+    }
+}
+
+extension System {
+    public final class BackgroundTask {
+        unowned let system: System
+        init(system: System) {
+            self.system = system
+        }
+        public enum State {
+            ///Not running and never finished
+            case initial
+            case running
+            case finished
+        }
+        public private(set) var state: State = .initial
+        @inline(__always)
+        nonisolated public var isRunning: Bool {
+            return state == .running
+        }
+        
+        @MainActor public func run(_ block: @escaping ()->Void) {
+            assert(self.isRunning == false, "A Task cannot be run when it's running.")
+            self.state = .running
+            Task(priority: .background) {
+                block()
+                Task { @MainActor in
+                    //Update the state between simulation ticks
+                    self.state = .finished
+                }
+            }
+        }
     }
 }
 

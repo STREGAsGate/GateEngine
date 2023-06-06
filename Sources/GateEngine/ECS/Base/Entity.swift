@@ -5,15 +5,7 @@
  * http://stregasgate.com
  */
 
-public extension Entity {
-    enum Priority: Int {
-        case high = 100
-        case normal = 0
-        case low = -100
-    }
-}
-
-public final class Entity {
+public final class Entity: Identifiable {
     public var name: String? = nil
     public let priority: Priority
     @usableFromInline
@@ -32,18 +24,6 @@ public final class Entity {
     
     public convenience init(name: String? = nil, priority: Priority = .normal, components: [Component.Type]) {
         self.init(name: name, priority: priority, components: components.map({$0.init()}))
-    }
-    
-    public private(set) lazy var id: ObjectIdentifier = ObjectIdentifier(self)
-}
-
-extension Entity: Hashable {
-    @_transparent
-    public static func ==(lhs: Entity, rhs: Entity) -> Bool {
-        return lhs.id == rhs.id
-    }
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
     }
 }
 
@@ -135,5 +115,23 @@ public extension Entity {
     @discardableResult
     func remove<T: Component>(_ type: T.Type) -> T? {
         return components.removeValue(forKey: type.componentID) as? T
+    }
+}
+
+public extension Entity {
+    enum Priority: Int {
+        case high = 100
+        case normal = 0
+        case low = -100
+    }
+}
+
+extension Entity: Hashable {
+    @_transparent
+    public static func ==(lhs: Entity, rhs: Entity) -> Bool {
+        return lhs.id == rhs.id
+    }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }

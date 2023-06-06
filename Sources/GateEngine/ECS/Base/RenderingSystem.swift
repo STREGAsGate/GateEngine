@@ -6,19 +6,19 @@
  */
 
 @MainActor open class RenderingSystem {
-    @usableFromInline
-    internal var context: ECSContext! = nil
+    private var didSetup = false
     
-    @inlinable
-    public var game: Game {
-        return context.game
+    /// The game instance.
+    @inlinable @inline(__always)
+    public final var game: Game {
+        return Game.shared
     }
     
     required public init() {
         
     }
     
-    internal final func willUpdate(game: Game, window: Window, withTimePassed deltaTime: Float) {
+    internal final func willRender(game: Game, window: Window, withTimePassed deltaTime: Float) {
         if didSetup == false {
             didSetup = true
             setup(game: game)
@@ -28,23 +28,59 @@
         }
     }
 
-    private var didSetup = false
+    /**
+     Called once when this ``RenderingSystem`` is inserted into the game instance.
+  
+     Provides an oportuninty to setup any objects this system depends on.
+     
+     - parameter game: The game instance.
+     **/
     open func setup(game: Game) {
         
     }
     
+    /**
+     Allows rendering to be skipped. Called every render frame.
+     - parameter game: The game instance.
+     - parameter window: The target window that wants to be rendered.
+     - parameter deltaTime: The duration since the last time this window was rendered.
+     - returns: `true` if you want to render, otheriwse `false`.
+     **/
     open func shouldRender(game: Game, window: Window, withTimePassed deltaTime: Float) -> Bool {
         return true
     }
     
+    /**
+     Allows rendering to be skipped. Called every render frame.
+     - parameter game: The game instance.
+     - parameter window: The target window that wants to be rendered.
+     - parameter deltaTime: The duration since the last time this window was rendered.
+     - returns: `true` if you want to render, otheriwse `false`.
+     **/
     open func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
         preconditionFailure("Must Override \"\(#function)\" in \(type(of: Self.self))")
     }
-        
+    
+    /**
+     Called when this ``RenderingSystem`` is removed from the game instance.
+  
+     Provides an oportuninty to clean up any objects this system depended on.
+     
+     - parameter game: The game instance.
+     **/
     open func teardown(game: Game) {
-        
+            
     }
 
+    /**
+     Provide a sorting order to ensure this system is processed at the right time.
+     
+     Every ``RenderingSystem`` is sorted before being rendered.
+     The sort order determines how the systems are sorted.
+     Returning `nil` means you don't care, and the order will be undefined.
+     
+     - returns: A ``RenderingSystemSortOrder`` describing this sytems position.
+     **/
     nonisolated open class func sortOrder() -> RenderingSystemSortOrder? {
         return nil
     }

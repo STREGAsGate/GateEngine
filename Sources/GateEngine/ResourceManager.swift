@@ -6,28 +6,6 @@
  */
 
 import Foundation
-#if canImport(Atomics.ManagedAtomic)
-import class Atomics.ManagedAtomic
-#else 
-struct ManagedAtomic<T: BinaryInteger> {
-    private let lock = NSLock()
-    private var value: T
-    enum Ordering {
-        case sequentiallyConsistent
-    }
-    public init(_ value: T) {
-        self.value = value
-    }
-    public mutating func wrappingIncrementThenLoad(ordering: Ordering) -> T {
-        lock.lock()
-        value += 1
-        defer {
-            lock.unlock()
-        }
-        return value
-    }
-}
-#endif
 
 extension ResourceManager {
     struct Importers {
@@ -56,7 +34,7 @@ public class ResourceManager {
     internal var importers: Importers = Importers()
     internal let cache: Cache = Cache()
     
-    var rawCacheID = ManagedAtomic<UInt>(0)
+    var rawCacheID = IDGenerator<UInt>()
     
     var accumulatedSeconds: Float = 0
     
@@ -210,7 +188,7 @@ internal extension ResourceManager {
     }
     
     func geometryCacheKey(rawGeometry geometry: RawGeometry?) -> Cache.GeometryKey {
-        let path = "$\(rawCacheID.wrappingIncrementThenLoad(ordering: .sequentiallyConsistent))"
+        let path = "$\(rawCacheID.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
@@ -358,7 +336,7 @@ internal extension ResourceManager {
     }
     
     func skinnedGeometryCacheKey(rawGeometry geometry: RawGeometry?, skin: Skin) -> Cache.SkinnedGeometryKey {
-        let path = "$\(rawCacheID.wrappingIncrementThenLoad(ordering: .sequentiallyConsistent))"
+        let path = "$\(rawCacheID.generateID())"
         let key = Cache.SkinnedGeometryKey(requestedPath: path, geometryOptions: .none, skinOptions: .none)
         if cache.skinnedGeometries[key] == nil {
             cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
@@ -451,7 +429,7 @@ internal extension ResourceManager {
 // MARK: - Lines
 internal extension ResourceManager {
     func geometryCacheKey(rawLines lines: RawLines?) -> Cache.GeometryKey {
-        let path = "$\(rawCacheID.wrappingIncrementThenLoad(ordering: .sequentiallyConsistent))"
+        let path = "$\(rawCacheID.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
@@ -493,7 +471,7 @@ internal extension ResourceManager {
 // MARK: - Points
 internal extension ResourceManager {
     func geometryCacheKey(rawPoints points: RawPoints?) -> Cache.GeometryKey {
-        let path = "$\(rawCacheID.wrappingIncrementThenLoad(ordering: .sequentiallyConsistent))"
+        let path = "$\(rawCacheID.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
@@ -575,7 +553,7 @@ internal extension ResourceManager {
     }
     
     func texureCacheKey(data: Data, size: Size2, mipMapping: MipMapping) -> Cache.TextureKey {
-        let path = "$\(rawCacheID.wrappingIncrementThenLoad(ordering: .sequentiallyConsistent))"
+        let path = "$\(rawCacheID.generateID())"
         let key = Cache.TextureKey(requestedPath: path, mipMapping: mipMapping, textureOptions: .none)
         if cache.textures[key] == nil {
             cache.textures[key] = Cache.TextureCache()
@@ -591,7 +569,7 @@ internal extension ResourceManager {
     }
     
     func texureCacheKey(renderTargetBackend: RenderTargetBackend) -> Cache.TextureKey {
-        let path = "$\(rawCacheID.wrappingIncrementThenLoad(ordering: .sequentiallyConsistent))"
+        let path = "$\(rawCacheID.generateID())"
         let key = Cache.TextureKey(requestedPath: path, mipMapping: .none, textureOptions: .none)
         if cache.textures[key] == nil {
             let newCache = Cache.TextureCache()

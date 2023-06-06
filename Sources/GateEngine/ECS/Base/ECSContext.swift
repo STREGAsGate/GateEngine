@@ -294,7 +294,7 @@ extension ECSContext {
         
         for system in self.renderingSystems {
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(game: game, window: window, withTimePassed: deltaTime)
+            system.willRender(game: game, window: window, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         if let performance = performance {
@@ -390,7 +390,6 @@ extension ECSContext {
         let systemType = type(of: newSystem)
         guard _renderingSystems.contains(where: {type(of: $0) == systemType}) == false else {return}
         var renderingSystems = self._renderingSystems
-        newSystem.context = self
         renderingSystems.append(newSystem)
         _renderingSystems = renderingSystems
         renderingSystemsNeedSorting = true

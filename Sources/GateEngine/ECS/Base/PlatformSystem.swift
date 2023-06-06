@@ -7,48 +7,12 @@
 
 import GameMath
 
-extension PlatformSystem {
-    enum Phase: UInt {
-        case preUpdating
-        case postDeffered
-        case postRendering
-    }
-}
-
 /// PlaformSystems are private and reserved for internal use by the engine.
 @MainActor internal class PlatformSystem {
-    required init() {}
-    
+    private var didSetup = false
     private(set) lazy var backgroundTask = BackgroundTask(system: self)
-    public class BackgroundTask {
-        unowned let system: PlatformSystem
-        init(system: PlatformSystem) {
-            self.system = system
-        }
-        public enum State {
-            ///Not running and never finished
-            case initial
-            case running
-            case finished
-        }
-        public private(set) var state: State = .initial
-        @inline(__always)
-        nonisolated public var isRunning: Bool {
-            return state == .running
-        }
-        
-        @MainActor public func run(_ block: @escaping ()->Void) {
-            assert(self.isRunning == false, "A Task cannot be run when it's running.")
-            self.state = .running
-            Task(priority: .background) {
-                block()
-                Task { @MainActor in
-                    //Update the state between simulation ticks
-                    self.state = .finished
-                }
-            }
-        }
-    }
+    
+    required init() {}
         
     internal final func willUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) {
         if didSetup == false {
@@ -59,8 +23,6 @@ extension PlatformSystem {
             update(game: game, input: input, withTimePassed: deltaTime)
         }
     }
-
-    private var didSetup = false
     
     /**
      Called once when the system is first inserted into the game.
@@ -110,6 +72,46 @@ extension PlatformSystem {
     /// The minor sort order for systems
     open class func sortOrder() -> PlatformSystemSortOrder? {
         return nil
+    }
+}
+
+extension PlatformSystem {
+    enum Phase: UInt {
+        case preUpdating
+        case postDeffered
+        case postRendering
+    }
+}
+
+extension PlatformSystem {
+    final class BackgroundTask {
+        unowned let system: PlatformSystem
+        init(system: PlatformSystem) {
+            self.system = system
+        }
+        public enum State {
+            ///Not running and never finished
+            case initial
+            case running
+            case finished
+        }
+        public private(set) var state: State = .initial
+        @inline(__always)
+        nonisolated final public var isRunning: Bool {
+            return state == .running
+        }
+        
+        @MainActor public func run(_ block: @escaping ()->Void) {
+            assert(self.isRunning == false, "A Task cannot be run when it's running.")
+            self.state = .running
+            Task(priority: .background) {
+                block()
+                Task { @MainActor in
+                    //Update the state between simulation ticks
+                    self.state = .finished
+                }
+            }
+        }
     }
 }
 
