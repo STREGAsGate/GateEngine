@@ -15,6 +15,12 @@ import GameMath
 
     internal var activeStreams: Set<WeakCharacterStream> = []
     
+    private var needsUpdate: UpdateOptions = []
+    struct UpdateOptions: OptionSet {
+        let rawValue: UInt
+        static let pressedButtons = UpdateOptions(rawValue: 1 << 1)
+    }
+    
     /**
      Gets a ``ButtonState`` associcated with the physical key.
      
@@ -98,12 +104,16 @@ import GameMath
         }
     }
     
+    private var _pressedButtons: [(key: KeyboardKey, button: ButtonState)] = []
     /// All currently pressed keyboard keys
-    @inlinable @inline(__always)
-    public func pressedButtons() -> [KeyboardKey:ButtonState] {
-        return buttons.filter({$0.value.isPressed})
+    @inline(__always)
+    public func pressedButtons() -> [(key: KeyboardKey, button: ButtonState)] {
+        if needsUpdate.contains(.pressedButtons) {
+            needsUpdate.remove(.pressedButtons)
+            _pressedButtons = buttons.filter({$0.value.isPressed}).map({(($0.key, $0.value))})
+        }
+        return _pressedButtons
     }
-    
     
     internal func _button(_ keyboardKey: KeyboardKey) -> ButtonState {
         #if GATEENGINE_DEBUG_HID
@@ -237,6 +247,9 @@ extension Keyboard {
                            modifiers: KeyboardModifierMask,
                            isRepeat: Bool,
                            event: KeyboardEvent) -> Bool {
+        
+        self.needsUpdate.insert(.pressedButtons)
+        
         switch event {
         case .keyDown:
             if isRepeat == false {
