@@ -897,9 +897,34 @@ public let glBackBuffer = GL_BACK
     _glBindBuffer(GLenum(target.value), buffer)
 }
 
+@_disfavoredOverload
 @inlinable @inline(__always) public func glBufferData<D: Collection>(_ data: D, withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
     data.withContiguousStorageIfAvailable { buffer in
         _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<D>.stride * data.count), buffer.baseAddress, GLenum(usage.value))
+    }
+}
+
+@inlinable @inline(__always) public func glBufferData(_ data: [Int32], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
+    data.withUnsafeBufferPointer { buffer in
+        _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<Int32>.stride * data.count), buffer.baseAddress, GLenum(usage.value))
+    }
+}
+
+@inlinable @inline(__always) public func glBufferData(_ data: [UInt16], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
+    data.withUnsafeBufferPointer { buffer in
+        _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<UInt16>.stride * data.count), buffer.baseAddress, GLenum(usage.value))
+    }
+}
+
+@inlinable @inline(__always) public func glBufferData(_ data: [UInt32], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
+    data.withUnsafeBufferPointer { buffer in
+        _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<UInt32>.stride * data.count), buffer.baseAddress, GLenum(usage.value))
+    }
+}
+
+@inlinable @inline(__always) public func glBufferData(_ data: [Float], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
+    data.withUnsafeBufferPointer { buffer in
+        _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<Float>.stride * data.count), buffer.baseAddress, GLenum(usage.value))
     }
 }
 

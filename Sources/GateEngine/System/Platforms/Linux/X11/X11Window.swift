@@ -269,12 +269,17 @@ final class X11Window: WindowBacking {
         return nil
     }
 
-    let keyLookup: [KeyboardKey] = {
-        let kbdDesc = XkbGetKeyboard(xDisplay, UInt32(XkbAllComponentsMask), UInt32(XkbUseCoreKbd))!.pointee
-        var keys: [KeyboardKey] = Array(repeating: .unhandledPlatformKeyCode(nil, nil), count: Int(kbdDesc.max_key_code) + 1)
+    lazy private(set) var keyLookup: [KeyboardKey] = {
+        let kbdDesc: XkbDescPtr! = XkbGetMap(self.xDisplay, 0, UInt32(XkbUseCoreKbd))
+        XkbGetNames(xDisplay, UInt32(XkbKeyNamesMask), kbdDesc)
+        if kbdDesc?.pointee.names?.pointee.keys == nil {
+            Log.error("Failed to create keyboard map! Keyboard input will not work.")
+            return Array(repeating: .unhandledPlatformKeyCode(nil, nil), count: 256)
+        }
+        var keys: [KeyboardKey] = Array(repeating: .unhandledPlatformKeyCode(nil, nil), count: Int(kbdDesc.pointee.max_key_code) + 1)
         
-        for keyCode in Int(kbdDesc.min_key_code) ... Int(kbdDesc.max_key_code) {
-            let _name = kbdDesc.names.pointee.keys[keyCode].name
+        for keyCode: Int in Int(kbdDesc.pointee.min_key_code) ... Int(kbdDesc.pointee.max_key_code) {
+            guard let _name: (CChar, CChar, CChar, CChar) = kbdDesc.pointee.names.pointee.keys?[keyCode].name else {continue}
             let name: String = String(cString: [_name.0, _name.1, _name.2, _name.3, 0])
             switch name {
             case "ESC":
@@ -379,27 +384,27 @@ final class X11Window: WindowBacking {
                 keys[keyCode] = .tab
             case "AD01":
                 keys[keyCode] = .character("q", .standard)
-            case "AD03":
+            case "AD02":
                 keys[keyCode] = .character("w", .standard)
-            case "AD04":
+            case "AD03":
                 keys[keyCode] = .character("e", .standard)
-            case "AD05":
+            case "AD04":
                 keys[keyCode] = .character("r", .standard)
-            case "AD06":
+            case "AD05":
                 keys[keyCode] = .character("t", .standard)
-            case "AD07":
+            case "AD06":
                 keys[keyCode] = .character("y", .standard)
-            case "AD08":
+            case "AD07":
                 keys[keyCode] = .character("u", .standard)
-            case "AD09":
+            case "AD08":
                 keys[keyCode] = .character("i", .standard)
-            case "AD10":
+            case "AD09":
                 keys[keyCode] = .character("o", .standard)
-            case "AD11":
+            case "AD10":
                 keys[keyCode] = .character("p", .standard)
-            case "AD12":
+            case "AD11":
                 keys[keyCode] = .character("[", .standard)
-            case "AD13":
+            case "AD12":
                 keys[keyCode] = .character("]", .standard)
             case "BKSL":
                 keys[keyCode] = .character("\\", .standard)
@@ -450,7 +455,7 @@ final class X11Window: WindowBacking {
             case "KP6":
                 keys[keyCode] = .character("6", .numberPad)
             case "LFSH":
-                keys[keyCode] = .shift(.left)
+                keys[keyCode] = .shift(.leftSide)
             case "AB01":
                 keys[keyCode] = .character("z", .standard)
             case "AB02":
@@ -472,37 +477,45 @@ final class X11Window: WindowBacking {
             case "AB10":
                 keys[keyCode] = .character("/", .standard)
             case "RTSH":
-                keys[keyCode] = .shift(.right)
+                keys[keyCode] = .shift(.rightSide)
             case "UP":
                 keys[keyCode] = .up
-            case "KP01":
+            case "KP1":
                 keys[keyCode] = .character("1", .numberPad)
-            case "KP02":
+            case "KP2":
                 keys[keyCode] = .character("2", .numberPad)
-            case "KP03":
+            case "KP3":
                 keys[keyCode] = .character("3", .numberPad)
             case "KPEN":
                 keys[keyCode] = .enter(.numberPad)
             case "LCTL":
-                keys[keyCode] = .control(.left)
+                keys[keyCode] = .control(.leftSide)
             case "LALT":
-                keys[keyCode] = .alt(.left)
+                keys[keyCode] = .alt(.leftSide)
             case "SPCE":
                 keys[keyCode] = .space
             case "RALT":
-                keys[keyCode] = .alt(.right)
+                keys[keyCode] = .alt(.rightSide)
             case "RCTL":
-                keys[keyCode] = .control(.right)
+                keys[keyCode] = .control(.rightSide)
             case "LEFT":
                 keys[keyCode] = .left
             case "DOWN":
                 keys[keyCode] = .down
-            case "RIGHT":
+            case "RGHT":
                 keys[keyCode] = .right
             case "KP0":
                 keys[keyCode] = .character("0", .numberPad)
             case "KPDL":
                 keys[keyCode] = .character(".", .numberPad)
+            case "LWIN":
+                keys[keyCode] = .host(.leftSide)
+            case "RWIN":
+                keys[keyCode] = .host(.rightSide)
+            case "MENU", "COMP":
+                keys[keyCode] = .contextMenu
+            case "KPEQ":
+                keys[keyCode] = .character("=", .numberPad)
             default:
                 Log.info("Unhandled key", keyCode, name)
                 keys[keyCode] = .unhandledPlatformKeyCode(keyCode, nil)
