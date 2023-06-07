@@ -442,11 +442,11 @@ final class WASIWindow: WindowBacking {
             return .control(.leftSide)
         case "AltLeft":
             return .alt(.leftSide)
-        case "MetaLeft":
+        case "MetaLeft", "OSLeft":
             return .host(.leftSide)
         case "Space":
             return .space
-        case "MetaRight":
+        case "MetaRight", "OSRight":
             return .host(.rightSide)
         case "AltRight":
             return .alt(.rightSide)
