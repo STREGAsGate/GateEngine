@@ -242,6 +242,7 @@ extension X11Window {
         }
     }
 
+    @inline(__always)
     func modifierKeyFromState(_ state: Int32) -> KeyboardModifierMask {
         var modifiers: KeyboardModifierMask = []
         if state & ShiftMask == ShiftMask {
@@ -256,6 +257,7 @@ extension X11Window {
         return modifiers
     }
     
+    @inline(__always)
     func characterFromEvent(_ event: XKeyEvent) -> Character? {
         var status: Int32 = 0
         var event: XKeyEvent = event
@@ -271,213 +273,99 @@ extension X11Window {
         return nil
     }
 
-    @_transparent
-    func keysymFromEvent(_ event: XKeyEvent) -> KeySym {
-        var event: XKeyEvent = event
-        var keysym: KeySym = 0
-        Xutf8LookupString(self.xic, &event, nil, 0, &keysym, nil)
-        return keysym
-    }
-    
+    let keyLookup: [KeyboardKey] = {
+        let kbdDesc = XkbGetKeyboard(self.xDisplay, XkbAllComponentsMask, XkbUseCoreKbd)
+        var keys: [KeySym] = Array(repeating: XK_VoidSymbol, count: Int(descr.max_key_code))
+        
+        for keyCode in Int(kbdDesc.min_key_code) ... Int(kbdDesc.max_key_code) {
+            switch kbdDesc.names.keys[keyCode].name {
+            case "ESC":
+                keys[keyCode] = .escape
+            case "FK01":
+                keys[keyCode] = .function(1)
+            case "FK02":
+                keys[keyCode] = .function(2)
+            case "FK03":
+                keys[keyCode] = .function(3)
+            case "FK04":
+                keys[keyCode] = .function(4)
+            case "FK05":
+                keys[keyCode] = .function(5)
+            case "FK06":
+                keys[keyCode] = .function(6)
+            case "FK07":
+                keys[keyCode] = .function(7)
+            case "FK08":
+                keys[keyCode] = .function(8)
+            case "FK09":
+                keys[keyCode] = .function(9)
+            case "FK10":
+                keys[keyCode] = .function(10)
+            case "FK11":
+                keys[keyCode] = .function(11)
+            case "FK12":
+                keys[keyCode] = .function(12)
+            case "FK13":
+                keys[keyCode] = .function(13)
+            case "FK14":
+                keys[keyCode] = .function(14)
+            case "FK15":
+                keys[keyCode] = .function(15)
+            case "FK16":
+                keys[keyCode] = .function(16)
+            case "FK17":
+                keys[keyCode] = .function(17)
+            case "FK18":
+                keys[keyCode] = .function(18)
+            case "FK19":
+                keys[keyCode] = .function(19)
+            case "FK20":
+                keys[keyCode] = .function(20)
+            case "FK21":
+                keys[keyCode] = .function(21)
+            case "FK22":
+                keys[keyCode] = .function(22)
+            case "FK23":
+                keys[keyCode] = .function(23)
+            case "FK24":
+                keys[keyCode] = .function(24)
+            case "TLDE":
+                keys[keyCode] = .character("`", .standard)
+            case "AE01":
+                keys[keyCode] = .character("1", .standard)
+            case "AE02":
+                keys[keyCode] = .character("2", .standard)
+            case "AE03":
+                keys[keyCode] = .character("3", .standard)
+            case "AE04":
+                keys[keyCode] = .character("4", .standard)
+            case "AE05":
+                keys[keyCode] = .character("5", .standard)
+            case "AE06":
+                keys[keyCode] = .character("6", .standard)
+            case "AE07":
+                keys[keyCode] = .character("7", .standard)
+            case "AE08":
+                keys[keyCode] = .character("8", .standard)
+            case "AE09":
+                keys[keyCode] = .character("9", .standard)
+            case "AE10":
+                keys[keyCode] = .character("0", .standard)
+            case "AE11":
+                keys[keyCode] = .character("-", .standard)
+            case "AE12":
+                keys[keyCode] = .character("=", .standard)
+            case "BKSP":
+                keys[keyCode] = .backspace
+                
+            default:
+                Log.info("Unhandled key", keyCode, kbdDesc.names.keys[keyCode].name)
+                keys[keyCode] = .unhandledPlatformKeyCode(keyCode, kbdDesc.names.keys[keyCode].name)
+            }
+        }
+
     func keyFromEvent(_ event: XKeyEvent) -> KeyboardKey {
-        var key: KeyboardKey?
-
-        switch Int32(event.keycode) {
-        case 9://# Esc
-            key = .escape
-        case 21:
-            key = .character("=", .numberPad)
-        case 67...76://# F1 - F10
-            key = .function(Int(event.keycode - 66))
-        case 95:
-            key = .function(11)
-        case 96:
-            key = .function(12)
-        case 191...203://# F13 - F24
-            key = .function(Int(event.keycode - 190))
-        case 111://# PrintScrn
-            key = .printScreen
-        case 78://# Scroll Lock
-            key = .scrollLock
-        case 110://# Pause
-            key = .pauseBreak
-        case 49://# `
-            key = .character("`", .standard)
-        case 10...18://# 1 - 9
-            key = .character(Character("\(Int(event.keycode - 9))"), .standard)
-        case 19://# 0
-            key = .character("0", .standard)
-        case 20://# -
-            key = .character("-", .standard)
-        case 21://# =
-            key = .character("=", .standard)
-        case 22://# Backspace
-            key = .backspace
-        case 106://# Insert
-            key = .insert
-        case 97://# Home
-            key = .home
-        case 99://# Page Up
-            key = .pageUp
-        case 77://# Num Lock
-            key = .numLock
-        case 112://# KP /
-            key = .character("/", .numberPad)
-        case 63://# KP *
-            key = .character("*", .numberPad)
-        case 82://# KP -
-            key = .character("-", .numberPad)
-        case 23://# Tab
-            key = .tab
-        case 24://# Q
-            key = .character("q", .standard)
-        case 25://# W
-            key = .character("w", .standard)
-        case 26://# E
-            key = .character("e", .standard)
-        case 27://# R
-            key = .character("r", .standard)
-        case 28://# T
-            key = .character("t", .standard)
-        case 29://# Y
-            key = .character("y", .standard)
-        case 30://# U
-            key = .character("u", .standard)
-        case 31://# I
-            key = .character("i", .standard)
-        case 32://# O
-            key = .character("o", .standard)
-        case 33://# P
-            key = .character("p", .standard)
-        case 34://# [
-            key = .character("[", .standard)
-        case 35://# ]
-            key = .character("]", .standard)
-        case 36://# key =
-            key = .enter(.standard)
-        case 107://# Delete
-            key = .delete
-        case 103://# End
-            key = .end
-        case 105://# Page Down
-            key = .pageDown
-        case 79://# KP 7
-            key = .character("7", .numberPad)
-        case 80://# KP 8
-            key = .character("8", .numberPad)
-        case 81://# KP 9
-            key = .character("9", .numberPad)
-        case 86://# KP +
-            key = .character("+", .numberPad)
-        case 66://# Caps Lock
-            key = .capsLock
-        case 38://# A
-            key = .character("a", .standard)
-        case 39://# S
-            key = .character("s", .standard)
-        case 40://# D
-            key = .character("d", .standard)
-        case 41://# F
-            key = .character("f", .standard)
-        case 42://# G
-            key = .character("g", .standard)
-        case 43://# H
-            key = .character("h", .standard)
-        case 44://# J
-            key = .character("j", .standard)
-        case 45://# K
-            key = .character("k", .standard)
-        case 46://# L
-            key = .character("l", .standard)
-        case 47://# ;
-            key = .character(";", .standard)
-        case 48://# '
-            key = .character("'", .standard)
-        case 83://# KP 4
-            key = .character("4", .numberPad)
-        case 84://# KP 5
-            key = .character("5", .numberPad)
-        case 85://# KP 6
-            key = .character("6", .numberPad)
-        case 50://# Shift Left
-            key = .shift(.leftSide)
-        #if GATEENGINE_DEBUG_HID
-        case 94://# International
-            break
-        #endif
-        case 52://# Z
-            key = .character("z", .standard)
-        case 53://# X
-            key = .character("x", .standard)
-        case 54://# C
-            key = .character("c", .standard)
-        case 55://# V
-            key = .character("v", .standard)
-        case 56://# B
-            key = .character("b", .standard)
-        case 57://# N
-            key = .character("n", .standard)
-        case 58://# M
-            key = .character("m", .standard)
-        case 59://# ,
-            key = .character(",", .standard)
-        case 60://# .
-            key = .character(".", .standard)
-        case 61://# /
-            key = .character("/", .standard)
-        case 62://# Shift Right
-            key = .shift(.rightSide)
-        case 51://# \
-            key = .character("\\", .standard)
-        case 87://# KP 1
-            key = .character("1", .numberPad)
-        case 88://# KP 2
-            key = .character("2", .numberPad)
-        case 89://# KP 3
-            key = .character("3", .numberPad)
-        case 108://# KP Enter
-            key = .enter(.numberPad)
-        case 37://# Ctrl Left
-            key = .control(.leftSide)
-        case 115://# Logo Left (-> Option)
-            key = .host(.leftSide)
-        case 64://# Alt Left (-> Command)
-            key = .alt(.leftSide)
-        case 65://# Space
-            key = .space
-        case 113://# Alt Right (-> Command)
-            key = .alt(.rightSide)
-        case 116://# Logo Right (-> Option)
-            key = .host(.rightSide)
-        case 117://# Menu (-> International)
-            key = .contextMenu
-        case 109://# Ctrl Right
-            key = .control(.rightSide)
-        case 90://# KP 0
-            key = .character("0", .numberPad)
-        case 91://# KP .
-            key = .character(".", .numberPad)
-        case 98:
-            key = .up
-        case 100:
-            key = .left
-        case 102:
-            key = .right
-        case 104:
-            key = .down
-        default:
-            key = nil
-        }
-
-        #if GATEENGINE_DEBUG_HID
-        if key == nil {
-            Log.warnOnce("Key", event.keycode, characterFromEvent(event) ?? "", "is unhandled!")
-        }
-        #endif
-        if let key: KeyboardKey = key {
-            return key
-        }
-        return .unhandledPlatformKeyCode(Int(event.keycode), characterFromEvent(event))
+        return keyLookup[event.keycode]
     }
 }
 
