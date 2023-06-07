@@ -158,9 +158,7 @@ final class X11Window: WindowBacking {
         glXMakeCurrent(xDisplay, xWindow, nil)
  		glXDestroyContext(xDisplay, glxContext)
     }
-}
 
-extension X11Window {
     var title: String? {
         get {
             var optionalPointer: UnsafeMutablePointer<CChar>?
@@ -222,9 +220,7 @@ extension X11Window {
     func setMousePosition(_ position: Position2) {
     
     }
-}
 
-extension X11Window {
     func mouseButtonFromEvent(_ event: XButtonEvent) -> MouseButton {
         switch Int32(event.button) {
         case 1:
@@ -274,11 +270,13 @@ extension X11Window {
     }
 
     let keyLookup: [KeyboardKey] = {
-        let kbdDesc = XkbGetKeyboard(self.xDisplay, XkbAllComponentsMask, XkbUseCoreKbd)
-        var keys: [KeySym] = Array(repeating: XK_VoidSymbol, count: Int(descr.max_key_code))
+        let kbdDesc = XkbGetKeyboard(xDisplay, UInt32(XkbAllComponentsMask), UInt32(XkbUseCoreKbd))!.pointee
+        var keys: [KeyboardKey] = Array(repeating: .unhandledPlatformKeyCode(nil, nil), count: Int(kbdDesc.max_key_code) + 1)
         
         for keyCode in Int(kbdDesc.min_key_code) ... Int(kbdDesc.max_key_code) {
-            switch kbdDesc.names.keys[keyCode].name {
+            let _name = kbdDesc.names.pointee.keys[keyCode].name
+            let name: String = String(cString: [_name.0, _name.1, _name.2, _name.3, 0])
+            switch name {
             case "ESC":
                 keys[keyCode] = .escape
             case "FK01":
@@ -359,13 +357,15 @@ extension X11Window {
                 keys[keyCode] = .backspace
                 
             default:
-                Log.info("Unhandled key", keyCode, kbdDesc.names.keys[keyCode].name)
-                keys[keyCode] = .unhandledPlatformKeyCode(keyCode, kbdDesc.names.keys[keyCode].name)
+                Log.info("Unhandled key", keyCode, name)
+                keys[keyCode] = .unhandledPlatformKeyCode(keyCode, nil)
             }
         }
+        return keys
+    }()
 
     func keyFromEvent(_ event: XKeyEvent) -> KeyboardKey {
-        return keyLookup[event.keycode]
+        return keyLookup[Int(event.keycode)]
     }
 }
 
