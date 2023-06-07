@@ -20,7 +20,21 @@ final class Win32Window: WindowBacking {
     @MainActor internal private(set) lazy var swapChain: DX12SwapChain = DX12SwapChain(hWnd: hWnd)
     private lazy var mouseState: MouseState = MouseState(hWnd)
     private static let windowClass: Win32WindowClass = Win32WindowClass()
-
+    
+    // Stoted Metadata
+    var pixelSafeAreaInsets: Insets = .zero
+    var pixelSize: Size2 = .zero
+    var interfaceScaleFactor: Float = 1
+    
+    func updateStoredMetaData() {
+        var frame: RECT = RECT()
+        WinSDK.GetWindowRect(self.hWnd, &frame)
+        self.pixelSize = Size2(width: Float(RECT.width), height: Float(RECT.height))
+        
+        let dpi: UINT = GetDpiForWindow(hWnd)
+        self.interfaceScaleFactor = Float(dpi) / Float(USER_DEFAULT_SCREEN_DPI)
+    }
+    
     required init(identifier: String, style: WindowStyle, window: Window) {
         self.window = window
         self.style = style
@@ -62,33 +76,6 @@ final class Win32Window: WindowBacking {
         }
     }
 
-    ///The screen relative rectangle of the window
-    var frame: Rect {
-        get {
-            var rect: RECT = RECT()
-            WinSDK.GetWindowRect(self.hWnd, &rect)
-            return Rect(rect)
-        }
-        set {
-            var rect = newValue.RECT()
-            WinSDK.AdjustWindowRect(&rect, DWORD(hwndStyle.rawValue), hwndStyle.contains(.menuInTitleBar))
-            WinSDK.SetWindowPos(self.hWnd, nil, rect.x, rect.y, rect.width, rect.height, UInt32(SWP_NOACTIVATE))
-        }
-    }
-
-    @inline(__always)
-    var backingSize: Size2 {
-        return self.frame.size
-    }
-
-    @inline(__always)
-    var backingScaleFactor: Float {
-        let dpi: UINT = GetDpiForWindow(hWnd)
-        return Float(dpi) / Float(USER_DEFAULT_SCREEN_DPI)
-    }
-
-    let safeAreaInsets: Insets = .zero
-
     var state: Window.State = .hidden
     /// If possible, shows the window on screen.
     func show() {
@@ -107,6 +94,7 @@ final class Win32Window: WindowBacking {
     @MainActor func hide() {
         guard self.state == .shown else {return}
         WinSDK.CloseWindow(self.hWnd)
+        self.updateStoredMetaData()
     }
 
     @MainActor func close() {
@@ -253,56 +241,59 @@ fileprivate class Win32WindowClass {
 //These are the notifation calls
 fileprivate extension Win32Window {
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgPaint() {
         self.render()
     }
     
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgResized() {
         self.window.size = self.frame.size
+        self.updateStoredMetaData()
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgShow() {
         self.show()
+        self.updateStoredMetaData()
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgRestore() {
         self.state = .shown
+        self.updateStoredMetaData()
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgHide() {
         self.hide()
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgClose() {
         self.close()
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgDestroy() {
         self.state = .destroyed
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgMouseMoved(_ lparam: LPARAM) {
         if let windowDelegate: WindowDelegate = window.delegate {
@@ -316,7 +307,7 @@ fileprivate extension Win32Window {
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgMouseExited() {
         if let windowDelegate: WindowDelegate = window.delegate {
@@ -327,7 +318,7 @@ fileprivate extension Win32Window {
 
     //return true if input was used
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgKeyDown(_ wparam: WPARAM, _ lparam: LPARAM) -> Bool {
         if let windowDelegate: WindowDelegate = window.delegate {
@@ -343,7 +334,7 @@ fileprivate extension Win32Window {
 
     //return true if input was used
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgKeyUp(_ wparam: WPARAM, _ lparam: LPARAM) -> Bool {
         if let windowDelegate: WindowDelegate = window.delegate {
@@ -358,7 +349,7 @@ fileprivate extension Win32Window {
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseDownLeft(_ lparam: LPARAM) {
         let position = positionFrom(lparam)
@@ -371,7 +362,7 @@ fileprivate extension Win32Window {
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseUpLeft(_ lparam: LPARAM) {
         let position = positionFrom(lparam)
@@ -384,7 +375,7 @@ fileprivate extension Win32Window {
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseDownRight(_ lparam: LPARAM) {
         let position = positionFrom(lparam)
@@ -397,7 +388,7 @@ fileprivate extension Win32Window {
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseUpRight(_ lparam: LPARAM) {
         let position = positionFrom(lparam)
@@ -410,7 +401,7 @@ fileprivate extension Win32Window {
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseDownMiddle(_ lparam: LPARAM) {
         let position = positionFrom(lparam)
@@ -423,7 +414,7 @@ fileprivate extension Win32Window {
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseUpMiddle(_ lparam: LPARAM) {
         let position = positionFrom(lparam)
@@ -436,8 +427,8 @@ fileprivate extension Win32Window {
     }
 
     @inline(__always)
-    @preconcurrency 
-    @MainActor 
+    @preconcurrency
+    @MainActor
     func _mouseDownX(_ lparam: LPARAM, _ wparam: WPARAM) {
         let wparam: Int32 = Int32(wparam)
         let button: MouseButton
@@ -458,7 +449,7 @@ fileprivate extension Win32Window {
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseUpX(_ lparam: LPARAM, _ wparam: WPARAM) {
         let wparam: Int32 = Int32(wparam)

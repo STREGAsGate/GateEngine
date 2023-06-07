@@ -17,6 +17,47 @@ final class WASIWindow: WindowBacking {
     let identifier: String
     var state: Window.State = .hidden
     let canvas: HTMLCanvasElement
+    
+    // Stoted Metadata
+    var pixelSafeAreaInsets: Insets = .zero
+    var pixelSize: Size2 = .zero
+    var interfaceScaleFactor: Float = 1
+    
+    // Called from onreseize observer
+    func updateStoredMetaData() {
+        self.interfaceScaleFactor = Float(globalThis.document.defaultView?.devicePixelRatio ?? 1)
+        self.pixelSize = Size2(Float(globalThis.window.innerWidth), Float(globalThis.window.innerHeight)) * interfaceScaleFactor
+
+        if let doc = globalThis.document.documentElement, let obj = JSObject.global.getComputedStyle?(doc) {
+            var insets: Insets = .zero
+            if let s = obj.getPropertyValue("--sat").string {
+                let v = s[...s.index(before: s.index(before: s.index(before: s.endIndex)))]
+                if let value = Float(v) {
+                    insets.top = value
+                }
+            }
+            if let s = obj.getPropertyValue("--sal").string {
+                let v = s[...s.index(before: s.index(before: s.index(before: s.endIndex)))]
+                if let value = Float(v) {
+                    insets.leading = value
+                }
+            }
+            if let s = obj.getPropertyValue("--sab").string {
+                let v = s[...s.index(before: s.index(before: s.index(before: s.endIndex)))]
+                if let value = Float(v) {
+                    insets.bottom = value
+                }
+            }
+            if let s = obj.getPropertyValue("--sar").string {
+                let v = s[...s.index(before: s.index(before: s.index(before: s.endIndex)))]
+                if let value = Float(v) {
+                    insets.trailing = value
+                }
+            }
+            self.pixelSafeAreaInsets = insets * self.interfaceScaleFactor
+        }
+    }
+    
     required init(identifier: String, style: WindowStyle, window: Window) {
         self.window = window
         self.style = style
@@ -41,31 +82,6 @@ final class WASIWindow: WindowBacking {
         }
     }
 
-    var frame: Rect {
-        get {
-            return Rect(size: Size2(Float(globalThis.window.innerWidth), Float(globalThis.window.innerHeight)))
-        }
-        set {
-            // can't
-        }
-    }
-
-    @inline(__always)
-    var backingSize: Size2 {
-        let size = Size2(Float(globalThis.window.innerWidth), Float(globalThis.window.innerHeight))
-        return size * backingScaleFactor
-    }
-    
-    @inline(__always)
-    var backingScaleFactor: Float {
-        if let pxRatio = globalThis.document.defaultView?.devicePixelRatio {
-            return Float(pxRatio)
-        }
-        return 1
-    }
-
-    var safeAreaInsets: Insets = .zero
-
     @preconcurrency @MainActor func vSync(_ deltaTime: Double) {
         self.window.vSyncCalled()
         Game.shared.eventLoop() {
@@ -75,8 +91,9 @@ final class WASIWindow: WindowBacking {
     
     @MainActor func show() {
         self.state = .shown
-        vSync(0)
-        addListeners()
+        self.updateStoredMetaData()
+        self.vSync(0)
+        self.addListeners()
     }
     
     func setMouseHidden(_ hidden: Bool) {
@@ -145,33 +162,7 @@ final class WASIWindow: WindowBacking {
             }
         }
         globalThis.onresize = { event -> JSValue in
-            guard let doc = globalThis.document.documentElement, let obj = JSObject.global.getComputedStyle?(doc) else {return .null}
-            var insets: Insets = .zero
-            if let s = obj.getPropertyValue("--sat").string {
-                let v = s[...s.index(before: s.index(before: s.index(before: s.endIndex)))]
-                if let value = Float(v) {
-                    insets.top = value
-                }
-            }
-            if let s = obj.getPropertyValue("--sal").string {
-                let v = s[...s.index(before: s.index(before: s.index(before: s.endIndex)))]
-                if let value = Float(v) {
-                    insets.leading = value
-                }
-            }
-            if let s = obj.getPropertyValue("--sab").string {
-                let v = s[...s.index(before: s.index(before: s.index(before: s.endIndex)))]
-                if let value = Float(v) {
-                    insets.bottom = value
-                }
-            }
-            if let s = obj.getPropertyValue("--sar").string {
-                let v = s[...s.index(before: s.index(before: s.index(before: s.endIndex)))]
-                if let value = Float(v) {
-                    insets.trailing = value
-                }
-            }
-            self.safeAreaInsets = insets
+            self.updateStoredMetaData()
             return .null
         }
         

@@ -47,7 +47,7 @@ internal class MetalView: MTKView, MTKViewDelegate {
         if size.isFinite == false {
             size = Size2(view.bounds.size) * Float(view.layer.rasterizationScale)
         }
-        self.viewController.window.window?.newSize = Size2(size)
+        self.viewController.window.window?.newPixelSize = Size2(size)
     }
 
     func draw(in view: MTKView) {

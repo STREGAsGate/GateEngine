@@ -57,14 +57,14 @@ public enum WindowStyle {
     }
     
     @usableFromInline
-    internal lazy var newSize: Size2 = self.size
+    internal lazy var newPixelSize: Size2 = self.size
     @inlinable @inline(__always)
     public internal(set) var size: Size2 {
         get {
-            return windowBacking.backingSize
+            return windowBacking.pixelSize
         }
         set {
-            newSize = newValue
+            newPixelSize = newValue
         }
     }
     
@@ -75,8 +75,8 @@ public enum WindowStyle {
     
     @inline(__always)
     internal func reshapeIfNeeded() {
-        if self.newSize != renderTargetBackend.size || renderTargetBackend.wantsReshape {
-            renderTargetBackend.size = self.newSize
+        if self.newPixelSize != renderTargetBackend.size || renderTargetBackend.wantsReshape {
+            renderTargetBackend.size = self.newPixelSize
             renderTargetBackend.reshape()
         }
     }
@@ -105,12 +105,12 @@ public enum WindowStyle {
     
     @inlinable @inline(__always)
     public var interfaceScale: Float {
-        return windowBacking.backingScaleFactor
+        return windowBacking.interfaceScaleFactor
     }
     
     @inlinable @inline(__always)
     public var safeAreaInsets: Insets {
-        return windowBacking.safeAreaInsets
+        return windowBacking.pixelSafeAreaInsets
     }
     
     @usableFromInline @inline(__always)
@@ -132,13 +132,14 @@ public enum WindowStyle {
 @usableFromInline
 internal protocol WindowBacking: AnyObject {
     var style: WindowStyle {get}
-    var title: String? {get set}
-    var frame: Rect {get set}
-    var safeAreaInsets: Insets {get}
-    var backingSize: Size2 {get}
-    var backingScaleFactor: Float {get}
     var state: Window.State {get}
     
+    var title: String? {get set}
+    
+    var pixelSafeAreaInsets: Insets {get}
+    var pixelSize: Size2 {get}
+    var interfaceScaleFactor: Float {get}
+
     init(identifier: String, style: WindowStyle, window: Window)
     
     func setMouseHidden(_ hidden: Bool)

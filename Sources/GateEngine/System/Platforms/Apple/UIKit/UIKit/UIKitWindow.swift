@@ -18,6 +18,25 @@ final class UIKitWindow: WindowBacking {
     let style: WindowStyle
     var state: Window.State = .hidden
     
+    // Stoted Metadata
+    var pixelSafeAreaInsets: Insets = .zero
+    var pixelSize: Size2 = .zero
+    var interfaceScaleFactor: Float = 1
+    
+    // Called from UIKitViewController
+    func updateStoredMetaData() {
+        self.interfaceScaleFactor = Float(uiWindow.traitCollection.displayScale)
+        if let view = uiWindow.rootViewController?.view {
+            self.pixelSize = Size2(view.bounds.size) * self.interfaceScaleFactor
+            if #available(iOS 11, tvOS 11, macCatalyst 13, *) {
+                self.pixelSafeAreaInsets = Insets(top: Float(view.safeAreaInsets.top) * self.interfaceScaleFactor,
+                                                  leading: Float(view.safeAreaInsets.left) * self.interfaceScaleFactor,
+                                                  bottom: Float(view.safeAreaInsets.bottom) * self.interfaceScaleFactor,
+                                                  trailing: Float(view.safeAreaInsets.right) * self.interfaceScaleFactor)
+            }
+        }
+    }
+    
     required init(identifier: String, style: WindowStyle, window: Window) {
         self.window = window
         self.uiWindow = UIWindow()
@@ -90,31 +109,6 @@ extension UIKitWindow {
         set {
             uiWindow.rootViewController?.title = newValue
         }
-    }
-    var frame: Rect {
-        get {
-            return Rect(uiWindow.frame)
-        }
-        set {
-            uiWindow.frame = newValue.cgRect
-        }
-    }
-    var safeAreaInsets: Insets {
-        if #available(iOS 11, tvOS 11, macCatalyst 13, *) {
-            let insets = uiWindow.safeAreaInsets
-            return Insets(top: Float(insets.top), leading: Float(insets.left), bottom: Float(insets.bottom), trailing: Float(insets.right))
-        }
-        return .zero
-    }
-    
-    @inline(__always)
-    var backingSize: Size2 {
-        return frame.size * backingScaleFactor
-    }
-    
-    @inline(__always)
-    var backingScaleFactor: Float {
-        return Float(uiWindow.traitCollection.displayScale)
     }
     
     func setMouseHidden(_ hidden: Bool) {

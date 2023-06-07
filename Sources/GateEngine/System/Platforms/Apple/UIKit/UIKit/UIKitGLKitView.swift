@@ -41,7 +41,7 @@ internal class GLKitView: GLKView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        self.viewController.window.window.newSize = Size2(Float(self.drawableWidth), Float(self.drawableHeight))
+        self.viewController.window.window.newPixelSize = Size2(Float(self.drawableWidth), Float(self.drawableHeight))
     }
     
     override func draw(_ rect: CGRect) {

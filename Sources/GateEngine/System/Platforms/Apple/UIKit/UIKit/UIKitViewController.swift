@@ -45,7 +45,11 @@ internal class UIKitViewController: GCEventViewController {
             self.setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
         }
         #endif
-        self.view.setNeedsLayout()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.window.updateStoredMetaData()
     }
     
     #if os(iOS)

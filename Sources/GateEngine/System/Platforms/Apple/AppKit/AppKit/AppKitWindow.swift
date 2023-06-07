@@ -19,6 +19,25 @@ final class AppKitWindow: WindowBacking {
     
     var state: Window.State = .hidden
     
+    // Stoted Metadata
+    var pixelSafeAreaInsets: Insets = .zero
+    var pixelSize: Size2 = .zero
+    var interfaceScaleFactor: Float = 1
+    
+    // Called from AppKitViewController
+    func updateStoredMetaData() {
+        if let window = self.nsWindowController.window {
+            self.interfaceScaleFactor = Float(window.backingScaleFactor)
+            if #available(macOS 11.0, *), let view = nsWindowController.window?.contentViewController?.view {
+                self.pixelSize = Size2(view.bounds.size) * self.interfaceScaleFactor
+                self.pixelSafeAreaInsets = Insets(top: Float(view.safeAreaInsets.top) * self.interfaceScaleFactor,
+                                                  leading: Float(view.safeAreaInsets.left) * self.interfaceScaleFactor,
+                                                  bottom: Float(view.safeAreaInsets.bottom) * self.interfaceScaleFactor,
+                                                  trailing: Float(view.safeAreaInsets.right) * self.interfaceScaleFactor)
+            }
+        }
+    }
+    
     required init(identifier: String, style: WindowStyle, window: Window) {
         self.window = window
         self.style = style
@@ -144,10 +163,13 @@ final class AppKitWindow: WindowBacking {
     }()
     
     func getFrameForTime(now: CVTimeStamp, outputTime: CVTimeStamp) -> CVReturn {
-        DispatchQueue.main.sync {
+        Task {@MainActor in
             if let view = self.nsWindowController.window?.contentViewController?.view {
                 view.setNeedsDisplay(view.bounds)
             }
+            #if GATEENGINE_PLATFORM_EVENT_DRIVEN
+            Game.shared.gameLoop()
+            #endif
         }
         return kCVReturnSuccess
     }
@@ -169,18 +191,10 @@ final class AppKitWindow: WindowBacking {
         
         NSApplication.shared.activate(ignoringOtherApps: true)
         self.state = .shown
-    }
-    
-    @inline(__always)
-    var backingSize: Size2 {
-        guard let layer = self.nsWindowController.window?.contentView?.layer ?? self.nsWindowController.contentViewController?.view.layer else {fatalError()}
-        return Size2(layer.bounds.size) * Float(layer.contentsScale)
-    }
-    
-    @inline(__always)
-    var backingScaleFactor: Float {
-        guard let layer = self.nsWindowController.window?.contentView?.layer ?? self.nsWindowController.contentViewController?.view.layer else {fatalError()}
-        return Float(layer.contentsScale)
+        
+//        #if GATEENGINE_PLATFORM_EVENT_DRIVEN
+//        _ = displayLink
+//        #endif
     }
     
     public func close() {
@@ -233,21 +247,6 @@ extension AppKitWindow {
         }
         set {
             nsWindowController.window?.setFrame(newValue.cgRect, display: false)
-        }
-    }
-    var safeAreaInsets: Insets {
-        get {
-            if #available(macOS 11.0, *) {
-                if let insets = nsWindowController.window?.contentViewController?.view.safeAreaInsets {
-                    return Insets(top: Float(insets.top),
-                                  leading: Float(insets.left),
-                                  bottom: Float(insets.bottom),
-                                  trailing: Float(insets.right))
-                }
-                return .zero
-            }else{
-                return .zero
-            }
         }
     }
     

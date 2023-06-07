@@ -13,11 +13,43 @@ import LinuxSupport
 final class X11Window: WindowBacking {
     weak var window: Window!
     let xWindow: LinuxSupport.Window
+    var xDisplay: OpaquePointer {
+        return Self.xDisplay
+    }
     let glxContext: GLXContext
     let style: WindowStyle
     let identifier: String
     
     var state: Window.State = .hidden
+    
+    // Stoted Metadata
+    var pixelSafeAreaInsets: Insets = .zero
+    var pixelSize: Size2 = .zero
+    var interfaceScaleFactor: Float = 1
+    
+    func updateStoredMetaData() {
+        var xwa: XWindowAttributes = XWindowAttributes()
+        XGetWindowAttributes(xDisplay, xWindow, &xwa)
+        self.pixelSize = Size2(Float(xwa.width), Float(xwa.height))
+        
+        let resourceString: UnsafeMutablePointer<CChar>? = XResourceManagerString(xDisplay)
+        XrmInitialize() /* Need to initialize the DB before calling Xrm* functions */
+        let db: XrmDatabase? = XrmGetStringDatabase(resourceString)
+        var value: XrmValue = XrmValue()
+        var type: UnsafeMutablePointer<CChar>? = nil
+
+        if let cResourceString: UnsafeMutablePointer<CChar> = resourceString {
+            let resourceString: String = String(cString: cResourceString)
+            if (XrmGetResource(db, "Xft.dpi", "String", &type, &value) == True) {
+                if let addr: XPointer = value.addr {
+                    let userDPI = atof(addr)
+                    let screenDPIX = Float(DisplayWidth(self.xDisplay, Self.xScreen)) / (Float(DisplayWidthMM(self.xDisplay, Self.xScreen)) / 25.4)
+//                    let screenDPIY = Float(DisplayHeight(self.xDisplay, Self.xScreen)) / (Float(DisplayHeightMM(self.xDisplay, Self.xScreen)) / 25.4)
+                    self.interfaceScaleFactor = screenDPIX / dpi
+                }
+            }
+        }
+    }
     
     required init(identifier: String, style: WindowStyle, window: Window) {
         self.window = window
@@ -30,7 +62,7 @@ final class X11Window: WindowBacking {
         var swa: XSetWindowAttributes = XSetWindowAttributes()
         let cmap: Colormap = XCreateColormap(Self.xDisplay, xRoot, vi.visual, AllocNone)
         swa.colormap = cmap
-        swa.event_mask = (EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask)
+        swa.event_mask = (ResizeRedirectMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask)
         
         self.xWindow = XCreateWindow(Self.xDisplay, xRoot, 0, 0, UInt32(640), UInt32(480), 0, vi.depth, UInt32(InputOutput), vi.visual, UInt(CWColormap | CWEventMask), &swa)
          
@@ -39,10 +71,6 @@ final class X11Window: WindowBacking {
         glXMakeCurrent(xDisplay, xWindow, glxContext)
 
         XStoreName(xDisplay, xWindow, identifier)
-    }
-    
-    var xDisplay: OpaquePointer {
-        return Self.xDisplay
     }
     
     lazy var xic: XIC = XCreateIC(XOpenIM(xDisplay, nil, nil, nil), xWindow)
@@ -61,6 +89,9 @@ final class X11Window: WindowBacking {
             glXMakeCurrent(xDisplay, xWindow, glxContext)
             glXSwapBuffers(xDisplay, xWindow)
             XFlush(xDisplay)
+        case ResizeRequest:
+            let event: XResizeRequest = event.xResizeRequest
+            self.updateStoredMetaData()
         case KeyPress:
             let event: XKeyEvent = event.xkey
             
@@ -164,53 +195,15 @@ final class X11Window: WindowBacking {
             var optionalPointer: UnsafeMutablePointer<CChar>?
             guard XFetchName(xDisplay, xWindow, &optionalPointer) != 0 else {return nil}
             guard let pointer: UnsafeMutablePointer<CChar> = optionalPointer else {return nil}
-            return String(cString: pointer)  
+            let title = String(cString: pointer)
+            if title.isEmpty == false {
+                return title
+            }
+            return nil
         }
         set {
             XStoreName(xDisplay, xWindow, newValue)
         }
-    }
-
-    var frame: Rect {
-        get {
-            var xwa: XWindowAttributes = XWindowAttributes()
-            XGetWindowAttributes(xDisplay, xWindow, &xwa)
-            return Rect(x: Float(xwa.x), y: Float(xwa.y), width: Float(xwa.width), height: Float(xwa.height))
-        }
-        set {
-            XMoveWindow(xDisplay, xWindow, Int32(newValue.x), Int32(newValue.y))
-            XResizeWindow(xDisplay, xWindow, UInt32(newValue.width), UInt32(newValue.height))
-        }
-    }
-    var safeAreaInsets: Insets {
-        get {
-            return .zero
-        }
-    }
-
-    var backingSize: Size2 {
-        return frame.size
-    }
-
-    var backingScaleFactor: Float {
-        let resourceString: UnsafeMutablePointer<CChar>? = XResourceManagerString(xDisplay)
-        XrmInitialize(); /* Need to initialize the DB before calling Xrm* functions */
-        let db: XrmDatabase? = XrmGetStringDatabase(resourceString)
-        var value: XrmValue = XrmValue()
-        var type: UnsafeMutablePointer<CChar>? = nil
-        var dpi: Double = 0.0
-
-        if let cResourceString: UnsafeMutablePointer<CChar> = resourceString {
-            let resourceString: String = String(cString: cResourceString)
-            print("Entire DB:", resourceString)
-            if (XrmGetResource(db, "Xft.dpi", "String", &type, &value) == True) {
-                if let addr: XPointer = value.addr {
-                    dpi = atof(addr)
-                }
-            }
-        }
-        Log.info("X11 DPI:", dpi)
-        return Float(dpi) 
     }
 
     func setMouseHidden(_ hidden: Bool) {

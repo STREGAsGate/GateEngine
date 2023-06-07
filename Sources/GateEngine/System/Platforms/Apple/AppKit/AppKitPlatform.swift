@@ -139,7 +139,7 @@ extension AppKitPlatform {
         
         if Bundle.main.infoDictionary?["CFBundleIconFile"] == nil && Bundle.main.infoDictionary?["CFBundleIconName"] == nil {
             Game.shared.defer {
-                guard let rasterizationScale = Game.shared.windowManager.mainWindow?.windowBacking.backingScaleFactor else {return}
+                guard let rasterizationScale = Game.shared.windowManager.mainWindow?.interfaceScale else {return}
                 Task {@MainActor in
                     let filePath = URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent().path
                     let iconPath = await Game.shared.platform.locateResource(from: "GateEngine/Branding/Square Logo.png")!
