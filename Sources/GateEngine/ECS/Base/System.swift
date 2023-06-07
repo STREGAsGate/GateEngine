@@ -18,13 +18,13 @@ import GameMath
         return Game.shared.entities
     }
         
-    internal final func willUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) {
+    internal final func willUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         if didSetup == false {
             didSetup = true
-            setup(game: game, input: input)
+            await setup(game: game, input: input)
         }
-        if shouldUpdate(game: game, input: input, withTimePassed: deltaTime) {
-            update(game: game, input: input, withTimePassed: deltaTime)
+        if await shouldUpdate(game: game, input: input, withTimePassed: deltaTime) {
+            await update(game: game, input: input, withTimePassed: deltaTime)
         }
     }
     
@@ -34,7 +34,7 @@ import GameMath
      Use `setup()` to create any system specific data and add it to the game.
      - note: The call to `setup()` is deffered until the next update frame after the system has been inserted and will be called immediatled before `update(withTimePassed:)`.
      */
-    open func setup(game: Game, input: HID) {
+    open func setup(game: Game, input: HID) async {
         
     }
     
@@ -42,7 +42,7 @@ import GameMath
      Called before `update(withTimePassed:)`. Return `true` if you would like `update(withTimePassed:)` to be called, otherwise return `false`.
      - parameter deltaTime: The duration of time since the last update frame.
      */
-    open func shouldUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) -> Bool {
+    open func shouldUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) async -> Bool {
         return true
     }
     
@@ -50,7 +50,7 @@ import GameMath
      Called every update frame.
      - parameter deltaTime: The duration of time since the last update frame.
      */
-    open func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
+    open func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         
     }
     

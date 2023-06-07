@@ -449,6 +449,7 @@ extension WebGL2Renderer {
             "desynchronized": true,
             "antialias": false,
             "failIfMajorPerformanceCaveat": false,
+            "premultipliedAlpha": false,
         ].jsValue
         let context = canvas.getContext(WebGL2RenderingContext.self, options: options)!
         return context

@@ -7,7 +7,7 @@
 
 internal class HIDSystem: PlatformSystem {
     @inlinable
-    override func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
+    override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         input.update(deltaTime)
     }
     

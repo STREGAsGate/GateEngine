@@ -17,7 +17,7 @@ internal final class DeferredSystem: PlatformSystem {
         deferredBlocks.append(block)
     }
     
-    override func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
+    override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         for block in deferredBlocks {
             block()
         }

@@ -84,19 +84,26 @@ let package = Package(
                         settings.append(contentsOf: [
                             // MARK: Gate Engine options.
                             .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
-                            .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
-                            .define("GATEENGINE_PLATFORM_SINGLETHREADED", .when(platforms: [.wasi])),
                             .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
+                            .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
+                            .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.wasi])),
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH", .when(platforms: [.wasi])),
                         ])
                         
-                        #if false
+                        #if false // Options for development of GateEngine. These should be commented out for a tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
+                        
+                        // Options for developemnt of WASI platform
+                        #if false
                         settings.append(contentsOf: [
-                            // MARK: Options for development of GateEngine. These should be commented out for a tagged version releases.
                             .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
-                            .define("GATEENGINE_LOG_SHADERS", .when(configuration: .debug)),
-                            .define("GATEENGINE_DEBUG_RENDERING", .when(configuration: .debug)),
+                            .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.macOS, .linux, .wasi], configuration: .debug)),
+                        ])
+                        #endif
+                        
+                        settings.append(contentsOf: [
+                            .define("GATEENGINE_LOG_SHADERS"),
+                            .define("GATEENGINE_DEBUG_RENDERING"),
                             .define("GATEENGINE_DEBUG_HID"),
                             .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, .iOS, .tvOS])),
                         ])

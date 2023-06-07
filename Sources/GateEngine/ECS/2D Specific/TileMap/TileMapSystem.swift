@@ -8,7 +8,7 @@
 import Foundation
 
 public final class TileMapSystem: System {
-    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
+    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         for entity in game.entities {
             if let tileMap = entity.component(ofType: TileMapComponent.self) {
                 rebuild(tileMap)

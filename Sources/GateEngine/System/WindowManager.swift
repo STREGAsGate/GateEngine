@@ -27,7 +27,7 @@ import GameMath
     public func createWindow(identifier: String, style: WindowStyle) throws -> Window {
         guard game.isHeadless == false else {throw "Cannot create a window when running headless."}
         precondition(game.renderingIsPermitted, "A window can only be created from a RenderingSystem.")
-        #if GATEENGINE_PLATFORM_SINGLETHREADED
+        #if GATEENGINE_PLATFORM_EVENT_DRIVEN
         // Single threaded platforms can only ever have 1 window
         guard windows.isEmpty else {throw "This platform doesn't support multiple windows."}
         #else
@@ -89,12 +89,6 @@ extension WindowManager: WindowDelegate {
         }else{
             self.windowsThatRequestedDraw.append((window, deltaTime))
         }
-        #if GATEENGINE_PLATFORM_SINGLETHREADED || os(WASI)
-        if game.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
-            window.didDrawSomething = true
-            self.drawWindows()
-        }
-        #endif
     }
     
     @_transparent

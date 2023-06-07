@@ -6,7 +6,7 @@
  */
 
 public final class Collision3DSystem: System {
-    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
+    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         let staticEntities = game.entities.filter({$0.component(ofType: Collision3DComponent.self)?.kind == .static})
         for entity in staticEntities {
             entity.collision3DComponent.updateColliders(entity.transform3)

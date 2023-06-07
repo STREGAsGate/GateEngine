@@ -226,7 +226,7 @@ public struct WindowLayout {
 }
 //MARK: Update
 extension ECSContext {
-    func shouldRenderAfterUpdate(withTimePassed deltaTime: Float) -> Bool {
+    func shouldRenderAfterUpdate(withTimePassed deltaTime: Float) async -> Bool {
         let game = game
         let input = game.hid
         
@@ -239,18 +239,18 @@ extension ECSContext {
         for system in self.platformSystems {
             guard type(of: system).phase == .preUpdating else {continue}
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
+            await system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         for system in self.systems {
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
+            await system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         for system in self.platformSystems {
             guard type(of: system).phase == .postDeffered else {continue}
             self.performance?.beginStatForSystem(system)
-            system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
+            await system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         
@@ -301,12 +301,6 @@ extension ECSContext {
             performance.endRenderingSystems()
             performance.finalizeRenderingSystemsFrameTime()
             performance.startSystems()
-        }
-        for system in self.platformSystems {
-            guard type(of: system).phase == .postRendering else {continue}
-            self.performance?.beginStatForSystem(system)
-            system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
-            self.performance?.endCurrentStatistic()
         }
     }
 }

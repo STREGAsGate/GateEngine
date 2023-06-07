@@ -240,8 +240,8 @@ extension DOM.Navigator {
     }
 }
 
-#if os(WASI) && !GATEENGINE_PLATFORM_SINGLETHREADED
-#error("WASI must be single threaded.")
+#if os(WASI) && !GATEENGINE_PLATFORM_EVENT_DRIVEN
+#error("WASI must be event driven.")
 #endif
 
 #endif

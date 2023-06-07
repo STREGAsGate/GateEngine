@@ -68,7 +68,9 @@ final class WASIWindow: WindowBacking {
 
     @preconcurrency @MainActor func vSync(_ deltaTime: Double) {
         self.window.vSyncCalled()
-        _ = globalThis.window.requestAnimationFrame(callback: vSync(_:))
+        Game.shared.eventLoop() {
+            _ = globalThis.window.requestAnimationFrame(callback: self.vSync(_:))
+        }
     }
     
     @MainActor func show() {

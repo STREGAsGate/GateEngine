@@ -31,11 +31,11 @@ internal class AudioSystem: PlatformSystem {
         cache[path] = new
         return new
     }
-    override func setup(game: Game, input: HID) {
+    override func setup(game: Game, input: HID) async {
         
     }
     
-    override func update(game: Game, input: HID, withTimePassed deltaTime: Float) {
+    override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         updateSounds(game: game, withTimePassed: deltaTime)
         updateMusic(withTimePassed: deltaTime)
     }

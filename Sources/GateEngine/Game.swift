@@ -49,7 +49,7 @@ public final class Game {
         self.addPlatformSystems()
         self.delegate.didFinishLaunching(game: self, options: [])
         #endif
-        #if !GATEENGINE_PLATFORM_SINGLETHREADED
+        #if !GATEENGINE_PLATFORM_EVENT_DRIVEN
         self.gameLoop()
         #endif
     }
@@ -63,15 +63,42 @@ public final class Game {
         self.insertSystem(CacheSystem.self)
     }
     
-    #if !GATEENGINE_PLATFORM_SINGLETHREADED
-    @MainActor private var previousTime: Double = 0
-    @MainActor internal func gameLoop() {
-        Task(priority: .high) {@MainActor in
+    
+    #if GATEENGINE_PLATFORM_EVENT_DRIVEN
+    private var previousTime: Double = 0
+    @MainActor internal func eventLoop(completion: @escaping ()->Void) {
+        Task {@MainActor in
             let now: Double = Game.shared.platform.systemTime()
             let deltaTime: Double = now - self.previousTime
             self.previousTime = now
-            if self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
-                self.windowManager.drawWindows()
+            if await self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
+                Task(priority: .high) {@MainActor in
+                    self.windowManager.drawWindows()
+                    completion()
+                }
+            }else{
+                #if GATEENGINE_DEBUG_RENDERING
+                Log.warn("Frame Dropped")
+                #endif
+                completion()
+            }
+        }
+    }
+    #else
+    private var previousTime: Double = 0
+    internal func gameLoop() {
+        Task {@MainActor in
+            let now: Double = Game.shared.platform.systemTime()
+            let deltaTime: Double = now - self.previousTime
+            self.previousTime = now
+            if await self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
+                Task(priority: .high) {@MainActor in
+                    self.windowManager.drawWindows()
+                }
+            }else{
+                #if GATEENGINE_DEBUG_RENDERING
+                Log.warn("Frame Dropped")
+                #endif
             }
             self.gameLoop()
         }
