@@ -327,6 +327,12 @@ final class X11Window: WindowBacking {
                 keys[keyCode] = .function(23)
             case "FK24":
                 keys[keyCode] = .function(24)
+            case "PRSC":
+                keys[keyCode] = .printScreen
+            case "SCLK":
+                keys[keyCode] = .scrollLock
+            case "PAUS":
+                keys[keyCode] = .pauseBreak
             case "TLDE":
                 keys[keyCode] = .character("`", .standard)
             case "AE01":
@@ -355,7 +361,148 @@ final class X11Window: WindowBacking {
                 keys[keyCode] = .character("=", .standard)
             case "BKSP":
                 keys[keyCode] = .backspace
-                
+            case "INS":
+                keys[keyCode] = .insert
+            case "HOME":
+                keys[keyCode] = .home
+            case "PGUP":
+                keys[keyCode] = .pageUp
+            case "NMLK":
+                keys[keyCode] = .numLock
+            case "KPDV":
+                keys[keyCode] = .character("/", .numberPad)
+            case "KPMU":
+                keys[keyCode] = .character("*", .numberPad)
+            case "KPSU":
+                keys[keyCode] = .character("-", .numberPad)
+            case "TAB":
+                keys[keyCode] = .tab
+            case "AD01":
+                keys[keyCode] = .character("q", .standard)
+            case "AD03":
+                keys[keyCode] = .character("w", .standard)
+            case "AD04":
+                keys[keyCode] = .character("e", .standard)
+            case "AD05":
+                keys[keyCode] = .character("r", .standard)
+            case "AD06":
+                keys[keyCode] = .character("t", .standard)
+            case "AD07":
+                keys[keyCode] = .character("y", .standard)
+            case "AD08":
+                keys[keyCode] = .character("u", .standard)
+            case "AD09":
+                keys[keyCode] = .character("i", .standard)
+            case "AD10":
+                keys[keyCode] = .character("o", .standard)
+            case "AD11":
+                keys[keyCode] = .character("p", .standard)
+            case "AD12":
+                keys[keyCode] = .character("[", .standard)
+            case "AD13":
+                keys[keyCode] = .character("]", .standard)
+            case "BKSL":
+                keys[keyCode] = .character("\\", .standard)
+            case "DELE":
+                keys[keyCode] = .delete
+            case "END":
+                keys[keyCode] = .end
+            case "PGDN":
+                keys[keyCode] = .pageDown
+            case "KP7":
+                keys[keyCode] = .character("7", .numberPad)
+            case "KP8":
+                keys[keyCode] = .character("8", .numberPad)
+            case "KP9":
+                keys[keyCode] = .character("9", .numberPad)
+            case "KPAD":
+                keys[keyCode] = .character("+", .numberPad)
+            case "CAPS":
+                keys[keyCode] = .capsLock
+            case "AC01":
+                keys[keyCode] = .character("a", .standard)
+            case "AC02":
+                keys[keyCode] = .character("s", .standard)
+            case "AC03":
+                keys[keyCode] = .character("d", .standard)
+            case "AC04":
+                keys[keyCode] = .character("f", .standard)
+            case "AC05":
+                keys[keyCode] = .character("g", .standard)
+            case "AC06":
+                keys[keyCode] = .character("h", .standard)
+            case "AC07":
+                keys[keyCode] = .character("j", .standard)
+            case "AC08":
+                keys[keyCode] = .character("k", .standard)
+            case "AC09":
+                keys[keyCode] = .character("l", .standard)
+            case "AC10":
+                keys[keyCode] = .character(";", .standard)
+            case "AC11":
+                keys[keyCode] = .character("'", .standard)
+            case "RTRN":
+                keys[keyCode] = .enter(.standard)
+            case "KP4":
+                keys[keyCode] = .character("4", .numberPad)
+            case "KP5":
+                keys[keyCode] = .character("5", .numberPad)
+            case "KP6":
+                keys[keyCode] = .character("6", .numberPad)
+            case "LFSH":
+                keys[keyCode] = .shift(.left)
+            case "AB01":
+                keys[keyCode] = .character("z", .standard)
+            case "AB02":
+                keys[keyCode] = .character("x", .standard)
+            case "AB03":
+                keys[keyCode] = .character("c", .standard)
+            case "AB04":
+                keys[keyCode] = .character("v", .standard)
+            case "AB05":
+                keys[keyCode] = .character("b", .standard)
+            case "AB06":
+                keys[keyCode] = .character("n", .standard)
+            case "AB07":
+                keys[keyCode] = .character("m", .standard)
+            case "AB08":
+                keys[keyCode] = .character(",", .standard)
+            case "AB09":
+                keys[keyCode] = .character(".", .standard)
+            case "AB10":
+                keys[keyCode] = .character("/", .standard)
+            case "RTSH":
+                keys[keyCode] = .shift(.right)
+            case "UP":
+                keys[keyCode] = .up
+            case "KP01":
+                keys[keyCode] = .character("1", .numberPad)
+            case "KP02":
+                keys[keyCode] = .character("2", .numberPad)
+            case "KP03":
+                keys[keyCode] = .character("3", .numberPad)
+            case "KPEN":
+                keys[keyCode] = .enter(.numberPad)
+            case "LCTL":
+                keys[keyCode] = .control(.left)
+            case "LALT":
+                keys[keyCode] = .alt(.left)
+            case "SPCE":
+                keys[keyCode] = .space
+            case "RALT":
+                keys[keyCode] = .alt(.right)
+            case "RCTL":
+                keys[keyCode] = .control(.right)
+            case "LEFT":
+                keys[keyCode] = .left
+            case "DOWN":
+                keys[keyCode] = .down
+            case "RIGHT":
+                keys[keyCode] = .right
+            case "KP0":
+                keys[keyCode] = .character("0", .numberPad)
+            case "KPDL":
+                keys[keyCode] = .character(".", .numberPad)
             default:
                 Log.info("Unhandled key", keyCode, name)
                 keys[keyCode] = .unhandledPlatformKeyCode(keyCode, nil)
