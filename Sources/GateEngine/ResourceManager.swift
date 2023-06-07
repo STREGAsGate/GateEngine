@@ -62,14 +62,14 @@ public class ResourceManager {
             case .whileReferenced:
                 if cache.referenceCount == 0 {
                     self.cache.textures.removeValue(forKey: key)
-                    Log.debug("Removing cache (no longer referenced)", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
+                    Log.debug("Removing cache (no longer referenced), Object:", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
                 }
             case .until(minutes: let minutes):
                 if cache.referenceCount == 0 {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.textures.removeValue(forKey: key)
-                        Log.debug("Removing cache (unsused for \(cache.minutesDead) min)", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
+                        Log.debug("Removing cache (unsused for \(cache.minutesDead) min), Object:", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
                     }
                 }else{
                     cache.minutesDead = 0
@@ -86,14 +86,14 @@ public class ResourceManager {
             case .whileReferenced:
                 if cache.referenceCount == 0 {
                     self.cache.geometries.removeValue(forKey: key)
-                    Log.debug("Removing cache (no longer referenced)", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
+                    Log.debug("Removing cache (no longer referenced), Object:", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
                 }
             case .until(minutes: let minutes):
                 if cache.referenceCount == 0 {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.geometries.removeValue(forKey: key)
-                        Log.debug("Removing cache (unsused for \(cache.minutesDead) min)", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
+                        Log.debug("Removing cache (unsused for \(cache.minutesDead) min), Object:", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
                     }
                 }else{
                     cache.minutesDead = 0
