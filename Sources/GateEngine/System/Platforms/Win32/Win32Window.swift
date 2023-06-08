@@ -26,10 +26,12 @@ final class Win32Window: WindowBacking {
     var pixelSize: Size2 = .zero
     var interfaceScaleFactor: Float = 1
     
-    func updateStoredMetaData() {
+    @preconcurrency @MainActor func updateStoredMetaData() {
         var frame: RECT = RECT()
         WinSDK.GetWindowRect(self.hWnd, &frame)
-        self.pixelSize = Size2(width: Float(RECT.width), height: Float(RECT.height))
+        let size = Size2(width: Float(frame.width), height: Float(frame.height))
+        self.pixelSize = size
+        self.window.newPixelSize = size
         
         let dpi: UINT = GetDpiForWindow(hWnd)
         self.interfaceScaleFactor = Float(dpi) / Float(USER_DEFAULT_SCREEN_DPI)
@@ -85,6 +87,7 @@ final class Win32Window: WindowBacking {
         self.state = .shown
     }
 
+    @inline(__always)
     @MainActor func render() {
         guard state == .shown else {return}
         self.window.vSyncCalled()
@@ -251,8 +254,16 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _msgResized() {
-        self.window.size = self.frame.size
         self.updateStoredMetaData()
+    }
+
+    @inline(__always)
+    @preconcurrency
+    @MainActor
+    func _msgResizing(_ wParam: WPARAM, _ lParam: LPARAM) {
+        guard let rect: RECT = PRECT(bitPattern: Int(lParam))?.pointee else {return}
+        self.pixelSize = Size2(Float(rect.width), Float(rect.height))
+        self.window.newPixelSize = self.pixelSize        
     }
 
     @inline(__always)
@@ -922,8 +933,6 @@ fileprivate typealias WindowProc = @MainActor @convention(c) (HWND?, UINT, WPARA
     }
     
     switch Int32(uMsg) {
-    case WM_PAINT:
-        break
     case WM_SIZE:
         switch Int32(wParam) {
         case SIZE_RESTORED:
