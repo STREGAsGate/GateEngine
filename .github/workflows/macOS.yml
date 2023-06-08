@@ -1,10 +1,12 @@
 name: macOS
 on:
-    workflow_dispatch:
-    push:
-        branches: [ main ]
-    pull_request:
-        branches: [ main ]
+  workflow_dispatch:
+  push:
+    branches:
+    - '**' # matches every branch
+  pull_request:
+    branches:
+    - 'main'
 
 jobs:
   Build_Test-macOS-macOS:

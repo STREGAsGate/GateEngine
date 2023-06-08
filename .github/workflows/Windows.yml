@@ -3,9 +3,11 @@ name: Windows
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+    - '**' # matches every branch
   pull_request:
-    branches: [ main ]
+    branches:
+    - 'main'
 
 jobs:
   Build_Test-Windows-Windows:
