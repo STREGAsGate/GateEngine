@@ -48,12 +48,18 @@ internal class GLKitView: NSOpenGLView {
         CGLSetCurrentContext(obj)
         CGLFlushDrawable(obj)
     }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        self.update()
+    }
     
     override func update() {
         super.update()
-        guard self.window != nil else {return}
-        let scale = Float(self.layer?.contentsScale ?? 1)
-        self.viewController.window?.window?.size = Size2(Float(self.bounds.size.width), Float(self.bounds.size.height)) * scale
+        if let window = self.viewController.window {
+            let scale = window.interfaceScaleFactor
+            self.viewController.window?.window?.newPixelSize = Size2(Float(self.bounds.size.width), Float(self.bounds.size.height)) * scale
+        }
     }
 
     override open func draw(_ dirtyRect: NSRect) {

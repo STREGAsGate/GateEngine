@@ -16,7 +16,9 @@ import GameMath
     @usableFromInline
     internal var windows: [Window] = []
     
-    let mainWindowIdentifier: String = "main"
+    @usableFromInline
+    nonisolated static let mainWindowIdentifier: String = "main"
+    
     public private(set) weak var mainWindow: Window? = nil
     
     public func window(withIdentifier identifier: String) -> Window? {
@@ -24,22 +26,16 @@ import GameMath
     }
 
     @discardableResult
-    public func createWindow(identifier: String, style: WindowStyle) throws -> Window {
+    public func createWindow(identifier: String, style: WindowStyle = .system, options: WindowOptions = .defaultForOtherWindow) throws -> Window {
         guard game.isHeadless == false else {throw "Cannot create a window when running headless."}
         precondition(game.renderingIsPermitted, "A window can only be created from a RenderingSystem.")
-        #if GATEENGINE_PLATFORM_EVENT_DRIVEN
-        // Single threaded platforms can only ever have 1 window
-        guard windows.isEmpty else {throw "This platform doesn't support multiple windows."}
-        #else
         guard game.platform.supportsMultipleWindows || windows.isEmpty else {throw "This platform doesn't support multiple windows."}
-        #endif
         guard identifierIsUnused(identifier) else {throw "Window with identifier \"\(identifier)\" already exists."}
-        let window: Window = Window(identifier: identifier, style: style)
+        let window: Window = Window(identifier: identifier, style: style, options: options)
         self.windows.append(window)
-        if identifier == mainWindowIdentifier {
+        if identifier == Self.mainWindowIdentifier {
             self.mainWindow = window
         }
-        window.delegate = self
         window.show()
         return window
     }
@@ -48,7 +44,7 @@ import GameMath
         windows.removeAll(where: {$0.identifier.caseInsensitiveCompare(identifier) == .orderedSame})
         
         // If the main window is closed, close all windows
-        if identifier == mainWindowIdentifier {
+        if identifier == Self.mainWindowIdentifier {
             for window in windows {
                 window.windowBacking.close()
             }
@@ -79,7 +75,7 @@ import GameMath
     }
 }
 
-extension WindowManager: WindowDelegate {
+extension WindowManager {
     @inline(__always)
     func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float) {
         window.didDrawSomething = false
@@ -89,36 +85,5 @@ extension WindowManager: WindowDelegate {
         }else{
             self.windowsThatRequestedDraw.append((window, deltaTime))
         }
-    }
-    
-    @_transparent
-    func mouseChange(event: MouseChangeEvent, position: Position2, delta: Position2, window: Window?) {
-        game.hid.mouseChange(event: event, position: position, delta: delta, window: window)
-    }
-    @_transparent
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2?, delta: Position2?, window: Window?) {
-        game.hid.mouseClick(event: event, button: button, count: count, position: position, delta: delta, window: window)
-    }
-    
-    @_transparent
-    func screenTouchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2) {
-        game.hid.screenTouchChange(id: id, kind: kind, event: event, position: position)
-    }
-    @_transparent
-    func surfaceTouchChange(id: AnyHashable, event: TouchChangeEvent, surfaceID: AnyHashable, normalizedPosition: Position2) {
-        game.hid.surfaceTouchChange(id: id, event: event, surfaceID: surfaceID, normalizedPosition: normalizedPosition)
-    }
-
-    @_transparent
-    func keyboardDidhandle(key: KeyboardKey,
-                           character: Character?,
-                           modifiers: KeyboardModifierMask,
-                           isRepeat: Bool,
-                           event: KeyboardEvent) -> Bool {
-        return game.hid.keyboardDidhandle(key: key,
-                                          character: character,
-                                          modifiers: modifiers,
-                                          isRepeat: isRepeat,
-                                          event: event)
     }
 }

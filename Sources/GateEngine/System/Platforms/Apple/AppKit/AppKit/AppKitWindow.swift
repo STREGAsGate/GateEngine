@@ -14,41 +14,48 @@ import MetalKit
 final class AppKitWindow: WindowBacking {
     weak var window: Window!
     let nsWindowController: NSWindowController
-    let style: WindowStyle
-    let identifier: String
     
     var state: Window.State = .hidden
     
     // Stoted Metadata
+    var pointSafeAreaInsets: Insets = .zero
     var pixelSafeAreaInsets: Insets = .zero
-    var pixelSize: Size2 = .zero
+    var pointSize: Size2 = Size2(640, 480)
+    var pixelSize: Size2 = Size2(640, 480)
     var interfaceScaleFactor: Float = 1
     
     // Called from AppKitViewController
     func updateStoredMetaData() {
         if let window = self.nsWindowController.window {
             self.interfaceScaleFactor = Float(window.backingScaleFactor)
-            if #available(macOS 11.0, *), let view = nsWindowController.window?.contentViewController?.view {
-                self.pixelSize = Size2(view.bounds.size) * self.interfaceScaleFactor
-                self.pixelSafeAreaInsets = Insets(top: Float(view.safeAreaInsets.top) * self.interfaceScaleFactor,
-                                                  leading: Float(view.safeAreaInsets.left) * self.interfaceScaleFactor,
-                                                  bottom: Float(view.safeAreaInsets.bottom) * self.interfaceScaleFactor,
-                                                  trailing: Float(view.safeAreaInsets.right) * self.interfaceScaleFactor)
+            if let view = nsWindowController.window?.contentViewController?.view {
+                self.pointSize = Size2(view.bounds.size)
+                self.pixelSize = self.pointSize * self.interfaceScaleFactor
+                if #available(macOS 11.0, *) {
+                    self.pixelSafeAreaInsets = Insets(top: Float(view.safeAreaInsets.top),
+                                                      leading: Float(view.safeAreaInsets.left),
+                                                      bottom: Float(view.safeAreaInsets.bottom),
+                                                      trailing: Float(view.safeAreaInsets.right))
+                    self.pointSafeAreaInsets = self.pixelSafeAreaInsets / self.interfaceScaleFactor
+                }
             }
         }
     }
     
-    required init(identifier: String, style: WindowStyle, window: Window) {
+    @MainActor required init(window: Window) {
         self.window = window
-        self.style = style
-        self.identifier = identifier
         
-        let styleMask: NSWindow.StyleMask
-        switch style {
+        var styleMask: NSWindow.StyleMask = [.titled, .resizable, .miniaturizable]
+        
+        switch window.style {
         case .bestForGames:
-            styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
+            styleMask.insert(.fullSizeContentView)
         case .system:
-            styleMask = [.titled, .closable, .miniaturizable, .resizable]
+            break
+        }
+        
+        if window.isMainWindow || window.options.contains(.userClosable) {
+            styleMask.insert(.closable)
         }
         
         let size = Size2(640, 480)
@@ -60,7 +67,7 @@ final class AppKitWindow: WindowBacking {
                                   defer: false)
         self.nsWindowController = NSWindowController(window: nsWindow)
         nsWindow.isReleasedWhenClosed = false
-        if style == .bestForGames {
+        if window.style == .bestForGames {
             nsWindow.titlebarAppearsTransparent = true
             nsWindow.titleVisibility = .hidden
         }
@@ -68,35 +75,53 @@ final class AppKitWindow: WindowBacking {
         nsWindow.contentViewController = AppKitViewController(window: self)
 
         nsWindow.center()
-        nsWindow.setFrameAutosaveName(identifier)
+        let frameIsAcceptable = nsWindow.setFrameAutosaveName(window.identifier)
+        assert(frameIsAcceptable, "Must use unique window identifiers.")
         if #available(macOS 10.12, *) {
             nsWindow.tabbingMode = .disallowed
         }
         
-        nsWindow.title = identifier
+        nsWindow.title = window.identifier
         
         self.setupNotifications()
     }
         
-    private func restoreSizeAndPosition(ofWindow nsWindow: NSWindow) {
-        //restore size and relative position
-        nsWindow.setFrameUsingName(identifier)
+    @MainActor private func restoreSizeAndPosition(ofWindow nsWindow: NSWindow) {
         
-        //restore screen position
-        let screenID = CGDirectDisplayID(UserDefaults.standard.integer(forKey: "ScreenID_\(identifier)"))
-        for screen in NSScreen.screens {
-            if screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID == screenID {
-                var frame = nsWindow.frame
-                frame.origin.x += screen.frame.origin.x
-                frame.origin.y += screen.frame.origin.y
-                nsWindow.setFrame(frame, display: true)
-                break
+
+        //restore size and relative position
+        nsWindow.setFrameUsingName(window.identifier)
+        
+        if window.isMainWindow == false {
+            // Restore screen position, but not for the primary window.
+            // Users expect the main window to appear on the main screen. macOS will do that for us.
+            let screenID = CGDirectDisplayID(UserDefaults.standard.integer(forKey: "ScreenID_\(window.identifier)"))
+            for screen in NSScreen.screens {
+                if screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID == screenID {
+                    // If the screen isn't the last screen the user preferred, move the window to the correct screen
+                    if nsWindow.screen !== screen {
+                        var frame = nsWindow.frame
+                        if let currentScreen = nsWindow.screen {
+                            // Remove the current screen offset
+                            frame.origin.x -= currentScreen.frame.origin.x
+                            frame.origin.y -= currentScreen.frame.origin.y
+                        }
+                        // Add the deired screen offset
+                        frame.origin.x += screen.frame.origin.x
+                        frame.origin.y += screen.frame.origin.y
+                        nsWindow.setFrame(frame, display: false)
+                    }
+                    break
+                }
             }
         }
 
-        // Enter full screen if no preference, otherwise restore user preference
-        if UserDefaults.standard.value(forKey: "\(identifier)-WasFullScreen") == nil || UserDefaults.standard.bool(forKey: "\(identifier)-WasFullScreen") {
-            nsWindowController.window?.toggleFullScreen(nil)
+        if nsWindow.styleMask.contains(.fullScreen) == false {
+            if window.options.contains(.forceFullScreen) || UserDefaults.standard.bool(forKey: "\(window.identifier)-WasFullScreen") {
+                nsWindowController.window?.toggleFullScreen(nil)
+            }else if window.options.contains(.firstLaunchFullScreen) && UserDefaults.standard.object(forKey: "\(window.identifier)-WasFullScreen") == nil {
+                nsWindowController.window?.toggleFullScreen(nil)
+            }
         }
     }
     
@@ -117,15 +142,15 @@ final class AppKitWindow: WindowBacking {
     }
     
     @MainActor @objc func windowWillClose(_ notification: Notification) {
-        UserDefaults.standard.set(nsWindowController.window?.styleMask.contains(.fullScreen) == true, forKey: "\(identifier)-WasFullScreen")
+        UserDefaults.standard.set(nsWindowController.window?.styleMask.contains(.fullScreen) == true, forKey: "\(window.identifier)-WasFullScreen")
         UserDefaults.standard.synchronize()
-        self.state = .destroyed
-        Game.shared.windowManager.removeWindow(self.identifier)
+        self.state = .closing
+        Game.shared.windowManager.removeWindow(window.identifier)
     }
     
     @MainActor @objc func windowDidChangeScreen(_ notification: Notification) {
         if let screenID = self.nsWindowController.window?.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID {
-            UserDefaults.standard.set(screenID, forKey: "ScreenID_\(identifier)")
+            UserDefaults.standard.set(screenID, forKey: "ScreenID_\(window.identifier)")
             UserDefaults.standard.synchronize()
         }
         
@@ -165,7 +190,7 @@ final class AppKitWindow: WindowBacking {
     func getFrameForTime(now: CVTimeStamp, outputTime: CVTimeStamp) -> CVReturn {
         Task {@MainActor in
             if let view = self.nsWindowController.window?.contentViewController?.view {
-                view.setNeedsDisplay(view.bounds)
+                view.needsDisplay = true
             }
             #if GATEENGINE_PLATFORM_EVENT_DRIVEN
             Game.shared.gameLoop()
@@ -175,13 +200,11 @@ final class AppKitWindow: WindowBacking {
     }
     
     @MainActor func show() {
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(30)) {
-            self.restoreSizeAndPosition(ofWindow: self.nsWindowController.window!)
-            if UserDefaults.standard.bool(forKey: "\(self.identifier)-WasFullScreen") {
-                self.nsWindowController.window!.toggleFullScreen(NSApp)
-            }
+        self.restoreSizeAndPosition(ofWindow: self.nsWindowController.window!)
+        if UserDefaults.standard.bool(forKey: "\(window.identifier)-WasFullScreen") {
+            self.nsWindowController.window!.toggleFullScreen(NSApp)
         }
-        
+   
         nsWindowController.showWindow(NSApp)
         self.nsWindowController.window?.makeKeyAndOrderFront(nil)
         
@@ -191,17 +214,15 @@ final class AppKitWindow: WindowBacking {
         
         NSApplication.shared.activate(ignoringOtherApps: true)
         self.state = .shown
-        
-//        #if GATEENGINE_PLATFORM_EVENT_DRIVEN
-//        _ = displayLink
-//        #endif
     }
     
-    public func close() {
+    @MainActor public func close() {
         if CVDisplayLinkIsRunning(self.displayLink) {
             CVDisplayLinkStop(self.displayLink)
         }
-        nsWindowController.close()
+        if window?.state != .closing && window?.state != .destroyed {
+            nsWindowController.close()
+        }
         self.state = .destroyed
     }
 
@@ -293,7 +314,7 @@ final class UGNSWindow: AppKit.NSWindow {
     }
     
     override var canBecomeMain: Bool {
-        return true
+        return self.window.isMainWindow
     }
 
     //MARK: - Mouse
@@ -333,131 +354,117 @@ final class UGNSWindow: AppKit.NSWindow {
     }
 
     override func mouseDown(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonDown,
-                                      button: .button1,
-                                      count: event.clickCount,
-                                      position: positionFromEvent(event),
-                                      delta: deltaPositionFromEvent(event),
-                                      window: window)
-        }
+        Game.shared.hid.mouseClick(event: .buttonDown,
+                                   button: .button1,
+                                   count: event.clickCount,
+                                   position: positionFromEvent(event),
+                                   delta: deltaPositionFromEvent(event),
+                                   window: window)
         super.mouseDown(with: event)
     }
 
     override func mouseUp(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonUp,
-                                      button: .button1,
-                                      count: event.clickCount,
-                                      position: positionFromEvent(event),
-                                      delta: deltaPositionFromEvent(event),
-                                      window: window)
-        }
+        Game.shared.hid.mouseClick(event: .buttonUp,
+                                   button: .button1,
+                                   count: event.clickCount,
+                                   position: positionFromEvent(event),
+                                   delta: deltaPositionFromEvent(event),
+                                   window: window)
         super.mouseUp(with: event)
     }
 
     override func rightMouseDown(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonDown,
-                                      button: .button2,
-                                      count: event.clickCount,
-                                      position: positionFromEvent(event),
-                                      delta: deltaPositionFromEvent(event),
-                                      window: window)
-        }
+        Game.shared.hid.mouseClick(event: .buttonDown,
+                                   button: .button2,
+                                   count: event.clickCount,
+                                   position: positionFromEvent(event),
+                                   delta: deltaPositionFromEvent(event),
+                                   window: window)
         super.rightMouseDown(with: event)
     }
 
     override func rightMouseUp(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
-            windowDelegate.mouseClick(event: .buttonUp,
-                                      button: .button2,
-                                      count: event.clickCount,
-                                      position: positionFromEvent(event),
-                                      delta: deltaPositionFromEvent(event),
-                                      window: window)
-        }
+        Game.shared.hid.mouseClick(event: .buttonUp,
+                                   button: .button2,
+                                   count: event.clickCount,
+                                   position: positionFromEvent(event),
+                                   delta: deltaPositionFromEvent(event),
+                                   window: window)
         super.rightMouseUp(with: event)
     }
 
     override func otherMouseDown(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
-            let button: MouseButton = mouseButtonFromEvent(event)
-            windowDelegate.mouseClick(event: .buttonDown,
-                                      button: button,
-                                      count: event.clickCount,
-                                      position: positionFromEvent(event),
-                                      delta: deltaPositionFromEvent(event),
-                                      window: window)
-        }
+        Game.shared.hid.mouseClick(event: .buttonDown,
+                                   button: mouseButtonFromEvent(event),
+                                   count: event.clickCount,
+                                   position: positionFromEvent(event),
+                                   delta: deltaPositionFromEvent(event),
+                                   window: window)
         super.otherMouseDown(with: event)
     }
 
     override func otherMouseUp(with event: NSEvent) {
-        if let windowDelegate = window.delegate {
-            let button: MouseButton = mouseButtonFromEvent(event)
-            windowDelegate.mouseClick(event: .buttonUp,
-                                      button: button,
-                                      count: event.clickCount,
-                                      position: positionFromEvent(event),
-                                      delta: deltaPositionFromEvent(event),
-                                      window: window)
-        }
+        Game.shared.hid.mouseClick(event: .buttonUp,
+                                   button: mouseButtonFromEvent(event),
+                                   count: event.clickCount,
+                                   position: positionFromEvent(event),
+                                   delta: deltaPositionFromEvent(event),
+                                   window: window)
         super.otherMouseUp(with: event)
     }
 
     override func mouseEntered(with event: NSEvent) {
-        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
-            windowDelegate.mouseChange(event: .entered,
-                                       position: position,
-                                       delta: deltaPositionFromEvent(event),
-                                       window: window)
+        if let position = positionFromEvent(event) {
+            Game.shared.hid.mouseChange(event: .entered,
+                                        position: position,
+                                        delta: deltaPositionFromEvent(event),
+                                        window: window)
         }
         super.mouseEntered(with: event)
     }
     override func mouseMoved(with event: NSEvent) {
-        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
-            windowDelegate.mouseChange(event: .moved,
-                                       position: position,
-                                       delta: deltaPositionFromEvent(event),
-                                       window: window)
+        if let position = positionFromEvent(event) {
+            Game.shared.hid.mouseChange(event: .moved,
+                                        position: position,
+                                        delta: deltaPositionFromEvent(event),
+                                        window: window)
         }
         super.mouseMoved(with: event)
     }
     override func mouseDragged(with event: NSEvent) {
-        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
-            windowDelegate.mouseChange(event: .moved,
-                                       position: position,
-                                       delta: deltaPositionFromEvent(event),
-                                       window: window)
+        if let position = positionFromEvent(event) {
+            Game.shared.hid.mouseChange(event: .moved,
+                                        position: position,
+                                        delta: deltaPositionFromEvent(event),
+                                        window: window)
         }
         super.mouseDown(with: event)
     }
     override func rightMouseDragged(with event: NSEvent) {
-        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
-            windowDelegate.mouseChange(event: .moved,
-                                       position: position,
-                                       delta: deltaPositionFromEvent(event),
-                                       window: window)
+        if let position = positionFromEvent(event) {
+            Game.shared.hid.mouseChange(event: .moved,
+                                        position: position,
+                                        delta: deltaPositionFromEvent(event),
+                                        window: window)
         }
         super.rightMouseDragged(with: event)
     }
     override func otherMouseDragged(with event: NSEvent) {
-        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
-            windowDelegate.mouseChange(event: .moved,
-                                       position: position,
-                                       delta: deltaPositionFromEvent(event),
-                                       window: window)
+        if let position = positionFromEvent(event) {
+            Game.shared.hid.mouseChange(event: .moved,
+                                        position: position,
+                                        delta: deltaPositionFromEvent(event),
+                                        window: window)
         }
         super.otherMouseDragged(with: event)
     }
-
+    
     override func mouseExited(with event: NSEvent) {
-        if let windowDelegate = window.delegate, let position = positionFromEvent(event) {
-            windowDelegate.mouseChange(event: .exited,
-                                       position: position,
-                                       delta: deltaPositionFromEvent(event),
-                                       window: window)
+        if let position = positionFromEvent(event) {
+            Game.shared.hid.mouseChange(event: .exited,
+                                        position: position,
+                                        delta: deltaPositionFromEvent(event),
+                                        window: window)
         }
         super.mouseExited(with: event)
     }
@@ -489,24 +496,22 @@ final class UGNSWindow: AppKit.NSWindow {
     override func touchesBegan(with event: NSEvent) {
         super.touchesBegan(with: event)
 
-        if let windowDelegate = window.delegate {
-            let touches = event.touches(matching: .began, in: nil)
-
-            for touch in touches {
-                let id = UUID()
-                touchesIDs[ObjectIdentifier(touch.identity)] = id
-                let type = type(for: touch)
-                if let position = locationOfTouch(touch, from: event) {
-                    switch touch.type {
-                    case .direct:
-                        windowDelegate.screenTouchChange(id: id, kind: type, event: .began, position: position)
-                    case .indirect:
-                        if let device = touch.device as? AnyObject {
-                            windowDelegate.surfaceTouchChange(id: id, event: .began, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
-                        }
-                    default:
-                        break
+        let touches = event.touches(matching: .began, in: nil)
+        
+        for touch in touches {
+            let id = UUID()
+            touchesIDs[ObjectIdentifier(touch.identity)] = id
+            let type = type(for: touch)
+            if let position = locationOfTouch(touch, from: event) {
+                switch touch.type {
+                case .direct:
+                    Game.shared.hid.screenTouchChange(id: id, kind: type, event: .began, position: position)
+                case .indirect:
+                    if let device = touch.device as? AnyObject {
+                        Game.shared.hid.surfaceTouchChange(id: id, event: .began, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
                     }
+                default:
+                    break
                 }
             }
         }
@@ -514,23 +519,21 @@ final class UGNSWindow: AppKit.NSWindow {
 
     override func touchesMoved(with event: NSEvent) {
         super.touchesMoved(with: event)
-        if let windowDelegate = window.delegate {
-            let touches = event.touches(matching: .moved, in: nil)
-
-            for touch in touches {
-                guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else {continue}
-                let type = type(for: touch)
-                if let position = locationOfTouch(touch, from: event) {
-                    switch touch.type {
-                    case .direct:
-                        windowDelegate.screenTouchChange(id: id, kind: type, event: .moved, position: position)
-                    case .indirect:
-                        if let device = touch.device as? AnyObject {
-                            windowDelegate.surfaceTouchChange(id: id, event: .moved, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
-                        }
-                    default:
-                        break
+        let touches = event.touches(matching: .moved, in: nil)
+        
+        for touch in touches {
+            guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else {continue}
+            let type = type(for: touch)
+            if let position = locationOfTouch(touch, from: event) {
+                switch touch.type {
+                case .direct:
+                    Game.shared.hid.screenTouchChange(id: id, kind: type, event: .moved, position: position)
+                case .indirect:
+                    if let device = touch.device as? AnyObject {
+                        Game.shared.hid.surfaceTouchChange(id: id, event: .moved, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
                     }
+                default:
+                    break
                 }
             }
         }
@@ -539,52 +542,48 @@ final class UGNSWindow: AppKit.NSWindow {
     override func touchesEnded(with event: NSEvent) {
         super.touchesEnded(with: event)
 
-        if let windowDelegate = window.delegate {
-            let touches = event.touches(matching: .ended, in: nil)
-
-            for touch in touches {
-                guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else {continue}
-                let type = type(for: touch)
-                if let position = locationOfTouch(touch, from: event) {
-                    switch touch.type {
-                    case .direct:
-                        windowDelegate.screenTouchChange(id: id, kind: type, event: .ended, position: position)
-                    case .indirect:
-                        if let device = touch.device as? AnyObject {
-                            windowDelegate.surfaceTouchChange(id: id, event: .ended, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
-                        }
-                    default:
-                        break
+        let touches = event.touches(matching: .ended, in: nil)
+        
+        for touch in touches {
+            guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else {continue}
+            let type = type(for: touch)
+            if let position = locationOfTouch(touch, from: event) {
+                switch touch.type {
+                case .direct:
+                    Game.shared.hid.screenTouchChange(id: id, kind: type, event: .ended, position: position)
+                case .indirect:
+                    if let device = touch.device as? AnyObject {
+                        Game.shared.hid.surfaceTouchChange(id: id, event: .ended, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
                     }
+                default:
+                    break
                 }
-                touchesIDs[ObjectIdentifier(touch)] = nil
             }
+            touchesIDs[ObjectIdentifier(touch)] = nil
         }
     }
 
     override func touchesCancelled(with event: NSEvent) {
         super.touchesCancelled(with: event)
 
-        if let windowDelegate = window.delegate {
-            let touches = event.touches(matching: .cancelled, in: nil)
-
-            for touch in touches {
-                guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else {continue}
-                let type = type(for: touch)
-                if let position = locationOfTouch(touch, from: event) {
-                    switch touch.type {
-                    case .direct:
-                        windowDelegate.screenTouchChange(id: id, kind: type, event: .canceled, position: position)
-                    case .indirect:
-                        if let device = touch.device as? AnyObject {
-                            windowDelegate.surfaceTouchChange(id: id, event: .canceled, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
-                        }
-                    default:
-                        break
+        let touches = event.touches(matching: .cancelled, in: nil)
+        
+        for touch in touches {
+            guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else {continue}
+            let type = type(for: touch)
+            if let position = locationOfTouch(touch, from: event) {
+                switch touch.type {
+                case .direct:
+                    Game.shared.hid.screenTouchChange(id: id, kind: type, event: .canceled, position: position)
+                case .indirect:
+                    if let device = touch.device as? AnyObject {
+                        Game.shared.hid.surfaceTouchChange(id: id, event: .canceled, surfaceID: ObjectIdentifier(device), normalizedPosition: position)
                     }
+                default:
+                    break
                 }
-                touchesIDs[ObjectIdentifier(touch)] = nil
             }
+            touchesIDs[ObjectIdentifier(touch)] = nil
         }
     }
 
@@ -893,16 +892,12 @@ final class UGNSWindow: AppKit.NSWindow {
 
     override func keyDown(with event: NSEvent) {
         var forward: Bool = true
-        if let windowDelegate = window.delegate {
-            let key = keyFromEvent(event)
-            let modifiers = modifiersFromEvent(event)
-            if windowDelegate.keyboardDidhandle(key: key,
-                                                character: event.characters?.first,
-                                                modifiers: modifiers,
-                                                isRepeat: event.isARepeat,
-                                                event: .keyDown) {
-                forward = false
-            }
+        if Game.shared.hid.keyboardDidhandle(key: keyFromEvent(event),
+                                             character: event.characters?.first,
+                                             modifiers: modifiersFromEvent(event),
+                                             isRepeat: event.isARepeat,
+                                             event: .keyDown) {
+            forward = false
         }
         if forward {
             super.keyDown(with: event)
@@ -910,18 +905,13 @@ final class UGNSWindow: AppKit.NSWindow {
     }
 
     override func keyUp(with event: NSEvent) {
-        guard event.isARepeat == false else {return}
         var forward: Bool = true
-        if let windowDelegate = window.delegate {
-            let key = keyFromEvent(event)
-            let modifiers = modifiersFromEvent(event)
-            if windowDelegate.keyboardDidhandle(key: key,
-                                                character: event.characters?.first,
-                                                modifiers: modifiers,
-                                                isRepeat: event.isARepeat,
-                                                event: .keyUp) {
-                forward = false
-            }
+        if Game.shared.hid.keyboardDidhandle(key: keyFromEvent(event),
+                                             character: event.characters?.first,
+                                             modifiers: modifiersFromEvent(event),
+                                             isRepeat: event.isARepeat,
+                                             event: .keyUp) {
+            forward = false
         }
         if forward {
             super.keyUp(with: event)
@@ -930,55 +920,53 @@ final class UGNSWindow: AppKit.NSWindow {
     
     override func flagsChanged(with event: NSEvent) {
         var forward: Bool = true
-        if let windowDelegate = window.delegate {
-            let keyCode = Int(event.keyCode)
-            switch keyCode {
-            case 56, 60:
-                let key: KeyboardKey = keyCode == 56 ? .shift(.leftSide) : .shift(.rightSide)
-                forward = windowDelegate.keyboardDidhandle(key: key,
-                                                           character: nil,
-                                                           modifiers: [],
-                                                           isRepeat: false,
-                                                           event: .toggle) == false
-            case 55, 54:
-                let key: KeyboardKey = keyCode == 55 ? .host(.leftSide) : .host(.rightSide)
-                forward = windowDelegate.keyboardDidhandle(key: key,
-                                                           character: nil,
-                                                           modifiers: [],
-                                                           isRepeat: false,
-                                                           event: .toggle) == false
-            case 59, 62:
-                let key: KeyboardKey = keyCode == 59 ? .control(.leftSide) : .control(.rightSide)
-                forward = windowDelegate.keyboardDidhandle(key: key,
-                                                           character: nil,
-                                                           modifiers: [],
-                                                           isRepeat: false,
-                                                           event: .toggle) == false
-            case 58, 61:
-                let key: KeyboardKey = keyCode == 58 ? .alt(.leftSide) : .alt(.rightSide)
-                forward = windowDelegate.keyboardDidhandle(key: key,
-                                                           character: nil,
-                                                           modifiers: [],
-                                                           isRepeat: false,
-                                                           event: .toggle) == false
-            case 63:
-                let key: KeyboardKey = .fn
-                forward = windowDelegate.keyboardDidhandle(key: key,
-                                                           character: nil,
-                                                           modifiers: [],
-                                                           isRepeat: false,
-                                                           event: .toggle) == false
-            case 57:
-                let key: KeyboardKey = .capsLock
-                forward = windowDelegate.keyboardDidhandle(key: key,
-                                                           character: nil,
-                                                           modifiers: [],
-                                                           isRepeat: false,
-                                                           event: .toggle) == false
-            default:
-                Log.info("Unhandled Modfier Key", event.keyCode)
-                break
-            }
+        let keyCode = Int(event.keyCode)
+        switch keyCode {
+        case 56, 60:
+            let key: KeyboardKey = keyCode == 56 ? .shift(.leftSide) : .shift(.rightSide)
+            forward = Game.shared.hid.keyboardDidhandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
+        case 55, 54:
+            let key: KeyboardKey = keyCode == 55 ? .host(.leftSide) : .host(.rightSide)
+            forward = Game.shared.hid.keyboardDidhandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
+        case 59, 62:
+            let key: KeyboardKey = keyCode == 59 ? .control(.leftSide) : .control(.rightSide)
+            forward = Game.shared.hid.keyboardDidhandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
+        case 58, 61:
+            let key: KeyboardKey = keyCode == 58 ? .alt(.leftSide) : .alt(.rightSide)
+            forward = Game.shared.hid.keyboardDidhandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
+        case 63:
+            let key: KeyboardKey = .fn
+            forward = Game.shared.hid.keyboardDidhandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
+        case 57:
+            let key: KeyboardKey = .capsLock
+            forward = Game.shared.hid.keyboardDidhandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
+        default:
+            Log.info("Unhandled Modfier Key", event.keyCode)
+            break
         }
         if forward {
             super.flagsChanged(with: event)

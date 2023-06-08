@@ -70,7 +70,7 @@ public extension GameDelegate {
     }
     
     func createMainWindow(game: Game, identifier: String) throws -> Window {
-        return try game.windowManager.createWindow(identifier: identifier, style: .system)
+        return try game.windowManager.createWindow(identifier: identifier, style: .system, options: .defaultForMainWindow)
     }
 }
 

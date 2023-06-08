@@ -97,7 +97,7 @@ extension AppKitPlatform {
                 <key>CFBundleExecutable</key>
                 <string>\(url.lastPathComponent)</string>
                 <key>CFBundleIdentifier</key>
-                <string>com.swift.\(url.lastPathComponent)</string>
+                <string>com.stregasgate.third-party-dev.\(url.lastPathComponent)</string>
                 <key>CFBundleInfoDictionaryVersion</key>
                 <string>6.0</string>
                 <key>CFBundleName</key>
