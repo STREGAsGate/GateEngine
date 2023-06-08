@@ -20,7 +20,5 @@ jobs:
     - name: Swift Version
       run: swift --version
     
-    - name: Bundle
-      run: carton bundle
     - name: Test
       run: carton test --environment node
