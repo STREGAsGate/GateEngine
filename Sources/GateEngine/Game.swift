@@ -63,15 +63,18 @@ public final class Game {
         self.insertSystem(CacheSystem.self)
     }
     
+    /// The current delta time as a Double
+    @usableFromInline
+    internal var highPrecisionDeltaTime: Double = 0
     
     #if GATEENGINE_PLATFORM_EVENT_DRIVEN
     private var previousTime: Double = 0
     @MainActor internal func eventLoop(completion: @escaping ()->Void) {
         Task {@MainActor in
             let now: Double = Game.shared.platform.systemTime()
-            let deltaTime: Double = now - self.previousTime
+            self.highPrecisionDeltaTime = now - self.previousTime
             self.previousTime = now
-            if await self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
+            if await self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(highPrecisionDeltaTime)) {
                 Task(priority: .high) {@MainActor in
                     self.windowManager.drawWindows()
                     completion()
@@ -89,9 +92,9 @@ public final class Game {
     internal func gameLoop() {
         Task {@MainActor in
             let now: Double = Game.shared.platform.systemTime()
-            let deltaTime: Double = now - self.previousTime
+            self.highPrecisionDeltaTime = now - self.previousTime
             self.previousTime = now
-            if await self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(deltaTime)) {
+            if await self.ecs.shouldRenderAfterUpdate(withTimePassed: Float(highPrecisionDeltaTime)) {
                 Task(priority: .high) {@MainActor in
                     self.windowManager.drawWindows()
                 }

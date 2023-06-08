@@ -1,26 +1,31 @@
 name: macOS
 on:
-    workflow_dispatch:
-    push:
-        branches: [ main ]
-    pull_request:
-        branches: [ main ]
+  workflow_dispatch:
+  push:
+    branches:
+    - '**' # matches every branch
+  pull_request:
+    branches:
+    - 'main'
 
 jobs:
-  Build_Test-Swift:
+  Build_Test-macOS-macOS:
     runs-on: macos-13
     steps:
     - uses: actions/checkout@v3
     - name: Select Xcode version
       run: sudo xcode-select -s '/Applications/Xcode_14.3.app/Contents/Developer'
+    
     - name: Swift Version
       run: swift --version
+    
     - name: Build using Swift x86_64
       run: swift build --triple x86_64-apple-macos
     - name: Build using Swift arm64
       run: swift build --triple arm64-apple-macos
     - name: Test using Swift
       run: swift test
+    
     - name: Build using Xcode
       run: xcodebuild -scheme GateEngine ONLY_ACTIVE_ARCH=NO -destination platform=macOS -configuration Release
     - name: Test using Xcode

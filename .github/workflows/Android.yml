@@ -1,18 +1,22 @@
 name: Android
 on:
-    workflow_dispatch:
-    push:
-        branches: [ main ]
-    pull_request:
-        branches: [ main ]
+  workflow_dispatch:
+  push:
+    branches:
+    - '**' # matches every branch
+  pull_request:
+    branches:
+    - 'main'
 
 jobs:
-  Build_Test-Linux:
+  Build_Test-Linux-Android:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    
     - name: Swift Version
       run: swift --version
+    
     - name: Build using Swift
       run: swift build
     - name: Test using Swift

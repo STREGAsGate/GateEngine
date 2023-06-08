@@ -290,7 +290,6 @@ extension ECSContext {
         }
 
         let game = game
-        let input = game.hid
         
         for system in self.renderingSystems {
             self.performance?.beginStatForSystem(system)

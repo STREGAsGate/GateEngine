@@ -11,6 +11,13 @@ import GameMath
     private var didSetup = false
     public private(set) lazy var backgroundTask = BackgroundTask(system: self)
     
+    /// The current delta time as a Double
+    /// Use this instead of the System Float varient when keeping track of timers
+    @inlinable @inline(__always)
+    public var highPrecisionDeltaTime: Double {
+        return Game.shared.highPrecisionDeltaTime
+    }
+    
     required public init() {}
     
     @inlinable @inline(__always)

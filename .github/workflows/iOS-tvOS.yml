@@ -1,23 +1,25 @@
 name: iOS-tvOS
 on:
-    workflow_dispatch:
-    push:
-        branches: [ main ]
-    pull_request:
-        branches: [ main ]
+  workflow_dispatch:
+  push:
+    branches:
+    - '**' # matches every branch
+  pull_request:
+    branches:
+    - 'main'
 
 jobs:
-  Build_Test-Xcode:
+  Build_Test-macOS-iOS:
     runs-on: macos-13
     steps:
     - uses: actions/checkout@v3
     - name: Select Xcode version
       run: sudo xcode-select -s '/Applications/Xcode_14.3.app/Contents/Developer'
+    
+    - name: Swift Version
+      run: swift --version
+    
     - name: Build iOS using Xcode
       run: xcodebuild -scheme GateEngine -destination generic/platform=iOS
-#     - name: Test iOS using Xcode
-#       run: xcodebuild -scheme GateEngine -destination generic/platform=iOS test
     - name: Build tvOS using Xcode
       run: xcodebuild -scheme GateEngine -destination generic/platform=tvOS
-#     - name: Test tvOS using Xcode
-#       run: xcodebuild -scheme GateEngine -destination generic/platform=tvOS test

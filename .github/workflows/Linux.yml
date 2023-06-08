@@ -3,12 +3,14 @@ name: Linux
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+    - '**' # matches every branch
   pull_request:
-    branches: [ main ]
+    branches:
+    - 'main'
 
 jobs:
-  Build_Test-Ubuntu:
+  Build_Test-Linux-Linux:
 
     runs-on: ubuntu-latest
 
@@ -17,6 +19,9 @@ jobs:
     - name: Deps
       run: sudo apt-get install freeglut3-dev; sudo apt-get install libopenal-dev
     
+    - name: Swift Version
+      run: swift --version
+      
     - name: Build
       run: swift build
     - name: Test

@@ -3,12 +3,14 @@ name: HTML5
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+    - '**' # matches every branch
   pull_request:
-    branches: [ main ]
+    branches:
+    - 'main'
 
 jobs:
-  Build_Test-Linux:
+  Build_Test-Linux-WASI:
     runs-on: ubuntu-latest
     
     container:
@@ -16,5 +18,9 @@ jobs:
       
     steps:
     - uses: actions/checkout@v3
+    
+    - name: Swift Version
+      run: swift --version
+    
     - name: Test
       run: carton test --environment node
