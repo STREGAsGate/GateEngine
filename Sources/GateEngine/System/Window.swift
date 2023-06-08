@@ -140,7 +140,7 @@ public struct WindowOptions: OptionSet {
         // Positive time change and miniumum of 10 fps
         guard highPrecisionDeltaTime > 0 && highPrecisionDeltaTime < 0.1 else {return}
 
-        Game.shared.windowManager.window(self, wantsUpdateForTimePassed: Float(delta))
+        Game.shared.windowManager.window(self, wantsUpdateForTimePassed: Float(highPrecisionDeltaTime))
         self.draw(frame)
         
         frame &+= 1
