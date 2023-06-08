@@ -8,7 +8,7 @@ on:
     branches: [ main ]
 
 jobs:
-  Build_Test-Ubuntu:
+  Build_Test-Linux-Linux:
 
     runs-on: ubuntu-latest
 
