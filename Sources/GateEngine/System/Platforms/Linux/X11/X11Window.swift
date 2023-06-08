@@ -27,11 +27,14 @@ final class X11Window: WindowBacking {
     var pixelSize: Size2 = .zero
     var interfaceScaleFactor: Float = 1
     
-    func updateStoredMetaData() {
-        var xwa: XWindowAttributes = XWindowAttributes()
-        XGetWindowAttributes(xDisplay, xWindow, &xwa)
-        self.pixelSize = Size2(Float(xwa.width), Float(xwa.height))
-        
+    @preconcurrency @MainActor func updateStoredMetaData(pixelSize: Size2? = nil) {
+        self.pixelSize = pixelSize ?? {
+            var xwa: XWindowAttributes = XWindowAttributes()
+            XGetWindowAttributes(xDisplay, xWindow, &xwa)
+            return Size2(Float(xwa.width), Float(xwa.height))
+        }()
+        self.window.newPixelSize = self.pixelSize
+
         let resourceString: UnsafeMutablePointer<CChar>? = XResourceManagerString(xDisplay)
         XrmInitialize() /* Need to initialize the DB before calling Xrm* functions */
         let db: XrmDatabase? = XrmGetStringDatabase(resourceString)
@@ -42,10 +45,9 @@ final class X11Window: WindowBacking {
             let resourceString: String = String(cString: cResourceString)
             if (XrmGetResource(db, "Xft.dpi", "String", &type, &value) == True) {
                 if let addr: XPointer = value.addr {
-                    let userDPI = atof(addr)
-                    let screenDPIX = Float(DisplayWidth(self.xDisplay, Self.xScreen)) / (Float(DisplayWidthMM(self.xDisplay, Self.xScreen)) / 25.4)
-//                    let screenDPIY = Float(DisplayHeight(self.xDisplay, Self.xScreen)) / (Float(DisplayHeightMM(self.xDisplay, Self.xScreen)) / 25.4)
-                    self.interfaceScaleFactor = screenDPIX / dpi
+                    let userDPI: Float = Float(atof(addr))
+                    let screenDPIX = Float(DisplayWidth_Ext(self.xDisplay, Self.xScreen)) / (Float(DisplayWidthMM_Ext(self.xDisplay, Self.xScreen)) / 25.4)
+                    self.interfaceScaleFactor = userDPI / screenDPIX
                 }
             }
         }
@@ -62,7 +64,7 @@ final class X11Window: WindowBacking {
         var swa: XSetWindowAttributes = XSetWindowAttributes()
         let cmap: Colormap = XCreateColormap(Self.xDisplay, xRoot, vi.visual, AllocNone)
         swa.colormap = cmap
-        swa.event_mask = (ResizeRedirectMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask)
+        swa.event_mask = (StructureNotifyMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask)
         
         self.xWindow = XCreateWindow(Self.xDisplay, xRoot, 0, 0, UInt32(640), UInt32(480), 0, vi.depth, UInt32(InputOutput), vi.visual, UInt(CWColormap | CWEventMask), &swa)
          
@@ -71,6 +73,8 @@ final class X11Window: WindowBacking {
         glXMakeCurrent(xDisplay, xWindow, glxContext)
 
         XStoreName(xDisplay, xWindow, identifier)
+
+        updateStoredMetaData()
     }
     
     lazy var xic: XIC = XCreateIC(XOpenIM(xDisplay, nil, nil, nil), xWindow)
@@ -89,9 +93,11 @@ final class X11Window: WindowBacking {
             glXMakeCurrent(xDisplay, xWindow, glxContext)
             glXSwapBuffers(xDisplay, xWindow)
             XFlush(xDisplay)
-        case ResizeRequest:
-            let event: XResizeRequest = event.xResizeRequest
-            self.updateStoredMetaData()
+        case ConfigureNotify:
+            Log.info("Resize")
+            let event: XConfigureEvent = event.xconfigure
+            self.updateStoredMetaData(pixelSize: Size2(Float(event.width), Float(event.height)))
+            self.window.newPixelSize = self.pixelSize
         case KeyPress:
             let event: XKeyEvent = event.xkey
             
@@ -99,7 +105,6 @@ final class X11Window: WindowBacking {
             previousKeyEvent = event
             let key: KeyboardKey = keyFromEvent(event)
             let modifiers: KeyboardModifierMask = modifierKeyFromState(Int32(event.state))
-            Log.info("KeyPress", event.keycode, key, modifiers)
             _ = window.delegate?.keyboardDidhandle(key: key,
                                                    character: characterFromEvent(event),
                                                    modifiers: modifiers,
@@ -111,7 +116,6 @@ final class X11Window: WindowBacking {
             previousKeyEvent = event
             let key: KeyboardKey = keyFromEvent(event)
             let modifiers: KeyboardModifierMask = modifierKeyFromState(Int32(event.state))
-            Log.info("KeyRelease", event.keycode, key, modifiers)
             _ = window.delegate?.keyboardDidhandle(key: key,
                                                    character: characterFromEvent(event),
                                                    modifiers: modifiers,
@@ -510,7 +514,9 @@ final class X11Window: WindowBacking {
             case "KPEQ":
                 keys[keyCode] = .character("=", .numberPad)
             default:
+                #if GATEENGINE_DEBUG_HID
                 Log.info("Unhandled key", keyCode, name)
+                #endif
                 keys[keyCode] = .unhandledPlatformKeyCode(keyCode, nil)
             }
         }
