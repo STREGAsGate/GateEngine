@@ -15,13 +15,16 @@ final class UIKitWindow: WindowBacking {
     weak var window: Window!
     let uiWindow: UIWindow
     var state: Window.State = .hidden
+    var userActivity: NSUserActivity? {
+        return uiWindow.windowScene?.userActivity
+    }
     
     // Stoted Metadata
     var pointSafeAreaInsets: Insets = .zero
     var pixelSafeAreaInsets: Insets = .zero
     var pointSize: Size2 = Size2(640, 480)
     var pixelSize: Size2 = Size2(640, 480)
-    var interfaceScaleFactor: Float  = 1
+    var interfaceScaleFactor: Float = 1
     
     // Called from UIKitViewController
     func updateStoredMetaData() {
@@ -35,7 +38,6 @@ final class UIKitWindow: WindowBacking {
                                                   bottom: Float(view.safeAreaInsets.bottom),
                                                   trailing: Float(view.safeAreaInsets.right))
                 self.pointSafeAreaInsets = self.pixelSafeAreaInsets / self.interfaceScaleFactor
-                
             }
         }
     }
@@ -48,7 +50,23 @@ final class UIKitWindow: WindowBacking {
         
         if Game.shared.platform.applicationReqestedWindow == false && window.isMainWindow == false {
             Game.shared.platform.windowPreparingForSceneConnection = self
-            UIApplication.shared.requestSceneSessionActivation(nil, userActivity: nil, options: nil)
+            
+            @inline(__always)
+            func existingSession(forWindow window: Window) -> UISceneSession? {
+                for session in UIApplication.shared.openSessions {
+                    let sceneID = session.persistentIdentifier
+                    guard let windowID = UserDefaults.standard.string(forKey: sceneID) else {continue}
+                    if windowID == window.identifier {
+                        return session
+                    }
+                }
+                return nil
+            }
+            
+            let userActivity = NSUserActivity(activityType: "GateEngineWindow")
+            userActivity.userInfo = ["WindowIdentifier":window.identifier]
+            UserDefaults.standard.set("Untitled", forKey: "Windows/\(window.identifier)/title")
+            UIApplication.shared.requestSceneSessionActivation(existingSession(forWindow: window), userActivity: userActivity, options: nil)
         }
         Game.shared.platform.applicationReqestedWindow = false
     }
@@ -103,9 +121,7 @@ final class UIKitWindow: WindowBacking {
             displayLink.invalidate()
         }
     }
-}
 
-extension UIKitWindow {
     var title: String? {
         get {
             if let title = uiWindow.rootViewController?.title, title.isEmpty == false {
@@ -114,7 +130,10 @@ extension UIKitWindow {
             return nil
         }
         set {
-            uiWindow.rootViewController?.title = newValue
+            self.uiWindow.rootViewController?.title = newValue
+            self.uiWindow.windowScene?.title = newValue
+            UserDefaults.standard.set(newValue, forKey: "Windows/\(window.identifier)/title")
+            UserDefaults.standard.synchronize()
         }
     }
     

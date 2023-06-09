@@ -30,7 +30,10 @@ import GameMath
         guard game.isHeadless == false else {throw "Cannot create a window when running headless."}
         precondition(game.renderingIsPermitted, "A window can only be created from a RenderingSystem.")
         guard game.platform.supportsMultipleWindows || windows.isEmpty else {throw "This platform doesn't support multiple windows."}
-        guard identifierIsUnused(identifier) else {throw "Window with identifier \"\(identifier)\" already exists."}
+        if let exisitng = self.window(withIdentifier: identifier) {
+            Log.warn("Window with identifier \(identifier) already exists. It was returned with it's original style and options.")
+            return exisitng
+        }
         let window: Window = Window(identifier: identifier, style: style, options: options)
         self.windows.append(window)
         if identifier == Self.mainWindowIdentifier {

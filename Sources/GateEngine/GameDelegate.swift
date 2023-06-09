@@ -28,7 +28,14 @@ public struct LaunchOptions: OptionSet {
      */
     func createMainWindow(game: Game, identifier: String) throws -> Window
     
-    func screenDidBecomeAvailable(game: Game) throws -> Window?
+    /// The end user has tried to open a window using the platforms mechanisms
+    func userRequestedWindow(game: Game) throws -> Window?
+    
+    /**
+     A display has been attached.
+     - returns: A new window instance to put on the screen. Passing an existing window is undefined behaviour.
+    */
+    func screenBecomeAvailable(game: Game) throws -> Window?
     
     /// Might be called immediatley before the app closes.
     func willTerminate(game: Game)
@@ -59,9 +66,11 @@ public struct LaunchOptions: OptionSet {
 }
 
 public extension GameDelegate {
-    func didFinishLaunching(game: Game, options: LaunchOptions) {}
-    
-    func screenDidBecomeAvailable(game: Game) throws -> Window? {return nil}
+    func createMainWindow(game: Game, identifier: String) throws -> Window {
+        return try game.windowManager.createWindow(identifier: identifier, style: .system, options: .defaultForMainWindow)
+    }
+    func userRequestedWindow(game: Game) throws -> Window? {return nil}
+    func screenBecomeAvailable(game: Game) throws -> Window? {return nil}
     
     func willTerminate(game: Game) {}
     func isHeadless() -> Bool {return false}
@@ -72,10 +81,6 @@ public extension GameDelegate {
     static func main() {
         Game.shared = Game(delegate: Self())
         Game.shared.platform.main()
-    }
-    
-    func createMainWindow(game: Game, identifier: String) throws -> Window {
-        return try game.windowManager.createWindow(identifier: identifier, style: .system, options: .defaultForMainWindow)
     }
 }
 

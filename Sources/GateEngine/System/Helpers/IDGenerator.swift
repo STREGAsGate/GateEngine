@@ -13,8 +13,12 @@ import class Foundation.NSLock
 
 #if canImport(Atomics)
 public final class IDGenerator<T: AtomicInteger> {
-    var value: ManagedAtomic<T> = ManagedAtomic<T>(0)
+    var value: ManagedAtomic<T>
 
+    public init(startValue: T = 0) {
+        value = ManagedAtomic<T>(startValue)
+    }
+    
     public func generateID() -> T {
         return value.wrappingIncrementThenLoad(ordering: .sequentiallyConsistent)
     }
@@ -23,6 +27,11 @@ public final class IDGenerator<T: AtomicInteger> {
 public final class IDGenerator<T: BinaryInteger> {
     var value: T = 0
     let lock = NSLock()
+    
+    public init(startValue: T = 0) {
+        self.value = startValue
+    }
+    
     public func generateID() -> T {
         lock.lock()
         value += 1
@@ -35,6 +44,10 @@ public final class IDGenerator<T: BinaryInteger> {
 #else
 public final class IDGenerator<T: BinaryInteger> {
     var value: T = 0
+    
+    public init(startValue: T = 0) {
+        self.value = startValue
+    }
 
     public func generateID() -> T {
         value += 1
