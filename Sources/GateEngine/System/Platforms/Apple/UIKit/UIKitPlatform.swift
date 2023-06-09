@@ -13,13 +13,15 @@ public final class UIKitPlatform: Platform, InternalPlatform {
     public static let staticSearchPaths: [URL] = getStaticSearchPaths()
     var pathCache: [String:String] = [:]
     
+    internal var applicationReqestedWindow: Bool = false
+    weak internal var windowPreparingForSceneConnection: UIKitWindow? = nil
+    
+    internal var overrideSupportsMultipleWindows: Bool? = nil
     public var supportsMultipleWindows: Bool {
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad, .mac:
-            return true
-        default:
-            return false
+        if let overrideSupportsMultipleWindows {
+            return overrideSupportsMultipleWindows
         }
+        return false
     }
     
     public func locateResource(from path: String) async -> String? {
@@ -52,6 +54,10 @@ public final class UIKitPlatform: Platform, InternalPlatform {
 }
 
 internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+
+        return true
+    }
     func applicationDidFinishLaunching(_ application: UIApplication) {
         Game.shared.didFinishLaunching()
         
@@ -100,6 +106,9 @@ internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
+        for session in application.openSessions {
+            application.requestSceneSessionDestruction(session, options: nil)
+        }
         Game.shared.willTerminate()
     }
 }
@@ -109,17 +118,44 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else {return}
         do {
             Game.shared.renderingIsPermitted = true
-            let window: Window
-            if Game.shared.windowManager.windows.isEmpty {
-                window = try Game.shared.delegate.createMainWindow(game: Game.shared, identifier: Game.shared.windowManager.mainWindowIdentifier)
+            if let createdWindow = Game.shared.platform.windowPreparingForSceneConnection {
+                assert(createdWindow.window.isMainWindow == false)
+                createdWindow.uiWindow.windowScene = windowScene
+                Game.shared.platform.windowPreparingForSceneConnection = nil
+            }else if Game.shared.windowManager.mainWindow == nil && session.role == .windowApplication {
+                let window = try Game.shared.delegate.createMainWindow(game: Game.shared, identifier: WindowManager.mainWindowIdentifier)
+                let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
+                uiWindow.windowScene = windowScene
+                UserDefaults.standard.set(session.persistentIdentifier, forKey: "MainSceneSessionIdentifier")
+                UserDefaults.standard.synchronize()
             }else{
-                window = try Game.shared.windowManager.createWindow(identifier: session.persistentIdentifier, style: .system)
+                Game.shared.platform.applicationReqestedWindow = true
+                if session.role == .windowExternalDisplay {
+                    Game.shared.platform.overrideSupportsMultipleWindows = true
+                    if let window = try Game.shared.delegate.screenDidBecomeAvailable(game: Game.shared) {
+                        let uiKitWindow = (window.windowBacking as! UIKitWindow)
+                        uiKitWindow.uiWindow.windowScene = windowScene
+                    }
+                    Game.shared.platform.overrideSupportsMultipleWindows = nil
+                }else{
+                    let window = try Game.shared.windowManager.createWindow(identifier: UUID().uuidString)
+                    let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
+                    uiWindow.windowScene = windowScene
+                }
             }
-            let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
-            uiWindow.windowScene = windowScene
             Game.shared.renderingIsPermitted = false
         }catch{
             Log.error(error)
+        }
+    }
+    
+    func sceneDidDisconnect(_ scene: UIScene) {
+        for window in Game.shared.windowManager.windows {
+            let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
+            if uiWindow.windowScene === scene {
+                Game.shared.windowManager.removeWindow(window.identifier)
+                break
+            }
         }
     }
 }

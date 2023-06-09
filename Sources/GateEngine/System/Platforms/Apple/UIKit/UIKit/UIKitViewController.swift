@@ -54,7 +54,7 @@ internal class UIKitViewController: GCEventViewController {
     
     #if os(iOS)
     override var prefersHomeIndicatorAutoHidden: Bool {
-        switch window.style {
+        switch window.window.style {
         case .system:
             return false
         case .bestForGames:
@@ -63,7 +63,7 @@ internal class UIKitViewController: GCEventViewController {
     }
     
     override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge {
-        switch window.style {
+        switch window.window.style {
         case .system:
             return []
         case .bestForGames:
@@ -140,13 +140,12 @@ internal class UIKitViewController: GCEventViewController {
             #if !os(tvOS)
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
                 if let event = event {
-                    let button = mouseButtonFromEvent(event)
-                    Game.shared.windowManager.mouseClick(event: .buttonDown,
-                                                         button: button,
-                                                         count: touch.tapCount,
-                                                         position: position,
-                                                         delta: self.deltaLocationOfTouch(touch, from: event),
-                                                         window: self.window.window)
+                    Game.shared.hid.mouseClick(event: .buttonDown,
+                                               button: mouseButtonFromEvent(event),
+                                               count: touch.tapCount,
+                                               position: position,
+                                               delta: self.deltaLocationOfTouch(touch, from: event),
+                                               window: self.window.window)
                 }
                 continue
             }
@@ -154,10 +153,15 @@ internal class UIKitViewController: GCEventViewController {
             let id = ObjectIdentifier(touch)
             switch touch.type {
             case .direct, .pencil:
-                let type = type(for: touch)
-                Game.shared.windowManager.screenTouchChange(id: id, kind: type, event: .began, position: position)
+                Game.shared.hid.screenTouchChange(id: id,
+                                                  kind: type(for: touch),
+                                                  event: .began,
+                                                  position: position)
             case .indirect:
-                Game.shared.windowManager.surfaceTouchChange(id: id, event: .began, surfaceID: ObjectIdentifier(UIDevice.current), normalizedPosition: position)
+                Game.shared.hid.surfaceTouchChange(id: id,
+                                                   event: .began,
+                                                   surfaceID: ObjectIdentifier(UIDevice.current),
+                                                   normalizedPosition: position)
             default:
                 break
             }
@@ -171,17 +175,22 @@ internal class UIKitViewController: GCEventViewController {
             #if !os(tvOS)
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
                 let deltaPosition = deltaLocationOfTouch(touch, from: event)
-                Game.shared.windowManager.mouseChange(event: .moved, position: position, delta: deltaPosition, window: self.window.window)
+                Game.shared.hid.mouseChange(event: .moved, position: position, delta: deltaPosition, window: self.window.window)
                 continue
             }
             #endif
             let id = ObjectIdentifier(touch)
             switch touch.type {
             case .direct, .pencil:
-                let type = type(for: touch)
-                Game.shared.windowManager.screenTouchChange(id: id, kind: type, event: .moved, position: position)
+                Game.shared.hid.screenTouchChange(id: id,
+                                                  kind: type(for: touch),
+                                                  event: .moved,
+                                                  position: position)
             case .indirect:
-                Game.shared.windowManager.surfaceTouchChange(id: id, event: .moved, surfaceID: ObjectIdentifier(UIDevice.current), normalizedPosition: position)
+                Game.shared.hid.surfaceTouchChange(id: id,
+                                                   event: .moved,
+                                                   surfaceID: ObjectIdentifier(UIDevice.current),
+                                                   normalizedPosition: position)
             default:
                 break
             }
@@ -194,9 +203,8 @@ internal class UIKitViewController: GCEventViewController {
             guard let position = locationOfTouch(touch, from: event) else {continue}
             #if !os(tvOS)
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
-                let button = mouseButtonFromEvent(event)
-                Game.shared.windowManager.mouseClick(event: .buttonUp,
-                                                     button: button,
+                Game.shared.hid.mouseClick(event: .buttonUp,
+                                                     button: mouseButtonFromEvent(event),
                                                      count: touch.tapCount,
                                                      position: position,
                                                      delta: self.deltaLocationOfTouch(touch, from: event),
@@ -207,10 +215,15 @@ internal class UIKitViewController: GCEventViewController {
             let id = ObjectIdentifier(touch)
             switch touch.type {
             case .direct, .pencil:
-                let type = type(for: touch)
-                Game.shared.windowManager.screenTouchChange(id: id, kind: type, event: .ended, position: position)
+                Game.shared.hid.screenTouchChange(id: id,
+                                                  kind: type(for: touch),
+                                                  event: .ended,
+                                                  position: position)
             case .indirect:
-                Game.shared.windowManager.surfaceTouchChange(id: id, event: .ended, surfaceID: ObjectIdentifier(UIDevice.current), normalizedPosition: position)
+                Game.shared.hid.surfaceTouchChange(id: id,
+                                                   event: .ended,
+                                                   surfaceID: ObjectIdentifier(UIDevice.current),
+                                                   normalizedPosition: position)
             default:
                 break
             }
@@ -223,23 +236,27 @@ internal class UIKitViewController: GCEventViewController {
             guard let position = locationOfTouch(touch, from: event) else {continue}
             #if !os(tvOS)
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
-                let button = mouseButtonFromEvent(event)
-                Game.shared.windowManager.mouseClick(event: .buttonUp,
-                                                     button: button,
-                                                     count: touch.tapCount,
-                                                     position: position,
-                                                     delta: self.deltaLocationOfTouch(touch, from: event),
-                                                     window: self.window.window)
+                Game.shared.hid.mouseClick(event: .buttonUp,
+                                           button: mouseButtonFromEvent(event),
+                                           count: touch.tapCount,
+                                           position: position,
+                                           delta: self.deltaLocationOfTouch(touch, from: event),
+                                           window: self.window.window)
                 continue
             }
             #endif
             let id = ObjectIdentifier(touch)
             switch touch.type {
             case .direct, .pencil:
-                let type = type(for: touch)
-                Game.shared.windowManager.screenTouchChange(id: id, kind: type, event: .canceled, position: position)
+                Game.shared.hid.screenTouchChange(id: id,
+                                                  kind: type(for: touch),
+                                                  event: .canceled,
+                                                  position: position)
             case .indirect:
-                Game.shared.windowManager.surfaceTouchChange(id: id, event: .canceled, surfaceID: ObjectIdentifier(UIDevice.current), normalizedPosition: position)
+                Game.shared.hid.surfaceTouchChange(id: id,
+                                                   event: .canceled,
+                                                   surfaceID: ObjectIdentifier(UIDevice.current),
+                                                   normalizedPosition: position)
             default:
                 break
             }
@@ -714,13 +731,11 @@ internal class UIKitViewController: GCEventViewController {
     func didHandlePressEvent(_ event: UIPressesEvent?, _ keyEvent: KeyboardEvent) -> Bool {
         var handled: Bool = false
         guard let event else {return handled}
-        if let windowDelegate = window.window?.delegate {
-            let keys = keysFromEvent(event)
-            let modifiers = modifiersFromEvent(event)
-            for pair in keys {
-                if windowDelegate.keyboardDidhandle(key: pair.key, character: pair.characters?.first, modifiers: modifiers, isRepeat: false, event: keyEvent) {
-                    handled = true
-                }
+        let keys = keysFromEvent(event)
+        let modifiers = modifiersFromEvent(event)
+        for pair in keys {
+            if Game.shared.hid.keyboardDidhandle(key: pair.key, character: pair.characters?.first, modifiers: modifiers, isRepeat: false, event: keyEvent) {
+                handled = true
             }
         }
         return handled
@@ -756,7 +771,10 @@ extension UIKitViewController: UIPointerInteractionDelegate {
  
     // Called as the pointer moves within the interaction's view.
     func pointerInteraction(_ interaction: UIPointerInteraction, regionFor request: UIPointerRegionRequest, defaultRegion: UIPointerRegion) -> UIPointerRegion? {
-        Game.shared.windowManager.mouseChange(event: .moved, position: Position2(request.location), delta: .zero, window: self.window.window)
+        Game.shared.hid.mouseChange(event: .moved,
+                                    position: Position2(request.location),
+                                    delta: .zero,
+                                    window: self.window.window)
         return defaultRegion
     }
 
@@ -770,12 +788,18 @@ extension UIKitViewController: UIPointerInteractionDelegate {
     
     // Called when the pointer enters a given region.
     func pointerInteraction(_ interaction: UIPointerInteraction, willEnter region: UIPointerRegion, animator: UIPointerInteractionAnimating) {
-        Game.shared.windowManager.mouseChange(event: .entered, position: .zero, delta: .zero, window: self.window.window)
+        Game.shared.hid.mouseChange(event: .entered,
+                                    position: .zero,
+                                    delta: .zero,
+                                    window: self.window.window)
     }
 
     // Called when the pointer exists a given region.
     func pointerInteraction(_ interaction: UIPointerInteraction, willExit region: UIPointerRegion, animator: UIPointerInteractionAnimating) {
-        Game.shared.windowManager.mouseChange(event: .exited, position: .zero, delta: .zero, window: self.window.window)
+        Game.shared.hid.mouseChange(event: .exited,
+                                    position: .zero,
+                                    delta: .zero,
+                                    window: self.window.window)
     }
 }
 #endif

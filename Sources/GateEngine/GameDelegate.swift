@@ -28,6 +28,8 @@ public struct LaunchOptions: OptionSet {
      */
     func createMainWindow(game: Game, identifier: String) throws -> Window
     
+    func screenDidBecomeAvailable(game: Game) throws -> Window?
+    
     /// Might be called immediatley before the app closes.
     func willTerminate(game: Game)
     
@@ -58,6 +60,9 @@ public struct LaunchOptions: OptionSet {
 
 public extension GameDelegate {
     func didFinishLaunching(game: Game, options: LaunchOptions) {}
+    
+    func screenDidBecomeAvailable(game: Game) throws -> Window? {return nil}
+    
     func willTerminate(game: Game) {}
     func isHeadless() -> Bool {return false}
     func resourceSearchPaths() -> [URL] {return []}

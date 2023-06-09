@@ -14,36 +14,43 @@ import GameMath
 final class UIKitWindow: WindowBacking {
     weak var window: Window!
     let uiWindow: UIWindow
-    let identifier: String
-    let style: WindowStyle
     var state: Window.State = .hidden
     
     // Stoted Metadata
+    var pointSafeAreaInsets: Insets = .zero
     var pixelSafeAreaInsets: Insets = .zero
-    var pixelSize: Size2 = .zero
-    var interfaceScaleFactor: Float = 1
+    var pointSize: Size2 = Size2(640, 480)
+    var pixelSize: Size2 = Size2(640, 480)
+    var interfaceScaleFactor: Float  = 1
     
     // Called from UIKitViewController
     func updateStoredMetaData() {
         self.interfaceScaleFactor = Float(uiWindow.traitCollection.displayScale)
-        if let view = uiWindow.rootViewController?.view {
-            self.pixelSize = Size2(view.bounds.size) * self.interfaceScaleFactor
+        if let view = uiWindow.rootViewController!.view {
+            self.pointSize = Size2(view.bounds.size)
+            self.pixelSize = self.pointSize * self.interfaceScaleFactor
             if #available(iOS 11, tvOS 11, macCatalyst 13, *) {
-                self.pixelSafeAreaInsets = Insets(top: Float(view.safeAreaInsets.top) * self.interfaceScaleFactor,
-                                                  leading: Float(view.safeAreaInsets.left) * self.interfaceScaleFactor,
-                                                  bottom: Float(view.safeAreaInsets.bottom) * self.interfaceScaleFactor,
-                                                  trailing: Float(view.safeAreaInsets.right) * self.interfaceScaleFactor)
+                self.pixelSafeAreaInsets = Insets(top: Float(view.safeAreaInsets.top),
+                                                  leading: Float(view.safeAreaInsets.left),
+                                                  bottom: Float(view.safeAreaInsets.bottom),
+                                                  trailing: Float(view.safeAreaInsets.right))
+                self.pointSafeAreaInsets = self.pixelSafeAreaInsets / self.interfaceScaleFactor
+                
             }
         }
     }
     
-    required init(identifier: String, style: WindowStyle, window: Window) {
+    @MainActor required init(window: Window) {
         self.window = window
         self.uiWindow = UIWindow()
-        self.identifier = identifier
-        self.style = style
         self.uiWindow.rootViewController = UIKitViewController(window: self)
         self.uiWindow.translatesAutoresizingMaskIntoConstraints = true
+        
+        if Game.shared.platform.applicationReqestedWindow == false && window.isMainWindow == false {
+            Game.shared.platform.windowPreparingForSceneConnection = self
+            UIApplication.shared.requestSceneSessionActivation(nil, userActivity: nil, options: nil)
+        }
+        Game.shared.platform.applicationReqestedWindow = false
     }
     
     lazy private(set) var displayLink: CADisplayLink = {
@@ -66,7 +73,7 @@ final class UIKitWindow: WindowBacking {
         self.uiWindow.rootViewController?.view.setNeedsDisplay()
     }
     
-    func show() {
+    @MainActor func show() {
         if Game.shared.renderingAPI == .openGL {
             _ = displayLink
         }
@@ -75,7 +82,7 @@ final class UIKitWindow: WindowBacking {
     }
     
     func close() {
-        assertionFailure("UIKit windows can't be closed.")
+        
     }
 
     @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
