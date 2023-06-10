@@ -102,10 +102,10 @@ internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
+        Game.shared.willTerminate()
         for session in application.openSessions {
             application.requestSceneSessionDestruction(session, options: nil)
         }
-        Game.shared.willTerminate()
     }
 }
 
@@ -122,11 +122,6 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                 }
             }
         }
-        
-        for session in UIApplication.shared.openSessions {
-            session.persistentIdentifier
-        }
-        
         return nil
     }
     
@@ -190,6 +185,13 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                 UserDefaults.standard.removeObject(forKey: "Windows/\(window.identifier)/title")
                 break
             }
+            #if GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW
+            if window.isMainWindow {
+                for session in UIApplication.shared.openSessions {
+                    UIApplication.shared.requestSceneSessionDestruction(session, options: nil)
+                }
+            }
+            #endif
         }
     }
 }

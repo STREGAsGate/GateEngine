@@ -83,10 +83,17 @@ let package = Package(
                         
                         settings.append(contentsOf: [
                             // MARK: Gate Engine options.
-                            .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux])),
+                            /// Closes all open windows when the main window is closed
+                            .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW", .when(platforms: [.macOS, .windows, .linux])),
+                            /// Checks for reloadable resources and reloads them if they have changed
+                            .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
+                            /// THe host platfrom requests the main window, so GateEngine won't create one until it's requested
                             .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
+                            /// The host platform can't be usaed to compile HTML5 products
                             .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
+                            /// The host platform updates and draws from an event callback, so GateEngine won't create a game loop.
                             .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.wasi])),
+                            /// The host pltfrom requires an intermediate task, so GateEngine won't load default systems.
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH", .when(platforms: [.wasi])),
                         ])
                         
@@ -96,22 +103,28 @@ let package = Package(
                         // Options for developemnt of WASI platform
                         #if false
                         settings.append(contentsOf: [
+                            /// Allows HTML5 platform to be compiled from a compatible host, such as macOS. This allows the IDE to show compile errors without targeting WASI.
                             .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
+                            /// see comment in "Gate Engine options".
                             .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.macOS, .linux, .wasi], configuration: .debug)),
                         ])
                         #endif
                         
                         settings.append(contentsOf: [
+                            /// Printes the output of generated shaders
                             .define("GATEENGINE_LOG_SHADERS"),
+                            /// Enables varius additional checks and output for rendering
                             .define("GATEENGINE_DEBUG_RENDERING"),
+                            /// Enables varius additional checks and output for input
                             .define("GATEENGINE_DEBUG_HID"),
+                            /// Forces Apple platforms to use OpenGL for rendering
                             .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, .iOS, .tvOS])),
                         ])
                         #endif
                         return settings
                     }(),
                     linkerSettings: [
-                        // .linkedLibrary("GameMath", .when(platforms: [.windows])),
+
                     ]),
             
             .target(name: "Shaders", dependencies: ["GameMath"]),

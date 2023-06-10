@@ -47,11 +47,13 @@ import GameMath
         windows.removeAll(where: {$0.identifier.caseInsensitiveCompare(identifier) == .orderedSame})
         
         // If the main window is closed, close all windows
+        #if GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW
         if identifier == Self.mainWindowIdentifier {
             for window in windows {
                 window.windowBacking.close()
             }
         }
+        #endif
     }
 
     @inline(__always)

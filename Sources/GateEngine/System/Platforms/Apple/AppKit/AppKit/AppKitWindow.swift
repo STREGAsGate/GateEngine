@@ -314,7 +314,7 @@ final class UGNSWindow: AppKit.NSWindow {
     }
     
     override var canBecomeMain: Bool {
-        return self.window.isMainWindow
+        return self.window?.isMainWindow ?? false
     }
 
     //MARK: - Mouse

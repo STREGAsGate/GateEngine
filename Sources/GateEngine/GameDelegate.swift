@@ -58,7 +58,7 @@ public struct LaunchOptions: OptionSet {
      
      This can be helpful for mods and expanability.
      Search paths for your Swift Packages are already located automatically and don't need to be added here.
-     - returns: An array of URLs each pinting to a directory containing game resources.
+     - returns: An array of URLs each pointing to a directory containing game resources.
      */
     func resourceSearchPaths() -> [URL]
     
