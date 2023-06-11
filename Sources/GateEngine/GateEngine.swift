@@ -100,7 +100,7 @@ internal enum Log {
         let message = _message(prefix: "[GateEngine]", items, separator: separator)
         Swift.print(message, terminator: terminator)
         #if os(Windows)
-        WinSDK.OutputDebugStringW((_message + terminator).windowsUTF16)
+        WinSDK.OutputDebugStringW((message + terminator).windowsUTF16)
         #endif
     }
     

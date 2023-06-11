@@ -77,15 +77,15 @@ extension Win32Platform {
 
         Game.shared.didFinishLaunching()
         
-        var window: Win32Window? = Game.shared.windowManager.mainWindow?.windowBacking as? Win32Window
         mainLoop: while true {
             if Game.shared.windowManager.windows.isEmpty {
-                window = nil
                 WinSDK.PostQuitMessage(WinSDK.EXIT_SUCCESS)
             }
             // Process all messages in thread's message queue; for GUI applications UI
             // events must have high priority.
-            window?.window.vSyncCalled()
+            for window: Window in Game.shared.windowManager.windows {
+                window.vSyncCalled()
+            }
 
             while PeekMessageW(&msg, nil, 0, 0, UINT(PM_REMOVE)) {
                 if msg.message == UINT(WM_QUIT) {
