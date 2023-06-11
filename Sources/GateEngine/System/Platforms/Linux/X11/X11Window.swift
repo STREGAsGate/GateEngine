@@ -80,9 +80,6 @@ final class X11Window: WindowBacking {
         @_transparent
         func isRepeatedKey(_ event: XKeyEvent) -> Bool {
             return false
-            return previousKeyEvent.type == KeyRelease &&
-                   previousKeyEvent.time == event.time &&
-                   previousKeyEvent.keycode == event.keycode
         }
         switch event.type {
         case Expose:
