@@ -89,7 +89,7 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
             }
         }
 
-        switch globalThis.navigator.browser {
+        switch Game.shared.platform.browser {
         case .safari:
             if id == "Wireless Controller Extended Gamepad".lowercased() {
                 gamePad.symbols = .sonyPlaystation

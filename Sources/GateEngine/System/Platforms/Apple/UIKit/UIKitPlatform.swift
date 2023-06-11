@@ -13,13 +13,15 @@ public final class UIKitPlatform: Platform, InternalPlatform {
     public static let staticSearchPaths: [URL] = getStaticSearchPaths()
     var pathCache: [String:String] = [:]
     
+    internal var applicationReqestedWindow: Bool = false
+    weak internal var windowPreparingForSceneConnection: UIKitWindow? = nil
+    
+    internal var overrideSupportsMultipleWindows: Bool? = nil
     public var supportsMultipleWindows: Bool {
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad, .mac:
-            return true
-        default:
-            return false
+        if let overrideSupportsMultipleWindows {
+            return overrideSupportsMultipleWindows
         }
+        return UIApplication.shared.supportsMultipleScenes
     }
     
     public func locateResource(from path: String) async -> String? {
@@ -101,25 +103,95 @@ internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
     
     func applicationWillTerminate(_ application: UIApplication) {
         Game.shared.willTerminate()
+        for session in application.openSessions {
+            application.requestSceneSessionDestruction(session, options: nil)
+        }
     }
 }
 
 internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
+    func attachExistingWindow(forSession session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) -> UIKitWindow? {
+        if let userActivity = (connectionOptions.userActivities.first(where: {$0.activityType == "GateEngineWindow"}) ?? session.stateRestorationActivity) {
+            if let requestedWindowIdentifier = userActivity.userInfo?["WindowIdentifier"] as? String {
+                if let createdWindow = Game.shared.windowManager.window(withIdentifier: requestedWindowIdentifier) {
+                    let uiKitWindow = createdWindow.windowBacking as? UIKitWindow
+                    if let title = UserDefaults.standard.string(forKey: "Windows/\(createdWindow.identifier)/title") {
+                        createdWindow.title = title
+                    }
+                    return uiKitWindow
+                }
+            }
+        }
+        return nil
+    }
+    
+    func persistSessionIdentifier(_ session: UISceneSession, forWindow window: Window) {
+        UserDefaults.standard.set(window.identifier, forKey: session.persistentIdentifier)
+        UserDefaults.standard.synchronize()
+    }
+    
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else {return}
         do {
             Game.shared.renderingIsPermitted = true
-            let window: Window
-            if Game.shared.windowManager.windows.isEmpty {
-                window = try Game.shared.delegate.createMainWindow(game: Game.shared, identifier: Game.shared.windowManager.mainWindowIdentifier)
-            }else{
-                window = try Game.shared.windowManager.createWindow(identifier: session.persistentIdentifier, style: .system)
+            if let restoredWindow = attachExistingWindow(forSession: session, options: connectionOptions) {
+                assert(restoredWindow.window.isMainWindow == false)
+                restoredWindow.uiWindow.windowScene = windowScene
+                windowScene.title = restoredWindow.title
+            }else if session.stateRestorationActivity != nil {
+                UIApplication.shared.requestSceneSessionDestruction(session, options: nil)
+            }else if Game.shared.windowManager.mainWindow == nil && session.role == .windowApplication {
+                let window = try Game.shared.delegate.createMainWindow(game: Game.shared, identifier: WindowManager.mainWindowIdentifier)
+                let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
+                uiWindow.windowScene = windowScene
+                windowScene.title = window.title
+                persistSessionIdentifier(session, forWindow: window)
+            }else{// Plaform reqested a window, proably from a user action
+                Game.shared.platform.applicationReqestedWindow = true
+                if session.role == .windowExternalDisplay {
+                    Game.shared.platform.overrideSupportsMultipleWindows = true
+                    if let window = try Game.shared.delegate.screenBecomeAvailable(game: Game.shared) {
+                        let uiKitWindow = (window.windowBacking as! UIKitWindow)
+                        uiKitWindow.uiWindow.windowScene = windowScene
+                        windowScene.title = window.title
+                        persistSessionIdentifier(session, forWindow: window)
+                    }
+                    Game.shared.platform.overrideSupportsMultipleWindows = nil
+                }else{
+                    Game.shared.platform.overrideSupportsMultipleWindows = true
+                    if let window = try Game.shared.delegate.userRequestedWindow(game: Game.shared) {
+                        let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
+                        uiWindow.windowScene = windowScene
+                        windowScene.title = window.title
+                        persistSessionIdentifier(session, forWindow: window)
+                    }else{
+                        UIApplication.shared.requestSceneSessionDestruction(session, options: nil)
+                    }
+                    Game.shared.platform.overrideSupportsMultipleWindows = nil
+                }
             }
-            let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
-            uiWindow.windowScene = windowScene
             Game.shared.renderingIsPermitted = false
         }catch{
             Log.error(error)
+        }
+    }
+    
+    func sceneDidDisconnect(_ scene: UIScene) {
+        Log.info("Scene Disconnect:", scene.title ?? "[NoTitle]")
+        for window in Game.shared.windowManager.windows {
+            let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
+            if uiWindow.windowScene?.session.persistentIdentifier == scene.session.persistentIdentifier {
+                Game.shared.windowManager.removeWindow(window.identifier)
+                UserDefaults.standard.removeObject(forKey: "Windows/\(window.identifier)/title")
+                break
+            }
+            #if GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW
+            if window.isMainWindow {
+                for session in UIApplication.shared.openSessions {
+                    UIApplication.shared.requestSceneSessionDestruction(session, options: nil)
+                }
+            }
+            #endif
         }
     }
 }

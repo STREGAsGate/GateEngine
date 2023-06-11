@@ -10,3 +10,11 @@ XIC XCreateIC_Ext(XIM im, Window window) {
                      XNFocusWindow,  window,
                      NULL);
 }
+
+// Macros
+int DisplayWidth_Ext(Display *dpy, int scr) {
+    return ScreenOfDisplay(dpy,scr)->width;
+}
+int DisplayWidthMM_Ext(Display *dpy, int scr) {
+    return ScreenOfDisplay(dpy,scr)->mwidth;
+}

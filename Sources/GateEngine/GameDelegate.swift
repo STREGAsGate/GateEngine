@@ -28,6 +28,15 @@ public struct LaunchOptions: OptionSet {
      */
     func createMainWindow(game: Game, identifier: String) throws -> Window
     
+    /// The end user has tried to open a window using the platforms mechanisms
+    func userRequestedWindow(game: Game) throws -> Window?
+    
+    /**
+     A display has been attached.
+     - returns: A new window instance to put on the screen. Passing an existing window is undefined behaviour.
+    */
+    func screenBecomeAvailable(game: Game) throws -> Window?
+    
     /// Might be called immediatley before the app closes.
     func willTerminate(game: Game)
     
@@ -49,7 +58,7 @@ public struct LaunchOptions: OptionSet {
      
      This can be helpful for mods and expanability.
      Search paths for your Swift Packages are already located automatically and don't need to be added here.
-     - returns: An array of URLs each pinting to a directory containing game resources.
+     - returns: An array of URLs each pointing to a directory containing game resources.
      */
     func resourceSearchPaths() -> [URL]
     
@@ -57,7 +66,12 @@ public struct LaunchOptions: OptionSet {
 }
 
 public extension GameDelegate {
-    func didFinishLaunching(game: Game, options: LaunchOptions) {}
+    func createMainWindow(game: Game, identifier: String) throws -> Window {
+        return try game.windowManager.createWindow(identifier: identifier, style: .system, options: .defaultForMainWindow)
+    }
+    func userRequestedWindow(game: Game) throws -> Window? {return nil}
+    func screenBecomeAvailable(game: Game) throws -> Window? {return nil}
+    
     func willTerminate(game: Game) {}
     func isHeadless() -> Bool {return false}
     func resourceSearchPaths() -> [URL] {return []}
@@ -67,10 +81,6 @@ public extension GameDelegate {
     static func main() {
         Game.shared = Game(delegate: Self())
         Game.shared.platform.main()
-    }
-    
-    func createMainWindow(game: Game, identifier: String) throws -> Window {
-        return try game.windowManager.createWindow(identifier: identifier, style: .system)
     }
 }
 

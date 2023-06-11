@@ -97,7 +97,7 @@ extension AppKitPlatform {
                 <key>CFBundleExecutable</key>
                 <string>\(url.lastPathComponent)</string>
                 <key>CFBundleIdentifier</key>
-                <string>com.swift.\(url.lastPathComponent)</string>
+                <string>com.stregasgate.third-party-dev.\(url.lastPathComponent)</string>
                 <key>CFBundleInfoDictionaryVersion</key>
                 <string>6.0</string>
                 <key>CFBundleName</key>
@@ -139,7 +139,7 @@ extension AppKitPlatform {
         
         if Bundle.main.infoDictionary?["CFBundleIconFile"] == nil && Bundle.main.infoDictionary?["CFBundleIconName"] == nil {
             Game.shared.defer {
-                guard let rasterizationScale = Game.shared.windowManager.mainWindow?.windowBacking.backingScaleFactor else {return}
+                guard let rasterizationScale = Game.shared.windowManager.mainWindow?.interfaceScale else {return}
                 Task {@MainActor in
                     let filePath = URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent().path
                     let iconPath = await Game.shared.platform.locateResource(from: "GateEngine/Branding/Square Logo.png")!

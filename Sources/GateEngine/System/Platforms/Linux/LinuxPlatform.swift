@@ -55,7 +55,7 @@ extension LinuxPlatform {
         var window: Window? = Game.shared.windowManager.mainWindow
         mainLoop: while true {
 
-            let eventMask: Int = (EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask)
+            let eventMask: Int = (StructureNotifyMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask)
             for window: Window in Game.shared.windowManager.windows {
                 let x11Window: X11Window = window.windowBacking as! X11Window
                 var event: XEvent = XEvent()

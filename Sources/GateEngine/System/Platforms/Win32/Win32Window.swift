@@ -12,35 +12,44 @@ import GameMath
 
 final class Win32Window: WindowBacking {
     unowned let window: Window
-    let style: WindowStyle
-    let identifier: String
-
     internal let hWnd: WinSDK.HWND
     private let hwndStyle: Win32WindowStyle
     @MainActor internal private(set) lazy var swapChain: DX12SwapChain = DX12SwapChain(hWnd: hWnd)
     private lazy var mouseState: MouseState = MouseState(hWnd)
     private static let windowClass: Win32WindowClass = Win32WindowClass()
+    
+    // Stoted Metadata
+    var pointSafeAreaInsets: Insets = .zero
+    var pixelSafeAreaInsets: Insets = .zero
+    var pointSize: Size2 = Size2(640, 480)
+    var pixelSize: Size2 = Size2(640, 480)
+    var interfaceScaleFactor: Float = 1
+    
+    @preconcurrency @MainActor func updateStoredMetaData() {
+        self.interfaceScaleFactor = Float(GetDpiForWindow(hWnd)) / Float(USER_DEFAULT_SCREEN_DPI)
 
-    required init(identifier: String, style: WindowStyle, window: Window) {
+        var frame: RECT = RECT()
+        WinSDK.GetClientRect(self.hWnd, &frame)
+        self.pixelSize = Size2(width: Float(frame.width), height: Float(frame.height))
+        self.pointSize = self.pixelSize / self.interfaceScaleFactor
+    }
+    
+    required init(window: Window) {
         self.window = window
-        self.style = style
-        self.identifier = identifier
-        
-        let size: Size2 = Size2(640, 480)
 
         Self.windowClass.register()
         let hWnd: WinSDK.HWND
-        switch style {
+        switch window.style {
         case .system:
-            hWnd = Self.makeHWND(withSize: size, style: .standard)
+            hWnd = Self.makeHWND(withSize: pixelSize, style: .standard)
             self.hwndStyle = .standard
         case .bestForGames:
-            hWnd = Self.makeHWND(withSize: size, style: .modern)
+            hWnd = Self.makeHWND(withSize: pixelSize, style: .modern)
             self.hwndStyle = .modern
         }
         
         self.hWnd = hWnd
-        self.title = identifier
+        self.title = window.identifier
         SetWindowLongPtrW(hWnd, GWLP_USERDATA, unsafeBitCast(self as AnyObject, to: LONG_PTR.self))
     }
 
@@ -62,33 +71,6 @@ final class Win32Window: WindowBacking {
         }
     }
 
-    ///The screen relative rectangle of the window
-    var frame: Rect {
-        get {
-            var rect: RECT = RECT()
-            WinSDK.GetWindowRect(self.hWnd, &rect)
-            return Rect(rect)
-        }
-        set {
-            var rect = newValue.RECT()
-            WinSDK.AdjustWindowRect(&rect, DWORD(hwndStyle.rawValue), hwndStyle.contains(.menuInTitleBar))
-            WinSDK.SetWindowPos(self.hWnd, nil, rect.x, rect.y, rect.width, rect.height, UInt32(SWP_NOACTIVATE))
-        }
-    }
-
-    @inline(__always)
-    var backingSize: Size2 {
-        return self.frame.size
-    }
-
-    @inline(__always)
-    var backingScaleFactor: Float {
-        let dpi: UINT = GetDpiForWindow(hWnd)
-        return Float(dpi) / Float(USER_DEFAULT_SCREEN_DPI)
-    }
-
-    let safeAreaInsets: Insets = .zero
-
     var state: Window.State = .hidden
     /// If possible, shows the window on screen.
     func show() {
@@ -98,6 +80,7 @@ final class Win32Window: WindowBacking {
         self.state = .shown
     }
 
+    @inline(__always)
     @MainActor func render() {
         guard state == .shown else {return}
         self.window.vSyncCalled()
@@ -107,11 +90,12 @@ final class Win32Window: WindowBacking {
     @MainActor func hide() {
         guard self.state == .shown else {return}
         WinSDK.CloseWindow(self.hWnd)
+        self.updateStoredMetaData()
     }
 
     @MainActor func close() {
         guard self.state != .destroyed else {return}
-        Game.shared.windowManager.removeWindow(self.identifier)
+        Game.shared.windowManager.removeWindow(self.window.identifier)
     }
 
     @MainActor func setMouseHidden(_ hidden: Bool) {
@@ -253,191 +237,191 @@ fileprivate class Win32WindowClass {
 //These are the notifation calls
 fileprivate extension Win32Window {
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgPaint() {
         self.render()
     }
     
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgResized() {
-        self.window.size = self.frame.size
+        self.updateStoredMetaData()
+        self.window.newPixelSize = self.pixelSize
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
+    @MainActor
+    func _msgResizing(_ wParam: WPARAM, _ lParam: LPARAM) {
+        guard let rect: RECT = PRECT(bitPattern: Int(lParam))?.pointee else {return}
+        self.pixelSize = Size2(Float(rect.width), Float(rect.height))
+        self.window.newPixelSize = self.pixelSize        
+    }
+
+    @inline(__always)
+    @preconcurrency
     @MainActor
     func _msgShow() {
         self.show()
+        self.updateStoredMetaData()
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgRestore() {
         self.state = .shown
+        self.updateStoredMetaData()
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgHide() {
         self.hide()
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgClose() {
         self.close()
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgDestroy() {
         self.state = .destroyed
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgMouseMoved(_ lparam: LPARAM) {
-        if let windowDelegate: WindowDelegate = window.delegate {
-            var event: MouseChangeEvent = .moved
-            if mouseState.state == .outside {
-                event = .entered
-            }
-            mouseState.mouseMoved(lparam)
-            windowDelegate.mouseChange(event: event, position: mouseState.position, delta: mouseState.delta, window: self.window)
+        var event: MouseChangeEvent = .moved
+        if mouseState.state == .outside {
+            event = .entered
         }
+        mouseState.mouseMoved(lparam)
+        Game.shared.hid.mouseChange(event: event,
+                                    position: mouseState.position,
+                                    delta: mouseState.delta,
+                                    window: self.window)
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgMouseExited() {
-        if let windowDelegate: WindowDelegate = window.delegate {
-            mouseState.mouseExited()
-            windowDelegate.mouseChange(event: .exited, position: mouseState.position, delta: mouseState.delta, window: self.window)
-        }
+        mouseState.mouseExited()
+        Game.shared.hid.mouseChange(event: .exited, 
+                                    position: mouseState.position,
+                                    delta: mouseState.delta,
+                                    window: self.window)
     }
 
     //return true if input was used
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgKeyDown(_ wparam: WPARAM, _ lparam: LPARAM) -> Bool {
-        if let windowDelegate: WindowDelegate = window.delegate {
-            let key: KeyboardKey = self.keyFromWPARAM(wparam, lparam)
-            return windowDelegate.keyboardDidhandle(key: key,
-                                                    character: character(from: wparam),
-                                                    modifiers: modifierKeyFromWPARAM(wparam),
-                                                    isRepeat: false,
-                                                    event: .keyDown)
-        }
-        return true
+        return Game.shared.hid.keyboardDidhandle(key: keyFromWPARAM(wparam, lparam),
+                                                 character: character(from: wparam),
+                                                 modifiers: modifierKeyFromWPARAM(wparam),
+                                                 isRepeat: false,
+                                                 event: .keyDown)
     }
 
     //return true if input was used
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _msgKeyUp(_ wparam: WPARAM, _ lparam: LPARAM) -> Bool {
-        if let windowDelegate: WindowDelegate = window.delegate {
-            let key: KeyboardKey = self.keyFromWPARAM(wparam, lparam)
-            return windowDelegate.keyboardDidhandle(key: key,
-                                                    character: character(from: wparam),
-                                                    modifiers: modifierKeyFromWPARAM(wparam),
-                                                    isRepeat: false,
-                                                    event: .keyUp)
-        }
-        return true
+        return Game.shared.hid.keyboardDidhandle(key: keyFromWPARAM(wparam, lparam),
+                                                 character: character(from: wparam),
+                                                 modifiers: modifierKeyFromWPARAM(wparam),
+                                                 isRepeat: false,
+                                                 event: .keyUp)
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseDownLeft(_ lparam: LPARAM) {
-        let position = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonDown,
-                                    button: .button1,
-                                    count: nil,
-                                    position: position,
-                                    delta: nil,
-                                    window: self.window)
+        Game.shared.hid.mouseClick(event: .buttonDown,
+                                   button: .button1,
+                                   count: nil,
+                                   position: positionFrom(lparam),
+                                   delta: nil,
+                                   window: self.window)
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseUpLeft(_ lparam: LPARAM) {
-        let position = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonUp,
-                                    button: .button1,
-                                    count: nil,
-                                    position: position,
-                                    delta: nil,
-                                    window: self.window)
+        Game.shared.hid.mouseClick(event: .buttonUp,
+                                   button: .button1,
+                                   count: nil,
+                                   position: positionFrom(lparam),
+                                   delta: nil,
+                                   window: self.window)
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseDownRight(_ lparam: LPARAM) {
-        let position = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonDown,
-                                    button: .button2,
-                                    count: nil,
-                                    position: position,
-                                    delta: nil,
-                                    window: self.window)
+        Game.shared.hid.mouseClick(event: .buttonDown,
+                                   button: .button2,
+                                   count: nil,
+                                   position: positionFrom(lparam),
+                                   delta: nil,
+                                   window: self.window)
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseUpRight(_ lparam: LPARAM) {
-        let position = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonUp,
-                                    button: .button2,
-                                    count: nil,
-                                    position: position,
-                                    delta: nil,
-                                    window: self.window)
+        Game.shared.hid.mouseClick(event: .buttonUp,
+                                   button: .button2,
+                                   count: nil,
+                                   position: positionFrom(lparam),
+                                   delta: nil,
+                                   window: self.window)
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseDownMiddle(_ lparam: LPARAM) {
-        let position = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonDown,
-                                    button: .button3,
-                                    count: nil,
-                                    position: position,
-                                    delta: nil,
-                                    window: self.window)
+        Game.shared.hid.mouseClick(event: .buttonDown,
+                                   button: .button3,
+                                   count: nil,
+                                   position: positionFrom(lparam),
+                                   delta: nil,
+                                   window: self.window)
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseUpMiddle(_ lparam: LPARAM) {
-        let position = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonUp,
-                                    button: .button3,
-                                    count: nil,
-                                    position: position,
-                                    delta: nil,
-                                    window: self.window)
+        Game.shared.hid.mouseClick(event: .buttonUp,
+                                   button: .button3,
+                                   count: nil,
+                                   position: positionFrom(lparam),
+                                   delta: nil,
+                                   window: self.window)
     }
 
     @inline(__always)
-    @preconcurrency 
-    @MainActor 
+    @preconcurrency
+    @MainActor
     func _mouseDownX(_ lparam: LPARAM, _ wparam: WPARAM) {
         let wparam: Int32 = Int32(wparam)
         let button: MouseButton
@@ -448,17 +432,16 @@ fileprivate extension Win32Window {
         }else{
             button = .unknown(nil)
         }
-        let position = positionFrom(lparam)
-        window.delegate?.mouseClick(event: .buttonDown,
-                                    button: button,
-                                    count: nil,
-                                    position: position,
-                                    delta: nil,
-                                    window: self.window)
+        Game.shared.hid.mouseClick(event: .buttonDown,
+                                   button: button,
+                                   count: nil,
+                                   position: positionFrom(lparam),
+                                   delta: nil,
+                                   window: self.window)
     }
 
     @inline(__always)
-    @preconcurrency 
+    @preconcurrency
     @MainActor
     func _mouseUpX(_ lparam: LPARAM, _ wparam: WPARAM) {
         let wparam: Int32 = Int32(wparam)
@@ -471,12 +454,12 @@ fileprivate extension Win32Window {
             button = .unknown(nil)
         }
         mouseState.mouseMoved(lparam)
-        window.delegate?.mouseClick(event: .buttonUp,
-                                    button: button,
-                                    count: nil,
-                                    position: mouseState.position,
-                                    delta: mouseState.delta,
-                                    window: self.window)
+        Game.shared.hid.mouseClick(event: .buttonUp,
+                                   button: button,
+                                   count: nil,
+                                   position: mouseState.position,
+                                   delta: mouseState.delta,
+                                   window: self.window)
     }
 }
 
@@ -931,8 +914,6 @@ fileprivate typealias WindowProc = @MainActor @convention(c) (HWND?, UINT, WPARA
     }
     
     switch Int32(uMsg) {
-    case WM_PAINT:
-        break
     case WM_SIZE:
         switch Int32(wParam) {
         case SIZE_RESTORED:

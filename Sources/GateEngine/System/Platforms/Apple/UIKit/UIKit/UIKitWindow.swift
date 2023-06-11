@@ -14,17 +14,61 @@ import GameMath
 final class UIKitWindow: WindowBacking {
     weak var window: Window!
     let uiWindow: UIWindow
-    let identifier: String
-    let style: WindowStyle
     var state: Window.State = .hidden
+    var userActivity: NSUserActivity? {
+        return uiWindow.windowScene?.userActivity
+    }
     
-    required init(identifier: String, style: WindowStyle, window: Window) {
+    // Stoted Metadata
+    var pointSafeAreaInsets: Insets = .zero
+    var pixelSafeAreaInsets: Insets = .zero
+    var pointSize: Size2 = Size2(640, 480)
+    var pixelSize: Size2 = Size2(640, 480)
+    var interfaceScaleFactor: Float = 1
+    
+    // Called from UIKitViewController
+    func updateStoredMetaData() {
+        self.interfaceScaleFactor = Float(uiWindow.traitCollection.displayScale)
+        if let view = uiWindow.rootViewController!.view {
+            self.pointSize = Size2(view.bounds.size)
+            self.pixelSize = self.pointSize * self.interfaceScaleFactor
+            if #available(iOS 11, tvOS 11, macCatalyst 13, *) {
+                self.pointSafeAreaInsets = Insets(top: Float(view.safeAreaInsets.top),
+                                                  leading: Float(view.safeAreaInsets.left),
+                                                  bottom: Float(view.safeAreaInsets.bottom),
+                                                  trailing: Float(view.safeAreaInsets.right))
+                self.pixelSafeAreaInsets = self.pointSafeAreaInsets * self.interfaceScaleFactor
+            }
+        }
+    }
+    
+    @MainActor required init(window: Window) {
         self.window = window
         self.uiWindow = UIWindow()
-        self.identifier = identifier
-        self.style = style
         self.uiWindow.rootViewController = UIKitViewController(window: self)
         self.uiWindow.translatesAutoresizingMaskIntoConstraints = true
+        
+        if Game.shared.platform.applicationReqestedWindow == false && window.isMainWindow == false {
+            Game.shared.platform.windowPreparingForSceneConnection = self
+            
+            @inline(__always)
+            func existingSession(forWindow window: Window) -> UISceneSession? {
+                for session in UIApplication.shared.openSessions {
+                    let sceneID = session.persistentIdentifier
+                    guard let windowID = UserDefaults.standard.string(forKey: sceneID) else {continue}
+                    if windowID == window.identifier {
+                        return session
+                    }
+                }
+                return nil
+            }
+            
+            let userActivity = NSUserActivity(activityType: "GateEngineWindow")
+            userActivity.userInfo = ["WindowIdentifier":window.identifier]
+            UserDefaults.standard.set("Untitled", forKey: "Windows/\(window.identifier)/title")
+            UIApplication.shared.requestSceneSessionActivation(existingSession(forWindow: window), userActivity: userActivity, options: nil)
+        }
+        Game.shared.platform.applicationReqestedWindow = false
     }
     
     lazy private(set) var displayLink: CADisplayLink = {
@@ -47,7 +91,7 @@ final class UIKitWindow: WindowBacking {
         self.uiWindow.rootViewController?.view.setNeedsDisplay()
     }
     
-    func show() {
+    @MainActor func show() {
         if Game.shared.renderingAPI == .openGL {
             _ = displayLink
         }
@@ -56,7 +100,7 @@ final class UIKitWindow: WindowBacking {
     }
     
     func close() {
-        assertionFailure("UIKit windows can't be closed.")
+        
     }
 
     @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
@@ -77,9 +121,7 @@ final class UIKitWindow: WindowBacking {
             displayLink.invalidate()
         }
     }
-}
 
-extension UIKitWindow {
     var title: String? {
         get {
             if let title = uiWindow.rootViewController?.title, title.isEmpty == false {
@@ -88,33 +130,11 @@ extension UIKitWindow {
             return nil
         }
         set {
-            uiWindow.rootViewController?.title = newValue
+            self.uiWindow.rootViewController?.title = newValue
+            self.uiWindow.windowScene?.title = newValue
+            UserDefaults.standard.set(newValue, forKey: "Windows/\(window.identifier)/title")
+            UserDefaults.standard.synchronize()
         }
-    }
-    var frame: Rect {
-        get {
-            return Rect(uiWindow.frame)
-        }
-        set {
-            uiWindow.frame = newValue.cgRect
-        }
-    }
-    var safeAreaInsets: Insets {
-        if #available(iOS 11, tvOS 11, macCatalyst 13, *) {
-            let insets = uiWindow.safeAreaInsets
-            return Insets(top: Float(insets.top), leading: Float(insets.left), bottom: Float(insets.bottom), trailing: Float(insets.right))
-        }
-        return .zero
-    }
-    
-    @inline(__always)
-    var backingSize: Size2 {
-        return frame.size * backingScaleFactor
-    }
-    
-    @inline(__always)
-    var backingScaleFactor: Float {
-        return Float(uiWindow.traitCollection.displayScale)
     }
     
     func setMouseHidden(_ hidden: Bool) {
