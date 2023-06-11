@@ -245,6 +245,15 @@ let package = Package(
                 sources: openALSources,
                 publicHeadersPath: "UnmodifiedSource/include",
                 cxxSettings: openALCXXSettings,
+                swiftSettings: {
+                    var array: [SwiftSetting] = []
+                    #if compiler(>=5.9)
+                    array.append(.interoperabilityMode(.Cxx))
+                    #else
+                    array.append(.unsafeFlags(["-enable-experimental-cxx-interop", "-cxx-interoperability-mode=default"]))
+                    #endif
+                    return array
+                }(),
                 linkerSettings: openALLinkerSettings),
         ])
         #endif
