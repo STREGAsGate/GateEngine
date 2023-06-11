@@ -22,6 +22,13 @@ public struct InputRecipts {
     }
 }
 
+public enum InputMethod {
+    case mouseKeyboard
+    case touchScreen
+    case touchSurface
+    case gamePad
+}
+
 @MainActor public final class HID {
     public let keyboard: Keyboard = Keyboard()
     public let mouse: Mouse = Mouse()
@@ -29,12 +36,6 @@ public struct InputRecipts {
     public let surfaces: SurfaceDevices = SurfaceDevices()
     public internal(set) lazy var gamePads: GamePadManger = GamePadManger(hid: self)
     
-    public enum InputMethod {
-        case mouseKeyboard
-        case touchScreen
-        case touchSurface
-        case gamepad
-    }
     /// The most recent input method used by the end user
     public private(set) var recentInputMethod: InputMethod = .mouseKeyboard
     
@@ -79,10 +80,6 @@ extension HID {
                            isRepeat: Bool,
                            event: KeyboardEvent) -> Bool {
         recentInputMethod = .mouseKeyboard
-        return keyboard.keyboardDidhandle(key: key,
-                                          character: character,
-                                          modifiers: modifiers,
-                                          isRepeat: isRepeat,
-                                          event: event)
+        return keyboard.keyboardDidhandle(key: key, character: character, modifiers: modifiers, isRepeat: isRepeat, event: event)
     }
 }
