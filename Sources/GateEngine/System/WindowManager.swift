@@ -26,7 +26,7 @@ import GameMath
     }
 
     @discardableResult
-    public func createWindow(identifier: String, style: WindowStyle = .system, options: WindowOptions = .defaultForOtherWindow) throws -> Window {
+    public func createWindow(identifier: String, style: WindowStyle = .system, options: WindowOptions = .default) throws -> Window {
         guard game.isHeadless == false else {throw "Cannot create a window when running headless."}
         precondition(game.renderingIsPermitted, "A window can only be created from a RenderingSystem.")
         guard game.platform.supportsMultipleWindows || windows.isEmpty else {throw "This platform doesn't support multiple windows."}

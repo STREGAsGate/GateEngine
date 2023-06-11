@@ -32,11 +32,11 @@ final class AppKitWindow: WindowBacking {
                 self.pointSize = Size2(view.bounds.size)
                 self.pixelSize = self.pointSize * self.interfaceScaleFactor
                 if #available(macOS 11.0, *) {
-                    self.pixelSafeAreaInsets = Insets(top: Float(view.safeAreaInsets.top),
+                    self.pointSafeAreaInsets = Insets(top: Float(view.safeAreaInsets.top),
                                                       leading: Float(view.safeAreaInsets.left),
                                                       bottom: Float(view.safeAreaInsets.bottom),
                                                       trailing: Float(view.safeAreaInsets.right))
-                    self.pointSafeAreaInsets = self.pixelSafeAreaInsets / self.interfaceScaleFactor
+                    self.pixelSafeAreaInsets = self.pointSafeAreaInsets * self.interfaceScaleFactor
                 }
             }
         }
@@ -193,7 +193,9 @@ final class AppKitWindow: WindowBacking {
                 view.needsDisplay = true
             }
             #if GATEENGINE_PLATFORM_EVENT_DRIVEN
-            Game.shared.gameLoop()
+            Game.shared.eventLoop {
+                
+            }
             #endif
         }
         return kCVReturnSuccess

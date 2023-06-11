@@ -33,11 +33,11 @@ final class UIKitWindow: WindowBacking {
             self.pointSize = Size2(view.bounds.size)
             self.pixelSize = self.pointSize * self.interfaceScaleFactor
             if #available(iOS 11, tvOS 11, macCatalyst 13, *) {
-                self.pixelSafeAreaInsets = Insets(top: Float(view.safeAreaInsets.top),
+                self.pointSafeAreaInsets = Insets(top: Float(view.safeAreaInsets.top),
                                                   leading: Float(view.safeAreaInsets.left),
                                                   bottom: Float(view.safeAreaInsets.bottom),
                                                   trailing: Float(view.safeAreaInsets.right))
-                self.pointSafeAreaInsets = self.pixelSafeAreaInsets / self.interfaceScaleFactor
+                self.pixelSafeAreaInsets = self.pointSafeAreaInsets * self.interfaceScaleFactor
             }
         }
     }

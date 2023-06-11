@@ -13,21 +13,21 @@ import DOM
 
 final class WASIWindow: WindowBacking {
     unowned let window: Window
-    let style: WindowStyle
-    let identifier: String
     var state: Window.State = .hidden
     let canvas: HTMLCanvasElement
     
     // Stoted Metadata
     var pixelSafeAreaInsets: Insets = .zero
-    var pixelSize: Size2 = .zero
+    var pointSafeAreaInsets: Insets = .zero
+    var pixelSize: Size2 = Size2(640, 480)
+    var pointSize: Size2 = Size2(640, 480)
     var interfaceScaleFactor: Float = 1
     
     // Called from onreseize observer
     func updateStoredMetaData() {
         self.interfaceScaleFactor = Float(globalThis.document.defaultView?.devicePixelRatio ?? 1)
-        self.pixelSize = Size2(Float(globalThis.window.innerWidth), Float(globalThis.window.innerHeight)) * interfaceScaleFactor
-
+        self.pointSize = Size2(Float(globalThis.window.innerWidth), Float(globalThis.window.innerHeight))
+        self.pixelSize = self.pointSize * self.interfaceScaleFactor
         if let doc = globalThis.document.documentElement, let obj = JSObject.global.getComputedStyle?(doc) {
             var insets: Insets = .zero
             if let s = obj.getPropertyValue("--sat").string {
@@ -54,14 +54,17 @@ final class WASIWindow: WindowBacking {
                     insets.trailing = value
                 }
             }
-            self.pixelSafeAreaInsets = insets * self.interfaceScaleFactor
+            self.pointSafeAreaInsets = insets
+            self.pixelSafeAreaInsets = self.pointSafeAreaInsets * self.interfaceScaleFactor
+            
+            Log.info("Scale:", self.interfaceScaleFactor)
+            Log.info("SizePoint:", self.pointSize, "SizePixel:", self.pixelSize)
+            Log.info("SafePoint:", self.pointSafeAreaInsets, "SafePixel:", self.pixelSafeAreaInsets)
         }
     }
     
-    required init(identifier: String, style: WindowStyle, window: Window) {
+    required init(window: Window) {
         self.window = window
-        self.style = style
-        self.identifier = identifier
         
         let document: Document = globalThis.document
         
@@ -171,11 +174,11 @@ final class WASIWindow: WindowBacking {
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
             Task {@MainActor in
-                _ = self.window.delegate?.keyboardDidhandle(key: key,
-                                                            character: event.key.first,
-                                                            modifiers: modifiers,
-                                                            isRepeat: event.repeat,
-                                                            event: .keyDown)
+                _ = Game.shared.hid.keyboardDidhandle(key: key,
+                                                      character: event.key.first,
+                                                      modifiers: modifiers,
+                                                      isRepeat: event.repeat,
+                                                      event: .keyDown)
                 if event.isTrusted && key != .escape {
                     self.performedUserGesture()
                 }
@@ -187,11 +190,11 @@ final class WASIWindow: WindowBacking {
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
             Task {@MainActor in
-                _ = self.window.delegate?.keyboardDidhandle(key: key,
-                                                            character: event.key.first,
-                                                            modifiers: modifiers,
-                                                            isRepeat: event.repeat,
-                                                            event: .keyUp)
+                _ = Game.shared.hid.keyboardDidhandle(key: key,
+                                                       character: event.key.first,
+                                                       modifiers: modifiers,
+                                                       isRepeat: event.repeat,
+                                                       event: .keyUp)
             }
             event.preventDefault()
         }
@@ -199,7 +202,10 @@ final class WASIWindow: WindowBacking {
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let locations = self.getPositionAndDelta(from: event)
             Task {@MainActor in
-                self.window.delegate?.mouseChange(event: .entered, position: locations.position, delta: locations.delta, window: self.window)
+                Game.shared.hid.mouseChange(event: .entered,
+                                            position: locations.position,
+                                            delta: locations.delta,
+                                            window: self.window)
             }
             event.preventDefault()
         }
@@ -207,7 +213,10 @@ final class WASIWindow: WindowBacking {
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let locations = self.getPositionAndDelta(from: event)
             Task {@MainActor in
-                self.window.delegate?.mouseChange(event: .moved, position: locations.position, delta: locations.delta, window: self.window)
+                Game.shared.hid.mouseChange(event: .moved,
+                                            position: locations.position,
+                                            delta: locations.delta,
+                                            window: self.window)
             }
             event.preventDefault()
         }
@@ -215,7 +224,10 @@ final class WASIWindow: WindowBacking {
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let locations = self.getPositionAndDelta(from: event)
             Task {@MainActor in
-                self.window.delegate?.mouseChange(event: .exited, position: locations.position, delta: locations.delta, window: self.window)
+                Game.shared.hid.mouseChange(event: .exited,
+                                            position: locations.position,
+                                            delta: locations.delta,
+                                            window: self.window)
             }
             event.preventDefault()
         }
@@ -224,12 +236,12 @@ final class WASIWindow: WindowBacking {
             let button: MouseButton = self.mouseButton(fromEvent: event)
             let locations = self.getPositionAndDelta(from: event)
             Task {@MainActor in
-                self.window.delegate?.mouseClick(event: .buttonDown,
-                                                 button: button,
-                                                 count: nil,
-                                                 position: locations.position,
-                                                 delta: locations.delta,
-                                                 window: self.window)
+                Game.shared.hid.mouseClick(event: .buttonDown,
+                                           button: button,
+                                           count: nil,
+                                           position: locations.position,
+                                           delta: locations.delta,
+                                           window: self.window)
                 if event.isTrusted {
                     self.performedUserGesture()
                 }
@@ -241,12 +253,12 @@ final class WASIWindow: WindowBacking {
             let button: MouseButton = self.mouseButton(fromEvent: event)
             let locations = self.getPositionAndDelta(from: event)
             Task {@MainActor in
-                self.window.delegate?.mouseClick(event: .buttonUp,
-                                                 button: button,
-                                                 count: nil,
-                                                 position: locations.position,
-                                                 delta: locations.delta,
-                                                 window: self.window)
+                Game.shared.hid.mouseClick(event: .buttonUp,
+                                           button: button,
+                                           count: nil,
+                                           position: locations.position,
+                                           delta: locations.delta,
+                                           window: self.window)
             }
             event.preventDefault()
         }
@@ -259,7 +271,10 @@ final class WASIWindow: WindowBacking {
                 for index in 0 ..< event.changedTouches.length {
                     guard let touch = event.changedTouches.item(index: index) else {continue}
                     let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    self.window.delegate?.screenTouchChange(id: touch.identifier, kind: .physical, event: .began, position: position)
+                    Game.shared.hid.screenTouchChange(id: touch.identifier,
+                                                      kind: .physical,
+                                                      event: .began,
+                                                      position: position)
                 }
             }
             event.preventDefault()
@@ -270,7 +285,10 @@ final class WASIWindow: WindowBacking {
                 for index in 0 ..< event.changedTouches.length {
                     guard let touch = event.changedTouches.item(index: index) else {continue}
                     let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    self.window.delegate?.screenTouchChange(id: touch.identifier, kind: .physical, event: .moved, position: position)
+                    Game.shared.hid.screenTouchChange(id: touch.identifier,
+                                                      kind: .physical,
+                                                      event: .moved,
+                                                      position: position)
                 }
             }
             event.preventDefault()
@@ -281,7 +299,10 @@ final class WASIWindow: WindowBacking {
                 for index in 0 ..< event.changedTouches.length {
                     guard let touch = event.changedTouches.item(index: index) else {continue}
                     let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    self.window.delegate?.screenTouchChange(id: touch.identifier, kind: .physical, event: .ended, position: position)
+                    Game.shared.hid.screenTouchChange(id: touch.identifier,
+                                                      kind: .physical,
+                                                      event: .ended,
+                                                      position: position)
                 }
                 if event.isTrusted {
                     self.performedUserGesture()
@@ -295,7 +316,10 @@ final class WASIWindow: WindowBacking {
                 for index in 0 ..< event.changedTouches.length {
                     guard let touch = event.changedTouches.item(index: index) else {continue}
                     let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    self.window.delegate?.screenTouchChange(id: touch.identifier, kind: .physical, event: .canceled, position: position)
+                    Game.shared.hid.screenTouchChange(id: touch.identifier,
+                                                      kind: .physical,
+                                                      event: .canceled,
+                                                      position: position)
                 }
             }
             event.preventDefault()
@@ -542,7 +566,7 @@ final class WASIWindow: WindowBacking {
         case "F20":
             return .function(20)
         case "Help":
-            switch globalThis.navigator.browser {
+            switch Game.shared.platform.browser {
             case .safari:
                 return .insert
             default:

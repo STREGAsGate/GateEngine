@@ -18,7 +18,7 @@ public extension HID {
         }
         
         @inlinable @inline(__always)
-        public func anyTouch(if gesture: Gesture) -> Touch? {
+        public func anyTouch(withGesture gesture: Gesture) -> Touch? {
             return touches.first { touch in
                 return (gesture == .touchUp && touch.phase == .up) || (gesture == .touchDown && touch.phase == .down)
             }

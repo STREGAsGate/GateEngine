@@ -43,9 +43,7 @@ extension _RenderTargetProtocol {
     @inlinable @inline(__always)
     public func insert(_ canvas: Canvas) {
         precondition(Game.shared.renderingIsPermitted, "Rendering can only be changed from a RenderingSystem.")
-        if let size = canvas.size {
-            precondition(size == self.size, "Canvas.size must equal RenderTarget.size to insert.")
-        }
+        precondition(canvas.size == nil || canvas.size! == self.size, "Canvas.size.aspectRatio must equal RenderTarget.size.aspectRatio to insert.")
         self.drawables.append(canvas)
     }
     

@@ -43,14 +43,19 @@ extension String: Error {}
 
 internal extension CommandLine {
 #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
+    @usableFromInline
     static let isDebuggingWithXcode: Bool = ProcessInfo.processInfo.environment.keys.first(where: {$0.lowercased().contains("xcode")}) != nil
 #endif
 }
 
+@usableFromInline
 internal enum Log {
+    @usableFromInline
     static var onceHashes: Set<Int> = []
 
+    @usableFromInline
     enum ANSIColors: String, CustomStringConvertible {
+        @usableFromInline
         var description: String {
             return self.rawValue
         }
@@ -66,7 +71,7 @@ internal enum Log {
         case `default` = "\u{001B}[0;0m"
     }
     
-    @_transparent
+    @_transparent @usableFromInline
     static var supportsColor: Bool {
         #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
         if CommandLine.isDebuggingWithXcode {
@@ -80,8 +85,8 @@ internal enum Log {
         #endif
     }
     
-    @_transparent
-    private static func message(prefix: String, _ items: Any..., separator: String) -> String {
+    @_transparent @usableFromInline
+    internal static func _message(prefix: String, _ items: Any..., separator: String) -> String {
         var message = prefix
         for item in items {
             message += separator
@@ -90,16 +95,16 @@ internal enum Log {
         return message
     }
     
-    @_transparent
+    @_transparent @usableFromInline
     static func info(_ items: Any..., separator: String = " ", terminator: String = "\n") {
-        let message = message(prefix: "[GateEngine]", items, separator: separator)
+        let message = _message(prefix: "[GateEngine]", items, separator: separator)
         Swift.print(message, terminator: terminator)
         #if os(Windows)
-        WinSDK.OutputDebugStringW((message + terminator).windowsUTF16)
+        WinSDK.OutputDebugStringW((_message + terminator).windowsUTF16)
         #endif
     }
     
-    @_transparent
+    @_transparent @usableFromInline
     static func infoOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let hash = items.compactMap({$0 as? AnyHashable}).hashValue
         if onceHashes.contains(hash) == false {
@@ -108,14 +113,14 @@ internal enum Log {
         }
     }
     
-    @_transparent
+    @_transparent @usableFromInline
     static func debug(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         #if DEBUG
         self.info(items, separator: separator, terminator: terminator)
         #endif
     }
     
-    @_transparent
+    @_transparent @usableFromInline
     static func debugOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         #if DEBUG
         let hash = items.compactMap({$0 as? AnyHashable}).hashValue
@@ -126,13 +131,13 @@ internal enum Log {
         #endif
     }
     
-    @_transparent
+    @_transparent @usableFromInline
     static func warn(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let resolvedMessage: String
         if supportsColor {
-            resolvedMessage = message(prefix: "[GateEngine] warning:", items, separator: separator)
+            resolvedMessage = _message(prefix: "[GateEngine] \(ANSIColors.magenta)warning\(ANSIColors.default):", items, separator: separator)
         }else{
-            resolvedMessage = message(prefix: "[GateEngine] \(ANSIColors.magenta)warning\(ANSIColors.default):", items, separator: separator)
+            resolvedMessage = _message(prefix: "[GateEngine] warning:", items, separator: separator)
         }
         Swift.print(resolvedMessage, separator: separator, terminator: terminator)
         #if os(Windows)
@@ -140,7 +145,7 @@ internal enum Log {
         #endif
     }
     
-    @_transparent
+    @_transparent @usableFromInline
     static func warnOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let hash = items.compactMap({$0 as? AnyHashable}).hashValue
         if onceHashes.contains(hash) == false {
@@ -149,13 +154,13 @@ internal enum Log {
         }
     }
     
-    @_transparent
+    @_transparent @usableFromInline
     static func error(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let resolvedMessage: String
         if supportsColor {
-            resolvedMessage = self.message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", items, separator: separator)
+            resolvedMessage = self._message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", items, separator: separator)
         }else{
-            resolvedMessage = self.message(prefix: "[GateEngine] error:", items, separator: separator)
+            resolvedMessage = self._message(prefix: "[GateEngine] error:", items, separator: separator)
         }
         Swift.print(resolvedMessage, separator: separator, terminator: terminator)
         #if canImport(WinSDK)
@@ -163,7 +168,7 @@ internal enum Log {
         #endif
     }
     
-    @_transparent
+    @_transparent @usableFromInline
     static func errorOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let hash = items.compactMap({$0 as? AnyHashable}).hashValue
         if onceHashes.contains(hash) == false {
@@ -172,7 +177,7 @@ internal enum Log {
         }
     }
     
-    @_transparent
+    @_transparent @usableFromInline
     static func assert(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> String, file: StaticString = #file, line: UInt = #line) {
         #if DEBUG
         let condition = condition()
@@ -180,9 +185,9 @@ internal enum Log {
 
         let resolvedMessage: String
         if supportsColor {
-            resolvedMessage = self.message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", message(), separator: " ")
+            resolvedMessage = self._message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", message(), separator: " ")
         }else{
-            resolvedMessage = self.message(prefix: "[GateEngine] error:", message(), separator: " ")
+            resolvedMessage = self._message(prefix: "[GateEngine] error:", message(), separator: " ")
         }
         #if canImport(WinSDK)
         WinSDK.OutputDebugStringW((resolvedMessage + "/n").windowsUTF16)
@@ -191,12 +196,13 @@ internal enum Log {
         #endif
     }
     
+    @usableFromInline
     static func fatalError(_ message: String, file: StaticString = #file, line: UInt = #line) -> Never {
         let resolvedMessage: String
         if supportsColor {
-            resolvedMessage = self.message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", message, separator: " ")
+            resolvedMessage = self._message(prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):", message, separator: " ")
         }else{
-            resolvedMessage = self.message(prefix: "[GateEngine] error:", message, separator: " ")
+            resolvedMessage = self._message(prefix: "[GateEngine] error:", message, separator: " ")
         }
         #if canImport(WinSDK)
         WinSDK.OutputDebugStringW((resolvedMessage + "/n").windowsUTF16)

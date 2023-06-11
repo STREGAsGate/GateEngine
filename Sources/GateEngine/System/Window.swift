@@ -31,9 +31,9 @@ public struct WindowOptions: OptionSet {
     public static let firstLaunchFullScreen = WindowOptions(rawValue: 1 << 3)
     
     /// The recommended window options for the main window
-    public static let defaultForMainWindow: WindowOptions = [.firstLaunchFullScreen]
-    /// The recommended window options for additional windows
-    public static let defaultForOtherWindow: WindowOptions = []
+    internal static let defaultForMainWindow: WindowOptions = [.firstLaunchFullScreen]
+    /// The recommended window options for windows
+    public static let `default`: WindowOptions = []
 }
 
 @MainActor public final class Window: RenderTargetProtocol, _RenderTargetProtocol {
@@ -84,16 +84,16 @@ public struct WindowOptions: OptionSet {
         }
     }
     
-    internal lazy var newPixelSize: Size2 = self.pixelSize
+    internal lazy var newPixelSize: Size2 = self.size
     
     @inlinable @inline(__always)
     public var size: Size2 {
-        return windowBacking.pointSize
+        return windowBacking.pixelSize
     }
     
     @inlinable @inline(__always)
-    public var pixelSize: Size2 {
-        return windowBacking.pixelSize
+    public var pointSize: Size2 {
+        return windowBacking.pointSize
     }
     
     @inlinable @inline(__always)
@@ -103,12 +103,12 @@ public struct WindowOptions: OptionSet {
     
     @inlinable @inline(__always)
     public var safeAreaInsets: Insets {
-        return windowBacking.pointSafeAreaInsets
+        return windowBacking.pixelSafeAreaInsets
     }
     
     @inlinable @inline(__always)
-    public var pixelSafeAreaInsets: Insets {
-        return windowBacking.pixelSafeAreaInsets
+    public var pointSafeAreaInsets: Insets {
+        return windowBacking.pointSafeAreaInsets
     }
     
     @inline(__always)
