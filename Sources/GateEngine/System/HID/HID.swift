@@ -61,6 +61,11 @@ extension HID {
         recentInputMethod = .mouseKeyboard
         mouse.mouseClick(event: event, button: button, count: count, position: position, delta: delta, window: window)
     }
+    @_transparent
+    func mouseScrolled(delta: Position3, device: Int, window: Window?) {
+        recentInputMethod = .mouseKeyboard
+        mouse.mouseScrolled(delta: delta, device: device, window: window)
+    }
 
     @_transparent
     func screenTouchChange(id: AnyHashable, kind: TouchKind, event: TouchChangeEvent, position: Position2) {

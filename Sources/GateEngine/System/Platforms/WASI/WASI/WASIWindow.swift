@@ -262,6 +262,16 @@ final class WASIWindow: WindowBacking {
             }
             event.preventDefault()
         }
+        canvas.addEventListener(type: "wheel") { event in
+            let event = DOM.WheelEvent(unsafelyWrapping: event.jsObject)
+            let delta = Position3(Float(event.deltaX), Float(event.deltaY), Float(event.deltaZ))
+            Task {@MainActor in
+                Game.shared.hid.mouseScrolled(delta: delta,
+                                              device: 1,
+                                              window: self.window)
+            }
+            event.preventDefault()
+        }
         canvas.addEventListener(type: "contextmenu") { event in
             event.preventDefault()
         }

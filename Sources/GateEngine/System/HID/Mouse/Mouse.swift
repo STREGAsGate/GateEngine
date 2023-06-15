@@ -28,6 +28,20 @@ import GameMath
         return button
     }
     
+    
+    @usableFromInline
+    internal var scrollers: [MouseScroller:ScrollerState] = [:]
+    
+    @inlinable @inline(__always)
+    public func scroller(_ mouseScroller: MouseScroller) -> ScrollerState {
+        if let existing = scrollers[mouseScroller] {
+            return existing
+        }
+        let scroller = ScrollerState(mouse: self)
+        scrollers[mouseScroller] = scroller
+        return scroller
+    }
+    
     @usableFromInline
     internal var _hidden: Bool = false
     /// Hide or Unhide the mouse cursor
@@ -110,60 +124,6 @@ import GameMath
     }
 }
 
-public extension Mouse {
-    @MainActor final class ButtonState {
-        @usableFromInline
-        internal unowned let mouse: Mouse
-        @usableFromInline
-        internal var currentRecipt: UInt8 = 0
-        
-        @usableFromInline
-        internal init(mouse: Mouse) {
-            self.mouse = mouse
-        }
-        
-        /// The location of the mouse in the windows native pixels
-        @inlinable @inline(__always)
-        public var position: Position2? {
-            return mouse.position
-        }
-        
-        /// The location of the mouse in the window
-        @inlinable @inline(__always)
-        public var interfacePosition: Position2? {
-            return mouse.interfacePosition
-        }
-        
-        /// The current platform's preference for "Double Click" gesture
-        public internal(set) var pressCount: Int? = nil
-        
-        /// `true` if the button is considered down.
-        public internal(set) var isPressed: Bool = false {
-            didSet {
-                if isPressed != oldValue {
-                    currentRecipt &+= 1
-                }
-            }
-        }
-        
-        /**
-         Returns a recipt for the current press or nil if not pressed.
-         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
-         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
-         */
-        @inlinable @inline(__always)
-        public func isPressed(ifDifferent recipt: inout InputRecipts) -> Bool {
-            guard isPressed else {return false}
-            let key = ObjectIdentifier(self)
-            if let recipt = recipt.values[key], recipt == currentRecipt {
-                return false
-            }
-            recipt.values[key] = currentRecipt
-            return true
-        }
-    }
-}
-
 extension Mouse {
     @inline(__always)
     func mouseChange(event: MouseChangeEvent, position: Position2, delta: Position2, window: Window?) {
@@ -198,5 +158,16 @@ extension Mouse {
         let button = self.button(button)
         button.isPressed = (event == .buttonDown)
         button.pressCount = count
+    }
+    
+    @inline(__always)
+    func mouseScrolled(delta: Position3, device: Int, window: Window?) {
+        if let window {
+            self._window = window
+        }
+        
+        self.scrollers[.x]?.setDelta(delta.x, device: device)
+        self.scrollers[.y]?.setDelta(delta.y, device: device)
+        self.scrollers[.z]?.setDelta(delta.z, device: device)
     }
 }

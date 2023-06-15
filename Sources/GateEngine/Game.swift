@@ -45,6 +45,9 @@ public final class Game {
             }
         }
         #endif
+        
+        self.primeDeltaTime()
+        
         #if !GATEENGINE_PLATFORM_DEFERS_LAUNCH
         self.addPlatformSystems()
         self.delegate.didFinishLaunching(game: self, options: [])
@@ -66,9 +69,18 @@ public final class Game {
     /// The current delta time as a Double
     @usableFromInline
     internal var highPrecisionDeltaTime: Double = 0
+    private var previousTime: Double = 0
+    
+    @inline(__always)
+    func primeDeltaTime() {
+        for _ in 0 ..< 2 {
+            let now: Double = Game.shared.platform.systemTime()
+            self.highPrecisionDeltaTime = now - self.previousTime
+            self.previousTime = now
+        }
+    }
     
     #if GATEENGINE_PLATFORM_EVENT_DRIVEN
-    private var previousTime: Double = 0
     @MainActor internal func eventLoop(completion: @escaping ()->Void) {
         Task {@MainActor in
             let now: Double = Game.shared.platform.systemTime()
@@ -81,14 +93,13 @@ public final class Game {
                 }
             }else{
                 #if GATEENGINE_DEBUG_RENDERING
-                Log.warn("Frame Dropped")
+                Log.warn("Frame Dropped", "DeltaTime:", highPrecisionDeltaTime)
                 #endif
                 completion()
             }
         }
     }
     #else
-    private var previousTime: Double = 0
     internal func gameLoop() {
         Task {@MainActor in
             let now: Double = Game.shared.platform.systemTime()
@@ -100,7 +111,7 @@ public final class Game {
                 }
             }else{
                 #if GATEENGINE_DEBUG_RENDERING
-                Log.warn("Frame Dropped")
+                Log.warn("Frame Dropped. DeltaTime:", Float(highPrecisionDeltaTime))
                 #endif
             }
             self.gameLoop()
