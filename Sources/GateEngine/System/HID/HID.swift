@@ -52,19 +52,19 @@ public enum InputMethod {
 
 extension HID {
     @_transparent
-    func mouseChange(event: MouseChangeEvent, position: Position2, delta: Position2, window: Window?) {
+    func mouseChange(event: Mouse.ChangeEvent, position: Position2, delta: Position2, window: Window?) {
         recentInputMethod = .mouseKeyboard
         mouse.mouseChange(event: event, position: position, delta: delta, window: window)
     }
     @_transparent
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2?, delta: Position2?, window: Window?) {
+    func mouseClick(event: Mouse.ClickEvent, button: MouseButton, count: Int?, position: Position2?, delta: Position2?, window: Window?) {
         recentInputMethod = .mouseKeyboard
         mouse.mouseClick(event: event, button: button, count: count, position: position, delta: delta, window: window)
     }
     @_transparent
-    func mouseScrolled(delta: Position3, device: Int, window: Window?) {
+    func mouseScrolled(delta: Position3, uiDelta: Position3, device: Int, isMomentum: Bool, window: Window?) {
         recentInputMethod = .mouseKeyboard
-        mouse.mouseScrolled(delta: delta, device: device, window: window)
+        mouse.mouseScrolled(delta: delta, uiDelta: uiDelta, device: device, isMomentum: isMomentum, window: window)
     }
 
     @_transparent

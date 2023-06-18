@@ -264,10 +264,31 @@ final class WASIWindow: WindowBacking {
         }
         canvas.addEventListener(type: "wheel") { event in
             let event = DOM.WheelEvent(unsafelyWrapping: event.jsObject)
-            let delta = Position3(-Float(event.deltaX), Float(event.deltaY), Float(event.deltaZ))
+            var delta = Position3(Float(event.deltaX), Float(event.deltaY), Float(event.deltaZ))
+            let uiDelta: Position3
+            switch event.deltaMode {
+            case DOM.WheelEvent.DOM_DELTA_PIXEL:
+                uiDelta = delta
+                delta /= 10
+            case DOM.WheelEvent.DOM_DELTA_PAGE:
+                #if GATEENGINE_DEBUG_HID
+                Log.warn("Scroll Value is DOM_DELTA_PAGE, and is not being converted to expected DOM_DELTA_PIXEL")
+                #endif
+                fallthrough
+            case DOM.WheelEvent.DOM_DELTA_LINE:
+                #if GATEENGINE_DEBUG_HID
+                Log.warn("Scroll Value is DOM_DELTA_LINE, and is not being converted to expected DOM_DELTA_PIXEL")
+                #endif
+                fallthrough
+            default:
+                uiDelta = delta
+            }
+            let immutableDelta = delta
             Task {@MainActor in
-                Game.shared.hid.mouseScrolled(delta: delta,
+                Game.shared.hid.mouseScrolled(delta: immutableDelta,
+                                              uiDelta: uiDelta,
                                               device: 1,
+                                              isMomentum: false,
                                               window: self.window)
             }
             event.preventDefault()

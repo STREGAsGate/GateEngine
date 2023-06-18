@@ -15,6 +15,24 @@ import GameMath
         return _window
     }
     
+    public enum Mode {
+        // Hardware mouse
+        case standard
+        // The mouse is locked and position reprots delta changes
+        case locked
+    }
+    public var mode: Mode = .standard {
+        didSet {
+            if mode == .locked {
+                self.hidden = true
+                self.locked = true
+            }else{
+                self.hidden = false
+                self.locked = false
+            }
+        }
+    }
+    
     @usableFromInline
     internal var buttons: [MouseButton:ButtonState] = [:]
     
@@ -27,7 +45,6 @@ import GameMath
         buttons[mouseButton] = button
         return button
     }
-    
     
     @usableFromInline
     internal var scrollers: [MouseScroller:ScrollerState] = [:]
@@ -46,7 +63,7 @@ import GameMath
     internal var _hidden: Bool = false
     /// Hide or Unhide the mouse cursor
     @inlinable @inline(__always)
-    public var hidden: Bool {
+    internal var hidden: Bool {
         get {return self._hidden}
         set {
             window?.setMouseHidden(newValue)
@@ -55,9 +72,9 @@ import GameMath
     }
     
     /// The location in the window to lock the curosr at
-    public var preferredLockPosition: Position2! = nil
+    internal var preferredLockPosition: Position2! = nil
     /// Lock or Unlock the mouse cursor's position
-    public var locked: Bool = false {
+    internal var locked: Bool = false {
         didSet {
             if locked, self.preferredLockPosition == nil {
                 self.preferredLockPosition = Position2(window!.size / 2)
@@ -88,12 +105,6 @@ import GameMath
         }
     }
     
-    @inlinable @inline(__always)
-    internal func setPosition(_ position: Position2, inWindow window: Window) {
-        self._window = window
-        window.setMousePosition(position)
-    }
-    
     /**
      The user interface scaled position of the mouse cursor
      
@@ -110,9 +121,9 @@ import GameMath
         }
         set {
             if let newValue, let window {
-                self.position = newValue * window.interfaceScale
+                self._position = newValue * window.interfaceScale
             }else{
-                self.position = nil
+                self._position = nil
             }
         }
     }
@@ -121,12 +132,20 @@ import GameMath
     func update() {
         self.deltaPosition = self._nextDeltaPosition
         self._nextDeltaPosition = .zero
+        if locked {
+            self.position = preferredLockPosition
+        }
     }
 }
 
 extension Mouse {
+    public enum ChangeEvent {
+        case entered
+        case moved
+        case exited
+    }
     @inline(__always)
-    func mouseChange(event: MouseChangeEvent, position: Position2, delta: Position2, window: Window?) {
+    func mouseChange(event: ChangeEvent, position: Position2, delta: Position2, window: Window?) {
         switch event {
         case .entered, .moved:
             if locked, let preferredLockPosition {
@@ -134,7 +153,7 @@ extension Mouse {
                 if abs(delta.min) < 500 && abs(delta.max) < 500 {
                     self._nextDeltaPosition += delta
                 }
-                self.position = preferredLockPosition
+                self._position = preferredLockPosition
             }else{
                 self._position = position
             }
@@ -144,8 +163,13 @@ extension Mouse {
             self._window = nil
         }
     }
+    
+    public enum ClickEvent {
+        case buttonDown
+        case buttonUp
+    }
     @inline(__always)
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2?, delta: Position2?, window: Window?) {
+    func mouseClick(event: ClickEvent, button: MouseButton, count: Int?, position: Position2?, delta: Position2?, window: Window?) {
         if let position {
             self._position = position
         }
@@ -161,13 +185,13 @@ extension Mouse {
     }
     
     @inline(__always)
-    func mouseScrolled(delta: Position3, device: Int, window: Window?) {
+    func mouseScrolled(delta: Position3, uiDelta: Position3, device: Int, isMomentum: Bool, window: Window?) {
         if let window {
             self._window = window
         }
         
-        self.scrollers[.x]?.setDelta(delta.x, device: device)
-        self.scrollers[.y]?.setDelta(delta.y, device: device)
-        self.scrollers[.z]?.setDelta(delta.z, device: device)
+        self.scrollers[.x]?.setDelta(delta.x, uiDelta: uiDelta.x, device: device, isMomentum: isMomentum)
+        self.scrollers[.y]?.setDelta(delta.y, uiDelta: uiDelta.y, device: device, isMomentum: isMomentum)
+        self.scrollers[.z]?.setDelta(delta.z, uiDelta: uiDelta.z, device: device, isMomentum: isMomentum)
     }
 }

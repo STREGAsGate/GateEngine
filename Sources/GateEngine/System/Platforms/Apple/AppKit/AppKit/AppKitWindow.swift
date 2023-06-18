@@ -473,11 +473,23 @@ final class UGNSWindow: AppKit.NSWindow {
     }
     
     override func scrollWheel(with event: NSEvent) {
-        let delta = Position3(Float(event.isDirectionInvertedFromDevice ? event.deltaX : -event.deltaX),
-                              Float(event.isDirectionInvertedFromDevice ? -event.deltaY : event.deltaY),
+        let delta = Position3(Float(event.isDirectionInvertedFromDevice ? event.deltaX : event.deltaX * -1),
+                              Float(event.isDirectionInvertedFromDevice ? event.deltaY * -1 : event.deltaY),
                               Float(event.deltaZ))
+        let uiDelta = Position3(Float(event.scrollingDeltaX),
+                                Float(event.scrollingDeltaY),
+                                Float(event.deltaZ))
+        let isMomentum: Bool
+        switch event.momentumPhase {
+        case [], .cancelled, .ended:
+            isMomentum = false
+        default:
+            isMomentum = true
+        }
         Game.shared.hid.mouseScrolled(delta: delta,
+                                      uiDelta: uiDelta,
                                       device: event.deviceID,
+                                      isMomentum: isMomentum,
                                       window: window)
         
         super.scrollWheel(with: event)

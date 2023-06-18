@@ -134,7 +134,6 @@ public final class WASIPlatform: Platform, InternalPlatform {
         return false
     }
     
-    
     internal enum Browser: CustomStringConvertible {
         case safari(version: Version)
         case mobileSafari(version: Version)

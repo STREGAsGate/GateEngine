@@ -26,14 +26,19 @@ public extension Mouse {
         internal var currentRecipt: UInt8 = 0
         
         private var mostRecentDevice: Int = 0
+        @usableFromInline
+        internal var lastValueWasMomentum: Bool = false
         
         public private(set) var direction: Direction? = nil
         public private(set) var delta: Float = 0
+        public private(set) var uiDelta: Float = 0
         
         public var ticks: Int {
-            if let min = ranges[mostRecentDevice]?.min {
-                let ticks = Int(delta / min)
-                return ticks
+            if lastValueWasMomentum == false {
+                if let min = ranges[mostRecentDevice]?.min {
+                    let ticks = Int(delta / min)
+                    return ticks
+                }
             }
             return 0
         }
@@ -43,9 +48,11 @@ public extension Mouse {
             var max: Float = -.greatestFiniteMagnitude
         }
         private var ranges: [Int:DeviceRange] = [:]
-        internal func setDelta(_ delta: Float, device: Int) {
+        internal func setDelta(_ delta: Float, uiDelta: Float, device: Int, isMomentum: Bool) {
             self.delta = delta
+            self.uiDelta = uiDelta
             self.mostRecentDevice = device
+            self.lastValueWasMomentum = isMomentum
             
             if delta != 0 {
                 currentRecipt &+= 1
@@ -58,13 +65,15 @@ public extension Mouse {
                 direction = .positive
             }
             
-            var deviceRange = ranges[device] ?? DeviceRange()
-            deviceRange.max = Float.maximum(deviceRange.max, abs(delta))
-            let min = Float.minimum(deviceRange.min, abs(delta))
-            if min > 0 {
-                deviceRange.min = min
+            if isMomentum == false {
+                var deviceRange = ranges[device] ?? DeviceRange()
+                deviceRange.max = Float.maximum(deviceRange.max, abs(delta))
+                let min = Float.minimum(deviceRange.min, abs(delta))
+                if min > 0 {
+                    deviceRange.min = min
+                }
+                ranges[device] = deviceRange
             }
-            ranges[device] = deviceRange
         }
         
         @usableFromInline
@@ -95,13 +104,17 @@ public extension Mouse {
          - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
          */
         @inlinable @inline(__always)
-        public func didScroll(ifDifferent recipt: inout InputRecipts) -> Bool {
+        public func didScroll(ifDifferent recipt: inout InputRecipts, includingMomentum includeMomentum: Bool = false) -> Bool {
             guard delta != 0 else {return false}
             let key = ObjectIdentifier(self)
+            
             if let recipt = recipt.values[key], recipt == currentRecipt {
                 return false
             }
             recipt.values[key] = currentRecipt
+            if includeMomentum == false && lastValueWasMomentum {
+                return false
+            }
             return true
         }
     }
