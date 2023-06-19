@@ -50,7 +50,7 @@ public extension Mouse {
         }
         
         /// The current platform's preference for "Double Click" gesture
-        public internal(set) var pressCount: Int? = nil
+        public internal(set) var pressCount: Int = 1
         
         /// `true` if the button is considered down.
         public internal(set) var isPressed: Bool = false {
@@ -75,6 +75,30 @@ public extension Mouse {
             }
             recipt.values[key] = currentRecipt
             return true
+        }
+
+
+        public enum Gesture {
+            case singleClick
+            case doubleClick
+            case trippleClick
+        }
+        @inlinable @inline(__always)
+        public func isPressed(ifDifferent recipt: inout InputRecipts, andGesture gesture: Gesture) -> Bool {
+            guard isPressed else {return false}
+            let key = ObjectIdentifier(self)
+            if let recipt = recipt.values[key], recipt == currentRecipt {
+                return false
+            }
+            recipt.values[key] = currentRecipt
+            switch gesture {
+            case .singleClick:
+                return pressCount == 1
+            case .doubleClick:
+                return pressCount == 2
+            case .trippleClick:
+                return pressCount == 3
+            }
         }
     }
 }

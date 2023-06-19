@@ -21,7 +21,7 @@ public final class Win32Platform: InternalPlatform {
         if let existing = pathCache[path] {
             return existing
         }
-        let searchPaths = await Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
+        let searchPaths = Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             let path = file.path
@@ -44,19 +44,118 @@ public final class Win32Platform: InternalPlatform {
         }
         throw "failed to locate."
     }
+
+    lazy private(set) var userDataURL: URL = {
+        var pwString: PWSTR! = nil
+        var folderID: KNOWNFOLDERID = FOLDERID_LocalAppData
+        _ = SHGetKnownFolderPath(&folderID, DWORD(KF_FLAG_DEFAULT.rawValue), nil, &pwString)
+        let string: String = String(windowsUTF16: pwString)
+        CoTaskMemFree(pwString)
+        return URL(fileURLWithPath: string).appendingPathComponent("GateEngine/\(Game.shared.identifier)/")
+    }()
+    lazy private(set) var sharedDataURL: URL = {
+        var pwString: PWSTR! = nil
+        var folderID: KNOWNFOLDERID = FOLDERID_ProgramData
+        _ = SHGetKnownFolderPath(&folderID, DWORD(KF_FLAG_DEFAULT.rawValue), nil, &pwString)
+        let string: String = String(windowsUTF16: pwString)
+        CoTaskMemFree(pwString)
+        return URL(fileURLWithPath: string).appendingPathComponent("GateEngine/\(Game.shared.identifier)/")
+    }()
+}
+
+internal extension Win32Platform {
+    private func _queryRegistry(forKey path: String, dataSize: Int) -> (data: [UInt8], size: DWORD, type: DWORD)? {
+        var components: [String] = path.components(separatedBy: "\\")
+        let _hkey = components.removeFirst()
+        let key = components.removeLast()
+        let subKey = components.joined(separator: "\\") + "\\"
+        let hKey: HKEY
+        switch _hkey {
+        case "HKEY_CURRENT_USER":
+            hKey = HKEY_CURRENT_USER
+        default:
+            return nil
+        }
+
+        var resultType: DWORD = 0
+        var resultData: [UInt8] = Array(repeating: 0, count: dataSize)
+        var resultSize: DWORD = DWORD(resultData.count)
+        let nError: LSTATUS = WinSDK.RegGetValueW(hKey, subKey.windowsUTF16, key.windowsUTF16, DWORD(RRF_RT_ANY), &resultType, &resultData, &resultSize)
+        if nError != ERROR_SUCCESS {
+            switch nError {
+            case ERROR_MORE_DATA:
+                Log.error("Failed to allocate space for registry result.")
+            case ERROR_FILE_NOT_FOUND:
+                Log.errorOnce("Registry sub key not found:", "HKEY_CURRENT_USER\\\(key)")
+            case ERROR_INVALID_PARAMETER:
+                Log.error("Key permissions are wrong.")
+            case ERROR_BAD_PATHNAME:
+                Log.errorOnce("Registry sub key path is invalid:", key)
+            default:
+                Log.error("Unknown registry lookup error:", nError)
+            }
+            return nil
+        }
+        return (resultData, resultSize, resultType)
+    }
+
+    func queryRegistry(forKey path: String) -> Int? {
+        guard let result = _queryRegistry(forKey: path, dataSize: MemoryLayout<Int>.size) else {return nil}
+        return result.data.withUnsafeBytes{ resultData in
+            switch result.type {
+            case REG_DWORD, REG_DWORD_LITTLE_ENDIAN:
+                return Int(littleEndian: Int(resultData.loadUnaligned(as: Int32.self)))
+            case REG_DWORD_BIG_ENDIAN:
+                return Int(bigEndian: Int(resultData.loadUnaligned(as: Int32.self)))
+            case REG_QWORD, REG_QWORD_LITTLE_ENDIAN:
+                return Int(littleEndian: Int(resultData.loadUnaligned(as: Int64.self)))
+            default:
+                Log.errorOnce("Registry sub key has incorrect type:", result.type)
+                return nil
+            }
+        }
+    }
+    @_transparent
+    func queryRegistry(forKey key: String) -> Bool {
+        if let value: Int = queryRegistry(forKey: key) {
+            return value != 0
+        }
+        return false
+    }
+    func queryRegistry(forKey path: String) -> String? {
+        guard let result = _queryRegistry(forKey: path, dataSize: 255) else {return nil}
+        return result.data.withUnsafeBytes{ data in
+            switch result.type {
+            case REG_SZ:
+                return String(windowsUTF16: data.baseAddress!.assumingMemoryBound(to: WCHAR.self))
+            case REG_EXPAND_SZ:
+                let stringIn: UnsafePointer<WCHAR> = data.baseAddress!.assumingMemoryBound(to: WCHAR.self)
+                let stringOut: UnsafeMutablePointer<WCHAR>! = nil
+                let result = ExpandEnvironmentStringsW(stringIn, stringOut, result.size)
+                if result != ERROR_SUCCESS {
+                    return nil
+                }
+                return String(windowsUTF16: stringOut)
+            default:
+                return nil
+            }
+        }
+    }
 }
 
 extension Win32Platform {
     private func makeManifest() {
         var url = URL(fileURLWithPath: CommandLine.arguments[0])
-        let manifest = """
-        <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" >
-        <asmv3:application>
-            <asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
-            <dpiAware>true</dpiAware>
-            </asmv3:windowsSettings>
-        </asmv3:application>
-        </assembly>
+        let manifest: String = """
+            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
+            <asmv3:application>
+                <asmv3:windowsSettings>
+                <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+                <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+                </asmv3:windowsSettings>
+            </asmv3:application>
+            </assembly>
         """
         let name: String = url.lastPathComponent + ".manifest"
         url.deleteLastPathComponent()
@@ -70,7 +169,8 @@ extension Win32Platform {
         }
     }
     @MainActor func main() {
-        makeManifest()
+        SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
+        SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)
 
         var msg: MSG = MSG()
         var nExitCode: Int32 = EXIT_SUCCESS

@@ -25,13 +25,17 @@ final class Win32Window: WindowBacking {
     var pixelSize: Size2 = Size2(640, 480)
     var interfaceScaleFactor: Float = 1
     
-    @preconcurrency @MainActor func updateStoredMetaData() {
+    @preconcurrency @MainActor func updateStoredMetaData(newSize size: SIZE?) {
         self.interfaceScaleFactor = Float(GetDpiForWindow(hWnd)) / Float(USER_DEFAULT_SCREEN_DPI)
-
-        var frame: RECT = RECT()
-        WinSDK.GetClientRect(self.hWnd, &frame)
-        self.pixelSize = Size2(width: Float(frame.width), height: Float(frame.height))
-        self.pointSize = self.pixelSize / self.interfaceScaleFactor
+        if let size {
+            self.pixelSize = Size2(width: Float(size.cx), height: Float(size.cy))
+            self.pointSize = self.pixelSize / self.interfaceScaleFactor
+        }else{
+            var frame: RECT = RECT()
+            WinSDK.GetClientRect(self.hWnd, &frame)
+            self.pixelSize = Size2(width: Float(frame.width), height: Float(frame.height))
+            self.pointSize = self.pixelSize / self.interfaceScaleFactor
+        }
     }
     
     required init(window: Window) {
@@ -51,6 +55,13 @@ final class Win32Window: WindowBacking {
         self.hWnd = hWnd
         self.title = window.identifier
         SetWindowLongPtrW(hWnd, GWLP_USERDATA, unsafeBitCast(self as AnyObject, to: LONG_PTR.self))
+
+        Task {@MainActor in
+            let interfaceScaleFactor: INT = INT(GetDpiForWindow(hWnd)) / USER_DEFAULT_SCREEN_DPI
+            var frame: RECT = RECT()
+            GetWindowRect(hWnd, &frame)
+            MoveWindow(hWnd, frame.x, frame.y, frame.width * interfaceScaleFactor, frame.height * interfaceScaleFactor, true)
+        }
     }
 
    var title: String? {
@@ -90,7 +101,6 @@ final class Win32Window: WindowBacking {
     @MainActor func hide() {
         guard self.state == .shown else {return}
         WinSDK.CloseWindow(self.hWnd)
-        self.updateStoredMetaData()
     }
 
     @MainActor func close() {
@@ -113,6 +123,13 @@ final class Win32Window: WindowBacking {
             Log.error("Failed to set mouse position.")
         }else{
             mouseState.setMousePosition(to: position)
+            #if GATEENGINE_DEBUG_HID
+            let oldP: POINT = p
+            WinSDK.GetCursorPos(&p)
+            if p.x != oldP.x && p.y != oldP.y {
+                Log.errorOnce("Cursor Isn't Locked. Are you using remote desktop?")
+            }   
+            #endif
         }
     }
 
@@ -127,6 +144,28 @@ final class Win32Window: WindowBacking {
             }
         }
         WinSDK.DestroyWindow(hWnd)
+    }
+
+    lazy var doubleClickTime: Double = Double(GetDoubleClickTime()) / 1000
+    struct ClickCount {
+        var count: Int = 0
+        var previousTime: Double = 0
+    }
+    var clickCounts: [MouseButton:ClickCount] = [:]
+    func clickCount(_ button: MouseButton, incrementing: Bool) -> Int {
+        var click: ClickCount = clickCounts[button] ?? ClickCount()
+        if incrementing {
+            let now: Double = Game.shared.platform.systemTime()
+            let delta: Double = now - click.previousTime
+            if delta <= doubleClickTime {
+                click.count += 1
+            }else{
+                click.count = 1
+            }
+            click.previousTime = now
+            clickCounts[button] = click
+        }
+        return click.count
     }
 }
 
@@ -231,7 +270,7 @@ fileprivate class Win32WindowClass {
         }
     }
 
-    var meodifierKeys: KeyboardModifierMask = []
+    var modifierKeys: KeyboardModifierMask = []
 }
 
 //These are the notifation calls
@@ -246,8 +285,8 @@ fileprivate extension Win32Window {
     @inline(__always)
     @preconcurrency
     @MainActor
-    func _msgResized() {
-        self.updateStoredMetaData()
+    func _msgResized(_ wParam: WPARAM, _ lParam: LPARAM) {
+        self.updateStoredMetaData(newSize: SIZE(cx: LONG(LOWORD(lParam)), cy: LONG(HIWORD(lParam))))
         self.window.newPixelSize = self.pixelSize
     }
 
@@ -255,9 +294,9 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _msgResizing(_ wParam: WPARAM, _ lParam: LPARAM) {
-        guard let rect: RECT = PRECT(bitPattern: Int(lParam))?.pointee else {return}
-        self.pixelSize = Size2(Float(rect.width), Float(rect.height))
-        self.window.newPixelSize = self.pixelSize        
+        let rect: RECT = PRECT(bitPattern: Int(lParam))!.pointee
+        self.updateStoredMetaData(newSize: SIZE(cx: rect.width, cy: rect.height))   
+        self.window.newPixelSize = self.pixelSize  
     }
 
     @inline(__always)
@@ -265,7 +304,7 @@ fileprivate extension Win32Window {
     @MainActor
     func _msgShow() {
         self.show()
-        self.updateStoredMetaData()
+        self.updateStoredMetaData(newSize: nil)
     }
 
     @inline(__always)
@@ -273,7 +312,7 @@ fileprivate extension Win32Window {
     @MainActor
     func _msgRestore() {
         self.state = .shown
-        self.updateStoredMetaData()
+        self.updateStoredMetaData(newSize: nil)
     }
 
     @inline(__always)
@@ -301,7 +340,7 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _msgMouseMoved(_ lparam: LPARAM) {
-        var event: MouseChangeEvent = .moved
+        var event: Mouse.ChangeEvent = .moved
         if mouseState.state == .outside {
             event = .entered
         }
@@ -321,6 +360,54 @@ fileprivate extension Win32Window {
                                     position: mouseState.position,
                                     delta: mouseState.delta,
                                     window: self.window)
+    }
+
+    @inline(__always)
+    @preconcurrency
+    @MainActor
+    func _msgMouseScrolledVertical(_ wParam: WPARAM, _ lParam: LPARAM) {
+        mouseState.mouseMoved(lParam)
+        let yUIDelta: Float = Float(GET_WHEEL_DELTA_WPARAM(wParam))
+        var yDelta: Float = yUIDelta
+        let WHEEL_DELTA = Float(WinSDK.WHEEL_DELTA)
+        if abs(yDelta).truncatingRemainder(dividingBy: WHEEL_DELTA) == 0 {
+            yDelta = yUIDelta / WHEEL_DELTA
+        }else if let direction: Int = Game.shared.platform.queryRegistry(forKey: "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PrecisionTouchPad\\ScrollDirection") {
+            if direction == 0 {
+                yDelta *= -1
+            }
+        }
+        let delta: Position3 = Position3(0, yDelta, 0)
+        let uiDelta: Position3 = Position3(0, yUIDelta, 0)
+        Game.shared.hid.mouseScrolled(delta: delta,
+                                      uiDelta: uiDelta,
+                                      device: 1,
+                                      isMomentum: false,
+                                      window: self.window)
+    }
+
+    @inline(__always)
+    @preconcurrency
+    @MainActor
+    func _msgMouseScrolledHorizontal(_ wParam: WPARAM, _ lParam: LPARAM) {
+        mouseState.mouseMoved(lParam)
+        let xUIDelta: Float = Float(GET_WHEEL_DELTA_WPARAM(wParam))
+        var xDelta: Float = xUIDelta
+        let WHEEL_DELTA = Float(WinSDK.WHEEL_DELTA)
+        if abs(xDelta).truncatingRemainder(dividingBy: WHEEL_DELTA) == 0 {
+            xDelta = xUIDelta / WHEEL_DELTA
+        }else if let direction: Int = Game.shared.platform.queryRegistry(forKey: "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PrecisionTouchPad\\ScrollDirection") {
+            if direction == 0 {
+                xDelta *= -1
+            }
+        }
+        let delta: Position3 = Position3(xDelta, 0, 0)
+        let uiDelta: Position3 = Position3(xUIDelta, 0, 0)
+        Game.shared.hid.mouseScrolled(delta: delta,
+                                      uiDelta: uiDelta,
+                                      device: 1,
+                                      isMomentum: false,
+                                      window: self.window)
     }
 
     //return true if input was used
@@ -351,11 +438,12 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _mouseDownLeft(_ lparam: LPARAM) {
+        mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: .button1,
-                                   count: nil,
-                                   position: positionFrom(lparam),
-                                   delta: nil,
+                                   count: clickCount(.button1, incrementing: true),
+                                   position: mouseState.position,
+                                   delta: mouseState.delta,
                                    window: self.window)
     }
 
@@ -363,11 +451,12 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _mouseUpLeft(_ lparam: LPARAM) {
+        mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: .button1,
-                                   count: nil,
-                                   position: positionFrom(lparam),
-                                   delta: nil,
+                                   count: clickCount(.button1, incrementing: false),
+                                   position: mouseState.position,
+                                   delta: mouseState.delta,
                                    window: self.window)
     }
 
@@ -375,11 +464,12 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _mouseDownRight(_ lparam: LPARAM) {
+        mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: .button2,
-                                   count: nil,
-                                   position: positionFrom(lparam),
-                                   delta: nil,
+                                   count: clickCount(.button2, incrementing: true),
+                                   position: mouseState.position,
+                                   delta: mouseState.delta,
                                    window: self.window)
     }
 
@@ -387,11 +477,12 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _mouseUpRight(_ lparam: LPARAM) {
+        mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: .button2,
-                                   count: nil,
-                                   position: positionFrom(lparam),
-                                   delta: nil,
+                                   count: clickCount(.button2, incrementing: false),
+                                   position: mouseState.position,
+                                   delta: mouseState.delta,
                                    window: self.window)
     }
 
@@ -399,11 +490,12 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _mouseDownMiddle(_ lparam: LPARAM) {
+        mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: .button3,
-                                   count: nil,
-                                   position: positionFrom(lparam),
-                                   delta: nil,
+                                   count: clickCount(.button3, incrementing: true),
+                                   position: mouseState.position,
+                                   delta: mouseState.delta,
                                    window: self.window)
     }
 
@@ -411,11 +503,12 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _mouseUpMiddle(_ lparam: LPARAM) {
+        mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: .button3,
-                                   count: nil,
-                                   position: positionFrom(lparam),
-                                   delta: nil,
+                                   count: clickCount(.button3, incrementing: false),
+                                   position: mouseState.position,
+                                   delta: mouseState.delta,
                                    window: self.window)
     }
 
@@ -423,20 +516,23 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _mouseDownX(_ lparam: LPARAM, _ wparam: WPARAM) {
-        let wparam: Int32 = Int32(wparam)
+        mouseState.mouseMoved(lparam)
+        let xButton: INT = GET_XBUTTON_WPARAM(wparam)
         let button: MouseButton
-        if wparam & XBUTTON1 == XBUTTON1 {
+        switch xButton {
+        case XBUTTON1:
             button = .button4
-        }else if wparam & XBUTTON2 == XBUTTON2 {
+        case XBUTTON2:
             button = .button5
-        }else{
+        default:
             button = .unknown(nil)
         }
+        mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: button,
-                                   count: nil,
-                                   position: positionFrom(lparam),
-                                   delta: nil,
+                                   count: clickCount(button, incrementing: true),
+                                   position: mouseState.position,
+                                   delta: mouseState.delta,
                                    window: self.window)
     }
 
@@ -444,19 +540,21 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _mouseUpX(_ lparam: LPARAM, _ wparam: WPARAM) {
-        let wparam: Int32 = Int32(wparam)
+        mouseState.mouseMoved(lparam)
+        let xButton: INT = GET_XBUTTON_WPARAM(wparam)
         let button: MouseButton
-        if wparam & XBUTTON1 == XBUTTON1 {
+        switch xButton {
+        case XBUTTON1:
             button = .button4
-        }else if wparam & XBUTTON2 == XBUTTON2 {
+        case XBUTTON2:
             button = .button5
-        }else{
-            button = .unknown(nil)
+        default:
+            button = .unknown(Int(xButton))
         }
         mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: button,
-                                   count: nil,
+                                   count: clickCount(button, incrementing: false),
                                    position: mouseState.position,
                                    delta: mouseState.delta,
                                    window: self.window)
@@ -923,7 +1021,16 @@ fileprivate typealias WindowProc = @MainActor @convention(c) (HWND?, UINT, WPARA
         default:
             break
         }
-        window._msgResized()
+        window._msgResized(wParam, lParam)
+        return 0
+    case WM_SIZING:
+        window._msgResizing(wParam, lParam)
+        return 0
+    case WM_MOUSEWHEEL:
+        window._msgMouseScrolledVertical(wParam, lParam)
+        return 0
+    case WM_MOUSEHWHEEL:
+        window._msgMouseScrolledHorizontal(wParam, lParam)
         return 0
     case WM_MOUSEMOVE:
         window._msgMouseMoved(lParam)
@@ -943,7 +1050,7 @@ fileprivate typealias WindowProc = @MainActor @convention(c) (HWND?, UINT, WPARA
     case WM_RBUTTONUP:
         window._mouseUpRight(lParam)
         return 0
-    case WM_LBUTTONDOWN:
+    case WM_MBUTTONDOWN:
         window._mouseDownMiddle(lParam)
         return 0
     case WM_MBUTTONUP:
@@ -991,7 +1098,7 @@ fileprivate struct MouseState {
     init(_ hwnd: HWND) {
         self.hwnd = hwnd
     }
-    var deltaPosition: Position2 = .zero
+    private var deltaPosition: Position2 = .zero
     @inline(__always)
     mutating func setMousePosition(to newPosition: Position2) {
         self.deltaPosition = floor(newPosition)
@@ -1008,11 +1115,12 @@ fileprivate struct MouseState {
     @inline(__always)
     mutating func mouseMoved(_ lpParam: LPARAM) {
         guard tracking == false else {return}
+        let newPosition: Position2 = positionFrom(lpParam)
+        guard position != newPosition else {return}
         state = .inside
-        let newPosition = positionFrom(lpParam)
-        self.delta = newPosition - deltaPosition
+        self.delta = (newPosition - deltaPosition) / 2
         self.position = newPosition
-        var event = TRACKMOUSEEVENT()
+        var event: TRACKMOUSEEVENT = TRACKMOUSEEVENT()
         event.cbSize = DWORD(MemoryLayout<TRACKMOUSEEVENT>.size)
         event.dwFlags = DWORD(TME_LEAVE)
         event.hwndTrack = hwnd
@@ -1023,49 +1131,6 @@ fileprivate struct MouseState {
     mutating func mouseExited() {
         tracking = false
         state = .outside
-    }
-}
-
-@_transparent
-fileprivate func LOWORD<T: BinaryInteger>(_ w: T) -> WORD {
-    return WORD((DWORD_PTR(w) >> 0) & 0xffff)
-}
-
-@_transparent
-fileprivate func HIWORD<T: BinaryInteger>(_ w: T) -> WORD {
-    return WORD((DWORD_PTR(w) >> 16) & 0xffff)
-}
-
-@_transparent
-fileprivate func GET_X_LPARAM(_ lParam: LPARAM) -> WORD {
-    return WORD(SHORT(LOWORD(lParam)))
-}
-
-@_transparent
-fileprivate func GET_Y_LPARAM(_ lParam: LPARAM) -> WORD {
-    return WORD(SHORT(HIWORD(lParam)))
-}
-
-@_transparent
-fileprivate func positionFrom(_ lparam: LPARAM) -> Position2 {
-    let x: WORD = GET_X_LPARAM(lparam)
-    let y: WORD = GET_Y_LPARAM(lparam)
-    return Position2(Float(x), Float(y))
-}
-
-fileprivate extension Rect {
-    func RECT() -> WinSDK.RECT {
-        let left: Int32 = Int32(position.x)
-        let top: Int32 = Int32(position.y)
-        let right: Int32 = Int32(position.x + size.width)
-        let bottom: Int32 = Int32(position.y + size.height)
-        return WinSDK.RECT(left: left, top: top, right: right, bottom: bottom)
-    }
-
-    init(_ RECT: WinSDK.RECT) {
-        let position: Position2 = Position2(x: Float(RECT.left), y: Float(RECT.top))
-        let size: Size2 = Size2(width: Float(RECT.width), height: Float(RECT.height))
-        self.init(position: position, size: size)
     }
 }
 

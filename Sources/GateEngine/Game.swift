@@ -11,9 +11,11 @@ import GameMath
 public final class Game {
     public let platform: CurrentPlatform = CurrentPlatform()
     
-    @MainActor public let delegate: GameDelegate
+    public let delegate: GameDelegate
     
     @MainActor public private(set) lazy var state: State = platform.loadState()
+
+    lazy private(set) var identifier: String = delegate.resolvedGameIdentifier()
     
     nonisolated public let isHeadless: Bool
     @MainActor internal init(delegate: GameDelegate) {

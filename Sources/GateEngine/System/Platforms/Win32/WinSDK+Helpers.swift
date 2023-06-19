@@ -8,6 +8,47 @@
 import WinSDK
 
 @_transparent
+@_specialize(where T == UInt64)
+@_specialize(where T == Int64)
+internal func LOWORD<T: FixedWidthInteger>(_ w: T) -> WORD {
+    return WORD((DWORD_PTR(w) >> 0) & 0xffff)
+}
+
+@_transparent
+@_specialize(where T == UInt64)
+@_specialize(where T == Int64)
+internal func HIWORD<T: FixedWidthInteger>(_ w: T) -> WORD {
+    return WORD((DWORD_PTR(w) >> 16) & 0xffff)
+}
+
+@_transparent
+internal func GET_X_LPARAM(_ lParam: LPARAM) -> SHORT {
+    return SHORT(bitPattern: LOWORD(lParam))
+}
+
+@_transparent
+internal func GET_Y_LPARAM(_ lParam: LPARAM) -> SHORT {
+    return SHORT(bitPattern: HIWORD(lParam))
+}
+
+@_transparent
+internal func GET_WHEEL_DELTA_WPARAM(_ wParam: WPARAM) -> SHORT {
+    return SHORT(bitPattern: HIWORD(wParam))
+}
+
+@_transparent
+internal func GET_XBUTTON_WPARAM(_ wParam: WPARAM) -> INT {
+    return INT(SHORT(bitPattern: HIWORD(wParam)))
+}
+
+@_transparent
+internal func positionFrom(_ lparam: LPARAM) -> Position2 {
+    let x: SHORT = GET_X_LPARAM(lparam)
+    let y: SHORT = GET_Y_LPARAM(lparam)
+    return Position2(Float(x), Float(y))
+}
+
+@_transparent
 internal var QS_INPUT: DWORD {
     return DWORD(QS_MOUSE) | DWORD(QS_KEY) | DWORD(QS_RAWINPUT) | DWORD(QS_TOUCH) | DWORD(QS_POINTER)
 }
@@ -79,6 +120,40 @@ internal func clock_gettime(_ X: Int, _ tv: inout timespec) -> Int {
     tv.tv_sec = Double(t.QuadPart) / 1000000
     tv.tv_nsec = Double(t.QuadPart).truncatingRemainder(dividingBy: 1000000)
     return 0
+}
+
+internal extension String {
+    @inlinable @inline(__always)
+    init(windowsUTF8 lpcstr: LPCSTR) {
+        self = withUnsafePointer(to: lpcstr) {
+            return $0.withMemoryRebound(to: UInt8.self, capacity: MemoryLayout.size(ofValue: $0)) {
+                return String(cString: $0)
+            }
+        }
+    }
+
+    @inlinable @inline(__always)
+    var windowsUTF8: Array<CHAR> {
+        return self.withCString(encodedAs: UTF8.self) {
+            return $0.withMemoryRebound(to: CHAR.self, capacity: self.utf8.count + 1) {
+                return Array(UnsafeBufferPointer(start: $0, count: self.utf8.count + 1))
+            }
+        }
+    }
+
+    @inlinable @inline(__always)
+    init(windowsUTF16 lpcwstr: LPCWSTR) {
+        self.init(decodingCString: lpcwstr, as: UTF16.self)
+    }
+
+    @inlinable @inline(__always)
+    var windowsUTF16: Array<WCHAR> {
+        return self.withCString(encodedAs: UTF16.self) {
+            return $0.withMemoryRebound(to: WCHAR.self, capacity: self.utf16.count + 1) {
+                return Array(UnsafeBufferPointer(start: $0, count: self.utf16.count + 1))
+            }
+        }
+    }
 }
 
 #endif

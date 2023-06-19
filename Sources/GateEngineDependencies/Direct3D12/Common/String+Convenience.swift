@@ -7,7 +7,7 @@
 
 import WinSDK
 
-public extension String {
+internal extension String {
     @inlinable @inline(__always)
     init(windowsUTF8 lpcstr: LPCSTR) {
         self = withUnsafePointer(to: lpcstr) {
