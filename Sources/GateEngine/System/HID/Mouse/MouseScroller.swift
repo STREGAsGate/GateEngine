@@ -29,6 +29,10 @@ public extension Mouse {
         @usableFromInline
         internal var lastValueWasMomentum: Bool = false
         
+        public enum Direction {
+            case positive
+            case negative
+        }
         public private(set) var direction: Direction? = nil
         public private(set) var delta: Float = 0
         public private(set) var uiDelta: Float = 0
@@ -93,14 +97,10 @@ public extension Mouse {
             return mouse.interfacePosition
         }
         
-        public enum Direction {
-            case positive
-            case negative
-        }
-        
         /**
          Returns a recipt for the current press or nil if not pressed.
          - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
+         - parameter includeMomentum: When set to false, excludes values that were generated as momentum effects. Only works on some platforms (like macOS).
          - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
          */
         @inlinable @inline(__always)
