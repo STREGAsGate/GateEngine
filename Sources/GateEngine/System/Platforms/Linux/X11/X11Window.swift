@@ -76,6 +76,28 @@ final class X11Window: WindowBacking {
     lazy var xic: XIC = XCreateIC(XOpenIM(xDisplay, nil, nil, nil), xWindow)
     private var previousKeyEvent: XKeyEvent = XKeyEvent()
     
+    let doubleClickTime: Double = 200 / 1000
+    struct ClickCount {
+        var count: Int = 0
+        var previousTime: Double = 0
+    }
+    var clickCounts: [MouseButton:ClickCount] = [:]
+    func clickCount(_ button: MouseButton, incrementing: Bool) -> Int {
+        var click: ClickCount = clickCounts[button] ?? ClickCount()
+        if incrementing {
+            let now: Double = Game.shared.platform.systemTime()
+            let delta: Double = now - click.previousTime
+            if delta <= doubleClickTime {
+                click.count += 1
+            }else{
+                click.count = 1
+            }
+            click.previousTime = now
+            clickCounts[button] = click
+        }
+        return click.count
+    }
+
     @MainActor func processEvent(_ event: XEvent) {
         @_transparent
         func isRepeatedKey(_ event: XKeyEvent) -> Bool {
@@ -87,7 +109,6 @@ final class X11Window: WindowBacking {
             glXSwapBuffers(xDisplay, xWindow)
             XFlush(xDisplay)
         case ConfigureNotify:
-            Log.info("Resize")
             let event: XConfigureEvent = event.xconfigure
             self.updateStoredMetaData(pixelSize: Size2(Float(event.width), Float(event.height)))
             self.window.newPixelSize = self.pixelSize
@@ -111,15 +132,15 @@ final class X11Window: WindowBacking {
             let event: XMotionEvent = event.xmotion
             guard event.same_screen != 0 else {return}
             Game.shared.hid.mouseChange(event: .entered, 
-                                        position: Position2(Float(event.x), Float(event.y)), 
-                                        delta: .zero, 
+                                        position: Position2(Float(event.x), Float(event.y)),
+                                        delta: .zero,
                                         window: self.window)
         case MotionNotify/*, ButtonMotionMask*/:
             let event: XMotionEvent = event.xmotion
             guard event.same_screen != 0 else {return}
-            Game.shared.hid.mouseChange(event: .moved, 
-                                        position: Position2(Float(event.x), Float(event.y)), 
-                                        delta: .zero, 
+            Game.shared.hid.mouseChange(event: .moved,
+                                        position: Position2(Float(event.x), Float(event.y)),
+                                        delta: .zero,
                                         window: self.window)
         case LeaveNotify:
             let event: XMotionEvent = event.xmotion
@@ -131,18 +152,29 @@ final class X11Window: WindowBacking {
         case ButtonPress:
             let event: XButtonEvent = event.xbutton
             guard event.same_screen != 0 else {return}
-            Game.shared.hid.mouseClick(event: .buttonDown, 
-                                       button: mouseButtonFromEvent(event), 
-                                       count: nil,
-                                       position: Position2(Float(event.x), Float(event.y)), 
-                                       delta: .zero, 
-                                       window: self.window)
+
+            if let delta: Position3 = scrollDeltaFromEvent(event) {
+                Game.shared.hid.mouseScrolled(delta: -delta, 
+                                              uiDelta: delta, 
+                                              device: 1, 
+                                              isMomentum: false, 
+                                              window: self.window)
+            }else{
+                let button: MouseButton = mouseButtonFromEvent(event)
+                Game.shared.hid.mouseClick(event: .buttonDown, 
+                                        button: button, 
+                                        count: clickCount(button, incrementing: true),
+                                        position: Position2(Float(event.x), Float(event.y)), 
+                                        delta: .zero, 
+                                        window: self.window)
+            }
         case ButtonRelease:
             let event: XButtonEvent = event.xbutton
             guard event.same_screen != 0 else {return}
+            let button: MouseButton = mouseButtonFromEvent(event)
             Game.shared.hid.mouseClick(event: .buttonUp, 
                                         button: mouseButtonFromEvent(event), 
-                                        count: nil,
+                                        count: clickCount(button, incrementing: false),
                                         position: Position2(Float(event.x), Float(event.y)), 
                                         delta: .zero, 
                                         window: self.window)
@@ -194,12 +226,51 @@ final class X11Window: WindowBacking {
         }
     }
 
+    lazy private(set) var blankCursor: Cursor = {
+        var data: [UInt8] = [0]
+        let blank: Pixmap = XCreateBitmapFromData(xDisplay, xWindow, &data, 1, 1)
+        if blank == None {
+            Log.fatalError("out of memory.")
+        }
+        var dummy1: XColor = XColor()
+        var dummy2: XColor = XColor()
+        let cursor: Cursor = XCreatePixmapCursor(xDisplay, blank, blank, &dummy1, &dummy2, 0, 0)
+        XFreePixmap(xDisplay, blank)
+        return cursor
+    }()
     func setMouseHidden(_ hidden: Bool) {
-    
+        if hidden {
+            XDefineCursor(xDisplay, xWindow, blankCursor)
+        }else{
+            XUndefineCursor(xDisplay, xWindow)
+        }
     }
 
     func setMousePosition(_ position: Position2) {
-    
+        let result: Int32 = XWarpPointer(xDisplay, 0, xWindow, 0, 0, 0, 0, Int32(position.x), Int32(position.y))
+        if result != Success {
+            if result == BadRequest {
+                Log.errorOnce("Failed to lock mouse cursor: BadRequest (Using Remote Desktop?)")
+            }else{
+                Log.errorOnce("Failed to lock mouse cursor:", result)
+            }
+        }
+        XFlush(xDisplay)
+    }
+
+    func scrollDeltaFromEvent(_ event: XButtonEvent) -> Position3? {
+        switch event.button {
+        case 4:
+            return Position3(0, 120, 0)
+        case 5:
+            return Position3(0, -120, 0)
+        case 6:
+            return Position3(-120, 0, 0)
+        case 7:
+            return Position3(120, 0, 0)
+        default:
+            return nil
+        }
     }
 
     func mouseButtonFromEvent(_ event: XButtonEvent) -> MouseButton {
