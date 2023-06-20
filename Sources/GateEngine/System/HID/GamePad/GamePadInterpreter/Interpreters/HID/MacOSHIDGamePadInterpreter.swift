@@ -52,9 +52,9 @@ internal class HIDGamePadInterpreter: GamePadInterpreter {
         IOHIDManagerRegisterDeviceRemovalCallback(hidManager, gamepadWasRemoved, nil)
 //        IOHIDManagerRegisterInputValueCallback(hidManager, gamepadAction, nil)
         let ioreturn = IOHIDManagerOpen(hidManager, IOOptionBits(kIOHIDOptionsTypeSeizeDevice))
-        guard ioreturn != kIOReturnSuccess else {return}
-        
-        Log.error("HID controller error: ", ioreturn)
+        if ioreturn != kIOReturnSuccess {
+            Log.error("HID controller error: ", ioreturn)
+        }
     }
     
     func update() {}
