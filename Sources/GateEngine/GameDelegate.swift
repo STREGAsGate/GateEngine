@@ -15,9 +15,9 @@ public struct LaunchOptions: OptionSet {
     }
 }
 
-@MainActor public protocol GameDelegate: AnyObject {
+public protocol GameDelegate: AnyObject {
     /// Called when the app finishes loading.
-    func didFinishLaunching(game: Game, options: LaunchOptions)
+    @MainActor func didFinishLaunching(game: Game, options: LaunchOptions)
     
     /**
      Create a customized mainWindow
@@ -26,19 +26,19 @@ public struct LaunchOptions: OptionSet {
      - parameter game: The game to create the window from
      - parameter identifier: The identifier to give the window. You must use this identifier.
      */
-    func createMainWindow(game: Game, identifier: String) throws -> Window
+    @MainActor func createMainWindow(game: Game, identifier: String) throws -> Window
     
     /// The end user has tried to open a window using the platforms mechanisms
-    func userRequestedWindow(game: Game) throws -> Window?
+    @MainActor func userRequestedWindow(game: Game) throws -> Window?
     
     /**
      A display has been attached.
      - returns: A new window instance to put on the screen. Passing an existing window is undefined behaviour.
     */
-    func screenBecomeAvailable(game: Game) throws -> Window?
+    @MainActor func screenBecomeAvailable(game: Game) throws -> Window?
     
     /// Might be called immediatley before the app closes.
-    func willTerminate(game: Game)
+    @MainActor func willTerminate(game: Game)
     
     /**
      Start the game with no window and skip updating RenderingSystem(s).
@@ -51,7 +51,7 @@ public struct LaunchOptions: OptionSet {
      - returns: true if the game doesn't draw anything.
      - note: RenderingSystem(s) do not recive updates in headless mode.
      */
-    func isHeadless() -> Bool
+    @MainActor func isHeadless() -> Bool
     
     /**
      Add additional search paths for resources.
@@ -60,13 +60,21 @@ public struct LaunchOptions: OptionSet {
      Search paths for your Swift Packages are already located automatically and don't need to be added here.
      - returns: An array of URLs each pointing to a directory containing game resources.
      */
-    func resourceSearchPaths() -> [URL]
+    nonisolated func resourceSearchPaths() -> [URL]
     
-    init()
+    /**
+    An ID for the current game. This identifier is used for storing user settings.
+    
+    By providing a stable identifier, you're free to rename your executable without breaking user settings.
+    By default the executablke name is used.
+    */
+    nonisolated func gameIdentifier() -> StaticString?
+
+    @MainActor init()
 }
 
 public extension GameDelegate {
-    func createMainWindow(game: Game, identifier: String) throws -> Window {
+    @MainActor func createMainWindow(game: Game, identifier: String) throws -> Window {
         return try game.windowManager.createWindow(identifier: identifier, style: .system, options: .defaultForMainWindow)
     }
     func userRequestedWindow(game: Game) throws -> Window? {return nil}
@@ -75,13 +83,21 @@ public extension GameDelegate {
     func willTerminate(game: Game) {}
     func isHeadless() -> Bool {return false}
     func resourceSearchPaths() -> [URL] {return []}
+
+    func gameIdentifier() -> StaticString? {return nil}
+
+    @_transparent
+    internal func resolvedGameIdentifier() -> String {
+        if let identifer: StaticString = self.gameIdentifier() {
+            return identifer.description
+        }
+        return CommandLine.arguments[0]
+    }
 }
 
 public extension GameDelegate {
-    static func main() {
+    @MainActor static func main() {
         Game.shared = Game(delegate: Self())
         Game.shared.platform.main()
     }
 }
-
-

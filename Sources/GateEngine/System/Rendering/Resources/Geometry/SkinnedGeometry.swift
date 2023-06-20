@@ -59,7 +59,7 @@ When this object deinitializes it's contents will also be removed from GPU memor
     
     deinit {
         let cacheKey = self.cacheKey
-        Task(priority: .low) {@MainActor in
+        Task.detached(priority: .low) {@MainActor in
             Game.shared.resourceManager.decrementReference(cacheKey)
         }
     }

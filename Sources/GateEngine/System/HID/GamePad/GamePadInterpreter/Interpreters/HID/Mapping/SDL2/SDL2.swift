@@ -185,7 +185,7 @@ class SDL2Database {
     var controllers: [SDL2ControllerGUID : SDL2ControllerMap] = [:]
 
     init() throws {
-        let localURL = Bundle.module.resourceURL!.appendingPathComponent("SDL2 Game Controller DB.txt")
+        let localURL = Bundle.module.resourceURL!.appendingPathComponent("GateEngine/SDL2_DB.txt")
         let string = try String(contentsOf: localURL)
         
         #if os(macOS)

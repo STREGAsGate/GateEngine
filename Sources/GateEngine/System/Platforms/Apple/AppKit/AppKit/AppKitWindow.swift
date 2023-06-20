@@ -10,6 +10,7 @@ import Foundation
 import GameMath
 import AppKit
 import MetalKit
+import Carbon
 
 final class AppKitWindow: WindowBacking {
     weak var window: Window!
@@ -301,7 +302,7 @@ extension AppKitWindow {
 
 final class UGNSWindow: AppKit.NSWindow {
     weak var window: Window!
-
+    
     init(window: Window, contentRect: NSRect, styleMask style: NSWindow.StyleMask, backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool) {
         self.window = window
         super.init(contentRect: contentRect, styleMask: style, backing: backingStoreType, defer: flag)
@@ -358,7 +359,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func mouseDown(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: .button1,
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)
@@ -368,7 +369,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func mouseUp(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: .button1,
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)
@@ -378,7 +379,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func rightMouseDown(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: .button2,
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)
@@ -388,7 +389,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func rightMouseUp(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: .button2,
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)
@@ -398,7 +399,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func otherMouseDown(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: mouseButtonFromEvent(event),
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)
@@ -408,7 +409,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func otherMouseUp(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: mouseButtonFromEvent(event),
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)
@@ -469,6 +470,29 @@ final class UGNSWindow: AppKit.NSWindow {
                                         window: window)
         }
         super.mouseExited(with: event)
+    }
+    
+    override func scrollWheel(with event: NSEvent) {
+        let delta = Position3(Float(event.isDirectionInvertedFromDevice ? event.deltaX : event.deltaX * -1),
+                              Float(event.isDirectionInvertedFromDevice ? event.deltaY * -1 : event.deltaY),
+                              Float(event.deltaZ))
+        let uiDelta = Position3(Float(event.scrollingDeltaX),
+                                Float(event.scrollingDeltaY),
+                                Float(event.deltaZ))
+        let isMomentum: Bool
+        switch event.momentumPhase {
+        case [], .cancelled, .ended:
+            isMomentum = false
+        default:
+            isMomentum = true
+        }
+        Game.shared.hid.mouseScrolled(delta: delta,
+                                      uiDelta: uiDelta,
+                                      device: event.deviceID,
+                                      isMomentum: isMomentum,
+                                      window: window)
+        
+        super.scrollWheel(with: event)
     }
 
     //MARK: - Touches
@@ -811,16 +835,20 @@ final class UGNSWindow: AppKit.NSWindow {
         #endif
         case 103:// F11
             return .function(11)
+        #if GATEENGINE_DEBUG_HID
         case 104:// ??
             break
+        #endif
         case 105:// F13
             return .function(13)
         case 106:// F16
             return .function(16)
         case 107:// F14
             return .function(14)
+        #if GATEENGINE_DEBUG_HID
         case 108:// ??
             break
+        #endif
         case 109:// F10
             return .function(10)
         case 110:// Applications
@@ -922,7 +950,7 @@ final class UGNSWindow: AppKit.NSWindow {
     
     override func flagsChanged(with event: NSEvent) {
         var forward: Bool = true
-        let keyCode = Int(event.keyCode)
+        let keyCode = event.keyCode
         switch keyCode {
         case 56, 60:
             let key: KeyboardKey = keyCode == 56 ? .shift(.leftSide) : .shift(.rightSide)
@@ -967,7 +995,9 @@ final class UGNSWindow: AppKit.NSWindow {
                                                         isRepeat: false,
                                                         event: .toggle) == false
         default:
-            Log.info("Unhandled Modfier Key", event.keyCode)
+            #if GATEENGINE_DEBUG_HID
+            Log.info("Unhandled Modifier Key", event.keyCode)
+            #endif
             break
         }
         if forward {

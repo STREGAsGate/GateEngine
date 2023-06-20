@@ -72,7 +72,6 @@ let package = Package(
                     }(),
                     resources: [
                         .copy("_Resources/GateEngine"),
-                        .copy("System/HID/GamePad/GamePadInterpreter/Interpreters/HID/Mapping/SDL2/SDL2 Game Controller DB.txt"),
                     ],
                     cSettings: [
                         .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS, .iOS, .tvOS])),
@@ -97,11 +96,11 @@ let package = Package(
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH", .when(platforms: [.wasi])),
                         ])
                         
-                        #if false // Options for development of GateEngine. These should be commented out for a tagged version releases.
+                        #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
                         // Options for developemnt of WASI platform
-                        #if true
+                        #if false
                         settings.append(contentsOf: [
                             /// Allows HTML5 platform to be compiled from a compatible host, such as macOS. This allows the IDE to show compile errors without targeting WASI.
                             .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),

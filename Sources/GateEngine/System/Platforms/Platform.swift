@@ -35,6 +35,8 @@ extension InternalPlatform {
         #else
         let bundleExtension: String = "resources"
         #endif
+        
+        let excludedResourceBundles = ["JavaScriptKit_JavaScriptKit.\(bundleExtension)"]
 
         let resourceBundleSearchURLs: Set<URL> = {
             var urls: [URL] = [Bundle.main.bundleURL, Bundle.main.resourceURL, Bundle.module.bundleURL.deletingLastPathComponent()].compactMap({$0})
@@ -105,6 +107,16 @@ extension InternalPlatform {
         })
         #endif
         
+        // Remove excluded
+        files.removeAll(where: {
+            for excluded in excludedResourceBundles {
+                if $0.path.contains(excluded) {
+                    return true
+                }
+            }
+            return false
+        })
+        
         // Remove duplicates
         files = Array(OrderedSet(files))
         
@@ -120,10 +132,20 @@ extension InternalPlatform {
         if files.isEmpty {
             Log.error("Failed to load any resource bundles! Check code signing and directory premissions.")
         }else{
+            #if os(WASI)
+            let relativeDescriptor: String = "."
+            #else
+            let relativeDescriptor: String = "[MainBundle]"
+            #endif
             let relativePath = Bundle.main.bundleURL.path
-            Log.debug("Loaded static resource search paths:", files.map({
-                return $0.path.replacingOccurrences(of: relativePath, with: "\n  \"[MainBundle]") + "\","
-            }).joined(), "\n  (note: These do not include any GameDelegate provided search paths)\n")
+            Log.debug("Loaded static resource search paths: (GameDelegate search paths not included)", files.map({
+                let relativeDescriptor = "\n  \"\(relativeDescriptor)"
+                var path = $0.path.replacingOccurrences(of: relativePath, with: relativeDescriptor)
+                if path == relativeDescriptor {
+                    path += "/"
+                }
+                return path + "\","
+            }).joined())
         }
 
         return files

@@ -226,6 +226,7 @@ public extension Keyboard {
          - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
          - parameter modifiers: Key modifiers required for a press to be considered valid.
          - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
+         - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
          */
         @inlinable @inline(__always)
         public func isPressed(ifDifferent recipt: inout InputRecipts, andUsing modifiers: KeyboardModifierMask = []) -> Bool {
@@ -236,6 +237,21 @@ public extension Keyboard {
             }
             recipt.values[key] = currentRecipt
             return true
+        }
+        
+        /**
+         Returns a recipt for the current press or nil if not pressed.
+         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
+         - parameter modifiers: Key modifiers required for a press to be considered valid.
+         - parameter block: A code block, including this button, that is run if the request is true.
+         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
+         - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
+         */
+        @inlinable @inline(__always)
+        public func whenPressed(ifDifferent recipt: inout InputRecipts, andUsing modifiers: KeyboardModifierMask = [], run block: (ButtonState)->Void) {
+            if isPressed(ifDifferent: &recipt, andUsing: modifiers) {
+                block(self)
+            }
         }
     }
 }

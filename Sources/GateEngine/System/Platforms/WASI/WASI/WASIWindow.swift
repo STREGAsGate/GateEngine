@@ -56,10 +56,6 @@ final class WASIWindow: WindowBacking {
             }
             self.pointSafeAreaInsets = insets
             self.pixelSafeAreaInsets = self.pointSafeAreaInsets * self.interfaceScaleFactor
-            
-            Log.info("Scale:", self.interfaceScaleFactor)
-            Log.info("SizePoint:", self.pointSize, "SizePixel:", self.pixelSize)
-            Log.info("SafePoint:", self.pointSafeAreaInsets, "SafePixel:", self.pixelSafeAreaInsets)
         }
     }
     
@@ -108,40 +104,53 @@ final class WASIWindow: WindowBacking {
     }
     
     func setMousePosition(_ position: Position2) {
-
+        // not possible in HTML5
     }
 
     @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
         return WebGL2RenderTarget(isWindow: true)
     }
     
-    var didRequestPointerLock: Bool = false
-    func setPointerLock(_ lock: Bool) {
-        let this = canvas.jsObject
-        if lock {
-            this["requestPointerLock"].function!(this: this)
-            didRequestPointerLock = true
-        }else{
-            this["exitPointerLock"].function!(this: this)
-            didRequestPointerLock = false
+    internal struct PointerLock {
+        private weak var canvas: HTMLCanvasElement?
+        
+        fileprivate var locked: Bool = false
+        private var requestedLockChange: Bool = false
+        private var requestedLock: Bool = false
+        
+        init(canvas: HTMLCanvasElement) {
+            self.canvas = canvas
+        }
+
+        fileprivate mutating func setRequestedLockIfNeeded() {
+            guard self.requestedLockChange else {return}
+            self.requestedLockChange = false
+            guard let this = canvas?.jsObject else {return}
+            if requestedLock {
+                this["requestPointerLock"].function?(this: this)
+            }else{
+                this["exitPointerLock"].function?(this: this)
+            }
+        }
+        
+        internal mutating func requestLock(shouldLock lock: Bool) {
+            self.requestedLockChange = true
+            self.requestedLock = lock
+        }
+        
+        fileprivate mutating func toggleLocked() {
+            self.locked = locked ? false : true
         }
     }
+
+    internal lazy var pointerLock: PointerLock = PointerLock(canvas: canvas)
     
-    var didSetup: Bool = false
-    @MainActor func performedUserGesture() {
-        if didRequestPointerLock == false && Game.shared.hid.mouse.locked {
-            setPointerLock(true)
-        }else if didRequestPointerLock && Game.shared.hid.mouse.locked == false {
-            setPointerLock(false)
-        }
-        if didSetup == false {
-            didSetup = true
-            Game.shared.insertSystem(AudioSystem.self)
-        }
+    @MainActor private func performedUserGesture() {
+        pointerLock.setRequestedLockIfNeeded()
     }
     
     @inline(__always)
-    func getPositionAndDelta(from event: MouseEvent) -> (position: Position2, delta: Position2) {
+    private func getPositionAndDelta(from event: MouseEvent) -> (position: Position2, delta: Position2) {
         let backingScale = Float(globalThis.document.defaultView?.devicePixelRatio ?? 1)
         let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY)) * backingScale
         let deltaX = Float(event.jsObject["movementX"].jsValue.number ?? 0)
@@ -150,18 +159,25 @@ final class WASIWindow: WindowBacking {
         return (position, delta)
     }
     
-    func addListeners() {
+    private func addListeners() {
         globalThis.addEventListener(type: "pointerlockchange") { event in
+            self.pointerLock.toggleLocked()
+            #if GATEENGINE_DEBUG_HID
+            Log.info("pointerlockchange", self.pointerLock.locked)
+            #endif
             Task {@MainActor in
-                if self.didRequestPointerLock {
-                    Game.shared.hid.mouse.locked = false
+                if self.pointerLock.locked {
+                    Game.shared.hid.mouse.setMode(.locked)
+                }else{
+                    Game.shared.hid.mouse.setMode(.standard)
                 }
             }
         }
         globalThis.addEventListener(type: "pointerlockerror") { event in
-            Log.error("Mouse lock failed")
+            Log.error("PointerLockError.", "Returning mouse to mode 'standard'.")
+            self.pointerLock.locked = false
             Task {@MainActor in
-                Game.shared.hid.mouse.locked = false
+                Game.shared.hid.mouse.mode = .standard
             }
         }
         globalThis.onresize = { event -> JSValue in
@@ -238,7 +254,6 @@ final class WASIWindow: WindowBacking {
             Task {@MainActor in
                 Game.shared.hid.mouseClick(event: .buttonDown,
                                            button: button,
-                                           count: nil,
                                            position: locations.position,
                                            delta: locations.delta,
                                            window: self.window)
@@ -255,10 +270,40 @@ final class WASIWindow: WindowBacking {
             Task {@MainActor in
                 Game.shared.hid.mouseClick(event: .buttonUp,
                                            button: button,
-                                           count: nil,
                                            position: locations.position,
                                            delta: locations.delta,
                                            window: self.window)
+            }
+            event.preventDefault()
+        }
+        canvas.addEventListener(type: "wheel") { event in
+            let event = DOM.WheelEvent(unsafelyWrapping: event.jsObject)
+            var delta = Position3(Float(event.deltaX), Float(event.deltaY), Float(event.deltaZ))
+            let uiDelta: Position3
+            switch event.deltaMode {
+            case DOM.WheelEvent.DOM_DELTA_PIXEL:
+                uiDelta = delta
+                delta /= 10
+            case DOM.WheelEvent.DOM_DELTA_PAGE:
+                #if GATEENGINE_DEBUG_HID
+                Log.warn("Scroll Value is DOM_DELTA_PAGE, and is not being converted to expected DOM_DELTA_PIXEL")
+                #endif
+                fallthrough
+            case DOM.WheelEvent.DOM_DELTA_LINE:
+                #if GATEENGINE_DEBUG_HID
+                Log.warn("Scroll Value is DOM_DELTA_LINE, and is not being converted to expected DOM_DELTA_PIXEL")
+                #endif
+                fallthrough
+            default:
+                uiDelta = delta
+            }
+            let immutableDelta = delta
+            Task {@MainActor in
+                Game.shared.hid.mouseScrolled(delta: immutableDelta,
+                                              uiDelta: uiDelta,
+                                              device: 1,
+                                              isMomentum: false,
+                                              window: self.window)
             }
             event.preventDefault()
         }

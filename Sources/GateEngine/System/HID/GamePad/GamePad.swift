@@ -435,6 +435,17 @@ public extension GamePad {
         }
         
         /**
+         
+         - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
+         */
+        @inlinable @inline(__always)
+        public func whenPressed(ifDifferent recipt: inout InputRecipts, run block: (ButtonState)->Void) {
+            if isPressed(ifDifferent: &recipt) {
+                block(self)
+            }
+        }
+        
+        /**
          Determines if this buttons `value` can have a value between 0 and 1
          This value will be initially false. The controller input has a few chances to report an analog value at which time this property become true, otherwise it's assumed to always be digital.
          */
