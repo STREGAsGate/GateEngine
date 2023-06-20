@@ -28,12 +28,14 @@ public extension HID {
         
         @inlinable @inline(__always)
         public var any: TouchSurface? {
-            return surfaces.first
+            return surfaces.first(where: {$0.touches.isEmpty == false}) ?? surfaces.first
         }
         
         @inline(__always)
         func update() {
-            
+            for surface in surfaces {
+                surface.update()
+            }
         }
     }
     

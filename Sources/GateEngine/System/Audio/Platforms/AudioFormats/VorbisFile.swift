@@ -10,11 +10,11 @@ import Vorbis
 
 func oggCallbackRead(buffer: UnsafeMutableRawPointer!, elementSize: Int, elementCount: Int, dataSource: UnsafeMutableRawPointer!) -> Int {
     assert(elementSize == 1)
-    let stream = dataSource.assumingMemoryBound(to: Stream.self).pointee
+    var stream = dataSource.assumingMemoryBound(to: Stream.self).pointee
     return stream.read(elementCount, into: buffer)
 }
 func oggCallbackSeek(dataSource: UnsafeMutableRawPointer!, offset: ogg_int64_t, whence: Int32) -> Int32 {
-    let stream = dataSource.assumingMemoryBound(to: Stream.self).pointee
+    var stream = dataSource.assumingMemoryBound(to: Stream.self).pointee
     stream.seek(offset: Int(offset), style: Stream.SeekStyle(rawValue: Int(whence))!)
     return 0
 }
@@ -34,14 +34,14 @@ func oggCallbackTell(dataSource: UnsafeMutableRawPointer!) -> Int {
 }
 #endif
 
-fileprivate final class Stream {
+fileprivate struct Stream {
     var position: Int = 0
     let data: Data
     init(_ data: Data) {
         self.data = data
     }
     
-    func read(_ count: Int, into buffer: UnsafeMutableRawPointer!) -> Int {
+    mutating func read(_ count: Int, into buffer: UnsafeMutableRawPointer!) -> Int {
         let count = min(count, data.count - position)
         data.withUnsafeBytes { (data: UnsafeRawBufferPointer) -> () in
             buffer.copyMemory(from: data.baseAddress!.advanced(by: position), byteCount: count)
@@ -56,7 +56,7 @@ fileprivate final class Stream {
         case fromEndOfFile
     }
     
-    func seek(offset: Int, style: SeekStyle) {
+    mutating func seek(offset: Int, style: SeekStyle) {
         switch style {
         case .becomeCurrent:
             self.position = offset
@@ -85,76 +85,83 @@ class VorbisFile {
     
     required init?(_ data: Data, context: AudioContext) {
         var stream = Stream(data)
-        var vorbisFile: OggVorbis_File = Vorbis.OggVorbis_File()
-        let callbacks = Vorbis.ov_callbacks(read_func: oggCallbackRead(buffer:elementSize:elementCount:dataSource:),
-                                            seek_func: oggCallbackSeek(dataSource:offset:whence:),
-                                            close_func: nil,
-                                            tell_func: oggCallbackTell(dataSource:))
-        
-        Vorbis.ov_open_callbacks(&stream, &vorbisFile, nil, 0, callbacks)
-        
-        guard let info = Vorbis.ov_info(&vorbisFile, 0)?.pointee else {return nil}
-        let channelCount = Int16(info.channels)
-        let samplesPerSecond = Int32(info.rate)
-        
-        var chains: Bool = false
-        for link: Int32 in 0 ..< Int32(Vorbis.ov_streams(&vorbisFile)) {
-            let info = Vorbis.ov_info(&vorbisFile, link).pointee
-            if (info.channels == channelCount && info.rate == samplesPerSecond) {
-                chains = true
-                break
-            }
-        }
-        
-        let endianness: Int32 = {
-            switch context.reference.endianness {
-            case .native:
-                return Int32(1.bigEndian == 1 ? 1 : 0)
-            case .little:
-                return 0
-            case .big:
-                return 1
-            }
-        }()
-        
-        let bitsPerSample: Int16 = {
-            if context.reference.supportsBitRate(.int16){
-                return Int16(MemoryLayout<Int16>.size * 8)
-            }else{
-                return Int16(MemoryLayout<Int8>.size * 8)
-            }
-        }()
-        
-        let nsamples = Vorbis.ov_pcm_total(&vorbisFile, chains ? -1 : 0)
-        var end: Bool = false
-        var current_section: Int32 = 0
-        
-        var position: Int = 0
-        var data: [CChar] = Array(repeating: 0, count: Int(nsamples) * Int(channelCount) * Int(bitsPerSample/8))
-        while(end == false) {
-            let ret: Int = data.withUnsafeMutableBufferPointer { (pointer) -> Int in
-                return Int(Vorbis.ov_read(&vorbisFile, pointer.baseAddress?.advanced(by: position), 4096, endianness, Int32(bitsPerSample / 8), 1, &current_section))
+        let values: (channelCount: Int16, samplesPerSecond: Int32, bitsPerSample: Int16, audio: Data)? = withUnsafeMutablePointer(to: &stream) { stream in
+            var vorbisFile: OggVorbis_File = Vorbis.OggVorbis_File()
+            let callbacks = Vorbis.ov_callbacks(read_func: oggCallbackRead(buffer:elementSize:elementCount:dataSource:),
+                                                seek_func: oggCallbackSeek(dataSource:offset:whence:),
+                                                close_func: nil,
+                                                tell_func: oggCallbackTell(dataSource:))
+            
+            Vorbis.ov_open_callbacks(stream, &vorbisFile, nil, 0, callbacks)
+            
+            guard let info = Vorbis.ov_info(&vorbisFile, 0)?.pointee else {return nil}
+            let channelCount = Int16(info.channels)
+            let samplesPerSecond = Int32(info.rate)
+            
+            var chains: Bool = false
+            for link: Int32 in 0 ..< Int32(Vorbis.ov_streams(&vorbisFile)) {
+                let info = Vorbis.ov_info(&vorbisFile, link).pointee
+                if (info.channels == channelCount && info.rate == samplesPerSecond) {
+                    chains = true
+                    break
+                }
             }
             
-            if (ret == 0) {
-                end = true
-            }else if ret < 0 {
-                Log.error("Failed to read Vorbis stream.")
-                return nil
-            }else{
-                position += ret
+            let endianness: Int32 = {
+                switch context.reference.endianness {
+                case .native:
+                    return Int32(1.bigEndian == 1 ? 1 : 0)
+                case .little:
+                    return 0
+                case .big:
+                    return 1
+                }
+            }()
+            
+            let bitsPerSample: Int16 = {
+                if context.reference.supportsBitRate(.int16){
+                    return Int16(MemoryLayout<Int16>.size * 8)
+                }else{
+                    return Int16(MemoryLayout<Int8>.size * 8)
+                }
+            }()
+            
+            let nsamples = Vorbis.ov_pcm_total(&vorbisFile, chains ? -1 : 0)
+            var end: Bool = false
+            var current_section: Int32 = 0
+            
+            var position: Int = 0
+            var data: [CChar] = Array(repeating: 0, count: Int(nsamples) * Int(channelCount) * Int(bitsPerSample/8))
+            while(end == false) {
+                let ret: Int = data.withUnsafeMutableBufferPointer { (pointer) -> Int in
+                    return Int(Vorbis.ov_read(&vorbisFile, pointer.baseAddress?.advanced(by: position), 4096, endianness, Int32(bitsPerSample / 8), 1, &current_section))
+                }
+                
+                if (ret == 0) {
+                    end = true
+                }else if ret < 0 {
+                    Log.error("Failed to read Vorbis stream.")
+                    return nil
+                }else{
+                    position += ret
+                }
             }
-        }
-        let audio = data.withUnsafeBufferPointer { (buffer) -> Data in
-            return Data(buffer: buffer)
+            let audio = data.withUnsafeBufferPointer { (buffer) -> Data in
+                return Data(buffer: buffer)
+            }
+            
+            Vorbis.ov_clear(&vorbisFile)
+            return (channelCount, samplesPerSecond, bitsPerSample, audio)
         }
         
-        Vorbis.ov_clear(&vorbisFile)
-        
-        self.channelCount = channelCount
-        self.samplesPerSecond = samplesPerSecond
-        self.bitsPerSample = bitsPerSample
-        self.audio = audio
+        if let values {
+            self.channelCount = values.channelCount
+            self.samplesPerSecond = values.samplesPerSecond
+            self.bitsPerSample = values.bitsPerSample
+            self.audio = values.audio
+        }else{
+            return nil
+        }
     }
 }
 #endif

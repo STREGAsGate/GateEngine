@@ -131,7 +131,7 @@ public extension MSRect {
     }
 }
 
-public extension WinSDK.RECT {
+internal extension WinSDK.RECT {
     @inlinable @inline(__always) var x: Int32 {self.left}
     @inlinable @inline(__always) var y: Int32 {self.top}
     @inlinable @inline(__always) var width: Int32 {self.right - self.left}

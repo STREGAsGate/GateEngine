@@ -15,6 +15,37 @@ import GameMath
         return _window
     }
     
+    public enum Mode {
+        // Hardware mouse
+        case standard
+        // The mouse is locked and position reprots delta changes
+        case locked
+    }
+    public var mode: Mode {
+        get {return _mode}
+        set {
+            #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+            if let wasiWindow = Game.shared.windowManager.mainWindow?.windowBacking as? WASIWindow {
+                wasiWindow.pointerLock.requestLock(shouldLock: newValue == .locked)
+            }
+            #else
+            self.setMode(newValue)
+            #endif
+        }
+    }
+    
+    internal var _mode: Mode = .standard
+    internal func setMode(_ mode: Mode) {
+        self._mode = mode
+        if mode == .locked {
+            self.hidden = true
+            self.locked = true
+        }else{
+            self.hidden = false
+            self.locked = false
+        }
+    }
+    
     @usableFromInline
     internal var buttons: [MouseButton:ButtonState] = [:]
     
@@ -29,10 +60,23 @@ import GameMath
     }
     
     @usableFromInline
+    internal var scrollers: [MouseScroller:ScrollerState] = [:]
+    
+    @inlinable @inline(__always)
+    public func scroller(_ mouseScroller: MouseScroller) -> ScrollerState {
+        if let existing = scrollers[mouseScroller] {
+            return existing
+        }
+        let scroller = ScrollerState(mouse: self)
+        scrollers[mouseScroller] = scroller
+        return scroller
+    }
+    
+    @usableFromInline
     internal var _hidden: Bool = false
     /// Hide or Unhide the mouse cursor
     @inlinable @inline(__always)
-    public var hidden: Bool {
+    internal var hidden: Bool {
         get {return self._hidden}
         set {
             window?.setMouseHidden(newValue)
@@ -41,9 +85,9 @@ import GameMath
     }
     
     /// The location in the window to lock the curosr at
-    public var preferredLockPosition: Position2! = nil
+    internal var preferredLockPosition: Position2! = nil
     /// Lock or Unlock the mouse cursor's position
-    public var locked: Bool = false {
+    internal var locked: Bool = false {
         didSet {
             if locked, self.preferredLockPosition == nil {
                 self.preferredLockPosition = Position2(window!.size / 2)
@@ -74,12 +118,6 @@ import GameMath
         }
     }
     
-    @inlinable @inline(__always)
-    internal func setPosition(_ position: Position2, inWindow window: Window) {
-        self._window = window
-        window.setMousePosition(position)
-    }
-    
     /**
      The user interface scaled position of the mouse cursor
      
@@ -96,9 +134,9 @@ import GameMath
         }
         set {
             if let newValue, let window {
-                self.position = newValue * window.interfaceScale
+                self._position = newValue * window.interfaceScale
             }else{
-                self.position = nil
+                self._position = nil
             }
         }
     }
@@ -107,85 +145,39 @@ import GameMath
     func update() {
         self.deltaPosition = self._nextDeltaPosition
         self._nextDeltaPosition = .zero
-    }
-}
-
-public extension Mouse {
-    @MainActor final class ButtonState {
-        @usableFromInline
-        internal unowned let mouse: Mouse
-        @usableFromInline
-        internal var currentRecipt: UInt8 = 0
-        
-        @usableFromInline
-        internal init(mouse: Mouse) {
-            self.mouse = mouse
-        }
-        
-        /// The location of the mouse in the windows native pixels
-        @inlinable @inline(__always)
-        public var position: Position2? {
-            return mouse.position
-        }
-        
-        /// The location of the mouse in the window
-        @inlinable @inline(__always)
-        public var interfacePosition: Position2? {
-            return mouse.interfacePosition
-        }
-        
-        /// The current platform's preference for "Double Click" gesture
-        public internal(set) var pressCount: Int? = nil
-        
-        /// `true` if the button is considered down.
-        public internal(set) var isPressed: Bool = false {
-            didSet {
-                if isPressed != oldValue {
-                    currentRecipt &+= 1
-                }
-            }
-        }
-        
-        /**
-         Returns a recipt for the current press or nil if not pressed.
-         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
-         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
-         */
-        @inlinable @inline(__always)
-        public func isPressed(ifDifferent recipt: inout InputRecipts) -> Bool {
-            guard isPressed else {return false}
-            let key = ObjectIdentifier(self)
-            if let recipt = recipt.values[key], recipt == currentRecipt {
-                return false
-            }
-            recipt.values[key] = currentRecipt
-            return true
+        if locked {
+            self.position = preferredLockPosition
         }
     }
 }
 
 extension Mouse {
+    public enum ChangeEvent {
+        case entered
+        case moved
+        case exited
+    }
     @inline(__always)
-    func mouseChange(event: MouseChangeEvent, position: Position2, delta: Position2, window: Window?) {
+    func mouseChange(event: ChangeEvent, position: Position2, delta: Position2, window: Window?) {
         switch event {
         case .entered, .moved:
-            if locked, let preferredLockPosition {
-                // discard high values
-                if abs(delta.min) < 500 && abs(delta.max) < 500 {
-                    self._nextDeltaPosition += delta
-                }
-                self.position = preferredLockPosition
-            }else{
-                self._position = position
+            if abs(delta.min) < 500 && abs(delta.max) < 500 {
+                self._nextDeltaPosition += delta
             }
+            self._position = position
             self._window = window
         case .exited:
             self._position = nil
             self._window = nil
         }
     }
+    
+    public enum ClickEvent {
+        case buttonDown
+        case buttonUp
+    }
     @inline(__always)
-    func mouseClick(event: MouseClickEvent, button: MouseButton, count: Int?, position: Position2?, delta: Position2?, window: Window?) {
+    func mouseClick(event: ClickEvent, button: MouseButton, multiClickTime: Double, position: Position2?, delta: Position2?, window: Window?) {
         if let position {
             self._position = position
         }
@@ -195,8 +187,17 @@ extension Mouse {
         if let window {
             self._window = window
         }
-        let button = self.button(button)
-        button.isPressed = (event == .buttonDown)
-        button.pressCount = count
+        self.button(button).setIsPressed((event == .buttonDown), multiClickTime: multiClickTime)
+    }
+    
+    @inline(__always)
+    func mouseScrolled(delta: Position3, uiDelta: Position3, device: Int, isMomentum: Bool, window: Window?) {
+        if let window {
+            self._window = window
+        }
+        
+        self.scrollers[.x]?.setDelta(delta.x, uiDelta: uiDelta.x, device: device, isMomentum: isMomentum)
+        self.scrollers[.y]?.setDelta(delta.y, uiDelta: uiDelta.y, device: device, isMomentum: isMomentum)
+        self.scrollers[.z]?.setDelta(delta.z, uiDelta: uiDelta.z, device: device, isMomentum: isMomentum)
     }
 }

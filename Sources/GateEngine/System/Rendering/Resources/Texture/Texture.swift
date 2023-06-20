@@ -111,7 +111,7 @@ public enum MipMapping: Hashable {
     
     deinit {
         let cacheKey = self.cacheKey
-        Task(priority: .low) {@MainActor in
+        Task.detached(priority: .low) {@MainActor in
             Game.shared.resourceManager.decrementReference(cacheKey)
         }
     }

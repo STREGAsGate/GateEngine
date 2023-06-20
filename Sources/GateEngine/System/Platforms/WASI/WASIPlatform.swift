@@ -49,7 +49,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
             Log.info("Located Resource: \"\(path)\" at \"\(existing)\"")
             return existing
         }
-        let delegatePaths = await Game.shared.delegate.resourceSearchPaths()
+        let delegatePaths = Game.shared.delegate.resourceSearchPaths()
 
         let searchPaths = OrderedSet(delegatePaths + Self.staticSearchPaths)
         for searchPath in searchPaths {
@@ -133,7 +133,6 @@ public final class WASIPlatform: Platform, InternalPlatform {
     public var supportsMultipleWindows: Bool {
         return false
     }
-    
     
     internal enum Browser: CustomStringConvertible {
         case safari(version: Version)
@@ -293,6 +292,7 @@ fileprivate final class WASIUserActivationRenderingSystem: RenderingSystem {
     override func setup(game: Game) {
         game.insertSystem(HIDSystem.self)
         game.windowManager.mainWindow?.clearColor = .stregasgateBackground
+        banner.texture.cacheHint = .whileReferenced
     }
     
     override func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
