@@ -16,6 +16,7 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
         self.hid = hid
     }
     
+    var gamepads: [Gamepad] = []
     func beginInterpreting() {
         Log.info("Looking for gamepads")
 
@@ -24,12 +25,14 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
             if event.gamepad.mapping == .standard {
                 let controller = GamePad(interpreter: self, identifier: event.gamepad.id)
                 self.hid.gamePads.addNewlyConnectedGamePad(controller)
+                self.gamepads.append(event.gamepad)
             }else{
                 Log.warn("Ignoring non-standard gamepad:", event.gamepad.id)
             }
         }
         func removeGamepad(_ event: Event) {
             let event = GamepadEvent(unsafelyWrapping: event.jsObject)
+            self.gamepads.removeAll(where: {$0.id == event.gamepad.id})
             if let controller = self.hid.gamePads.all.first(where: {$0.identifier as? String == event.gamepad.id}) {
                 self.hid.gamePads.removedDisconnectedGamePad(controller)
             }
@@ -104,7 +107,6 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
     
     func updateState(of gamePad: GamePad) {
         guard let id = gamePad.identifier as? String else {return}
-        let gamepads = globalThis.navigator.getGamepads().compactMap({$0})
         guard let wGamepad: Gamepad = gamepads.first(where: {$0.id == id}) else {return}
                 
         gamePad.dpad.up.isPressed = wGamepad.buttons[12].pressed
