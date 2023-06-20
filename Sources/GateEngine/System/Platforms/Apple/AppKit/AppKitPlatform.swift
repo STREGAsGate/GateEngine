@@ -21,7 +21,7 @@ public final class AppKitPlatform: InternalPlatform {
         if let existing = pathCache[path] {
             return existing
         }
-        let searchPaths = await Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
+        let searchPaths = Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             let path = file.path

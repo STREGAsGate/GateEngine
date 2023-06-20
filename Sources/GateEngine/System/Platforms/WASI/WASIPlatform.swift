@@ -49,7 +49,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
             Log.info("Located Resource: \"\(path)\" at \"\(existing)\"")
             return existing
         }
-        let delegatePaths = await Game.shared.delegate.resourceSearchPaths()
+        let delegatePaths = Game.shared.delegate.resourceSearchPaths()
 
         let searchPaths = OrderedSet(delegatePaths + Self.staticSearchPaths)
         for searchPath in searchPaths {
@@ -292,6 +292,7 @@ fileprivate final class WASIUserActivationRenderingSystem: RenderingSystem {
     override func setup(game: Game) {
         game.insertSystem(HIDSystem.self)
         game.windowManager.mainWindow?.clearColor = .stregasgateBackground
+        banner.texture.cacheHint = .whileReferenced
     }
     
     override func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
@@ -324,17 +325,9 @@ fileprivate final class WASIUserActivationRenderingSystem: RenderingSystem {
     }
     
     override func teardown(game: Game) {
-        let wasiWindow = game.windowManager.mainWindow!.windowBacking as! WASIWindow
-        wasiWindow.setPointerLock(true)
-        
         game.windowManager.mainWindow?.clearColor = .black
         game.addPlatformSystems()
         game.delegate.didFinishLaunching(game: game, options: [])
-        
-
-//        Task {
-//            wasiWindow.setPointerLock(false)
-//        }
     }
 }
 

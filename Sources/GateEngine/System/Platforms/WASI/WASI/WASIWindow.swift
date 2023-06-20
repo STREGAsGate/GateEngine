@@ -104,35 +104,53 @@ final class WASIWindow: WindowBacking {
     }
     
     func setMousePosition(_ position: Position2) {
-
+        // not possible in HTML5
     }
 
     @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
         return WebGL2RenderTarget(isWindow: true)
     }
     
-    var didRequestPointerLock: Bool = false
-    func setPointerLock(_ lock: Bool) {
-        let this = canvas.jsObject
-        if lock {
-            this["requestPointerLock"].function?(this: this)
-            didRequestPointerLock = true
-        }else{
-            this["exitPointerLock"].function?(this: this)
-            didRequestPointerLock = false
+    internal struct PointerLock {
+        private weak var canvas: HTMLCanvasElement?
+        
+        fileprivate var locked: Bool = false
+        private var requestedLockChange: Bool = false
+        private var requestedLock: Bool = false
+        
+        init(canvas: HTMLCanvasElement) {
+            self.canvas = canvas
+        }
+
+        fileprivate mutating func setRequestedLockIfNeeded() {
+            guard self.requestedLockChange else {return}
+            self.requestedLockChange = false
+            guard let this = canvas?.jsObject else {return}
+            if requestedLock {
+                this["requestPointerLock"].function?(this: this)
+            }else{
+                this["exitPointerLock"].function?(this: this)
+            }
+        }
+        
+        internal mutating func requestLock(shouldLock lock: Bool) {
+            self.requestedLockChange = true
+            self.requestedLock = lock
+        }
+        
+        fileprivate mutating func toggleLocked() {
+            self.locked = locked ? false : true
         }
     }
+
+    internal lazy var pointerLock: PointerLock = PointerLock(canvas: canvas)
     
-    @MainActor func performedUserGesture() {
-        if didRequestPointerLock == false && Game.shared.hid.mouse.locked && isPointerLocked == false {
-            setPointerLock(true)
-        }else if didRequestPointerLock && Game.shared.hid.mouse.locked == false && isPointerLocked == false {
-            setPointerLock(false)
-        }
+    @MainActor private func performedUserGesture() {
+        pointerLock.setRequestedLockIfNeeded()
     }
     
     @inline(__always)
-    func getPositionAndDelta(from event: MouseEvent) -> (position: Position2, delta: Position2) {
+    private func getPositionAndDelta(from event: MouseEvent) -> (position: Position2, delta: Position2) {
         let backingScale = Float(globalThis.document.defaultView?.devicePixelRatio ?? 1)
         let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY)) * backingScale
         let deltaX = Float(event.jsObject["movementX"].jsValue.number ?? 0)
@@ -141,19 +159,23 @@ final class WASIWindow: WindowBacking {
         return (position, delta)
     }
     
-    var isPointerLocked: Bool = false
-    func addListeners() {
+    private func addListeners() {
         globalThis.addEventListener(type: "pointerlockchange") { event in
-            self.isPointerLocked = !self.isPointerLocked
-            Log.info("pointerlockchange", self.isPointerLocked)
+            self.pointerLock.toggleLocked()
+            #if GATEENGINE_DEBUG_HID
+            Log.info("pointerlockchange", self.pointerLock.locked)
+            #endif
             Task {@MainActor in
-                if self.isPointerLocked == false {
-                    Game.shared.hid.mouse.mode = .standard
+                if self.pointerLock.locked {
+                    Game.shared.hid.mouse.setMode(.locked)
+                }else{
+                    Game.shared.hid.mouse.setMode(.standard)
                 }
             }
         }
         globalThis.addEventListener(type: "pointerlockerror") { event in
-            Log.error("pointerlockerror", "Returning mouse to mode: standard")
+            Log.error("PointerLockError.", "Returning mouse to mode 'standard'.")
+            self.pointerLock.locked = false
             Task {@MainActor in
                 Game.shared.hid.mouse.mode = .standard
             }

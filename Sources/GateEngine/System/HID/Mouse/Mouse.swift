@@ -21,15 +21,28 @@ import GameMath
         // The mouse is locked and position reprots delta changes
         case locked
     }
-    public var mode: Mode = .standard {
-        didSet {
-            if mode == .locked {
-                self.hidden = true
-                self.locked = true
-            }else{
-                self.hidden = false
-                self.locked = false
+    public var mode: Mode {
+        get {return _mode}
+        set {
+            #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+            if let wasiWindow = Game.shared.windowManager.mainWindow?.windowBacking as? WASIWindow {
+                wasiWindow.pointerLock.requestLock(shouldLock: newValue == .locked)
             }
+            #else
+            self.setMode(newValue)
+            #endif
+        }
+    }
+    
+    internal var _mode: Mode = .standard
+    internal func setMode(_ mode: Mode) {
+        self._mode = mode
+        if mode == .locked {
+            self.hidden = true
+            self.locked = true
+        }else{
+            self.hidden = false
+            self.locked = false
         }
     }
     
