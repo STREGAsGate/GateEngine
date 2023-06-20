@@ -164,7 +164,7 @@ extension Mouse {
         case buttonUp
     }
     @inline(__always)
-    func mouseClick(event: ClickEvent, button: MouseButton, count: Int, position: Position2?, delta: Position2?, window: Window?) {
+    func mouseClick(event: ClickEvent, button: MouseButton, multiClickTime: Double, position: Position2?, delta: Position2?, window: Window?) {
         if let position {
             self._position = position
         }
@@ -174,9 +174,7 @@ extension Mouse {
         if let window {
             self._window = window
         }
-        let button = self.button(button)
-        button.isPressed = (event == .buttonDown)
-        button.pressCount = count
+        self.button(button).setIsPressed((event == .buttonDown), multiClickTime: multiClickTime)
     }
     
     @inline(__always)

@@ -50,41 +50,25 @@ public extension Mouse {
         }
         
         /// The current platform's preference for "Double Click" gesture
-        public internal(set) var pressCount: Int = 1
+        public var pressCount: Int {multiClick.count}
         
         /// `true` if the button is considered down.
-        public internal(set) var isPressed: Bool = false {
-            didSet {
-                if isPressed != oldValue {
-                    currentRecipt &+= 1
-                }
-            }
-        }
-        
-        /**
-         Returns a recipt for the current press or nil if not pressed.
-         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
-         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
-         */
-        @inlinable @inline(__always)
-        public func isPressed(ifDifferent recipt: inout InputRecipts) -> Bool {
-            guard isPressed else {return false}
-            let key = ObjectIdentifier(self)
-            if let recipt = recipt.values[key], recipt == currentRecipt {
-                return false
-            }
-            recipt.values[key] = currentRecipt
-            return true
-        }
-
+        public internal(set) var isPressed: Bool = false
 
         public enum Gesture {
             case singleClick
             case doubleClick
             case trippleClick
         }
+        
+        /**
+         Returns a recipt for the current press or nil if not pressed.
+         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
+         - parameter gesture: A repetition based gesture to require for success.
+         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
+         */
         @inlinable @inline(__always)
-        public func isPressed(ifDifferent recipt: inout InputRecipts, andGesture gesture: Gesture) -> Bool {
+        public func isPressed(ifDifferent recipt: inout InputRecipts, andGesture gesture: Gesture? = nil) -> Bool {
             guard isPressed else {return false}
             let key = ObjectIdentifier(self)
             if let recipt = recipt.values[key], recipt == currentRecipt {
@@ -98,6 +82,61 @@ public extension Mouse {
                 return pressCount == 2
             case .trippleClick:
                 return pressCount == 3
+            case nil:
+                return true
+            }
+        }
+        
+        /**
+         Returns a recipt for the current press or nil if not pressed.
+         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
+         - parameter block: A code block, including this button, that is run if the request is true.
+         - parameter gesture: A repetition based gesture to require for success.
+         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
+         - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
+         */
+        @inlinable @inline(__always)
+        public func whenPressed(ifDifferent recipt: inout InputRecipts, andGesture gesture: Gesture? = nil, run block: (_ button: ButtonState)->Void) {
+            if isPressed(ifDifferent: &recipt, andGesture: gesture) {
+                block(self)
+            }
+        }
+        
+    
+        private struct MultiClick {
+            var count: Int = 0
+            var previousTime: Double = 0
+            var previousPosition: Position2? = nil
+        }
+        private var multiClick: MultiClick = MultiClick()
+        internal func setIsPressed(_ pressed: Bool, multiClickTime: Double) {
+            if pressed != isPressed {
+                currentRecipt &+= 1
+            }
+            
+            self.isPressed = pressed
+            
+            if pressed {// On Down increment multi-click
+                let now: Double = Game.shared.platform.systemTime()
+                let delta: Double = now - multiClick.previousTime
+                var isMultiClick = delta <= multiClickTime
+                if isMultiClick {
+                    if let position = mouse.position, let previousPosition = multiClick.previousPosition {
+                        if position.distance(from: previousPosition) > 16 {
+                            // If the cursor moved too much cancel multi-click
+                            isMultiClick = false
+                        }
+                    }
+                }
+        
+                if isMultiClick {
+                    multiClick.count += 1
+                    multiClick.previousPosition = mouse.position
+                }else{
+                    multiClick.count = 1
+                    multiClick.previousPosition = nil
+                }
+                multiClick.previousTime = now
             }
         }
     }

@@ -146,27 +146,7 @@ final class Win32Window: WindowBacking {
         WinSDK.DestroyWindow(hWnd)
     }
 
-    lazy var doubleClickTime: Double = Double(GetDoubleClickTime()) / 1000
-    struct ClickCount {
-        var count: Int = 0
-        var previousTime: Double = 0
-    }
-    var clickCounts: [MouseButton:ClickCount] = [:]
-    func clickCount(_ button: MouseButton, incrementing: Bool) -> Int {
-        var click: ClickCount = clickCounts[button] ?? ClickCount()
-        if incrementing {
-            let now: Double = Game.shared.platform.systemTime()
-            let delta: Double = now - click.previousTime
-            if delta <= doubleClickTime {
-                click.count += 1
-            }else{
-                click.count = 1
-            }
-            click.previousTime = now
-            clickCounts[button] = click
-        }
-        return click.count
-    }
+    let multiClickTime: Double = Double(GetDoubleClickTime()) / 1000
 }
 
 fileprivate extension Win32Window {
@@ -441,7 +421,7 @@ fileprivate extension Win32Window {
         mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: .button1,
-                                   count: clickCount(.button1, incrementing: true),
+                                   multiClickTime: multiClickTime,
                                    position: mouseState.position,
                                    delta: mouseState.delta,
                                    window: self.window)
@@ -454,7 +434,7 @@ fileprivate extension Win32Window {
         mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: .button1,
-                                   count: clickCount(.button1, incrementing: false),
+                                   multiClickTime: multiClickTime,
                                    position: mouseState.position,
                                    delta: mouseState.delta,
                                    window: self.window)
@@ -467,7 +447,7 @@ fileprivate extension Win32Window {
         mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: .button2,
-                                   count: clickCount(.button2, incrementing: true),
+                                   multiClickTime: multiClickTime,
                                    position: mouseState.position,
                                    delta: mouseState.delta,
                                    window: self.window)
@@ -480,7 +460,7 @@ fileprivate extension Win32Window {
         mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: .button2,
-                                   count: clickCount(.button2, incrementing: false),
+                                   multiClickTime: multiClickTime,
                                    position: mouseState.position,
                                    delta: mouseState.delta,
                                    window: self.window)
@@ -493,7 +473,7 @@ fileprivate extension Win32Window {
         mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: .button3,
-                                   count: clickCount(.button3, incrementing: true),
+                                   multiClickTime: multiClickTime,
                                    position: mouseState.position,
                                    delta: mouseState.delta,
                                    window: self.window)
@@ -506,7 +486,7 @@ fileprivate extension Win32Window {
         mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: .button3,
-                                   count: clickCount(.button3, incrementing: false),
+                                   multiClickTime: multiClickTime,
                                    position: mouseState.position,
                                    delta: mouseState.delta,
                                    window: self.window)
@@ -530,7 +510,7 @@ fileprivate extension Win32Window {
         mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: button,
-                                   count: clickCount(button, incrementing: true),
+                                   multiClickTime: multiClickTime,
                                    position: mouseState.position,
                                    delta: mouseState.delta,
                                    window: self.window)
@@ -554,7 +534,7 @@ fileprivate extension Win32Window {
         mouseState.mouseMoved(lparam)
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: button,
-                                   count: clickCount(button, incrementing: false),
+                                   multiClickTime: multiClickTime,
                                    position: mouseState.position,
                                    delta: mouseState.delta,
                                    window: self.window)

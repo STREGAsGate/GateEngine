@@ -56,10 +56,6 @@ final class WASIWindow: WindowBacking {
             }
             self.pointSafeAreaInsets = insets
             self.pixelSafeAreaInsets = self.pointSafeAreaInsets * self.interfaceScaleFactor
-            
-            Log.info("Scale:", self.interfaceScaleFactor)
-            Log.info("SizePoint:", self.pointSize, "SizePixel:", self.pixelSize)
-            Log.info("SafePoint:", self.pointSafeAreaInsets, "SafePixel:", self.pixelSafeAreaInsets)
         }
     }
     
@@ -119,24 +115,19 @@ final class WASIWindow: WindowBacking {
     func setPointerLock(_ lock: Bool) {
         let this = canvas.jsObject
         if lock {
-            this["requestPointerLock"].function!(this: this)
+            this["requestPointerLock"].function?(this: this)
             didRequestPointerLock = true
         }else{
-            this["exitPointerLock"].function!(this: this)
+            this["exitPointerLock"].function?(this: this)
             didRequestPointerLock = false
         }
     }
     
-    var didSetup: Bool = false
     @MainActor func performedUserGesture() {
-        if didRequestPointerLock == false && Game.shared.hid.mouse.locked {
+        if didRequestPointerLock == false && Game.shared.hid.mouse.locked && isPointerLocked == false {
             setPointerLock(true)
-        }else if didRequestPointerLock && Game.shared.hid.mouse.locked == false {
+        }else if didRequestPointerLock && Game.shared.hid.mouse.locked == false && isPointerLocked == false {
             setPointerLock(false)
-        }
-        if didSetup == false {
-            didSetup = true
-            Game.shared.insertSystem(AudioSystem.self)
         }
     }
     
@@ -150,18 +141,21 @@ final class WASIWindow: WindowBacking {
         return (position, delta)
     }
     
+    var isPointerLocked: Bool = false
     func addListeners() {
         globalThis.addEventListener(type: "pointerlockchange") { event in
+            self.isPointerLocked = !self.isPointerLocked
+            Log.info("pointerlockchange", self.isPointerLocked)
             Task {@MainActor in
-                if self.didRequestPointerLock {
-                    Game.shared.hid.mouse.locked = false
+                if self.isPointerLocked == false {
+                    Game.shared.hid.mouse.mode = .standard
                 }
             }
         }
         globalThis.addEventListener(type: "pointerlockerror") { event in
-            Log.error("Mouse lock failed")
+            Log.error("pointerlockerror", "Returning mouse to mode: standard")
             Task {@MainActor in
-                Game.shared.hid.mouse.locked = false
+                Game.shared.hid.mouse.mode = .standard
             }
         }
         globalThis.onresize = { event -> JSValue in
@@ -238,7 +232,6 @@ final class WASIWindow: WindowBacking {
             Task {@MainActor in
                 Game.shared.hid.mouseClick(event: .buttonDown,
                                            button: button,
-                                           count: nil,
                                            position: locations.position,
                                            delta: locations.delta,
                                            window: self.window)
@@ -255,7 +248,6 @@ final class WASIWindow: WindowBacking {
             Task {@MainActor in
                 Game.shared.hid.mouseClick(event: .buttonUp,
                                            button: button,
-                                           count: nil,
                                            position: locations.position,
                                            delta: locations.delta,
                                            window: self.window)

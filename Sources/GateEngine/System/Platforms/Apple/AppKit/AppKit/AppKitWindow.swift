@@ -302,7 +302,7 @@ extension AppKitWindow {
 
 final class UGNSWindow: AppKit.NSWindow {
     weak var window: Window!
-
+    
     init(window: Window, contentRect: NSRect, styleMask style: NSWindow.StyleMask, backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool) {
         self.window = window
         super.init(contentRect: contentRect, styleMask: style, backing: backingStoreType, defer: flag)
@@ -359,7 +359,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func mouseDown(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: .button1,
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)
@@ -369,7 +369,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func mouseUp(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: .button1,
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)
@@ -379,7 +379,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func rightMouseDown(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: .button2,
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)
@@ -389,7 +389,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func rightMouseUp(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: .button2,
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)
@@ -399,7 +399,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func otherMouseDown(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonDown,
                                    button: mouseButtonFromEvent(event),
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)
@@ -409,7 +409,7 @@ final class UGNSWindow: AppKit.NSWindow {
     override func otherMouseUp(with event: NSEvent) {
         Game.shared.hid.mouseClick(event: .buttonUp,
                                    button: mouseButtonFromEvent(event),
-                                   count: event.clickCount,
+                                   multiClickTime: NSEvent.doubleClickInterval,
                                    position: positionFromEvent(event),
                                    delta: deltaPositionFromEvent(event),
                                    window: window)

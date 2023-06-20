@@ -324,9 +324,17 @@ fileprivate final class WASIUserActivationRenderingSystem: RenderingSystem {
     }
     
     override func teardown(game: Game) {
+        let wasiWindow = game.windowManager.mainWindow!.windowBacking as! WASIWindow
+        wasiWindow.setPointerLock(true)
+        
         game.windowManager.mainWindow?.clearColor = .black
         game.addPlatformSystems()
         game.delegate.didFinishLaunching(game: game, options: [])
+        
+
+//        Task {
+//            wasiWindow.setPointerLock(false)
+//        }
     }
 }
 

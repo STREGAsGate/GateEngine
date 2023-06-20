@@ -142,7 +142,6 @@ internal class UIKitViewController: GCEventViewController {
                 if let event = event {
                     Game.shared.hid.mouseClick(event: .buttonDown,
                                                button: mouseButtonFromEvent(event),
-                                               count: touch.tapCount,
                                                position: position,
                                                delta: self.deltaLocationOfTouch(touch, from: event),
                                                window: self.window.window)
@@ -205,7 +204,6 @@ internal class UIKitViewController: GCEventViewController {
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
                 Game.shared.hid.mouseClick(event: .buttonUp,
                                                      button: mouseButtonFromEvent(event),
-                                                     count: touch.tapCount,
                                                      position: position,
                                                      delta: self.deltaLocationOfTouch(touch, from: event),
                                                      window: self.window.window)
@@ -238,7 +236,6 @@ internal class UIKitViewController: GCEventViewController {
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
                 Game.shared.hid.mouseClick(event: .buttonUp,
                                            button: mouseButtonFromEvent(event),
-                                           count: touch.tapCount,
                                            position: position,
                                            delta: self.deltaLocationOfTouch(touch, from: event),
                                            window: self.window.window)

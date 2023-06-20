@@ -117,5 +117,19 @@ public extension Mouse {
             }
             return true
         }
+        
+        /**
+         Returns a recipt for the current press or nil if not pressed.
+         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
+         - parameter includeMomentum: When set to false, excludes values that were generated as momentum effects. Only works on some platforms (like macOS).
+         - parameter block: A code block, including this scroller, that is run if the request is true.
+         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
+         */
+        @inlinable @inline(__always)
+        public func whenScrolled(ifDifferent recipt: inout InputRecipts, includingMomentum includeMomentum: Bool = false, run block: (_ scroller: ScrollerState)->Void) {
+            if didScroll(ifDifferent: &recipt, includingMomentum: includeMomentum) {
+                block(self)
+            }
+        }
     }
 }

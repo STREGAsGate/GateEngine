@@ -57,9 +57,9 @@ extension HID {
         mouse.mouseChange(event: event, position: position, delta: delta, window: window)
     }
     @_transparent
-    func mouseClick(event: Mouse.ClickEvent, button: MouseButton, count: Int, position: Position2?, delta: Position2?, window: Window?) {
+    func mouseClick(event: Mouse.ClickEvent, button: MouseButton, multiClickTime: Double = 0.5, position: Position2?, delta: Position2?, window: Window?) {
         recentInputMethod = .mouseKeyboard
-        mouse.mouseClick(event: event, button: button, count: count, position: position, delta: delta, window: window)
+        mouse.mouseClick(event: event, button: button, multiClickTime: multiClickTime, position: position, delta: delta, window: window)
     }
     @_transparent
     func mouseScrolled(delta: Position3, uiDelta: Position3, device: Int, isMomentum: Bool, window: Window?) {

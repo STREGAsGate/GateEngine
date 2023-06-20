@@ -76,28 +76,6 @@ final class X11Window: WindowBacking {
     lazy var xic: XIC = XCreateIC(XOpenIM(xDisplay, nil, nil, nil), xWindow)
     private var previousKeyEvent: XKeyEvent = XKeyEvent()
     
-    let doubleClickTime: Double = 200 / 1000
-    struct ClickCount {
-        var count: Int = 0
-        var previousTime: Double = 0
-    }
-    var clickCounts: [MouseButton:ClickCount] = [:]
-    func clickCount(_ button: MouseButton, incrementing: Bool) -> Int {
-        var click: ClickCount = clickCounts[button] ?? ClickCount()
-        if incrementing {
-            let now: Double = Game.shared.platform.systemTime()
-            let delta: Double = now - click.previousTime
-            if delta <= doubleClickTime {
-                click.count += 1
-            }else{
-                click.count = 1
-            }
-            click.previousTime = now
-            clickCounts[button] = click
-        }
-        return click.count
-    }
-
     @MainActor func processEvent(_ event: XEvent) {
         @_transparent
         func isRepeatedKey(_ event: XKeyEvent) -> Bool {
@@ -163,8 +141,7 @@ final class X11Window: WindowBacking {
                 let button: MouseButton = mouseButtonFromEvent(event)
                 Game.shared.hid.mouseClick(event: .buttonDown, 
                                         button: button, 
-                                        count: clickCount(button, incrementing: true),
-                                        position: Position2(Float(event.x), Float(event.y)), 
+                                        position: Position2(Float(event.x), Float(event.y)),
                                         delta: .zero, 
                                         window: self.window)
             }
@@ -174,8 +151,7 @@ final class X11Window: WindowBacking {
             let button: MouseButton = mouseButtonFromEvent(event)
             Game.shared.hid.mouseClick(event: .buttonUp, 
                                         button: mouseButtonFromEvent(event), 
-                                        count: clickCount(button, incrementing: false),
-                                        position: Position2(Float(event.x), Float(event.y)), 
+                                        position: Position2(Float(event.x), Float(event.y)),
                                         delta: .zero, 
                                         window: self.window)
         default:
