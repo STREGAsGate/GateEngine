@@ -72,7 +72,6 @@ let package = Package(
                     }(),
                     resources: [
                         .copy("_Resources/GateEngine"),
-                        .copy("System/HID/GamePad/GamePadInterpreter/Interpreters/HID/Mapping/SDL2/SDL2 Game Controller DB.txt"),
                     ],
                     cSettings: [
                         .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS, .iOS, .tvOS])),
