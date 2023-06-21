@@ -216,8 +216,8 @@ internal enum Log {
         WinSDK.OutputDebugStringW((resolvedMessage + "/n").windowsUTF16)
         #endif
         
-        #if os(WASI)
-        console.assert(condition, data: .string(resolvedMessage))
+        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        console.assert(condition: condition, data: .string(resolvedMessage))
         #endif
         
         Swift.assert(condition, resolvedMessage, file: file, line: line)
@@ -237,8 +237,8 @@ internal enum Log {
         WinSDK.OutputDebugStringW((resolvedMessage + "/n").windowsUTF16)
         #endif
         
-        #if os(WASI)
-        console.assert(false, data: .string(resolvedMessage))
+        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        console.assert(condition: false, data: .string(resolvedMessage))
         #endif
         
         return Swift.fatalError(resolvedMessage, file: file, line: line)
