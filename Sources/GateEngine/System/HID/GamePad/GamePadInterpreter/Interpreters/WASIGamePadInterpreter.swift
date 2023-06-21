@@ -12,29 +12,28 @@ import Gamepad
 
 internal class WASIGamePadInterpreter: GamePadInterpreter {
     unowned let hid: HID
+    var wGamepads: [Gamepad] = []
+    
     required init(hid: HID) {
         self.hid = hid
     }
     
-    var gamepads: [Gamepad] = []
     func beginInterpreting() {
-        Log.info("Looking for gamepads")
-
         func addGamepad(_ event: Event) {
             let event = GamepadEvent(unsafelyWrapping: event.jsObject)
             if event.gamepad.mapping == .standard {
+                self.wGamepads.append(event.gamepad)
                 let controller = GamePad(interpreter: self, identifier: event.gamepad.id)
                 self.hid.gamePads.addNewlyConnectedGamePad(controller)
-                self.gamepads.append(event.gamepad)
             }else{
                 Log.warn("Ignoring non-standard gamepad:", event.gamepad.id)
             }
         }
         func removeGamepad(_ event: Event) {
             let event = GamepadEvent(unsafelyWrapping: event.jsObject)
-            self.gamepads.removeAll(where: {$0.id == event.gamepad.id})
             if let controller = self.hid.gamePads.all.first(where: {$0.identifier as? String == event.gamepad.id}) {
                 self.hid.gamePads.removedDisconnectedGamePad(controller)
+                self.wGamepads.removeAll(where: {$0.id == event.gamepad.id})
             }
         }
                 
@@ -107,8 +106,9 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
     
     func updateState(of gamePad: GamePad) {
         guard let id = gamePad.identifier as? String else {return}
-        guard let wGamepad: Gamepad = gamepads.first(where: {$0.id == id}) else {return}
-                
+        let wGamepads = globalThis.navigator.getGamepads().compactMap({$0})
+        guard let wGamepad: Gamepad = wGamepads.first(where: {$0.id == id}) else {return}
+        
         gamePad.dpad.up.isPressed = wGamepad.buttons[12].pressed
         gamePad.dpad.up.value = Float(wGamepad.buttons[12].value)
         
@@ -126,7 +126,7 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
         
         gamePad.button.south.isPressed = wGamepad.buttons[0].pressed
         gamePad.button.south.value = Float(wGamepad.buttons[0].value)
-        
+
         gamePad.button.east.isPressed = wGamepad.buttons[1].pressed
         gamePad.button.east.value = Float(wGamepad.buttons[1].value)
         
@@ -157,12 +157,12 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
         }
 
         gamePad.stick.left.xAxis = Float(wGamepad.axes[0])
-        gamePad.stick.left.yAxis = Float(wGamepad.axes[1])
+        gamePad.stick.left.yAxis = Float(wGamepad.axes[1]) * -1
         gamePad.stick.left.button.isPressed = wGamepad.buttons[10].pressed
         gamePad.stick.left.button.value = Float(wGamepad.buttons[10].value)
 
         gamePad.stick.right.xAxis = Float(wGamepad.axes[2])
-        gamePad.stick.right.yAxis = Float(wGamepad.axes[3])
+        gamePad.stick.right.yAxis = Float(wGamepad.axes[3]) * -1
         gamePad.stick.right.button.isPressed = wGamepad.buttons[11].pressed
         gamePad.stick.right.button.value = Float(wGamepad.buttons[11].value)
     }

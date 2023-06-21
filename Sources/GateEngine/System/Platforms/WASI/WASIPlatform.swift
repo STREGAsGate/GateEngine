@@ -96,7 +96,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
         return try await JSPromise(jsFetch(url, options).object!)!.value
     }
     
-    func saveStateURL() throws -> URL {
+    func saveStateURL() throws -> Foundation.URL {
         fatalError()
     }
     

@@ -13,6 +13,11 @@ import GameMath
 import WinSDK
 #endif
 
+#if canImport(WebAPIBase) && canImport(JavaScriptKit)
+import JavaScriptKit
+import WebAPIBase
+#endif
+
 #if targetEnvironment(macCatalyst)
 #error("macCatalyst is not a supported platform.")
 #endif
@@ -98,9 +103,14 @@ internal enum Log {
     @_transparent @usableFromInline
     static func info(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let message = _message(prefix: "[GateEngine]", items, separator: separator)
+        
+        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        console.info(data: .string(message))
+        #else
         Swift.print(message, terminator: terminator)
         #if os(Windows)
         WinSDK.OutputDebugStringW((message + terminator).windowsUTF16)
+        #endif
         #endif
     }
     
@@ -139,9 +149,15 @@ internal enum Log {
         }else{
             resolvedMessage = _message(prefix: "[GateEngine] warning:", items, separator: separator)
         }
-        Swift.print(resolvedMessage, separator: separator, terminator: terminator)
+        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        console.warn(data: .string(resolvedMessage))
+        #else
+        
         #if os(Windows)
         WinSDK.OutputDebugStringW((resolvedMessage + terminator).windowsUTF16)
+        #endif
+        
+        Swift.print(resolvedMessage, separator: separator, terminator: terminator)
         #endif
     }
     
@@ -162,9 +178,15 @@ internal enum Log {
         }else{
             resolvedMessage = self._message(prefix: "[GateEngine] error:", items, separator: separator)
         }
-        Swift.print(resolvedMessage, separator: separator, terminator: terminator)
+        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        console.error(data: .string(resolvedMessage))
+        #else
+        
         #if canImport(WinSDK)
         WinSDK.OutputDebugStringW((resolvedMessage + terminator).windowsUTF16)
+        #endif
+        
+        Swift.print(resolvedMessage, separator: separator, terminator: terminator)
         #endif
     }
     
@@ -181,7 +203,7 @@ internal enum Log {
     static func assert(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> String, file: StaticString = #file, line: UInt = #line) {
         #if DEBUG
         let condition = condition()
-        guard condition else {return}
+        guard condition == false else {return}
 
         let resolvedMessage: String
         if supportsColor {
@@ -189,9 +211,15 @@ internal enum Log {
         }else{
             resolvedMessage = self._message(prefix: "[GateEngine] error:", message(), separator: " ")
         }
+        
         #if canImport(WinSDK)
         WinSDK.OutputDebugStringW((resolvedMessage + "/n").windowsUTF16)
         #endif
+        
+        #if os(WASI)
+        console.assert(condition, data: .string(resolvedMessage))
+        #endif
+        
         Swift.assert(condition, resolvedMessage, file: file, line: line)
         #endif
     }
@@ -204,9 +232,15 @@ internal enum Log {
         }else{
             resolvedMessage = self._message(prefix: "[GateEngine] error:", message, separator: " ")
         }
+        
         #if canImport(WinSDK)
         WinSDK.OutputDebugStringW((resolvedMessage + "/n").windowsUTF16)
         #endif
+        
+        #if os(WASI)
+        console.assert(false, data: .string(resolvedMessage))
+        #endif
+        
         return Swift.fatalError(resolvedMessage, file: file, line: line)
     }
 }
