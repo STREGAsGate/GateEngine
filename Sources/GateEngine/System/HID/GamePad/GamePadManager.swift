@@ -67,9 +67,9 @@ extension HID.GamePadManger {
         // GameController (MFI) framework doesn't function without an application bundle
         // This can happen if the application is executed without a bundle, such as a swift executable package
         // We ommit the MFI interpretter becuase it will never get any controllers
-        return [HIDGamePadInterpreter(hid: hid)]
+        return [HIDGamePadInterpreter()]
     }
-    return [HIDGamePadInterpreter(hid: hid), MFIGamePadInterpreter(hid: hid)]
+    return [HIDGamePadInterpreter(), MFIGamePadInterpreter()]
     #elseif os(Linux)
     return [LinuxHIDGamePadInterpreter()]
     #elseif os(Windows)
@@ -77,7 +77,7 @@ extension HID.GamePadManger {
     #elseif os(iOS) || os(tvOS)
     return [MFIGamePadInterpreter(hid: hid)]
     #elseif os(WASI)
-    return [WASIGamePadInterpreter(hid: hid)]
+    return [WASIGamePadInterpreter()]
     #elseif os(Android)
     return []
     #elseif os(PS4)

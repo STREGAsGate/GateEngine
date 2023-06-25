@@ -11,12 +11,10 @@ import DOM
 import Gamepad
 
 internal class WASIGamePadInterpreter: GamePadInterpreter {
-    unowned let hid: HID
+    @inline(__always)
+    var hid: HID {Game.shared.hid}
     var wGamepads: [Gamepad] = []
-    
-    required init(hid: HID) {
-        self.hid = hid
-    }
+    init() { }
     
     func beginInterpreting() {
         func addGamepad(_ event: Event) {

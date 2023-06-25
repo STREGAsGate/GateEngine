@@ -10,10 +10,9 @@ import Foundation
 import GameController
 
 internal class MFIGamePadInterpreter: GamePadInterpreter {
-    unowned let hid: HID
-    required init(hid: HID) {
-        self.hid = hid
-
+    @inline(__always)
+    var hid: HID {Game.shared.hid}
+    init() {
         if #available(macOS 11.3, macCatalyst 14.5, iOS 14.5, tvOS 14.5, *) {
             GCController.shouldMonitorBackgroundEvents = true
         }

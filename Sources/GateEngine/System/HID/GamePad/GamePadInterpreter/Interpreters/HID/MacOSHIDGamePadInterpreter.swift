@@ -29,10 +29,10 @@ fileprivate class HIDController {
     }
 }
 internal class HIDGamePadInterpreter: GamePadInterpreter {
-    unowned let hid: HID
-    required init(hid: HID) {
-        self.hid = hid
-    }
+    @inline(__always)
+    var hid: HID {Game.shared.hid}
+    init() { }
+    
     static let sdlDatabase = try! SDL2Database()
     var sdlDatabase: SDL2Database {
         return Self.sdlDatabase

@@ -21,8 +21,10 @@ let package = Package(
         // SwiftWASM
         #if os(macOS) || os(Linux)
         packageDependencies.append(contentsOf: [
-            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", branch: "main"),
-            .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
+//            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", branch: "main"),
+//            .package(url: "https://github.com/strega/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
+            .package(path: "~/Documents/GitHub/WebAPIKit"),
+            .package(path: "~/Documents/GitHub/JavaScriptKit")
         ])
         #endif
         
@@ -100,7 +102,7 @@ let package = Package(
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
                         // Options for developemnt of WASI platform
-                        #if false
+                        #if true
                         settings.append(contentsOf: [
                             /// Allows HTML5 platform to be compiled from a compatible host, such as macOS. This allows the IDE to show compile errors without targeting WASI.
                             .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),

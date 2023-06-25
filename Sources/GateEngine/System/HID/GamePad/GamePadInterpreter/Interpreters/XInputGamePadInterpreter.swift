@@ -11,10 +11,9 @@ import GameMath
 import WinSDK.DirectX.XInput14
 
 internal class XInputGamePadInterpreter: GamePadInterpreter {
-    unowned let hid: HID
-    required init(hid: HID) {
-        self.hid = hid
-    }
+    @inline(__always)
+    var hid: HID {Game.shared.hid}
+    init() { }
     
     func beginInterpreting() {
         XInputEnable(true)
