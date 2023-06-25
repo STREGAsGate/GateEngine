@@ -73,9 +73,9 @@ extension HID.GamePadManger {
     #elseif os(Linux)
     return [LinuxHIDGamePadInterpreter()]
     #elseif os(Windows)
-    return [XInputGamePadInterpreter(hid: hid)]
+    return [XInputGamePadInterpreter()]
     #elseif os(iOS) || os(tvOS)
-    return [MFIGamePadInterpreter(hid: hid)]
+    return [MFIGamePadInterpreter()]
     #elseif os(WASI)
     return [WASIGamePadInterpreter()]
     #elseif os(Android)
