@@ -7,6 +7,7 @@
 #if canImport(IOKit)
 
 import Foundation
+import CoreFoundation
 import IOKit.hid
 
 fileprivate class HIDController {
@@ -158,21 +159,38 @@ internal class IOKitGamePadInterpreter: GamePadInterpreter {
     
     func description(of gamePad: GamePad) -> String {
         let id = (gamePad.identifier as! HIDController).guid
+        #if GATEENGINE_DEBUG_HID
         return (sdlDatabase.controllers[id]?.name ?? "[Unknown]") + ", GUID: \(id.guid)"
+        #else
+        return (sdlDatabase.controllers[id]?.name ?? "[Unknown]")
+        #endif
     }
     
     var userReadableName: String {return "IOKit"}
 }
 
 fileprivate func supportedDeviceIdentifierFrom(_ device: IOHIDDevice) -> SDL2ControllerGUID? {
-    guard MFIGamePadInterpreter.supports(device) == false else {return nil}
+    let productName: String? = IOHIDDeviceGetProperty(device, "Product" as CFString) as? String
 
-    guard let vendorID = IOHIDDeviceGetProperty(device, kIOHIDVendorIDKey as CFString) as? Int else {return nil}
-    guard let productID = IOHIDDeviceGetProperty(device, kIOHIDProductIDKey as CFString) as? Int else {return nil}
-    guard let version = IOHIDDeviceGetProperty(device, kIOHIDVersionNumberKey as CFString) as? Int else {return nil}
-    guard let transport = IOHIDDeviceGetProperty(device, kIOHIDTransportKey as CFString) as? String else {return nil}
-    
-    var sldTransport: SDL2ControllerGUID.Transport = .usb
+    guard MFIGamePadInterpreter.supports(device) == false else {
+        #if GATEENGINE_DEBUG_HID
+        Log.info("IOKitGamePadInterpreter is ignoring gamepad \(productName ?? "[Unknown]"), Reason: Will be MFi.")
+        #endif
+        return nil
+    }
+
+    guard let vendorID = IOHIDDeviceGetProperty(device, kIOHIDVendorIDKey as CFString) as? Int,
+          let productID = IOHIDDeviceGetProperty(device, kIOHIDProductIDKey as CFString) as? Int,
+          let version = IOHIDDeviceGetProperty(device, kIOHIDVersionNumberKey as CFString) as? Int,
+          let transport = IOHIDDeviceGetProperty(device, kIOHIDTransportKey as CFString) as? String else {
+        #if GATEENGINE_DEBUG_HID
+        Log.info("IOKitGamePadInterpreter is ignoring gamepad \(productName ?? "[Unknown]"), Reason: Failed to generate GUID.")
+        #endif
+        return nil
+    }
+
+    let sldTransport: SDL2ControllerGUID.Transport = .usb
+    #if false // SDL doesn't account for bluetooth on macOS for some reason
     switch transport {
     case kIOHIDTransportBluetoothValue:
         sldTransport = .bluetooth
@@ -181,9 +199,15 @@ fileprivate func supportedDeviceIdentifierFrom(_ device: IOHIDDevice) -> SDL2Con
     default:
         break
     }
+    #endif
     
-    let guid = SDL2ControllerGUID(vendorID: vendorID, productID: productID, hidVersion: version, transport: Int(sldTransport.rawValue))
-    guard IOKitGamePadInterpreter.sdlDatabase.controllers.keys.contains(guid) == true else {return nil}
+    let guid = SDL2ControllerGUID(vendorID: vendorID, productID: productID, hidVersion: version, transport: Int(sldTransport.rawValue), name: productName ?? "")
+    guard IOKitGamePadInterpreter.sdlDatabase.controllers.keys.contains(guid) == true else {
+        #if GATEENGINE_DEBUG_HID
+        Log.info("IOKitGamePadInterpreter is ignoring gamepad \(productName ?? "[Unknown]"), Reason: No mapping available.")
+        #endif
+        return nil
+    }
     return guid
 }
 

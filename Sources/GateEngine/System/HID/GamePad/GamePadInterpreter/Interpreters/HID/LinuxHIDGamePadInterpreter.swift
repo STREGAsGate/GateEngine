@@ -317,7 +317,11 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
     
     func description(of gamePad: GamePad) -> String {
         let identifier: HIDController = gamePad.identifier as! HIDController
+        #if GATEENGINE_DEBUG_HID
         return (identifier.map.name ?? "[Unknown]") + ", GUID: \(identifier.guid)"
+        #else
+        return (identifier.map.name ?? "[Unknown]")
+        #endif
     }
     
     var userReadableName: String {return "Joystick API"}

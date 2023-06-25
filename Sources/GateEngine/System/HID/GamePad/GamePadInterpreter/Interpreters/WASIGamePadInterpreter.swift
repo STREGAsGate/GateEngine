@@ -95,6 +95,14 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
                 gamePad.symbols = .sonyPlaystation
                 return
             }
+            if id == "Pro Controller Extended Gamepad".lowercased() {
+                gamePad.symbols = .nintendoSwitch
+                return
+            }
+            if id.hasSuffix("Extended Gamepad".lowercased()) {
+                gamePad.symbols = .appleMFI
+                return
+            }
         default:
             break
         }
