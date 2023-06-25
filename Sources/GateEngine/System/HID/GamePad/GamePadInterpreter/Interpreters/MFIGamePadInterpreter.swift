@@ -232,6 +232,19 @@ internal class MFIGamePadInterpreter: GamePadInterpreter {
                     }
                 }
             }
+ 
+            if #available(macOS 11, iOS 14, tvOS 14, *) {
+                if let optionsButton = gcGamePad.buttonHome {
+                    gamePad.menu.tertiary.isPressed = optionsButton.isPressed
+                    if optionsButton.isAnalog && optionsButton.isPressed {
+                        gamePad.menu.tertiary.value = optionsButton.value
+                    }else if optionsButton.isPressed {
+                        gamePad.menu.tertiary.value = 1
+                    }else{
+                        gamePad.menu.tertiary.value = 0
+                    }
+                }
+            }
         }
     }
     
@@ -249,7 +262,6 @@ internal class MFIGamePadInterpreter: GamePadInterpreter {
 
 extension MFIGamePadInterpreter {
     nonisolated static var isSupported: Bool {
-        return false
         guard Bundle.main.bundleIdentifier != nil else {return false}
         if #available(macOS 11.0, *) {
             return true
