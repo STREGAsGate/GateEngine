@@ -13,6 +13,7 @@
     func setupGamePad(_ gamePad: GamePad)
     func updateState(of gamePad: GamePad)
     func description(of gamePad: GamePad) -> String
+    var userReadableName: String {get}
 }
 
 extension GamePadInterpreter {

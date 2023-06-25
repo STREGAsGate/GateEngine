@@ -4,11 +4,11 @@
  *
  * http://stregasgate.com
  */
-#if os(macOS)
+#if canImport(IOKit)
 
 import Foundation
 import IOKit.hid
-import GameController
+
 fileprivate class HIDController {
     let guid: SDL2ControllerGUID
     let device: IOHIDDevice
@@ -28,10 +28,10 @@ fileprivate class HIDController {
         self.device = device
     }
 }
-internal class HIDGamePadInterpreter: GamePadInterpreter {
+internal class IOKitGamePadInterpreter: GamePadInterpreter {
     @inline(__always)
     var hid: HID {Game.shared.hid}
-    init() { }
+    init?() { }
     
     static let sdlDatabase = try! SDL2Database()
     var sdlDatabase: SDL2Database {
@@ -157,16 +157,15 @@ internal class HIDGamePadInterpreter: GamePadInterpreter {
     }
     
     func description(of gamePad: GamePad) -> String {
-        return (gamePad.identifier as! HIDController).guid.guid
+        let id = (gamePad.identifier as! HIDController).guid
+        return (sdlDatabase.controllers[id]?.name ?? "[Unknown]") + ", GUID: \(id.guid)"
     }
+    
+    var userReadableName: String {return "IOKit"}
 }
 
 fileprivate func supportedDeviceIdentifierFrom(_ device: IOHIDDevice) -> SDL2ControllerGUID? {
-    if Bundle.main.bundleIdentifier != nil {
-        if #available(macOS 11.0, *) {
-            guard GCController.supportsHIDDevice(device) == false else {return nil}
-        }
-    }
+    guard MFIGamePadInterpreter.supports(device) == false else {return nil}
 
     guard let vendorID = IOHIDDeviceGetProperty(device, kIOHIDVendorIDKey as CFString) as? Int else {return nil}
     guard let productID = IOHIDDeviceGetProperty(device, kIOHIDProductIDKey as CFString) as? Int else {return nil}
@@ -184,7 +183,7 @@ fileprivate func supportedDeviceIdentifierFrom(_ device: IOHIDDevice) -> SDL2Con
     }
     
     let guid = SDL2ControllerGUID(vendorID: vendorID, productID: productID, hidVersion: version, transport: Int(sldTransport.rawValue))
-    guard HIDGamePadInterpreter.sdlDatabase.controllers.keys.contains(guid) == true else {return nil}
+    guard IOKitGamePadInterpreter.sdlDatabase.controllers.keys.contains(guid) == true else {return nil}
     return guid
 }
 
@@ -195,7 +194,7 @@ fileprivate func gamepadWasAdded(inContext: UnsafeMutableRawPointer?, inResult: 
     }
     
     Task {@MainActor in
-        if let interpreter = Game.shared.hid.gamePads.interpreters.first(where:{$0 is HIDGamePadInterpreter}) as? HIDGamePadInterpreter {
+        if let interpreter = Game.shared.hid.gamePads.interpreters.first(where:{$0 is IOKitGamePadInterpreter}) as? IOKitGamePadInterpreter {
             let controller = GamePad(interpreter: interpreter, identifier: HIDController(guid: guid, device: device))
             interpreter.hid.gamePads.addNewlyConnectedGamePad(controller)
         }
@@ -204,7 +203,7 @@ fileprivate func gamepadWasAdded(inContext: UnsafeMutableRawPointer?, inResult: 
 
 fileprivate func gamepadWasRemoved(inContext: UnsafeMutableRawPointer?, inResult: IOReturn, inSender: UnsafeMutableRawPointer?, device: IOHIDDevice) {
     Task {@MainActor in
-        let interpreter = Game.shared.hid.gamePads.interpreters.filter({$0 is HIDGamePadInterpreter}).first! as! HIDGamePadInterpreter
+        let interpreter = Game.shared.hid.gamePads.interpreters.filter({$0 is IOKitGamePadInterpreter}).first! as! IOKitGamePadInterpreter
         if let controller = interpreter.hid.gamePads.all.first(where: {($0.identifier as? HIDController)?.device === device}) {
             interpreter.hid.gamePads.removedDisconnectedGamePad(controller)
         }
@@ -225,7 +224,7 @@ fileprivate func gamepadAction(inContext: UnsafeMutableRawPointer?, inResult: IO
 //    }
 }
 
-extension HIDGamePadInterpreter {
+extension IOKitGamePadInterpreter {
     func integerValue(from device: IOHIDDevice, element: IOHIDElement, cookie: IOHIDElementCookie) -> Int? {
         let value = IOHIDValueCreateWithIntegerValue(nil, element, 0, 0)
         var pointer = Unmanaged<IOHIDValue>.passUnretained(value)
@@ -259,7 +258,7 @@ extension HIDGamePadInterpreter {
 }
 
 
-extension HIDGamePadInterpreter {
+extension IOKitGamePadInterpreter {
     func updateStateForSDL2Controller(_ gamePad: GamePad, controller: SDL2ControllerMap) {
         guard let hidDevice = gamePad.identifier as! HIDController? else {fatalError("Identifier is not an IOHIDDevice!")}
         

@@ -12,13 +12,15 @@ import GameController
 internal class MFIGamePadInterpreter: GamePadInterpreter {
     @inline(__always)
     var hid: HID {Game.shared.hid}
-    init() {
+    init?() {
+        guard Self.isSupported else {return nil}
         if #available(macOS 11.3, macCatalyst 14.5, iOS 14.5, tvOS 14.5, *) {
             GCController.shouldMonitorBackgroundEvents = true
         }
     }
     
     func beginInterpreting() {
+        
         NotificationCenter.default.addObserver(self, selector: #selector(controllerConnected(_:)), name: .GCControllerDidConnect, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(controllerDisconnected(_:)), name: .GCControllerDidDisconnect, object: nil)
 
@@ -237,10 +239,33 @@ internal class MFIGamePadInterpreter: GamePadInterpreter {
         guard let gcController = gamePad.identifier as? GCController else {return "ID Missing"}
         return gcController.vendorName ?? gcController.description
     }
+    
+    var userReadableName: String {return "MFi"}
 
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
+}
+
+extension MFIGamePadInterpreter {
+    nonisolated static var isSupported: Bool {
+        return false
+        guard Bundle.main.bundleIdentifier != nil else {return false}
+        if #available(macOS 11.0, *) {
+            return true
+        }
+        return false
+    }
+    #if canImport(IOKit)
+    nonisolated static func supports(_ device: IOHIDDevice) -> Bool {
+        guard Self.isSupported else {return false}
+        if #available(macOS 11.0, *) {
+            return GCController.supportsHIDDevice(device)
+        }else{
+            return false
+        }
+    }
+    #endif
 }
 
 #endif

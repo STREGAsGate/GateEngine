@@ -49,12 +49,12 @@ public extension HID {
 }
 extension HID.GamePadManger {
     internal func addNewlyConnectedGamePad(_ gamePad: GamePad) {
-        Log.info("GamePad Connected: \(gamePad.interpreter.description(of: gamePad)), Symbols: \(gamePad.symbols)")
+        Log.info("GamePad Connected: \(gamePad.interpreter.description(of: gamePad)), Symbols: \(gamePad.symbols), Connection:", gamePad.interpreter.userReadableName)
         self.all.append(gamePad)
     }
     
     internal func removedDisconnectedGamePad(_ gamePad: GamePad) {
-        Log.info("GamePad Disconnected:", gamePad.interpreter.description(of: gamePad))
+        Log.info("GamePad Disconnected: \(gamePad.interpreter.description(of: gamePad)), Symbols: \(gamePad.symbols), Connection:", gamePad.interpreter.userReadableName)
         gamePad.state = .disconnected
         all.removeAll(where: {$0 === gamePad})
     }
@@ -62,25 +62,20 @@ extension HID.GamePadManger {
 
 @_transparent
 @MainActor fileprivate func getGamepadInterpreters() -> [GamePadInterpreter] {
-    #if os(macOS)
-    if Bundle.main.bundleIdentifier == nil {
-        // GameController (MFI) framework doesn't function without an application bundle
-        // This can happen if the application is executed without a bundle, such as a swift executable package
-        // We ommit the MFI interpretter becuase it will never get any controllers
-        return [HIDGamePadInterpreter()]
-    }
-    return [HIDGamePadInterpreter(), MFIGamePadInterpreter()]
+    #if os(macOS) || os(iOS) || os(tvOS)
+    var interpreters: [GamePadInterpreter?] = []
+    #if canImport(IOKit)
+    interpreters.append(IOKitGamePadInterpreter())
+    #endif
+    interpreters.append(MFIGamePadInterpreter())
+    return interpreters.compactMap({$0})
     #elseif os(Linux)
     return [LinuxHIDGamePadInterpreter()]
     #elseif os(Windows)
     return [XInputGamePadInterpreter()]
-    #elseif os(iOS) || os(tvOS)
-    return [MFIGamePadInterpreter()]
     #elseif os(WASI)
     return [WASIGamePadInterpreter()]
-    #elseif os(Android)
-    return []
-    #elseif os(PS4)
-    return []
+    #else
+    #error("Unsupported Platform")
     #endif
 }

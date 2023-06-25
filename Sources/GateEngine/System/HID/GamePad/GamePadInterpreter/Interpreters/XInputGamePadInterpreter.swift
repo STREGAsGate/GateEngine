@@ -162,6 +162,8 @@ internal class XInputGamePadInterpreter: GamePadInterpreter {
         guard let id = gamePad.identifier as? XInputIdentifier else {return "ID Missing"}
         return "\(id.userIndex)"
     }
+    
+    var userReadableName: String {return "XInput"}
 }
 
 #endif

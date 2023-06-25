@@ -14,4 +14,5 @@ internal class NullGamePadInterpreter: GamePadInterpreter {
     func setupGamePad(_ gamePad: GamePad) {}
     func updateState(of gamePad: GamePad) {}
     func description(of gamePad: GamePad) -> String {"ID Missing"}
+    var userReadableName: String {return "Null"}
 }

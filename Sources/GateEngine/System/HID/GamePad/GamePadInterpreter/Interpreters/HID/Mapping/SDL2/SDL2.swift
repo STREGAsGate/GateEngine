@@ -201,19 +201,15 @@ class SDL2Database {
         #else
         throw SDL2DatabaseError("Platfrom not supported.")
         #endif
-        
-        guard let db = string.components(separatedBy: "# ").first(where: {$0.hasPrefix(platform)}) else {
-            throw SDL2DatabaseError("Failed to parse database")
-        }
-        
+                
         var controllers: [SDL2ControllerGUID : SDL2ControllerMap] = [:]
     
-        for line in db.components(separatedBy: "\n") {
+        for line in string.components(separatedBy: "\n") {
             guard line.indices.contains(line.startIndex) && line[line.startIndex] != "#" else {continue}
+            guard line.contains("platform:\(platform)") else {continue}
             let line = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
             let elementStrings = line.components(separatedBy: ",")
             guard elementStrings.isEmpty == false else {continue}
-//                guard elementStrings.contains(where: {$0.hasPrefix("platform") && $0.hasSuffix(platform)}) else {continue}
             guard let guid = SDL2ControllerGUID(elementStrings[0]) else {continue}
             
             let name: String? = {

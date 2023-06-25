@@ -319,6 +319,8 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
         let identifier: HIDController = gamePad.identifier as! HIDController
         return (identifier.map.name ?? "[Unknown]") + ", GUID: \(identifier.guid)"
     }
+    
+    var userReadableName: String {return "Joystick API"}
 }
 
 #endif

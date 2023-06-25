@@ -189,6 +189,8 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
     func description(of gamePad: GamePad) -> String {
         return gamePad.identifier as? String ?? "[ID Missing]"
     }
+    
+    var userReadableName: String {return "Gamepad API"}
 }
 
 #endif
