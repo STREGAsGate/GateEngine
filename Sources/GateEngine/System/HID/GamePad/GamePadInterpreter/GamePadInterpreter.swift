@@ -6,7 +6,6 @@
  */
 
 @MainActor internal protocol GamePadInterpreter {
-    init(hid: HID)
     var hid: HID {get}
     func beginInterpreting()
     func update()
@@ -14,4 +13,9 @@
     func setupGamePad(_ gamePad: GamePad)
     func updateState(of gamePad: GamePad)
     func description(of gamePad: GamePad) -> String
+}
+
+extension GamePadInterpreter {
+    @_transparent
+    var hid: HID {Game.shared.hid}
 }

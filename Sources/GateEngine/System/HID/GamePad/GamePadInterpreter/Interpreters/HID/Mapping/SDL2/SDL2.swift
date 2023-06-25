@@ -206,44 +206,44 @@ class SDL2Database {
             throw SDL2DatabaseError("Failed to parse database")
         }
         
-        func process(_ string: String) -> [SDL2ControllerGUID : SDL2ControllerMap] {
-            var controllers: [SDL2ControllerGUID : SDL2ControllerMap] = [:]
-        
-            for line in db.components(separatedBy: "\n") {
-                let line = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-                let elementStrings = line.components(separatedBy: ",")
-                guard elementStrings.isEmpty == false else {continue}
+        var controllers: [SDL2ControllerGUID : SDL2ControllerMap] = [:]
+    
+        for line in db.components(separatedBy: "\n") {
+            guard line.indices.contains(line.startIndex) && line[line.startIndex] != "#" else {continue}
+            let line = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            let elementStrings = line.components(separatedBy: ",")
+            guard elementStrings.isEmpty == false else {continue}
 //                guard elementStrings.contains(where: {$0.hasPrefix("platform") && $0.hasSuffix(platform)}) else {continue}
-                guard let guid = SDL2ControllerGUID(elementStrings[0]) else {continue}
-                
-                let name: String? = {
-                    if elementStrings.count > 1 {
-                        let name = elementStrings[1]
-                        if name.isEmpty == false {
-                            return name
-                        }
+            guard let guid = SDL2ControllerGUID(elementStrings[0]) else {continue}
+            
+            let name: String? = {
+                if elementStrings.count > 1 {
+                    let name = elementStrings[1]
+                    if name.isEmpty == false {
+                        return name
                     }
-                    return nil
-                }()
-                
-                var elements: [SDL2ControllerMap.Element : SDL2ControllerMap.Value] = [:]
-                
-                for elementString in elementStrings {
-                    let values = elementString.components(separatedBy: ":")
-                    guard values.count == 2 else {continue}
-                    guard let element = SDL2ControllerMap.Element(rawValue: values[0]) else {continue}
-                    guard let value = SDL2ControllerMap.Value(values[1]) else {continue}
-                    elements[element] = value
                 }
-                
-
-                controllers[guid] = SDL2ControllerMap(id: guid, name: name, elements: elements)
+                return nil
+            }()
+            
+            var elements: [SDL2ControllerMap.Element : SDL2ControllerMap.Value] = [:]
+            
+            for elementString in elementStrings {
+                let values = elementString.components(separatedBy: ":")
+                guard values.count == 2 else {continue}
+                guard let element = SDL2ControllerMap.Element(rawValue: values[0]) else {continue}
+                guard let value = SDL2ControllerMap.Value(values[1]) else {continue}
+                elements[element] = value
             }
             
-            return controllers
+            controllers[guid] = SDL2ControllerMap(id: guid, name: name, elements: elements)
         }
         
-        self.controllers = process(string)
+        #if GATEENGINE_DEBUG_HID
+        Log.info("Parsed \(controllers.count) SDL2 DB Gamepads for \(platform).")
+        #endif
+
+        self.controllers = controllers
     }
 //    
 //    static let shared: SDL2Database? = {
@@ -254,5 +254,9 @@ class SDL2Database {
 //            return nil
 //        }
 //    }()
+
+    deinit {
+
+    }
 }
 #endif

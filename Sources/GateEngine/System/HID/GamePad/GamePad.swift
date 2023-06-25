@@ -308,7 +308,6 @@ public extension GamePad {
         self.interpreter = interpreter
         self.identifier = identifier
         self.interpreter.setupGamePad(self)
-        self.interpreter.updateState(of: self)
     }
     
     internal func resetInputStates() {

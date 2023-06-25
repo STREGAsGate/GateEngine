@@ -10,16 +10,15 @@ import GameMath
 
 public extension HID {
     @MainActor final class GamePadManger {
-        unowned let hid: HID
+        var hid: HID {Game.shared.hid}
         let interpreters: [GamePadInterpreter]
         public private(set) var all: [GamePad] = []
         public private(set) var any: GamePad
         let nullGamePad: GamePad
         
-        init(hid: HID) {
-            self.hid = hid
-            self.interpreters = getGamepadInterpreters(hid: hid)
-            let nullPad = GamePad(interpreter: NullGamePadInterpreter(hid: hid), identifier: nil)
+        init() {
+            self.interpreters = getGamepadInterpreters()
+            let nullPad = GamePad(interpreter: NullGamePadInterpreter(), identifier: nil)
             self.nullGamePad = nullPad
             self.any = nullPad
             
@@ -62,7 +61,7 @@ extension HID.GamePadManger {
 }
 
 @_transparent
-@MainActor fileprivate func getGamepadInterpreters(hid: HID) -> [GamePadInterpreter] {
+@MainActor fileprivate func getGamepadInterpreters() -> [GamePadInterpreter] {
     #if os(macOS)
     if Bundle.main.bundleIdentifier == nil {
         // GameController (MFI) framework doesn't function without an application bundle
@@ -72,7 +71,7 @@ extension HID.GamePadManger {
     }
     return [HIDGamePadInterpreter(hid: hid), MFIGamePadInterpreter(hid: hid)]
     #elseif os(Linux)
-    return [LinuxHIDGamePadInterpreter(hid: hid)]
+    return [LinuxHIDGamePadInterpreter()]
     #elseif os(Windows)
     return [XInputGamePadInterpreter(hid: hid)]
     #elseif os(iOS) || os(tvOS)
