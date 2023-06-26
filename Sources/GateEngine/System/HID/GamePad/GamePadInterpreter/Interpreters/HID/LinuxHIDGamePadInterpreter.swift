@@ -235,7 +235,7 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
                 let factor: Float = {
                     switch axis {
                     case .whole, .wholeInverted:
-                        var value = (Float(intValue) - min) / (max - min)
+                        var value = (Float(axisInfo.value) - min) / (max - min)
                         if axis == .wholeInverted {
                             value *= -1
                         }
