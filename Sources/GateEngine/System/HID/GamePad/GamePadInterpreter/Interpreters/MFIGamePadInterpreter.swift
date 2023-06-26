@@ -10,16 +10,17 @@ import Foundation
 import GameController
 
 internal class MFIGamePadInterpreter: GamePadInterpreter {
-    unowned let hid: HID
-    required init(hid: HID) {
-        self.hid = hid
-
+    @inline(__always)
+    var hid: HID {Game.shared.hid}
+    init?() {
+        guard Self.isSupported else {return nil}
         if #available(macOS 11.3, macCatalyst 14.5, iOS 14.5, tvOS 14.5, *) {
             GCController.shouldMonitorBackgroundEvents = true
         }
     }
     
     func beginInterpreting() {
+        
         NotificationCenter.default.addObserver(self, selector: #selector(controllerConnected(_:)), name: .GCControllerDidConnect, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(controllerDisconnected(_:)), name: .GCControllerDidDisconnect, object: nil)
 
@@ -51,16 +52,18 @@ internal class MFIGamePadInterpreter: GamePadInterpreter {
     
     func setupGamePad(_ gamePad: GamePad) {
         guard let gcController = gamePad.identifier as? GCController else {return}
-        gamePad.symbols = .appleMFI
         
-        if let extended = gcController.extendedGamepad {
-            if #available(macOS 11, macCatalyst 14, tvOS 14, iOS 14, *), extended is GCDualShockGamepad {
-                gamePad.symbols = .sonyPlaystation
-            }else if #available(macOS 11.3, macCatalyst 14.5, tvOS 14.5, iOS 14.5, *), extended is GCDualSenseGamepad {
-                gamePad.symbols = .sonyPlaystation
-            }else if #available(macOS 11, macCatalyst 14, tvOS 14, iOS 14, *), extended is GCXboxGamepad {
-                gamePad.symbols = .microsoftXbox
-            }
+        switch gcController.productCategory {
+        case "DualShock 4", "DualSense":
+            gamePad.symbols = .sonyPlaystation
+        case "Xbox One":
+            gamePad.symbols = .microsoftXbox
+        case "Switch Pro Controller":
+            gamePad.symbols = .nintendoSwitch
+        case "MFi":
+            gamePad.symbols = .appleMFI
+        default:
+            gamePad.symbols = .unknown
         }
     }
     
@@ -72,124 +75,46 @@ internal class MFIGamePadInterpreter: GamePadInterpreter {
 
         if let gcGamePad = gcController.microGamepad {
             gamePad.dpad.up.isPressed = gcGamePad.dpad.up.isPressed
-            if gcGamePad.dpad.up.isAnalog && gcGamePad.dpad.up.isPressed {
-                gamePad.dpad.up.value = gcGamePad.dpad.up.value
-            }else if gcGamePad.dpad.up.isPressed {
-                gamePad.dpad.up.value = 1
-            }else{
-                gamePad.dpad.up.value = 0
-            }
+            gamePad.dpad.up.value = gcGamePad.dpad.up.value
             
             gamePad.dpad.down.isPressed = gcGamePad.dpad.down.isPressed
-            if gcGamePad.dpad.down.isAnalog && gcGamePad.dpad.down.isPressed {
-                gamePad.dpad.down.value = gcGamePad.dpad.down.value
-            }else if gcGamePad.dpad.down.isPressed {
-                gamePad.dpad.down.value = 1
-            }else{
-                gamePad.dpad.down.value = 0
-            }
+            gamePad.dpad.down.value = gcGamePad.dpad.down.value
             
             gamePad.dpad.left.isPressed = gcGamePad.dpad.left.isPressed
-            if gcGamePad.dpad.left.isAnalog && gcGamePad.dpad.left.isPressed {
-                gamePad.dpad.left.value = gcGamePad.dpad.left.value
-            }else if gcGamePad.dpad.left.isPressed {
-                gamePad.dpad.left.value = 1
-            }else{
-                gamePad.dpad.left.value = 0
-            }
+            gamePad.dpad.left.value = gcGamePad.dpad.left.value
             
             gamePad.dpad.right.isPressed = gcGamePad.dpad.right.isPressed
-            if gcGamePad.dpad.right.isAnalog && gcGamePad.dpad.right.isPressed {
-                gamePad.dpad.right.value = gcGamePad.dpad.right.value
-            }else if gcGamePad.dpad.right.isPressed {
-                gamePad.dpad.right.value = 1
-            }else{
-                gamePad.dpad.right.value = 0
-            }
+            gamePad.dpad.right.value = gcGamePad.dpad.right.value
             
             gamePad.button.south.isPressed = gcGamePad.buttonA.isPressed
-            if gcGamePad.buttonA.isAnalog && gcGamePad.buttonA.isPressed {
-                gamePad.button.south.value = gcGamePad.buttonA.value
-            }else if gcGamePad.buttonA.isPressed {
-                gamePad.button.south.value = 1
-            }else{
-                gamePad.button.south.value = 0
-            }
-            
+            gamePad.button.south.value = gcGamePad.buttonA.value
+ 
             gamePad.button.west.isPressed = gcGamePad.buttonX.isPressed
-            if gcGamePad.buttonX.isAnalog && gcGamePad.buttonX.isPressed {
-                gamePad.button.west.value = gcGamePad.buttonX.value
-            }else if gcGamePad.buttonX.isPressed {
-                gamePad.button.west.value = 1
-            }else{
-                gamePad.button.west.value = 0
-            }
+            gamePad.button.west.value = gcGamePad.buttonX.value
             
             if #available(macOS 10.15, iOS 13, tvOS 13, *) {
                 gamePad.menu.primary.isPressed = gcGamePad.buttonMenu.isPressed
-                if gcGamePad.buttonMenu.isAnalog && gcGamePad.buttonMenu.isPressed {
-                    gamePad.menu.primary.value = gcGamePad.buttonMenu.value
-                }else if gcGamePad.buttonMenu.isPressed {
-                    gamePad.menu.primary.value = 1
-                }else{
-                    gamePad.menu.primary.value = 0
-                }
+                gamePad.menu.primary.value = gcGamePad.buttonMenu.value
             }
         }
         if let gcGamePad = gcController.extendedGamepad {
             gamePad.button.east.isPressed = gcGamePad.buttonB.isPressed
-            if gcGamePad.buttonB.isAnalog && gcGamePad.buttonB.isPressed {
-                gamePad.button.east.value = gcGamePad.buttonB.value
-            }else if gcGamePad.buttonB.isPressed {
-                gamePad.button.east.value = 1
-            }else{
-                gamePad.button.east.value = 0
-            }
+            gamePad.button.east.value = gcGamePad.buttonB.value
             
             gamePad.button.north.isPressed = gcGamePad.buttonY.isPressed
-            if gcGamePad.buttonY.isAnalog && gcGamePad.buttonY.isPressed {
-                gamePad.button.north.value = gcGamePad.buttonY.value
-            }else if gcGamePad.buttonY.isPressed {
-                gamePad.button.north.value = 1
-            }else{
-                gamePad.button.north.value = 0
-            }
+            gamePad.button.north.value = gcGamePad.buttonY.value
             
             gamePad.shoulder.left.isPressed = gcGamePad.leftShoulder.isPressed
-            if gcGamePad.leftShoulder.isAnalog && gcGamePad.leftShoulder.isPressed {
-                gamePad.shoulder.left.value = gcGamePad.leftShoulder.value
-            }else if gcGamePad.leftShoulder.isPressed {
-                gamePad.shoulder.left.value = 1
-            }else{
-                gamePad.shoulder.left.value = 0
-            }
+            gamePad.shoulder.left.value = gcGamePad.leftShoulder.value
             
             gamePad.shoulder.right.isPressed = gcGamePad.rightShoulder.isPressed
-            if gcGamePad.rightShoulder.isAnalog && gcGamePad.rightShoulder.isPressed {
-                gamePad.shoulder.right.value = gcGamePad.rightShoulder.value
-            }else if gcGamePad.rightShoulder.isPressed {
-                gamePad.shoulder.right.value = 1
-            }else{
-                gamePad.shoulder.right.value = 0
-            }
+            gamePad.shoulder.right.value = gcGamePad.rightShoulder.value
         
             gamePad.trigger.left.isPressed = gcGamePad.leftTrigger.isPressed
-            if gcGamePad.leftTrigger.isAnalog && gcGamePad.leftTrigger.isPressed {
-                gamePad.trigger.left.value = gcGamePad.leftTrigger.value
-            }else if gcGamePad.leftTrigger.isPressed {
-                gamePad.trigger.left.value = 1
-            }else{
-                gamePad.trigger.left.value = 0
-            }
-            
+            gamePad.trigger.left.value = gcGamePad.leftTrigger.value
+ 
             gamePad.trigger.right.isPressed = gcGamePad.rightTrigger.isPressed
-            if gcGamePad.rightTrigger.isAnalog && gcGamePad.rightTrigger.isPressed {
-                gamePad.trigger.right.value = gcGamePad.rightTrigger.value
-            }else if gcGamePad.rightTrigger.isPressed {
-                gamePad.trigger.right.value = 1
-            }else{
-                gamePad.trigger.right.value = 0
-            }
+            gamePad.trigger.right.value = gcGamePad.rightTrigger.value
             
             gamePad.stick.left.xAxis = gcGamePad.leftThumbstick.xAxis.value
             gamePad.stick.left.yAxis = gcGamePad.leftThumbstick.yAxis.value
@@ -197,38 +122,27 @@ internal class MFIGamePadInterpreter: GamePadInterpreter {
             gamePad.stick.right.xAxis = gcGamePad.rightThumbstick.xAxis.value
             gamePad.stick.right.yAxis = gcGamePad.rightThumbstick.yAxis.value
             if #available(macOS 10.14.1, iOS 12.1, tvOS 12.1, *) {
-                if let leftThumbStickButton = gcGamePad.leftThumbstickButton {
-                    gamePad.stick.left.button.isPressed = leftThumbStickButton.isPressed
-                    if leftThumbStickButton.isAnalog && leftThumbStickButton.isPressed {
-                        gamePad.stick.left.button.value = leftThumbStickButton.value
-                    }else if leftThumbStickButton.isPressed {
-                        gamePad.stick.left.button.value = 1
-                    }else{
-                        gamePad.stick.left.button.value = 0
-                    }
+                if let button = gcGamePad.leftThumbstickButton {
+                    gamePad.stick.left.button.isPressed = button.isPressed
+                    gamePad.stick.left.button.value = button.value
                 }
-                if let rightThumbStickButton = gcGamePad.rightThumbstickButton {
-                    gamePad.stick.right.button.isPressed = rightThumbStickButton.isPressed
-                    if rightThumbStickButton.isAnalog && rightThumbStickButton.isPressed {
-                        gamePad.stick.right.button.value = rightThumbStickButton.value
-                    }else if rightThumbStickButton.isPressed {
-                        gamePad.stick.right.button.value = 1
-                    }else{
-                        gamePad.stick.right.button.value = 0
-                    }
+                if let button = gcGamePad.rightThumbstickButton {
+                    gamePad.stick.right.button.isPressed = button.isPressed
+                    gamePad.stick.right.button.value = button.value
                 }
             }
             
             if #available(macOS 10.15, iOS 13, tvOS 13, *) {
-                if let optionsButton = gcGamePad.buttonOptions {
-                    gamePad.menu.secondary.isPressed = optionsButton.isPressed
-                    if optionsButton.isAnalog && optionsButton.isPressed {
-                        gamePad.menu.secondary.value = optionsButton.value
-                    }else if optionsButton.isPressed {
-                        gamePad.menu.secondary.value = 1
-                    }else{
-                        gamePad.menu.secondary.value = 0
-                    }
+                if let button = gcGamePad.buttonOptions {
+                    gamePad.menu.secondary.isPressed = button.isPressed
+                    gamePad.menu.secondary.value = button.value
+                }
+            }
+ 
+            if #available(macOS 11, iOS 14, tvOS 14, *) {
+                if let button = gcGamePad.buttonHome {
+                    gamePad.menu.tertiary.isPressed = button.isPressed
+                    gamePad.menu.tertiary.value = button.value
                 }
             }
         }
@@ -238,10 +152,32 @@ internal class MFIGamePadInterpreter: GamePadInterpreter {
         guard let gcController = gamePad.identifier as? GCController else {return "ID Missing"}
         return gcController.vendorName ?? gcController.description
     }
+    
+    var userReadableName: String {return "MFi"}
 
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
+}
+
+extension MFIGamePadInterpreter {
+    nonisolated static var isSupported: Bool {
+        guard Bundle.main.bundleIdentifier != nil else {return false}
+        if #available(macOS 11.0, *) {
+            return true
+        }
+        return false
+    }
+    #if canImport(IOKit)
+    nonisolated static func supports(_ device: IOHIDDevice) -> Bool {
+        guard Self.isSupported else {return false}
+        if #available(macOS 11.0, *) {
+            return GCController.supportsHIDDevice(device)
+        }else{
+            return false
+        }
+    }
+    #endif
 }
 
 #endif

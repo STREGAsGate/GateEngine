@@ -3,19 +3,19 @@ A cross platform game engine for Swift that allows you to build 2D and 3D games.
 Gate Engine includes intuitive APIs for loading resources, handling user inputs, and rendering content.
 
 ## Platform Support:
-| Platform | CI | Dependencies¹ | Render | Sound | Keyboard | Mouse | Touch | Gamepad |
-|---------:|:---|:--------------|:-------|:------|:----------|:-----|:------|:--------|
-| [**Windows**](https://www.swift.org/getting-started/#on-windows)² | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Windows.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) | None | ✔︎ | ◑ | ✔︎ | ✔︎ | ⛌ | ◑`Buggy` |
-| [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | None | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
-| [**Linux**](https://www.swift.org/getting-started/#on-linux) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Linux.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml) | *TBD* | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ⛌ | ⛌
-| [**iOS**/**tvOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | None | ✔︎ | ✔︎ | ✔︎ | ◑`iOS` ⛌`tvOS` | ✔︎ | ✔︎
-| **Android** | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Android.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Android.yml) | *TBD* | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
-| [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/HTML5.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/HTML5.yml) | None | ✔︎| ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
+| Platform | CI | Render | Sound | Keyboard | Mouse | Touch | Gamepad |
+|---------:|:---|:-------|:------|:----------|:-----|:------|:--------|
+| [**Windows**](https://www.swift.org/getting-started/#on-windows)¹ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Windows.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) | ✔︎ | ◑ | ✔︎ | ✔︎ | ⛌ | ✔︎ |
+| [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
+| [**Linux**](https://www.swift.org/getting-started/#on-linux) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Linux.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ⛌ | ⛌
+| [**iOS**/**tvOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎`iPad` | ✔︎ | ✔︎
+| **Android** | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Android.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Android.yml) | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
+| [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/HTML5.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/HTML5.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
 
 Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
 <sub>
-</br>¹All platforms require a functioning Swift toolchain. Click a platform above for setup information.
-</br>²Windows support for Swift and Swift Package Manager is in development. Latest Swift toolchain recommended.
+</br>All platforms require a functioning Swift toolchain. Click a platform above for setup information.
+</br>¹Windows support for Swift and Swift Package Manager is in development. Latest Swift toolchain recommended.
 </sub>
 
 ## Getting Started

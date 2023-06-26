@@ -11,17 +11,16 @@ import DOM
 import Gamepad
 
 internal class WASIGamePadInterpreter: GamePadInterpreter {
-    unowned let hid: HID
-    required init(hid: HID) {
-        self.hid = hid
-    }
+    @inline(__always)
+    var hid: HID {Game.shared.hid}
+    var wGamepads: [Gamepad] = []
+    init() { }
     
     func beginInterpreting() {
-        Log.info("Looking for gamepads")
-
         func addGamepad(_ event: Event) {
             let event = GamepadEvent(unsafelyWrapping: event.jsObject)
             if event.gamepad.mapping == .standard {
+                self.wGamepads.append(event.gamepad)
                 let controller = GamePad(interpreter: self, identifier: event.gamepad.id)
                 self.hid.gamePads.addNewlyConnectedGamePad(controller)
             }else{
@@ -32,6 +31,7 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
             let event = GamepadEvent(unsafelyWrapping: event.jsObject)
             if let controller = self.hid.gamePads.all.first(where: {$0.identifier as? String == event.gamepad.id}) {
                 self.hid.gamePads.removedDisconnectedGamePad(controller)
+                self.wGamepads.removeAll(where: {$0.id == event.gamepad.id})
             }
         }
                 
@@ -95,6 +95,14 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
                 gamePad.symbols = .sonyPlaystation
                 return
             }
+            if id == "Pro Controller Extended Gamepad".lowercased() {
+                gamePad.symbols = .nintendoSwitch
+                return
+            }
+            if id.hasSuffix("Extended Gamepad".lowercased()) {
+                gamePad.symbols = .appleMFI
+                return
+            }
         default:
             break
         }
@@ -104,70 +112,93 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
     
     func updateState(of gamePad: GamePad) {
         guard let id = gamePad.identifier as? String else {return}
-        let gamepads = globalThis.navigator.getGamepads().compactMap({$0})
-        guard let wGamepad: Gamepad = gamepads.first(where: {$0.id == id}) else {return}
-                
-        gamePad.dpad.up.isPressed = wGamepad.buttons[12].pressed
-        gamePad.dpad.up.value = Float(wGamepad.buttons[12].value)
+        let wGamepads = globalThis.navigator.getGamepads().compactMap({$0})
+        guard let wGamepad: Gamepad = wGamepads.first(where: {$0.id == id}) else {return}
         
-        gamePad.dpad.down.isPressed = wGamepad.buttons[13].pressed
-        gamePad.dpad.down.value = Float(wGamepad.buttons[13].value)
+        let buttons = wGamepad.buttons
+        let axes = wGamepad.axes
         
-        gamePad.dpad.left.isPressed = wGamepad.buttons[14].pressed
-        gamePad.dpad.left.value = Float(wGamepad.buttons[14].value)
+        let up = buttons[12]
+        gamePad.dpad.up.isPressed = up.pressed
+        gamePad.dpad.up.value = Float(up.value)
         
-        gamePad.dpad.right.isPressed = wGamepad.buttons[15].pressed
-        gamePad.dpad.right.value = Float(wGamepad.buttons[15].value)
+        let down = buttons[13]
+        gamePad.dpad.down.isPressed = down.pressed
+        gamePad.dpad.down.value = Float(down.value)
         
-        gamePad.button.north.isPressed = wGamepad.buttons[3].pressed
-        gamePad.button.north.value = Float(wGamepad.buttons[3].value)
+        let left = buttons[14]
+        gamePad.dpad.left.isPressed = left.pressed
+        gamePad.dpad.left.value = Float(left.value)
         
-        gamePad.button.south.isPressed = wGamepad.buttons[0].pressed
-        gamePad.button.south.value = Float(wGamepad.buttons[0].value)
+        let right = buttons[15]
+        gamePad.dpad.right.isPressed = right.pressed
+        gamePad.dpad.right.value = Float(right.value)
         
-        gamePad.button.east.isPressed = wGamepad.buttons[1].pressed
-        gamePad.button.east.value = Float(wGamepad.buttons[1].value)
+        let north = buttons[3]
+        gamePad.button.north.isPressed = north.pressed
+        gamePad.button.north.value = Float(north.value)
         
-        gamePad.button.west.isPressed = wGamepad.buttons[2].pressed
-        gamePad.button.west.value = Float(wGamepad.buttons[2].value)
-        
-        gamePad.shoulder.left.isPressed = wGamepad.buttons[4].pressed
-        gamePad.shoulder.left.value = Float(wGamepad.buttons[4].value)
-        
-        gamePad.shoulder.right.isPressed = wGamepad.buttons[5].pressed
-        gamePad.shoulder.right.value = Float(wGamepad.buttons[5].value)
-        
-        gamePad.trigger.left.isPressed = wGamepad.buttons[6].pressed
-        gamePad.trigger.left.value = Float(wGamepad.buttons[6].value)
-        
-        gamePad.trigger.right.isPressed = wGamepad.buttons[7].pressed
-        gamePad.trigger.right.value = Float(wGamepad.buttons[7].value)
-        
-        gamePad.menu.primary.isPressed = wGamepad.buttons[9].pressed
-        gamePad.menu.primary.value = Float(wGamepad.buttons[9].value)
+        let south = buttons[0]
+        gamePad.button.south.isPressed = south.pressed
+        gamePad.button.south.value = Float(south.value)
 
-        gamePad.menu.secondary.isPressed = wGamepad.buttons[8].pressed
-        gamePad.menu.secondary.value = Float(wGamepad.buttons[8].value)
+        let east = buttons[1]
+        gamePad.button.east.isPressed = east.pressed
+        gamePad.button.east.value = Float(east.value)
+        
+        let west = buttons[2]
+        gamePad.button.west.isPressed = west.pressed
+        gamePad.button.west.value = Float(west.value)
+        
+        let leftShoulder = buttons[4]
+        gamePad.shoulder.left.isPressed = leftShoulder.pressed
+        gamePad.shoulder.left.value = Float(leftShoulder.value)
+        
+        let rightShoulder = buttons[5]
+        gamePad.shoulder.right.isPressed = rightShoulder.pressed
+        gamePad.shoulder.right.value = Float(rightShoulder.value)
+        
+        let leftTrigger = buttons[6]
+        gamePad.trigger.left.isPressed = leftTrigger.pressed
+        gamePad.trigger.left.value = Float(leftTrigger.value)
+        
+        let rightTrigger = buttons[7]
+        gamePad.trigger.right.isPressed = rightTrigger.pressed
+        gamePad.trigger.right.value = Float(rightTrigger.value)
+        
+        let menuPrimary = buttons[9]
+        gamePad.menu.primary.isPressed = menuPrimary.pressed
+        gamePad.menu.primary.value = Float(menuPrimary.value)
 
-        if wGamepad.buttons.count == 17 {// MFi Nimbus Gamepads don't have this button for some reason
-            gamePad.menu.tertiary.isPressed = wGamepad.buttons[16].pressed
-            gamePad.menu.tertiary.value = Float(wGamepad.buttons[16].value)
+        let menuSecondary = buttons[8]
+        gamePad.menu.secondary.isPressed = menuSecondary.pressed
+        gamePad.menu.secondary.value = Float(menuSecondary.value)
+
+        // Some Gamepads don't contain this button
+        if buttons.indices.contains(17) {
+            let menuTertiary = buttons[17]
+            gamePad.menu.tertiary.isPressed = menuTertiary.pressed
+            gamePad.menu.tertiary.value = Float(menuTertiary.value)
         }
 
-        gamePad.stick.left.xAxis = Float(wGamepad.axes[0])
-        gamePad.stick.left.yAxis = Float(wGamepad.axes[1])
-        gamePad.stick.left.button.isPressed = wGamepad.buttons[10].pressed
-        gamePad.stick.left.button.value = Float(wGamepad.buttons[10].value)
+        gamePad.stick.left.xAxis = Float(axes[0])
+        gamePad.stick.left.yAxis = Float(axes[1]) * -1
+        let leftStick = buttons[10]
+        gamePad.stick.left.button.isPressed = leftStick.pressed
+        gamePad.stick.left.button.value = Float(leftStick.value)
 
-        gamePad.stick.right.xAxis = Float(wGamepad.axes[2])
-        gamePad.stick.right.yAxis = Float(wGamepad.axes[3])
-        gamePad.stick.right.button.isPressed = wGamepad.buttons[11].pressed
-        gamePad.stick.right.button.value = Float(wGamepad.buttons[11].value)
+        gamePad.stick.right.xAxis = Float(axes[2])
+        gamePad.stick.right.yAxis = Float(axes[3]) * -1
+        let rightStick = buttons[11]
+        gamePad.stick.right.button.isPressed = rightStick.pressed
+        gamePad.stick.right.button.value = Float(rightStick.value)
     }
     
     func description(of gamePad: GamePad) -> String {
         return gamePad.identifier as? String ?? "[ID Missing]"
     }
+    
+    var userReadableName: String {return "Gamepad API"}
 }
 
 #endif

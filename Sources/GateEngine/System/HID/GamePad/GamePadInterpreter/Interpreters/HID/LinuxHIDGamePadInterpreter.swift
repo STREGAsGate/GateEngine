@@ -36,12 +36,12 @@ fileprivate func EVDEV_LONG(_ x: Int) -> Int {((x)/BITS_PER_LONG)}
 fileprivate func test_bit(_ bit: Int, _ array: Array<UInt32>) -> Bool {((array[EVDEV_LONG(bit)] >> EVDEV_OFF(bit)) & 1) != 0}
 
 internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
-    unowned let hid: HID
-    required init(hid: HID) {
-        self.hid = hid
+    @inline(__always)
+    var hid: HID {Game.shared.hid}
+    let sdl2Database: SDL2Database
+    required init() {
+        self.sdl2Database = try! SDL2Database()
     }
-
-    let sdl2Database: SDL2Database? = try? SDL2Database()
 
     var connected: [String:Int32] = [:]
     
@@ -74,7 +74,7 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
         guard ioctl(fd, EVIOCGID, &inpid) >= 0 else {return nil}
         inpid = fixUp(input: inpid)
 
-        return SDL2ControllerGUID(vendorID: Int(inpid.vendor), productID: Int(inpid.product), hidVersion: Int(inpid.version), transport: Int(inpid.bustype))
+        return SDL2ControllerGUID(vendorID: Int(inpid.vendor), productID: Int(inpid.product), hidVersion: Int(inpid.version), transport: Int(inpid.bustype), name: "")
     }
 
     func checkConnectedJoysticks() {
@@ -102,7 +102,7 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
                 }
 
                 guard let guid: SDL2ControllerGUID = guidFromPath(val, fd) else {failed(); continue}
-                guard var map: SDL2ControllerMap = sdl2Database?.controllers[guid] else {failed(); continue}
+                guard var map: SDL2ControllerMap = sdl2Database.controllers[guid] else {failed(); continue}
                 //Use our generated guid with vendor and product IDs
                 map.id = guid
                 
@@ -113,7 +113,7 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
     }
 
     func beginInterpreting() {
-        checkConnectedJoysticks()
+
     }
 
     var lastUpdate: Date = .distantPast
@@ -235,15 +235,14 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
                 let factor: Float = {
                     switch axis {
                     case .whole, .wholeInverted:
-                        let distance = Float(abs(axisInfo.minimum - axisInfo.maximum))
-                        var value = Float(axisInfo.minimum + axisInfo.value) / distance
+                        var value = Float(axisInfo.value - axisInfo.minimum) / Float(axisInfo.maximum - axisInfo.minimum)
                         if axis == .wholeInverted {
                             value *= -1
                         }
                         return value
                     case .negative:
                         if axisInfo.value < 0 {
-                            return Float(axisInfo.value) / Float(axisInfo.minimum)
+                            return Float(axisInfo.value) / Float(abs(axisInfo.minimum))
                         }
                     case .positive:
                         if axisInfo.value > 0 {
@@ -314,8 +313,14 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
     
     func description(of gamePad: GamePad) -> String {
         let identifier: HIDController = gamePad.identifier as! HIDController
+        #if GATEENGINE_DEBUG_HID
         return (identifier.map.name ?? "[Unknown]") + ", GUID: \(identifier.guid)"
+        #else
+        return (identifier.map.name ?? "[Unknown]")
+        #endif
     }
+    
+    var userReadableName: String {return "Joystick API"}
 }
 
 #endif

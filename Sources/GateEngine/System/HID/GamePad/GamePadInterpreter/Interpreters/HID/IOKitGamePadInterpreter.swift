@@ -4,11 +4,12 @@
  *
  * http://stregasgate.com
  */
-#if os(macOS)
+#if canImport(IOKit)
 
 import Foundation
+import CoreFoundation
 import IOKit.hid
-import GameController
+
 fileprivate class HIDController {
     let guid: SDL2ControllerGUID
     let device: IOHIDDevice
@@ -28,11 +29,11 @@ fileprivate class HIDController {
         self.device = device
     }
 }
-internal class HIDGamePadInterpreter: GamePadInterpreter {
-    unowned let hid: HID
-    required init(hid: HID) {
-        self.hid = hid
-    }
+internal class IOKitGamePadInterpreter: GamePadInterpreter {
+    @inline(__always)
+    var hid: HID {Game.shared.hid}
+    init?() { }
+    
     static let sdlDatabase = try! SDL2Database()
     var sdlDatabase: SDL2Database {
         return Self.sdlDatabase
@@ -50,11 +51,13 @@ internal class HIDGamePadInterpreter: GamePadInterpreter {
         
         IOHIDManagerRegisterDeviceMatchingCallback(hidManager, gamepadWasAdded, nil)
         IOHIDManagerRegisterDeviceRemovalCallback(hidManager, gamepadWasRemoved, nil)
-//        IOHIDManagerRegisterInputValueCallback(hidManager, gamepadAction, nil)
+        #if GATEENGINE_DEBUG_HID
+        IOHIDManagerRegisterInputValueCallback(hidManager, gamepadAction, nil)
+        #endif
         let ioreturn = IOHIDManagerOpen(hidManager, IOOptionBits(kIOHIDOptionsTypeSeizeDevice))
-        guard ioreturn != kIOReturnSuccess else {return}
-        
-        Log.error("HID controller error: ", ioreturn)
+        if ioreturn != kIOReturnSuccess {
+            Log.error("HID controller error: ", ioreturn)
+        }
     }
     
     func update() {}
@@ -157,23 +160,39 @@ internal class HIDGamePadInterpreter: GamePadInterpreter {
     }
     
     func description(of gamePad: GamePad) -> String {
-        return (gamePad.identifier as! HIDController).guid.guid
+        let id = (gamePad.identifier as! HIDController).guid
+        #if GATEENGINE_DEBUG_HID
+        return (sdlDatabase.controllers[id]?.name ?? "[Unknown]") + ", GUID: \(id.guid)"
+        #else
+        return (sdlDatabase.controllers[id]?.name ?? "[Unknown]")
+        #endif
     }
+    
+    var userReadableName: String {return "IOKit"}
 }
 
 fileprivate func supportedDeviceIdentifierFrom(_ device: IOHIDDevice) -> SDL2ControllerGUID? {
-    if Bundle.main.bundleIdentifier != nil {
-        if #available(macOS 11.0, *) {
-            guard GCController.supportsHIDDevice(device) == false else {return nil}
-        }
+    let productName: String? = IOHIDDeviceGetProperty(device, "Product" as CFString) as? String
+
+    guard MFIGamePadInterpreter.supports(device) == false else {
+        #if GATEENGINE_DEBUG_HID
+        Log.info("IOKitGamePadInterpreter is ignoring gamepad \(productName ?? "[Unknown]"), Reason: Will be MFi.")
+        #endif
+        return nil
     }
 
-    guard let vendorID = IOHIDDeviceGetProperty(device, kIOHIDVendorIDKey as CFString) as? Int else {return nil}
-    guard let productID = IOHIDDeviceGetProperty(device, kIOHIDProductIDKey as CFString) as? Int else {return nil}
-    guard let version = IOHIDDeviceGetProperty(device, kIOHIDVersionNumberKey as CFString) as? Int else {return nil}
-    guard let transport = IOHIDDeviceGetProperty(device, kIOHIDTransportKey as CFString) as? String else {return nil}
-    
-    var sldTransport: SDL2ControllerGUID.Transport = .usb
+    guard let vendorID = IOHIDDeviceGetProperty(device, kIOHIDVendorIDKey as CFString) as? Int,
+          let productID = IOHIDDeviceGetProperty(device, kIOHIDProductIDKey as CFString) as? Int,
+          let version = IOHIDDeviceGetProperty(device, kIOHIDVersionNumberKey as CFString) as? Int
+          /*let transport = IOHIDDeviceGetProperty(device, kIOHIDTransportKey as CFString) as? String*/ else {
+        #if GATEENGINE_DEBUG_HID
+        Log.info("IOKitGamePadInterpreter is ignoring gamepad \(productName ?? "[Unknown]"), Reason: Failed to generate GUID.")
+        #endif
+        return nil
+    }
+
+    let sldTransport: SDL2ControllerGUID.Transport = .usb
+    #if false // SDL doesn't account for bluetooth on macOS for some reason
     switch transport {
     case kIOHIDTransportBluetoothValue:
         sldTransport = .bluetooth
@@ -182,9 +201,15 @@ fileprivate func supportedDeviceIdentifierFrom(_ device: IOHIDDevice) -> SDL2Con
     default:
         break
     }
+    #endif
     
-    let guid = SDL2ControllerGUID(vendorID: vendorID, productID: productID, hidVersion: version, transport: Int(sldTransport.rawValue))
-    guard HIDGamePadInterpreter.sdlDatabase.controllers.keys.contains(guid) == true else {return nil}
+    let guid = SDL2ControllerGUID(vendorID: vendorID, productID: productID, hidVersion: version, transport: Int(sldTransport.rawValue), name: productName ?? "")
+    guard IOKitGamePadInterpreter.sdlDatabase.controllers.keys.contains(guid) == true else {
+        #if GATEENGINE_DEBUG_HID
+        Log.info("IOKitGamePadInterpreter is ignoring gamepad \(productName ?? "[Unknown]"), Reason: No mapping available.")
+        #endif
+        return nil
+    }
     return guid
 }
 
@@ -195,7 +220,7 @@ fileprivate func gamepadWasAdded(inContext: UnsafeMutableRawPointer?, inResult: 
     }
     
     Task {@MainActor in
-        if let interpreter = Game.shared.hid.gamePads.interpreters.first(where:{$0 is HIDGamePadInterpreter}) as? HIDGamePadInterpreter {
+        if let interpreter = Game.shared.hid.gamePads.interpreters.first(where:{$0 is IOKitGamePadInterpreter}) as? IOKitGamePadInterpreter {
             let controller = GamePad(interpreter: interpreter, identifier: HIDController(guid: guid, device: device))
             interpreter.hid.gamePads.addNewlyConnectedGamePad(controller)
         }
@@ -204,28 +229,28 @@ fileprivate func gamepadWasAdded(inContext: UnsafeMutableRawPointer?, inResult: 
 
 fileprivate func gamepadWasRemoved(inContext: UnsafeMutableRawPointer?, inResult: IOReturn, inSender: UnsafeMutableRawPointer?, device: IOHIDDevice) {
     Task {@MainActor in
-        let interpreter = Game.shared.hid.gamePads.interpreters.filter({$0 is HIDGamePadInterpreter}).first! as! HIDGamePadInterpreter
+        let interpreter = Game.shared.hid.gamePads.interpreters.filter({$0 is IOKitGamePadInterpreter}).first! as! IOKitGamePadInterpreter
         if let controller = interpreter.hid.gamePads.all.first(where: {($0.identifier as? HIDController)?.device === device}) {
             interpreter.hid.gamePads.removedDisconnectedGamePad(controller)
         }
     }
 }
 
+fileprivate var ignoredElements: Set<IOHIDElement> = []
+fileprivate let startIgnoring: Date = Date()
 fileprivate func gamepadAction(inContext: UnsafeMutableRawPointer?, inResult: IOReturn, inSender: UnsafeMutableRawPointer?, value: IOHIDValue) {
-    //print("Gamepad talked!");
-//    let element = IOHIDValueGetElement(value);
-    // print("Element:", element);
-
-//    let elementValue = IOHIDValueGetIntegerValue(value)
-//    let physical = IOHIDValueGetScaledValue(value, IOHIDValueScaleType(kIOHIDValueScaleTypePhysical))
-//    let calibrated = IOHIDValueGetScaledValue(value, IOHIDValueScaleType(kIOHIDValueScaleTypeCalibrated))
-//
-//    if DualShock4Wired_256(rawValue:IOHIDElementGetCookie(element)) == nil {
-//        print("Element: \(IOHIDElementGetCookie(element))", elementValue, physical, calibrated)
-//    }
+    let element = IOHIDValueGetElement(value)
+    let elementValue = IOHIDValueGetIntegerValue(value)
+    let physical = IOHIDValueGetScaledValue(value, IOHIDValueScaleType(kIOHIDValueScaleTypePhysical))
+    let calibrated = IOHIDValueGetScaledValue(value, IOHIDValueScaleType(kIOHIDValueScaleTypeCalibrated))
+    if startIgnoring.timeIntervalSinceNow > -3 {
+        ignoredElements.insert(element)
+    }else if ignoredElements.contains(element) == false {
+        Log.info("IOKit GamePad Input \(IOHIDElementGetCookie(element)) Changed:", elementValue, physical, calibrated)
+    }
 }
 
-extension HIDGamePadInterpreter {
+extension IOKitGamePadInterpreter {
     func integerValue(from device: IOHIDDevice, element: IOHIDElement, cookie: IOHIDElementCookie) -> Int? {
         let value = IOHIDValueCreateWithIntegerValue(nil, element, 0, 0)
         var pointer = Unmanaged<IOHIDValue>.passUnretained(value)
@@ -234,24 +259,23 @@ extension HIDGamePadInterpreter {
         }
         return nil
     }
-    func normalizedValue(device: IOHIDDevice, element: IOHIDElement, cookie: IOHIDElementCookie, min: Int, max: Int, axis: SDL2ControllerMap.Value.Kind.Axis) -> Float? {
+    func normalizedValue(device: IOHIDDevice, element: IOHIDElement, cookie: IOHIDElementCookie, min: Float, max: Float, axis: SDL2ControllerMap.Value.Kind.Axis) -> Float? {
         guard let intValue = integerValue(from: device, element: element, cookie: cookie) else {return nil}
 
         switch axis {
         case .whole, .wholeInverted:
-            let distance = Float(abs(min - max))
-            var value = Float(min + intValue) / distance
+            var value = (Float(intValue) - min) / (max - min)
             if axis == .wholeInverted {
                 value *= -1
             }
             return value
         case .negative:
             if intValue < 0 {
-                return Float(intValue) / Float(min)
+                return Float(intValue) / min
             }
         case .positive:
             if intValue > 0 {
-                return Float(intValue) / Float(max)
+                return Float(intValue) / max
             }
         }
         return nil
@@ -259,7 +283,7 @@ extension HIDGamePadInterpreter {
 }
 
 
-extension HIDGamePadInterpreter {
+extension IOKitGamePadInterpreter {
     func updateStateForSDL2Controller(_ gamePad: GamePad, controller: SDL2ControllerMap) {
         guard let hidDevice = gamePad.identifier as! HIDController? else {fatalError("Identifier is not an IOHIDDevice!")}
         
@@ -300,7 +324,7 @@ extension HIDGamePadInterpreter {
             case let .analog(axis):
                 let elementID = hidDevice.axesElements[value.id]
                 var axisValue: Float
-                if let value = normalizedValue(device: hidDevice.device, element: elementID.element, cookie: elementID.cookie, min: elementID.min, max: elementID.max, axis: axis) {
+                if let value = normalizedValue(device: hidDevice.device, element: elementID.element, cookie: elementID.cookie, min: Float(elementID.min), max: Float(elementID.max), axis: axis) {
                     axisValue = Float(-1.0).interpolated(to: 1.0, .linear(value))
                 }else{
                     axisValue = 0

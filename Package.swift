@@ -86,7 +86,7 @@ let package = Package(
                             .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW", .when(platforms: [.macOS, .windows, .linux])),
                             /// Checks for reloadable resources and reloads them if they have changed
                             .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
-                            /// THe host platfrom requests the main window, so GateEngine won't create one until it's requested
+                            /// The host platfrom requests the main window, so GateEngine won't create one until it's requested
                             .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
                             /// The host platform can't be usaed to compile HTML5 products
                             .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
@@ -246,7 +246,7 @@ let package = Package(
                 cxxSettings: openALCXXSettings,
                 swiftSettings: {
                     var array: [SwiftSetting] = []
-                    #if compiler(>=5.9)
+                    #if swift(>=5.9)
                     array.append(.interoperabilityMode(.Cxx))
                     #else
                     array.append(.unsafeFlags(["-enable-experimental-cxx-interop", "-cxx-interoperability-mode=default"]))

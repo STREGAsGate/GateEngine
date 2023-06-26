@@ -10,16 +10,15 @@ import GameMath
 
 public extension HID {
     @MainActor final class GamePadManger {
-        unowned let hid: HID
+        var hid: HID {Game.shared.hid}
         let interpreters: [GamePadInterpreter]
         public private(set) var all: [GamePad] = []
         public private(set) var any: GamePad
         let nullGamePad: GamePad
         
-        init(hid: HID) {
-            self.hid = hid
-            self.interpreters = getGamepadInterpreters(hid: hid)
-            let nullPad = GamePad(interpreter: NullGamePadInterpreter(hid: hid), identifier: nil)
+        init() {
+            self.interpreters = getGamepadInterpreters()
+            let nullPad = GamePad(interpreter: NullGamePadInterpreter(), identifier: nil)
             self.nullGamePad = nullPad
             self.any = nullPad
             
@@ -50,38 +49,33 @@ public extension HID {
 }
 extension HID.GamePadManger {
     internal func addNewlyConnectedGamePad(_ gamePad: GamePad) {
-        Log.info("GamePad Connected: \(gamePad.interpreter.description(of: gamePad)), Symbols: \(gamePad.symbols)")
+        Log.info("GamePad Connected: \(gamePad.interpreter.description(of: gamePad)), Symbols: \(gamePad.symbols), Connection:", gamePad.interpreter.userReadableName)
         self.all.append(gamePad)
     }
     
     internal func removedDisconnectedGamePad(_ gamePad: GamePad) {
-        Log.info("GamePad Disconnected:", gamePad.interpreter.description(of: gamePad))
+        Log.info("GamePad Disconnected: \(gamePad.interpreter.description(of: gamePad)), Symbols: \(gamePad.symbols), Connection:", gamePad.interpreter.userReadableName)
         gamePad.state = .disconnected
         all.removeAll(where: {$0 === gamePad})
     }
 }
 
 @_transparent
-@MainActor fileprivate func getGamepadInterpreters(hid: HID) -> [GamePadInterpreter] {
-    #if os(macOS)
-    if Bundle.main.bundleIdentifier == nil {
-        // GameController (MFI) framework doesn't function without an application bundle
-        // This can happen if the application is executed without a bundle, such as a swift executable package
-        // We ommit the MFI interpretter becuase it will never get any controllers
-        return [HIDGamePadInterpreter(hid: hid)]
-    }
-    return [HIDGamePadInterpreter(hid: hid), MFIGamePadInterpreter(hid: hid)]
+@MainActor fileprivate func getGamepadInterpreters() -> [GamePadInterpreter] {
+    #if os(macOS) || os(iOS) || os(tvOS)
+    var interpreters: [GamePadInterpreter?] = []
+    #if canImport(IOKit)
+    interpreters.append(IOKitGamePadInterpreter())
+    #endif
+    interpreters.append(MFIGamePadInterpreter())
+    return interpreters.compactMap({$0})
     #elseif os(Linux)
-    return [LinuxHIDGamePadInterpreter(hid: hid)]
+    return [LinuxHIDGamePadInterpreter()]
     #elseif os(Windows)
-    return [XInputGamePadInterpreter(hid: hid)]
-    #elseif os(iOS) || os(tvOS)
-    return [MFIGamePadInterpreter(hid: hid)]
+    return [XInputGamePadInterpreter()]
     #elseif os(WASI)
-    return [WASIGamePadInterpreter(hid: hid)]
-    #elseif os(Android)
-    return []
-    #elseif os(PS4)
-    return []
+    return [WASIGamePadInterpreter()]
+    #else
+    #error("Unsupported Platform")
     #endif
 }

@@ -15,7 +15,7 @@ public enum GamePadSymbolMap {
 
     case microsoftXbox
 
-    /// The classic controller layouts are additive and include NES, SNES,  GameBoy, GameBoy Advance
+    /// The classic controller layouts are additive and include NES, SNES,  GameBoy, GameBoy Advance, DS, 3DS
     case nintendoClassic
     case nintendoGameCube
     case nintendoSwitch
@@ -49,7 +49,24 @@ public struct GamePadSymbol: CustomStringConvertible {
         case .nintendoGameCube:
             fallthrough //TODO: Add GameCube nintenod symbols
         case .nintendoSwitch:
-            fallthrough //TODO: Add Nintendo Switch symbols
+            switch _id {
+            case .leftStick:        return .L
+            case .leftStickButton:  return .LSB
+            case .rightStick:       return .R
+            case .rightStickButton: return .RSB
+            case .south:            return .B
+            case .east:             return .A
+            case .west:             return .Y
+            case .north:            return .X
+            case .leftShoulder:     return .L
+            case .leftTrigger:      return .ZL
+            case .rightShoulder:    return .R
+            case .rightTrigger:     return .ZR
+            case .menu1:            return .plus
+            case .menu2:            return .minus
+            case .menu3:            return .home
+            default:                return .unknown
+            }
         case .unknown:
             fallthrough
         case .microsoftXbox:
@@ -308,7 +325,6 @@ public extension GamePad {
         self.interpreter = interpreter
         self.identifier = identifier
         self.interpreter.setupGamePad(self)
-        self.interpreter.updateState(of: self)
     }
     
     internal func resetInputStates() {
@@ -325,7 +341,7 @@ public extension GamePad {
         var _wrappedValue: T
         public var wrappedValue: T {
             get {
-                Task(priority: .userInitiated) {
+                Task(priority: .high) {
                     gamePad?.interpreter.hid.gamePads.pollIfNeeded()
                 }
                 return _wrappedValue
@@ -385,8 +401,8 @@ public extension GamePad {
                         maxHitCount += 1
                     }
                     
-                    if minHitCount >= 5 && maxHitCount >= 5 {
-                        // if the input goes from min to max 5 times without an inbetween it is not analog
+                    if minHitCount >= 2 && maxHitCount >= 2 {
+                        // if the input goes from min to max 2 times without an inbetween it is not analog
                         neverAnalog = true
                     }
                 }
@@ -406,14 +422,6 @@ public extension GamePad {
         let id: InternalID
         var currentRecipt: UInt8 = 0
 
-        init(gamePad: GamePad?, id: InternalID) {
-            self.gamePad = gamePad
-            self.id = id
-            
-            self._isPressed.configureWith(gamePad: gamePad)
-            self._value.configureWith(gamePad: gamePad, button: self)
-        }
-        
         /// `true` if the button is considered down.
         @Polled public internal(set) var isPressed: Bool = false {
             didSet {
@@ -447,7 +455,7 @@ public extension GamePad {
         
         /**
          Determines if this buttons `value` can have a value between 0 and 1
-         This value will be initially false. The controller input has a few chances to report an analog value at which time this property become true, otherwise it's assumed to always be digital.
+         This value will be initially false. The controller input has a few chances to report an analog value at which time this property will become true, otherwise it's assumed to always be digital.
          */
         public internal(set) var isAnalog: Bool = false
         
@@ -459,6 +467,14 @@ public extension GamePad {
         internal func resetInputStates() {
             self.isPressed = false
             self.value = 0
+        }
+
+        init(gamePad: GamePad?, id: InternalID) {
+            self.gamePad = gamePad
+            self.id = id
+            
+            self._isPressed.configureWith(gamePad: gamePad)
+            self._value.configureWith(gamePad: gamePad, button: self)
         }
     }
     
