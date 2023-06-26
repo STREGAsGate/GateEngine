@@ -52,20 +52,18 @@ internal class MFIGamePadInterpreter: GamePadInterpreter {
     
     func setupGamePad(_ gamePad: GamePad) {
         guard let gcController = gamePad.identifier as? GCController else {return}
-        gamePad.symbols = .appleMFI
         
-        if let extended = gcController.extendedGamepad {
-            if #available(macOS 11, macCatalyst 14, tvOS 14, iOS 14, *), extended is GCDualShockGamepad {
-                gamePad.symbols = .sonyPlaystation
-            }else if #available(macOS 11.3, macCatalyst 14.5, tvOS 14.5, iOS 14.5, *), extended is GCDualSenseGamepad {
-                gamePad.symbols = .sonyPlaystation
-            }else if #available(macOS 11, macCatalyst 14, tvOS 14, iOS 14, *), extended is GCXboxGamepad {
-                gamePad.symbols = .microsoftXbox
-            }else if let name = gcController.vendorName {
-                if name == "Pro Controller" {
-                    gamePad.symbols = .nintendoSwitch
-                }
-            }
+        switch gcController.productCategory {
+        case "DualShock 4", "DualSense":
+            gamePad.symbols = .sonyPlaystation
+        case "Xbox One":
+            gamePad.symbols = .microsoftXbox
+        case "Switch Pro Controller":
+            gamePad.symbols = .nintendoSwitch
+        case "MFi":
+            gamePad.symbols = .appleMFI
+        default:
+            gamePad.symbols = .unknown
         }
     }
     
@@ -164,7 +162,6 @@ internal class MFIGamePadInterpreter: GamePadInterpreter {
 
 extension MFIGamePadInterpreter {
     nonisolated static var isSupported: Bool {
-        return false
         guard Bundle.main.bundleIdentifier != nil else {return false}
         if #available(macOS 11.0, *) {
             return true

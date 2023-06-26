@@ -37,9 +37,14 @@ public final class WASIPlatform: Platform, InternalPlatform {
         if files.isEmpty {
             Log.error("Failed to load any resource bundles! Check code signing and directory premissions.")
         }else{
-            Log.debug("Loaded static resource search paths:", files.map({
-                return "\n\"" + $0.path + "/\","
-            }).joined(), "\n  (note: These do not include any GameDelegate provided search paths)\n")
+            Log.debug("Loaded static resource search paths: (GameDelegate search paths not included)", files.map({
+                let path = $0.path
+                if path == "." || path == "./" || path.isEmpty {
+                    // Already root
+                    return "\n    \"[WebDir]/\","
+                }
+                return "\n    \"[WebDir]/" + path + "/\","
+            }).joined(), "\n")
         }
         return files
     }()

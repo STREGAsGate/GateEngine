@@ -51,7 +51,9 @@ internal class IOKitGamePadInterpreter: GamePadInterpreter {
         
         IOHIDManagerRegisterDeviceMatchingCallback(hidManager, gamepadWasAdded, nil)
         IOHIDManagerRegisterDeviceRemovalCallback(hidManager, gamepadWasRemoved, nil)
-//        IOHIDManagerRegisterInputValueCallback(hidManager, gamepadAction, nil)
+        #if GATEENGINE_DEBUG_HID
+        IOHIDManagerRegisterInputValueCallback(hidManager, gamepadAction, nil)
+        #endif
         let ioreturn = IOHIDManagerOpen(hidManager, IOOptionBits(kIOHIDOptionsTypeSeizeDevice))
         if ioreturn != kIOReturnSuccess {
             Log.error("HID controller error: ", ioreturn)
@@ -181,8 +183,8 @@ fileprivate func supportedDeviceIdentifierFrom(_ device: IOHIDDevice) -> SDL2Con
 
     guard let vendorID = IOHIDDeviceGetProperty(device, kIOHIDVendorIDKey as CFString) as? Int,
           let productID = IOHIDDeviceGetProperty(device, kIOHIDProductIDKey as CFString) as? Int,
-          let version = IOHIDDeviceGetProperty(device, kIOHIDVersionNumberKey as CFString) as? Int,
-          let transport = IOHIDDeviceGetProperty(device, kIOHIDTransportKey as CFString) as? String else {
+          let version = IOHIDDeviceGetProperty(device, kIOHIDVersionNumberKey as CFString) as? Int
+          /*let transport = IOHIDDeviceGetProperty(device, kIOHIDTransportKey as CFString) as? String*/ else {
         #if GATEENGINE_DEBUG_HID
         Log.info("IOKitGamePadInterpreter is ignoring gamepad \(productName ?? "[Unknown]"), Reason: Failed to generate GUID.")
         #endif
@@ -234,18 +236,18 @@ fileprivate func gamepadWasRemoved(inContext: UnsafeMutableRawPointer?, inResult
     }
 }
 
+fileprivate var ignoredElements: Set<IOHIDElement> = []
+fileprivate let startIgnoring: Date = Date()
 fileprivate func gamepadAction(inContext: UnsafeMutableRawPointer?, inResult: IOReturn, inSender: UnsafeMutableRawPointer?, value: IOHIDValue) {
-    //print("Gamepad talked!");
-//    let element = IOHIDValueGetElement(value);
-    // print("Element:", element);
-
-//    let elementValue = IOHIDValueGetIntegerValue(value)
-//    let physical = IOHIDValueGetScaledValue(value, IOHIDValueScaleType(kIOHIDValueScaleTypePhysical))
-//    let calibrated = IOHIDValueGetScaledValue(value, IOHIDValueScaleType(kIOHIDValueScaleTypeCalibrated))
-//
-//    if DualShock4Wired_256(rawValue:IOHIDElementGetCookie(element)) == nil {
-//        print("Element: \(IOHIDElementGetCookie(element))", elementValue, physical, calibrated)
-//    }
+    let element = IOHIDValueGetElement(value)
+    let elementValue = IOHIDValueGetIntegerValue(value)
+    let physical = IOHIDValueGetScaledValue(value, IOHIDValueScaleType(kIOHIDValueScaleTypePhysical))
+    let calibrated = IOHIDValueGetScaledValue(value, IOHIDValueScaleType(kIOHIDValueScaleTypeCalibrated))
+    if startIgnoring.timeIntervalSinceNow > -3 {
+        ignoredElements.insert(element)
+    }else if ignoredElements.contains(element) == false {
+        Log.info("IOKit GamePad Input \(IOHIDElementGetCookie(element)) Changed:", elementValue, physical, calibrated)
+    }
 }
 
 extension IOKitGamePadInterpreter {
@@ -257,24 +259,23 @@ extension IOKitGamePadInterpreter {
         }
         return nil
     }
-    func normalizedValue(device: IOHIDDevice, element: IOHIDElement, cookie: IOHIDElementCookie, min: Int, max: Int, axis: SDL2ControllerMap.Value.Kind.Axis) -> Float? {
+    func normalizedValue(device: IOHIDDevice, element: IOHIDElement, cookie: IOHIDElementCookie, min: Float, max: Float, axis: SDL2ControllerMap.Value.Kind.Axis) -> Float? {
         guard let intValue = integerValue(from: device, element: element, cookie: cookie) else {return nil}
 
         switch axis {
         case .whole, .wholeInverted:
-            let distance = Float(abs(min - max))
-            var value = Float(min + intValue) / distance
+            var value = (Float(intValue) - min) / (max - min)
             if axis == .wholeInverted {
                 value *= -1
             }
             return value
         case .negative:
             if intValue < 0 {
-                return Float(intValue) / Float(min)
+                return Float(intValue) / min
             }
         case .positive:
             if intValue > 0 {
-                return Float(intValue) / Float(max)
+                return Float(intValue) / max
             }
         }
         return nil
@@ -323,7 +324,7 @@ extension IOKitGamePadInterpreter {
             case let .analog(axis):
                 let elementID = hidDevice.axesElements[value.id]
                 var axisValue: Float
-                if let value = normalizedValue(device: hidDevice.device, element: elementID.element, cookie: elementID.cookie, min: elementID.min, max: elementID.max, axis: axis) {
+                if let value = normalizedValue(device: hidDevice.device, element: elementID.element, cookie: elementID.cookie, min: Float(elementID.min), max: Float(elementID.max), axis: axis) {
                     axisValue = Float(-1.0).interpolated(to: 1.0, .linear(value))
                 }else{
                     axisValue = 0

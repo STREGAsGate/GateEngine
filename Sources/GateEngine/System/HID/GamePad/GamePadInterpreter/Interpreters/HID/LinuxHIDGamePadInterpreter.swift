@@ -74,7 +74,7 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
         guard ioctl(fd, EVIOCGID, &inpid) >= 0 else {return nil}
         inpid = fixUp(input: inpid)
 
-        return SDL2ControllerGUID(vendorID: Int(inpid.vendor), productID: Int(inpid.product), hidVersion: Int(inpid.version), transport: Int(inpid.bustype))
+        return SDL2ControllerGUID(vendorID: Int(inpid.vendor), productID: Int(inpid.product), hidVersion: Int(inpid.version), transport: Int(inpid.bustype), name: "")
     }
 
     func checkConnectedJoysticks() {
@@ -235,11 +235,7 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
                 let factor: Float = {
                     switch axis {
                     case .whole, .wholeInverted:
-                        var value = Float(axisInfo.value) / Float(axisInfo.maximum)
-                        if axisInfo.minimum < 0 {
-                            value += 1
-                            value /= 2
-                        }
+                        var value = (Float(intValue) - min) / (max - min)
                         if axis == .wholeInverted {
                             value *= -1
                         }

@@ -196,8 +196,16 @@ struct SDL2ControllerMap {
             return .nintendoClassic
         }else if comps.intersection(["GameCube"]).isEmpty == false {
             return .nintendoGameCube
-        }else if comps.intersection(["Nintendo", "Joy-Con"]).isEmpty == false {
+        }else if comps.intersection(["Switch", "Joy-Con"]).isEmpty == false {
             return .nintendoSwitch
+        }
+        
+        if comps.contains("8BitDo") && comps.intersection(["SF30", "SFC30", "NES30", "SN30"]).isEmpty == false {
+            return .nintendoClassic
+        }
+        
+        if comps.intersection(["Nimbus", "Stratus"]).isEmpty == false {
+            return .appleMFI
         }
         
         switch self.id.guid {

@@ -96,7 +96,7 @@ let package = Package(
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH", .when(platforms: [.wasi])),
                         ])
                         
-                        #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
+                        #if true // Options for development of GateEngine. These should be commented out for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
                         // Options for developemnt of WASI platform
