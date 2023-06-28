@@ -45,22 +45,69 @@ public final class Win32Platform: InternalPlatform {
         throw "failed to locate."
     }
 
-    lazy private(set) var userDataURL: URL = {
-        var pwString: PWSTR! = nil
-        var folderID: KNOWNFOLDERID = FOLDERID_LocalAppData
-        _ = SHGetKnownFolderPath(&folderID, DWORD(KF_FLAG_DEFAULT.rawValue), nil, &pwString)
-        let string: String = String(windowsUTF16: pwString)
-        CoTaskMemFree(pwString)
-        return URL(fileURLWithPath: string).appendingPathComponent("GateEngine/\(Game.shared.identifier)/")
-    }()
-    lazy private(set) var sharedDataURL: URL = {
-        var pwString: PWSTR! = nil
-        var folderID: KNOWNFOLDERID = FOLDERID_ProgramData
-        _ = SHGetKnownFolderPath(&folderID, DWORD(KF_FLAG_DEFAULT.rawValue), nil, &pwString)
-        let string: String = String(windowsUTF16: pwString)
-        CoTaskMemFree(pwString)
-        return URL(fileURLWithPath: string).appendingPathComponent("GateEngine/\(Game.shared.identifier)/")
-    }()
+    func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> URL {
+        func urlForFolderID(_ folderID: KNOWNFOLDERID) -> URL {
+            var pwString: PWSTR! = nil
+            _ = SHGetKnownFolderPath(&folderID, DWORD(KF_FLAG_DEFAULT.rawValue), nil, &pwString)
+            let string: String = String(windowsUTF16: pwString)
+            CoTaskMemFree(pwString)
+            return URL(fileURLWithPath: string).appendingPathComponent(Game.shared.identifier)
+        }
+        
+        func fileExists(at url: URL, asDirectory: Bool) -> Bool {
+            let dwAttrib: DWORD = GetFileAttributes(url.path)
+            guard dwAttrib != INVALID_FILE_ATTRIBUTES else {return false}
+            if asDirectory {
+                return (dwAttrib & FILE_ATTRIBUTE_DIRECTORY) != 0
+            }
+            return true
+        }
+        
+        func createDirectory(at url: URL) -> Bool {
+            var subPaths: [String] = [url.path]
+            var url = url
+            while url.path.isEmpty == false {
+                url.deleteLastPathComponent()
+                subPaths.append(url.path)
+            }
+            subPaths = subPaths.reversed()
+            for subPath in subPaths {
+                if fileExists(at: URL(fileURLWithPath: subPath), asDirectory: true) == false {
+                    if CreateDirectoryW(url.path, nil) == false {
+                        return false
+                    }
+                }
+            }
+            return true
+        }
+        
+        let url: URL
+        switch searchPath {
+        case .persistant:
+            switch domain {
+            case .currentUser:
+                url = urlForFolderID(FOLDERID_ProgramData)
+            case .shared:
+                url = urlForFolderID(FOLDERID_LocalAppData)
+            }
+        case .cache:
+            switch domain {
+            case .currentUser:
+                url = urlForFolderID(FOLDERID_ProgramData).appendingPathComponent("Cache")
+            case .shared:
+                url = urlForFolderID(FOLDERID_LocalAppData).appendingPathComponent("Cache")
+            }
+        case .temporary:
+            GetTempPathW
+        }
+        
+        if fileExists(at: url, asDirectory: true) == false {
+            if createDirectory(at: url) == false {
+                throw "Failed to create directory."
+            }
+        }
+        return url
+    }
 }
 
 internal extension Win32Platform {

@@ -28,7 +28,7 @@ public final class UIKitPlatform: Platform, InternalPlatform {
         if let existing = pathCache[path] {
             return existing
         }
-        let searchPaths = await Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
+        let searchPaths = Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             let path = file.path
@@ -50,6 +50,31 @@ public final class UIKitPlatform: Platform, InternalPlatform {
             }
         }
         throw "failed to locate."
+    }
+    
+    func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> URL {
+        let _searchPath: FileManager.SearchPathDirectory
+        switch searchPath {
+        case .persistant:
+            _searchPath = .applicationSupportDirectory
+        case .cache:
+            _searchPath = .cachesDirectory
+        case .temporary:
+            _searchPath = .itemReplacementDirectory
+        }
+        let _domainMask: FileManager.SearchPathDomainMask
+        switch domain {
+        case .currentUser:
+            _domainMask = .userDomainMask
+        case .shared:
+            _domainMask = .localDomainMask
+        }
+        var url: URL = try FileManager.default.url(for: _searchPath, in: _domainMask, appropriateFor: nil, create: false)
+        url = url.appendingPathComponent(Game.shared.identifier)
+        if FileManager.default.fileExists(atPath: url.path) == false {
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        }
+        return url
     }
 }
 

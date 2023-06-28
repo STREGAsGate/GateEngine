@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import struct Foundation.URL
+import Foundation
 
 public struct LaunchOptions: OptionSet {
     public let rawValue: UInt
@@ -93,6 +93,11 @@ public extension GameDelegate {
                 return String(decoding: $0, as: UTF8.self)
             }
         }
+        #if canImport(Darwin)
+        if let identifier = Bundle.main.bundleIdentifier {
+            return identifier
+        }
+        #endif
         return CommandLine.arguments[0]
     }
 }

@@ -101,14 +101,16 @@ public final class WASIPlatform: Platform, InternalPlatform {
         return try await JSPromise(jsFetch(url, options).object!)!.value
     }
     
-    func saveState(_ state: Game.State) throws {
+    func saveState(_ state: Game.State, as name: String) throws {
+        let name = Game.shared.delegate.resolvedGameIdentifier() + "." + name
         let window: DOM.Window = globalThis
-        window.localStorage["SaveState.data"] = try JSONEncoder().encode(state).base64EncodedString()
+        window.localStorage[name] = try JSONEncoder().encode(state).base64EncodedString()
     }
     
-    func loadState() -> Game.State {
+    func loadState(named name: String) -> Game.State {
+        let name = Game.shared.delegate.resolvedGameIdentifier() + "." + name
         let window: DOM.Window = globalThis
-        if let base64 = window.localStorage["SaveState.data"], let data = Data(base64Encoded: base64) {
+        if let base64 = window.localStorage[name], let data = Data(base64Encoded: base64) {
             do {
                 return try JSONDecoder().decode(Game.State.self, from: data)
             }catch{
@@ -125,16 +127,16 @@ public final class WASIPlatform: Platform, InternalPlatform {
     #endif
     
     func systemTime() -> Double {
-#if os(WASI)
+        #if os(WASI)
         var time = timespec()
         let CLOCK_MONOTONIC = clockid_t(bitPattern: 1)
         if clock_gettime(CLOCK_MONOTONIC, &time) != 0 {
             return -1
         }
         return Double(time.tv_sec) + (Double(time.tv_nsec) / 1e+9)
-#else
+        #else //GATEENGINE_ENABLE_WASI_IDE_SUPPORT
         return Date().timeIntervalSinceReferenceDate
-#endif
+        #endif
     }
     
     public var supportsMultipleWindows: Bool {

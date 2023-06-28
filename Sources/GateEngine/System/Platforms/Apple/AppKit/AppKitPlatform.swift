@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if os(macOS)
+#if canImport(AppKit)
 
 import AppKit
 import System
@@ -62,8 +62,12 @@ public final class AppKitPlatform: InternalPlatform {
         case .shared:
             _domainMask = .localDomainMask
         }
-        let url: URL = try FileManager.default.url(for: _searchPath, in: _domainMask, appropriateFor: nil, create: true)
-        return url.appendingPathComponent(Game.shared.identifier)
+        var url: URL = try FileManager.default.url(for: _searchPath, in: _domainMask, appropriateFor: nil, create: false)
+        url = url.appendingPathComponent(Game.shared.identifier)
+        if FileManager.default.fileExists(atPath: url.path) == false {
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        }
+        return url
     }
 }
 
