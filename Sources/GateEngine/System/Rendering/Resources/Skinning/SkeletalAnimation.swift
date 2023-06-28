@@ -82,7 +82,7 @@ extension SkeletalAnimation {
                         
                         switch interpolation {
                         case .linear:
-                            return position1.interpolated(to: position2, .linear(factor, shortest: true))
+                            return position1.interpolated(to: position2, .linear(factor, options: [.shortest]))
                         case .step:
                             if factor < 0.5 {
                                 return position1
@@ -107,7 +107,7 @@ extension SkeletalAnimation {
                     
                     switch interpolation {
                     case .linear:
-                        return position1.interpolated(to: position2, .linear(factor, shortest: true))
+                        return position1.interpolated(to: position2, .linear(factor, options: [.shortest]))
                     case .step:
                         if factor < 0.5 {
                             return position1
@@ -150,7 +150,7 @@ extension SkeletalAnimation {
                         
                         switch interpolation {
                         case .linear:
-                            return rotation1.interpolated(to: rotation2, .linear(factor, shortest: true))
+                            return rotation1.interpolated(to: rotation2, .linear(factor, options: [.shortest]))
                         case .step:
                             if factor < 0.5 {
                                 return rotation1
@@ -175,7 +175,7 @@ extension SkeletalAnimation {
                     
                     switch interpolation {
                     case .linear:
-                        return rotation1.interpolated(to: rotation2, .linear(factor, shortest: true))
+                        return rotation1.interpolated(to: rotation2, .linear(factor, options: [.shortest]))
                     case .step:
                         if factor < 0.5 {
                             return rotation1
@@ -219,7 +219,7 @@ extension SkeletalAnimation {
                         
                         switch interpolation {
                         case .linear:
-                            return scale1.interpolated(to: scale2, .linear(factor, shortest: true))
+                            return scale1.interpolated(to: scale2, .linear(factor, options: [.shortest]))
                         case .step:
                             if factor < 0.5 {
                                 return scale1
@@ -244,7 +244,7 @@ extension SkeletalAnimation {
                     
                     switch interpolation {
                     case .linear:
-                        return scale1.interpolated(to: scale2, .linear(factor, shortest: true))
+                        return scale1.interpolated(to: scale2, .linear(factor, options: [.shortest]))
                     case .step:
                         if factor < 0.5 {
                             return scale1

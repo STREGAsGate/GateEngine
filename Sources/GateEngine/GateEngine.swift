@@ -30,19 +30,6 @@ import WebAPIBase
 #error("HTML5 builds are not supported on this platform host.")
 #endif
 
-public extension GameMath.Color {
-    static let vertexColors = Color(red: -1001, green: -2002, blue: -3003, alpha: -4004)
-    static let defaultDiffuseMapColor = Color(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
-    static let defaultNormalMapColor = Color(red: 0.5, green: 0.5, blue: 1.0, alpha: 1.0)
-    static let defaultRoughnessMapColor = Color(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
-    static let defaultPointLightColor = Color(red: 1.0, green: 1.0, blue: 0.9, alpha: 1.0)
-    static let defaultSpotLightColor = Color(red: 1.0, green: 1.0, blue: 0.8, alpha: 1.0)
-    static let defaultDirectionalLightColor = Color(red: 0.7, green: 0.7, blue: 1.0, alpha: 1.0)
-}
-
-internal extension GameMath.Color {
-    static let stregasgateBackground: Color = #colorLiteral(red: 0.094117634, green: 0.0941176638, blue: 0.094117634, alpha: 1)
-}
 
 extension String: Error {}
 

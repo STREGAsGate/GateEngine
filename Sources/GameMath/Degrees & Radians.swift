@@ -554,7 +554,7 @@ public extension Degrees {
     
     @_transparent
     func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
-        if case .linear(_, shortest: true) = method {
+        if case .linear(_, let options) = method, options.contains(.shortest) {
             // Shortest distance
             let shortest = self.shortestAngle(to: to)
             return Self(self.rawValue.interpolated(to: (self + shortest).rawValue, method))

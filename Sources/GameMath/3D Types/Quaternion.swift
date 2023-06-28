@@ -446,8 +446,15 @@ public extension Quaternion {
     @_transparent
     func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
         switch method {
-        case let .linear(factor, shortest):
-            if shortest {
+        case let .linear(factor, options):
+            if options.contains(.shortest) {
+                return self.slerped(to: to, factor: factor)
+            }else{
+                return self.lerped(to: to, factor: factor)
+            }
+        case let .easeIn(factor, options):
+            #warning("Quaternion needs easeIn implimented.")
+            if options.contains(.shortest) {
                 return self.slerped(to: to, factor: factor)
             }else{
                 return self.lerped(to: to, factor: factor)
