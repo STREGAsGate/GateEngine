@@ -190,7 +190,7 @@ extension InternalPlatform {
             return state
         }catch{
             Log.error("Game.State failed to restore:", error)
-            return Game.State()
+            return Game.State(name: name)
         }
     }
     

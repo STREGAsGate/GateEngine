@@ -88,17 +88,44 @@ public extension GameDelegate {
 
     @_transparent
     internal func resolvedGameIdentifier() -> String {
+        let charSet = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.")
         if let identifer: StaticString = self.gameIdentifier() {
-            return identifer.withUTF8Buffer {
+            let customIdentifier = identifer.withUTF8Buffer {
                 return String(decoding: $0, as: UTF8.self)
             }
+            assert(customIdentifier.trimmingCharacters(in: charSet).isEmpty, "gameIdentifier can only contain english letters, numbers, `_`, `-` or `.`.")
+            assert(customIdentifier.first != ".", "gameIdentifier can't start with a period.")
+            return customIdentifier
         }
+        
         #if canImport(Darwin)
+        // Apple has a identifier system for thier platforms already, use it
         if let identifier = Bundle.main.bundleIdentifier {
             return identifier
         }
         #endif
-        return CommandLine.arguments[0]
+        
+        var identifier: String = ""
+        var isFirst = true
+        for character in CommandLine.arguments[0] {
+            if isFirst {
+                isFirst = false
+                if character == "." {
+                    // Don't allow period as the first character as it means something to most file systems.
+                    identifier.append("_")
+                    continue
+                }
+            }
+            let scalars = character.unicodeScalars
+            if scalars.count == 1, let scalar = scalars.first {
+                if charSet.contains(scalar) {
+                    identifier.append(character)
+                    continue
+                }
+            }
+            identifier.append("_")
+        }
+        return identifier
     }
 }
 

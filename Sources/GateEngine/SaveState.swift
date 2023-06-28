@@ -227,12 +227,13 @@ extension Game {
             datas.removeValue(forKey: key)
         }
 
-        internal init() {
+        internal init(name: String) {
             self.bools = [:]
             self.integers = [:]
             self.doubles = [:]
             self.strings = [:]
             self.datas = [:]
+            self.name = name
         }
         
         /// The name used to save and load this state instance
