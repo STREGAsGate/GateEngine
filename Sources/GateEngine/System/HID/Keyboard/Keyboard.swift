@@ -144,7 +144,7 @@ public extension Keyboard {
         internal unowned let keyboard: Keyboard
         let key: KeyboardKey
         @usableFromInline
-        internal var currentRecipt: UInt8 = 0
+        internal var currentReceipt: UInt8 = 0
         
         nonisolated public var description: String {
             switch key {
@@ -216,40 +216,40 @@ public extension Keyboard {
         public internal(set) var isPressed: Bool = false {
             didSet {
                 if isPressed != oldValue {
-                    currentRecipt &+= 1
+                    currentReceipt &+= 1
                 }
             }
         }
                 
         /**
-         Returns a recipt for the current press or nil if not pressed.
-         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
+         Returns a receipt for the current press or nil if not pressed.
+         - parameter receipt: An existing receipt from a previous call to compare to the current pressed state.
          - parameter modifiers: Key modifiers required for a press to be considered valid.
-         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
+         - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
          */
         @inlinable @inline(__always)
-        public func isPressed(ifDifferent recipt: inout InputRecipts, andUsing modifiers: KeyboardModifierMask = []) -> Bool {
+        public func isPressed(ifDifferent receipt: inout InputReceipts, andUsing modifiers: KeyboardModifierMask = []) -> Bool {
             guard isPressed, keyboard.modifiers.contains(modifiers) else {return false}
             let key = ObjectIdentifier(self)
-            if let recipt = recipt.values[key], recipt == currentRecipt {
+            if let receipt = receipt.values[key], receipt == currentReceipt {
                 return false
             }
-            recipt.values[key] = currentRecipt
+            receipt.values[key] = currentReceipt
             return true
         }
         
         /**
-         Returns a recipt for the current press or nil if not pressed.
-         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
+         Returns a receipt for the current press or nil if not pressed.
+         - parameter receipt: An existing receipt from a previous call to compare to the current pressed state.
          - parameter modifiers: Key modifiers required for a press to be considered valid.
          - parameter block: A code block, including this button, that is run if the request is true.
-         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
+         - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
          */
         @inlinable @inline(__always)
-        public func whenPressed(ifDifferent recipt: inout InputRecipts, andUsing modifiers: KeyboardModifierMask = [], run block: (ButtonState)->Void) {
-            if isPressed(ifDifferent: &recipt, andUsing: modifiers) {
+        public func whenPressed(ifDifferent receipt: inout InputReceipts, andUsing modifiers: KeyboardModifierMask = [], run block: (ButtonState)->Void) {
+            if isPressed(ifDifferent: &receipt, andUsing: modifiers) {
                 block(self)
             }
         }

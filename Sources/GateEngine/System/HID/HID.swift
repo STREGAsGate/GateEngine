@@ -7,12 +7,12 @@
 
 import GameMath
 
-public struct InputRecipts {
+public struct InputReceipts {
     @usableFromInline
     var values: [ObjectIdentifier:UInt8] = [:]
     
     @inlinable
-    func recipt(for object: AnyObject) -> UInt8? {
+    func receipt(for object: AnyObject) -> UInt8? {
         let key = ObjectIdentifier(object)
         return values[key]
     }

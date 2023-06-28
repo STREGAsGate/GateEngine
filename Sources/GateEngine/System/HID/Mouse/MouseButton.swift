@@ -30,7 +30,7 @@ public extension Mouse {
         @usableFromInline
         internal unowned let mouse: Mouse
         @usableFromInline
-        internal var currentRecipt: UInt8 = 0
+        internal var currentReceipt: UInt8 = 0
         
         @usableFromInline
         internal init(mouse: Mouse) {
@@ -62,19 +62,19 @@ public extension Mouse {
         }
         
         /**
-         Returns a recipt for the current press or nil if not pressed.
-         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
+         Returns a receipt for the current press or nil if not pressed.
+         - parameter receipt: An existing receipt from a previous call to compare to the current pressed state.
          - parameter gesture: A repetition based gesture to require for success.
-         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
+         - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          */
         @inlinable @inline(__always)
-        public func isPressed(ifDifferent recipt: inout InputRecipts, andGesture gesture: Gesture? = nil) -> Bool {
+        public func isPressed(ifDifferent receipt: inout InputReceipts, andGesture gesture: Gesture? = nil) -> Bool {
             guard isPressed else {return false}
             let key = ObjectIdentifier(self)
-            if let recipt = recipt.values[key], recipt == currentRecipt {
+            if let receipt = receipt.values[key], receipt == currentReceipt {
                 return false
             }
-            recipt.values[key] = currentRecipt
+            receipt.values[key] = currentReceipt
             switch gesture {
             case .singleClick:
                 return pressCount == 1
@@ -88,16 +88,16 @@ public extension Mouse {
         }
         
         /**
-         Returns a recipt for the current press or nil if not pressed.
-         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
+         Returns a receipt for the current press or nil if not pressed.
+         - parameter receipt: An existing receipt from a previous call to compare to the current pressed state.
          - parameter block: A code block, including this button, that is run if the request is true.
          - parameter gesture: A repetition based gesture to require for success.
-         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
+         - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
          */
         @inlinable @inline(__always)
-        public func whenPressed(ifDifferent recipt: inout InputRecipts, andGesture gesture: Gesture? = nil, run block: (_ button: ButtonState)->Void) {
-            if isPressed(ifDifferent: &recipt, andGesture: gesture) {
+        public func whenPressed(ifDifferent receipt: inout InputReceipts, andGesture gesture: Gesture? = nil, run block: (_ button: ButtonState)->Void) {
+            if isPressed(ifDifferent: &receipt, andGesture: gesture) {
                 block(self)
             }
         }
@@ -111,7 +111,7 @@ public extension Mouse {
         private var multiClick: MultiClick = MultiClick()
         internal func setIsPressed(_ pressed: Bool, multiClickTime: Double) {
             if pressed != isPressed {
-                currentRecipt &+= 1
+                currentReceipt &+= 1
             }
             
             self.isPressed = pressed
