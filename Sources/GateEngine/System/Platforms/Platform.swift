@@ -15,19 +15,34 @@ public protocol Platform: AnyObject {
     var supportsMultipleWindows: Bool {get}
 }
 
+enum FileSystemSearchPathDomain {
+    case currentUser
+    case shared
+}
+
+enum FileSystemSearchPath {
+    case persistant
+    case cache
+    case temporary
+}
+
 internal protocol InternalPlatform: AnyObject, Platform {
     var pathCache: [String:String] {get set}
     static var staticSearchPaths: [URL] {get}
     
-    func saveStateURL() throws -> URL
-    func saveState(_ state: Game.State) throws
-    func loadState() -> Game.State
-    
     func systemTime() -> Double
     func main()
+    
+    func saveState(_ state: Game.State, as name: String) throws
+    func loadState(named name: String) -> Game.State
+    
+    #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
+    func saveStateURL(forStateNamed name: String) throws -> URL
+    func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> URL
+    #endif
 }
 
-#if !os(WASI)
+#if GATEENGINE_PLATFORM_HAS_FILESYSTEM
 extension InternalPlatform {
     public static func getStaticSearchPaths() -> [URL] {
         #if canImport(Darwin)
@@ -39,7 +54,9 @@ extension InternalPlatform {
         let excludedResourceBundles = ["JavaScriptKit_JavaScriptKit.\(bundleExtension)"]
 
         let resourceBundleSearchURLs: Set<URL> = {
-            var urls: [URL] = [Bundle.main.bundleURL, Bundle.main.resourceURL, Bundle.module.bundleURL.deletingLastPathComponent()].compactMap({$0})
+            var urls: [URL] = [Bundle.main.bundleURL,
+                               Bundle.main.resourceURL,
+                               Bundle.module.bundleURL.deletingLastPathComponent()].compactMap({$0})
             urls.append(contentsOf: Bundle.allBundles.compactMap({$0.resourceURL}))
             return Set(urls)
         }()
@@ -132,11 +149,7 @@ extension InternalPlatform {
         if files.isEmpty {
             Log.error("Failed to load any resource bundles! Check code signing and directory premissions.")
         }else{
-            #if os(WASI)
-            let relativeDescriptor: String = "."
-            #else
             let relativeDescriptor: String = "[MainBundle]"
-            #endif
             let relativePath = Bundle.main.bundleURL.path
             Log.debug("Loaded static resource search paths: (GameDelegate search paths not included)", files.map({
                 let relativeDescriptor = "\n  \"\(relativeDescriptor)"
@@ -153,11 +166,8 @@ extension InternalPlatform {
 }
 
 extension InternalPlatform {
-    func saveStateURL() throws -> URL {
-        var url: URL = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-        url.appendPathComponent(Bundle.main.bundleIdentifier ?? CommandLine.arguments[0])
-        url.appendPathComponent("SaveState.data")
-        return url
+    func saveStateURL(forStateNamed name: String) throws -> URL {
+        return try urlForSearchPath(.persistant, in: .currentUser).appendingPathComponent(name)
     }
     
     #if os(macOS) || os(iOS) || os(tvOS) || os(Windows) || os(Linux)
@@ -172,19 +182,21 @@ extension InternalPlatform {
 }
 
 extension InternalPlatform {
-    func loadState() -> Game.State {
+    func loadState(named name: String) -> Game.State {
         do {
-            let data = try Data(contentsOf: try saveStateURL())
-            return try JSONDecoder().decode(Game.State.self, from: data)
+            let data = try Data(contentsOf: try saveStateURL(forStateNamed: name))
+            let state = try JSONDecoder().decode(Game.State.self, from: data)
+            state.name = name
+            return state
         }catch{
             Log.error("Game.State failed to restore:", error)
             return Game.State()
         }
     }
     
-    func saveState(_ state: Game.State) throws {
-        let url = try saveStateURL()
+    func saveState(_ state: Game.State, as name: String) throws {
         let data = try JSONEncoder().encode(state)
+        let url = try self.saveStateURL(forStateNamed: name)
         try data.write(to: url, options: .atomic)
     }
 }

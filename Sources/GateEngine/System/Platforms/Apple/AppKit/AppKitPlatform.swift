@@ -44,6 +44,27 @@ public final class AppKitPlatform: InternalPlatform {
         }
         throw "failed to locate."
     }
+    
+    func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> URL {
+        let _searchPath: FileManager.SearchPathDirectory
+        switch searchPath {
+        case .persistant:
+            _searchPath = .applicationSupportDirectory
+        case .cache:
+            _searchPath = .cachesDirectory
+        case .temporary:
+            _searchPath = .itemReplacementDirectory
+        }
+        let _domainMask: FileManager.SearchPathDomainMask
+        switch domain {
+        case .currentUser:
+            _domainMask = .userDomainMask
+        case .shared:
+            _domainMask = .localDomainMask
+        }
+        let url: URL = try FileManager.default.url(for: _searchPath, in: _domainMask, appropriateFor: nil, create: true)
+        return url.appendingPathComponent(Game.shared.identifier)
+    }
 }
 
 extension AppKitPlatform {

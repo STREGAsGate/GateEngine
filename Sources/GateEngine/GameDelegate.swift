@@ -89,7 +89,9 @@ public extension GameDelegate {
     @_transparent
     internal func resolvedGameIdentifier() -> String {
         if let identifer: StaticString = self.gameIdentifier() {
-            return identifer.description
+            return identifer.withUTF8Buffer {
+                return String(decoding: $0, as: UTF8.self)
+            }
         }
         return CommandLine.arguments[0]
     }

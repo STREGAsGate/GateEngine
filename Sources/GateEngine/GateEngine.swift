@@ -76,7 +76,7 @@ internal enum Log {
         case `default` = "\u{001B}[0;0m"
     }
     
-    @_transparent @usableFromInline
+    @inline(__always) @usableFromInline
     static var supportsColor: Bool {
         #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
         if CommandLine.isDebuggingWithXcode {
@@ -126,7 +126,12 @@ internal enum Log {
     @_transparent @usableFromInline
     static func debug(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         #if DEBUG
+        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        let message = _message(prefix: "[GateEngine]", items, separator: separator)
+        console.debug(data: .string(message))
+        #else
         self.info(items, separator: separator, terminator: terminator)
+        #endif
         #endif
     }
     

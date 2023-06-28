@@ -94,6 +94,8 @@ let package = Package(
                             .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.wasi])),
                             /// The host pltfrom requires an intermediate task, so GateEngine won't load default systems.
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH", .when(platforms: [.wasi])),
+                            /// The host pltfrom supports file system read/write
+                            .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])),
                         ])
                         
                         #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
@@ -116,6 +118,8 @@ let package = Package(
                             .define("GATEENGINE_DEBUG_RENDERING"),
                             /// Enables varius additional checks and output for input
                             .define("GATEENGINE_DEBUG_HID"),
+                            /// Enables varius additional, additional, checks and output for input
+                            .define("GATEENGINE_DEBUG_HID_VERBOSE"),
                             /// Forces Apple platforms to use OpenGL for rendering
                             .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, .iOS, .tvOS])),
                         ])

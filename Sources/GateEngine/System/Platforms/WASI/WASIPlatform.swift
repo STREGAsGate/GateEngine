@@ -101,10 +101,6 @@ public final class WASIPlatform: Platform, InternalPlatform {
         return try await JSPromise(jsFetch(url, options).object!)!.value
     }
     
-    func saveStateURL() throws -> Foundation.URL {
-        fatalError()
-    }
-    
     func saveState(_ state: Game.State) throws {
         let window: DOM.Window = globalThis
         window.localStorage["SaveState.data"] = try JSONEncoder().encode(state).base64EncodedString()
@@ -121,6 +117,12 @@ public final class WASIPlatform: Platform, InternalPlatform {
         }
         return Game.State()
     }
+    
+    #if GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+    func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> Foundation.URL {
+        fatalError()
+    }
+    #endif
     
     func systemTime() -> Double {
 #if os(WASI)
