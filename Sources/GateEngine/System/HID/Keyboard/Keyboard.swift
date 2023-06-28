@@ -258,7 +258,7 @@ public extension Keyboard {
 
 extension Keyboard {
     @inline(__always)
-    func keyboardDidhandle(key: KeyboardKey,
+    func keyboardDidHandle(key: KeyboardKey,
                            character: Character?,
                            modifiers: KeyboardModifierMask,
                            isRepeat: Bool,

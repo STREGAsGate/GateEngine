@@ -79,12 +79,12 @@ extension HID {
     }
 
     @_transparent
-    func keyboardDidhandle(key: KeyboardKey,
+    func keyboardDidHandle(key: KeyboardKey,
                            character: Character?,
                            modifiers: KeyboardModifierMask,
                            isRepeat: Bool,
                            event: KeyboardEvent) -> Bool {
         recentInputMethod = .mouseKeyboard
-        return keyboard.keyboardDidhandle(key: key, character: character, modifiers: modifiers, isRepeat: isRepeat, event: event)
+        return keyboard.keyboardDidHandle(key: key, character: character, modifiers: modifiers, isRepeat: isRepeat, event: event)
     }
 }

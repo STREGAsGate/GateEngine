@@ -190,7 +190,7 @@ final class WASIWindow: WindowBacking {
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
             Task {@MainActor in
-                _ = Game.shared.hid.keyboardDidhandle(key: key,
+                _ = Game.shared.hid.keyboardDidHandle(key: key,
                                                       character: event.key.first,
                                                       modifiers: modifiers,
                                                       isRepeat: event.repeat,
@@ -206,7 +206,7 @@ final class WASIWindow: WindowBacking {
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
             Task {@MainActor in
-                _ = Game.shared.hid.keyboardDidhandle(key: key,
+                _ = Game.shared.hid.keyboardDidHandle(key: key,
                                                        character: event.key.first,
                                                        modifiers: modifiers,
                                                        isRepeat: event.repeat,

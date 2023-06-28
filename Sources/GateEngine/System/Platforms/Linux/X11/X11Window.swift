@@ -93,7 +93,7 @@ final class X11Window: WindowBacking {
         case KeyPress:
             let event: XKeyEvent = event.xkey
             previousKeyEvent = event
-            Game.shared.hid.keyboardDidhandle(key: keyFromEvent(event),
+            Game.shared.hid.keyboardDidHandle(key: keyFromEvent(event),
                                               character: characterFromEvent(event),
                                               modifiers: modifierKeyFromState(Int32(event.state)),
                                               isRepeat: isRepeatedKey(event),
@@ -101,7 +101,7 @@ final class X11Window: WindowBacking {
         case KeyRelease:
             let event: XKeyEvent = event.xkey
             previousKeyEvent = event
-            Game.shared.hid.keyboardDidhandle(key: keyFromEvent(event),
+            Game.shared.hid.keyboardDidHandle(key: keyFromEvent(event),
                                               character: characterFromEvent(event),
                                               modifiers: modifierKeyFromState(Int32(event.state)),
                                               isRepeat: isRepeatedKey(event),
