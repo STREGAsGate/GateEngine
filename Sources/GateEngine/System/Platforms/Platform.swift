@@ -15,17 +15,6 @@ public protocol Platform: AnyObject {
     var supportsMultipleWindows: Bool {get}
 }
 
-enum FileSystemSearchPathDomain {
-    case currentUser
-    case shared
-}
-
-enum FileSystemSearchPath {
-    case persistant
-    case cache
-    case temporary
-}
-
 internal protocol InternalPlatform: AnyObject, Platform {
     var pathCache: [String:String] {get set}
     static var staticSearchPaths: [URL] {get}
@@ -38,7 +27,7 @@ internal protocol InternalPlatform: AnyObject, Platform {
     
     #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
     func saveStateURL(forStateNamed name: String) throws -> URL
-    func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> URL
+    var fileSystem: FileSystem {get}
     #endif
 }
 
@@ -167,7 +156,7 @@ extension InternalPlatform {
 
 extension InternalPlatform {
     func saveStateURL(forStateNamed name: String) throws -> URL {
-        return try urlForSearchPath(.persistant, in: .currentUser).appendingPathComponent(name)
+        return try fileSystem.urlForSearchPath(.persistant, in: .currentUser).appendingPathComponent(name)
     }
     
     #if os(macOS) || os(iOS) || os(tvOS) || os(Windows) || os(Linux)

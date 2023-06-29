@@ -30,6 +30,9 @@ import WebAPIBase
 #error("HTML5 builds are not supported on this platform host.")
 #endif
 
+extension Color {
+    internal static let stregasgateBackground: Color = #colorLiteral(red: 0.094117634, green: 0.0941176638, blue: 0.094117634, alpha: 1)
+}
 
 extension String: Error {}
 

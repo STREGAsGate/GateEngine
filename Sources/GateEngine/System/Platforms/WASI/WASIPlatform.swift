@@ -12,6 +12,7 @@ import JavaScriptKit
 import JavaScriptEventLoop
 
 public final class WASIPlatform: Platform, InternalPlatform {
+    let fileSystem: FileSystem = WASIFileSystem()
     var pathCache: [String:String] = [:]
     static let staticSearchPaths: [Foundation.URL] = {
         func getGameModuleName(_ delegate: AnyObject) -> String {
@@ -117,14 +118,8 @@ public final class WASIPlatform: Platform, InternalPlatform {
                 Log.error("Game.State failed to restore:", error)
             }
         }
-        return Game.State()
+        return Game.State(name: name)
     }
-    
-    #if GATEENGINE_ENABLE_WASI_IDE_SUPPORT
-    func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> Foundation.URL {
-        fatalError()
-    }
-    #endif
     
     func systemTime() -> Double {
         #if os(WASI)

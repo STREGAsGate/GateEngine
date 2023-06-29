@@ -31,17 +31,17 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         buffers.reserveCapacity(3)
         
         buffers.append(gl.createBuffer()!)
-        let positions = BufferSource.arrayBuffer(Float32Array(lines.positions).buffer)
+        let positions = BufferSource.arrayBuffer(Float32Array(lines.positions).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[0])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: positions, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let colors = BufferSource.arrayBuffer(Float32Array(lines.colors).buffer)
+        let colors = BufferSource.arrayBuffer(Float32Array(lines.colors).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[1])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: colors, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let indicies = BufferSource.arrayBuffer(Uint16Array(lines.indicies).buffer)
+        let indicies = BufferSource.arrayBuffer(Uint16Array(lines.indicies).buffer())
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[2])
         gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
         
@@ -66,17 +66,17 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         buffers.reserveCapacity(3)
         
         buffers.append(gl.createBuffer()!)
-        let positions = BufferSource.arrayBuffer(Float32Array(points.positions).buffer)
+        let positions = BufferSource.arrayBuffer(Float32Array(points.positions).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[0])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: positions, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let colors = BufferSource.arrayBuffer(Float32Array(points.colors).buffer)
+        let colors = BufferSource.arrayBuffer(Float32Array(points.colors).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[1])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: colors, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let indicies = BufferSource.arrayBuffer(Uint16Array(points.indicies).buffer)
+        let indicies = BufferSource.arrayBuffer(Uint16Array(points.indicies).buffer())
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[2])
         gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
         
@@ -105,37 +105,37 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         buffers.reserveCapacity(7)
         
         buffers.append(gl.createBuffer()!)
-        let positions = BufferSource.arrayBuffer(Float32Array(geometry.positions).buffer)
+        let positions = BufferSource.arrayBuffer(Float32Array(geometry.positions).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[0])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: positions, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let uvs1 = BufferSource.arrayBuffer(Float32Array(geometry.uvSet1).buffer)
+        let uvs1 = BufferSource.arrayBuffer(Float32Array(geometry.uvSet1).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[1])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: uvs1, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let uvs2 = BufferSource.arrayBuffer(Float32Array(geometry.uvSet2).buffer)
+        let uvs2 = BufferSource.arrayBuffer(Float32Array(geometry.uvSet2).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[2])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: uvs2, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let tangents = BufferSource.arrayBuffer(Float32Array(geometry.tangents).buffer)
+        let tangents = BufferSource.arrayBuffer(Float32Array(geometry.tangents).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[3])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: tangents, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let normals = BufferSource.arrayBuffer(Float32Array(geometry.normals).buffer)
+        let normals = BufferSource.arrayBuffer(Float32Array(geometry.normals).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[4])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: normals, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let colors = BufferSource.arrayBuffer(Float32Array(geometry.colors).buffer)
+        let colors = BufferSource.arrayBuffer(Float32Array(geometry.colors).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[5])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: colors, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let indicies = BufferSource.arrayBuffer(Uint16Array(geometry.indicies).buffer)
+        let indicies = BufferSource.arrayBuffer(Uint16Array(geometry.indicies).buffer())
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[6])
         gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
         
@@ -166,47 +166,47 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         buffers.reserveCapacity(9)
         
         buffers.append(gl.createBuffer()!)
-        let positions = BufferSource.arrayBuffer(Float32Array(geometry.positions).buffer)
+        let positions = BufferSource.arrayBuffer(Float32Array(geometry.positions).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[0])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: positions, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let uvs1 = BufferSource.arrayBuffer(Float32Array(geometry.uvSet1).buffer)
+        let uvs1 = BufferSource.arrayBuffer(Float32Array(geometry.uvSet1).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[1])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: uvs1, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let uvs2 = BufferSource.arrayBuffer(Float32Array(geometry.uvSet2).buffer)
+        let uvs2 = BufferSource.arrayBuffer(Float32Array(geometry.uvSet2).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[2])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: uvs2, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let tangents = BufferSource.arrayBuffer(Float32Array(geometry.tangents).buffer)
+        let tangents = BufferSource.arrayBuffer(Float32Array(geometry.tangents).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[3])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: tangents, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let normals = BufferSource.arrayBuffer(Float32Array(geometry.normals).buffer)
+        let normals = BufferSource.arrayBuffer(Float32Array(geometry.normals).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[4])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: normals, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let colors = BufferSource.arrayBuffer(Float32Array(geometry.colors).buffer)
+        let colors = BufferSource.arrayBuffer(Float32Array(geometry.colors).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[5])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: colors, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let jointIndicies = BufferSource.arrayBuffer(Uint32Array(skin.jointIndicies).buffer)
+        let jointIndicies = BufferSource.arrayBuffer(Uint32Array(skin.jointIndicies).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[6])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: jointIndicies, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let jointWeights = BufferSource.arrayBuffer(Float32Array(skin.jointWeights).buffer)
+        let jointWeights = BufferSource.arrayBuffer(Float32Array(skin.jointWeights).buffer())
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[7])
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: jointWeights, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let indicies = BufferSource.arrayBuffer(Uint16Array(geometry.indicies).buffer)
+        let indicies = BufferSource.arrayBuffer(Uint16Array(geometry.indicies).buffer())
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[8])
         gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
         

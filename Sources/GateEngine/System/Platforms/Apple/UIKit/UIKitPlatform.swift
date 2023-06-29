@@ -10,6 +10,7 @@ import UIKit
 import AVFoundation
 
 public final class UIKitPlatform: Platform, InternalPlatform {
+    public let fileSystem: FileSystem = AppleFileSystem()
     public static let staticSearchPaths: [URL] = getStaticSearchPaths()
     var pathCache: [String:String] = [:]
     
@@ -50,31 +51,6 @@ public final class UIKitPlatform: Platform, InternalPlatform {
             }
         }
         throw "failed to locate."
-    }
-    
-    func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> URL {
-        let _searchPath: FileManager.SearchPathDirectory
-        switch searchPath {
-        case .persistant:
-            _searchPath = .applicationSupportDirectory
-        case .cache:
-            _searchPath = .cachesDirectory
-        case .temporary:
-            _searchPath = .itemReplacementDirectory
-        }
-        let _domainMask: FileManager.SearchPathDomainMask
-        switch domain {
-        case .currentUser:
-            _domainMask = .userDomainMask
-        case .shared:
-            _domainMask = .localDomainMask
-        }
-        var url: URL = try FileManager.default.url(for: _searchPath, in: _domainMask, appropriateFor: nil, create: false)
-        url = url.appendingPathComponent(Game.shared.identifier)
-        if FileManager.default.fileExists(atPath: url.path) == false {
-            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-        }
-        return url
     }
 }
 

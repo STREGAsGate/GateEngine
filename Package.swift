@@ -62,6 +62,7 @@ let package = Package(
                         dependencies.append(contentsOf: [
                             .product(name: "JavaScriptEventLoop", package: "JavaScriptKit", condition: .when(platforms: [.wasi])),
                             .product(name: "DOM", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
+                            .product(name: "FileSystem", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
                             .product(name: "WebAudio", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
                             .product(name: "Gamepad", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
                             .product(name: "WebGL2", package: "WebAPIKit", condition: .when(platforms: [.wasi])),

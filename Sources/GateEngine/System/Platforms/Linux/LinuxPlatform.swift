@@ -10,6 +10,7 @@ import Foundation
 import LinuxSupport
 
 public final class LinuxPlatform: Platform, InternalPlatform {
+    let fileSystem: FileSystem = LinuxFileSystem()
     static let staticSearchPaths: [URL] = getStaticSearchPaths()
     var pathCache: [String:String] = [:]
     
@@ -43,11 +44,6 @@ public final class LinuxPlatform: Platform, InternalPlatform {
             }
         }
         throw "failed to locate."
-    }
-    
-    func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> URL {
-        let homeDir = getenv("HOME") ?? getpwuid(getuid()).pw_dir
-        
     }
 }
 
