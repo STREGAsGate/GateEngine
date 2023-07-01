@@ -21,8 +21,10 @@ let package = Package(
         // SwiftWASM
         #if os(macOS) || os(Linux)
         packageDependencies.append(contentsOf: [
-            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", branch: "main"),
-            .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
+            .package(path: "~/Documents/GitHub/WebAPIKit"),
+            .package(path: "~/Documents/GitHub/JavaScriptKit")
+//            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", branch: "file-system"),
+//            .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
         ])
         #endif
         
@@ -75,7 +77,7 @@ let package = Package(
                         .copy("_Resources/GateEngine"),
                     ],
                     cSettings: [
-                        .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS, .iOS, .tvOS])),
+                        .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS])),
                         .define("GLES_SILENCE_DEPRECATION", .when(platforms: [.iOS, .tvOS])),
                     ],
                     swiftSettings: {
@@ -93,17 +95,19 @@ let package = Package(
                             .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
                             /// The host platform updates and draws from an event callback, so GateEngine won't create a game loop.
                             .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.wasi])),
-                            /// The host pltfrom requires an intermediate task, so GateEngine won't load default systems.
+                            /// The host platform requires an intermediate task, so GateEngine won't load default systems.
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH", .when(platforms: [.wasi])),
-                            /// The host pltfrom supports file system read/write
-                            .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])),
+                            /// The host platform supports file system read/write
+                            .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android, .wasi])),
+                            /// The host platform supports Foundation.FileManager
+                            .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])),
                         ])
                         
                         #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
                         // Options for developemnt of WASI platform
-                        #if false
+                        #if true
                         settings.append(contentsOf: [
                             /// Allows HTML5 platform to be compiled from a compatible host, such as macOS. This allows the IDE to show compile errors without targeting WASI.
                             .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),

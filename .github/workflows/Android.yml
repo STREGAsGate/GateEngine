@@ -3,10 +3,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - '**' # matches every branch
+    - 'main'
   pull_request:
     branches:
-    - 'main'
+    - '**'
 
 jobs:
   Build_Test-Linux-Android:

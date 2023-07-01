@@ -27,11 +27,11 @@ internal protocol InternalPlatform: AnyObject, Platform {
     
     #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
     func saveStateURL(forStateNamed name: String) throws -> URL
-    var fileSystem: FileSystem {get}
+    var fileSystem: any FileSystem {get}
     #endif
 }
 
-#if GATEENGINE_PLATFORM_HAS_FILESYSTEM
+#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
 extension InternalPlatform {
     public static func getStaticSearchPaths() -> [URL] {
         #if canImport(Darwin)
@@ -156,7 +156,7 @@ extension InternalPlatform {
 
 extension InternalPlatform {
     func saveStateURL(forStateNamed name: String) throws -> URL {
-        return try fileSystem.urlForSearchPath(.persistant, in: .currentUser).appendingPathComponent(name)
+        return try fileSystem.urlForSearchPath(.persistent, in: .currentUser).appendingPathComponent(name)
     }
     
     #if os(macOS) || os(iOS) || os(tvOS) || os(Windows) || os(Linux)

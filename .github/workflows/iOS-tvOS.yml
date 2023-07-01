@@ -3,16 +3,17 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - '**' # matches every branch
+    - 'main'
   pull_request:
     branches:
-    - 'main'
+    - '**'
 
 jobs:
   Build_Test-macOS-iOS:
     runs-on: macos-13
     steps:
     - uses: actions/checkout@v3
+    
     - name: Select Xcode version
       run: sudo xcode-select -s '/Applications/Xcode_14.3.app/Contents/Developer'
     

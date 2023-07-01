@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - '**' # matches every branch
+    - 'main'
   pull_request:
     branches:
-    - 'main'
+    - '**'
 
 jobs:
   Build_Test-Linux-Linux:
@@ -16,10 +16,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Deps Update
-      run: sudo apt-get update --fix-missing
-    - name: Deps Install
-      run: sudo apt-get install freeglut3-dev; sudo apt-get install libopenal-dev
+    
+    - name: Install Linux Dependencies
+      run: sudo apt-get update --fix-missing; sudo apt-get install freeglut3-dev; sudo apt-get install libopenal-dev
     
     - name: Swift Version
       run: swift --version

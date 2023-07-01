@@ -12,7 +12,7 @@ import JavaScriptKit
 import JavaScriptEventLoop
 
 public final class WASIPlatform: Platform, InternalPlatform {
-    let fileSystem: FileSystem = WASIFileSystem()
+    let fileSystem: WASIFileSystem = WASIFileSystem()
     var pathCache: [String:String] = [:]
     static let staticSearchPaths: [Foundation.URL] = {
         func getGameModuleName(_ delegate: AnyObject) -> String {
