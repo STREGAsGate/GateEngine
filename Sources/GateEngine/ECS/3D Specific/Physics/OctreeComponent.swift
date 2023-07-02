@@ -181,10 +181,10 @@ internal extension OctreeComponent {
     
     @inline(__always)
     private func cleanEmptyNodes() {
-        var checkes = 0
+        var checks = 0
         func removeAnyNode() -> Bool {
             func removeChildIfNeeded(of node: Node) -> Bool {
-                checkes += 1
+                checks += 1
                 guard node.children != nil else {return false}
                 for index in node.children!.indices {
                     let child = node.children![index]
@@ -207,7 +207,7 @@ internal extension OctreeComponent {
         }
         var removed = 0
         while removeAnyNode() {removed += 1}
-        Log.debug("Octree nodes cleaned: \(removed), checkes: \(checkes)")
+        Log.debug("Octree nodes cleaned: \(removed), checks: \(checks)")
     }
 }
 

@@ -13,8 +13,8 @@ public final class Game {
     
     public let delegate: GameDelegate
     
-    @MainActor public private(set) lazy var state: State = platform.loadState(named: "SaveState.json")
-    @MainActor internal private(set) lazy var internalState: State = platform.loadState(named: "GateEngine.json")
+    @MainActor public private(set) var state: State! = nil
+    @MainActor internal private(set) var internalState: State! = nil
     
     lazy private(set) var identifier: String = delegate.resolvedGameIdentifier()
     
@@ -34,7 +34,9 @@ public final class Game {
     @MainActor @usableFromInline private(set) lazy var hid: HID = HID()
     @MainActor @usableFromInline private(set) lazy var resourceManager: ResourceManager = ResourceManager(game: self)
     
-    @MainActor func didFinishLaunching() {
+    @MainActor func didFinishLaunching() async {
+        self.state = await platform.loadState(named: "SaveState.json")
+        self.internalState = await platform.loadState(named: "GateEngine.json")
         #if !GATEENGINE_PLATFORM_CREATES_MAINWINDOW
         if isHeadless == false {
             do {
@@ -49,12 +51,13 @@ public final class Game {
         }
         #endif
         
-        self.primeDeltaTime()
-        
         #if !GATEENGINE_PLATFORM_DEFERS_LAUNCH
         self.addPlatformSystems()
         self.delegate.didFinishLaunching(game: self, options: [])
         #endif
+        
+        self.primeDeltaTime()
+        
         #if !GATEENGINE_PLATFORM_EVENT_DRIVEN
         self.gameLoop()
         #endif

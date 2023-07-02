@@ -13,25 +13,27 @@ public protocol Vector2: ExpressibleByFloatLiteral where FloatLiteralType == Flo
     init(_ x: Float, _ y: Float)
 }
 
-extension Vector2 {
+public extension Vector2 {
     @_transparent
-    public init(_ value: Float) {
+    init(_ value: Float) {
         self.init(value, value)
     }
     
     @_transparent
-    public init(floatLiteral float: Float) {
-        self.init(float)
+    init(_ values: [Float]) {
+        assert(values.count == 2, "values must have 2 elements. Use init(_: Float) to fill x,y with a single value.")
+        self.init(values[0], values[1])
     }
     
-    @inlinable
-    public init(_ values: [Float]) {
-        assert(values.isEmpty || values.count == 2, "values must be empty or have 2 elements. Use init(repeating:) to fill with a single value.")
-        if values.isEmpty {
-            self.init(0, 0)
-        }else{
-            self.init(values[0], values[1])
-        }
+    @_transparent
+    init(_ values: Float...) {
+        assert(values.count == 2, "values must have 2 elements. Use init(_: Float) to fill x,y with a single value.")
+        self.init(values[0], values[1])
+    }
+    
+    @_transparent
+    init(floatLiteral float: Float) {
+        self.init(float)
     }
 }
 

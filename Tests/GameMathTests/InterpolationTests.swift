@@ -67,7 +67,7 @@ final class InterpolationTests: XCTestCase {
         let end = Quaternion(180°, axis: .right).normalized
         
         do {// Start value
-            let value = start.interpolated(to: end, .linear(0.0, shortest: false)).normalized
+            let value = start.interpolated(to: end, .linear(0.0, options: [])).normalized
             let expected = start
             XCTAssertEqual(value.w, expected.w, accuracy: .ulpOfOne)
             XCTAssertEqual(value.x, expected.x, accuracy: .ulpOfOne)
@@ -76,7 +76,7 @@ final class InterpolationTests: XCTestCase {
         }
         
         do {// Halfway
-            let value = start.interpolated(to: end, .linear(1/2, shortest: false)).normalized
+            let value = start.interpolated(to: end, .linear(1/2, options: [])).normalized
             let expected = Quaternion(90°, axis: .right).normalized
             let angleAroundX = expected.forward.angleAroundX
             let angleAroundY = expected.forward.angleAroundY
@@ -87,7 +87,7 @@ final class InterpolationTests: XCTestCase {
         }
         
         do {// End value
-            let value = start.interpolated(to: end, .linear(1.0, shortest: false)).normalized
+            let value = start.interpolated(to: end, .linear(1.0, options: [])).normalized
             let expected = end
             XCTAssertEqual(value.w, expected.w, accuracy: .ulpOfOne)
             XCTAssertEqual(value.x, expected.x, accuracy: .ulpOfOne)
@@ -103,7 +103,7 @@ final class InterpolationTests: XCTestCase {
         let end = Quaternion(-45°, axis: .right).normalized
         
         do {// Start value
-            let value = start.interpolated(to: end, .linear(0.0, shortest: true)).normalized
+            let value = start.interpolated(to: end, .linear(0.0, options: .shortest)).normalized
             let expected = start
             XCTAssertEqual(value.w, expected.w, accuracy: .ulpOfOne)
             XCTAssertEqual(value.x, expected.x, accuracy: .ulpOfOne)
@@ -112,7 +112,7 @@ final class InterpolationTests: XCTestCase {
         }
         
         do {// Halfway
-            let value = start.interpolated(to: end, .linear(1/2, shortest: true)).normalized
+            let value = start.interpolated(to: end, .linear(1/2, options: .shortest)).normalized
             let expected = Quaternion(0°, axis: .right).normalized
             let angleAroundX = expected.forward.angleAroundX
             let angleAroundY = expected.forward.angleAroundY
@@ -123,7 +123,7 @@ final class InterpolationTests: XCTestCase {
         }
         
         do {// End value
-            let value = start.interpolated(to: end, .linear(1.0, shortest: true)).normalized
+            let value = start.interpolated(to: end, .linear(1.0, options: .shortest)).normalized
             let expected = end
             XCTAssertEqual(value.w, expected.w, accuracy: .ulpOfOne)
             XCTAssertEqual(value.x, expected.x, accuracy: .ulpOfOne)

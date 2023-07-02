@@ -10,7 +10,7 @@ import AppKit
 import System
 
 public final class AppKitPlatform: InternalPlatform {
-    public let fileSystem: FileSystem = AppleFileSystem()
+    public static let fileSystem: AppleFileSystem = AppleFileSystem()
     static let staticSearchPaths: [URL] = getStaticSearchPaths()
     var pathCache: [String:String] = [:]
     
@@ -26,7 +26,7 @@ public final class AppKitPlatform: InternalPlatform {
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             let path = file.path
-            if FileManager.default.fileExists(atPath: path) {
+            if fileSystem.itemExists(at: path) {
                 return path
             }
         }
@@ -36,8 +36,7 @@ public final class AppKitPlatform: InternalPlatform {
     public func loadResource(from path: String) async throws -> Data {
         if let path = await locateResource(from: path) {
             do {
-                let url: URL = URL(fileURLWithPath: path)
-                return try Data(contentsOf: url, options: .mappedIfSafe)
+                return try await fileSystem.read(from: path)
             }catch{
                 Log.error("Failed to load resource \"\(path)\".")
                 throw error
@@ -71,7 +70,9 @@ fileprivate class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Game.shared.resourceManager.addTextureImporter(ApplePlatformImageImporter.self, atEnd: true)
         Game.shared.resourceManager.addGeometryImporter(ApplePlatformModelImporter.self, atEnd: true)
-        Game.shared.didFinishLaunching()
+        Task(priority: .high) {@MainActor in
+            await Game.shared.didFinishLaunching()
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

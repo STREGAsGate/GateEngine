@@ -8,12 +8,13 @@
 import Foundation
 import GameMath
 @_exported import GameMath
+@_exported import struct Foundation.Data
 
 #if canImport(WinSDK)
 import WinSDK
 #endif
 
-#if canImport(WebAPIBase) && canImport(JavaScriptKit)
+#if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 import JavaScriptKit
 import WebAPIBase
 #endif
@@ -26,8 +27,16 @@ import WebAPIBase
 #error("watchOS is not a supported platform.")
 #endif
 
+#if os(xrOS)
+#error("visionOS is not a supported platform.")
+#endif
+
+#if os(Android)
+#error("Android is not currently supported, but is planned.")
+#endif
+
 #if GATEENGINE_WASI_UNSUPPORTED_HOST && os(WASI)
-#error("HTML5 builds are not supported on this platform host.")
+#error("HTML5 builds are not supported on this host platform. Use macOS or Linux.")
 #endif
 
 extension Color {

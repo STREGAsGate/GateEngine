@@ -9,15 +9,13 @@
 import Foundation
 
 public struct AppleFileSystem: FileSystem {
-    public func itemExists(at url: URL) -> Bool {
-        assert(url.isFileURL, "The url must be a file URL. Use `init(fileURLWithPath:)`")
-        return FileManager.default.fileExists(atPath: url.path)
+    public func itemExists(at path: String) -> Bool {
+        return FileManager.default.fileExists(atPath: path)
     }
     
-    public func itemType(at url: URL) async -> FileSystemItemType? {
-        assert(url.isFileURL, "The url must be a file URL. Use `init(fileURLWithPath:)`")
+    public func itemType(at path: String) -> FileSystemItemType? {
         var isDirectory: ObjCBool = ObjCBool(false)
-        let exists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
+        let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
         if exists {
             if isDirectory.boolValue {
                 return .directory
@@ -28,21 +26,19 @@ public struct AppleFileSystem: FileSystem {
     }
     
     
-    public func contentsOfDirectory(at url: URL) async throws -> [String] {
-        return try FileManager.default.contentsOfDirectory(atPath: url.path)
+    public func contentsOfDirectory(at path: String) throws -> [String] {
+        return try FileManager.default.contentsOfDirectory(atPath: path)
     }
     
-    public func createDirectory(at url: URL) async throws {
-        assert(url.isFileURL, "The url must be a file URL. Use `init(fileURLWithPath:)`")
-        try FileManager.default.createDirectory(atPath: url.path, withIntermediateDirectories: true)
+    public func createDirectory(at path: String) throws {
+        try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
     }
     
     
-    public func read(from url: URL) async throws -> Data {
-        assert(url.isFileURL, "The url must be a file URL. Use `init(fileURLWithPath:)`")
+    public func read(from path: String) async throws -> Data {
         return try await withCheckedThrowingContinuation { continuation in
             do {
-                let data = try Data(contentsOf: url)
+                let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
                 continuation.resume(returning: data)
             }catch{
                 continuation.resume(throwing: error)
@@ -50,8 +46,9 @@ public struct AppleFileSystem: FileSystem {
         }
     }
     
-    public func write(_ data: Data, to url: URL) async throws {
-        assert(url.isFileURL, "The url must be a file URL. Use `init(fileURLWithPath:)`")
+    public func write(_ data: Data, to path: String) async throws {
+        guard let url = URL(string: path) else {throw "Failed to read path."}
+        assert(url.isFileURL == true, "The url must be a file URL. Use `init(fileURLWithPath:)`")
         try await withCheckedThrowingContinuation { continuation in
             do {
                 try data.write(to: url)
@@ -63,8 +60,8 @@ public struct AppleFileSystem: FileSystem {
     }
     
     
-    public func resolveURL(_ url: URL) throws -> URL {
-        var url = url
+    public func resolvePath(_ path: String) throws -> String {
+        var url = URL(fileURLWithPath: path)
         
         // Expand symlinks
         url.resolveSymlinksInPath()
@@ -77,10 +74,10 @@ public struct AppleFileSystem: FileSystem {
         url = URL(fileURLWithPath: (url.path as NSString).expandingTildeInPath)
         #endif
         
-        return url
+        return url.path
     }
     
-    public func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain = .currentUser) throws -> URL {
+    public func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> String {
         let _searchPath: FileManager.SearchPathDirectory
         switch searchPath {
         case .persistent:
@@ -102,7 +99,7 @@ public struct AppleFileSystem: FileSystem {
         if FileManager.default.fileExists(atPath: url.path) == false {
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         }
-        return url
+        return url.path
     }
 }
 

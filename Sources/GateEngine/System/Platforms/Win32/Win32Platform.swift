@@ -35,8 +35,7 @@ public final class Win32Platform: InternalPlatform {
     public func loadResource(from path: String) async throws -> Data {
         if let path = await locateResource(from: path) {
             do {
-                let url: URL = URL(fileURLWithPath: path)
-                return try Data(contentsOf: url, options: .mappedIfSafe)
+                return try await fileSystem.read(from: path)
             }catch{
                 Log.error("Failed to load resource \"\(path)\".")
                 throw error

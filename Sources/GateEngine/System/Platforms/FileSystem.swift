@@ -6,8 +6,6 @@
  */
 #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
 
-import Foundation
-
 public enum FileSystemSearchPathDomain {
     case currentUser
     case shared
@@ -25,17 +23,17 @@ public enum FileSystemItemType {
 }
 
 public protocol FileSystem {
-    func itemExists(at url: URL) async -> Bool
-    func itemType(at url: URL) async -> FileSystemItemType?
+    func itemExists(at path: String) -> Bool
+    func itemType(at path: String) -> FileSystemItemType?
     
-    func contentsOfDirectory(at url: URL) async throws -> [String]
-    func createDirectory(at url: URL) async throws
+    func contentsOfDirectory(at path: String) throws -> [String]
+    func createDirectory(at path: String) throws
     
-    func read(from url: URL) async throws -> Data
-    func write(_ data: Data, to url: URL) async throws
+    func read(from path: String) async throws -> Data
+    func write(_ data: Data, to path: String) async throws
     
-    func resolveURL(_ url: URL) throws -> URL
-    func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> URL
+    func resolvePath(_ path: String) throws -> String
+    func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> String
 }
 
 #endif

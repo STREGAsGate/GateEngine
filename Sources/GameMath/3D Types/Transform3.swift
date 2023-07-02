@@ -165,7 +165,7 @@ extension Transform3: Codable {
         let values = try container.decode(Array<Float>.self)
         
         self.position = Position3(x: values[0], y: values[1], z: values[2])
-        self.rotation = Quaternion(w: values[3], x: values[4], y: values[5], z: values[6])
+        self.rotation = Quaternion(x: values[4], y: values[5], z: values[6], w: values[3])
         self.scale = Size3(width: values[7], height: values[8], depth: values[9])
     }
 }

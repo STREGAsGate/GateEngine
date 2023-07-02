@@ -11,11 +11,18 @@ import Foundation
 
 public typealias Colour = Color
 
-public struct Color {
+public struct Color: Vector4 {
     public var red: Float
     public var green: Float
     public var blue: Float
     public var alpha: Float
+    
+    @_transparent public var x: Float {get{red}set{red=newValue}}
+    @_transparent public var y: Float {get{green}set{green=newValue}}
+    @_transparent public var z: Float {get{blue}set{blue=newValue}}
+    @_transparent public var w: Float {get{alpha}set{alpha=newValue}}
+
+    public static var zero: Color {Color(0)}
     
     @inlinable
     public init(red: Float, green: Float, blue: Float, alpha: Float = 1) {
@@ -94,16 +101,6 @@ public struct Color {
 
 public extension Color {
     @_transparent
-    var simd: SIMD4<Float> {
-        return SIMD4<Float>(red, green, blue, alpha)
-    }
-
-    @_transparent
-    func valuesArray() -> [Float] {
-        return [red, green, blue, alpha]
-    }
-    
-    @_transparent
     var eightBitRed: UInt8 {
         return UInt8(clamping: Int(Float(UInt8.max) * red))
     }
@@ -132,106 +129,6 @@ public extension Color {
         let b = UInt32(eightBitBlue) << 8
         let a = UInt32(eightBitAlpha) << 0
         return r | g | b | a
-    }
-}
-
-public extension Color {
-    @_transparent
-    static func +(lhs: Color, rhs: Color) -> Color {
-        return Color(lhs.red + rhs.red, lhs.green + rhs.green, lhs.blue + rhs.blue, lhs.alpha + rhs.alpha)
-    }
-    @_transparent
-    static func +=(lhs: inout Color, rhs: Color) {
-        lhs.red += rhs.red
-        lhs.green += rhs.green
-        lhs.blue += rhs.blue
-        lhs.alpha += rhs.alpha
-    }
-    
-    @_transparent
-    static func -(lhs: Color, rhs: Color) -> Color {
-        return Color(lhs.red - rhs.red, lhs.green - rhs.green, lhs.blue - rhs.blue, lhs.alpha - rhs.alpha)
-    }
-    @_transparent
-    static func -=(lhs: inout Color, rhs: Color) {
-        lhs.red -= rhs.red
-        lhs.green -= rhs.green
-        lhs.blue -= rhs.blue
-        lhs.alpha -= rhs.alpha
-    }
-    
-    @_transparent
-    static func *(lhs: Color, rhs: Color) -> Color {
-        return Color(lhs.red * rhs.red, lhs.green * rhs.green, lhs.blue * rhs.blue, lhs.alpha * rhs.alpha)
-    }
-    @_transparent
-    static func *=(lhs: inout Color, rhs: Color) {
-        lhs.red *= rhs.red
-        lhs.green *= rhs.green
-        lhs.blue *= rhs.blue
-        lhs.alpha *= rhs.alpha
-    }
-    
-    @_transparent
-    static func /(lhs: Color, rhs: Color) -> Color {
-        return Color(lhs.red / rhs.red, lhs.green / rhs.green, lhs.blue / rhs.blue, lhs.alpha / rhs.alpha)
-    }
-    @_transparent
-    static func /=(lhs: inout Color, rhs: Color) {
-        lhs.red /= rhs.red
-        lhs.green /= rhs.green
-        lhs.blue /= rhs.blue
-        lhs.alpha /= rhs.alpha
-    }
-}
-
-public extension Color {
-    @_transparent
-    static func +(lhs: Color, rhs: Float) -> Color {
-        return Color(lhs.red + rhs, lhs.green + rhs, lhs.blue + rhs, lhs.alpha + rhs)
-    }
-    @_transparent
-    static func +=(lhs: inout Color, rhs: Float) {
-        lhs.red += rhs
-        lhs.green += rhs
-        lhs.blue += rhs
-        lhs.alpha += rhs
-    }
-
-    @_transparent
-    static func -(lhs: Color, rhs: Float) -> Color {
-        return Color(lhs.red - rhs, lhs.green - rhs, lhs.blue - rhs, lhs.alpha - rhs)
-    }
-    @_transparent
-    static func -=(lhs: inout Color, rhs: Float) {
-        lhs.red -= rhs
-        lhs.green -= rhs
-        lhs.blue -= rhs
-        lhs.alpha -= rhs
-    }
-
-    @_transparent
-    static func *(lhs: Color, rhs: Float) -> Color {
-        return Color(lhs.red * rhs, lhs.green * rhs, lhs.blue * rhs, lhs.alpha * rhs)
-    }
-    @_transparent
-    static func *=(lhs: inout Color, rhs: Float) {
-        lhs.red *= rhs
-        lhs.green *= rhs
-        lhs.blue *= rhs
-        lhs.alpha *= rhs
-    }
-    
-    @_transparent
-    static func /(lhs: Color, rhs: Float) -> Color {
-        return Color(lhs.red / rhs, lhs.green / rhs, lhs.blue / rhs, lhs.alpha / rhs)
-    }
-    @_transparent
-    static func /=(lhs: inout Color, rhs: Float) {
-        lhs.red /= rhs
-        lhs.green /= rhs
-        lhs.blue /= rhs
-        lhs.alpha /= rhs
     }
 }
 
@@ -301,28 +198,6 @@ public extension Color {
     }
 }
 
-/// Returns the lesser of two comparable values.
-///
-/// - Parameters:
-///   - x: A value to compare.
-///   - y: Another value to compare.
-/// - Returns: The lesser of `x` and `y`. If `x` is equal to `y`, returns `x`.
-@_transparent
-public func min(_ lhs: Color, _ rhs: Color) -> Color {
-    return Color(min(lhs.red, rhs.red), min(lhs.green, rhs.green), min(lhs.blue, rhs.blue), min(lhs.alpha, rhs.alpha))
-}
-
-/// Returns the greater of two comparable values.
-///
-/// - Parameters:
-///   - x: A value to compare.
-///   - y: Another value to compare.
-/// - Returns: The greater of `x` and `y`. If `x` is equal to `y`, returns `y`.
-@_transparent
-public func max(_ lhs: Color, _ rhs: Color) -> Color {
-    return Color(max(lhs.red, rhs.red), max(lhs.green, rhs.green), max(lhs.blue, rhs.blue), max(lhs.alpha, rhs.alpha))
-}
-
 extension Color: _ExpressibleByColorLiteral {
     @_transparent
     public init(_colorLiteralRed red: Float, green: Float, blue: Float, alpha: Float) {
@@ -366,27 +241,8 @@ public extension Color {
     static let defaultDirectionalLightColor = Color(red: 0.7, green: 0.7, blue: 1.0, alpha: 1.0)
 }
 
-public extension Color {
-    @_transparent
-    mutating func interpolate(to: Self, _ method: InterpolationMethod) {
-        self.red.interpolate(to: to.red, method)
-        self.green.interpolate(to: to.green, method)
-        self.blue.interpolate(to: to.blue, method)
-        self.alpha.interpolate(to: to.alpha, method)
-    }
-    
-    @_transparent
-    func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
-        return Self(self.red.interpolated(to: to.red, method),
-                    self.green.interpolated(to: to.green, method),
-                    self.blue.interpolated(to: to.blue, method),
-                    self.alpha.interpolated(to: to.alpha, method))
-    }
-}
-
 extension Color: Equatable {}
 extension Color: Hashable {}
-
 extension Color: Codable {
     @inlinable
     public func encode(to encoder: Encoder) throws {

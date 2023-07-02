@@ -240,8 +240,8 @@ extension Game {
         internal var name: String! = nil
         
         /// Persist the current values which will be loaded next time the game is run
-        @MainActor public func save() throws {
-            try Game.shared.platform.saveState(self, as: name)
+        @MainActor public func save() async throws {
+            try await Game.shared.platform.saveState(self, as: name)
         }
     }
 }
