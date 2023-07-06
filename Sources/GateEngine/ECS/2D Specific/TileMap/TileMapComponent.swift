@@ -14,7 +14,7 @@ public class TileMapComponent: Component {
             needsRebuild = true
         }
     }
-    public var tileIndicies: [Int] = [] {
+    public var tileIndices: [Int] = [] {
         didSet {
             needsRebuild = true
         }
@@ -24,7 +24,7 @@ public class TileMapComponent: Component {
     internal var needsRebuild: Bool = true
     
     public func tileIndexAtCoordinate(column: Int, row: Int) -> Int {
-        return tileIndicies[(row * Int(mapSize.width)) + column]
+        return tileIndices[(row * Int(mapSize.width)) + column]
     }
     
     public func tileIndexAtPosition(_ position: Position2) -> Int {

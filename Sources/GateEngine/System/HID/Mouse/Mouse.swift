@@ -18,7 +18,7 @@ import GameMath
     public enum Mode {
         // Hardware mouse
         case standard
-        // The mouse is locked and position reprots delta changes
+        // The mouse is locked and position reports delta changes
         case locked
     }
     public var mode: Mode {
@@ -96,7 +96,7 @@ import GameMath
     }
     
     private var _nextDeltaPosition: Position2 = .zero
-    /// The distance the cursor moved since it's last postion change
+    /// The distance the cursor moved since it's last position change
     public internal(set) var deltaPosition: Position2 = .zero
 
     @usableFromInline

@@ -30,16 +30,16 @@ public class IUnknown {
     }
 
     @usableFromInline
-    internal enum MemoryManagment {
+    internal enum MemoryManagement {
         case alreadyRetained
         case retain
     }
 
     @inlinable @inline(__always)
-    required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: MemoryManagment = .alreadyRetained) {
+    required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagement: MemoryManagement = .alreadyRetained) {
         guard let pointer = pointer else {return nil}
         self.pUnk = pointer
-        if memoryManagment == .retain {
+        if memoryManagement == .retain {
             self.retain()
         }
     }
@@ -73,7 +73,7 @@ public class IUnknown {
             let result: HRESULT = pThis.pointee.lpVtbl.pointee.QueryInterface(pThis, &iid, &pointer)
             
             if result.isSuccess, let pointer: UnsafeMutableRawPointer = pointer {
-                return type.init(winSDKPointer: pointer, memoryManagment: .retain)
+                return type.init(winSDKPointer: pointer, memoryManagement: .retain)
             }
             return nil
         }

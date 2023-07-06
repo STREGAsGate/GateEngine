@@ -57,10 +57,10 @@ struct ImageFont: FontBackend {
         let nativePointSize = nativePointSizes[key.style]!
         let scaledPointSize = Float(key.pointSize - (key.pointSize % nativePointSize))
         
-        let sizeMultiplyer = floor(scaledPointSize / Float(nativePointSize))
+        let sizeMultiple = floor(scaledPointSize / Float(nativePointSize))
  
         let charData = self.characterData(forKey: key, character: character)
-        xAdvance = charData.xAdvance * sizeMultiplyer
+        xAdvance = charData.xAdvance * sizeMultiple
         
         let maxX = origin.x + Float(scaledPointSize)
         let maxY = origin.y + Float(scaledPointSize)

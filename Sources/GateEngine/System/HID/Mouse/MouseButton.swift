@@ -58,7 +58,7 @@ public extension Mouse {
         public enum Gesture {
             case singleClick
             case doubleClick
-            case trippleClick
+            case tripleClick
         }
         
         /**
@@ -80,7 +80,7 @@ public extension Mouse {
                 return pressCount == 1
             case .doubleClick:
                 return pressCount == 2
-            case .trippleClick:
+            case .tripleClick:
                 return pressCount == 3
             case nil:
                 return true

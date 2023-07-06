@@ -127,7 +127,7 @@ public class ApplePlatformModelImporter: GeometryImporter {
                 return indices
             }
             
-            return RawGeometry(positions: try positions(), uvSets: uvSets(), normals: normals(), tangents: tangents(), colors: colors(), indicies: try indices())
+            return RawGeometry(positions: try positions(), uvSets: uvSets(), normals: normals(), tangents: tangents(), colors: colors(), indices: try indices())
         }
         if let name = options.subobjectName {
             throw "Failed to locate model named \(name)."

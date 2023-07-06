@@ -6,7 +6,7 @@
  */
 
 /**
- A physical key represenation. All values are stored as qwerty layout characters.
+ A physical key representation. All values are stored as qwerty layout characters.
  These keys are for development use for binding actions. Do not use this for text input!
  
  If you use a layout that is not qwerty, you can use the translation API.
@@ -65,7 +65,7 @@ public enum KeyboardKey: Hashable {
      The primary (not shift) symbol on the face of a physical key.
      - parameter character: The character on your keyboard, assuming your keyboard layout is \"qwerty\".
      - parameter origin: The location of the key on the keyboard.
-     - note: `character` is in qwerty layout. If you use another layoit for devlopment you can use the following function to translate:
+     - note: `character` is in qwerty layout. If you use another layoit for development you can use the following function to translate:
      ``KeyboardKey.qwerty(_,_)``, ``KeyboardKey.qwertz(_,_)``, ``KeyboardKey.azerty(_,_)``
      */
     case character(_ character: Character, _ origin: KeyOrigin = .anyVariation)

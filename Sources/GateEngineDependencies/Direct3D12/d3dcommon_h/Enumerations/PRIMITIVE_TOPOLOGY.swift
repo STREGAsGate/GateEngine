@@ -7,7 +7,7 @@
 
 import WinSDK
 
-// The explicit D3D10 and D3D12 varients in d3dcommon.h are just aliases
+// The explicit D3D10 and D3D12 variants in d3dcommon.h are just aliases
 
 /// Values that indicate how the pipeline interprets vertex data that is bound to the input-assembler stage. These primitive topology values determine how the vertex data is rendered on screen.
 public enum D3DPrimitiveTopology {

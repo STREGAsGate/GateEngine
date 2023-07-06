@@ -16,7 +16,7 @@ public struct AxisAlignedBoundingBox2D: Collider2D {
     /// The updated radius of the collider
     /// Use the `update(transform:)` function to update this value.
     public private(set) var radius: Size2
-    /// The updated offest of the collider
+    /// The updated offset of the collider
     /// Use the `update(transform:)` function to update this value.
     public private(set) var offset: Position2
 
@@ -185,7 +185,7 @@ public struct AxisAlignedBoundingBox2D: Collider2D {
         case let collider as AxisAlignedBoundingBox2D:
             return interpenetration(comparing: collider)
         default:
-            // Other colliders forward their check to AABB. If we get here there is no implimentation.
+            // Other colliders forward their check to AABB. If we get here there is no implementation.
             fatalError("Unhandled collider: \(type(of: collider))")
         }
     }

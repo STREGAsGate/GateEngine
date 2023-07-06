@@ -9,13 +9,13 @@ import GameMath
 
 public struct Skin: Hashable {
     public let joints: [Joint]
-    public let jointIndicies: [UInt32]
+    public let jointIndices: [UInt32]
     public let jointWeights: [Float]
     public let bindShape: Matrix4x4
     
     public init(joints: [Joint], indices: [UInt32], weights: [Float], bindShape: Matrix4x4) {
         self.joints = joints
-        self.jointIndicies = indices
+        self.jointIndices = indices
         self.jointWeights = weights
         self.bindShape = bindShape
     }

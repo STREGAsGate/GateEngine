@@ -92,21 +92,21 @@ class DX12RenderTarget: RenderTargetBackend {
             let desc: D3DDescriptorHeapDescription = D3DDescriptorHeapDescription(type: .renderTargetView, count: UInt32(swapChain?.bufferCount ?? 1), flags: [])
             self.renderTargetViewHeap = try renderer.device.createDescriptorHeap(description: desc)
 
-            var resourceDesciption: D3DResourceDescription = D3DResourceDescription()
-            resourceDesciption.dimension = .texture2D
-            resourceDesciption.width = UInt64(size.width)
-            resourceDesciption.height = UInt32(size.height)
-            resourceDesciption.depthOrArraySize = 1
-            resourceDesciption.mipLevels = 1
-            resourceDesciption.sampleDescription.count = 1
-            resourceDesciption.layout = .unknown
+            var resourceDescription: D3DResourceDescription = D3DResourceDescription()
+            resourceDescription.dimension = .texture2D
+            resourceDescription.width = UInt64(size.width)
+            resourceDescription.height = UInt32(size.height)
+            resourceDescription.depthOrArraySize = 1
+            resourceDescription.mipLevels = 1
+            resourceDescription.sampleDescription.count = 1
+            resourceDescription.layout = .unknown
             
             if let swapChain: DX12SwapChain = swapChain {
                 swapChain.reshape(renderTarget: self)
             }else{
-                resourceDesciption.format = dxClearValue.format
-                resourceDesciption.flags = .allowRenderTarget
-                self.colorTexture = try renderer.device.createCommittedResource(description: resourceDesciption, properties: .forTexture, state: .renderTarget, clearValue: dxClearValue)
+                resourceDescription.format = dxClearValue.format
+                resourceDescription.flags = .allowRenderTarget
+                self.colorTexture = try renderer.device.createCommittedResource(description: resourceDescription, properties: .forTexture, state: .renderTarget, clearValue: dxClearValue)
             
                 let targetLocation: D3DCPUDescriptorHandle = renderTargetViewHeap.cpuDescriptorHandleForHeapStart
                 renderer.device.createRenderTargetView(resource: colorTexture!, description: nil, destination: targetLocation)
@@ -114,10 +114,10 @@ class DX12RenderTarget: RenderTargetBackend {
             
             // Reshape depthStencil
             let depthClearValue: D3DClearValue = D3DClearValue(format: .d32Float, color: dxClearValue.color)
-            resourceDesciption.format = depthClearValue.format
-            resourceDesciption.flags = .allowDepthStencil
+            resourceDescription.format = depthClearValue.format
+            resourceDescription.flags = .allowDepthStencil
 
-            self.depthStencilTexture = try renderer.device.createCommittedResource(description: resourceDesciption, properties: .forTexture, state: .depthWrite, clearValue: depthClearValue)
+            self.depthStencilTexture = try renderer.device.createCommittedResource(description: resourceDescription, properties: .forTexture, state: .depthWrite, clearValue: depthClearValue)
 
             var depthDescription: D3DDepthStencilViewDescription = D3DDepthStencilViewDescription()
             depthDescription.format = .d32Float

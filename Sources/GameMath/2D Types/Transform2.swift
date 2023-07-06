@@ -36,7 +36,7 @@ public struct Transform2 {
     
     private var _needsUpdate: Bool = true
     private lazy var _matrix: Matrix4x4 = .identity
-    private lazy var _roationMatrix: Matrix4x4 = .identity
+    private lazy var _rotationMatrix: Matrix4x4 = .identity
     private lazy var _scaleMatrix: Matrix4x4 = .identity
 }
 #else
@@ -71,7 +71,7 @@ public struct Transform2 {
     
     private var _needsUpdate: Bool = true
     private lazy var _matrix: Matrix4x4 = .identity
-    private lazy var _roationMatrix: Matrix4x4 = .identity
+    private lazy var _rotationMatrix: Matrix4x4 = .identity
     private lazy var _scaleMatrix: Matrix4x4 = .identity
 }
 #endif

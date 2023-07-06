@@ -76,7 +76,7 @@ public final class D3DGraphicsCommandList: D3DCommandList {
     The app-provided pipeline state object becomes bound as the currently set pipeline state object.
     */
     @inlinable @inline(__always)
-    public func clearState(usingInitialPipleineState state: D3DPipelineState) {
+    public func clearState(usingInitialPipelineState state: D3DPipelineState) {
         performFatally(as: RawValue.self) {pThis in
             let pPipelineState = state.performFatally(as: D3DPipelineState.RawValue.self) {$0}
             pThis.pointee.lpVtbl.pointee.ClearState(pThis, pPipelineState)
@@ -88,7 +88,7 @@ public final class D3DGraphicsCommandList: D3DCommandList {
     - parameter cpuHandle: A D3D12_CPU_DESCRIPTOR_HANDLE in a non-shader visible descriptor heap that references an initialized descriptor for the unordered-access view (UAV) that is to be cleared. This descriptor must not be in a shader-visible descriptor heap. This is to allow drivers thath implement the clear as fixed-function hardware (rather than via a dispatch) to efficiently read from the descriptor, as shader-visible heaps may be created in WRITE_BACK memory (similar to D3D12_HEAP_TYPE_UPLOAD heap types), and CPU reads from this type of memory are prohibitively slow.
     - parameter resource: A pointer to the ID3D12Resource interface that represents the unordered-access-view (UAV) resource to clear.
     - parameter values: A 4-component array that containing the values to fill the unordered-access-view resource with.
-    - prameter regions: An array of D3D12_RECT structures for the rectangles in the resource view to clear. If NULL, ClearUnorderedAccessViewFloat clears the entire resource view.
+    - parameter regions: An array of D3D12_RECT structures for the rectangles in the resource view to clear. If NULL, ClearUnorderedAccessViewFloat clears the entire resource view.
     */
     @inlinable @inline(__always)
     public func clearUnorderedAccessView(gpuHandle: D3DGPUDescriptorHandle,
@@ -112,7 +112,7 @@ public final class D3DGraphicsCommandList: D3DCommandList {
     - parameter cpuHandle: A D3D12_CPU_DESCRIPTOR_HANDLE in a non-shader visible descriptor heap that references an initialized descriptor for the unordered-access view (UAV) that is to be cleared. This descriptor must not be in a shader-visible descriptor heap. This is to allow drivers thath implement the clear as fixed-function hardware (rather than via a dispatch) to efficiently read from the descriptor, as shader-visible heaps may be created in WRITE_BACK memory (similar to D3D12_HEAP_TYPE_UPLOAD heap types), and CPU reads from this type of memory are prohibitively slow.
     - parameter resource: A pointer to the ID3D12Resource interface that represents the unordered-access-view (UAV) resource to clear.
     - parameter values: A 4-component array that containing the values to fill the unordered-access-view resource with.
-    - prameter regions: An array of D3D12_RECT structures for the rectangles in the resource view to clear. If NULL, ClearUnorderedAccessViewFloat clears the entire resource view.
+    - parameter regions: An array of D3D12_RECT structures for the rectangles in the resource view to clear. If NULL, ClearUnorderedAccessViewFloat clears the entire resource view.
     */
     @inlinable @inline(__always)
     public func clearUnorderedAccessView(gpuHandle: D3DGPUDescriptorHandle,
@@ -742,9 +742,9 @@ public final class D3DGraphicsCommandList: D3DCommandList {
     - parameter pipelineState: Pointer to the ID3D12PipelineState containing the pipeline state data.
     */
     @inlinable @inline(__always)
-    public func setPipelineState(_ piplineState: D3DPipelineState) {
+    public func setPipelineState(_ pipelineState: D3DPipelineState) {
        performFatally(as: RawValue.self) {pThis in
-            let pPipelineState = piplineState.performFatally(as: D3DPipelineState.RawValue.self) {$0}
+            let pPipelineState = pipelineState.performFatally(as: D3DPipelineState.RawValue.self) {$0}
             pThis.pointee.lpVtbl.pointee.SetPipelineState(pThis, pPipelineState)
         }
     }
@@ -832,7 +832,7 @@ public extension D3DGraphicsCommandList {
         fatalError("This API is here to make migration easier. There is no implementation.")
     }
 
-    @available(*, unavailable, renamed: "clearState(usingInitialPipleineState:)")
+    @available(*, unavailable, renamed: "clearState(usingInitialPipelineState:)")
     func ClearState(_ pPipelineState: Any) {
         fatalError("This API is here to make migration easier. There is no implementation.")
     }

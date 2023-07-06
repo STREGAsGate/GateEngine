@@ -90,7 +90,7 @@ public extension Position3 {
         return distance.squareRoot()
     }
 
-    /** Returns true when the distance from `self` and  `rhs` is less then `threshhold`
+    /** Returns true when the distance from `self` and  `rhs` is less then `threshold`
     - parameter rhs: A value representing the destination positon.
     - parameter threshold: The maximum distance that is considered "near".
      */

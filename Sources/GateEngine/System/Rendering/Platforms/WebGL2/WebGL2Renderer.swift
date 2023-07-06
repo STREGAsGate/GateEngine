@@ -139,7 +139,7 @@ class WebGL2Renderer: RendererBackend {
 #endif
         
         gl.drawElementsInstanced(mode: primitive(from: drawCommand.flags.primitive),
-                                 count: geometries[0].indiciesCount,
+                                 count: geometries[0].indicesCount,
                                  type: GL.UNSIGNED_SHORT,
                                  offset: 0,
                                  instanceCount: GLsizei(drawCommand.transforms.count))
@@ -254,14 +254,14 @@ extension WebGL2Renderer {
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: instanceMatriciesVBO)
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: floats, usage: GL.STATIC_DRAW)
         
-        let atributeLocation = index
+        let attributeLocation = index
         for index in 0 ..< 4 {
-            let atrributeLocation = GLuint(atributeLocation + index)
-            gl.enableVertexAttribArray(index: atrributeLocation)
+            let attributeLocation = GLuint(attributeLocation + index)
+            gl.enableVertexAttribArray(index: attributeLocation)
             let stride = MemoryLayout<SIMD16<Float>>.stride
             let offset = MemoryLayout<SIMD4<Float>>.stride * index
-            gl.vertexAttribPointer(index: atrributeLocation, size: 4, type: GL.FLOAT, normalized: false, stride: GLsizei(stride), offset: GLintptr(offset))
-            gl.vertexAttribDivisor(index: atrributeLocation, divisor: 1)
+            gl.vertexAttribPointer(index: attributeLocation, size: 4, type: GL.FLOAT, normalized: false, stride: GLsizei(stride), offset: GLintptr(offset))
+            gl.vertexAttribDivisor(index: attributeLocation, divisor: 1)
         }
         index += 4
 #if GATEENGINE_DEBUG_RENDERING

@@ -184,7 +184,7 @@ public enum D3DTextureLayout {
 #if !Direct3D12ExcludeOriginalStyleAPI
 
 @available(*, deprecated, renamed: "D3DTextureLayout")
-public typealias D3D12_TEXTURE_LAYOU = D3DTextureLayout
+public typealias D3D12_TEXTURE_LAYOUT = D3DTextureLayout
 
 
 @available(*, deprecated, renamed: "D3DTextureLayout.unknown")

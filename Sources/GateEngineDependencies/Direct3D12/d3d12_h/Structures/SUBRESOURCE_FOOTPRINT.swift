@@ -71,7 +71,7 @@ public struct D3DSubresourceFootprint {
     /** Describes the format, width, height, depth, and row-pitch of the subresource into the parent resource.
     - parameter format: A DXGI_FORMAT-typed value that specifies the viewing format.
     - parameter width: The width of the subresource.
-    - parmaeter height: The height of the subresource.
+    - parameter height: The height of the subresource.
     - parameter depth: The depth of the subresource.
     - parameter rowPitch: The row pitch, or width, or physical size, in bytes, of the subresource data. This must be a multiple of D3D12_TEXTURE_DATA_PITCH_ALIGNMENT (256), and must be greater than or equal to the size of the data within a row.
     */

@@ -33,7 +33,7 @@ fileprivate func getBakedQuad(characterData: [CharData], pixelsWidth: Int32, pix
     private let fontData: [Font.Style:Data]
     internal var textures: [Font.Key:Texture] = [:]
     internal var textureSizes: [Font.Key:Size2] = [:]
-    internal var characterDatas: [Font.Key:[CharData]] = [:]
+    internal var characterData: [Font.Key:[CharData]] = [:]
     
     init(regular: String) async throws {
         let regular = try await Game.shared.platform.loadResource(from: regular)
@@ -47,11 +47,11 @@ fileprivate func getBakedQuad(characterData: [CharData], pixelsWidth: Int32, pix
     
     mutating func characterData(forKey key: Font.Key, character: Character) -> CharacterData {
         let characterData: [CharData] = {
-            if let existing = self.characterDatas[key] {
+            if let existing = self.characterData[key] {
                 return existing
             }
             populate(forPointSize: key.pointSize, style: key.style)
-            return self.characterDatas[key]!
+            return self.characterData[key]!
         }()
         
         let codepoint = character.utf8.first!
@@ -65,11 +65,11 @@ fileprivate func getBakedQuad(characterData: [CharData], pixelsWidth: Int32, pix
     mutating func alignedCharacter(forKey key: Font.Key, character: Character, origin: GameMath.Position2, xAdvance: inout Float) -> AlignedCharacter {
         let textureSize = textureSize(forPointSize: key.pointSize, style: key.style)
         let characterData: [CharData] = {
-            if let existing = self.characterDatas[key] {
+            if let existing = self.characterData[key] {
                 return existing
             }
             populate(forPointSize: key.pointSize, style: key.style)
-            return self.characterDatas[key]!
+            return self.characterData[key]!
         }()
         let index = Int(character.utf8.first!)
         var pX = origin.x
@@ -120,7 +120,7 @@ fileprivate func getBakedQuad(characterData: [CharData], pixelsWidth: Int32, pix
         let key = Font.Key(style: style, pointSize: pointSize)
         self.textures[key] = texture
         self.textureSizes[key] = Size2(Float(width), Float(height))
-        self.characterDatas[key] = charData
+        self.characterData[key] = charData
     }
     
     nonisolated var preferredSampleFilter: Text.SampleFilter {.nearest}

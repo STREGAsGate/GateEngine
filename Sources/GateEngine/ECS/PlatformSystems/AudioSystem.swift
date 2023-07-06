@@ -424,7 +424,7 @@ public extension Entity {
     /**
      Makes the entity a tracked object representing the "ears" or thing listening to Sounds.
      
-     This will default to the active camera and will automatically reset to the active camera if the Entity being tracked dissapears.
+     This will default to the active camera and will automatically reset to the active camera if the Entity being tracked disappears.
      */
     func becomeListener() {
         Task(priority: .medium) {@MainActor in

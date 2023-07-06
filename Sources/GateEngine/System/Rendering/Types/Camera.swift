@@ -46,7 +46,7 @@ public class Camera {
     private var needsUpdateProjection = true
     
     private var aspect: Float = .nan
-    private var persepective: Matrix4x4 = .identity
+    private var perspective: Matrix4x4 = .identity
     private var view: Matrix4x4 = .identity
     private static let viewScale = Matrix4x4(scale: Size3(width: 1.0, height: 1.0, depth: -1.0))
     private var matrices: Matrices = Matrices(projection: .identity)
@@ -57,7 +57,7 @@ public class Camera {
         if needsUpdateProjection || self.aspect != aspect {
             self.needsUpdateProjection = false
             self.aspect = aspect
-            self.persepective = Matrix4x4(perspectiveWithFOV: _fieldOfView.rawValue,
+            self.perspective = Matrix4x4(perspectiveWithFOV: _fieldOfView.rawValue,
                                           aspect: aspect,
                                           near: clippingPlane.near,
                                           far: clippingPlane.far)
@@ -70,7 +70,7 @@ public class Camera {
             self.view = Self.viewScale * rotation * position
         }
 
-        self.matrices = Matrices(projection: self.persepective, view: self.view)
+        self.matrices = Matrices(projection: self.perspective, view: self.view)
         
         return matrices
     }

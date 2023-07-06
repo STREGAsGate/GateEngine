@@ -13,7 +13,7 @@ class DX12Geometry: GeometryBackend, SkinnedGeometryBackend {
     let primitive: DrawFlags.Primitive
     let attributes: ContiguousArray<GeometryAttribute>
     let buffers: ContiguousArray<D3DResource>
-    let indiciesCount: Int
+    let indicesCount: Int
     @inline(__always)
     var indexBuffer: D3DResource {
         return buffers.last!
@@ -38,9 +38,9 @@ class DX12Geometry: GeometryBackend, SkinnedGeometryBackend {
             DX12Renderer.createBuffer(withData: geometry.normals, heapProperties: .forBuffer, state: .genericRead),
             DX12Renderer.createBuffer(withData: geometry.colors, heapProperties: .forBuffer, state: .genericRead),
 
-            DX12Renderer.createBuffer(withData: geometry.indicies, heapProperties: .forBuffer, state: .genericRead),
+            DX12Renderer.createBuffer(withData: geometry.indices, heapProperties: .forBuffer, state: .genericRead),
         ]
-        self.indiciesCount = geometry.indicies.count
+        self.indicesCount = geometry.indices.count
     }
     
     required init(geometry: RawGeometry, skin: Skin) {
@@ -53,7 +53,7 @@ class DX12Geometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 3, shaderAttribute: .tangent),
             .init(type: .float, componentLength: 3, shaderAttribute: .normal),
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
-            .init(type: .uInt32, componentLength: 4, shaderAttribute: .jointIndicies),
+            .init(type: .uInt32, componentLength: 4, shaderAttribute: .jointIndices),
             .init(type: .float, componentLength: 4, shaderAttribute: .jointWeights),
         ]
 
@@ -65,12 +65,12 @@ class DX12Geometry: GeometryBackend, SkinnedGeometryBackend {
             DX12Renderer.createBuffer(withData: geometry.normals, heapProperties: .forBuffer, state: .genericRead),
             DX12Renderer.createBuffer(withData: geometry.colors, heapProperties: .forBuffer, state: .genericRead),
 
-            DX12Renderer.createBuffer(withData: skin.jointIndicies, heapProperties: .forBuffer, state: .genericRead),
+            DX12Renderer.createBuffer(withData: skin.jointIndices, heapProperties: .forBuffer, state: .genericRead),
             DX12Renderer.createBuffer(withData: skin.jointWeights, heapProperties: .forBuffer, state: .genericRead),
 
-            DX12Renderer.createBuffer(withData: geometry.indicies, heapProperties: .forBuffer, state: .genericRead),
+            DX12Renderer.createBuffer(withData: geometry.indices, heapProperties: .forBuffer, state: .genericRead),
         ]
-        self.indiciesCount = geometry.indicies.count
+        self.indicesCount = geometry.indices.count
     }
     
     required init(lines: RawLines) {
@@ -85,9 +85,9 @@ class DX12Geometry: GeometryBackend, SkinnedGeometryBackend {
             DX12Renderer.createBuffer(withData: lines.positions, heapProperties: .forBuffer, state: .genericRead),
             DX12Renderer.createBuffer(withData: lines.colors, heapProperties: .forBuffer, state: .genericRead),
 
-            DX12Renderer.createBuffer(withData: lines.indicies, heapProperties: .forBuffer, state: .genericRead),
+            DX12Renderer.createBuffer(withData: lines.indices, heapProperties: .forBuffer, state: .genericRead),
         ]
-        self.indiciesCount = lines.indicies.count
+        self.indicesCount = lines.indices.count
     }
     
     required init(points: RawPoints) {
@@ -102,9 +102,9 @@ class DX12Geometry: GeometryBackend, SkinnedGeometryBackend {
             DX12Renderer.createBuffer(withData: points.positions, heapProperties: .forBuffer, state: .genericRead),
             DX12Renderer.createBuffer(withData: points.colors, heapProperties: .forBuffer, state: .genericRead),
 
-            DX12Renderer.createBuffer(withData: points.indicies, heapProperties: .forBuffer, state: .genericRead),
+            DX12Renderer.createBuffer(withData: points.indices, heapProperties: .forBuffer, state: .genericRead),
         ]
-        self.indiciesCount = points.indicies.count
+        self.indicesCount = points.indices.count
     }
 
     
@@ -112,7 +112,7 @@ class DX12Geometry: GeometryBackend, SkinnedGeometryBackend {
 #if GATEENGINE_DEBUG_RENDERING || DEBUG
     func isDrawCommandValid(sharedWith backend: GeometryBackend) -> Bool {
         let backend: Self = backend as! Self
-        if indiciesCount != backend.indiciesCount {
+        if indicesCount != backend.indicesCount {
             return false
         }
         if self.primitive != backend.primitive {

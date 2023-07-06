@@ -310,8 +310,8 @@ extension Quaternion {
     /**
      Creates a quaternion a forward direction and optionally constrained to an Euler angle.
      - Parameter direction: The forward axis
-     - Parameter up: The relative up vector, defualt is  `Direction3.up`.
-     - Parameter right: The relative right axis. Defualt value is  `Direction3.right`.
+     - Parameter up: The relative up vector, default is  `Direction3.up`.
+     - Parameter right: The relative right axis. Default value is  `Direction3.right`.
      - Parameter constraint: Limits the rotation to an Euler angle. Use this to look in directions without a roll.
      */
     @inlinable

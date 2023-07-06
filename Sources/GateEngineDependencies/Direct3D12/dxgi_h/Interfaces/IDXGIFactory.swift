@@ -68,8 +68,8 @@ public final class DGIFactory: DGIObject {
     }
 
     @inlinable @inline(__always)
-    required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: MemoryManagment = .alreadyRetained) {
-        super.init(winSDKPointer: pointer, memoryManagment: memoryManagment)
+    required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagement: MemoryManagement = .alreadyRetained) {
+        super.init(winSDKPointer: pointer, memoryManagement: memoryManagement)
     }
 
     @inlinable @inline(__always)

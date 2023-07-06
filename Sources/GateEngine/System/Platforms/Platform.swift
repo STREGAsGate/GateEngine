@@ -54,7 +54,7 @@ extension InternalPlatform {
                 Log.info(error)
             }
             
-            // Sometimes the URL varient returns empty arrays, use the path varient too and clear the duplicates later
+            // Sometimes the URL variant returns empty arrays, use the path variant too and clear the duplicates later
             do {
                 let paths: [String] = try FileManager.default.contentsOfDirectory(atPath: searchURL.path)
                 files.append(contentsOf: paths.map({searchURL.appendingPathComponent($0)}))
@@ -130,7 +130,7 @@ extension InternalPlatform {
         })
 
         if files.isEmpty {
-            Log.error("Failed to load any resource bundles! Check code signing and directory premissions.")
+            Log.error("Failed to load any resource bundles! Check code signing and directory permissions.")
         }else{
             #if os(WASI)
             let relativeDescriptor: String = "."

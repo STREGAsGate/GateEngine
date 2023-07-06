@@ -69,7 +69,7 @@ public class ResourceManager {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.textures.removeValue(forKey: key)
-                        Log.debug("Removing cache (unsused for \(cache.minutesDead) min), Object:", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
+                        Log.debug("Removing cache (unused for \(cache.minutesDead) min), Object:", key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath)
                     }
                 }else{
                     cache.minutesDead = 0
@@ -93,7 +93,7 @@ public class ResourceManager {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.geometries.removeValue(forKey: key)
-                        Log.debug("Removing cache (unsused for \(cache.minutesDead) min), Object:", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
+                        Log.debug("Removing cache (unused for \(cache.minutesDead) min), Object:", key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath)
                     }
                 }else{
                     cache.minutesDead = 0
@@ -552,7 +552,7 @@ internal extension ResourceManager {
         return key
     }
     
-    func texureCacheKey(data: Data, size: Size2, mipMapping: MipMapping) -> Cache.TextureKey {
+    func textureCacheKey(data: Data, size: Size2, mipMapping: MipMapping) -> Cache.TextureKey {
         let path = "$\(rawCacheID.generateID())"
         let key = Cache.TextureKey(requestedPath: path, mipMapping: mipMapping, textureOptions: .none)
         if cache.textures[key] == nil {
@@ -568,7 +568,7 @@ internal extension ResourceManager {
         return key
     }
     
-    func texureCacheKey(renderTargetBackend: RenderTargetBackend) -> Cache.TextureKey {
+    func textureCacheKey(renderTargetBackend: RenderTargetBackend) -> Cache.TextureKey {
         let path = "$\(rawCacheID.generateID())"
         let key = Cache.TextureKey(requestedPath: path, mipMapping: .none, textureOptions: .none)
         if cache.textures[key] == nil {

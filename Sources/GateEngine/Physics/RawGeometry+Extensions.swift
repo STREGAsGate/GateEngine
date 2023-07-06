@@ -11,13 +11,13 @@ public extension RawGeometry {
         var uvs: [[Position2]] = Array(repeating: [], count: uvSets.count)
         var colors: [Color] = []
         var colorComponents: Int = 0
-        if self.colors.count / 3 == indicies.count {
+        if self.colors.count / 3 == indices.count {
             colorComponents = 3
-        }else if self.colors.count / 4 == indicies.count {
+        }else if self.colors.count / 4 == indices.count {
             colorComponents = 4
         }
-        for vertexIndex in indicies.indices {
-            let index = Int(indicies[vertexIndex])
+        for vertexIndex in indices.indices {
+            let index = Int(indices[vertexIndex])
             let start3 = index * 3
             let start2 = index * 2
             let start4 = index * 4

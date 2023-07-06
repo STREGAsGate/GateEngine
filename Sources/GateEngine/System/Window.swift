@@ -8,7 +8,7 @@
 import GameMath
 
 public enum WindowStyle {
-    ///The window will appear the way most windows do on the platfrom.
+    ///The window will appear the way most windows do on the platform.
     case system
     ///The window will attempt to maximize the content size within the window by reducing window decorations.
     case bestForGames
@@ -24,10 +24,10 @@ public struct WindowOptions: OptionSet {
     /// Allows the user to manually close the window. The main window is always closable and this option is ignored.
     public static let userClosable = WindowOptions(rawValue: 1 << 1)
     
-    /// When the window is open it will enter full screen \, reguardless of the users previous poreference
+    /// When the window is open it will enter full screen \, regardless of the users previous poreference
     public static let forceFullScreen = WindowOptions(rawValue: 1 << 2)
     
-    /// The window will be full screen when first opened, but the users preference will be respected on subseqent launches
+    /// The window will be full screen when first opened, but the users preference will be respected on subsequent launches
     public static let firstLaunchFullScreen = WindowOptions(rawValue: 1 << 3)
     
     /// The recommended window options for the main window
@@ -129,7 +129,7 @@ public struct WindowOptions: OptionSet {
     private var previousTime: Double = 0
     
     /// The current delta time as a Double
-    /// Use this instead of the System Float varient when keeping track of timers
+    /// Use this instead of the System Float variant when keeping track of timers
     public var highPrecisionDeltaTime: Double = 0
 
     var frame: UInt = 0
@@ -137,7 +137,7 @@ public struct WindowOptions: OptionSet {
         let now: Double = Game.shared.platform.systemTime()
         self.highPrecisionDeltaTime = now - previousTime
         self.previousTime = now
-        // Positive time change and miniumum of 10 fps
+        // Positive time change and minimum of 10 fps
         guard highPrecisionDeltaTime > 0 && highPrecisionDeltaTime < 0.1 else {return}
 
         Game.shared.windowManager.window(self, wantsUpdateForTimePassed: Float(highPrecisionDeltaTime))

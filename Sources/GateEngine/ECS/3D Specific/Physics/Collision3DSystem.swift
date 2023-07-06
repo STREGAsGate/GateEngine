@@ -11,8 +11,8 @@ public final class Collision3DSystem: System {
         for entity in staticEntities {
             entity.collision3DComponent.updateColliders(entity.transform3)
         }
-        let dynamicEntites = game.entities.filter({$0.component(ofType: Collision3DComponent.self)?.kind == .dynamic})
-        for entity in dynamicEntites {
+        let dynamicEntities = game.entities.filter({$0.component(ofType: Collision3DComponent.self)?.kind == .dynamic})
+        for entity in dynamicEntities {
             entity.collision3DComponent.updateColliders(entity.transform3)
         }
                 
@@ -20,7 +20,7 @@ public final class Collision3DSystem: System {
         
         let octrees = self.octrees
         
-        for dynamicEntity in dynamicEntites {
+        for dynamicEntity in dynamicEntities {
             guard let collisionComponent = dynamicEntity.component(ofType: Collision3DComponent.self) else {continue}
             guard collisionComponent.isEnabled else {continue}
             guard let transformComponent = dynamicEntity.component(ofType: Transform3Component.self) else {continue}
@@ -107,7 +107,7 @@ public final class Collision3DSystem: System {
                     }
                 }
                 
-                for entity in dynamicEntites {
+                for entity in dynamicEntities {
                     guard entity != dynamicEntity else {continue}
                     guard collisionComponent.entityFilter?(entity) ?? true else {continue}
                     guard let dynamicComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
@@ -139,7 +139,7 @@ public final class Collision3DSystem: System {
     
     public override class var phase: System.Phase {.simulation}
     public override class func sortOrder() -> SystemSortOrder? {
-        return .colision3DSystem
+        return .collision3DSystem
     }
 }
 
@@ -425,10 +425,10 @@ public extension Collision3DSystem {
     
     @inline(__always)
     func entitiesHit(by ray: Ray3D, filter: ((Entity)->Bool)? = nil) -> [(position: Position3, surfaceDirection: Direction3, entity: Entity)] {
-        let entites = entitiesProbablyHit(by: ray, filter: filter)
+        let entities = entitiesProbablyHit(by: ray, filter: filter)
         
         var hits: [(position: Position3, surfaceDirection: Direction3, entity: Entity)] = []
-        for entity in entites {
+        for entity in entities {
             guard let collisionComponent = entity.component(ofType: Collision3DComponent.self) else {continue}
             let collider = collisionComponent.collider
             guard collider is MeshCollider == false else {continue}

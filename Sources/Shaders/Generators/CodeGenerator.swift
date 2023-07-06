@@ -77,7 +77,7 @@ public class CodeGenerator {
         #if DEBUG
         case .scalarBool(_), .scalarInt(_), .scalarUInt(_), .scalarFloat(_):
             return
-        case .vertexInPosition, .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_), .vertexInJointIndicies(_), .vertexInJointWeights(_):
+        case .vertexInPosition, .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_), .vertexInJointIndices(_), .vertexInJointWeights(_):
             return
         case .vertexOutPosition, .vertexOutPointSize, .vertexOut(_), .vertexInstanceID:
             return
@@ -355,14 +355,14 @@ public class CodeGenerator {
     }
     
     public enum InputAttribute: Hashable {
-        case vertexInPosition(geoemtryIndex: UInt8)
-        case vertexInTexCoord0(geoemtryIndex: UInt8)
-        case vertexInTexCoord1(geoemtryIndex: UInt8)
-        case vertexInNormal(geoemtryIndex: UInt8)
-        case vertexInTangent(geoemtryIndex: UInt8)
-        case vertexInColor(geoemtryIndex: UInt8)
-        case vertexInJointIndices(geoemtryIndex: UInt8)
-        case vertexInJointWeights(geoemtryIndex: UInt8)
+        case vertexInPosition(geometryIndex: UInt8)
+        case vertexInTexCoord0(geometryIndex: UInt8)
+        case vertexInTexCoord1(geometryIndex: UInt8)
+        case vertexInNormal(geometryIndex: UInt8)
+        case vertexInTangent(geometryIndex: UInt8)
+        case vertexInColor(geometryIndex: UInt8)
+        case vertexInJointIndices(geometryIndex: UInt8)
+        case vertexInJointWeights(geometryIndex: UInt8)
     }
 }
 

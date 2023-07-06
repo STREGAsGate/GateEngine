@@ -34,8 +34,8 @@ public enum RenderingAPI {
                             0.0, 1.0,
                             1.0, 0.0,
                             1.0, 1.0]
-        let indicies: [UInt16] = [0,1,2,3,4,5]
-        let raw = RawGeometry(positions: positions, uvSets: [uvs], normals: nil, tangents: nil, colors: nil, indicies: indicies)
+        let indices: [UInt16] = [0,1,2,3,4,5]
+        let raw = RawGeometry(positions: positions, uvSets: [uvs], normals: nil, tangents: nil, colors: nil, indices: indices)
         return Geometry(raw)
     }()
     
@@ -53,8 +53,8 @@ public enum RenderingAPI {
                             0.0, 1.0,
                             1.0, 0.0,
                             1.0, 1.0]
-        let indicies: [UInt16] = [0,1,2,3,4,5]
-        let raw = RawGeometry(positions: positions, uvSets: [uvs], normals: nil, tangents: nil, colors: nil, indicies: indicies)
+        let indices: [UInt16] = [0,1,2,3,4,5]
+        let raw = RawGeometry(positions: positions, uvSets: [uvs], normals: nil, tangents: nil, colors: nil, indices: indices)
         return Geometry(raw)
     }()
     

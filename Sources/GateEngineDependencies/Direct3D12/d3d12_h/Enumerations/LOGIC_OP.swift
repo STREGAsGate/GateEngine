@@ -15,7 +15,7 @@ public enum D3DLogicOperation {
     case clear
     ///	Sets the render target ( 1).	
     case set
-    ///	Copys the render target (s source from Pixel Shader output).	
+    ///	Copies the render target (s source from Pixel Shader output).	
     case copy
     ///	Performs an inverted-copy of the render target (~s).	
     case invertedCopy

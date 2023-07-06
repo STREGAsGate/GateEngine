@@ -57,14 +57,14 @@ public struct D3DSamplerDescription {
         }
     }
 
-    /// Offset from the calculated mipmap level. For example, if the runtime calculates that a texture should be sampled at mipmap level 3 and MipLODBias is 2, the texture will be sampled at mipmap level 5.
+    /// Offset from the calculated mipmap level. For example, if the runtime calculates that a texture should be sampled at mipmap level 3 and MipLOADBias is 2, the texture will be sampled at mipmap level 5.
     @inlinable @inline(__always)
-    public var mipLODBias: Float {
+    public var mipLOADBias: Float {
         get {
-            return rawValue.MipLODBias
+            return rawValue.MipLOADBias
         }
         set {
-            rawValue.MipLODBias = newValue
+            rawValue.MipLOADBias = newValue
         }
     }
 
@@ -103,23 +103,23 @@ public struct D3DSamplerDescription {
 
     /// Lower end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed.
     @inlinable @inline(__always)
-    public var minLOD: Float {
+    public var minLOAD: Float {
         get {
-            return rawValue.MinLOD
+            return rawValue.MinLOAD
         }
         set {
-            rawValue.MinLOD = newValue
+            rawValue.MinLOAD = newValue
         }
     }
 
-    /// Upper end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed. This value must be greater than or equal to MinLOD. To have no upper limit on LOD, set this member to a large value.
+    /// Upper end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed. This value must be greater than or equal to MinLOAD. To have no upper limit on LOAD, set this member to a large value.
     @inlinable @inline(__always)
-    public var maxLOD: Float {
+    public var maxLOAD: Float {
         get {
-            return rawValue.MaxLOD
+            return rawValue.MaxLOAD
         }
         set {
-            rawValue.MaxLOD = newValue
+            rawValue.MaxLOAD = newValue
         }
     }
 
@@ -128,35 +128,35 @@ public struct D3DSamplerDescription {
     - parameter addressU: A D3D12_TEXTURE_ADDRESS_MODE-typed value that specifies the method to use for resolving a u texture coordinate that is outside the 0 to 1 range.
     - parameter addressV: A D3D12_TEXTURE_ADDRESS_MODE-typed value that specifies the method to use for resolving a v texture coordinate that is outside the 0 to 1 range.
     - parameter addressW: A D3D12_TEXTURE_ADDRESS_MODE-typed value that specifies the method to use for resolving a w texture coordinate that is outside the 0 to 1 range.
-    - parameter mipLODBias: Offset from the calculated mipmap level. For example, if the runtime calculates that a texture should be sampled at mipmap level 3 and MipLODBias is 2, the texture will be sampled at mipmap level 5.
+    - parameter mipLOADBias: Offset from the calculated mipmap level. For example, if the runtime calculates that a texture should be sampled at mipmap level 3 and MipLOADBias is 2, the texture will be sampled at mipmap level 5.
     - parameter maxAnisotropy: Clamping value used if D3D12_FILTER_ANISOTROPIC or D3D12_FILTER_COMPARISON_ANISOTROPIC is specified in Filter. Valid values are between 1 and 16.
     - parameter comparisonFunction: A D3D12_COMPARISON_FUNC-typed value that specifies a function that compares sampled data against existing sampled data.
     - parameter borderColor: Border color to use if D3D12_TEXTURE_ADDRESS_MODE_BORDER is specified for AddressU, AddressV, or AddressW. Range must be between 0.0 and 1.0 inclusive.
-    - parameter minLOD: Lower end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed.
-    - parameter maxLOD: Upper end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed. This value must be greater than or equal to MinLOD. To have no upper limit on LOD, set this member to a large value.
+    - parameter minLOAD: Lower end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed.
+    - parameter maxLOAD: Upper end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed. This value must be greater than or equal to MinLOAD. To have no upper limit on LOAD, set this member to a large value.
     */
     @inlinable @inline(__always)
     public init(filter: D3DFilter,
                 addressU: D3DTextureAddressMode,
                 addressV: D3DTextureAddressMode,
                 addressW: D3DTextureAddressMode,
-                mipLODBias: Float = 0,
+                mipLOADBias: Float = 0,
                 maxAnisotropy: UInt32 = 0,
                 comparisonFunction: D3DComparisonFunction = .alwaysSucceed,
                 borderColor: D3DColor = .clear,
-                minLOD: Float = 0,
-                maxLOD: Float = 1000) {
+                minLOAD: Float = 0,
+                maxLOAD: Float = 1000) {
         self.rawValue = RawValue()
         self.filter = filter
         self.addressU = addressU
         self.addressV = addressV
         self.addressW = addressW
-        self.mipLODBias = mipLODBias
+        self.mipLOADBias = mipLOADBias
         self.maxAnisotropy = maxAnisotropy
         self.comparisonFunction = comparisonFunction
         self.borderColor = borderColor
-        self.minLOD = minLOD
-        self.maxLOD = maxLOD
+        self.minLOAD = minLOAD
+        self.maxLOAD = maxLOAD
     }
 
     @inlinable @inline(__always)

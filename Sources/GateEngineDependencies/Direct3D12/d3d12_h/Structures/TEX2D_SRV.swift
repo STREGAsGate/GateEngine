@@ -46,14 +46,14 @@ public struct D3DTexture2DShaderResourceView {
         }
     }
 
-    /// A value to clamp sample LOD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
+    /// A value to clamp sample LOAD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
     @inlinable @inline(__always)
-    public var minLODClamp: Float {
+    public var minLOADClamp: Float {
         get {
-            return rawValue.ResourceMinLODClamp
+            return rawValue.ResourceMinLOADClamp
         }
         set {
-            rawValue.ResourceMinLODClamp = newValue
+            rawValue.ResourceMinLOADClamp = newValue
         }
     }
 
@@ -61,14 +61,14 @@ public struct D3DTexture2DShaderResourceView {
     - parameter maxMipLevel: 
     - parameter mipLevels: 
     - parameter planeSlice: 
-    - parameter minLODClamp: 
+    - parameter minLOADClamp: 
     */
     @inlinable @inline(__always)
-    public init(maxMipLevel: UInt32, mipLevels: UInt32, planeSlice: UInt32, minLODClamp: Float) {
+    public init(maxMipLevel: UInt32, mipLevels: UInt32, planeSlice: UInt32, minLOADClamp: Float) {
         self.rawValue = RawValue(MostDetailedMip: maxMipLevel,
                                  MipLevels: mipLevels,
                                  PlaneSlice: planeSlice,
-                                 ResourceMinLODClamp: minLODClamp)
+                                 ResourceMinLOADClamp: minLOADClamp)
     }
 
     @inlinable @inline(__always)

@@ -22,14 +22,14 @@ import GameMath
     }
     
     /**
-     Gets a ``ButtonState`` associcated with the physical key.
+     Gets a ``ButtonState`` associated with the physical key.
      
      When requesting a key represents multiple buttons, such as with `.character("1", .anyVariation)`, the `ButtonState` returned will be one of the represented physical keys.
      If you keep a reference to the ``ButtonState`` you will only be checking that physical button. Request a new ``ButtonState`` each time to ensure any variation of the ``KeyboardKey`` is returned.
      
      When requesting with a physical ``KeyboardKey``, like `.shift(.leftSide)`,  it is okay to keep a reference to the ``ButtonState``.
      
-     - parameter keybordKey: A ``KeyboardKey`` that represents a physical keyboard button.
+     - parameter keyboardKey: A ``KeyboardKey`` that represents a physical keyboard button.
      - note: Non-physical keys are keys which have no physical button, like `.control(.anything)` or `.character("0", .anyVariation)`
      - returns: A ``ButtonState``, or `nil` if the key is not a physical key.
      */

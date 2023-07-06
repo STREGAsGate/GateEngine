@@ -70,13 +70,13 @@ public class WavefrontOBJImporter: GeometryImporter {
             }else if line.hasPrefix("f ") {
                 func rawVertexConvert(_ string: String) throws -> Vertex {
                     let comps = string.components(separatedBy: "/")
-                    let indicies = comps.compactMap({Int($0)}).map({$0 - 1}) //convert to base zero index
-                    if indicies.count >= 3 {//Has normals and possibly other stuff
-                        return Vertex(positions[indicies[0]], normals[indicies[2]], uvs[indicies[1]])
-                    }else if indicies.count == 2 {//Just position and texture
-                        return Vertex(positions[indicies[0]], .zero, uvs[indicies[1]])
-                    }else if indicies.count == 1 {// Just position
-                        return Vertex(positions[indicies[0]], .zero, .zero)
+                    let indices = comps.compactMap({Int($0)}).map({$0 - 1}) //convert to base zero index
+                    if indices.count >= 3 {//Has normals and possibly other stuff
+                        return Vertex(positions[indices[0]], normals[indices[2]], uvs[indices[1]])
+                    }else if indices.count == 2 {//Just position and texture
+                        return Vertex(positions[indices[0]], .zero, uvs[indices[1]])
+                    }else if indices.count == 1 {// Just position
+                        return Vertex(positions[indices[0]], .zero, .zero)
                     }else{
                         throw "File malformed at vertex from face: \(string)."
                     }
@@ -102,7 +102,7 @@ public class WavefrontOBJImporter: GeometryImporter {
             }
         }
         guard triangles.isEmpty == false else {
-            throw "No trinagles to create the geometry with."
+            throw "No triangles to create the geometry with."
         }
 
         return RawGeometry(triangles: triangles)

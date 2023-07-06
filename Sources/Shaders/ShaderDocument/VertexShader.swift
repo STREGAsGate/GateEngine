@@ -33,7 +33,7 @@ public final class VertexShader: ShaderDocument {
             public let color: Vec4
             public let normal: Vec3
             public let tangent: Vec3
-            public let jointIndicies: UVec4
+            public let jointIndices: UVec4
             public let jointWeights: Vec4
             
             init(_ index: UInt8) {
@@ -43,7 +43,7 @@ public final class VertexShader: ShaderDocument {
                 self.color = Vec4(representation: .vertexInColor(index), type: .float4)
                 self.normal = Vec3(representation: .vertexInNormal(index), type: .float4)
                 self.tangent = Vec3(representation: .vertexInTangent(index), type: .float4)
-                self.jointIndicies = UVec4(representation: .vertexInJointIndicies(index), type: .uint4)
+                self.jointIndices = UVec4(representation: .vertexInJointIndices(index), type: .uint4)
                 self.jointWeights = Vec4(representation: .vertexInJointWeights(index), type: .float4)
             }
         }

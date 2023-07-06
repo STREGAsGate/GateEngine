@@ -24,7 +24,7 @@ public enum GamePadSymbolMap {
 }
 
 public struct GamePadSymbol: CustomStringConvertible {
-    /// The mapping used to determin all other values
+    /// The mapping used to determine all other values
     public let map: GamePadSymbolMap
     internal let _id: GamePad.InternalID
     
@@ -431,14 +431,14 @@ public extension GamePad {
             }
         }
         
-        // Returns a reciept for the current press or nil if not pressed
-        public func isPressed(ifDifferent reciept: inout InputReceipts) -> Bool {
+        // Returns a receipt for the current press or nil if not pressed
+        public func isPressed(ifDifferent receipt: inout InputReceipts) -> Bool {
             guard self.isPressed else {return false}
             let key = ObjectIdentifier(self)
-            if let reciept = reciept.values[key], reciept == currentReceipt {
+            if let receipt = receipt.values[key], receipt == currentReceipt {
                 return false
             }
-            reciept.values[key] = currentReceipt
+            receipt.values[key] = currentReceipt
             return true
         }
         
@@ -447,8 +447,8 @@ public extension GamePad {
          - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
          */
         @inlinable @inline(__always)
-        public func whenPressed(ifDifferent reciept: inout InputReceipts, run block: (ButtonState)->Void) {
-            if isPressed(ifDifferent: &reciept) {
+        public func whenPressed(ifDifferent receipt: inout InputReceipts, run block: (ButtonState)->Void) {
+            if isPressed(ifDifferent: &receipt) {
                 block(self)
             }
         }

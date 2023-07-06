@@ -57,14 +57,14 @@ public struct D3DStaticSamplerDescription {
         }
     }
 
-    /// Offset from the calculated mipmap level. For example, if Direct3D calculates that a texture should be sampled at mipmap level 3 and MipLODBias is 2, then the texture will be sampled at mipmap level 5.
+    /// Offset from the calculated mipmap level. For example, if Direct3D calculates that a texture should be sampled at mipmap level 3 and MipLOADBias is 2, then the texture will be sampled at mipmap level 5.
     @inlinable @inline(__always)
-    public var mipLODBias: Float {
+    public var mipLOADBias: Float {
         get {
-            return rawValue.MipLODBias
+            return rawValue.MipLOADBias
         }
         set {
-            rawValue.MipLODBias = newValue
+            rawValue.MipLOADBias = newValue
         }
     }
 
@@ -103,23 +103,23 @@ public struct D3DStaticSamplerDescription {
 
     /// Lower end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed.
     @inlinable @inline(__always)
-    public var minLOD: Float {
+    public var minLOAD: Float {
         get {
-            return rawValue.MinLOD
+            return rawValue.MinLOAD
         }
         set {
-            rawValue.MinLOD = newValue
+            rawValue.MinLOAD = newValue
         }
     }
 
-    /// Upper end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed. This value must be greater than or equal to MinLOD. To have no upper limit on LOD set this to a large value such as D3D12_FLOAT32_MAX.
+    /// Upper end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed. This value must be greater than or equal to MinLOAD. To have no upper limit on LOAD set this to a large value such as D3D12_FLOAT32_MAX.
     @inlinable @inline(__always)
-    public var maxLOD: Float {
+    public var maxLOAD: Float {
         get {
-            return rawValue.MaxLOD
+            return rawValue.MaxLOAD
         }
         set {
-            rawValue.MaxLOD = newValue
+            rawValue.MaxLOAD = newValue
         }
     }
 
@@ -173,12 +173,12 @@ public struct D3DStaticSamplerDescription {
     - parameter addressU: Specifies the D3D12_TEXTURE_ADDRESS_MODE mode to use for resolving a u texture coordinate that is outside the 0 to 1 range.
     - parameter addressV: Specifies the D3D12_TEXTURE_ADDRESS_MODE mode to use for resolving a v texture coordinate that is outside the 0 to 1 range.
     - parameter addressW: Specifies the D3D12_TEXTURE_ADDRESS_MODE mode to use for resolving a w texture coordinate that is outside the 0 to 1 range.
-    - parameter mipLODBias: Offset from the calculated mipmap level. For example, if Direct3D calculates that a texture should be sampled at mipmap level 3 and MipLODBias is 2, then the texture will be sampled at mipmap level 5.
+    - parameter mipLOADBias: Offset from the calculated mipmap level. For example, if Direct3D calculates that a texture should be sampled at mipmap level 3 and MipLOADBias is 2, then the texture will be sampled at mipmap level 5.
     - parameter maxAnisotropy: Clamping value used if D3D12_FILTER_ANISOTROPIC or D3D12_FILTER_COMPARISON_ANISOTROPIC is specified as the filter. Valid values are between 1 and 16.
     - parameter comparisonFunction: A function that compares sampled data against existing sampled data. The function options are listed in D3D12_COMPARISON_FUNC.
     - parameter borderColor: One member of D3D12_STATIC_BORDER_COLOR, the border color to use if D3D12_TEXTURE_ADDRESS_MODE_BORDER is specified for AddressU, AddressV, or AddressW. Range must be between 0.0 and 1.0 inclusive.
-    - parameter minLOD: Lower end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed.
-    - parameter maxLOD: Upper end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed. This value must be greater than or equal to MinLOD. To have no upper limit on LOD set this to a large value such as D3D12_FLOAT32_MAX.
+    - parameter minLOAD: Lower end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed.
+    - parameter maxLOAD: Upper end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed. This value must be greater than or equal to MinLOAD. To have no upper limit on LOAD set this to a large value such as D3D12_FLOAT32_MAX.
     - parameter shaderRegister The ShaderRegister and RegisterSpace parameters correspond to the binding syntax of HLSL.
     - parameter registerSpace: The ShaderRegister and RegisterSpace parameters correspond to the binding syntax of HLSL.
     - parameter shaderVisibility: Specifies the visibility of the sampler to the pipeline shaders, one member of D3D12_SHADER_VISIBILITY.
@@ -188,12 +188,12 @@ public struct D3DStaticSamplerDescription {
                 addressU: D3DTextureAddressMode = .border,
                 addressV: D3DTextureAddressMode = .border,
                 addressW: D3DTextureAddressMode = .border,
-                mipLODBias: Float = 0,
+                mipLOADBias: Float = 0,
                 maxAnisotropy: UInt32 = 0,
                 comparisonFunction: D3DComparisonFunction = .neverSucceed,
                 borderColor: D3DStaticBorderColor = .transparentBlack,
-                minLOD: Float = 0,
-                maxLOD: Float = D3D12_FLOAT32_MAX,
+                minLOAD: Float = 0,
+                maxLOAD: Float = D3D12_FLOAT32_MAX,
                 shaderRegister: UInt32,
                 registerSpace: UInt32 = 0,
                 shaderVisibility: D3DShaderVisibility = .all) {
@@ -202,12 +202,12 @@ public struct D3DStaticSamplerDescription {
         self.addressU = addressU
         self.addressV = addressV
         self.addressW = addressW
-        self.mipLODBias = mipLODBias
+        self.mipLOADBias = mipLOADBias
         self.maxAnisotropy = maxAnisotropy
         self.comparisonFunction = comparisonFunction
         self.borderColor = borderColor
-        self.minLOD = minLOD
-        self.maxLOD = maxLOD
+        self.minLOAD = minLOAD
+        self.maxLOAD = maxLOAD
         self.shaderRegister = shaderRegister
         self.shaderVisibility = shaderVisibility
     }

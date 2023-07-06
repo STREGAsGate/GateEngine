@@ -35,7 +35,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
             Foundation.URL(fileURLWithPath: Bundle.main.bundlePath),
         ]
         if files.isEmpty {
-            Log.error("Failed to load any resource bundles! Check code signing and directory premissions.")
+            Log.error("Failed to load any resource bundles! Check code signing and directory permissions.")
         }else{
             Log.debug("Loaded static resource search paths: (GameDelegate search paths not included)", files.map({
                 let path = $0.path

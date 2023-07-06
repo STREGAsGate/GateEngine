@@ -61,7 +61,7 @@ public struct BitStream {
     }
     
     /**
-     Move the current read postion.
+     Move the current read position.
      - parameter numBits: The number of bits to move the read position.
      */
     @_transparent

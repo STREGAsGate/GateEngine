@@ -61,7 +61,7 @@ public struct D3DTexture2DArrayUnorderedAccessView {
     - parameter maxMipLevel: Index of the most detailed mipmap level to use; this number is between 0 and MipLevels (from the original Texture1D for which ID3D12Device::CreateShaderResourceView creates a view) -1.
     - parameter textureIndex: The index of the first texture to use in an array of textures.
     - parameter textureCount: Number of textures to use.
-    - parameter minLODClamp: A value to clamp sample LOD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
+    - parameter minLOADClamp: A value to clamp sample LOAD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
     */
     @inlinable @inline(__always)
     public init(mipIndex: UInt32, textureIndex: UInt32, textureCount: UInt32, planeSlice: UInt32) {
