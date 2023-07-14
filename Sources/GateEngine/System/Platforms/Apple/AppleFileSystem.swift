@@ -25,20 +25,20 @@ public struct AppleFileSystem: FileSystem {
         return nil
     }
     
-    
     public func contentsOfDirectory(at path: String) throws -> [String] {
         return try FileManager.default.contentsOfDirectory(atPath: path)
     }
     
     public func createDirectory(at path: String) throws {
-        try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+        let url = URL(fileURLWithPath: path)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     }
-    
     
     public func read(from path: String) async throws -> Data {
         return try await withCheckedThrowingContinuation { continuation in
             do {
-                let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
+                let url = URL(fileURLWithPath: path)
+                let data = try Data(contentsOf: url, options: .mappedIfSafe)
                 continuation.resume(returning: data)
             }catch{
                 continuation.resume(throwing: error)
@@ -47,10 +47,9 @@ public struct AppleFileSystem: FileSystem {
     }
     
     public func write(_ data: Data, to path: String) async throws {
-        guard let url = URL(string: path) else {throw "Failed to read path."}
-        assert(url.isFileURL == true, "The url must be a file URL. Use `init(fileURLWithPath:)`")
         try await withCheckedThrowingContinuation { continuation in
             do {
+                let url = URL(fileURLWithPath: path)
                 try data.write(to: url)
                 continuation.resume()
             }catch{
@@ -58,7 +57,6 @@ public struct AppleFileSystem: FileSystem {
             }
         }
     }
-    
     
     public func resolvePath(_ path: String) throws -> String {
         var url = URL(fileURLWithPath: path)
@@ -96,9 +94,6 @@ public struct AppleFileSystem: FileSystem {
         }
         var url: URL = try FileManager.default.url(for: _searchPath, in: _domainMask, appropriateFor: nil, create: false)
         url = url.appendingPathComponent(Game.shared.identifier)
-        if FileManager.default.fileExists(atPath: url.path) == false {
-            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-        }
         return url.path
     }
 }

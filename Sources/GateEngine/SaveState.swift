@@ -64,6 +64,8 @@ extension Direction3: StateCodableValue {}
 extension Quaternion: StateCodableValue {}
 extension Transform3: StateCodableValue {}
 
+extension Array: StateCodableValue where Element: StateCodableValue {}
+
 extension Game {
     public class State: Codable {
         let encoder = JSONEncoder()
@@ -247,6 +249,7 @@ extension Game {
 }
 
 fileprivate extension String {
+    @_transparent
     var isAscii: Bool {
         for char in self {
             for code in char.unicodeScalars {

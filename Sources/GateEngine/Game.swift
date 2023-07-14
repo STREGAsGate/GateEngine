@@ -9,8 +9,7 @@ import Foundation
 import GameMath
 
 public final class Game {
-    public let platform: CurrentPlatform = CurrentPlatform()
-    
+    public let platform: CurrentPlatform
     public let delegate: GameDelegate
     
     @MainActor public private(set) var state: State! = nil
@@ -19,7 +18,8 @@ public final class Game {
     lazy private(set) var identifier: String = delegate.resolvedGameIdentifier()
     
     nonisolated public let isHeadless: Bool
-    @MainActor internal init(delegate: GameDelegate) {
+    @MainActor internal init(delegate: GameDelegate, currentPlatform: CurrentPlatform) {
+        self.platform = currentPlatform
         self.delegate = delegate
         self.isHeadless = delegate.isHeadless()
     }

@@ -12,14 +12,20 @@ import JavaScriptKit
 import JavaScriptEventLoop
 
 public final class WASIPlatform: Platform, InternalPlatform {
-    let fileSystem: WASIFileSystem = WASIFileSystem()
+    public static let fileSystem: WASIFileSystem = WASIFileSystem()
+    var staticResourceLocations: [URL]
     var pathCache: [String:String] = [:]
-    static let staticSearchPaths: [Foundation.URL] = {
+    
+    init(delegate: GameDelegate) {
+        self.staticResourceLocations = Self.staticResourceLocations(delegate: delegate)
+    }
+    
+    static func staticResourceLocations(delegate: GameDelegate) -> [Foundation.URL] {
         func getGameModuleName(_ delegate: AnyObject) -> String {
             let ref = String(reflecting: type(of: delegate))
             return String(ref.split(separator: ".")[0])
         }
-        let gameModule = getGameModuleName(Game.shared.delegate)
+        let gameModule = getGameModuleName(delegate)
         final class GateEngineModuleLocator {}
         let engineModule = getGameModuleName(GateEngineModuleLocator())
         let files = [
@@ -48,16 +54,16 @@ public final class WASIPlatform: Platform, InternalPlatform {
             }).joined(), "\n")
         }
         return files
-    }()
+    }
 
     public func locateResource(from path: String) async -> String? {
         if let existing = pathCache[path] {
             Log.info("Located Resource: \"\(path)\" at \"\(existing)\"")
             return existing
         }
-        let delegatePaths = Game.shared.delegate.resourceSearchPaths()
+        let delegatePaths = Game.shared.delegate.customResourceLocations()
 
-        let searchPaths = OrderedSet(delegatePaths + Self.staticSearchPaths)
+        let searchPaths = OrderedSet(delegatePaths + staticResourceLocations)
         for searchPath in searchPaths {
             let newPath = searchPath.appendingPathComponent(path).path
             if let object = try? await fetch(newPath, ["method": "HEAD"]).object {
@@ -102,20 +108,28 @@ public final class WASIPlatform: Platform, InternalPlatform {
         return try await JSPromise(jsFetch(url, options).object!)!.value
     }
     
-    func saveState(_ state: Game.State, as name: String) throws {
-        let name = Game.shared.delegate.resolvedGameIdentifier() + "." + name
+    func saveStatePath(forStateNamed name: String) throws -> String {
+        return URL(fileURLWithPath: try fileSystem.pathForSearchPath(.persistent, in: .currentUser)).appendingPathComponent(name).path
+    }
+    
+    func saveState(_ state: Game.State, as name: String) async throws {
         let window: DOM.Window = globalThis
         window.localStorage[name] = try JSONEncoder().encode(state).base64EncodedString()
     }
     
-    func loadState(named name: String) -> Game.State {
-        let name = Game.shared.delegate.resolvedGameIdentifier() + "." + name
+    func loadState(named name: String) async -> Game.State {
         let window: DOM.Window = globalThis
-        if let base64 = window.localStorage[name], let data = Data(base64Encoded: base64) {
-            do {
-                return try JSONDecoder().decode(Game.State.self, from: data)
-            }catch{
-                Log.error("Game.State failed to restore:", error)
+        if let base64 = window.localStorage[name] {
+            if let data = Data(base64Encoded: base64) {
+                do {
+                    let state = try JSONDecoder().decode(Game.State.self, from: data)
+                    state.name = name
+                    return state
+                }catch{
+                    Log.error("Game.State failed to restore:", error)
+                }
+            }else{
+                Log.error("Game.State failed to restore")
             }
         }
         return Game.State(name: name)
@@ -282,10 +296,12 @@ extension WASIPlatform {
     @MainActor func main() {
         JavaScriptEventLoop.installGlobalExecutor()
         setupDocument()
-        Log.info("Notice: Failed resource errors emitted from the browser are normal. Ignore them. Only rely on the logs starting with \"[GateEngine]\".")
-        Game.shared.didFinishLaunching()
-        Game.shared.insertSystem(WASIUserActivationRenderingSystem.self)
+        Log.info("Notice: Browser resource errors are expected and normal. Ignore them. Only rely on the logs starting with \"[GateEngine]\".")
         Log.info("Detected Browser As:", Game.shared.platform.browser)
+        Task(priority: .high) {@MainActor in
+            await Game.shared.didFinishLaunching()
+            Game.shared.insertSystem(WASIUserActivationRenderingSystem.self)
+        }
     }
 }
 
@@ -299,6 +315,7 @@ fileprivate final class WASIUserActivationRenderingSystem: RenderingSystem {
         banner.texture.cacheHint = .whileReferenced
     }
     
+    var somethingWasPressed = false
     override func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
         var canvas = Canvas()
         
@@ -310,20 +327,28 @@ fileprivate final class WASIUserActivationRenderingSystem: RenderingSystem {
         
         window.insert(canvas)
         
-        var somethingWasPressed = false
+        var noInputsPressed: Bool = true
         if game.hid.gamePads.any.button.confirmButton.isPressed {
             somethingWasPressed = true
+            noInputsPressed = false
         }
         if game.hid.screen.anyTouch(withGesture: .touchDown) != nil {
             somethingWasPressed = true
+            noInputsPressed = false
         }
         if game.hid.keyboard.pressedButtons().isEmpty == false {
             somethingWasPressed = true
+            noInputsPressed = false
         }
         if game.hid.mouse.button(.primary).isPressed {
             somethingWasPressed = true
+            noInputsPressed = false
         }
-        if somethingWasPressed {
+        
+        // If something was pressed and nothing is currently pressed
+        // This ensures inputs from this screen are not immediteley sent to the game
+        // Since no other platform would have this happen, doing this will reduce platform specific per-project bugs.
+        if somethingWasPressed && noInputsPressed {
             game.removeSystem(self)
         }
     }

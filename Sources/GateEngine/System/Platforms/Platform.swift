@@ -29,8 +29,7 @@ public extension Platform {
 }
 
 internal protocol InternalPlatform: AnyObject, Platform {
-    var pathCache: [String:String] {get set}
-    static var staticSearchPaths: [URL] {get}
+    var staticResourceLocations: [URL] {get}
     
     func systemTime() -> Double
     func main()
@@ -39,13 +38,19 @@ internal protocol InternalPlatform: AnyObject, Platform {
     func loadState(named name: String) async -> Game.State
     
     #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
-    func saveStateURL(forStateNamed name: String) throws -> URL
+    func saveStatePath(forStateNamed name: String) throws -> String
+    #endif
+    
+    #if GATEENGINE_ASYNCLOAD_CURRENTPLATFORM
+    init(delegate: GameDelegate) async
+    #else
+    init(delegate: GameDelegate)
     #endif
 }
 
-#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
+#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 extension InternalPlatform {
-    static func getStaticSearchPaths() -> [URL] {
+    static func getStaticSearchPaths(delegate: GameDelegate) async -> [URL] {
         #if canImport(Darwin)
         let bundleExtension: String = "bundle"
         #else
@@ -66,7 +71,7 @@ extension InternalPlatform {
         
         do {
             for bundleURL in bundleURLs {
-                let contents = try Self.fileSystem.contentsOfDirectory(at: bundleURL.path)
+                let contents = try await Self.fileSystem.contentsOfDirectory(at: bundleURL.path)
                 resourceFolders.append(contentsOf: contents.map({bundleURL.appendingPathComponent($0)}))
             }
         }catch{
@@ -148,8 +153,8 @@ extension InternalPlatform {
 }
 
 extension InternalPlatform {
-    func saveStateURL(forStateNamed name: String) throws -> URL {
-        return URL(fileURLWithPath: try fileSystem.pathForSearchPath(.persistent, in: .currentUser)).appendingPathComponent(name)
+    func saveStatePath(forStateNamed name: String) throws -> String {
+        return URL(fileURLWithPath: try fileSystem.pathForSearchPath(.persistent, in: .currentUser)).appendingPathComponent(name).path
     }
     
     #if os(macOS) || os(iOS) || os(tvOS) || os(Windows) || os(Linux)
@@ -166,7 +171,7 @@ extension InternalPlatform {
 extension InternalPlatform {
     func loadState(named name: String) async -> Game.State {
         do {
-            let data = try await fileSystem.read(from: try saveStateURL(forStateNamed: name).path)
+            let data = try await fileSystem.read(from: try saveStatePath(forStateNamed: name))
             let state = try JSONDecoder().decode(Game.State.self, from: data)
             state.name = name
             return state
@@ -182,8 +187,8 @@ extension InternalPlatform {
     
     func saveState(_ state: Game.State, as name: String) async throws {
         let data = try JSONEncoder().encode(state)
-        let url = try self.saveStateURL(forStateNamed: name)
-        try data.write(to: url, options: .atomic)
+        let path = try self.saveStatePath(forStateNamed: name)
+        try await fileSystem.write(data, to: path)
     }
 }
 #endif

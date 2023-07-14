@@ -22,7 +22,7 @@ public final class LinuxPlatform: Platform, InternalPlatform {
         if let existing = pathCache[path] {
             return existing
         }
-        let searchPaths = Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
+        let searchPaths = Game.shared.delegate.customResourceLocations() + Self.staticSearchPaths
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             let path = file.path

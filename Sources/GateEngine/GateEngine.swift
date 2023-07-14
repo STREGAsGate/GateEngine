@@ -6,9 +6,9 @@
  */
 
 import Foundation
+@_exported import struct Foundation.Data
 import GameMath
 @_exported import GameMath
-@_exported import struct Foundation.Data
 
 #if canImport(WinSDK)
 import WinSDK

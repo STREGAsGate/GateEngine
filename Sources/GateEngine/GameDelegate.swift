@@ -54,13 +54,13 @@ public protocol GameDelegate: AnyObject {
     @MainActor func isHeadless() -> Bool
     
     /**
-     Add additional search paths for resources.
+     Add additional search locations for resources.
      
      This can be helpful for mods and expanability.
      Search paths for your Swift Packages are already located automatically and don't need to be added here.
      - returns: An array of URLs each pointing to a directory containing game resources.
      */
-    nonisolated func resourceSearchPaths() -> [URL]
+    nonisolated func customResourceLocations() -> [URL]
     
     /**
     An ID for the current game. This identifier is used for storing user settings.
@@ -82,7 +82,7 @@ public extension GameDelegate {
     
     func willTerminate(game: Game) {}
     func isHeadless() -> Bool {return false}
-    func resourceSearchPaths() -> [URL] {return []}
+    func customResourceLocations() -> [URL] {return []}
 
     func gameIdentifier() -> StaticString? {return nil}
 
@@ -105,9 +105,14 @@ public extension GameDelegate {
         }
         #endif
         
+        func getGameModuleName() -> String {
+            let ref = String(reflecting: type(of: self))
+            return String(ref.split(separator: ".")[0])
+        }
+        
         var identifier: String = ""
         var isFirst = true
-        for character in CommandLine.arguments[0] {
+        for character in CommandLine.arguments.first ?? getGameModuleName() {
             if isFirst {
                 isFirst = false
                 if character == "." {
@@ -131,7 +136,19 @@ public extension GameDelegate {
 
 public extension GameDelegate {
     @MainActor static func main() {
-        Game.shared = Game(delegate: Self())
+        let delegate = Self()
+        #if GATEENGINE_ASYNCLOAD_CURRENTPLATFORM && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        Task(priority: .high) {@MainActor in
+            let platform = await CurrentPlatform(delegate: delegate)
+            Game.shared = Game(delegate: delegate, currentPlatform: platform)
+        }
+        while Game.shared == nil {
+            RunLoop.main.run(until: Date())
+        }
+        #else
+        let platform = CurrentPlatform(delegate: delegate)
+        Game.shared = Game(delegate: delegate, currentPlatform: platform)
+        #endif
         Game.shared.platform.main()
     }
 }
