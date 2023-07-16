@@ -113,26 +113,27 @@ public final class WASIPlatform: Platform, InternalPlatform {
     }
     
     func saveState(_ state: Game.State, as name: String) async throws {
-        let window: DOM.Window = globalThis
-        window.localStorage[name] = try JSONEncoder().encode(state).base64EncodedString()
+        let data = try JSONEncoder().encode(state)
+        let path = try self.saveStatePath(forStateNamed: name)
+        let dir = URL(fileURLWithPath: path).deletingLastPathComponent().path
+        if await fileSystem.itemExists(at: dir) == false {
+            try await fileSystem.createDirectory(at: dir)
+        }
+        try await fileSystem.write(data, to: path)
     }
     
     func loadState(named name: String) async -> Game.State {
-        let window: DOM.Window = globalThis
-        if let base64 = window.localStorage[name] {
-            if let data = Data(base64Encoded: base64) {
-                do {
-                    let state = try JSONDecoder().decode(Game.State.self, from: data)
-                    state.name = name
-                    return state
-                }catch{
-                    Log.error("Game.State failed to restore:", error)
-                }
-            }else{
-                Log.error("Game.State failed to restore")
+        do {
+            let data = try await fileSystem.read(from: try saveStatePath(forStateNamed: name))
+            let state = try JSONDecoder().decode(Game.State.self, from: data)
+            state.name = name
+            return state
+        }catch{
+            if let error = error as? String, error != "No such file or directory." {
+                Log.error("Game State \"\(name)\" failed to restore:", error)
             }
+            return Game.State(name: name)
         }
-        return Game.State(name: name)
     }
     
     func systemTime() -> Double {
@@ -190,7 +191,9 @@ public final class WASIPlatform: Platform, InternalPlatform {
             }
         }
     }
-    internal lazy private(set) var browser: Browser = {
+    
+    var browser: Browser {Self.browser}
+    internal static let browser: Browser = {
         let string: String = globalThis.navigator.userAgent
         let name = globalThis.navigator.appName
         
