@@ -1,15 +1,15 @@
 // Window & Rendering
-#include "GL/glx.h"
-#include "X11/Xlib.h"
-#include "X11/Xatom.h"
-#include "X11/Xresource.h"
+#include <GL/glx.h>
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#include <X11/Xresource.h>
 
 // Keyboard
-#include "X11/XKBlib.h"
+#include <X11/XKBlib.h>
 
 // Audio
-#include "AL/al.h"
-#include "AL/alc.h"
+#include <AL/al.h>
+#include <AL/alc.h>
 
 // Game Controllers
 #include <sys/ioctl.h>
