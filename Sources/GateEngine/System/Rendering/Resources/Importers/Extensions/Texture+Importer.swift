@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 extension ResourceManager {
     public func addTextureImporter(_ type: TextureImporter.Type, atEnd: Bool = false) {
         guard importers.textureImporters.contains(where: {$0 == type}) == false else {return}

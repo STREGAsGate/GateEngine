@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 public final class Quadtree {
     public var center: Position2 {return rootNode.boundingBox.center}
     public var offset: Position2 {return rootNode.boundingBox.offset}

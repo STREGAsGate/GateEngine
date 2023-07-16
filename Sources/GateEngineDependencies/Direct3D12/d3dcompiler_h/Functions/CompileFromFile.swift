@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
 import WinSDK
 
 @inlinable @inline(__always)

@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 extension ResourceManager {
     public func addSkeletalAnimationImporter(_ type: SkeletalAnimationImporter.Type) {
         guard importers.skeletalAnimationImporters.contains(where: {$0 == type}) == false else {return}

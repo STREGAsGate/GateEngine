@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import Foundation
+import struct Foundation.URL
 
 extension ResourceManager {
     public func addGeometryImporter(_ type: GeometryImporter.Type, atEnd: Bool = false) {

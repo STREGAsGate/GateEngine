@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 public enum GamePadSymbolMap {
     case unknown
 

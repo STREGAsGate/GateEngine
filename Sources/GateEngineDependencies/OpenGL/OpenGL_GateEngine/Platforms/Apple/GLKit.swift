@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 #if canImport(GLKit) && !targetEnvironment(macCatalyst)
-
-import Foundation
 import GLKit
 
 @_transparent @usableFromInline internal var GL_VENDOR: Int32 {return GLKit.GL_VENDOR}

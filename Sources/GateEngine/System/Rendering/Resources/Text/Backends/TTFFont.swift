@@ -5,10 +5,7 @@
  * http://stregasgate.com
  */
 #if canImport(TrueType)
-
-import Foundation
 import TrueType
-import GameMath
 
 typealias CharData = TrueType.stbtt_bakedchar
 typealias AlignedQuad = TrueType.stbtt_aligned_quad

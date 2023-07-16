@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import GameMath
-import Foundation
-
 public final class PerformanceRenderingSystem: RenderingSystem {
     public override func setup(game: Game) {
         game.ecs.recordPerformance()

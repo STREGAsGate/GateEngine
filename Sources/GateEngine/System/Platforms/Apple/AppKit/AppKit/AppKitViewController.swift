@@ -5,11 +5,8 @@
  * http://stregasgate.com
  */
 #if os(macOS)
-
-import Foundation
-import GameController
-import GameMath
 import AppKit
+import GameController
 
 @available(macOS 10.11, *)
 internal class AppKitViewController: GCEventViewController {

@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 extension ECSContext {
     @MainActor internal final class Performance {
         var totalDroppedFrames: Int = 0

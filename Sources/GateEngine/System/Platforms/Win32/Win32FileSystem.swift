@@ -5,9 +5,7 @@
  * http://stregasgate.com
  */
 #if canImport(WinSDK)
-
 import WinSDK
-import Foundation
 
 public struct Win32FileSystem: FileSystem {
     func urlForFolderID(_ folderID: KNOWNFOLDERID) -> URL {

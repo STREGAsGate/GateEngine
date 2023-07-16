@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 #if canImport(IOKit)
-
 import Foundation
 import CoreFoundation
 import IOKit.hid

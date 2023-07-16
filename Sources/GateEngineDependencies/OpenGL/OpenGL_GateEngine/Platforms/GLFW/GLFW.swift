@@ -1,5 +1,4 @@
 #if canImport(GLFW)
-import Foundation
 import GLFW
 
 @_transparent @usableFromInline public var GLFW_TRUE: Int32 {GLFW.GLFW_TRUE}

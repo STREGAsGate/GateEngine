@@ -5,9 +5,7 @@
  * http://stregasgate.com
  */
 #if canImport(WinSDK)
-
 import WinSDK
-import Foundation
 
 public final class Win32Platform: InternalPlatform {
     public static let fileSystem: Win32FileSystem = Win32FileSystem()

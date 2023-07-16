@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 public final class Physics2DComponent: Component {
 
     public var velocity: Direction2 = .zero

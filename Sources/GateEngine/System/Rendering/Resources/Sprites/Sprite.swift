@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 @MainActor public final class Sprite {
     public let texture: Texture
     public var bounds: Rect

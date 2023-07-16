@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public class ShaderDocument: Identifiable {
     enum DocumentType {
         case vertex

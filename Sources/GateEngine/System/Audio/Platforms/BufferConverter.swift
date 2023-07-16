@@ -4,7 +4,6 @@
  *
  * http://stregasgate.com
  */
-import Foundation
 
 internal class BufferConverter {
     let data: Data

@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 #if canImport(Darwin) && canImport(ModelIO)
-import Foundation
-import GameMath
 import ModelIO
 
 public class ApplePlatformModelImporter: GeometryImporter {

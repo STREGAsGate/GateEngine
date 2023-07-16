@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 #if canImport(Darwin)
-
 import Foundation
 
 public struct AppleFileSystem: FileSystem {

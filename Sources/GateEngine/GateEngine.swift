@@ -7,6 +7,7 @@
 
 import Foundation
 @_exported import struct Foundation.Data
+@_exported import struct Foundation.URL
 import GameMath
 @_exported import GameMath
 

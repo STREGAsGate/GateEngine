@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 internal protocol AudioBufferBackend: AnyObject {
     var duration: Double {get}
     init(path: String, context: AudioContext, audioBuffer: AudioBuffer)

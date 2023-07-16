@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 #if (canImport(OpenALSoft) || canImport(LinuxSupport)) && !os(WASI)
-
-import Foundation
 #if canImport(OpenALSoft) 
 import OpenALSoft
 #elseif canImport(LinuxSupport)

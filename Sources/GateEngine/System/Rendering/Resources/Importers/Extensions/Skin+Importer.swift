@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 extension ResourceManager {
     public func addSkinImporter(_ type: SkinImporter.Type) {
         guard importers.skinImporters.contains(where: {$0 == type}) == false else {return}

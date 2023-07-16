@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 public final class Skeleton: OldResource {
     internal let path: String?
     internal let options: SkeletonImporterOptions?

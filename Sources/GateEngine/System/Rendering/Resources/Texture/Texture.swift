@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 public enum MipMapping: Hashable {
     /// No mipmapping
     case none

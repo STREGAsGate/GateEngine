@@ -6,7 +6,6 @@
  */
 
 import Foundation
-import GameMath
 
 /**
  Recommended values for game state storage conform to this protocol.

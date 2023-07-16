@@ -5,8 +5,7 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
+import class Foundation.JSONDecoder
 
 extension GLTF {
     enum ComponentType: Int, Decodable {

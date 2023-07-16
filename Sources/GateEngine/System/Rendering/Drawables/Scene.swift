@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 /**
  A Scene is a drawing space with 3 dimentions and a persepctive camera.
  */

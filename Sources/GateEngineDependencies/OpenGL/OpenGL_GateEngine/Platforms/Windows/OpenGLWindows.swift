@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 #if false && canImport(OpenGL_Windows)
-
-import Foundation
 import OpenGL_Windows
 
 @_transparent @usableFromInline internal var GL_VENDOR: Int32 {return OpenGL_Windows.GL_VENDOR}

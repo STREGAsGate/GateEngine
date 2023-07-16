@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 public class SkeletalAnimation {
     public let name: String
     public let duration: Float

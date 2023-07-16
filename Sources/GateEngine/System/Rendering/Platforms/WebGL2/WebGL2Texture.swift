@@ -5,13 +5,11 @@
  * http://stregasgate.com
  */
 #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
-import Foundation
 import JavaScriptKit
 import WebAPIBase
 import DOM
 import WebGL1
 import WebGL2
-import GameMath
 
 class WebGL2Texture: TextureBackend {
     let renderTarget: WebGL2RenderTarget?

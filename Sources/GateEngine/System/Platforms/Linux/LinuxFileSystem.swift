@@ -6,8 +6,6 @@
  */
 #if os(Linux)
 
-import Foundation
-
 public struct LinuxFileSystem: FileSystem {
     let homeDir: String = {
         String(cString: getenv("HOME") ?? getpwuid(getuid()).pointee.pw_dir)

@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 public final class Text {
     public enum SampleFilter {
         case nearest

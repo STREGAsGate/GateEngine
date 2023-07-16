@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 #if os(Linux)
-
-import Foundation
-import GameMath
 import LinuxSupport
 
 final class X11Window: WindowBacking {

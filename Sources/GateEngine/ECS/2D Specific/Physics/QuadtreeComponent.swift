@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public final class QuadtreeComponent: Component {
     public var quadtree: Quadtree! = nil
     

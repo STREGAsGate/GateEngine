@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 #if canImport(ImageIO) && canImport(CoreImage)
-import Foundation
-import GameMath
 import ImageIO
 import CoreImage
 import CoreServices

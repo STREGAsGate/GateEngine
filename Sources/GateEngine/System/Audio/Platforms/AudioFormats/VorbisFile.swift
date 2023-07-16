@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 #if !os(WASI) && canImport(Vorbis)
-import Foundation
 import Vorbis
 
 func oggCallbackRead(buffer: UnsafeMutableRawPointer!, elementSize: Int, elementCount: Int, dataSource: UnsafeMutableRawPointer!) -> Int {

@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 #if canImport(AVFoundation)
-import Foundation
 import AVFoundation
 
 internal class CAContextReference: AudioContextBackend {

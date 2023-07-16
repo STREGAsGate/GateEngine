@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 public final class Game {
     public let platform: CurrentPlatform
     public let delegate: GameDelegate

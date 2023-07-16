@@ -7,8 +7,6 @@
 #if canImport(WinSDK)
 import WinSDK
 import Direct3D12
-import GameMath
-import Foundation
 
 final class DX12Texture: TextureBackend {
     let renderTarget: DX12RenderTarget?

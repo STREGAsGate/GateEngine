@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 #if os(macOS)
-
-import Foundation
-import GameMath
 import AppKit
 import MetalKit
 import Carbon

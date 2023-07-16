@@ -6,7 +6,6 @@
  */
 
 import Foundation
-import GameMath
 
 /**
  A Canvas is a drawing space with no depth and an orthographic camera.

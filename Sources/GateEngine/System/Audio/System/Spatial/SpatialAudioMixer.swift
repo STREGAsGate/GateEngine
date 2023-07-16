@@ -4,7 +4,6 @@
  *
  * http://stregasgate.com
  */
-import Foundation
 
 internal protocol SpacialAudioMixerReference: AnyObject {
     var minimumAttenuationDistance: Float {get set}

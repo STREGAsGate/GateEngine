@@ -6,8 +6,6 @@
  * http://stregasgate.com
  */
 #if canImport(UIKit) && canImport(GLKit) && !targetEnvironment(macCatalyst)
-
-import Foundation
 import GLKit
 
 class VK: GLKViewController {

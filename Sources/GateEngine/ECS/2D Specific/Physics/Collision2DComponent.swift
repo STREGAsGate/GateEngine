@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public final class Collision2DComponent: Component {
     public var primitive: AxisAlignedBoundingBox2D! = nil
     public var complex: Collider2D? = nil

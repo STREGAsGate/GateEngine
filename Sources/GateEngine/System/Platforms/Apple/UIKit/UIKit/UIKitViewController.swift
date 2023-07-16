@@ -5,10 +5,7 @@
  * http://stregasgate.com
  */
 #if canImport(UIKit) && canImport(UIKit) && !os(watchOS)
-
-import Foundation
 import GameController
-import GameMath
 
 internal class UIKitViewController: GCEventViewController {
     unowned let window: UIKitWindow

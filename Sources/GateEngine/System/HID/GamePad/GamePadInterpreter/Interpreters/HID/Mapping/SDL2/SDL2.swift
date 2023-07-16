@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 #if os(macOS) || os(Windows) || os(Linux)
-
 import Foundation
 
 struct SDL2DatabaseError: Error, CustomStringConvertible {

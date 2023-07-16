@@ -5,9 +5,7 @@
  * http://stregasgate.com
  */
 
-
 import Foundation
-import GameMath
 
 public final class SpriteComponent: Component {
     public var depth: Float = 0

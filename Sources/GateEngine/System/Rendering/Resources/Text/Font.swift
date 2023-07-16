@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 struct FontQuad {
     let min: Position2
     let max: Position2

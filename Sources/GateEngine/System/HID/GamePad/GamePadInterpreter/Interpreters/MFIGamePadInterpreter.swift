@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 #if os(macOS) || os(iOS) || os(tvOS)
-
-import Foundation
 import GameController
 
 internal class MFIGamePadInterpreter: GamePadInterpreter {
