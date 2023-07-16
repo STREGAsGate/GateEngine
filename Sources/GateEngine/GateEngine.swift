@@ -5,11 +5,23 @@
  * http://stregasgate.com
  */
 
-import Foundation
-@_exported import struct Foundation.Data
-@_exported import struct Foundation.URL
+// Windows doesn't always link @_exported, so we import too.
 import GameMath
 @_exported import GameMath
+
+import Foundation
+@_exported import struct Foundation.Date
+@_exported import struct Foundation.Data
+@_exported import struct Foundation.URL
+@_exported import func Foundation.ceil
+@_exported import func Foundation.floor
+@_exported import func Foundation.round
+@_exported import func Foundation.pow
+@_exported import func Foundation.sin
+@_exported import func Foundation.cos
+@_exported import func Foundation.tan
+@_exported import func Foundation.acos
+@_exported import func Foundation.atan2
 
 #if canImport(WinSDK)
 import WinSDK

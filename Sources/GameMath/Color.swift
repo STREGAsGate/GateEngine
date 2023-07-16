@@ -6,7 +6,7 @@
  */
 
 #if canImport(Foundation)
-import Foundation
+import class Foundation.Scanner
 #endif
 
 public typealias Colour = Color

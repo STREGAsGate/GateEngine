@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 
+import Foundation
 @_exported import func Foundation.ceil
 @_exported import func Foundation.floor
 @_exported import func Foundation.round
