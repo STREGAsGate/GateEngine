@@ -5,10 +5,7 @@
  * http://stregasgate.com
  */
 
-#if canImport(Darwin)
-import class Foundation.Bundle
-#endif
-import struct Foundation.CharacterSet
+import Foundation
 
 public struct LaunchOptions: OptionSet {
     public let rawValue: UInt
