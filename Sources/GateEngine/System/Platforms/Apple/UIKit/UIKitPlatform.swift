@@ -11,8 +11,11 @@ import AVFoundation
 
 public final class UIKitPlatform: Platform, InternalPlatform {
     public static let fileSystem: AppleFileSystem = AppleFileSystem()
-    public static let staticSearchPaths: [URL] = getStaticSearchPaths()
-    var pathCache: [String:String] = [:]
+    public let staticResourceLocations: [URL]
+    
+    init(delegate: GameDelegate) async {
+        self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
+    }
     
     internal var applicationReqestedWindow: Bool = false
     weak internal var windowPreparingForSceneConnection: UIKitWindow? = nil
@@ -26,10 +29,7 @@ public final class UIKitPlatform: Platform, InternalPlatform {
     }
     
     public func locateResource(from path: String) async -> String? {
-        if let existing = pathCache[path] {
-            return existing
-        }
-        let searchPaths = Game.shared.delegate.customResourceLocations() + Self.staticSearchPaths
+        let searchPaths = Game.shared.delegate.customResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             let path = file.path

@@ -21,7 +21,7 @@ let package = Package(
         // SwiftWASM
         #if os(macOS) || os(Linux)
         packageDependencies.append(contentsOf: [
-            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", branch: "main"),
+            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", branch: "file-system"),
             .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
         ])
         #endif
@@ -106,7 +106,7 @@ let package = Package(
                         #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
-                        // Options for developemnt of WASI platform
+                        // Options for development of WASI platform
                         #if true
                         settings.append(contentsOf: [
                             /// Allows HTML5 platform to be compiled from a compatible host, such as macOS. This allows the IDE to show compile errors without targeting WASI.
@@ -117,7 +117,7 @@ let package = Package(
                         #endif
                         
                         settings.append(contentsOf: [
-                            /// Printes the output of generated shaders
+                            /// Prints the output of generated shaders
                             .define("GATEENGINE_LOG_SHADERS"),
                             /// Enables varius additional checks and output for rendering
                             .define("GATEENGINE_DEBUG_RENDERING"),
@@ -126,7 +126,7 @@ let package = Package(
                             /// Enables varius additional, additional, checks and output for input
                             .define("GATEENGINE_DEBUG_HID_VERBOSE"),
                             /// Forces Apple platforms to use OpenGL for rendering
-                            .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, .iOS, .tvOS])),
+                            .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, /*.iOS, .tvOS*/])),
                         ])
                         #endif
                         return settings
