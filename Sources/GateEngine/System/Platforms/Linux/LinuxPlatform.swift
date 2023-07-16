@@ -10,19 +10,19 @@ import Foundation
 import LinuxSupport
 
 public final class LinuxPlatform: Platform, InternalPlatform {
-    let fileSystem: FileSystem = LinuxFileSystem()
-    static let staticSearchPaths: [URL] = getStaticSearchPaths()
-    var pathCache: [String:String] = [:]
+    public static let fileSystem: LinuxFileSystem = LinuxFileSystem()
+    let staticResourceLocations: [URL]
     
+    init(delegate: GameDelegate) async {
+        self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
+    }
+
     public var supportsMultipleWindows: Bool {
         return true
     }
     
     public func locateResource(from path: String) async -> String? {
-        if let existing = pathCache[path] {
-            return existing
-        }
-        let searchPaths = Game.shared.delegate.customResourceLocations() + Self.staticSearchPaths
+        let searchPaths = Game.shared.delegate.customResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             let path = file.path
@@ -49,11 +49,16 @@ public final class LinuxPlatform: Platform, InternalPlatform {
 
 extension LinuxPlatform {
     @MainActor func main() {
-        var nExitCode: Int32 = EXIT_SUCCESS
+        var done = false
+        Task(priority: .high) { @MainActor in
+            await Game.shared.didFinishLaunching()
+            done = true
+        }
+        while done == false {
+            RunLoop.main.run(until: Date())
+        }
 
-        Game.shared.didFinishLaunching()
-        
-        var window: Window? = Game.shared.windowManager.mainWindow
+        let window: Window? = Game.shared.windowManager.mainWindow
         mainLoop: while true {
 
             let eventMask: Int = (StructureNotifyMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask)
@@ -84,7 +89,7 @@ extension LinuxPlatform {
         }
 
         Game.shared.willTerminate()
-        exit(nExitCode)
+        exit(EXIT_SUCCESS)
     }
 }
 

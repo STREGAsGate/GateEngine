@@ -82,7 +82,7 @@ extension InternalPlatform {
         #if canImport(Darwin)
         resourceFolders = resourceFolders.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame}).compactMap({Bundle(url: $0)?.resourceURL})
         #else
-        files = files.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame})
+        resourceFolders = resourceFolders.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame})
         #endif
 
         // Add the executables own path
@@ -176,7 +176,9 @@ extension InternalPlatform {
             state.name = name
             return state
         }catch let error as NSError {
-            if error.domain == NSCocoaErrorDomain && error.code == 260 {
+            if error.domain == NSCocoaErrorDomain && error.code == 260 {// File not found
+                Log.debug("No Game State \"\(name)\" found. Creating new Game State.")
+            }else if error.domain == NSPOSIXErrorDomain && error.code == 2 {// File not found
                 Log.debug("No Game State \"\(name)\" found. Creating new Game State.")
             }else{
                 Log.error("Game State \"\(name)\" failed to restore:", error)
@@ -188,6 +190,10 @@ extension InternalPlatform {
     func saveState(_ state: Game.State, as name: String) async throws {
         let data = try JSONEncoder().encode(state)
         let path = try self.saveStatePath(forStateNamed: name)
+        let dir = URL(fileURLWithPath: path).deletingLastPathComponent().path
+        if await fileSystem.itemExists(at: dir) == false {
+            try await fileSystem.createDirectory(at: dir)
+        }
         try await fileSystem.write(data, to: path)
     }
 }
