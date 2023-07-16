@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 #if os(Linux)
+import Foundation
 import LinuxSupport
 
 fileprivate class HIDController {

@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-import struct Foundation.URL
+import Foundation
 import Collections
 
 public protocol Platform: AnyObject {

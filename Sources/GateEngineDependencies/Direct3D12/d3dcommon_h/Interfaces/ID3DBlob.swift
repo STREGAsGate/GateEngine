@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 
+import Foundation
 import WinSDK
 
 /// This interface is used to return arbitrary-length data.
