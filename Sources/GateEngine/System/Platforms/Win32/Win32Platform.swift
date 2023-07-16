@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 #if canImport(WinSDK)
+import Foundation
 import WinSDK
 
 public final class Win32Platform: InternalPlatform {

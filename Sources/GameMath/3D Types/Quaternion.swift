@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
 #if GameMathUseSIMD && canImport(simd)
 import simd
 #endif
@@ -272,10 +271,10 @@ extension Quaternion {
         
         //Normalize
         let length: Float = self.magnitude
-        x /= length;
-        y /= length;
-        z /= length;
-        w /= length;
+        x /= length
+        y /= length
+        z /= length
+        w /= length
     }
 }
 

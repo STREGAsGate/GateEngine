@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 #if GameMathUseSIMD
 public struct Direction3: Vector3, SIMD {
     public typealias Scalar = Float

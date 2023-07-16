@@ -5,6 +5,8 @@
  * http://stregasgate.com
  */
 
+import Foundation
+
 public final class Octree: Codable {
     var center: Position3 {return rootNode.boundingBox.center}
     var size: Size3 {return rootNode.boundingBox.size}

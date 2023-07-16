@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 struct ImageFont: FontBackend {
     private let fontData: [Font.Style:(data: Data, size: Size2?, importer: TextureImporter.Type)]
     internal var nativePointSizes: [Font.Style:UInt] = [:]

@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
 #if GameMathUseSIMD && canImport(simd)
 import simd
 #endif

@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public final class SpriteComponent: Component {
     public var depth: Float = 0
     public var opacity: Float = 1

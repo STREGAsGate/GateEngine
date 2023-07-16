@@ -51,7 +51,7 @@ public final class Quadtree {
     
     fileprivate func nodesNear(_ box: AxisAlignedBoundingBox2D) -> [Node] {
         guard rootNode.boundingBox.isColiding(with: box) else {
-            Log.debug("No collision");
+            Log.debug("No collision")
             return []
         }
         var nodes: [Node] = []

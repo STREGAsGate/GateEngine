@@ -5,7 +5,8 @@
  * http://stregasgate.com
  */
 
-import Foundation
+import class Foundation.JSONEncoder
+import class Foundation.JSONDecoder
 
 /**
  Recommended values for game state storage conform to this protocol.

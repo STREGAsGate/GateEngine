@@ -111,7 +111,7 @@ internal class IOKitGamePadInterpreter: GamePadInterpreter {
                             analogs.append(element)
                             existing.insert(element)
                         default:
-                            break;
+                            break
                         }
                     case kHIDPage_Button, kHIDPage_Consumer:
                         buttons.append(element)

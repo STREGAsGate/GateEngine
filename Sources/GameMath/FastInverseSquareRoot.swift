@@ -6,8 +6,6 @@
  */
 #if GameMathUseFastInverseSquareRoot
 
-import Foundation
-
 public extension Float {
     @_transparent
     func fastInverseSquareRoot() -> Self {
@@ -17,7 +15,7 @@ public extension Float {
         i = 0x5f3759df - (i >> 1)
         x = Self(bitPattern: i)
         x *= (1.5 - xhalf * x * x)
-        return x;
+        return x
     }
 }
 

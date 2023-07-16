@@ -6,10 +6,6 @@
  */
 
 import Foundation
-import struct Foundation.CharacterSet
-#if canImport(Darwin)
-import class Foundation.Bundle
-#endif
 
 public struct LaunchOptions: OptionSet {
     public let rawValue: UInt
@@ -33,13 +29,13 @@ public protocol GameDelegate: AnyObject {
     @MainActor func createMainWindow(game: Game, identifier: String) throws -> Window
     
     /// The end user has tried to open a window using the platforms mechanisms
-    @MainActor func userRequestedWindow(game: Game) throws -> Window?
+    @MainActor func createUserRequestedWindow(game: Game) throws -> Window?
     
     /**
      A display has been attached.
      - returns: A new window instance to put on the screen. Passing an existing window is undefined behaviour.
     */
-    @MainActor func screenBecomeAvailable(game: Game) throws -> Window?
+    @MainActor func createWindowForExternalscreen(game: Game) throws -> Window?
     
     /// Might be called immediatley before the app closes.
     @MainActor func willTerminate(game: Game)
@@ -81,8 +77,8 @@ public extension GameDelegate {
     @MainActor func createMainWindow(game: Game, identifier: String) throws -> Window {
         return try game.windowManager.createWindow(identifier: identifier, style: .system, options: .defaultForMainWindow)
     }
-    func userRequestedWindow(game: Game) throws -> Window? {return nil}
-    func screenBecomeAvailable(game: Game) throws -> Window? {return nil}
+    func createUserRequestedWindow(game: Game) throws -> Window? {return nil}
+    func createWindowForExternalscreen(game: Game) throws -> Window? {return nil}
     
     func willTerminate(game: Game) {}
     func isHeadless() -> Bool {return false}

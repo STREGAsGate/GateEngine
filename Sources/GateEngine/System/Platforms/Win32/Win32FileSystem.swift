@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 #if canImport(WinSDK)
+import Foundation
 import WinSDK
 
 public struct Win32FileSystem: FileSystem {

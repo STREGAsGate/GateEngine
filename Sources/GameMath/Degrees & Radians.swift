@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public protocol Angle: RawRepresentable, Numeric, Comparable, FloatingPoint where RawValue == Float {
     var rawValue: RawValue {get set}
     

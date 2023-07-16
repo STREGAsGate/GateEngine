@@ -152,7 +152,7 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                 Game.shared.platform.applicationReqestedWindow = true
                 if session.role == .windowExternalDisplay {
                     Game.shared.platform.overrideSupportsMultipleWindows = true
-                    if let window = try Game.shared.delegate.screenBecomeAvailable(game: Game.shared) {
+                    if let window = try Game.shared.delegate.createWindowForExternalscreen(game: Game.shared) {
                         let uiKitWindow = (window.windowBacking as! UIKitWindow)
                         uiKitWindow.uiWindow.windowScene = windowScene
                         windowScene.title = window.title
@@ -161,7 +161,7 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                     Game.shared.platform.overrideSupportsMultipleWindows = nil
                 }else{
                     Game.shared.platform.overrideSupportsMultipleWindows = true
-                    if let window = try Game.shared.delegate.userRequestedWindow(game: Game.shared) {
+                    if let window = try Game.shared.delegate.createUserRequestedWindow(game: Game.shared) {
                         let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
                         uiWindow.windowScene = windowScene
                         windowScene.title = window.title

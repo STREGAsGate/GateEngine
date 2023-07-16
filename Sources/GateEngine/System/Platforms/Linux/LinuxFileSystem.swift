@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 #if os(Linux)
+import Foundation
 
 public struct LinuxFileSystem: FileSystem {
     let homeDir: String = {
