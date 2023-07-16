@@ -6,34 +6,12 @@
  */
 #if canImport(WinSDK)
 
+import WinSDK
 import Foundation
-import FileSystem
 
 public struct Win32FileSystem: FileSystem {
-    public func itemExists(at url: URL) -> Bool {
-        let dwAttrib: DWORD = GetFileAttributes(url.path)
-        return dwAttrib != INVALID_FILE_ATTRIBUTES
-    }
-    
-    public func createDirectory(at url: URL) throws {
-        var subPaths: [String] = [url.path]
-        var url = url
-        while url.path.isEmpty == false {
-            url.deleteLastPathComponent()
-            subPaths.append(url.path)
-        }
-        subPaths = subPaths.reversed()
-        for subPath in subPaths {
-            if itemExists(at: URL(fileURLWithPath: subPath)) == false {
-                if CreateDirectoryW(url.path, nil) == false {
-                    return false
-                }
-            }
-        }
-        return true
-    }
-    
     func urlForFolderID(_ folderID: KNOWNFOLDERID) -> URL {
+        var folderID: KNOWNFOLDERID = folderID
         var pwString: PWSTR! = nil
         _ = SHGetKnownFolderPath(&folderID, DWORD(KF_FLAG_DEFAULT.rawValue), nil, &pwString)
         let string: String = String(windowsUTF16: pwString)
@@ -41,33 +19,28 @@ public struct Win32FileSystem: FileSystem {
         return URL(fileURLWithPath: string).appendingPathComponent(Game.shared.identifier)
     }
     
-    public func urlForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> URL {
-        let url: URL
+    public func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> String {
         switch searchPath {
-        case .persistant:
+        case .persistent:
             switch domain {
             case .currentUser:
-                url = urlForFolderID(FOLDERID_ProgramData)
+                return urlForFolderID(FOLDERID_ProgramData).path
             case .shared:
-                url = urlForFolderID(FOLDERID_LocalAppData)
+                return urlForFolderID(FOLDERID_LocalAppData).path
             }
         case .cache:
             switch domain {
             case .currentUser:
-                url = urlForFolderID(FOLDERID_ProgramData).appendingPathComponent("Cache")
+                return urlForFolderID(FOLDERID_ProgramData).appendingPathComponent("Cache").path
             case .shared:
-                url = urlForFolderID(FOLDERID_LocalAppData).appendingPathComponent("Cache")
+                return  urlForFolderID(FOLDERID_LocalAppData).appendingPathComponent("Cache").path
             }
         case .temporary:
-            GetTempPathW
+            let length: DWORD = 128
+            var buffer: [UInt16] = Array(repeating: 0, count: Int(length))
+            _ = GetTempPathW(length, &buffer)
+            return String(windowsUTF16: buffer)
         }
-        
-        if fileExists(at: url, asDirectory: true) == false {
-            if createDirectory(at: url) == false {
-                throw "Failed to create directory."
-            }
-        }
-        return url
     }
 }
 #endif
