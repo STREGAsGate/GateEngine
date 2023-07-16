@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 #if canImport(WinSDK)
+import Foundation
 import WinSDK
 import Direct3D12
 
