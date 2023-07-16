@@ -12,11 +12,20 @@ import FileSystem
 
 public struct WASIFileSystem: FileSystem {
     let supportsWebFileSystem: Bool = {
+        guard globalThis.isSecureContext else {return false}
         switch CurrentPlatform.browser {
         case .safari(version: _):
             return false
+        case .chrome(version: let version):
+            return version.major >= 86
+        case .edge(version: let version):
+            return version.major >= 86
+        case .fireFox(version: let version):
+            return version.major >= 111
+        case .opera(version: let version):
+            return version.major >= 72
         default:
-            return globalThis.isSecureContext
+            return false
         }
     }()
     
