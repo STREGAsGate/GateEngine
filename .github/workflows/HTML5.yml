@@ -21,5 +21,8 @@ jobs:
     - name: Swift Version
       run: swift --version
     
-    - name: Test
-      run: carton test --environment defaultBrowser
+    - name: Test Insecure Context
+      run: carton test --environment defaultBrowser --host 127.0.0.1
+      
+    - name: Test Secure Context
+      run: carton test --environment defaultBrowser --host localhost
