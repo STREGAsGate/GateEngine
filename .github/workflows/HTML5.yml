@@ -11,12 +11,12 @@ on:
 jobs:
   Build_Test-Linux-WASI:
     runs-on: ubuntu-latest
-    
-    container:
-      image: ghcr.io/swiftwasm/carton:latest
-      
+
     steps:
     - uses: actions/checkout@v3
+    
+    - name: Install Carton
+    - run: brew install swiftwasm/tap/carton
     
     - name: Swift Version
       run: swift --version
