@@ -8,6 +8,7 @@
 import GameMath
 
 public enum RenderingAPI {
+    case headless
     case metal
     case openGL
     case openGLES

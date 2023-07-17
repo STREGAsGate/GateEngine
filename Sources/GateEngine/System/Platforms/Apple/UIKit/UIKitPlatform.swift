@@ -33,7 +33,7 @@ public final class UIKitPlatform: Platform, InternalPlatform {
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             let path = file.path
-            if fileSystem.itemExists(at: path) {
+            if await fileSystem.itemExists(at: path) {
                 return path
             }
         }

@@ -18,12 +18,21 @@ public final class Game {
     @MainActor internal init(delegate: GameDelegate, currentPlatform: CurrentPlatform) {
         self.platform = currentPlatform
         self.delegate = delegate
-        self.isHeadless = delegate.isHeadless()
+        if delegate.isHeadless() {
+            self.renderer = nil
+            self.isHeadless = true
+            self.renderingAPI = .headless
+        }else{
+            let renderer = Renderer()
+            self.renderer = renderer
+            self.renderingAPI = renderer._backend.renderingAPI
+            self.isHeadless = false
+        }
     }
     
     /// The graphics library being used to render.
-    nonisolated public var renderingAPI: RenderingAPI {renderer.api}
-    @MainActor @usableFromInline private(set) lazy var renderer: Renderer = Renderer()
+    public let renderingAPI: RenderingAPI
+    @MainActor @usableFromInline let renderer: Renderer!
     @MainActor @usableFromInline internal var renderingIsPermitted: Bool = false
     
     @MainActor public private(set) lazy var windowManager: WindowManager = WindowManager(self)

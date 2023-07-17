@@ -19,6 +19,8 @@ import Shaders
             let texCood = vsh.input.geometry(0).textureCoordinate0
             let y = 1.0 - texCood.y
             vsh.output["texCoord0"] = Vec2(x: texCood.x, y: y) * vsh.channel(0).scale + vsh.channel(0).offset
+        case .headless:
+            break
         }
         return vsh
     }()
