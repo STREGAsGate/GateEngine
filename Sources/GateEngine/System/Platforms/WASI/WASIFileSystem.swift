@@ -178,11 +178,12 @@ public struct WASIFileSystem: FileSystem {
         }
     }
     
-    public func write(_ data: Data, to path: String) async throws {
+    public func write(_ data: Data, to path: String, options: FileSystemWriteOptions = .default) async throws {
         let url = URL(fileURLWithPath: path)
         if supportsWebFileSystem {
+            //TODO: atomic write is not handled
             if let currentDirectory = await directoryHandle(at: url.deletingLastPathComponent().path) {
-                let fileHandle = try await currentDirectory.getFileHandle(name: url.lastPathComponent, options: FileSystemGetFileOptions(create: true))
+                let fileHandle = try await currentDirectory.getFileHandle(name: url.lastPathComponent, options: FileSystemGetFileOptions(create: options.contains(.createDirectories)))
                 let stream = try await fileHandle.createWritable(options: FileSystemCreateWritableOptions(keepExistingData: false))
                 try await stream.write(data: .bufferSource(BufferSource.arrayBuffer(Uint8Array(data).arrayBuffer)))
                 try await stream.close()
