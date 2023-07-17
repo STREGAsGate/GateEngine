@@ -25,7 +25,7 @@ public final class AppKitPlatform: InternalPlatform {
         let searchPaths = Game.shared.delegate.customResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
-            if fileSystem.itemExists(at: file.path) {
+            if await fileSystem.itemExists(at: file.path) {
                 return file.path
             }
         }

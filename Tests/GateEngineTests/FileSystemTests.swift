@@ -7,7 +7,9 @@ final class FileSystemTests: XCTestCase {
             func didFinishLaunching(game: Game, options: LaunchOptions) {
                 
             }
-            
+            func isHeadless() -> Bool {
+                return true
+            }
             nonisolated func gameIdentifier() -> StaticString? {
                 return "com.STREGAsGate.GateEngine.tests"
             }
@@ -24,27 +26,33 @@ final class FileSystemTests: XCTestCase {
     func testDirectoryCreateExistsMoveDelete() async throws {
         let fileSystem = Game.shared.platform.fileSystem
         let path = try fileSystem.pathForSearchPath(.persistent, in: .currentUser) + "/test-NewFolder"
-        XCTAssertFalse(fileSystem.itemExists(at: path))
+        var result = await fileSystem.itemExists(at: path)
+        XCTAssertFalse(result)
         
         // Create
-        try fileSystem.createDirectory(at: path)
-        XCTAssertTrue(fileSystem.itemType(at: path) == .directory)
+        try await fileSystem.createDirectory(at: path)
+        result = await fileSystem.itemType(at: path) == .directory
+        XCTAssertTrue(result)
         
         // Move + Exists
         let path2 = path + "2"
         try await fileSystem.moveItem(at: path, to: path2)
-        XCTAssertFalse(fileSystem.itemExists(at: path))
-        XCTAssertTrue(fileSystem.itemExists(at: path2))
+        result = await fileSystem.itemExists(at: path)
+        XCTAssertFalse(result)
+        result = await fileSystem.itemExists(at: path2)
+        XCTAssertTrue(result)
         
         // Delete
         try await fileSystem.deleteItem(at: path2)
-        XCTAssertFalse(fileSystem.itemExists(at: path2))
+        result = await fileSystem.itemExists(at: path2)
+        XCTAssertFalse(result)
     }
     
     func testFileWriteReadExistsMoveDelete() async throws {
         let fileSystem = Game.shared.platform.fileSystem
         let path = try fileSystem.pathForSearchPath(.persistent, in: .currentUser) + "/test-NewFile"
-        XCTAssertFalse(fileSystem.itemExists(at: path))
+        var result = await fileSystem.itemExists(at: path)
+        XCTAssertFalse(result)
         
         // Write + Read
         let writeData = "hollo world".data(using: .utf8)!
@@ -61,12 +69,15 @@ final class FileSystemTests: XCTestCase {
         // Move + Exists
         let path2 = path + "2"
         try await fileSystem.moveItem(at: path, to: path2)
-        XCTAssertFalse(fileSystem.itemExists(at: path))
-        XCTAssertTrue(fileSystem.itemExists(at: path2))
+        result = await fileSystem.itemExists(at: path)
+        XCTAssertFalse(result)
+        result = await fileSystem.itemExists(at: path2)
+        XCTAssertTrue(result)
         
         // Delete
         try await fileSystem.deleteItem(at: path2)
-        XCTAssertFalse(fileSystem.itemExists(at: path2))
+        result = await fileSystem.itemExists(at: path2)
+        XCTAssertFalse(result)
     }
     
     func testItemType() async throws {
@@ -74,13 +85,15 @@ final class FileSystemTests: XCTestCase {
         let path = try fileSystem.pathForSearchPath(.persistent, in: .currentUser)
         
         let dirPath = path + "/test-HelloDir"
-        try fileSystem.createDirectory(at: dirPath)
-        XCTAssert(fileSystem.itemType(at: dirPath) == .directory)
+        try await fileSystem.createDirectory(at: dirPath)
+        var result = await fileSystem.itemType(at: dirPath) == .directory
+        XCTAssert(result)
         try await fileSystem.deleteItem(at: dirPath)
 
         let filePath = path + "/test-HelloFile"
         try await fileSystem.write("hollo world".data(using: .utf8)!, to: filePath)
-        XCTAssert(fileSystem.itemType(at: filePath) == .file)
+        result = await fileSystem.itemType(at: filePath) == .file
+        XCTAssert(result)
         try await fileSystem.deleteItem(at: filePath)
     }
 }

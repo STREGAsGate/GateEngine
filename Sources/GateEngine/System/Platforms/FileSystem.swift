@@ -85,11 +85,11 @@ public protocol FileSystem {
 import Foundation
 
 extension FileSystem {
-    public func itemExists(at path: String) -> Bool {
+    public func itemExists(at path: String) async -> Bool {
         return FileManager.default.fileExists(atPath: path)
     }
     
-    public func itemType(at path: String) -> FileSystemItemType? {
+    public func itemType(at path: String) async -> FileSystemItemType? {
         var isDirectory: ObjCBool = ObjCBool(false)
         let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
         if exists {
@@ -101,11 +101,11 @@ extension FileSystem {
         return nil
     }
     
-    public func contentsOfDirectory(at path: String) throws -> [String] {
+    public func contentsOfDirectory(at path: String) async throws -> [String] {
         return try FileManager.default.contentsOfDirectory(atPath: path)
     }
     
-    public func createDirectory(at path: String) throws {
+    public func createDirectory(at path: String) async throws {
         let url = URL(fileURLWithPath: path)
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     }

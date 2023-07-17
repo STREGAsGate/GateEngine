@@ -8,9 +8,8 @@
 import Foundation
 
 public struct LinuxFileSystem: FileSystem {
-    let homeDir: String = {
-        String(cString: getenv("HOME") ?? getpwuid(getuid()).pointee.pw_dir)
-    }()
+    let homeDir: String = String(cString: getenv("HOME") ?? getpwuid(getuid()).pointee.pw_dir)
+
     public func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> String {
         switch searchPath {
         case .persistent:
