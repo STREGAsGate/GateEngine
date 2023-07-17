@@ -45,6 +45,20 @@ public enum FileSystemItemType {
     case file
 }
 
+public struct FileSystemWriteOptions: OptionSet {
+    public typealias RawValue = UInt
+    public var rawValue: RawValue
+    public init(rawValue: RawValue) {
+        self.rawValue = rawValue
+    }
+    
+    public static let createDirectories = Self(rawValue: 1 << 1)
+    public static let atomically = Self(rawValue: 1 << 2)
+    
+    @_transparent
+    public static var `default`: Self {[]}// {[.createDirectories, .atomically]}
+}
+
 /*
  FileSystem uses URL instead of String paths because URL automatically handles converting Unix paths to Windows paths on Windows.
  This allows users to use Unix paths exclusivley.
@@ -57,8 +71,11 @@ public protocol FileSystem {
     func contentsOfDirectory(at path: String) async throws -> [String]
     func createDirectory(at path: String) async throws
     
+    func deleteItem(at path: String) async throws
+    func moveItem(at originPath: String, to destinationPath: String) async throws
+    
     func read(from path: String) async throws -> Data
-    func write(_ data: Data, to path: String) async throws
+    func write(_ data: Data, to path: String, options: FileSystemWriteOptions) async throws
     
     func resolvePath(_ path: String) throws -> String
     func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> String
@@ -68,7 +85,7 @@ public protocol FileSystem {
 import Foundation
 
 extension FileSystem {
-public func itemExists(at path: String) -> Bool {
+    public func itemExists(at path: String) -> Bool {
         return FileManager.default.fileExists(atPath: path)
     }
     
@@ -93,6 +110,14 @@ public func itemExists(at path: String) -> Bool {
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     }
     
+    public func deleteItem(at path: String) async throws {
+        try FileManager.default.removeItem(atPath: path)
+    }
+    
+    public func moveItem(at originPath: String, to destinationPath: String) async throws {
+        try FileManager.default.moveItem(atPath: originPath, toPath: destinationPath)
+    }
+    
     public func read(from path: String) async throws -> Data {
         return try await withCheckedThrowingContinuation { continuation in
             do {
@@ -105,15 +130,34 @@ public func itemExists(at path: String) -> Bool {
         }
     }
     
-    public func write(_ data: Data, to path: String) async throws {
-        try await withCheckedThrowingContinuation { continuation in
-            do {
-                let url = URL(fileURLWithPath: path)
-                try data.write(to: url)
-                continuation.resume()
-            }catch{
-                continuation.resume(throwing: error)
+    public func write(_ data: Data, to path: String, options: FileSystemWriteOptions = .default) async throws {
+        func writeData(to destinationPath: String) async throws {
+            try await withCheckedThrowingContinuation { continuation in
+                do {
+                    try data.write(to: URL(fileURLWithPath: destinationPath), options: [])
+                    continuation.resume()
+                }catch{
+                    continuation.resume(throwing: error)
+                }
             }
+        }
+        func createDirectoryIfNeeded(at dirPath: String) async throws {
+            if await itemExists(at: dirPath) == false {
+                try await createDirectory(at: dirPath)
+            }
+        }
+        if options.contains(.createDirectories) {
+            let dirPath = URL(fileURLWithPath: path).deletingLastPathComponent().path
+            try await createDirectoryIfNeeded(at: dirPath)
+        }
+        if options.contains(.atomically) {
+            let tmpDir = URL(fileURLWithPath: try pathForSearchPath(.temporary, in: .currentUser))
+            let tmpPath = tmpDir.appendingPathComponent(URL(fileURLWithPath: path).lastPathComponent).path
+            try await createDirectoryIfNeeded(at: tmpDir.path)
+            try await writeData(to: tmpPath)
+            try await moveItem(at: tmpPath, to: path)
+        }else{
+            try await writeData(to: path)
         }
     }
     

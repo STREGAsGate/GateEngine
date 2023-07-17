@@ -8,7 +8,7 @@
 import Foundation
 
 public struct AppleFileSystem: FileSystem {
-    public func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> String {
+    public func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain = .currentUser) throws -> String {
         let _searchPath: FileManager.SearchPathDirectory
         switch searchPath {
         case .persistent:
@@ -16,7 +16,7 @@ public struct AppleFileSystem: FileSystem {
         case .cache:
             _searchPath = .cachesDirectory
         case .temporary:
-            _searchPath = .itemReplacementDirectory
+            return FileManager.default.temporaryDirectory.appendingPathComponent(Game.shared.identifier).path
         }
         let _domainMask: FileManager.SearchPathDomainMask
         switch domain {

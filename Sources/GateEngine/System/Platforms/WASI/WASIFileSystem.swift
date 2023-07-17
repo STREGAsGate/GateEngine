@@ -100,7 +100,7 @@ public struct WASIFileSystem: FileSystem {
         }else{
             let path = path.lowercased()
             let window: DOM.Window = globalThis
-            var keys: [String] = (0 ..< window.localStorage.length).compactMap({window.localStorage.key(index: $0)})
+            let keys: [String] = (0 ..< window.localStorage.length).compactMap({window.localStorage.key(index: $0)})
             return keys.filter({$0.lowercased().hasPrefix(path)})
         }
     }
@@ -115,6 +115,36 @@ public struct WASIFileSystem: FileSystem {
         }else{
             let window: DOM.Window = globalThis
             window.localStorage[path] = ""
+        }
+    }
+    
+    public func deleteItem(at path: String) async throws {
+        if supportsWebFileSystem {
+            let url = URL(fileURLWithPath: path)
+            if let dir = await directoryHandle(at: url.deletingLastPathComponent().path) {
+                try await dir.removeEntry(name: url.lastPathComponent)
+            }
+        }else{
+            let window: DOM.Window = globalThis
+            window.localStorage.removeValue(forKey: path)
+        }
+    }
+    
+    public func moveItem(at originPath: String, to destinationPath: String) async throws {
+        if supportsWebFileSystem {
+            fatalError()
+//            let url = URL(fileURLWithPath: path)
+//            if let originDirectoryHandle = await directoryHandle(at: url.deletingLastPathComponent().path) {
+//                try await dir.move(name: url.lastPathComponent)
+//            }
+        }else{
+            let window: DOM.Window = globalThis
+            if let value = window.localStorage[originPath] {
+                window.localStorage[destinationPath] = value
+                window.localStorage.removeValue(forKey: originPath)
+            }else{
+                throw "Item \"\(originPath)\" doesn't exist."
+            }
         }
     }
     
