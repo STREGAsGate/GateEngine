@@ -16,7 +16,7 @@ jobs:
       image: ghcr.io/swiftwasm/carton:latest
       
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     
     - name: Swift Version
       run: swift --version
