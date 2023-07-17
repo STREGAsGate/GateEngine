@@ -18,11 +18,11 @@ jobs:
     - name: Install Carton
       run: brew install swiftwasm/tap/carton
     
-    - name: Make Chrome Default
-      run: open -a "Google Chrome" --args --make-default-browser
-    
     - name: Test Insecure Context
       run: carton test --environment defaultBrowser --host 127.0.0.1
+      
+    - name: Make Chrome Default
+      run: open -a "Google Chrome" --args --make-default-browser
       
     - name: Test Secure Context
       run: carton test --environment defaultBrowser --host localhost
