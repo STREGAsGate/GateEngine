@@ -10,7 +10,7 @@ on:
 
 jobs:
   Build_Test-macOS-WASI:
-    runs-on: macos-latest
+    runs-on: macos-13
     
     container:
       image: ghcr.io/swiftwasm/carton:latest
