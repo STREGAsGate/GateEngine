@@ -9,8 +9,8 @@ on:
     - '**'
 
 jobs:
-  Build_Test-Linux-WASI:
-    runs-on: ubuntu-latest
+  Build_Test-macOS-WASI:
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v3
