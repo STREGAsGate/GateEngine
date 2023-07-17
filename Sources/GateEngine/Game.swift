@@ -23,7 +23,7 @@ public final class Game {
     
     /// The graphics library being used to render.
     nonisolated public var renderingAPI: RenderingAPI {renderer.api}
-    @MainActor @usableFromInline let renderer: Renderer = Renderer()
+    @MainActor @usableFromInline private(set) lazy var renderer: Renderer = Renderer()
     @MainActor @usableFromInline internal var renderingIsPermitted: Bool = false
     
     @MainActor public private(set) lazy var windowManager: WindowManager = WindowManager(self)
