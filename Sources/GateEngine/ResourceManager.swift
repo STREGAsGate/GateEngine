@@ -554,7 +554,7 @@ internal extension ResourceManager {
         return key
     }
     
-    func texureCacheKey(data: Data, size: Size2, mipMapping: MipMapping) -> Cache.TextureKey {
+    func textureCacheKey(data: Data, size: Size2, mipMapping: MipMapping) -> Cache.TextureKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.TextureKey(requestedPath: path, mipMapping: mipMapping, textureOptions: .none)
         if cache.textures[key] == nil {
@@ -570,7 +570,7 @@ internal extension ResourceManager {
         return key
     }
     
-    func texureCacheKey(renderTargetBackend: RenderTargetBackend) -> Cache.TextureKey {
+    func textureCacheKey(renderTargetBackend: RenderTargetBackend) -> Cache.TextureKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.TextureKey(requestedPath: path, mipMapping: .none, textureOptions: .none)
         if cache.textures[key] == nil {
