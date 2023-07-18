@@ -49,7 +49,7 @@ public final class Physics3DSystem: System {
 }
 
 extension Physics3DSystem {
-    func applyGravity(entitiy: Entity, component: Physics3DComponent, deltaTime: Float) {
+    func applyGravity(entity: Entity, component: Physics3DComponent, deltaTime: Float) {
         var gravity = component.velocity
         gravity.y = component.effectiveGravity().y
         component.velocity = component.velocity.interpolated(to: gravity, .linear(deltaTime))

@@ -22,8 +22,8 @@ internal final class DeferredSystem: PlatformSystem {
         deferredBlocks.removeAll(keepingCapacity: true)
     }
     
-    public override class var phase: PlatformSystem.Phase {.postDeffered}
-    override class func sortOrder() -> PlatformSystemSortOrder? {.defferedSystem}
+    public override class var phase: PlatformSystem.Phase {.postDeferred}
+    override class func sortOrder() -> PlatformSystemSortOrder? {.deferredSystem}
 }
 
 public extension System {

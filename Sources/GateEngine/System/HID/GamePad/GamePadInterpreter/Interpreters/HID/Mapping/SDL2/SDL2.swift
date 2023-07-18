@@ -234,7 +234,7 @@ class SDL2Database {
         #elseif os(Android)
         let platform = "Android"
         #else
-        throw SDL2DatabaseError("Platfrom not supported.")
+        throw SDL2DatabaseError("Platform not supported.")
         #endif
                 
         var controllers: [SDL2ControllerGUID : SDL2ControllerMap] = [:]

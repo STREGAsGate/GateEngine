@@ -141,7 +141,7 @@ public extension BoundingCircle2D {
     @inlinable @inline(__always)
     func surfaceNormal(facing point: Position2) -> Direction2 {
         let position = self.position
-        // If the points are the same there is no direction, return a defualt
+        // If the points are the same there is no direction, return a default
         guard point != position else {return .up}
         return Direction2(from: self.position, to: point)
     }

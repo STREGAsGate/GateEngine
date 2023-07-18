@@ -23,7 +23,7 @@ public extension Mouse {
         @usableFromInline
         internal unowned let mouse: Mouse
         @usableFromInline
-        internal var currentRecipt: UInt8 = 0
+        internal var currentReceipt: UInt8 = 0
         
         private var mostRecentDevice: Int = 0
         @usableFromInline
@@ -59,7 +59,7 @@ public extension Mouse {
             self.lastValueWasMomentum = isMomentum
             
             if delta != 0 {
-                currentRecipt &+= 1
+                currentReceipt &+= 1
             }
             if delta == 0 {
                 direction = nil
@@ -98,20 +98,20 @@ public extension Mouse {
         }
         
         /**
-         Returns a recipt for the current press or nil if not pressed.
-         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
+         Returns a receipt for the current press or nil if not pressed.
+         - parameter receipt: An existing receipt from a previous call to compare to the current pressed state.
          - parameter includeMomentum: When set to false, excludes values that were generated as momentum effects. Only works on some platforms (like macOS).
-         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
+         - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          */
         @inlinable @inline(__always)
-        public func didScroll(ifDifferent recipt: inout InputRecipts, includingMomentum includeMomentum: Bool = false) -> Bool {
+        public func didScroll(ifDifferent receipt: inout InputReceipts, includingMomentum includeMomentum: Bool = false) -> Bool {
             guard delta != 0 else {return false}
             let key = ObjectIdentifier(self)
             
-            if let recipt = recipt.values[key], recipt == currentRecipt {
+            if let receipt = receipt.values[key], receipt == currentReceipt {
                 return false
             }
-            recipt.values[key] = currentRecipt
+            receipt.values[key] = currentReceipt
             if includeMomentum == false && lastValueWasMomentum {
                 return false
             }
@@ -119,15 +119,15 @@ public extension Mouse {
         }
         
         /**
-         Returns a recipt for the current press or nil if not pressed.
-         - parameter recipt: An existing recipt from a previous call to compare to the current pressed state.
+         Returns a receipt for the current press or nil if not pressed.
+         - parameter receipt: An existing receipt from a previous call to compare to the current pressed state.
          - parameter includeMomentum: When set to false, excludes values that were generated as momentum effects. Only works on some platforms (like macOS).
          - parameter block: A code block, including this scroller, that is run if the request is true.
-         - returns: A recipt if the key is currently pressed and the was released since the provided recipt.
+         - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          */
         @inlinable @inline(__always)
-        public func whenScrolled(ifDifferent recipt: inout InputRecipts, includingMomentum includeMomentum: Bool = false, run block: (_ scroller: ScrollerState)->Void) {
-            if didScroll(ifDifferent: &recipt, includingMomentum: includeMomentum) {
+        public func whenScrolled(ifDifferent receipt: inout InputReceipts, includingMomentum includeMomentum: Bool = false, run block: (_ scroller: ScrollerState)->Void) {
+            if didScroll(ifDifferent: &receipt, includingMomentum: includeMomentum) {
                 block(self)
             }
         }

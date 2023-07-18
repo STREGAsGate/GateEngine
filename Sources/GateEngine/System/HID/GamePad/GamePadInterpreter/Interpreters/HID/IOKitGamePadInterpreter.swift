@@ -154,7 +154,7 @@ internal class IOKitGamePadInterpreter: GamePadInterpreter {
         if let sdlController = sdlDatabase.controllers[controller.guid] {
             updateStateForSDL2Controller(gamePad, controller: sdlController)
         }else{
-            fatalError("GamePad was supposed to be supported but there is no implememntation.")
+            fatalError("GamePad was supposed to be supported but there is no implementation.")
         }
     }
     

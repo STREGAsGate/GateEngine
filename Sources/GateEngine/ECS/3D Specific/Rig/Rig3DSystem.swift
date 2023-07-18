@@ -7,19 +7,19 @@
 
 public class RigSystem: System {
     var checkedIDs: Set<ObjectIdentifier> = []
-    func getFarAway(from entites: ContiguousArray<Entity>) -> Entity? {
+    func getFarAway(from entities: ContiguousArray<Entity>) -> Entity? {
         func filter(_ entity: Entity) -> Bool {
             if let rig = entity.component(ofType: Rig3DComponent.self) {
                 return rig.disabled == false && rig.deltaAccumulator > 0 && checkedIDs.contains(entity.id) == false
             }
             return false
         }
-        if let entity = entites.first(where: {filter($0)}) {
+        if let entity = entities.first(where: {filter($0)}) {
             checkedIDs.insert(entity.id)
             return entity
         }
         checkedIDs.removeAll(keepingCapacity: true)
-        if let entity = entites.first(where: {filter($0)}) {
+        if let entity = entities.first(where: {filter($0)}) {
             checkedIDs.insert(entity.id)
             return entity
         }
@@ -73,8 +73,8 @@ public class RigSystem: System {
         }
  
         for entity in game.entities {
-            if let rigAttachmentComponenet = entity.component(ofType: RigAttachmentComponent.self) {
-                updateRigAttachmentTransform(game, entity: entity, rigAttachmentComponenet: rigAttachmentComponenet)
+            if let rigAttachmentComponent = entity.component(ofType: RigAttachmentComponent.self) {
+                updateRigAttachmentTransform(game, entity: entity, rigAttachmentComponent: rigAttachmentComponent)
             }
         }
     }
@@ -87,15 +87,15 @@ public class RigSystem: System {
         joint.localTransform.scale = (joint.localTransform.scale + transform.scale) / 2
     }
     
-    private func updateRigAttachmentTransform(_ game: Game, entity: Entity, rigAttachmentComponenet: RigAttachmentComponent) {
-        guard let parent = game.entities.first(where: {$0.id == rigAttachmentComponenet.parentEntityID}) else {
+    private func updateRigAttachmentTransform(_ game: Game, entity: Entity, rigAttachmentComponent: RigAttachmentComponent) {
+        guard let parent = game.entities.first(where: {$0.id == rigAttachmentComponent.parentEntityID}) else {
             //If the parent is gone trash the attachment
             game.removeEntity(entity)
             return
         }
         guard let parentTransform = parent.component(ofType: Transform3Component.self) else {return}
         guard let parentRig = parent.component(ofType: Rig3DComponent.self) else {return}
-        guard let joint = parentRig.skeleton.jointNamed(rigAttachmentComponenet.parentJointName) else {return}
+        guard let joint = parentRig.skeleton.jointNamed(rigAttachmentComponent.parentJointName) else {return}
         entity.configure(Transform3Component.self) { component in
             let transform = (parentTransform.transform.createMatrix() * joint.modelSpace).transform
             component.transform.position = transform.position

@@ -183,22 +183,22 @@
         return _renderingSystems
     }
 
-    private var entitesDidChange: Bool = true
+    private var entitiesDidChange: Bool = true
     @usableFromInline
     private(set) var entities: Set<Entity> = [] {
         didSet {
-            self.entitesDidChange = true
+            self.entitiesDidChange = true
         }
     }
     
-    private var _sortedEntites: ContiguousArray<Entity> = []
+    private var _sortedEntities: ContiguousArray<Entity> = []
     @usableFromInline
     func sortedEntities() -> ContiguousArray<Entity> {
-        if entitesDidChange {
-            entitesDidChange = false
-            _sortedEntites = ContiguousArray(self.entities.sorted(by: {$0.priority.rawValue > $1.priority.rawValue}))
+        if entitiesDidChange {
+            entitiesDidChange = false
+            _sortedEntities = ContiguousArray(self.entities.sorted(by: {$0.priority.rawValue > $1.priority.rawValue}))
         }
-        return _sortedEntites
+        return _sortedEntities
     }
 
     public private(set) var performance: Performance? = nil
@@ -248,7 +248,7 @@ extension ECSContext {
             self.performance?.endCurrentStatistic()
         }
         for system in self.platformSystems {
-            guard type(of: system).phase == .postDeffered else {continue}
+            guard type(of: system).phase == .postDeferred else {continue}
             self.performance?.beginStatForSystem(system)
             await system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
@@ -304,7 +304,7 @@ extension ECSContext {
     }
 }
 
-//MARK: Entity Managment
+//MARK: Entity Management
 extension ECSContext {
     @inlinable @inline(__always)
     func insertEntity(_ entity: Entity) {
@@ -341,7 +341,7 @@ extension ECSContext {
     }
 }
 
-//MARK: System Managment
+//MARK: System Management
 extension ECSContext {
     @usableFromInline
     func system(ofType systemType: System.Type) -> System {

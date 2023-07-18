@@ -27,7 +27,7 @@ public final class Entity: Identifiable {
     }
 }
 
-//MARK: Component Managment
+//MARK: Component Management
 public extension Entity {
     /// - returns true if the entity has the component
     @inlinable @inline(__always)
@@ -35,7 +35,7 @@ public extension Entity {
         return components.keys.contains(type.componentID)
     }
 
-    /// - returns The component, addind it to the entity if neccessary
+    /// - returns The component, addind it to the entity if necessary
     @inlinable @inline(__always)
     subscript<T: Component>(_ type: T.Type) -> T {
         get {
@@ -95,7 +95,7 @@ public extension Entity {
     }
     
     /// Allows changing a component with async, creating the component if needed.
-    /// The compnent is added to the Entity after the async operation is complete.
+    /// The component is added to the Entity after the async operation is complete.
     @inlinable @inline(__always)
     func configure<T: Component>(_ type: T.Type, _ config: @escaping (_ component: inout T) async throws -> Void) {
         Task(priority: .medium) {

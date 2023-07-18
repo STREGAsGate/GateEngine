@@ -919,7 +919,7 @@ final class UGNSWindow: AppKit.NSWindow {
 
     override func keyDown(with event: NSEvent) {
         var forward: Bool = true
-        if Game.shared.hid.keyboardDidhandle(key: keyFromEvent(event),
+        if Game.shared.hid.keyboardDidHandle(key: keyFromEvent(event),
                                              character: event.characters?.first,
                                              modifiers: modifiersFromEvent(event),
                                              isRepeat: event.isARepeat,
@@ -933,7 +933,7 @@ final class UGNSWindow: AppKit.NSWindow {
 
     override func keyUp(with event: NSEvent) {
         var forward: Bool = true
-        if Game.shared.hid.keyboardDidhandle(key: keyFromEvent(event),
+        if Game.shared.hid.keyboardDidHandle(key: keyFromEvent(event),
                                              character: event.characters?.first,
                                              modifiers: modifiersFromEvent(event),
                                              isRepeat: event.isARepeat,
@@ -951,42 +951,42 @@ final class UGNSWindow: AppKit.NSWindow {
         switch keyCode {
         case 56, 60:
             let key: KeyboardKey = keyCode == 56 ? .shift(.leftSide) : .shift(.rightSide)
-            forward = Game.shared.hid.keyboardDidhandle(key: key,
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
                                                         character: nil,
                                                         modifiers: [],
                                                         isRepeat: false,
                                                         event: .toggle) == false
         case 55, 54:
             let key: KeyboardKey = keyCode == 55 ? .host(.leftSide) : .host(.rightSide)
-            forward = Game.shared.hid.keyboardDidhandle(key: key,
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
                                                         character: nil,
                                                         modifiers: [],
                                                         isRepeat: false,
                                                         event: .toggle) == false
         case 59, 62:
             let key: KeyboardKey = keyCode == 59 ? .control(.leftSide) : .control(.rightSide)
-            forward = Game.shared.hid.keyboardDidhandle(key: key,
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
                                                         character: nil,
                                                         modifiers: [],
                                                         isRepeat: false,
                                                         event: .toggle) == false
         case 58, 61:
             let key: KeyboardKey = keyCode == 58 ? .alt(.leftSide) : .alt(.rightSide)
-            forward = Game.shared.hid.keyboardDidhandle(key: key,
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
                                                         character: nil,
                                                         modifiers: [],
                                                         isRepeat: false,
                                                         event: .toggle) == false
         case 63:
             let key: KeyboardKey = .fn
-            forward = Game.shared.hid.keyboardDidhandle(key: key,
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
                                                         character: nil,
                                                         modifiers: [],
                                                         isRepeat: false,
                                                         event: .toggle) == false
         case 57:
             let key: KeyboardKey = .capsLock
-            forward = Game.shared.hid.keyboardDidhandle(key: key,
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
                                                         character: nil,
                                                         modifiers: [],
                                                         isRepeat: false,

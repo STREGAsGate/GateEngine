@@ -81,7 +81,7 @@ public extension Position3 {
 
 public extension Position3 {
     /** The distance between `from` and `self`
-    - parameter from: A value representing the source positon.
+    - parameter from: A value representing the source position.
      */
     @_transparent
     func distance(from: Self) -> Float {
@@ -90,8 +90,8 @@ public extension Position3 {
         return distance.squareRoot()
     }
 
-    /** Returns true when the distance from `self` and  `rhs` is less then `threshhold`
-    - parameter rhs: A value representing the destination positon.
+    /** Returns true when the distance from `self` and  `rhs` is less then `threshold`
+    - parameter rhs: A value representing the destination position.
     - parameter threshold: The maximum distance that is considered "near".
      */
     @_transparent

@@ -21,7 +21,7 @@ public enum GamePadSymbolMap {
 }
 
 public struct GamePadSymbol: CustomStringConvertible {
-    /// The mapping used to determin all other values
+    /// The mapping used to determine all other values
     public let map: GamePadSymbolMap
     internal let _id: GamePad.InternalID
     
@@ -417,25 +417,25 @@ public extension GamePad {
     @MainActor public class ButtonState {
         weak var gamePad: GamePad?
         let id: InternalID
-        var currentRecipt: UInt8 = 0
+        var currentReceipt: UInt8 = 0
 
         /// `true` if the button is considered down.
         @Polled public internal(set) var isPressed: Bool = false {
             didSet {
                 if isPressed != oldValue {
-                    currentRecipt &+= 1
+                    currentReceipt &+= 1
                 }
             }
         }
         
-        // Returns a recipt for the current press or nil if not pressed
-        public func isPressed(ifDifferent recipt: inout InputRecipts) -> Bool {
+        // Returns a receipt for the current press or nil if not pressed
+        public func isPressed(ifDifferent receipt: inout InputReceipts) -> Bool {
             guard self.isPressed else {return false}
             let key = ObjectIdentifier(self)
-            if let recipt = recipt.values[key], recipt == currentRecipt {
+            if let receipt = receipt.values[key], receipt == currentReceipt {
                 return false
             }
-            recipt.values[key] = currentRecipt
+            receipt.values[key] = currentReceipt
             return true
         }
         
@@ -444,8 +444,8 @@ public extension GamePad {
          - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
          */
         @inlinable @inline(__always)
-        public func whenPressed(ifDifferent recipt: inout InputRecipts, run block: (ButtonState)->Void) {
-            if isPressed(ifDifferent: &recipt) {
+        public func whenPressed(ifDifferent receipt: inout InputReceipts, run block: (ButtonState)->Void) {
+            if isPressed(ifDifferent: &receipt) {
                 block(self)
             }
         }

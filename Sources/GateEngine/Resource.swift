@@ -51,7 +51,7 @@ public enum ResourceState: Equatable {
     case pending
     /// The resource can be used and it's properties accessed.
     case ready
-    /** The resource had an issue becomming `ready` and will never be usable. It should be discarded.
+    /** The resource had an issue becoming `ready` and will never be usable. It should be discarded.
      The provided failure reason exists for debugging and does not guaranteed the same string for the same failure. Do not compare against it.
     - parameter reason: The rason the resource state is `failed`.
     */

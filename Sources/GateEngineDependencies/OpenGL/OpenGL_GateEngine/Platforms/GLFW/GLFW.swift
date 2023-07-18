@@ -150,7 +150,7 @@ public struct GamepadState {
     @_transparent @usableFromInline public var buttonWestPressed: Bool {buttons[Int(GLFW_GAMEPAD_BUTTON_SQUARE)]}
 
     @_transparent @usableFromInline public var buttonLeftBumperPressed: Bool {buttons[Int(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER)]}
-    @_transparent @usableFromInline public var buttonRighBumperPressed: Bool {buttons[Int(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER)]}
+    @_transparent @usableFromInline public var buttonRightBumperPressed: Bool {buttons[Int(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER)]}
 
     @_transparent @usableFromInline public var buttonLeftStickPressed: Bool {buttons[Int(GLFW_GAMEPAD_BUTTON_LEFT_THUMB)]}
     @_transparent @usableFromInline public var buttonRightStickPressed: Bool {buttons[Int(GLFW_GAMEPAD_BUTTON_RIGHT_THUMB)]}

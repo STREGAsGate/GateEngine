@@ -62,7 +62,7 @@ public class Font: OldResource {
         #endif
     }
     
-    public init(pngRegualar regular: String) {
+    public init(pngRegular regular: String) {
         super.init()
         #if DEBUG
         self._backend.configure(withOwner: self)
@@ -115,6 +115,6 @@ public class Font: OldResource {
     static let `default`: Font = tuffy
     
     nonisolated static let tuffy: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy.ttf")
-    nonisolated static let micro: Font = Font(pngRegualar: "GateEngine/Fonts/Micro/Micro.png")
-    nonisolated static let babel: Font = Font(pngRegualar: "GateEngine/Fonts/Babel/Babel.png")
+    nonisolated static let micro: Font = Font(pngRegular: "GateEngine/Fonts/Micro/Micro.png")
+    nonisolated static let babel: Font = Font(pngRegular: "GateEngine/Fonts/Babel/Babel.png")
 }

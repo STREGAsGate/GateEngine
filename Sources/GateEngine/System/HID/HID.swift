@@ -7,12 +7,12 @@
 
 import GameMath
 
-public struct InputRecipts {
+public struct InputReceipts {
     @usableFromInline
     var values: [ObjectIdentifier:UInt8] = [:]
     
     @inlinable
-    func recipt(for object: AnyObject) -> UInt8? {
+    func receipt(for object: AnyObject) -> UInt8? {
         let key = ObjectIdentifier(object)
         return values[key]
     }
@@ -79,12 +79,12 @@ extension HID {
     }
 
     @_transparent
-    func keyboardDidhandle(key: KeyboardKey,
+    func keyboardDidHandle(key: KeyboardKey,
                            character: Character?,
                            modifiers: KeyboardModifierMask,
                            isRepeat: Bool,
                            event: KeyboardEvent) -> Bool {
         recentInputMethod = .mouseKeyboard
-        return keyboard.keyboardDidhandle(key: key, character: character, modifiers: modifiers, isRepeat: isRepeat, event: event)
+        return keyboard.keyboardDidHandle(key: key, character: character, modifiers: modifiers, isRepeat: isRepeat, event: event)
     }
 }

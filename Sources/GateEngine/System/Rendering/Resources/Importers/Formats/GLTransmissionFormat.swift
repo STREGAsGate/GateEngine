@@ -487,7 +487,7 @@ extension GLTransmissionFormat: GeometryImporter {
                 }
             }
             
-            let geometry = RawGeometry(positions: positions, uvSets: uvSets, normals: normals, tangents: tangents, colors: colors, indicies: indices)
+            let geometry = RawGeometry(positions: positions, uvSets: uvSets, normals: normals, tangents: tangents, colors: colors, indices: indices)
             geometries.append(geometry)
         }
         

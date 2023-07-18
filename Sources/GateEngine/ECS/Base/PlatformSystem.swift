@@ -7,13 +7,13 @@
 
 import GameMath
 
-/// PlaformSystems are private and reserved for internal use by the engine.
+/// PlatformSystems are private and reserved for internal use by the engine.
 @MainActor internal class PlatformSystem {
     private var didSetup = false
     private(set) lazy var backgroundTask = BackgroundTask(system: self)
     
     /// The current delta time as a Double
-    /// Use this instead of the System Float varient when keeping track of timers
+    /// Use this instead of the System Float variant when keeping track of timers
     @inlinable @inline(__always)
     internal var highPrecisionDeltaTime: Double {
         return Game.shared.highPrecisionDeltaTime
@@ -35,7 +35,7 @@ import GameMath
      Called once when the system is first inserted into the game.
      
      Use `setup()` to create any system specific data and add it to the game.
-     - note: The call to `setup()` is deffered until the next update frame after the system has been inserted and will be called immediatled before `update(withTimePassed:)`.
+     - note: The call to `setup()` is deferred until the next update frame after the system has been inserted and will be called immediatled before `update(withTimePassed:)`.
      */
     open func setup(game: Game, input: HID) async {
         
@@ -61,7 +61,7 @@ import GameMath
      Called when the system is removed from the game.
         
      Use teardown to cleanup any system specific data within the game.
-     - note: The call to `teardown()` happens immediatley updon removal from the game.
+     - note: The call to `teardown()` happens immediately updon removal from the game.
      */
     open func teardown(game: Game) {
         
@@ -85,7 +85,7 @@ import GameMath
 extension PlatformSystem {
     enum Phase: UInt {
         case preUpdating
-        case postDeffered
+        case postDeferred
     }
 }
 

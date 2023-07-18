@@ -56,7 +56,7 @@ public final class MSLCodeGenerator: CodeGenerator {
             return "in.tan\(index)"
         case let .vertexInColor(index):
             return "in.clr\(index)"
-        case let .vertexInJointIndicies(index):
+        case let .vertexInJointIndices(index):
             return "in.jtIdx\(index)"
         case let .vertexInJointWeights(index):
             return "in.jtWeit\(index)"
@@ -149,21 +149,21 @@ public final class MSLCodeGenerator: CodeGenerator {
         for attributeIndex in attributes.indices {
             let attribute = attributes[attributeIndex]
             switch attribute {
-            case .vertexInPosition(geoemtryIndex: let geometryIndex):
+            case .vertexInPosition(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float3)) pos\(geometryIndex) [[attribute(\(attributeIndex))]];"
-            case .vertexInTexCoord0(geoemtryIndex: let geometryIndex):
+            case .vertexInTexCoord0(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float2)) uv\(geometryIndex)_0 [[attribute(\(attributeIndex))]];"
-            case .vertexInTexCoord1(geoemtryIndex: let geometryIndex):
+            case .vertexInTexCoord1(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float2)) uv\(geometryIndex)_1 [[attribute(\(attributeIndex))]];"
-            case .vertexInNormal(geoemtryIndex: let geometryIndex):
+            case .vertexInNormal(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float3)) nml\(geometryIndex) [[attribute(\(attributeIndex))]];"
-            case .vertexInTangent(geoemtryIndex: let geometryIndex):
+            case .vertexInTangent(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float3)) tan\(geometryIndex) [[attribute(\(attributeIndex))]];"
-            case .vertexInColor(geoemtryIndex: let geometryIndex):
+            case .vertexInColor(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float4)) clr\(geometryIndex) [[attribute(\(attributeIndex))]];"
-            case .vertexInJointIndices(geoemtryIndex: let geometryIndex):
+            case .vertexInJointIndices(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .uint4)) jtIdx\(geometryIndex) [[attribute(\(attributeIndex))]];"
-            case .vertexInJointWeights(geoemtryIndex: let geometryIndex):
+            case .vertexInJointWeights(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float4)) jtWeit\(geometryIndex) [[attribute(\(attributeIndex))]];"
             }
         }

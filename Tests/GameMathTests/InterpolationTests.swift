@@ -97,7 +97,7 @@ final class InterpolationTests: XCTestCase {
     }
     
     func testQuaternionShortest() {
-        // This test is diffcult to perform accuraualy. To help, results are unitNormaized to bring them as close to the same format as possible before comparison. Because results are modified this a poor test, but good enough for regetion chcking.
+        // This test is difficult to perform accuraualy. To help, results are unitNormalized to bring them as close to the same format as possible before comparison. Because results are modified this a poor test, but good enough for regetion chcking.
         
         let start = Quaternion(45°, axis: .right).normalized
         let end = Quaternion(-45°, axis: .right).normalized

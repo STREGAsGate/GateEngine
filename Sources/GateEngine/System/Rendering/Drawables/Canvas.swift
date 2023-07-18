@@ -196,9 +196,9 @@
     /**
      Create a canvas.
      
-     - parameter camera: An optional Scene camera, which is required for 3D space convertions.
+     - parameter camera: An optional Scene camera, which is required for 3D space conversions.
      - parameter size: The exact size of the canvas, this should be the saizxe of your renderTarget.
-     - parameter interfaceScale: The userInterface scale. Sometimes called HiDPI. This setting changes how some drawable items are layed out. Use `1` for traditional gaming style drawing.
+     - parameter interfaceScale: The userInterface scale. Sometimes called HiDPI. This setting changes how some drawable items are laid out. Use `1` for traditional gaming style drawing.
      - parameter estimatedCommandCount: A performance hint of how many commands will be added.
      */
     public init(camera: Camera? = nil, size: Size2? = nil, interfaceScale: Float = 1, estimatedCommandCount: Int = 10) {
@@ -212,7 +212,7 @@
     /**
      Create a canvas.
      
-     - parameter camera: An optional Scene camera, which is required for 3D space convertions.
+     - parameter camera: An optional Scene camera, which is required for 3D space conversions.
      - parameter window: The Window this canvas will be added to.
      - parameter estimatedCommandCount: A performance hint of how many commands will be added.
      */

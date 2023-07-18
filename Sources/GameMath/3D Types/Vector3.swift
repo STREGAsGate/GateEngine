@@ -114,8 +114,8 @@ extension Vector3 {
 public extension Vector3 {
     /**
      Returns a new instance with `x` incremented by `value`.
-     - parameter x: The amount to add to `x`. To subtract use a negatie value.
-     - returns: A new Self with the additions.
+     - parameter value: The amount to add to `x`. To subtract use a negative value.
+     - returns: A new Self with `x` incremented by `value`.
     */
     @_transparent
     func addingTo(x: Float) -> Self {
@@ -124,8 +124,8 @@ public extension Vector3 {
     
     /**
      Returns a new instance with `y` incremented by `value`.
-     - parameter y: The amount to add to `y`. To subtract use a negatie value.
-     - returns: A new Self with the additions.
+     - parameter value: The amount to add to `y`. To subtract use a negative value.
+     - returns: A new Self with `y` incremented by `value`.
     */
     @_transparent
     func addingTo(y value: Float) -> Self {
@@ -134,8 +134,8 @@ public extension Vector3 {
     
     /**
      Returns a new instance with `z` incremented by `value`.
-     - parameter value: The amount to add to `z`. To subtract use a negatie value.
-     - returns: A new Self with the additions.
+     - parameter value: The amount to add to `z`. To subtract use a negative value.
+     - returns: A new Self with `z` incremented by `value`.
     */
     @_transparent
     func addingTo(z value: Float) -> Self {
@@ -144,8 +144,8 @@ public extension Vector3 {
     
     /**
      Returns a new instance with `x` incremented by `value`.
-     - parameter x: The amount to add to `x`. To subtract use a negatie value.
-     - parameter y: The amount to add to `y`. To subtract use a negatie value.
+     - parameter x: The amount to add to `x`. To subtract use a negative value.
+     - parameter y: The amount to add to `y`. To subtract use a negative value.
      - returns: A new Self with the additions.
     */
     @_transparent
@@ -155,8 +155,8 @@ public extension Vector3 {
     
     /**
      Returns a new instance with `x` incremented by `value`.
-     - parameter x: The amount to add to `x`. To subtract use a negatie value.
-     - parameter z: The amount to add to `z`. To subtract use a negatie value.
+     - parameter x: The amount to add to `x`. To subtract use a negative value.
+     - parameter z: The amount to add to `z`. To subtract use a negative value.
      - returns: A new Self with the additions.
     */
     @_transparent

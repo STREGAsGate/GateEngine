@@ -6,7 +6,7 @@
  */
 
 /**
- A Scene is a drawing space with 3 dimentions and a persepctive camera.
+ A Scene is a drawing space with 3 dimensions and a perspective camera.
  */
 @MainActor public struct Scene {
     @usableFromInline internal var camera: Camera
@@ -35,13 +35,13 @@
     /** Adds geometry to the scene for rendering.
     - parameter geometry: The geometry to draw.
     - parameter material: The color information used to draw the geometry.
-    - parameter transform: Describes how the geometry should be positioned and scaled releative to the scene.
+    - parameter transform: Describes how the geometry should be positioned and scaled relative to the scene.
     - parameter flags: Options to customize how drawing is handled.
     - Geometry is automatically instanced for performance. There are two types of instancing that happen automatically under the hood.
       1. Simple instancing. This happens when all instances of the same `Geometry` reference have the same `material` and `flags` and differ only by `transform`. This is the most efficient and suitible for things like particles, foliage, and tiles.
-      2. Complex instancing. Complex instancing occures if any instance of the same `Geometry` reference has a different material or flags. Complex instancing allows using the same `Geometry` with different materials while still having some.
-    - The  instancing is best effort and does not guarantee the same perfromance across platforms or package version. You should test each platform if you use many instances.
-    - You may not explicilty choose the instancing, however you could create a new `Geometry` from the same URL wich would have a different id and have seperate instancing. This would allow both instancing types at the expence of an additional GPU resource for each `Geometry` reference.
+      2. Complex instancing. Complex instancing occurs if any instance of the same `Geometry` reference has a different material or flags. Complex instancing allows using the same `Geometry` with different materials while still having some.
+    - The  instancing is best effort and does not guarantee the same performance across platforms or package version. You should test each platform if you use many instances.
+    - You may not explicitly choose the instancing, however you could create a new `Geometry` from the same URL which would have a different id and have separate instancing. This would allow both instancing types at the expense of an additional GPU resource for each `Geometry` reference.
     */
     @_transparent
     public mutating func insert(_ geometry: Geometry, withMaterial material: Material, at transform: Transform3, flags: SceneElementFlags = .default) {
@@ -51,7 +51,7 @@
     /** Adds geometry to the scene for rendering.
     - parameter geometry: The geometry to draw.
     - parameter material: The color information used to draw the geometry.
-    - parameter transforms: Describes how each geometry instance should be positioned and scaled releative to the scene.
+    - parameter transforms: Describes how each geometry instance should be positioned and scaled relative to the scene.
     - parameter flags: Options to customize how drawing is handled.
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
     */
@@ -68,13 +68,13 @@
     /** Adds geometry to the scene for rendering.
     - parameter geometry: The geometry to draw.
     - parameter material: The color information used to draw the geometry.
-    - parameter transform: Describes how the geometry should be positioned and scaled releative to the scene.
+    - parameter transform: Describes how the geometry should be positioned and scaled relative to the scene.
     - parameter flags: Options to customize how drawing is handled.
     - Geometry is automatically instanced for performance. There are two types of instancing that happen automatically under the hood.
       1. Simple instancing. This happens when all instances of the same `Geometry` reference have the same `material` and `flags` and differ only by `transform`. This is the most efficient and suitible for things like particles, foliage, and tiles.
-      2. Complex instancing. Complex instancing occures if any instance of the same `Geometry` reference has a different material or flags. Complex instancing allows using the same `Geometry` with different materials while still having some.
-    - The  instancing is best effort and does not guarantee the same perfromance across platforms or package version. You should test each platform if you use many instances.
-    - You may not explicilty choose the instancing, however you could create a new `Geometry` from the same URL wich would have a different id and have seperate instancing. This would allow both instancing types at the expence of an additional GPU resource for each `Geometry` reference.
+      2. Complex instancing. Complex instancing occurs if any instance of the same `Geometry` reference has a different material or flags. Complex instancing allows using the same `Geometry` with different materials while still having some.
+    - The  instancing is best effort and does not guarantee the same performance across platforms or package version. You should test each platform if you use many instances.
+    - You may not explicitly choose the instancing, however you could create a new `Geometry` from the same URL which would have a different id and have separate instancing. This would allow both instancing types at the expense of an additional GPU resource for each `Geometry` reference.
     */
     @_transparent
     public mutating func insert(_ geometry: SkinnedGeometry, withPose pose: Skeleton.Pose, material: Material, at transform: Transform3, flags: SceneElementFlags = .default) {
@@ -84,13 +84,13 @@
     /** Adds geometry to the scene for rendering.
     - parameter geometry: The geometry to draw.
     - parameter material: The color information used to draw the geometry.
-    - parameter transforms: Describes how each geometry instance should be positioned and scaled releative to the scene.
+    - parameter transforms: Describes how each geometry instance should be positioned and scaled relative to the scene.
     - parameter flags: Options to customize how drawing is handled.
     - Geometry is automatically instanced for performance. There are two types of instancing that happen automatically under the hood.
       1. Simple instancing. This happens when all instances of the same `Geometry` reference have the same `material` and `flags` and differ only by `transform`. This is the most efficient and suitible for things like particles, foliage, and tiles.
-      2. Complex instancing. Complex instancing occures if any instance of the same `Geometry` reference has a different material or flags. Complex instancing allows using the same `Geometry` with different materials while still having some.
-    - The  instancing is best effort and does not guarantee the same perfromance across platforms or package version. You should test each platform if you use many instances.
-    - You may not explicilty choose the instancing, however you could create a new `Geometry` from the same URL wich would have a different id and have seperate instancing. This would allow both instancing types at the expence of an additional GPU resource for each `Geometry` reference.
+      2. Complex instancing. Complex instancing occurs if any instance of the same `Geometry` reference has a different material or flags. Complex instancing allows using the same `Geometry` with different materials while still having some.
+    - The  instancing is best effort and does not guarantee the same performance across platforms or package version. You should test each platform if you use many instances.
+    - You may not explicitly choose the instancing, however you could create a new `Geometry` from the same URL which would have a different id and have separate instancing. This would allow both instancing types at the expense of an additional GPU resource for each `Geometry` reference.
     */
     @inlinable @inline(__always)
     public mutating func insert(_ geometry: SkinnedGeometry, withPose pose: Skeleton.Pose, material: Material, at transforms: [Transform3], flags: SceneElementFlags = .default) {

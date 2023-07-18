@@ -17,7 +17,7 @@ public final class UIKitPlatform: Platform, InternalPlatform {
         self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
     }
     
-    internal var applicationReqestedWindow: Bool = false
+    internal var applicationRequestedWindow: Bool = false
     weak internal var windowPreparingForSceneConnection: UIKitWindow? = nil
     
     internal var overrideSupportsMultipleWindows: Bool? = nil
@@ -148,8 +148,8 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                 uiWindow.windowScene = windowScene
                 windowScene.title = window.title
                 persistSessionIdentifier(session, forWindow: window)
-            }else{// Plaform reqested a window, proably from a user action
-                Game.shared.platform.applicationReqestedWindow = true
+            }else{// Platform requested a window, probably from a user action
+                Game.shared.platform.applicationRequestedWindow = true
                 if session.role == .windowExternalDisplay {
                     Game.shared.platform.overrideSupportsMultipleWindows = true
                     if let window = try Game.shared.delegate.createWindowForExternalscreen(game: Game.shared) {

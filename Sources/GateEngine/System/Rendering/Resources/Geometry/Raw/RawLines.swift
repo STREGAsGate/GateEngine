@@ -9,12 +9,12 @@
 public struct RawLines {
     var positions: [Float]
     var colors: [Float]
-    var indicies: [UInt16]
+    var indices: [UInt16]
 
     public init() {
         positions = []
         colors = []
-        indicies = []
+        indices = []
     }
 
     private var lineStartIndex: UInt16? = nil
@@ -22,8 +22,8 @@ public struct RawLines {
         return UInt16(positions.count / 3)
     }
     
-    /** Creates a Line primitve element array object from triangles.
-    - parameter boxEdgesOnly when true only the outermost vertices are kept. If the trinagles make up a cube the result would be the cube's edges as lines.
+    /** Creates a Line primitive element array object from triangles.
+    - parameter boxEdgesOnly when true only the outermost vertices are kept. If the triangles make up a cube the result would be the cube's edges as lines.
      */
     public init(wireframeFrom triangles: [Triangle]) {
         func getSimilarVertex(to vertext: Vertex, from vertices: [Vertex]) -> Array<Vertex>.Index? {
@@ -31,18 +31,18 @@ public struct RawLines {
         }
         
         let inVertices: [Vertex] = triangles.vertices
-        var outVerticies: [Vertex] = []
+        var outVertices: [Vertex] = []
         
         var positions: [Position3] = []
         var colors: [Color] = []
-        var indicies: [UInt16] = []
+        var indices: [UInt16] = []
         
         var pairs: [(v1: Vertex, v2: Vertex)] = []
         
         for triangle in triangles {
             func optimizedInsert(_ v1: Vertex) {
-                if let index = getSimilarVertex(to: v1, from: outVerticies) {
-                    indicies.append(UInt16(index))
+                if let index = getSimilarVertex(to: v1, from: outVertices) {
+                    indices.append(UInt16(index))
                     
                     let vertex = inVertices[index]
                     colors[index] += vertex.color
@@ -51,10 +51,10 @@ public struct RawLines {
                 }
             }
             func insert(_ v1: Vertex) {
-                outVerticies.append(v1)
+                outVertices.append(v1)
                 positions.append(v1.position)
                 colors.append(v1.color)
-                indicies.append(UInt16(outVerticies.count - 1))
+                indices.append(UInt16(outVertices.count - 1))
             }
             func append(_ v1: Vertex, _ v2: Vertex) {
                 func pairExists() -> Bool {
@@ -94,7 +94,7 @@ public struct RawLines {
 
         self.positions = _positions
         self.colors = _colors
-        self.indicies = indicies
+        self.indices = indices
     }
 
     public init(boundingBoxFrom triangles: [Triangle]) {
@@ -103,18 +103,18 @@ public struct RawLines {
         }
 
         let inVertices: [Vertex] = triangles.vertices
-        var outVerticies: [Vertex] = []
+        var outVertices: [Vertex] = []
 
         var positions: [Position3] = []
         var colors: [Color] = []
-        var indicies: [UInt16] = []
+        var indices: [UInt16] = []
 
         var pairs: [(v1: Vertex, v2: Vertex)] = []
 
         for triangle in triangles {
             func optimizedInsert(_ v1: Vertex) {
-                if let index = getSimilarVertex(to: v1, from: outVerticies) {
-                    indicies.append(UInt16(index))
+                if let index = getSimilarVertex(to: v1, from: outVertices) {
+                    indices.append(UInt16(index))
 
                     let vertex = inVertices[index]
                     colors[index] += vertex.color
@@ -123,10 +123,10 @@ public struct RawLines {
                 }
             }
             func insert(_ v1: Vertex) {
-                outVerticies.append(v1)
+                outVertices.append(v1)
                 positions.append(v1.position)
                 colors.append(v1.color)
-                indicies.append(UInt16(outVerticies.count - 1))
+                indices.append(UInt16(outVertices.count - 1))
             }
             func append(_ v1: Vertex, _ v2: Vertex) {
                 func pairExists() -> Bool {
@@ -180,7 +180,7 @@ public struct RawLines {
         
         self.positions = _positions
         self.colors = _colors
-        self.indicies = indicies
+        self.indices = indices
     }
 }
 
@@ -195,35 +195,35 @@ public extension RawLines {// 2D
 public extension RawLines {// 3D
     mutating func insert(_ point: Position3, color: Color) {
         let index = currentIndex
-        if indicies.count % 2 == 1 {
+        if indices.count % 2 == 1 {
             positions.append(contentsOf: point.valuesArray())
             colors.append(contentsOf: color.valuesArray())
-            indicies.append(index)
+            indices.append(index)
         }else {
             if lineStartIndex == nil {
                 self.lineStartIndex = index
             }else{
-                indicies.append(indicies.last!)
+                indices.append(indices.last!)
             }
 
             positions.append(contentsOf: point.valuesArray())
             colors.append(contentsOf: color.valuesArray())
-            indicies.append(index)
+            indices.append(index)
         }
     }
 
     /// Add a segment to from the current point to the lines first point
     mutating func closeLine() {
-        guard indicies.isEmpty == false else {return}
+        guard indices.isEmpty == false else {return}
         guard let index = lineStartIndex else {return}
-        indicies.append(indicies.last!)
-        indicies.append(index)
+        indices.append(indices.last!)
+        indices.append(index)
     }
 
     mutating func endLine() {
-        guard indicies.isEmpty == false else {return}
-        if indicies.count % 2 == 1 {
-            indicies.removeLast()
+        guard indices.isEmpty == false else {return}
+        if indices.count % 2 == 1 {
+            indices.removeLast()
         }
         lineStartIndex = nil
     }
@@ -239,8 +239,8 @@ public extension RawLines {// 3D
 
 extension RawLines: Equatable {
     public static func ==(lhs: Self, rhs: Self) -> Bool {
-        guard lhs.indicies.count == rhs.indicies.count else {return false}
-        return lhs.positions == rhs.positions && lhs.colors == rhs.colors && lhs.indicies == rhs.indicies
+        guard lhs.indices.count == rhs.indices.count else {return false}
+        return lhs.positions == rhs.positions && lhs.colors == rhs.colors && lhs.indices == rhs.indices
     }
 }
 
@@ -248,6 +248,6 @@ extension RawLines: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(positions)
         hasher.combine(colors)
-        hasher.combine(indicies)
+        hasher.combine(indices)
     }
 }

@@ -177,7 +177,7 @@ internal class OpenALSource {
             assert(alCheckError() == .noError)
         }
 
-        // Keep a reference so the buffer doesn't dealocate while playing
+        // Keep a reference so the buffer doesn't deallocate while playing
         self.buffer = buffer
     }
     

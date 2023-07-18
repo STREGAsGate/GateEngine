@@ -18,7 +18,7 @@ public struct Tile {
 
     public struct Collider {
         public enum Kind {
-            case elipse
+            case ellipse
             case rect
         }
         public let kind: Kind

@@ -61,7 +61,7 @@ public struct D3DHeapDescription {
     - parameter byteCount: The size, in bytes, of the heap. To avoid wasting memory, applications should pass SizeInBytes values which are multiples of the effective Alignment; but non-aligned SizeInBytes is also supported, for convenience. To find out how large a heap must be to support textures with undefined layouts and adapter-specific sizes, call ID3D12Device::GetResourceAllocationInfo.
     - parameter properties: A D3D12_HEAP_PROPERTIES structure that describes the heap properties.
     - parameter alignment: The alignment value for the heap. Valid values:
-    - parmaeter flags: A combination of D3D12_HEAP_FLAGS-typed values that are combined by using a bitwise-OR operation. The resulting value identifies heap options. When creating heaps to support adapters with resource heap tier 1, an application must choose some flags.
+    - parameter flags: A combination of D3D12_HEAP_FLAGS-typed values that are combined by using a bitwise-OR operation. The resulting value identifies heap options. When creating heaps to support adapters with resource heap tier 1, an application must choose some flags.
     */
     @inlinable @inline(__always)
     public init(byteCount: UInt64, properties: D3DHeapProperties, alignment: UInt64, flags: D3DHeapFlags) {

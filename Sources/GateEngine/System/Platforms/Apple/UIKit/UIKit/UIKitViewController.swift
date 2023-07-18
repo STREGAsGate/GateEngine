@@ -728,7 +728,7 @@ internal class UIKitViewController: GCEventViewController {
         let keys = keysFromEvent(event)
         let modifiers = modifiersFromEvent(event)
         for pair in keys {
-            if Game.shared.hid.keyboardDidhandle(key: pair.key, character: pair.characters?.first, modifiers: modifiers, isRepeat: false, event: keyEvent) {
+            if Game.shared.hid.keyboardDidHandle(key: pair.key, character: pair.characters?.first, modifiers: modifiers, isRepeat: false, event: keyEvent) {
                 handled = true
             }
         }

@@ -21,9 +21,9 @@ public class ApplePlatformImageImporter: TextureImporter {
     }
 
     public class func canProcessFile(_ file: URL) -> Bool {
-        guard let identifers = (CGImageSourceCopyTypeIdentifiers() as? [CFString]) else {return false}
+        guard let identifiers = (CGImageSourceCopyTypeIdentifiers() as? [CFString]) else {return false}
         guard let uttype = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, file.pathExtension as CFString, kUTTypeImage)?.takeRetainedValue() else {return false}
-        return identifers.contains(where: {$0 == uttype})
+        return identifiers.contains(where: {$0 == uttype})
     }
 }
 #endif

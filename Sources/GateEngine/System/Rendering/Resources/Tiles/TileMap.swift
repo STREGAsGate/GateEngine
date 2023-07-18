@@ -22,17 +22,17 @@ public class TileMap {
         public let name: String?
         public let size: Size2
         public let tileSize: Size2
-        public let tileIndicies: [[Int]]
+        public let tileIndices: [[Int]]
 
         public var rows: Int {
-            return tileIndicies.count
+            return tileIndices.count
         }
         public var columns: Int {
-            return tileIndicies.first?.count ?? 0
+            return tileIndices.first?.count ?? 0
         }
         
         public func tileIndexAtCoordinate(column: Int, row: Int) -> Int {
-            return tileIndicies[row][column]
+            return tileIndices[row][column]
         }
         
         public func tileIndexAtPosition(_ position: Position2) -> Int {
@@ -45,11 +45,11 @@ public class TileMap {
             return (Position2(Float(column), Float(row)) * tileSize)
         }
 
-        init(name: String?, size: Size2, tileSize: Size2, tileIndicies: [[Int]]) {
+        init(name: String?, size: Size2, tileSize: Size2, tileIndices: [[Int]]) {
             self.name = name
             self.size = size
             self.tileSize = tileSize
-            self.tileIndicies = tileIndicies
+            self.tileIndices = tileIndices
         }
     }
 }

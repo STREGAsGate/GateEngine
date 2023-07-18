@@ -119,20 +119,20 @@ extension Skeleton {
         let interpolate = interpolateProgress < 1
         
         func applyToJoint(_ joint: Skeleton.Joint) {
-            var keyedComponets: SkeletalAnimation.KeyedComponents = []
+            var keyedComponents: SkeletalAnimation.KeyedComponents = []
             var transform: Transform3 = .default
             if let animation = skeletalAnimation.animations[joint.id] {
-                keyedComponets = animation.updateTransform(&transform, withTime: time, duration: duration, repeating: repeating)
+                keyedComponents = animation.updateTransform(&transform, withTime: time, duration: duration, repeating: repeating)
             }
             
-            if keyedComponets.isFull == false, let pose = bindPose.jointWithID(joint.id)?.localTransform {
-                if keyedComponets.contains(.position) == false {
+            if keyedComponents.isFull == false, let pose = bindPose.jointWithID(joint.id)?.localTransform {
+                if keyedComponents.contains(.position) == false {
                     transform.position = pose.position
                 }
-                if keyedComponets.contains(.rotation) == false {
+                if keyedComponents.contains(.rotation) == false {
                     transform.rotation = pose.rotation
                 }
-                if keyedComponets.contains(.scale) == false {
+                if keyedComponents.contains(.scale) == false {
                     transform.scale = pose.scale
                 }
             }
@@ -222,7 +222,7 @@ extension Skeleton {
             }
             
             var updateMTX: Matrix4x4 = .identity
-            var updateRoationMTX: Matrix4x4 = .identity
+            var updateRotationMTX: Matrix4x4 = .identity
             var updateScaleMTX: Matrix4x4 = .identity
             
             var new: Matrix4x4 = .identity
@@ -230,8 +230,8 @@ extension Skeleton {
                 updateMTX.becomeIdentity()
                 updateMTX.position = node.localTransform.position
                 
-                updateRoationMTX.rotation = node.localTransform.rotation
-                updateMTX *= updateRoationMTX
+                updateRotationMTX.rotation = node.localTransform.rotation
+                updateMTX *= updateRotationMTX
                 
                 updateScaleMTX.scale = node.localTransform.scale
                 updateMTX *= updateScaleMTX

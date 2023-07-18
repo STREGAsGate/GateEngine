@@ -16,7 +16,7 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
     let primitive: DrawFlags.Primitive
     let attributes: ContiguousArray<GeometryAttribute>
     let buffers: ContiguousArray<WebGLBuffer>
-    let indiciesCount: GLsizei
+    let indicesCount: GLsizei
     
     required init(lines: RawLines) {
         let gl = WebGL2Renderer.context
@@ -43,10 +43,10 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         buffers.append(gl.createBuffer()!)
         let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(lines.indicies).arrayBuffer)
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[2])
-        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
+        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indices, usage: GL.STATIC_DRAW)
         
         self.buffers = buffers
-        self.indiciesCount = GLsizei(lines.indicies.count)
+        self.indicesCount = GLsizei(lines.indices.count)
         
 #if GATEENGINE_DEBUG_RENDERING
         Game.shared.renderer.checkError()
@@ -78,10 +78,10 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         buffers.append(gl.createBuffer()!)
         let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(points.indicies).arrayBuffer)
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[2])
-        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
+        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indices, usage: GL.STATIC_DRAW)
         
         self.buffers = buffers
-        self.indiciesCount = GLsizei(points.indicies.count)
+        self.indicesCount = GLsizei(points.indices.count)
         
 #if GATEENGINE_DEBUG_RENDERING
         Game.shared.renderer.checkError()
@@ -137,10 +137,10 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         buffers.append(gl.createBuffer()!)
         let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(geometry.indicies).arrayBuffer)
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[6])
-        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
+        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indices, usage: GL.STATIC_DRAW)
         
         self.buffers = buffers
-        self.indiciesCount = GLsizei(geometry.indicies.count)
+        self.indicesCount = GLsizei(geometry.indices.count)
         
 #if GATEENGINE_DEBUG_RENDERING
         Game.shared.renderer.checkError()
@@ -158,7 +158,7 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 3, shaderAttribute: .tangent),
             .init(type: .float, componentLength: 3, shaderAttribute: .normal),
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
-            .init(type: .uInt32, componentLength: 4, shaderAttribute: .jointIndicies),
+            .init(type: .uInt32, componentLength: 4, shaderAttribute: .jointIndices),
             .init(type: .float, componentLength: 4, shaderAttribute: .jointWeights),
         ]
         
@@ -198,7 +198,7 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         buffers.append(gl.createBuffer()!)
         let jointIndicies: AllowSharedBufferSource = .arrayBuffer(Uint32Array(skin.jointIndicies).arrayBuffer)
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[6])
-        gl.bufferData(target: GL.ARRAY_BUFFER, srcData: jointIndicies, usage: GL.STATIC_DRAW)
+        gl.bufferData(target: GL.ARRAY_BUFFER, srcData: jointIndices, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
         let jointWeights: AllowSharedBufferSource = .arrayBuffer(Float32Array(skin.jointWeights).arrayBuffer)
@@ -208,10 +208,10 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         buffers.append(gl.createBuffer()!)
         let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(geometry.indicies).arrayBuffer)
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[8])
-        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
+        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indices, usage: GL.STATIC_DRAW)
         
         self.buffers = buffers
-        self.indiciesCount = GLsizei(geometry.indicies.count)
+        self.indicesCount = GLsizei(geometry.indices.count)
         
 #if GATEENGINE_DEBUG_RENDERING
         Game.shared.renderer.checkError()
@@ -221,7 +221,7 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
 #if GATEENGINE_DEBUG_RENDERING || DEBUG
     func isDrawCommandValid(sharedWith backend: GeometryBackend) -> Bool {
         let backend = backend as! Self
-        if indiciesCount != backend.indiciesCount {
+        if indicesCount != backend.indicesCount {
             return false
         }
         if self.primitive != backend.primitive {

@@ -11,6 +11,6 @@ internal class CacheSystem: PlatformSystem {
         game.resourceManager.update(withTimePassed: highPrecisionDeltaTime)
     }
     
-    override class var phase: PlatformSystem.Phase {return .postDeffered}
+    override class var phase: PlatformSystem.Phase {return .postDeferred}
     override class func sortOrder() -> PlatformSystemSortOrder? {.cacheSystem}
 }

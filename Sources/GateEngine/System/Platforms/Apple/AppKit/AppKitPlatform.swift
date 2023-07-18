@@ -250,7 +250,7 @@ extension AppKitPlatform {
                         key = .unhandledPlatformKeyCode(keyCode, nil)
                     }
                     
-                    if Game.shared.hid.keyboardDidhandle(key: key, character: nil, modifiers: [], isRepeat: keyRepeat, event: keyState) {
+                    if Game.shared.hid.keyboardDidHandle(key: key, character: nil, modifiers: [], isRepeat: keyRepeat, event: keyState) {
                         forward = true
                     }
                 }
