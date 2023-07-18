@@ -39,7 +39,7 @@ import GameMath
      Called once when the system is first inserted into the game.
      
      Use `setup()` to create any system specific data and add it to the game.
-     - note: The call to `setup()` is deffered until the next update frame after the system has been inserted and will be called immediatled before `update(withTimePassed:)`.
+     - note: The call to `setup()` is deferred until the next update frame after the system has been inserted and will be called immediatled before `update(withTimePassed:)`.
      */
     open func setup(game: Game, input: HID) async {
         
@@ -98,7 +98,7 @@ public extension System {
         case simulation
         /// Perform 2D layout and related user input.
         case userInterface
-        /// Any system marked as deffered will update last, but before rendering.
+        /// Any system marked as deferred will update last, but before rendering.
         case deferred
     }
 }

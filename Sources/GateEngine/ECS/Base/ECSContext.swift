@@ -248,7 +248,7 @@ extension ECSContext {
             self.performance?.endCurrentStatistic()
         }
         for system in self.platformSystems {
-            guard type(of: system).phase == .postDeffered else {continue}
+            guard type(of: system).phase == .postDeferred else {continue}
             self.performance?.beginStatForSystem(system)
             await system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()

@@ -57,14 +57,14 @@ public struct D3DTextureCubeArrayShaderResourceView {
         }
     }
 
-    /// A value to clamp sample LOAD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
+    /// A value to clamp sample LOD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
     @inlinable @inline(__always)
-    public var minLOADClamp: Float {
+    public var minLODClamp: Float {
         get {
-            return rawValue.ResourceMinLOADClamp
+            return rawValue.ResourceMinLODClamp
         }
         set {
-            rawValue.ResourceMinLOADClamp = newValue
+            rawValue.ResourceMinLODClamp = newValue
         }
     }
 
@@ -73,15 +73,15 @@ public struct D3DTextureCubeArrayShaderResourceView {
     - parameter mipLevels: The maximum number of mipmap levels for the view of the texture. See the remarks in D3D12_TEX1D_SRV. Set to -1 to indicate all the mipmap levels from MostDetailedMip on down to least detailed.
     - parameter first2dArrayFace: Index of the first 2D texture to use.
     - parameter cubeTextureCount: Number of cube textures in the array.
-    - parameter minLOADClamp: A value to clamp sample LOAD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
+    - parameter minLODClamp: A value to clamp sample LOD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
     */
     @inlinable @inline(__always)
-    public init(maxMipLevel: UInt32, mipLevels: UInt32, first2DArrayFace: UInt32, cubeTextureCount: UInt32, minLOADClamp: Float) {
+    public init(maxMipLevel: UInt32, mipLevels: UInt32, first2DArrayFace: UInt32, cubeTextureCount: UInt32, minLODClamp: Float) {
         self.rawValue = RawValue(MostDetailedMip: maxMipLevel,
                                  MipLevels: mipLevels,
                                  First2DArrayFace: first2DArrayFace,
                                  NumCubes: cubeTextureCount,
-                                 ResourceMinLOADClamp: minLOADClamp)
+                                 ResourceMinLODClamp: minLODClamp)
     }
     
     @inlinable @inline(__always)

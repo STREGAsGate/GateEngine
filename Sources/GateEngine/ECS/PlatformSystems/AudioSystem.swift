@@ -40,7 +40,7 @@ internal class AudioSystem: PlatformSystem {
         updateMusic(withTimePassed: deltaTime)
     }
 
-    override class var phase: PlatformSystem.Phase {.postDeffered}
+    override class var phase: PlatformSystem.Phase {.postDeferred}
     override class func sortOrder() -> PlatformSystemSortOrder? {.audioSystem}
 }
 

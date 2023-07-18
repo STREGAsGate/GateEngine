@@ -194,13 +194,13 @@ extension OpenGLRenderer {
         glEnable(capability: .depthTest)
         switch flags.depthTest {
         case .always:
-            glDepthFunc(.alwaysSucceeed)
+            glDepthFunc(.alwaysSucceed)
         case .greaterThan:
             glDepthFunc(.greaterThan)
         case .lessThan:
             glDepthFunc(.lessThan)
         case .never:
-            glDepthFunc(.neverSucceeed)
+            glDepthFunc(.neverSucceed)
         }
         
         switch flags.depthWrite {

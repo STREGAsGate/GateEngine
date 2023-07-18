@@ -455,7 +455,7 @@ extension OrientedBoundingBox3D {
     }
     
     @inline(__always)
-    static func getNumHitPoints(_ box0: OrientedBoundingBox3D, _ hitNormal: Direction3, _ penetration: Float, _ vertIndexs: inout [Array<Position3>.Index]) -> [Position3] {
+    static func getNumHitPoints(_ box0: OrientedBoundingBox3D, _ hitNormal: Direction3, _ penetration: Float, _ vertIndexes: inout [Array<Position3>.Index]) -> [Position3] {
         let vertices = box0.vertices
         
         var planePoint = vertices[0]
@@ -481,7 +481,7 @@ extension OrientedBoundingBox3D {
             
             if side > 0 {
                 collisionPoints.append(vertex)
-                vertIndexs.append(index)
+                vertIndexes.append(index)
             }
         }
         
@@ -552,12 +552,12 @@ extension OrientedBoundingBox3D {
     
     @inline(__always)
     static func clipFaceFaceVerts(_ verts0: inout [Position3],
-                                  _ vertIndexs0: inout [Array<Position3>.Index],
+                                  _ vertIndexes0: inout [Array<Position3>.Index],
                                   _ verts1: inout [Position3],
-                                  _ vertIndexs1: inout [Array<Position3>.Index]) -> [Position3] {
+                                  _ vertIndexes1: inout [Array<Position3>.Index]) -> [Position3] {
         
-        sortVertices(&verts0, &vertIndexs0)
-        sortVertices(&verts1, &vertIndexs1)
+        sortVertices(&verts0, &vertIndexes0)
+        sortVertices(&verts1, &vertIndexes1)
         
         // Work out the normal for the face
         let v0 = verts0[1] - verts0[0]
@@ -657,8 +657,8 @@ extension OrientedBoundingBox3D {
     }
     
     @inline(__always)
-    static func clipLinePlane(_ verts0: [Position3], _ vertIndexs0: [Array<Position3>.Index], _ box0: OrientedBoundingBox3D,
-                              _ verts1: [Position3], _ vertIndexs1: [Array<Position3>.Index], _ box1: OrientedBoundingBox3D) -> [Position3] {
+    static func clipLinePlane(_ verts0: [Position3], _ vertIndexes0: [Array<Position3>.Index], _ box0: OrientedBoundingBox3D,
+                              _ verts1: [Position3], _ vertIndexes1: [Array<Position3>.Index], _ box1: OrientedBoundingBox3D) -> [Position3] {
         
         let p1 = closestPtPointOBB(verts0[0], box1)
         let p2 = closestPtPointOBB(verts0[1], box1)

@@ -211,22 +211,22 @@ public struct AxisAlignedBoundingBox2D: Collider2D {
         let minPosition = rhs.center + rhs.offset - rhs.radius
         guard self.contains(minPosition, withThreshold: threshold) else {return false}
         
-        let maxPositon = minPosition + rhs.size
-        guard self.contains(maxPositon, withThreshold: threshold) else {return false}
+        let maxPosition = minPosition + rhs.size
+        guard self.contains(maxPosition, withThreshold: threshold) else {return false}
         
         return true
     }
 
     /// `true` if `rhs` is inside `self`
     public func contains(_ rhs: Position2, withThreshold threshold: Float = 0) -> Bool {
-        let positon = self.position - (self.radius + threshold)
+        let position = self.position - (self.radius + threshold)
         
-        guard rhs.x >= positon.x else {return false}
-        guard rhs.y >= positon.y else {return false}
+        guard rhs.x >= position.x else {return false}
+        guard rhs.y >= position.y else {return false}
         
         let size = self.size + threshold
-        guard rhs.x <= positon.x + size.x else {return false}
-        guard rhs.y <= positon.y + size.y else {return false}
+        guard rhs.x <= position.x + size.x else {return false}
+        guard rhs.y <= position.y + size.y else {return false}
         
         return true
     }

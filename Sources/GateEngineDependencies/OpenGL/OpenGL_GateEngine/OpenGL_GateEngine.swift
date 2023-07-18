@@ -436,8 +436,8 @@ public enum OpenGL {
     public enum Texture {
         public enum Blending {
             public enum Function {
-                case neverSucceeed
-                case alwaysSucceeed
+                case neverSucceed
+                case alwaysSucceed
                 
                 case equalTo
                 case notEqualTo
@@ -450,8 +450,8 @@ public enum OpenGL {
                 
                 @inlinable @inline(__always) internal var value: Int32 {
                     switch self {
-                    case .neverSucceeed: return GL_NEVER
-                    case .alwaysSucceeed: return GL_ALWAYS
+                    case .neverSucceed: return GL_NEVER
+                    case .alwaysSucceed: return GL_ALWAYS
                     case .equalTo: return GL_EQUAL
                     case .notEqualTo: return GL_NOTEQUAL
                     case .lessThan: return GL_LESS

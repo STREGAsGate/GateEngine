@@ -86,7 +86,7 @@ public extension PlatformSystemSortOrder {
     
     static let audioSystem: Self    = 0_001
     static let cacheSystem: Self    = 1_002
-    static let defferedSystem: Self = 100_000
+    static let deferredSystem: Self = 100_000
 }
 
 public struct PlatformSystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral {

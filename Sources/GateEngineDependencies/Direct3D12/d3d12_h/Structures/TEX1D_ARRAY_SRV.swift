@@ -60,14 +60,14 @@ public struct D3DTexture1DArrayShaderResourceView {
         }
     }
 
-    /// A value to clamp sample LOAD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
+    /// A value to clamp sample LOD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
     @inlinable @inline(__always)
-    public var minLOADClamp: Float {
+    public var minLODClamp: Float {
         get {
-            return rawValue.ResourceMinLOADClamp
+            return rawValue.ResourceMinLODClamp
         }
         set {
-            rawValue.ResourceMinLOADClamp = newValue
+            rawValue.ResourceMinLODClamp = newValue
         }
     }
 
@@ -76,15 +76,15 @@ public struct D3DTexture1DArrayShaderResourceView {
     - parameter mipLevels: The maximum number of mipmap levels for the view of the texture. See the remarks in D3D12_TEX1D_SRV. Set to -1 to indicate all the mipmap levels from MostDetailedMip on down to least detailed.
     - parameter textureIndex: The index of the first texture to use in an array of textures.
     - parameter textureCount: Number of textures to use.
-    - parameter minLOADClamp: A value to clamp sample LOAD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
+    - parameter minLODClamp: A value to clamp sample LOD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
     */
     @inlinable @inline(__always)
-    public init(maxMipLevel: UInt32, mipLevels: UInt32, textureIndex: UInt32, textureCount: UInt32, minLOADClamp: Float) {
+    public init(maxMipLevel: UInt32, mipLevels: UInt32, textureIndex: UInt32, textureCount: UInt32, minLODClamp: Float) {
         self.rawValue = RawValue(MostDetailedMip: maxMipLevel,
                                  MipLevels: mipLevels,
                                  FirstArraySlice: textureIndex,
                                  ArraySize: textureCount,
-                                 ResourceMinLOADClamp: minLOADClamp)
+                                 ResourceMinLODClamp: minLODClamp)
     }
     
     @inlinable @inline(__always)
