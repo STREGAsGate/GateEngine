@@ -7,7 +7,7 @@
 
 import GameMath
 
-/// An element array object formated as triangle primitives
+/// An element array object formatted as triangle primitives
 public struct RawGeometry: Codable, Equatable, Hashable {
     public enum Attribute: Hashable {
         case position(_ index: UInt8)
@@ -38,16 +38,16 @@ public struct RawGeometry: Codable, Equatable, Hashable {
     public var normals: [Float]
     public var tangents: [Float]
     public var colors: [Float]
-    public var indicies: [UInt16]
+    public var indices: [UInt16]
 
     func uvSet(_ index: Int) -> [Float]? {
         guard index < uvSets.count else {return nil}
         return uvSets[index]
     }
 
-    /// Creates an array of `Position3`s, representing Vertex positions, from the elment array storage.
+    /// Creates an array of `Position3`s, representing Vertex positions, from the element array storage.
     public func generatePositions(transformedBy matrix: Matrix4x4? = nil) -> [Position3] {
-        return stride(from: 0, to: indicies.count, by: 3).map { index in
+        return stride(from: 0, to: indices.count, by: 3).map { index in
             let start3 = index * 3
             var p = Position3(positions[start3], positions[start3 + 1], positions[start3 + 2])
             if let matrix = matrix {
@@ -57,11 +57,11 @@ public struct RawGeometry: Codable, Equatable, Hashable {
         }
     }
     
-    /// Creates an array of `Vertex`s from the elment array storage.
-    public func generateVerticies() -> [Vertex] {
-        var vertices: [Vertex] = Array(repeating: Vertex(), count: indicies.count)
-        for vertexIndex in indicies.indices {
-            let index = Int(indicies[vertexIndex])
+    /// Creates an array of `Vertex`s from the element array storage.
+    public func generateVertices() -> [Vertex] {
+        var vertices: [Vertex] = Array(repeating: Vertex(), count: indices.count)
+        for vertexIndex in indices.indices {
+            let index = Int(indices[vertexIndex])
             let start3 = index * 3
             let start2 = index * 2
             let start4 = index * 4
@@ -76,9 +76,9 @@ public struct RawGeometry: Codable, Equatable, Hashable {
         return vertices
     }
     
-    /// Creates an array of `Triangle`s from the elment array storage
+    /// Creates an array of `Triangle`s from the element array storage
     public func generateTriangles() -> [Triangle] {
-        let vertices: [Vertex] = generateVerticies()
+        let vertices: [Vertex] = generateVertices()
         return stride(from: 0, to: vertices.count, by: 3).map({Triangle(v1: vertices[$0 + 0],
                                                                         v2: vertices[$0 + 1],
                                                                         v3: vertices[$0 + 2],
@@ -91,22 +91,22 @@ public struct RawGeometry: Codable, Equatable, Hashable {
     }
     
     /// Creates a new `Geometry` from element array values.
-    public init(positions: [Float], uvSets: [[Float]], normals: [Float]?, tangents: [Float]?, colors: [Float]?, indicies: [UInt16]) {
+    public init(positions: [Float], uvSets: [[Float]], normals: [Float]?, tangents: [Float]?, colors: [Float]?, indices: [UInt16]) {
         self.positions = positions
         self.uvSets = uvSets
         if self.uvSets.count < 2 {
-            let filler = Array<Float>(repeating: 0, count: indicies.count * 2)
+            let filler = Array<Float>(repeating: 0, count: indices.count * 2)
             for _ in uvSets.count ..< 2 {
                 self.uvSets.append(filler)
             }
         }
-        self.normals = normals ?? Array(repeating: 0, count: indicies.count * 3)
-        self.tangents = tangents ?? Array(repeating: 0, count: indicies.count * 3)
-        self.colors = colors ?? Array(repeating: 0.5, count: indicies.count * 4)
-        self.indicies = indicies
+        self.normals = normals ?? Array(repeating: 0, count: indices.count * 3)
+        self.tangents = tangents ?? Array(repeating: 0, count: indices.count * 3)
+        self.colors = colors ?? Array(repeating: 0.5, count: indices.count * 4)
+        self.indices = indices
     }
     
-    /// Create `Geometry` from counter-clockwise wound `Triangles` and optionanly attmpts to optimze the arrays by distance.
+    /// Create `Geometry` from counter-clockwise wound `Triangles` and optionanly attempts to optimize the arrays by distance.
     /// Optimization is extremely slow and may result in loss of data. It should be used to pre-optimize assets and should not be used at runtime.
     public init(triangles: [Triangle], optimizeDistance: Float? = nil) {
         assert(triangles.isEmpty == false)
@@ -123,17 +123,17 @@ public struct RawGeometry: Codable, Equatable, Hashable {
         tangents.reserveCapacity(triangles.count * 3 * 3)
         self.colors = []
         colors.reserveCapacity(triangles.count * 3 * 4)
-        self.indicies = []
-        indicies.reserveCapacity(triangles.count * 3)
+        self.indices = []
+        indices.reserveCapacity(triangles.count * 3)
 
         let inVertices: [Vertex] = triangles.vertices
         
         var similars: [UInt16?]? = nil
-        if let threshhold = optimizeDistance {
+        if let threshold = optimizeDistance {
             similars = Array(repeating: nil, count: inVertices.count)
             for index in 0 ..< inVertices.count {
                 let vertex = inVertices[index]
-                if let similarIndex = Array(inVertices[..<index]).firstIndex(where: {$0.isSimilar(to: vertex, threshold: threshhold)}) {
+                if let similarIndex = Array(inVertices[..<index]).firstIndex(where: {$0.isSimilar(to: vertex, threshold: threshold)}) {
                     similars?[index] = UInt16(similarIndex)
                 }
             }
@@ -142,7 +142,7 @@ public struct RawGeometry: Codable, Equatable, Hashable {
         var nextIndex = 0
         for vertexIndex in inVertices.indices {
             if let similarIndex = similars?[vertexIndex] {
-                indicies.append(similarIndex)
+                indices.append(similarIndex)
             }else{
                 let vertex = inVertices[vertexIndex]
                 positions.append(contentsOf: vertex.storage[0 ..< 3])
@@ -151,7 +151,7 @@ public struct RawGeometry: Codable, Equatable, Hashable {
                 uvSet2.append(contentsOf: vertex.storage[8 ..< 10])
                 tangents.append(contentsOf: vertex.storage[10 ..< 13])
                 colors.append(contentsOf: vertex.storage[13 ..< 17])
-                indicies.append(UInt16(nextIndex))
+                indices.append(UInt16(nextIndex))
                 nextIndex += 1
             }
         }
@@ -166,7 +166,7 @@ public struct RawGeometry: Codable, Equatable, Hashable {
         self.init(triangles: triangles, optimizeDistance: nil)
     }
     
-    /// Creates a new `Geometry` by merging multiple geometry. This is usful for loading files that store geometry speretly base don material if you intend to only use a sinlge material for them all.
+    /// Creates a new `Geometry` by merging multiple geometry. This is usful for loading files that store geometry speretly base don material if you intend to only use a single material for them all.
     public init(geometries: [RawGeometry]) {
         @_transparent
         func sum(_ array: [Int]) -> Int {
@@ -183,8 +183,8 @@ public struct RawGeometry: Codable, Equatable, Hashable {
         self.tangents.reserveCapacity(sum(geometries.map({$0.tangents.count})))
         self.colors = []
         self.colors.reserveCapacity(sum(geometries.map({$0.colors.count})))
-        self.indicies = []
-        self.indicies.reserveCapacity(sum(geometries.map({$0.indicies.count})))
+        self.indices = []
+        self.indices.reserveCapacity(sum(geometries.map({$0.indices.count})))
 
         for geometry in geometries {
             self.positions.append(contentsOf: geometry.positions)
@@ -198,8 +198,8 @@ public struct RawGeometry: Codable, Equatable, Hashable {
             self.normals.append(contentsOf: geometry.normals)
             self.tangents.append(contentsOf: geometry.tangents)
             self.colors.append(contentsOf: geometry.colors)
-            let max = self.indicies.max() ?? 0
-            self.indicies.append(contentsOf: geometry.indicies.map({$0 + max}))
+            let max = self.indices.max() ?? 0
+            self.indices.append(contentsOf: geometry.indices.map({$0 + max}))
         }
     }
     
@@ -210,7 +210,7 @@ public struct RawGeometry: Codable, Equatable, Hashable {
         hasher.combine(uvSet2)
         hasher.combine(tangents)
         hasher.combine(colors)
-        hasher.combine(indicies)
+        hasher.combine(indices)
     }
     
     public static func *(lhs: Self, rhs: Matrix4x4) -> Self {
@@ -220,10 +220,10 @@ public struct RawGeometry: Codable, Equatable, Hashable {
 }
 
 extension Array where Element == RawGeometry {
-    public func generateVerticies() -> [Vertex] {
+    public func generateVertices() -> [Vertex] {
         var vertices: [Vertex] = []
         for geometry in self {
-            vertices.append(contentsOf: geometry.generateVerticies())
+            vertices.append(contentsOf: geometry.generateVertices())
         }
         return vertices
     }

@@ -14,7 +14,7 @@ fileprivate extension Data {
         })
     }
     
-    func swapEndianess(withUnitByteCount bytes: Int) -> Data {
+    func swapEndianness(withUnitByteCount bytes: Int) -> Data {
         var data = self
         let count = data.count / bytes
         data.withUnsafeMutableBytes { (ptr) in
@@ -72,7 +72,7 @@ class WaveFile {
             
             let swapEndianness = (context.reference.endianness == .big) || (context.reference.endianness == .native && 1.bigEndian == 1)
             if swapEndianness {
-                self.audio = audio.swapEndianess(withUnitByteCount: Int(bitsPerSample / 8))
+                self.audio = audio.swapEndianness(withUnitByteCount: Int(bitsPerSample / 8))
             }else{
                 self.audio = audio
             }

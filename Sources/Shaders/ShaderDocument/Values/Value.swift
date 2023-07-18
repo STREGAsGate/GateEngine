@@ -15,7 +15,7 @@ public enum ValueRepresentation {
     case vertexInTangent(_ index: UInt8)
     case vertexInColor(_ index: UInt8)
     case vertexInJointWeights(_ index: UInt8)
-    case vertexInJointIndicies(_ index: UInt8)
+    case vertexInJointIndices(_ index: UInt8)
     
     case vertexOutPosition
     case vertexOutPointSize
@@ -69,7 +69,7 @@ public enum ValueRepresentation {
             return .float2
         case .vec4, .vertexInColor(_), .vertexInJointWeights(_), .fragmentOutColor:
             return .float4
-        case .uvec4, .vertexInJointIndicies(_):
+        case .uvec4, .vertexInJointIndices(_):
             return .uint4
         case .mat4, .mat4ArrayValue(_, _), .uniformModelMatrix, .uniformViewMatrix, .uniformProjectionMatrix:
             return .float4x4
@@ -128,7 +128,7 @@ public enum ValueRepresentation {
     var isVertexInput: Bool {
         #if DEBUG
         switch self {
-        case .vertexInPosition(_), .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_), .vertexInJointWeights(_), .vertexInJointIndicies(_):
+        case .vertexInPosition(_), .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_), .vertexInJointWeights(_), .vertexInJointIndices(_):
             return true
         case .vertexOutPosition, .vertexOutPointSize, .vertexOut(_), .vertexInstanceID, .operation, .fragmentIn(_), .fragmentOutColor, .fragmentInstanceID, .uniformModelMatrix,
                 .uniformViewMatrix, .uniformProjectionMatrix, .uniformCustom(_,_), .channelScale(_), .channelOffset(_), .channelColor(_), .channelAttachment(_),
@@ -137,7 +137,7 @@ public enum ValueRepresentation {
         }
         #else
         switch self {
-        case .vertexInPosition(_), .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_), .vertexInJointWeights(_), .vertexInJointIndicies(_):
+        case .vertexInPosition(_), .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_), .vertexInJointWeights(_), .vertexInJointIndices(_):
             return true
         default:
             return false

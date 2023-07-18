@@ -125,7 +125,7 @@ public final class Text {
         self.paragraphWidth = paragraphWidth
         self._sampleFilter = sampleFilter
         #if RELEASE && (os(macOS) || os(iOS) || os(tvOS) || os(watchOS))
-        // Odds are good it's a retina dispaly. Save some calls for rebuilding texture and geometry.
+        // Odds are good it's a retina display. Save some calls for rebuilding texture and geometry.
         self.interfaceScale = 2
         #else
         self.interfaceScale = 1

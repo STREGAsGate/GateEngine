@@ -362,7 +362,7 @@ extension OrientedBoundingBox3D {
 
 extension OrientedBoundingBox3D {
     @inline(__always)
-    public var verticies: [Position3] {
+    public var vertices: [Position3] {
         let x = self.radius.width
         let y = self.radius.height
         let z = self.radius.depth
@@ -379,12 +379,12 @@ extension OrientedBoundingBox3D {
     }
     @inline(__always)
     func vertexSpan(along axis: Direction3) -> ClosedRange<Float> {
-        let verticies = self.verticies
+        let vertices = self.vertices
         
-        var min = verticies[0].dot(axis)
+        var min = vertices[0].dot(axis)
         var max = min
         
-        for vertex in verticies {
+        for vertex in vertices {
             let d = vertex.dot(axis)
             
             if d < min {
@@ -455,13 +455,13 @@ extension OrientedBoundingBox3D {
     }
     
     @inline(__always)
-    static func getNumHitPoints(_ box0: OrientedBoundingBox3D, _ hitNormal: Direction3, _ penetration: Float, _ vertIndexs: inout [Array<Position3>.Index]) -> [Position3] {
-        let verticies = box0.verticies
+    static func getNumHitPoints(_ box0: OrientedBoundingBox3D, _ hitNormal: Direction3, _ penetration: Float, _ vertIndexes: inout [Array<Position3>.Index]) -> [Position3] {
+        let vertices = box0.vertices
         
-        var planePoint = verticies[0]
-        var maxdist = verticies[0].dot(hitNormal)
+        var planePoint = vertices[0]
+        var maxdist = vertices[0].dot(hitNormal)
         
-        for vertex in verticies {
+        for vertex in vertices {
             let d = vertex.dot(hitNormal)
             if d > maxdist {
                 maxdist = d
@@ -475,13 +475,13 @@ extension OrientedBoundingBox3D {
         d -= penetration + 0.01
         
         var collisionPoints: [Position3] = []
-        for index in verticies.indices {
-            let vertex = verticies[index]
+        for index in vertices.indices {
+            let vertex = vertices[index]
             let side = vertex.dot(hitNormal) - d
             
             if side > 0 {
                 collisionPoints.append(vertex)
-                vertIndexs.append(index)
+                vertIndexes.append(index)
             }
         }
         
@@ -489,7 +489,7 @@ extension OrientedBoundingBox3D {
     }
     
     @inline(__always)
-    static func sortVertices(_ verticies: inout [Position3], _ vertexIndicies: inout [Array<Position3>.Index]) {
+    static func sortVertices(_ vertices: inout [Position3], _ vertexIndices: inout [Array<Position3>.Index]) {
         let faces = [[4,0,3,7],
                      [1,5,6,2],
                      [0,1,2,3],
@@ -498,27 +498,27 @@ extension OrientedBoundingBox3D {
                      [6,7,3,2]]
         
         var sortedVerts: [Position3] = [] // New correct clockwise order
-        var sortedIndicies: [Array<Position3>.Index] = []
+        var sortedIndices: [Array<Position3>.Index] = []
         
         for face in faces where sortedVerts.count < 4 {
             var count = 0
-            for vertexIndex in vertexIndicies where count < 4 {
+            for vertexIndex in vertexIndices where count < 4 {
                 if face.contains(vertexIndex) {
                     count += 1
                 }
             }
             if count == 4 {
                 for index in face {
-                    sortedVerts.append(verticies[vertexIndicies.firstIndex(of: index)!])
-                    sortedIndicies.append(index)
+                    sortedVerts.append(vertices[vertexIndices.firstIndex(of: index)!])
+                    sortedIndices.append(index)
                 }
                 break
             }
         }
         
         assert(sortedVerts.count == 4, "Must be 4 matching verts")
-        verticies = sortedVerts
-        vertexIndicies = sortedIndicies
+        vertices = sortedVerts
+        vertexIndices = sortedIndices
     }
     
     @inline(__always)
@@ -552,12 +552,12 @@ extension OrientedBoundingBox3D {
     
     @inline(__always)
     static func clipFaceFaceVerts(_ verts0: inout [Position3],
-                                  _ vertIndexs0: inout [Array<Position3>.Index],
+                                  _ vertIndexes0: inout [Array<Position3>.Index],
                                   _ verts1: inout [Position3],
-                                  _ vertIndexs1: inout [Array<Position3>.Index]) -> [Position3] {
+                                  _ vertIndexes1: inout [Array<Position3>.Index]) -> [Position3] {
         
-        sortVertices(&verts0, &vertIndexs0)
-        sortVertices(&verts1, &vertIndexs1)
+        sortVertices(&verts0, &vertIndexes0)
+        sortVertices(&verts1, &vertIndexes1)
         
         // Work out the normal for the face
         let v0 = verts0[1] - verts0[0]
@@ -657,8 +657,8 @@ extension OrientedBoundingBox3D {
     }
     
     @inline(__always)
-    static func clipLinePlane(_ verts0: [Position3], _ vertIndexs0: [Array<Position3>.Index], _ box0: OrientedBoundingBox3D,
-                              _ verts1: [Position3], _ vertIndexs1: [Array<Position3>.Index], _ box1: OrientedBoundingBox3D) -> [Position3] {
+    static func clipLinePlane(_ verts0: [Position3], _ vertIndexes0: [Array<Position3>.Index], _ box0: OrientedBoundingBox3D,
+                              _ verts1: [Position3], _ vertIndexes1: [Array<Position3>.Index], _ box1: OrientedBoundingBox3D) -> [Position3] {
         
         let p1 = closestPtPointOBB(verts0[0], box1)
         let p2 = closestPtPointOBB(verts0[1], box1)

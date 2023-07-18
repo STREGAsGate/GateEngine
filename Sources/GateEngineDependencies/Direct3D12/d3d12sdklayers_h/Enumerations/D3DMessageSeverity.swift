@@ -15,7 +15,7 @@ public enum D3DMessageSeverity {
     case warning
     case info
     case message
-    case unknwon(RawValue)
+    case unknown(RawValue)
 
     @inlinable @inline(__always)
     var rawValue: RawValue {
@@ -30,7 +30,7 @@ public enum D3DMessageSeverity {
             return WinSDK.D3D12_MESSAGE_SEVERITY_INFO
         case .message:
             return WinSDK.D3D12_MESSAGE_SEVERITY_MESSAGE
-        case .unknwon(let rawValue):
+        case .unknown(let rawValue):
             return rawValue
         }
     }
@@ -49,7 +49,7 @@ public enum D3DMessageSeverity {
         case WinSDK.D3D12_MESSAGE_SEVERITY_MESSAGE:
             self = .message
         default:
-            self = .unknwon(rawValue)
+            self = .unknown(rawValue)
         }
     }
 }

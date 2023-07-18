@@ -10,14 +10,14 @@ import Foundation
 public final class SpriteSystem: System {
     public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         for entity in game.entities {
-            if let spriteComponet = entity.component(ofType: SpriteComponent.self) {
-                switch spriteComponet.playbackState {
+            if let spriteComponent = entity.component(ofType: SpriteComponent.self) {
+                switch spriteComponent.playbackState {
                 case .play:
-                    if spriteComponet.animations.indices.contains(spriteComponet.activeAnimationIndex) {
-                        spriteComponet.animations[spriteComponet.activeAnimationIndex].appendTime(deltaTime)
+                    if spriteComponent.animations.indices.contains(spriteComponent.activeAnimationIndex) {
+                        spriteComponent.animations[spriteComponent.activeAnimationIndex].appendTime(deltaTime)
                     }
                 case .stop:
-                    spriteComponet.activeAnimation?.progress = 0
+                    spriteComponent.activeAnimation?.progress = 0
                 }
             }
         }

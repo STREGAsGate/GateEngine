@@ -33,13 +33,13 @@ import Shaders
     internal static let skinned: VertexShader = {
         let vsh = VertexShader()
         let bones = vsh.uniform(named: "bones", as: Mat4Array.self, arrayCapacity: 64)
-        let jointIndicies = vsh.input.geometry(0).jointIndicies
+        let jointIndices = vsh.input.geometry(0).jointIndices
         let jointWeights = vsh.input.geometry(0).jointWeights
         var position = Vec4(vsh.input.geometry(0).position, 1)
-        position += bones[jointIndicies[0]] * position * jointWeights[0]
-        position += bones[jointIndicies[1]] * position * jointWeights[1]
-        position += bones[jointIndicies[2]] * position * jointWeights[2]
-        position += bones[jointIndicies[3]] * position * jointWeights[3]
+        position += bones[jointIndices[0]] * position * jointWeights[0]
+        position += bones[jointIndices[1]] * position * jointWeights[1]
+        position += bones[jointIndices[2]] * position * jointWeights[2]
+        position += bones[jointIndices[3]] * position * jointWeights[3]
         vsh.output.position = vsh.modelViewProjectionMatrix * position
         vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
         return vsh
@@ -55,8 +55,8 @@ import Shaders
         return vsh
     }()
     
-    /// Uses the colors in the verticies to shade objects
-    /// Inteded to be paired with `FragmentShader.vertexColors`
+    /// Uses the colors in the vertices to shade objects
+    /// Intended to be paired with `FragmentShader.vertexColors`
     static let vertexColors: VertexShader = {
         let vsh = VertexShader()
         vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
@@ -64,7 +64,7 @@ import Shaders
         return vsh
     }()
     
-    /// Handles 2 geometries, inteded for use with FragmentShader.morphTextureSample
+    /// Handles 2 geometries, intended for use with FragmentShader.morphTextureSample
     @usableFromInline
     internal static let morph: VertexShader = {
         let vsh = VertexShader()
@@ -80,8 +80,8 @@ import Shaders
 }
 
 @MainActor public extension FragmentShader {
-    /// The same as `textureSample` but with an additonal channel for a second geometry
-    ///  Inteded to be used with `VertexShader.morph`
+    /// The same as `textureSample` but with an additional channel for a second geometry
+    ///  Intended to be used with `VertexShader.morph`
     @usableFromInline
     internal static let morphTextureSample: FragmentShader = {
         let fsh = FragmentShader()
@@ -103,8 +103,8 @@ import Shaders
         fsh.output.color = fsh.channel(0).color
         return fsh
     }()
-    /// Uses the colors in the verticies to shade objects
-    /// Inteded to be paired with `VertexShader.vertexColors`
+    /// Uses the colors in the vertices to shade objects
+    /// Intended to be paired with `VertexShader.vertexColors`
     static let vertexColor: FragmentShader = {
         let fsh = FragmentShader()
         fsh.output.color = fsh.input["color"]

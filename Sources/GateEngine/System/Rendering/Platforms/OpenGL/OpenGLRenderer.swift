@@ -17,7 +17,7 @@ class OpenGLRenderer: RendererBackend {
         #elseif os(iOS) || os(tvOS) || os(Android)
         return .openGLES
         #else
-        #error("Unhandled Platfrom")
+        #error("Unhandled Platform")
         #endif
     }
     
@@ -146,7 +146,7 @@ class OpenGLRenderer: RendererBackend {
         
         do {
             try glDrawElementsInstanced(mode: primitive(from: drawCommand.flags.primitive),
-                                        count: geometries[0].indiciesCount,
+                                        count: geometries[0].indicesCount,
                                         type: .uint16,
                                         instanceCount: GLsizei(drawCommand.transforms.count))
         }catch{
@@ -194,13 +194,13 @@ extension OpenGLRenderer {
         glEnable(capability: .depthTest)
         switch flags.depthTest {
         case .always:
-            glDepthFunc(.alwaysSucceeed)
+            glDepthFunc(.alwaysSucceed)
         case .greaterThan:
             glDepthFunc(.greaterThan)
         case .lessThan:
             glDepthFunc(.lessThan)
         case .never:
-            glDepthFunc(.neverSucceeed)
+            glDepthFunc(.neverSucceed)
         }
         
         switch flags.depthWrite {
@@ -275,14 +275,14 @@ extension OpenGLRenderer {
         glBindBuffer(vbo, as: .array)
         glBufferData(data, withUsage: .static, as: .array)
         
-        let atributeLocation = index
+        let attributeLocation = index
         for index in 0 ..< 4 {
-            let atrributeLocation = GLuint(atributeLocation + index)
-            glEnableVertexAttribArray(attributeIndex: atrributeLocation)
+            let attributeLocation = GLuint(attributeLocation + index)
+            glEnableVertexAttribArray(attributeIndex: attributeLocation)
             let stride = MemoryLayout<SIMD16<Float>>.stride
             let offset = UnsafeMutableRawPointer(bitPattern: MemoryLayout<SIMD4<Float>>.stride * index)
-            glVertexAttribPointer(attributeIndex: atrributeLocation, unitsPerComponent: 4, unitType: .float, stride: GLsizei(stride), pointer: offset)
-            glVertexAttribDivisor(atrributeLocation, divisor: 1)
+            glVertexAttribPointer(attributeIndex: attributeLocation, unitsPerComponent: 4, unitType: .float, stride: GLsizei(stride), pointer: offset)
+            glVertexAttribDivisor(attributeLocation, divisor: 1)
         }
         index += 4
 #if GATEENGINE_DEBUG_RENDERING
@@ -513,13 +513,13 @@ extension OpenGLRenderer {
             let lines = glError.components(separatedBy: "\n").map({$0.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)}).filter({$0.isEmpty == false})
             #if os(macOS) || os(iOS) || os(tvOS)
             for lineLower in lines {
-                let glComponenets = lineLower.components(separatedBy: ":")
+                let glComponents = lineLower.components(separatedBy: ":")
                 
                 let filePath = ""
-                let lineLower = Int(glComponenets[2].trimmingCharacters(in: CharacterSet.whitespaces))! - 1
-                error += filePath + ":\(lineLower):\(glComponenets[1].trimmingCharacters(in: CharacterSet.whitespaces)):"
-                error += " \(glComponenets[0].trimmingCharacters(in: CharacterSet.whitespaces).lowercased()):"
-                for comp in glComponenets[3 ..< glComponenets.indices.endIndex] {
+                let lineLower = Int(glComponents[2].trimmingCharacters(in: CharacterSet.whitespaces))! - 1
+                error += filePath + ":\(lineLower):\(glComponents[1].trimmingCharacters(in: CharacterSet.whitespaces)):"
+                error += " \(glComponents[0].trimmingCharacters(in: CharacterSet.whitespaces).lowercased()):"
+                for comp in glComponents[3 ..< glComponents.indices.endIndex] {
                     error +=  " \(comp.trimmingCharacters(in: CharacterSet.whitespaces))"
                 }
                 error += "\n"

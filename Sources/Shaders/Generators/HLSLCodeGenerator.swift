@@ -56,7 +56,7 @@ public final class HLSLCodeGenerator: CodeGenerator {
             return "input.tan\(index)"
         case let .vertexInColor(index):
             return "input.clr\(index)"
-        case let .vertexInJointIndicies(index):
+        case let .vertexInJointIndices(index):
             return "input.jtIdx\(index)"
         case let .vertexInJointWeights(index):
             return "input.jtWeit\(index)"
@@ -179,21 +179,21 @@ public final class HLSLCodeGenerator: CodeGenerator {
         for attributeIndex in attributes.indices {
             let attribute = attributes[attributeIndex]
             switch attribute {
-            case .vertexInPosition(geoemtryIndex: let geometryIndex):
+            case .vertexInPosition(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float3)) pos\(geometryIndex) : POSITION;"
-            case .vertexInTexCoord0(geoemtryIndex: let geometryIndex):
+            case .vertexInTexCoord0(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float2)) uv\(geometryIndex)_0 : TEXCOORD0;"
-            case .vertexInTexCoord1(geoemtryIndex: let geometryIndex):
+            case .vertexInTexCoord1(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float2)) uv\(geometryIndex)_1 : TEXCOORD1;"
-            case .vertexInNormal(geoemtryIndex: let geometryIndex):
+            case .vertexInNormal(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float3)) nml\(geometryIndex) : NORMAL;"
-            case .vertexInTangent(geoemtryIndex: let geometryIndex):
+            case .vertexInTangent(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float3)) tan\(geometryIndex) : TANGENT;"
-            case .vertexInColor(geoemtryIndex: let geometryIndex):
+            case .vertexInColor(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float4)) clr\(geometryIndex) : COLOR;"
-            case .vertexInJointIndices(geoemtryIndex: let geometryIndex):
+            case .vertexInJointIndices(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .uint4)) jtIdx\(geometryIndex) : BONEINDEX;"
-            case .vertexInJointWeights(geoemtryIndex: let geometryIndex):
+            case .vertexInJointWeights(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float4)) jtWeit\(geometryIndex) : BONEWEIGHT;"
             }
         }

@@ -13,7 +13,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
     let primitive: DrawFlags.Primitive
     let attributes: ContiguousArray<GeometryAttribute>
     let buffers: ContiguousArray<MTLBuffer>
-    let indiciesCount: Int
+    let indicesCount: Int
     var indexBuffer: MTLBuffer {
         return buffers.last!
     }
@@ -37,7 +37,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             device.makeBuffer(bytes: geometry.normals, length: MemoryLayout<Float>.stride * geometry.normals.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.tangents, length: MemoryLayout<Float>.stride * geometry.tangents.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.colors, length: MemoryLayout<Float>.stride * geometry.colors.count, options: .storageModeShared)!,
-            device.makeBuffer(bytes: geometry.indicies, length: MemoryLayout<UInt16>.stride * geometry.indicies.count, options: .storageModeShared)!
+            device.makeBuffer(bytes: geometry.indices, length: MemoryLayout<UInt16>.stride * geometry.indices.count, options: .storageModeShared)!
         ]
 
         self.buffers = [
@@ -47,9 +47,9 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             device.makeBuffer(length: MemoryLayout<Float>.stride * geometry.normals.count, options: .storageModePrivate)!,
             device.makeBuffer(length: MemoryLayout<Float>.stride * geometry.tangents.count, options: .storageModePrivate)!,
             device.makeBuffer(length: MemoryLayout<Float>.stride * geometry.colors.count, options: .storageModePrivate)!,
-            device.makeBuffer(length: MemoryLayout<UInt16>.stride * geometry.indicies.count, options: .storageModePrivate)!
+            device.makeBuffer(length: MemoryLayout<UInt16>.stride * geometry.indices.count, options: .storageModePrivate)!
         ]
-        self.indiciesCount = geometry.indicies.count
+        self.indicesCount = geometry.indices.count
         
         self.blit(sharedBuffers, buffers)
     }
@@ -65,7 +65,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 3, shaderAttribute: .tangent),
             .init(type: .float, componentLength: 3, shaderAttribute: .normal),
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
-            .init(type: .uInt32, componentLength: 4, shaderAttribute: .jointIndicies),
+            .init(type: .uInt32, componentLength: 4, shaderAttribute: .jointIndices),
             .init(type: .float, componentLength: 4, shaderAttribute: .jointWeights),
         ]
         
@@ -76,9 +76,9 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             device.makeBuffer(bytes: geometry.normals, length: MemoryLayout<Float>.stride * geometry.normals.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.tangents, length: MemoryLayout<Float>.stride * geometry.tangents.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.colors, length: MemoryLayout<Float>.stride * geometry.colors.count, options: .storageModeShared)!,
-            device.makeBuffer(bytes: skin.jointIndicies, length: MemoryLayout<UInt32>.stride * skin.jointIndicies.count, options: .storageModeShared)!,
+            device.makeBuffer(bytes: skin.jointIndices, length: MemoryLayout<UInt32>.stride * skin.jointIndices.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: skin.jointWeights, length: MemoryLayout<Float>.stride * skin.jointWeights.count, options: .storageModeShared)!,
-            device.makeBuffer(bytes: geometry.indicies, length: MemoryLayout<UInt16>.stride * geometry.indicies.count, options: .storageModeShared)!
+            device.makeBuffer(bytes: geometry.indices, length: MemoryLayout<UInt16>.stride * geometry.indices.count, options: .storageModeShared)!
         ]
         
         self.buffers = [
@@ -88,11 +88,11 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             device.makeBuffer(length: MemoryLayout<Float>.stride * geometry.normals.count, options: .storageModePrivate)!,
             device.makeBuffer(length: MemoryLayout<Float>.stride * geometry.tangents.count, options: .storageModePrivate)!,
             device.makeBuffer(length: MemoryLayout<Float>.stride * geometry.colors.count, options: .storageModePrivate)!,
-            device.makeBuffer(length: MemoryLayout<UInt32>.stride * skin.jointIndicies.count, options: .storageModePrivate)!,
+            device.makeBuffer(length: MemoryLayout<UInt32>.stride * skin.jointIndices.count, options: .storageModePrivate)!,
             device.makeBuffer(length: MemoryLayout<Float>.stride * skin.jointWeights.count, options: .storageModePrivate)!,
-            device.makeBuffer(length: MemoryLayout<UInt16>.stride * geometry.indicies.count, options: .storageModePrivate)!
+            device.makeBuffer(length: MemoryLayout<UInt16>.stride * geometry.indices.count, options: .storageModePrivate)!
         ]
-        self.indiciesCount = geometry.indicies.count
+        self.indicesCount = geometry.indices.count
         self.blit(sharedBuffers, buffers)
     }
     
@@ -108,15 +108,15 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
         let sharedBuffers: ContiguousArray<MTLBuffer> = [
             device.makeBuffer(bytes: lines.positions, length: MemoryLayout<Float>.stride * lines.positions.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: lines.colors, length: MemoryLayout<Float>.stride * lines.colors.count, options: .storageModeShared)!,
-            device.makeBuffer(bytes: lines.indicies, length: MemoryLayout<UInt16>.stride * lines.indicies.count, options: .storageModeShared)!
+            device.makeBuffer(bytes: lines.indices, length: MemoryLayout<UInt16>.stride * lines.indices.count, options: .storageModeShared)!
         ]
         
         self.buffers = [
             device.makeBuffer(length: MemoryLayout<Float>.stride * lines.positions.count, options: .storageModePrivate)!,
             device.makeBuffer(length: MemoryLayout<Float>.stride * lines.colors.count, options: .storageModePrivate)!,
-            device.makeBuffer(length: MemoryLayout<UInt16>.stride * lines.indicies.count, options: .storageModePrivate)!
+            device.makeBuffer(length: MemoryLayout<UInt16>.stride * lines.indices.count, options: .storageModePrivate)!
         ]
-        self.indiciesCount = lines.indicies.count
+        self.indicesCount = lines.indices.count
         self.blit(sharedBuffers, buffers)
     }
     
@@ -133,15 +133,15 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
         let sharedBuffers: ContiguousArray<MTLBuffer> = [
             device.makeBuffer(bytes: points.positions, length: MemoryLayout<Float>.stride * points.positions.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: points.colors, length: MemoryLayout<Float>.stride * points.colors.count, options: .storageModeShared)!,
-            device.makeBuffer(bytes: points.indicies, length: MemoryLayout<UInt16>.stride * points.indicies.count, options: .storageModeShared)!
+            device.makeBuffer(bytes: points.indices, length: MemoryLayout<UInt16>.stride * points.indices.count, options: .storageModeShared)!
         ]
         
         self.buffers = [
             device.makeBuffer(length: MemoryLayout<Float>.stride * points.positions.count, options: .storageModePrivate)!,
             device.makeBuffer(length: MemoryLayout<Float>.stride * points.colors.count, options: .storageModePrivate)!,
-            device.makeBuffer(length: MemoryLayout<UInt16>.stride * points.indicies.count, options: .storageModePrivate)!
+            device.makeBuffer(length: MemoryLayout<UInt16>.stride * points.indices.count, options: .storageModePrivate)!
         ]
-        self.indiciesCount = points.indicies.count
+        self.indicesCount = points.indices.count
         self.blit(sharedBuffers, buffers)
     }
     
@@ -162,7 +162,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
 #if GATEENGINE_DEBUG_RENDERING || DEBUG
     func isDrawCommandValid(sharedWith backend: GeometryBackend) -> Bool {
         let backend = backend as! Self
-        if indiciesCount != backend.indiciesCount {
+        if indicesCount != backend.indicesCount {
             return false
         }
         if self.primitive != backend.primitive {

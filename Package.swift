@@ -86,7 +86,7 @@ let package = Package(
                             .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW", .when(platforms: [.macOS, .windows, .linux])),
                             /// Checks for reloadable resources and reloads them if they have changed
                             .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
-                            /// The host platfrom requests the main window, so GateEngine won't create one until it's requested
+                            /// The host platform requests the main window, so GateEngine won't create one until it's requested
                             .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
                             /// The host platform can't be usaed to compile HTML5 products
                             .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
@@ -99,7 +99,7 @@ let package = Package(
                         #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
-                        // Options for developemnt of WASI platform
+                        // Options for developments of WASI platform
                         #if false
                         settings.append(contentsOf: [
                             /// Allows HTML5 platform to be compiled from a compatible host, such as macOS. This allows the IDE to show compile errors without targeting WASI.
@@ -110,11 +110,11 @@ let package = Package(
                         #endif
                         
                         settings.append(contentsOf: [
-                            /// Printes the output of generated shaders
+                            /// Printers the output of generated shaders
                             .define("GATEENGINE_LOG_SHADERS"),
-                            /// Enables varius additional checks and output for rendering
+                            /// Enables various additional checks and output for rendering
                             .define("GATEENGINE_DEBUG_RENDERING"),
-                            /// Enables varius additional checks and output for input
+                            /// Enables various additional checks and output for input
                             .define("GATEENGINE_DEBUG_HID"),
                             /// Forces Apple platforms to use OpenGL for rendering
                             .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, .iOS, .tvOS])),

@@ -45,7 +45,7 @@ public struct D3DGraphicsPipelineStateDescription {
     public var depthStencilState: D3DDepthStencilDescription
 
     /// A D3D12_INPUT_LAYOUT_DESC structure that describes the input-buffer data for the input-assembler stage.
-    public var inputLayout: D3DInputLayoutDesription
+    public var inputLayout: D3DInputLayoutDescription
 
     /// Specifies the properties of the index buffer in a D3D12_INDEX_BUFFER_STRIP_CUT_VALUE structure.
     public var indexBufferStripCutValue: D3DIndexBufferStripCutValue
@@ -105,7 +105,7 @@ public struct D3DGraphicsPipelineStateDescription {
                 sampleMask: UInt32 = .max,
                 rasterizerState: D3DRasterizerDescription = D3DRasterizerDescription(),
                 depthStencilState: D3DDepthStencilDescription = D3DDepthStencilDescription(),
-                inputLayout: D3DInputLayoutDesription,
+                inputLayout: D3DInputLayoutDescription,
                 indexBufferStripCutValue: D3DIndexBufferStripCutValue = .disabled,
                 primitiveTopologyType: D3DPrimitiveTopologyType,
                 renderTargetFormats: [DGIFormat],

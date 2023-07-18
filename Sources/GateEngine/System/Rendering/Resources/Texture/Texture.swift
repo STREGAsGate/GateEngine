@@ -22,7 +22,7 @@ public enum MipMapping: Hashable {
     func replaceData(with data: Data, size: Size2, mipMapping: MipMapping)
 }
 
-/** Texture represents a mangaed bitmap buffer object.
+/** Texture represents a managed bitmap buffer object.
  It's contents are stored within GPU accessible memory and this object represents a reference to that memory.
  When this object deinitializes it's contents will also be removed from GPU memory.
  */
@@ -65,7 +65,7 @@ public enum MipMapping: Hashable {
      Create a new texture.
      
      - parameter path: The package resource path. This path is relative to a package resource. Using a fullyqualified disc path will fail.
-     - parameter sizeHint: This hint will be returned by the `Texture.size` property before the texture data has been loaded. After the Texture data has loaded the actual texture file dimenstions will be returned by `Texture.size`.
+     - parameter sizeHint: This hint will be returned by the `Texture.size` property before the texture data has been loaded. After the Texture data has loaded the actual texture file dimensions will be returned by `Texture.size`.
      - parameter options: Options that will be given to the texture importer.
      - parameter mipMapping: The mip level to generate for this texture.
      */
@@ -78,7 +78,7 @@ public enum MipMapping: Hashable {
      Create a new texture.
      
      - parameter path: The package resource path. This path is relative to a package resource. Using a fullyqualified disc path will fail.
-     - parameter sizeHint: This hint will be returned by the `Texture.size` property before the texture data has been loaded. After the Texture data has loaded the actual texture file dimenstions will be returned by `Texture.size`.
+     - parameter sizeHint: This hint will be returned by the `Texture.size` property before the texture data has been loaded. After the Texture data has loaded the actual texture file dimensions will be returned by `Texture.size`.
      - parameter options: Options that will be given to the texture importer.
      - parameter mipMapping: The mip level to generate for this texture.
      */
@@ -94,7 +94,7 @@ public enum MipMapping: Hashable {
     public init(data: Data, size: Size2, mipMapping: MipMapping) {
         let resourceManager = Game.shared.resourceManager
         self.renderTarget = nil
-        self.cacheKey = resourceManager.texureCacheKey(data: data, size: size, mipMapping: mipMapping)
+        self.cacheKey = resourceManager.textureCacheKey(data: data, size: size, mipMapping: mipMapping)
         self.sizeHint = size
         self.cacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
@@ -103,7 +103,7 @@ public enum MipMapping: Hashable {
     init(renderTarget: any _RenderTargetProtocol) {
         let resourceManager = Game.shared.resourceManager
         self.renderTarget = renderTarget
-        self.cacheKey = resourceManager.texureCacheKey(renderTargetBackend: renderTarget.renderTargetBackend)
+        self.cacheKey = resourceManager.textureCacheKey(renderTargetBackend: renderTarget.renderTargetBackend)
         self.sizeHint = renderTarget.size
         self.cacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)

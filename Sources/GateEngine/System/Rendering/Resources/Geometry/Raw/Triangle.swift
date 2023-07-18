@@ -88,7 +88,7 @@ public struct Triangle: Codable, Equatable, Hashable {
     }
     /**
      Creates UVs, Normals, Tangents, and Bitangents if they are missing or incorrectly formatted.
-     This function is called automatically by initializers where any of the elemnts are missing, such as init with positions only.
+     This function is called automatically by initializers where any of the elements are missing, such as init with positions only.
      It's not necessary to call this function onless you manipulate the tirnagle storage outside of an initializer.
      */
     public mutating func repairIfNeeded() {
@@ -153,7 +153,7 @@ public extension Array where Element == Triangle {
 }
 
 public extension Triangle {
-    /// - returns `true` if `position` is on `self`s plane and withing it's edges.
+    /// - returns `true` if `position` is on `self`s plane and within it's edges.
     func contains(_ position: Position3) -> Bool {
         let pa = v1.position
         let pb = v2.position

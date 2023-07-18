@@ -116,7 +116,7 @@ public extension Vector3 {
     /**
      Returns a new instance with `x` incremented by `value`.
      - parameter value: The amount to add to `x`. To subtract use a negatie value.
-     - returns: A new Self with `x` incrmented by `value`.
+     - returns: A new Self with `x` incremented by `value`.
     */
     @_transparent
     func addingToX(_ value: Float) -> Self {
@@ -125,7 +125,7 @@ public extension Vector3 {
     /**
      Returns a new instance with `y` incremented by `value`.
      - parameter value: The amount to add to `y`. To subtract use a negatie value.
-     - returns: A new Self with `y` incrmented by `value`.
+     - returns: A new Self with `y` incremented by `value`.
     */
     @_transparent
     func addingToY(_ value: Float) -> Self {
@@ -134,7 +134,7 @@ public extension Vector3 {
     /**
      Returns a new instance with `z` incremented by `value`.
      - parameter value: The amount to add to `z`. To subtract use a negatie value.
-     - returns: A new Self with `z` incrmented by `value`.
+     - returns: A new Self with `z` incremented by `value`.
     */
     @_transparent
     func addingToZ(_ value: Float) -> Self {

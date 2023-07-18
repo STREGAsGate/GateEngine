@@ -68,7 +68,7 @@ public final class GLSLCodeGenerator: CodeGenerator {
             return "iTan\(index)"
         case let .vertexInColor(index):
             return "iClr\(index)"
-        case let .vertexInJointIndicies(index):
+        case let .vertexInJointIndices(index):
             return "iJtIdx\(index)"
         case let .vertexInJointWeights(index):
             return "iJtWeit\(index)"
@@ -162,21 +162,21 @@ public final class GLSLCodeGenerator: CodeGenerator {
         for attributeIndex in attributes.indices {
             let attribute = attributes[attributeIndex]
             switch attribute {
-            case .vertexInPosition(geoemtryIndex: let geometryIndex):
+            case .vertexInPosition(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float3)) \(variable(for: .vertexInPosition(geometryIndex)));"
-            case .vertexInTexCoord0(geoemtryIndex: let geometryIndex):
+            case .vertexInTexCoord0(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float2)) \(variable(for: .vertexInTexCoord0(geometryIndex)));"
-            case .vertexInTexCoord1(geoemtryIndex: let geometryIndex):
+            case .vertexInTexCoord1(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float2)) \(variable(for: .vertexInTexCoord1(geometryIndex)));"
-            case .vertexInNormal(geoemtryIndex: let geometryIndex):
+            case .vertexInNormal(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float3)) \(variable(for: .vertexInNormal(geometryIndex)));"
-            case .vertexInTangent(geoemtryIndex: let geometryIndex):
+            case .vertexInTangent(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float3)) \(variable(for: .vertexInTangent(geometryIndex)));"
-            case .vertexInColor(geoemtryIndex: let geometryIndex):
+            case .vertexInColor(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float4)) \(variable(for: .vertexInColor(geometryIndex)));"
-            case .vertexInJointIndices(geoemtryIndex: let geometryIndex):
-                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .uint4)) \(variable(for: .vertexInJointIndicies(geometryIndex)));"
-            case .vertexInJointWeights(geoemtryIndex: let geometryIndex):
+            case .vertexInJointIndices(geometryIndex: let geometryIndex):
+                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .uint4)) \(variable(for: .vertexInJointIndices(geometryIndex)));"
+            case .vertexInJointWeights(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float4)) \(variable(for: .vertexInJointWeights(geometryIndex)));"
             }
         }

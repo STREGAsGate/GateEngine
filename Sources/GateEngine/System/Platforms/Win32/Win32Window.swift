@@ -395,7 +395,7 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _msgKeyDown(_ wparam: WPARAM, _ lparam: LPARAM) -> Bool {
-        return Game.shared.hid.keyboardDidhandle(key: keyFromWPARAM(wparam, lparam),
+        return Game.shared.hid.keyboardDidHandle(key: keyFromWPARAM(wparam, lparam),
                                                  character: character(from: wparam),
                                                  modifiers: modifierKeyFromWPARAM(wparam),
                                                  isRepeat: false,
@@ -407,7 +407,7 @@ fileprivate extension Win32Window {
     @preconcurrency
     @MainActor
     func _msgKeyUp(_ wparam: WPARAM, _ lparam: LPARAM) -> Bool {
-        return Game.shared.hid.keyboardDidhandle(key: keyFromWPARAM(wparam, lparam),
+        return Game.shared.hid.keyboardDidHandle(key: keyFromWPARAM(wparam, lparam),
                                                  character: character(from: wparam),
                                                  modifiers: modifierKeyFromWPARAM(wparam),
                                                  isRepeat: false,

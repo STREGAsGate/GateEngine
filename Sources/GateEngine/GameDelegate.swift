@@ -37,7 +37,7 @@ public protocol GameDelegate: AnyObject {
     */
     @MainActor func screenBecomeAvailable(game: Game) throws -> Window?
     
-    /// Might be called immediatley before the app closes.
+    /// Might be called immediately before the app closes.
     @MainActor func willTerminate(game: Game)
     
     /**
@@ -49,7 +49,7 @@ public protocol GameDelegate: AnyObject {
      - Creating a multiplayer server.
      - Running your project in a remote environment, such as over SSH, where windows cannot be opened.
      - returns: true if the game doesn't draw anything.
-     - note: RenderingSystem(s) do not recive updates in headless mode.
+     - note: RenderingSystem(s) do not receive updates in headless mode.
      */
     @MainActor func isHeadless() -> Bool
     
@@ -88,8 +88,8 @@ public extension GameDelegate {
 
     @_transparent
     internal func resolvedGameIdentifier() -> String {
-        if let identifer: StaticString = self.gameIdentifier() {
-            return identifer.description
+        if let identifier: StaticString = self.gameIdentifier() {
+            return identifier.description
         }
         return CommandLine.arguments[0]
     }

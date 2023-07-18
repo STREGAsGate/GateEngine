@@ -37,7 +37,7 @@ internal struct GeometryAttribute: Hashable {
         case normal
         case tangent
         case color
-        case jointIndicies
+        case jointIndices
         case jointWeights
     }
 }
@@ -53,21 +53,21 @@ extension GeometryBackend {
                 let attribute = geometry.attributes[attributeIndex]
                 switch attribute.shaderAttribute {
                 case .position:
-                    attributes.append(.vertexInPosition(geoemtryIndex: geometryIndex))
+                    attributes.append(.vertexInPosition(geometryIndex: geometryIndex))
                 case .texCoord0:
-                    attributes.append(.vertexInTexCoord0(geoemtryIndex: geometryIndex))
+                    attributes.append(.vertexInTexCoord0(geometryIndex: geometryIndex))
                 case .texCoord1:
-                    attributes.append(.vertexInTexCoord1(geoemtryIndex: geometryIndex))
+                    attributes.append(.vertexInTexCoord1(geometryIndex: geometryIndex))
                 case .normal:
-                    attributes.append(.vertexInNormal(geoemtryIndex: geometryIndex))
+                    attributes.append(.vertexInNormal(geometryIndex: geometryIndex))
                 case .tangent:
-                    attributes.append(.vertexInTangent(geoemtryIndex: geometryIndex))
+                    attributes.append(.vertexInTangent(geometryIndex: geometryIndex))
                 case .color:
-                    attributes.append(.vertexInColor(geoemtryIndex: geometryIndex))
-                case .jointIndicies:
-                    attributes.append(.vertexInJointIndices(geoemtryIndex: geometryIndex))
+                    attributes.append(.vertexInColor(geometryIndex: geometryIndex))
+                case .jointIndices:
+                    attributes.append(.vertexInJointIndices(geometryIndex: geometryIndex))
                 case .jointWeights:
-                    attributes.append(.vertexInJointWeights(geoemtryIndex: geometryIndex))
+                    attributes.append(.vertexInJointWeights(geometryIndex: geometryIndex))
                 }
             }
         }

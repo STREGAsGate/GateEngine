@@ -11,7 +11,7 @@ class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
     let primitive: DrawFlags.Primitive
     let attributes: ContiguousArray<GeometryAttribute>
     let buffers: [GLuint]
-    let indiciesCount: GLsizei
+    let indicesCount: GLsizei
     
     required init(lines: RawLines) {
         self.primitive = .line
@@ -29,10 +29,10 @@ class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
         glBufferData(lines.colors, withUsage: .static, as: .array)
         
         glBindBuffer(buffers.last!, as: .elementArray)
-        glBufferData(lines.indicies, withUsage: .static, as: .elementArray)
+        glBufferData(lines.indices, withUsage: .static, as: .elementArray)
         
         self.buffers = buffers
-        self.indiciesCount = GLsizei(lines.indicies.count)
+        self.indicesCount = GLsizei(lines.indices.count)
         
 #if GATEENGINE_DEBUG_RENDERING
         Game.shared.renderer.openGLCheckError()
@@ -55,10 +55,10 @@ class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
         glBufferData(points.colors, withUsage: .static, as: .array)
         
         glBindBuffer(buffers.last!, as: .elementArray)
-        glBufferData(points.indicies, withUsage: .static, as: .elementArray)
+        glBufferData(points.indices, withUsage: .static, as: .elementArray)
         
         self.buffers = buffers
-        self.indiciesCount = GLsizei(points.indicies.count)
+        self.indicesCount = GLsizei(points.indices.count)
         
 #if GATEENGINE_DEBUG_RENDERING
         Game.shared.renderer.openGLCheckError()
@@ -97,10 +97,10 @@ class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
         glBufferData(geometry.colors, withUsage: .static, as: .array)
         
         glBindBuffer(buffers.last!, as: .elementArray)
-        glBufferData(geometry.indicies, withUsage: .static, as: .elementArray)
+        glBufferData(geometry.indices, withUsage: .static, as: .elementArray)
         
         self.buffers = buffers
-        self.indiciesCount = GLsizei(geometry.indicies.count)
+        self.indicesCount = GLsizei(geometry.indices.count)
         
 #if GATEENGINE_DEBUG_RENDERING
         Game.shared.renderer.openGLCheckError()
@@ -116,7 +116,7 @@ class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 3, shaderAttribute: .tangent),
             .init(type: .float, componentLength: 3, shaderAttribute: .normal),
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
-            .init(type: .uInt32, componentLength: 4, shaderAttribute: .jointIndicies),
+            .init(type: .uInt32, componentLength: 4, shaderAttribute: .jointIndices),
             .init(type: .float, componentLength: 4, shaderAttribute: .jointWeights),
         ]
         
@@ -141,16 +141,16 @@ class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
         glBufferData(geometry.colors, withUsage: .static, as: .array)
         
         glBindBuffer(buffers[6], as: .array)
-        glBufferData(skin.jointIndicies, withUsage: .static, as: .array)
+        glBufferData(skin.jointIndices, withUsage: .static, as: .array)
         
         glBindBuffer(buffers[7], as: .array)
         glBufferData(skin.jointWeights, withUsage: .static, as: .array)
         
         glBindBuffer(buffers.last!, as: .elementArray)
-        glBufferData(geometry.indicies, withUsage: .static, as: .elementArray)
+        glBufferData(geometry.indices, withUsage: .static, as: .elementArray)
         
         self.buffers = buffers
-        self.indiciesCount = GLsizei(geometry.indicies.count)
+        self.indicesCount = GLsizei(geometry.indices.count)
         
 #if GATEENGINE_DEBUG_RENDERING
         Game.shared.renderer.openGLCheckError()
@@ -160,7 +160,7 @@ class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
 #if GATEENGINE_DEBUG_RENDERING || DEBUG
     func isDrawCommandValid(sharedWith backend: GeometryBackend) -> Bool {
         let backend = backend as! Self
-        if indiciesCount != backend.indiciesCount {
+        if indicesCount != backend.indicesCount {
             return false
         }
         if self.primitive != backend.primitive {

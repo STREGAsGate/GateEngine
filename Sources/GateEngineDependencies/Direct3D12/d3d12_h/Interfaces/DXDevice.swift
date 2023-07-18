@@ -409,7 +409,7 @@ public final class D3DDevice: D3DObject {
     }
 
     /** Creates a render-target view for accessing resource data.
-    - paramter resource: A pointer to the ID3D12Resource object that represents the render target. At least one of pResource or pDesc must be provided. A null pResource is used to initialize a null descriptor, which guarantees D3D11-like null binding behavior (reading 0s, writes are discarded), but must have a valid pDesc in order to determine the descriptor type.
+    - parameter resource: A pointer to the ID3D12Resource object that represents the render target. At least one of pResource or pDesc must be provided. A null pResource is used to initialize a null descriptor, which guarantees D3D11-like null binding behavior (reading 0s, writes are discarded), but must have a valid pDesc in order to determine the descriptor type.
     - parameter description: A pointer to a D3D12_RENDER_TARGET_VIEW_DESC structure that describes the render-target view.
     - parameter destination: Describes the CPU descriptor handle that represents the destination where the newly-created render target view will reside.
     */
@@ -703,7 +703,7 @@ public final class D3DDevice: D3DObject {
     @inlinable @inline(__always)
     override class var interfaceID: WinSDK.IID {
         // if #available(Windows 10.0.19041, *) {
-        //     //Device7 and Device8 were relased at the same time. Always use Device8.
+        //     //Device7 and Device8 were released at the same time. Always use Device8.
         //     return RawValue8.interfaceID //ID3D12Device8
         //   //return RawValue7.interfaceID //ID3D12Device7
         // }else if #available(Windows 10.0.18362, *) {
@@ -735,8 +735,8 @@ public final class D3DDevice: D3DObject {
     }
 
     @inlinable @inline(__always)
-    required init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: IUnknown.MemoryManagment = .alreadyRetained) {
-        super.init(winSDKPointer: pointer, memoryManagment: memoryManagment)
+    required init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagement: IUnknown.MemoryManagement = .alreadyRetained) {
+        super.init(winSDKPointer: pointer, memoryManagement: memoryManagement)
     }
 }
 

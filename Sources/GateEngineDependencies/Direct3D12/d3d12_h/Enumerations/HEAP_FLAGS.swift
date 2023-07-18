@@ -31,7 +31,7 @@ public struct D3DHeapFlags: OptionSet {
     public static let denyNonRenderTargetAndDepthStencilTextures = D3DHeapFlags(rawValue: WinSDK.D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES.rawValue)
     ///	Unsupported. Do not use.
     public static let hardwareProtected = D3DHeapFlags(rawValue: WinSDK.D3D12_HEAP_FLAG_HARDWARE_PROTECTED.rawValue)
-    ///	The heap supports MEM_WRITE_WATCH functionality, which causes the system to track the pages that are written to in the commited memory region. This flag can't be combined with the D3D12_HEAP_TYPE_DEFAULT or D3D12_CPU_PAGE_PROPERTY_UNKNOWN flags. Applications are discouraged from using this flag themselves because it prevents tools from using this functionality.
+    ///	The heap supports MEM_WRITE_WATCH functionality, which causes the system to track the pages that are written to in the committed memory region. This flag can't be combined with the D3D12_HEAP_TYPE_DEFAULT or D3D12_CPU_PAGE_PROPERTY_UNKNOWN flags. Applications are discouraged from using this flag themselves because it prevents tools from using this functionality.
     public static let allowWriteWatch = D3DHeapFlags(rawValue: WinSDK.D3D12_HEAP_FLAG_ALLOW_WRITE_WATCH.rawValue)
     /**	
     Ensures that atomic operations will be atomic on this heap's memory, according to components able to see the memory.

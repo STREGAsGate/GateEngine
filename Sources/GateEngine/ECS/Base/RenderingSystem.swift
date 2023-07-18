@@ -15,7 +15,7 @@
     }
     
     /// The current delta time as a Double
-    /// Use this instead of the System Float varient when keeping track of timers
+    /// Use this instead of the System Float variant when keeping track of timers
     public internal(set) var highPrecisionDeltaTime: Double = 0
     
     required public init() {
@@ -49,7 +49,7 @@
      - parameter game: The game instance.
      - parameter window: The target window that wants to be rendered.
      - parameter deltaTime: The duration since the last time this window was rendered.
-     - returns: `true` if you want to render, otheriwse `false`.
+     - returns: `true` if you want to render, otherwise `false`.
      **/
     open func shouldRender(game: Game, window: Window, withTimePassed deltaTime: Float) -> Bool {
         return true
@@ -60,7 +60,7 @@
      - parameter game: The game instance.
      - parameter window: The target window that wants to be rendered.
      - parameter deltaTime: The duration since the last time this window was rendered.
-     - returns: `true` if you want to render, otheriwse `false`.
+     - returns: `true` if you want to render, otherwise `false`.
      **/
     open func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
         preconditionFailure("Must Override \"\(#function)\" in \(type(of: Self.self))")
@@ -84,7 +84,7 @@
      The sort order determines how the systems are sorted.
      Returning `nil` means you don't care, and the order will be undefined.
      
-     - returns: A ``RenderingSystemSortOrder`` describing this sytems position.
+     - returns: A ``RenderingSystemSortOrder`` describing this systems position.
      **/
     nonisolated open class func sortOrder() -> RenderingSystemSortOrder? {
         return nil

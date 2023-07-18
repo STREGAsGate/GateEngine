@@ -48,7 +48,7 @@ final class UIKitWindow: WindowBacking {
         self.uiWindow.rootViewController = UIKitViewController(window: self)
         self.uiWindow.translatesAutoresizingMaskIntoConstraints = true
         
-        if Game.shared.platform.applicationReqestedWindow == false && window.isMainWindow == false {
+        if Game.shared.platform.applicationRequestedWindow == false && window.isMainWindow == false {
             Game.shared.platform.windowPreparingForSceneConnection = self
             
             @inline(__always)
@@ -68,7 +68,7 @@ final class UIKitWindow: WindowBacking {
             UserDefaults.standard.set("Untitled", forKey: "Windows/\(window.identifier)/title")
             UIApplication.shared.requestSceneSessionActivation(existingSession(forWindow: window), userActivity: userActivity, options: nil)
         }
-        Game.shared.platform.applicationReqestedWindow = false
+        Game.shared.platform.applicationRequestedWindow = false
     }
     
     lazy private(set) var displayLink: CADisplayLink = {

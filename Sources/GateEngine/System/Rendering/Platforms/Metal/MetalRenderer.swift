@@ -66,10 +66,10 @@ class MetalRenderer: RendererBackend {
         encoder.setFragmentSamplerState(nearestSamplerState, index: 1)
 
         let firstGeometry = geometries[0]
-        let indiciesCount: Int = firstGeometry.indiciesCount
+        let indicesCount: Int = firstGeometry.indicesCount
         let indexBuffer: MTLBuffer = firstGeometry.indexBuffer
         encoder.drawIndexedPrimitives(type: primitive(from: drawCommand.flags.primitive),
-                                      indexCount: indiciesCount,
+                                      indexCount: indicesCount,
                                       indexType: .uint16,
                                       indexBuffer: indexBuffer,
                                       indexBufferOffset: 0,

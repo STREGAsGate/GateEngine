@@ -7,7 +7,7 @@
 
 import Foundation
 
-/** Geometry represents a mangaed vertex buffer object.
+/** Geometry represents a managed vertex buffer object.
 It's contents are stored within GPU accessible memory and this object represents a reference to that memory.
 When this object deinitializes it's contents will also be removed from GPU memory.
 */

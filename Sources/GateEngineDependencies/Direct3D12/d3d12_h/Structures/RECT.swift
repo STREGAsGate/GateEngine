@@ -88,15 +88,15 @@ public struct MSRect: Equatable {
         copy.origin.x += halfHorizontal //Move left
         copy.size.width -= x            //Shrink left
 
-        let halfVertial = y / 2
-        copy.origin.y += halfVertial    //Move down
+        let halfVertical = y / 2
+        copy.origin.y += halfVertical    //Move down
         copy.size.height -= y           //Shrink up
         return copy
     }
 
     @inlinable @inline(__always)
     public func contains(_ rhs: MSRect) -> Bool {
-        //Seperating axis. If there is space between any edges, they can't overlap.
+        //Separating axis. If there is space between any edges, they can't overlap.
         guard self.maxX < rhs.minX else {return false}
         guard self.maxY < rhs.minY else {return false}
         guard self.minX < rhs.maxX else {return false}

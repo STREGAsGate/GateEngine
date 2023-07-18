@@ -8,7 +8,7 @@
 import WinSDK
 
 /// Describes the input-buffer data for the input-assembler stage.
-public struct D3DInputLayoutDesription {
+public struct D3DInputLayoutDescription {
     public typealias RawValue = WinSDK.D3D12_INPUT_LAYOUT_DESC
 
     /// An array of D3D12_INPUT_ELEMENT_DESC structures that describe the data types of the input-assembler stage.
@@ -50,7 +50,7 @@ public struct D3DInputLayoutDesription {
 //MARK: - Original Style API
 #if !Direct3D12ExcludeOriginalStyleAPI
 
-@available(*, deprecated, renamed: "D3DInputLayoutDesription")
-public typealias D3D12_INPUT_LAYOUT_DESC = D3DInputLayoutDesription
+@available(*, deprecated, renamed: "D3DInputLayoutDescription")
+public typealias D3D12_INPUT_LAYOUT_DESC = D3DInputLayoutDescription
 
 #endif

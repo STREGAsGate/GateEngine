@@ -26,8 +26,8 @@ public final class D3DDebug: IUnknown {
         super.init(winSDKPointer: ppvDebug!)!
     }
 
-    required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagment: MemoryManagment = .alreadyRetained) {
-        super.init(winSDKPointer: pointer, memoryManagment: memoryManagment)
+    required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagement: MemoryManagement = .alreadyRetained) {
+        super.init(winSDKPointer: pointer, memoryManagement: memoryManagement)
     }
 
     @inlinable @inline(__always)
