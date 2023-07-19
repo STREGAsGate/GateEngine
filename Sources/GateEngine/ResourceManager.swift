@@ -5,7 +5,9 @@
  * http://stregasgate.com
  */
 
-import Foundation
+#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
+import class Foundation.FileManager
+#endif
 
 extension ResourceManager {
     struct Importers {
@@ -34,16 +36,16 @@ public class ResourceManager {
     internal var importers: Importers = Importers()
     internal let cache: Cache = Cache()
     
-    var rawCacheID = IDGenerator<UInt>()
+    let rawCacheIDGenerator = IDGenerator<UInt>()
     
-    var accumulatedSeconds: Float = 0
+    var accumulatedSeconds: Double = 0
     
     public let game: Game
     public init(game: Game) {
         self.game = game
     }
     
-    func update(withTimePassed deltaTime: Float) {
+    func update(withTimePassed deltaTime: Double) {
         accumulatedSeconds += deltaTime
         if accumulatedSeconds > 60 {
             accumulatedSeconds -= 60
@@ -188,7 +190,7 @@ internal extension ResourceManager {
     }
     
     func geometryCacheKey(rawGeometry geometry: RawGeometry?) -> Cache.GeometryKey {
-        let path = "$\(rawCacheID.generateID())"
+        let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
@@ -234,7 +236,7 @@ internal extension ResourceManager {
     func geometryNeedsReload(key: Cache.GeometryKey) -> Bool {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else {return false}
-        #if GATEENGINE_ENABLE_HOTRELOADING
+        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
         guard let cache = cache.geometries[key] else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)
@@ -336,7 +338,7 @@ internal extension ResourceManager {
     }
     
     func skinnedGeometryCacheKey(rawGeometry geometry: RawGeometry?, skin: Skin) -> Cache.SkinnedGeometryKey {
-        let path = "$\(rawCacheID.generateID())"
+        let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.SkinnedGeometryKey(requestedPath: path, geometryOptions: .none, skinOptions: .none)
         if cache.skinnedGeometries[key] == nil {
             cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
@@ -429,7 +431,7 @@ internal extension ResourceManager {
 // MARK: - Lines
 internal extension ResourceManager {
     func geometryCacheKey(rawLines lines: RawLines?) -> Cache.GeometryKey {
-        let path = "$\(rawCacheID.generateID())"
+        let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
@@ -471,7 +473,7 @@ internal extension ResourceManager {
 // MARK: - Points
 internal extension ResourceManager {
     func geometryCacheKey(rawPoints points: RawPoints?) -> Cache.GeometryKey {
-        let path = "$\(rawCacheID.generateID())"
+        let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
@@ -553,7 +555,7 @@ internal extension ResourceManager {
     }
     
     func textureCacheKey(data: Data, size: Size2, mipMapping: MipMapping) -> Cache.TextureKey {
-        let path = "$\(rawCacheID.generateID())"
+        let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.TextureKey(requestedPath: path, mipMapping: mipMapping, textureOptions: .none)
         if cache.textures[key] == nil {
             cache.textures[key] = Cache.TextureCache()
@@ -569,7 +571,7 @@ internal extension ResourceManager {
     }
     
     func textureCacheKey(renderTargetBackend: RenderTargetBackend) -> Cache.TextureKey {
-        let path = "$\(rawCacheID.generateID())"
+        let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.TextureKey(requestedPath: path, mipMapping: .none, textureOptions: .none)
         if cache.textures[key] == nil {
             let newCache = Cache.TextureCache()

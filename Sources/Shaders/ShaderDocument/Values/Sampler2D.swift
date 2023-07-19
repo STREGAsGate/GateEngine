@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public final class Sampler2D: ShaderValue {
     public internal(set) var operation: Operation? = nil
     

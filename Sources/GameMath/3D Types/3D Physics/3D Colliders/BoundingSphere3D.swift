@@ -198,8 +198,8 @@ public extension BoundingSphere3D {
         let radius2 = radius * radius
         if d2 > radius2 {return nil}
         let thc = (radius2 - d2).squareRoot()
-        var t0 = tca - thc;
-        var t1 = tca + thc;
+        var t0 = tca - thc
+        var t1 = tca + thc
 
         if t0 > t1 {
             swap(&t0, &t1)

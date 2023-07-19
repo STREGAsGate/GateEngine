@@ -5,23 +5,23 @@
  * http://stregasgate.com
  */
 #if canImport(WinSDK)
-
-import WinSDK
 import Foundation
+import WinSDK
 
 public final class Win32Platform: InternalPlatform {
-    static let staticSearchPaths: [URL] = getStaticSearchPaths()
-    var pathCache: [String:String] = [:]
+    public static let fileSystem: Win32FileSystem = Win32FileSystem()
+    var staticResourceLocations: [URL]
     
+    init(delegate: GameDelegate) async {
+        self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
+    }
+
     public var supportsMultipleWindows: Bool {
         return true
     }
     
     public func locateResource(from path: String) async -> String? {
-        if let existing = pathCache[path] {
-            return existing
-        }
-        let searchPaths = Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
+        let searchPaths = Game.shared.delegate.customResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             let path = file.path
@@ -35,8 +35,7 @@ public final class Win32Platform: InternalPlatform {
     public func loadResource(from path: String) async throws -> Data {
         if let path = await locateResource(from: path) {
             do {
-                let url: URL = URL(fileURLWithPath: path)
-                return try Data(contentsOf: url, options: .mappedIfSafe)
+                return try await fileSystem.read(from: path)
             }catch{
                 Log.error("Failed to load resource \"\(path)\".")
                 throw error
@@ -44,23 +43,6 @@ public final class Win32Platform: InternalPlatform {
         }
         throw "failed to locate."
     }
-
-    lazy private(set) var userDataURL: URL = {
-        var pwString: PWSTR! = nil
-        var folderID: KNOWNFOLDERID = FOLDERID_LocalAppData
-        _ = SHGetKnownFolderPath(&folderID, DWORD(KF_FLAG_DEFAULT.rawValue), nil, &pwString)
-        let string: String = String(windowsUTF16: pwString)
-        CoTaskMemFree(pwString)
-        return URL(fileURLWithPath: string).appendingPathComponent("GateEngine/\(Game.shared.identifier)/")
-    }()
-    lazy private(set) var sharedDataURL: URL = {
-        var pwString: PWSTR! = nil
-        var folderID: KNOWNFOLDERID = FOLDERID_ProgramData
-        _ = SHGetKnownFolderPath(&folderID, DWORD(KF_FLAG_DEFAULT.rawValue), nil, &pwString)
-        let string: String = String(windowsUTF16: pwString)
-        CoTaskMemFree(pwString)
-        return URL(fileURLWithPath: string).appendingPathComponent("GateEngine/\(Game.shared.identifier)/")
-    }()
 }
 
 internal extension Win32Platform {
@@ -175,7 +157,14 @@ extension Win32Platform {
         var msg: MSG = MSG()
         var nExitCode: Int32 = EXIT_SUCCESS
 
-        Game.shared.didFinishLaunching()
+        var done = false
+        Task(priority: .high) { @MainActor in
+            await Game.shared.didFinishLaunching()
+            done = true
+        }
+        while done == false {
+            RunLoop.main.run(until: Date())
+        }
         
         mainLoop: while true {
             if Game.shared.windowManager.windows.isEmpty {

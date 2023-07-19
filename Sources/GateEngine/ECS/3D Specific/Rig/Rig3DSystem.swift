@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public class RigSystem: System {
     var checkedIDs: Set<ObjectIdentifier> = []
     func getFarAway(from entities: ContiguousArray<Entity>) -> Entity? {

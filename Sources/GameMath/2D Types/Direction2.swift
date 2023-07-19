@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public struct Direction2: Vector2 {
     public var x: Float
     public var y: Float

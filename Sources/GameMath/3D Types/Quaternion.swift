@@ -5,13 +5,12 @@
  * http://stregasgate.com
  */
 
-import Foundation
 #if GameMathUseSIMD && canImport(simd)
 import simd
 #endif
 
 #if GameMathUseSIMD
-public struct Quaternion: SIMD {
+public struct Quaternion: Vector4, SIMD {
     public typealias Scalar = Float
     public typealias MaskStorage = SIMD4<Float>.MaskStorage
     public typealias ArrayLiteralElement = Scalar
@@ -29,15 +28,7 @@ public struct Quaternion: SIMD {
         }
     }
     
-    @inlinable
-    public var w: Scalar {
-        @_transparent get {
-            return _storage[0]
-        }
-        @_transparent set {
-            _storage[0] = newValue
-        }
-    }
+
     @inlinable
     public var x: Scalar {
         @_transparent get {
@@ -65,6 +56,15 @@ public struct Quaternion: SIMD {
             _storage[3] = newValue
         }
     }
+    @inlinable
+    public var w: Scalar {
+        @_transparent get {
+            return _storage[3]
+        }
+        @_transparent set {
+            _storage[3] = newValue
+        }
+    }
     
     @inlinable
     public init() {
@@ -72,19 +72,18 @@ public struct Quaternion: SIMD {
     }
     
     @inlinable
-    public init(w: Float, x: Float, y: Float, z: Float) {
-        self.w = w
+    public init(_ x: Float, _ y: Float, _ z: Float, _ w: Float) {
         self.x = x
         self.y = y
         self.z = z
+        self.w = w
     }
 }
 #else
-public struct Quaternion {
-    public var w, x, y, z: Float
+public struct Quaternion: Vector4 {
+    public var x, y, z, w: Float
     
-    @inlinable
-    public init(w: Float, x: Float, y: Float, z: Float) {
+    public init(_ x: Float, _ y: Float, _ z: Float, _ w: Float) {
         self.w = w
         self.x = x
         self.y = y
@@ -92,6 +91,18 @@ public struct Quaternion {
     }
 }
 #endif
+
+public extension Quaternion {
+    @_transparent
+    init(x: Float, y: Float, z: Float, w: Float) {
+        self.init(x, y, z, w)
+    }
+    
+    @available(*, unavailable, message: "Use init(x:y:z:w:) (the w is at the end now)")
+    init(w: Float, x: Float, y: Float, z: Float) {
+        self.init(x, y, z, w)
+    }
+}
 
 public extension Quaternion {
     @inlinable
@@ -220,10 +231,10 @@ extension Quaternion {
         
         //Normalize
         let length: Float = self.magnitude
-        x /= length;
-        y /= length;
-        z /= length;
-        w /= length;
+        x /= length
+        y /= length
+        z /= length
+        w /= length
     }
     
     @_transparent
@@ -260,10 +271,10 @@ extension Quaternion {
         
         //Normalize
         let length: Float = self.magnitude
-        x /= length;
-        y /= length;
-        z /= length;
-        w /= length;
+        x /= length
+        y /= length
+        z /= length
+        w /= length
     }
 }
 
@@ -344,39 +355,6 @@ extension Quaternion {
 
 public extension Quaternion {
     @_transparent
-    var isFinite: Bool {
-        return x.isFinite && y.isFinite && z.isFinite && w.isFinite
-    }
-    
-    @_transparent
-    var squaredLength: Float {
-        var value: Float
-        value  = x * x
-        value += y * y
-        value += z * z
-        value += w * w
-        return value
-    }
-    
-    @_transparent
-    var magnitude: Float {
-        return squaredLength.squareRoot()
-    }
-    
-    @_transparent
-    var normalized: Self {
-        let magnitude: Float = self.magnitude
-        return Self(w: w / magnitude, x: x / magnitude, y: y / magnitude, z: z / magnitude)
-    }
-    
-    @_transparent
-    mutating func normalize() {
-        self = self.normalized
-    }
-}
-
-public extension Quaternion {
-    @_transparent
     var direction: Direction3 {
         get {
             return Direction3(x: x, y: y, z: z)
@@ -434,7 +412,7 @@ public extension Quaternion {
 public extension Quaternion {
     @_transparent
     var conjugate: Self {
-        return Self(w: w, x: -x, y: -y, z: -z)
+        return Self(x: -x, y: -y, z: -z, w: w)
     }
     @_transparent
     var transposed: Self {
@@ -446,8 +424,15 @@ public extension Quaternion {
     @_transparent
     func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
         switch method {
-        case let .linear(factor, shortest):
-            if shortest {
+        case let .linear(factor, options):
+            if options.contains(.shortest) {
+                return self.slerped(to: to, factor: factor)
+            }else{
+                return self.lerped(to: to, factor: factor)
+            }
+        case let .easeIn(factor, options):
+            #warning("Quaternion needs easeIn implimented.")
+            if options.contains(.shortest) {
                 return self.slerped(to: to, factor: factor)
             }else{
                 return self.lerped(to: to, factor: factor)
@@ -522,7 +507,7 @@ internal extension Quaternion {
         let rz = s0 * az + s1 * bz
         let rw = s0 * aw + s1 * bw
 
-        return Quaternion(w: rw, x: rx, y: ry, z: rz)
+        return Quaternion(x: rx, y: ry, z: rz, w: rw)
     }
     
     @_transparent @usableFromInline
@@ -531,39 +516,6 @@ internal extension Quaternion {
     }
 }
 
-#if !GameMathUseSIMD
-public extension Quaternion {
-    @_transparent
-    static func *(lhs: Self, rhs: Float) -> Self {
-        return Self(w: lhs.w * rhs, x: lhs.x * rhs, y: lhs.y * rhs, z: lhs.z * rhs)
-    }
-    @_transparent
-    static func /(lhs: Self, rhs: Float) -> Self {
-        return Self(w: lhs.w / rhs, x: lhs.x / rhs, y: lhs.y / rhs, z: lhs.z / rhs)
-    }
-    @_transparent
-    static func /=(lhs: inout Self, rhs: Float) {
-        lhs = lhs / rhs
-    }
-    @_transparent
-    static func +=(lhs: inout Self, rhs: Self) {
-        lhs = lhs + rhs
-    }
-    @_transparent
-    static func +(lhs: Self, rhs: Self) -> Self {
-        return Self(w: lhs.w + rhs.w, x: lhs.x + rhs.x, y: lhs.y + rhs.y, z: lhs.z + rhs.z)
-    }
-    @_transparent
-    static func -=(lhs: inout Self, rhs: Self) {
-        lhs = lhs - rhs
-    }
-    @_transparent
-    static func -(lhs: Self, rhs: Self) -> Self {
-        return Self(w: lhs.w - rhs.w, x: lhs.x - rhs.x, y: lhs.y - rhs.y, z: lhs.z - rhs.z)
-    }
-}
-#endif
-
 public extension Quaternion {
     @_transparent
     static func *=(lhs: inout Self, rhs: Self) {
@@ -571,10 +523,6 @@ public extension Quaternion {
     }
     @_transparent
     static func *(lhs: Self, rhs: Self) -> Self {
-        var w: Float = lhs.w * rhs.w
-        w -= lhs.x * rhs.x
-        w -= lhs.y * rhs.y
-        w -= lhs.z * rhs.z
         var x: Float = lhs.x * rhs.w
         x += lhs.w * rhs.x
         x += lhs.y * rhs.z
@@ -587,8 +535,12 @@ public extension Quaternion {
         z += lhs.w * rhs.z
         z += lhs.x * rhs.y
         z -= lhs.y * rhs.x
+        var w: Float = lhs.w * rhs.w
+        w -= lhs.x * rhs.x
+        w -= lhs.y * rhs.y
+        w -= lhs.z * rhs.z
         
-        return Self(w: w, x: x, y: y, z: z)
+        return Self(x: x, y: y, z: z, w: w)
     }
     
     @_transparent
@@ -597,15 +549,16 @@ public extension Quaternion {
     }
     @_transparent
     static func *<V: Vector2>(lhs: Self, rhs: V) -> Self {
-        var w: Float = -lhs.x * rhs.x
-        w -= lhs.y * rhs.y
+
         var x: Float =  lhs.w * rhs.x
         x -= lhs.z * rhs.y
         var y: Float =  lhs.w * rhs.y
         y += lhs.z * rhs.x
         var z: Float =  lhs.x * rhs.y
         z -= lhs.y * rhs.x
-        return Self(w: w, x: x, y: y, z: z)
+        var w: Float = -lhs.x * rhs.x
+        w -= lhs.y * rhs.y
+        return Self(x: x, y: y, z: z, w: w)
     }
     
     @_transparent
@@ -614,9 +567,6 @@ public extension Quaternion {
     }
     @_transparent
     static func *<V: Vector3>(lhs: Self, rhs: V) -> Self {
-        var w: Float = -lhs.x * rhs.x
-        w -= lhs.y * rhs.y
-        w -= lhs.z * rhs.z
         var x: Float =  lhs.w * rhs.x
         x += lhs.y * rhs.z
         x -= lhs.z * rhs.y
@@ -626,7 +576,10 @@ public extension Quaternion {
         var z: Float =  lhs.w * rhs.z
         z += lhs.x * rhs.y
         z -= lhs.y * rhs.x
-        return Self(w: w, x: x, y: y, z: z)
+        var w: Float = -lhs.x * rhs.x
+        w -= lhs.y * rhs.y
+        w -= lhs.z * rhs.z
+        return Self(x: x, y: y, z: z, w: w)
     }
 }
 

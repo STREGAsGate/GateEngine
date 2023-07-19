@@ -6,7 +6,6 @@
  */
 
 import WinSDK
-import Foundation
 
 /// Describes shader data.
 public struct D3DShaderBytecode {

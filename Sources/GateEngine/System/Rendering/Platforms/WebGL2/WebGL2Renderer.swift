@@ -250,7 +250,7 @@ extension WebGL2Renderer {
         for transform in transforms {
             data.append(contentsOf: transform.createMatrix().transposedArray())
         }
-        let floats = BufferSource.arrayBuffer(Float32Array(data).buffer)
+        let floats: AllowSharedBufferSource = .arrayBuffer(Float32Array(data).arrayBuffer)
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: instanceMatriciesVBO)
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: floats, usage: GL.STATIC_DRAW)
         

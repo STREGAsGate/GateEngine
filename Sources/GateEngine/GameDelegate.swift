@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import struct Foundation.URL
+import Foundation
 
 public struct LaunchOptions: OptionSet {
     public let rawValue: UInt
@@ -29,13 +29,13 @@ public protocol GameDelegate: AnyObject {
     @MainActor func createMainWindow(game: Game, identifier: String) throws -> Window
     
     /// The end user has tried to open a window using the platforms mechanisms
-    @MainActor func userRequestedWindow(game: Game) throws -> Window?
+    @MainActor func createUserRequestedWindow(game: Game) throws -> Window?
     
     /**
      A display has been attached.
      - returns: A new window instance to put on the screen. Passing an existing window is undefined behaviour.
     */
-    @MainActor func screenBecomeAvailable(game: Game) throws -> Window?
+    @MainActor func createWindowForExternalscreen(game: Game) throws -> Window?
     
     /// Might be called immediately before the app closes.
     @MainActor func willTerminate(game: Game)
@@ -54,13 +54,13 @@ public protocol GameDelegate: AnyObject {
     @MainActor func isHeadless() -> Bool
     
     /**
-     Add additional search paths for resources.
+     Add additional search locations for resources.
      
      This can be helpful for mods and expanability.
      Search paths for your Swift Packages are already located automatically and don't need to be added here.
      - returns: An array of URLs each pointing to a directory containing game resources.
      */
-    nonisolated func resourceSearchPaths() -> [URL]
+    nonisolated func customResourceLocations() -> [URL]
     
     /**
     An ID for the current game. This identifier is used for storing user settings.
@@ -77,27 +77,78 @@ public extension GameDelegate {
     @MainActor func createMainWindow(game: Game, identifier: String) throws -> Window {
         return try game.windowManager.createWindow(identifier: identifier, style: .system, options: .defaultForMainWindow)
     }
-    func userRequestedWindow(game: Game) throws -> Window? {return nil}
-    func screenBecomeAvailable(game: Game) throws -> Window? {return nil}
+    func createUserRequestedWindow(game: Game) throws -> Window? {return nil}
+    func createWindowForExternalscreen(game: Game) throws -> Window? {return nil}
     
     func willTerminate(game: Game) {}
     func isHeadless() -> Bool {return false}
-    func resourceSearchPaths() -> [URL] {return []}
+    func customResourceLocations() -> [URL] {return []}
 
     func gameIdentifier() -> StaticString? {return nil}
 
     @_transparent
     internal func resolvedGameIdentifier() -> String {
-        if let identifier: StaticString = self.gameIdentifier() {
-            return identifier.description
+        let charSet = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.")
+        if let identifer: StaticString = self.gameIdentifier() {
+            let customIdentifier = identifer.withUTF8Buffer {
+                return String(decoding: $0, as: UTF8.self)
+            }
+            assert(customIdentifier.trimmingCharacters(in: charSet).isEmpty, "gameIdentifier can only contain english letters, numbers, `_`, `-` or `.`.")
+            assert(customIdentifier.first != ".", "gameIdentifier can't start with a period.")
+            return customIdentifier
         }
-        return CommandLine.arguments[0]
+        
+        #if canImport(Darwin)
+        // Apple has a identifier system for thier platforms already, use it
+        if let identifier = Bundle.main.bundleIdentifier {
+            return identifier
+        }
+        #endif
+        
+        func getGameModuleName() -> String {
+            let ref = String(reflecting: type(of: self))
+            return String(ref.split(separator: ".")[0])
+        }
+        
+        var identifier: String = ""
+        var isFirst = true
+        for character in CommandLine.arguments.first ?? getGameModuleName() {
+            if isFirst {
+                isFirst = false
+                if character == "." {
+                    // Don't allow period as the first character as it means something to most file systems.
+                    identifier.append("_")
+                    continue
+                }
+            }
+            let scalars = character.unicodeScalars
+            if scalars.count == 1, let scalar = scalars.first {
+                if charSet.contains(scalar) {
+                    identifier.append(character)
+                    continue
+                }
+            }
+            identifier.append("_")
+        }
+        return identifier
     }
 }
 
 public extension GameDelegate {
     @MainActor static func main() {
-        Game.shared = Game(delegate: Self())
+        let delegate = Self()
+        #if GATEENGINE_ASYNCLOAD_CURRENTPLATFORM && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        Task(priority: .high) {@MainActor in
+            let platform = await CurrentPlatform(delegate: delegate)
+            Game.shared = Game(delegate: delegate, currentPlatform: platform)
+        }
+        while Game.shared == nil {
+            RunLoop.main.run(until: Date())
+        }
+        #else
+        let platform = CurrentPlatform(delegate: delegate)
+        Game.shared = Game(delegate: delegate, currentPlatform: platform)
+        #endif
         Game.shared.platform.main()
     }
 }

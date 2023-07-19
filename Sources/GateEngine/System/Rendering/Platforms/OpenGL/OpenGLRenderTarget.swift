@@ -87,7 +87,7 @@ extension OpenGLRenderTarget {
             glViewport(x: 0, y: 0, width: Int(size.width), height: Int(size.height))
             glClearColor(0, 0, 0, 1)
             glClear([.color])
-            let renderer = Game.shared.renderer
+            let renderer: Renderer = Game.shared.renderer
             let sizeOnlyRenderTarget = renderer.openGLBackend.sizeOnlyRenderTarget
             sizeOnlyRenderTarget.size = self.size
             renderer.draw(windowRenderTarget, into: sizeOnlyRenderTarget, options: [], sampler: .nearest)

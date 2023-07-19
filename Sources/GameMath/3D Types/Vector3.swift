@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
 #if GameMathUseSIMD && canImport(simd)
 import simd
 #endif
@@ -33,12 +32,6 @@ public protocol Vector3: Equatable, ExpressibleByFloatLiteral where FloatLiteral
     static var zero: Self {get}
 }
 #endif
-
-public extension Vector3 {
-    init(floatLiteral value: FloatLiteralType) {
-        self.init(value)
-    }
-}
 
 #if GameMathUseSIMD
 public extension Vector3 {
@@ -76,20 +69,26 @@ public extension Vector3 {
     }
 }
 
-extension Vector3 {
+public extension Vector3 {
     @_transparent
-    public init(_ value: Float) {
+    init(_ value: Float) {
         self.init(value, value, value)
     }
     
-    @inlinable
-    public init(_ values: [Float]) {
-        assert(values.isEmpty || values.count == 3, "values must be empty or have 3 elements. Use init(_:) to fill with a single value.")
-        if values.isEmpty {
-            self.init(0, 0, 0)
-        }else{
-            self.init(values[0], values[1], values[2])
-        }
+    @_transparent
+    init(_ values: [Float]) {
+        assert(values.count == 3, "Values must have 3 elements. Use init(_: Float) to fill x,y,z with a single value.")
+        self.init(values[0], values[1], values[2])
+    }
+    
+    @_transparent
+    init(_ values: Float...) {
+        assert(values.count == 3, "Values must have 3 elements. Use init(_: Float) to fill x,y,z with a single value.")
+        self.init(values[0], values[1], values[2])
+    }
+    
+    init(floatLiteral value: FloatLiteralType) {
+        self.init(value)
     }
 }
 
@@ -115,28 +114,66 @@ extension Vector3 {
 public extension Vector3 {
     /**
      Returns a new instance with `x` incremented by `value`.
-     - parameter value: The amount to add to `x`. To subtract use a negatie value.
+     - parameter value: The amount to add to `x`. To subtract use a negative value.
      - returns: A new Self with `x` incremented by `value`.
     */
     @_transparent
-    func addingToX(_ value: Float) -> Self {
-        return Self(x + value, y, z)
+    func addingTo(x: Float) -> Self {
+        return Self(self.x + x, y, z)
     }
+    
     /**
      Returns a new instance with `y` incremented by `value`.
-     - parameter value: The amount to add to `y`. To subtract use a negatie value.
+     - parameter value: The amount to add to `y`. To subtract use a negative value.
      - returns: A new Self with `y` incremented by `value`.
     */
     @_transparent
-    func addingToY(_ value: Float) -> Self {
+    func addingTo(y value: Float) -> Self {
         return Self(x, y + value, z)
     }
+    
     /**
      Returns a new instance with `z` incremented by `value`.
-     - parameter value: The amount to add to `z`. To subtract use a negatie value.
+     - parameter value: The amount to add to `z`. To subtract use a negative value.
      - returns: A new Self with `z` incremented by `value`.
     */
     @_transparent
+    func addingTo(z value: Float) -> Self {
+        return Self(x, y, z + value)
+    }
+    
+    /**
+     Returns a new instance with `x` incremented by `value`.
+     - parameter x: The amount to add to `x`. To subtract use a negative value.
+     - parameter y: The amount to add to `y`. To subtract use a negative value.
+     - returns: A new Self with the additions.
+    */
+    @_transparent
+    func addingTo(x: Float, y: Float) -> Self {
+        return Self(self.x + x, self.y + y, z)
+    }
+    
+    /**
+     Returns a new instance with `x` incremented by `value`.
+     - parameter x: The amount to add to `x`. To subtract use a negative value.
+     - parameter z: The amount to add to `z`. To subtract use a negative value.
+     - returns: A new Self with the additions.
+    */
+    @_transparent
+    func addingTo(x: Float, z: Float) -> Self {
+        return Self(self.x + x, y, self.z + z)
+    }
+    
+    // Deprecations
+    @available(*, unavailable, renamed: "addingTo(x:)")
+    func addingToX(_ value: Float) -> Self {
+        return self.addingTo(x: value)
+    }
+    @available(*, unavailable, renamed: "addingTo(y:)")
+    func addingToY(_ value: Float) -> Self {
+        return Self(x, y + value, z)
+    }
+    @available(*, unavailable, renamed: "addingTo(z:)")
     func addingToZ(_ value: Float) -> Self {
         return Self(x, y, z + value)
     }

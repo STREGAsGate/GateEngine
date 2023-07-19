@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 #if canImport(WinSDK)
-
-import Foundation
-import GameMath
 import WinSDK.DirectX.XInput14
 
 internal class XInputGamePadInterpreter: GamePadInterpreter {

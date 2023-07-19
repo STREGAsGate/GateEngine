@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 #if canImport(OpenGL_Linux)
-
-import Foundation
 import OpenGL_Linux
 
 @_transparent @usableFromInline internal var GL_VENDOR: Int32 {return OpenGL_Linux.GL_VENDOR}

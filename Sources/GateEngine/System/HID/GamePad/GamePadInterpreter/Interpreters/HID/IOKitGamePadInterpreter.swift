@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 #if canImport(IOKit)
-
 import Foundation
 import CoreFoundation
 import IOKit.hid
@@ -51,7 +50,7 @@ internal class IOKitGamePadInterpreter: GamePadInterpreter {
         
         IOHIDManagerRegisterDeviceMatchingCallback(hidManager, gamepadWasAdded, nil)
         IOHIDManagerRegisterDeviceRemovalCallback(hidManager, gamepadWasRemoved, nil)
-        #if GATEENGINE_DEBUG_HID
+        #if GATEENGINE_DEBUG_HID && GATEENGINE_DEBUG_HID_VERBOSE
         IOHIDManagerRegisterInputValueCallback(hidManager, gamepadAction, nil)
         #endif
         let ioreturn = IOHIDManagerOpen(hidManager, IOOptionBits(kIOHIDOptionsTypeSeizeDevice))
@@ -112,7 +111,7 @@ internal class IOKitGamePadInterpreter: GamePadInterpreter {
                             analogs.append(element)
                             existing.insert(element)
                         default:
-                            break;
+                            break
                         }
                     case kHIDPage_Button, kHIDPage_Consumer:
                         buttons.append(element)
@@ -175,7 +174,7 @@ fileprivate func supportedDeviceIdentifierFrom(_ device: IOHIDDevice) -> SDL2Con
     let productName: String? = IOHIDDeviceGetProperty(device, "Product" as CFString) as? String
 
     guard MFIGamePadInterpreter.supports(device) == false else {
-        #if GATEENGINE_DEBUG_HID
+        #if GATEENGINE_DEBUG_HID_VERBOSE
         Log.info("IOKitGamePadInterpreter is ignoring gamepad \(productName ?? "[Unknown]"), Reason: Will be MFi.")
         #endif
         return nil

@@ -6,9 +6,8 @@
  */
 #if canImport(WinSDK)
 import Foundation
-import Direct3D12
 import WinSDK
-import GameMath
+import Direct3D12
 
 final class Win32Window: WindowBacking {
     unowned let window: Window

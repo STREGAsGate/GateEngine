@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public typealias DeferredBlock = () -> Void
 
 internal final class DeferredSystem: PlatformSystem {

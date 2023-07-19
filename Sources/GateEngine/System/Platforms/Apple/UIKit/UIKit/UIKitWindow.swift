@@ -5,11 +5,8 @@
  * http://stregasgate.com
  */
 #if canImport(UIKit) && !os(watchOS)
-
-import Foundation
 import UIKit
 import MetalKit
-import GameMath
 
 final class UIKitWindow: WindowBacking {
     weak var window: Window!

@@ -5,15 +5,29 @@
  * http://stregasgate.com
  */
 
-import Foundation
+// Windows doesn't always link @_exported, so we import too.
 import GameMath
 @_exported import GameMath
+
+import Foundation
+@_exported import struct Foundation.Date
+@_exported import struct Foundation.Data
+@_exported import struct Foundation.URL
+@_exported import func Foundation.ceil
+@_exported import func Foundation.floor
+@_exported import func Foundation.round
+@_exported import func Foundation.pow
+@_exported import func Foundation.sin
+@_exported import func Foundation.cos
+@_exported import func Foundation.tan
+@_exported import func Foundation.acos
+@_exported import func Foundation.atan2
 
 #if canImport(WinSDK)
 import WinSDK
 #endif
 
-#if canImport(WebAPIBase) && canImport(JavaScriptKit)
+#if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 import JavaScriptKit
 import WebAPIBase
 #endif
@@ -26,22 +40,20 @@ import WebAPIBase
 #error("watchOS is not a supported platform.")
 #endif
 
-#if GATEENGINE_WASI_UNSUPPORTED_HOST && os(WASI)
-#error("HTML5 builds are not supported on this platform host.")
+#if os(xrOS)
+#error("visionOS is not a supported platform.")
 #endif
 
-public extension GameMath.Color {
-    static let vertexColors = Color(red: -1001, green: -2002, blue: -3003, alpha: -4004)
-    static let defaultDiffuseMapColor = Color(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
-    static let defaultNormalMapColor = Color(red: 0.5, green: 0.5, blue: 1.0, alpha: 1.0)
-    static let defaultRoughnessMapColor = Color(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
-    static let defaultPointLightColor = Color(red: 1.0, green: 1.0, blue: 0.9, alpha: 1.0)
-    static let defaultSpotLightColor = Color(red: 1.0, green: 1.0, blue: 0.8, alpha: 1.0)
-    static let defaultDirectionalLightColor = Color(red: 0.7, green: 0.7, blue: 1.0, alpha: 1.0)
-}
+#if os(Android)
+#error("Android is not currently supported, but is planned.")
+#endif
 
-internal extension GameMath.Color {
-    static let stregasgateBackground: Color = #colorLiteral(red: 0.094117634, green: 0.0941176638, blue: 0.094117634, alpha: 1)
+#if GATEENGINE_WASI_UNSUPPORTED_HOST && os(WASI)
+#error("HTML5 builds are not supported on this host platform. Use macOS or Linux.")
+#endif
+
+extension Color {
+    internal static let stregasgateBackground: Color = #colorLiteral(red: 0.094117634, green: 0.0941176638, blue: 0.094117634, alpha: 1)
 }
 
 extension String: Error {}
@@ -76,7 +88,7 @@ internal enum Log {
         case `default` = "\u{001B}[0;0m"
     }
     
-    @_transparent @usableFromInline
+    @inline(__always) @usableFromInline
     static var supportsColor: Bool {
         #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
         if CommandLine.isDebuggingWithXcode {
@@ -126,7 +138,12 @@ internal enum Log {
     @_transparent @usableFromInline
     static func debug(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         #if DEBUG
+        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        let message = _message(prefix: "[GateEngine]", items, separator: separator)
+        console.debug(data: .string(message))
+        #else
         self.info(items, separator: separator, terminator: terminator)
+        #endif
         #endif
     }
     

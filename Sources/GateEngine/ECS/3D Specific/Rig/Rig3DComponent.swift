@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public class Rig3DComponent: Component {
     public var disabled: Bool = false
     internal var deltaAccumulator: Float = 0

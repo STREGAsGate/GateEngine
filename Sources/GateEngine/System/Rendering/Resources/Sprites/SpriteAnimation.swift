@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 @MainActor public struct SpriteAnimation {
     public let duration: Float
     public var scale: Float = 1

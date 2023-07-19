@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
-import Foundation
 import WebAudio
 
 internal class WAAudioTrackReference: AudioTrackReference {

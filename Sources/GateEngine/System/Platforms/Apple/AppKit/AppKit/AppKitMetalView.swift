@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 #if os(macOS)
-
-import Foundation
 import QuartzCore
 import MetalKit
 

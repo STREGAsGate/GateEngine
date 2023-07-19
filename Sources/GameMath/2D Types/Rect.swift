@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 #if GameMathUseSIMD
 public struct Rect {
     public var position: Position2

@@ -5,9 +5,7 @@
  * http://stregasgate.com
  */
 #if canImport(AVFoundation)
-import Foundation
 import AVFoundation
-import GameMath
 
 internal class CAListenerReference: SpatialAudioListenerBackend {
     unowned let environmentNode: AVAudioEnvironmentNode

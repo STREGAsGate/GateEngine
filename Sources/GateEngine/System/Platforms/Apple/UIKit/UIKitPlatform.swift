@@ -10,8 +10,12 @@ import UIKit
 import AVFoundation
 
 public final class UIKitPlatform: Platform, InternalPlatform {
-    public static let staticSearchPaths: [URL] = getStaticSearchPaths()
-    var pathCache: [String:String] = [:]
+    public static let fileSystem: AppleFileSystem = AppleFileSystem()
+    public let staticResourceLocations: [URL]
+    
+    init(delegate: GameDelegate) async {
+        self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
+    }
     
     internal var applicationRequestedWindow: Bool = false
     weak internal var windowPreparingForSceneConnection: UIKitWindow? = nil
@@ -25,14 +29,11 @@ public final class UIKitPlatform: Platform, InternalPlatform {
     }
     
     public func locateResource(from path: String) async -> String? {
-        if let existing = pathCache[path] {
-            return existing
-        }
-        let searchPaths = await Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
+        let searchPaths = Game.shared.delegate.customResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             let path = file.path
-            if FileManager.default.fileExists(atPath: path) {
+            if await fileSystem.itemExists(at: path) {
                 return path
             }
         }
@@ -42,8 +43,7 @@ public final class UIKitPlatform: Platform, InternalPlatform {
     public func loadResource(from path: String) async throws -> Data {
         if let path = await locateResource(from: path) {
             do {
-                let url: URL = URL(fileURLWithPath: path)
-                return try Data(contentsOf: url, options: .mappedIfSafe)
+                return try await fileSystem.read(from: path)
             }catch{
                 Log.error("Failed to load resource \"\(path)\".")
                 throw error
@@ -55,7 +55,9 @@ public final class UIKitPlatform: Platform, InternalPlatform {
 
 internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
     func applicationDidFinishLaunching(_ application: UIApplication) {
-        Game.shared.didFinishLaunching()
+        Task(priority: .high) {
+            await Game.shared.didFinishLaunching()
+        }
         
         do {// The following will silence music if a user is already playing their own music
             let session = AVAudioSession.sharedInstance()
@@ -150,7 +152,7 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                 Game.shared.platform.applicationRequestedWindow = true
                 if session.role == .windowExternalDisplay {
                     Game.shared.platform.overrideSupportsMultipleWindows = true
-                    if let window = try Game.shared.delegate.screenBecomeAvailable(game: Game.shared) {
+                    if let window = try Game.shared.delegate.createWindowForExternalscreen(game: Game.shared) {
                         let uiKitWindow = (window.windowBacking as! UIKitWindow)
                         uiKitWindow.uiWindow.windowScene = windowScene
                         windowScene.title = window.title
@@ -159,7 +161,7 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                     Game.shared.platform.overrideSupportsMultipleWindows = nil
                 }else{
                     Game.shared.platform.overrideSupportsMultipleWindows = true
-                    if let window = try Game.shared.delegate.userRequestedWindow(game: Game.shared) {
+                    if let window = try Game.shared.delegate.createUserRequestedWindow(game: Game.shared) {
                         let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
                         uiWindow.windowScene = windowScene
                         windowScene.title = window.title

@@ -6,7 +6,6 @@
  */
 
 import WinSDK
-import Foundation
 
 /// Stores a pipeline state.
 public struct D3DCachedPipelineState {

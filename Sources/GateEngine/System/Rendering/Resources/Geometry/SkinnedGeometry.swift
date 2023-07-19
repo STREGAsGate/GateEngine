@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 internal protocol SkinnedGeometryBackend: AnyObject {
     init(geometry: RawGeometry, skin: Skin)
 }

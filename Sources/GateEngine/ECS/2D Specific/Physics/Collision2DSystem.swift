@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public final class Collision2DSystem: System {
     public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         guard let quadtreeEntity = game.entities.first(where: {$0.hasComponent(QuadtreeComponent.self)}) else {return}

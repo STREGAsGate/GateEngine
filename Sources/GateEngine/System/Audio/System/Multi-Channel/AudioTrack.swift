@@ -4,7 +4,6 @@
  *
  * http://stregasgate.com
  */
-import Foundation
 
 internal protocol AudioTrackReference: AnyObject {
     var repeats: Bool {get set}

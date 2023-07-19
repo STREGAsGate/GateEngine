@@ -203,7 +203,7 @@ extension Collision3DSystem {
                 }
             }
             
-            let inFrontOfLedgeRelativeToEntity = transformComponent.position.addingToY(-0.05)
+            let inFrontOfLedgeRelativeToEntity = transformComponent.position.addingTo(y: -0.05)
             if let wall = wall(inFrontOfLedge, Direction3(from: inFrontOfLedge, to: inFrontOfLedgeRelativeToEntity)) {
                 let wallPosition = wall.triangle.closestSurfacePoint(from: collider.position)
                 if wallPosition.distance(from: transformComponent.position) < collider.radius.x {
@@ -268,7 +268,7 @@ extension Collision3DSystem {
             let point = edge.pointNear(transformComponent.position)
 
             if point.distance(from: transformComponent.position) < collider.radius.x {
-                let projected = point.moved(collider.radius.x, toward: transformComponent.rotation.forward).addingToY(collider.radius.y)
+                let projected = point.moved(collider.radius.x, toward: transformComponent.rotation.forward).addingTo(y: collider.radius.y)
 
                 lazy var angle: Degrees = {
                     let d1 = Degrees(transformComponent.rotation.forward.angleAroundY)

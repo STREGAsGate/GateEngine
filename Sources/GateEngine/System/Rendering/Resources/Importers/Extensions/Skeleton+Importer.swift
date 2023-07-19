@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 extension ResourceManager {
     public func addSkeletonImporter(_ type: SkeletonImporter.Type) {
         guard importers.skeletonImporters.contains(where: {$0 == type}) == false else {return}

@@ -56,20 +56,25 @@ public struct ViewFrustum3D {
                           matrix[14] - matrix[10],
                           matrix[15] - matrix[11]).normalized
         
-        self.planes = [left, right, top, bottom, near, far]
+        self.planes = [left, right, near, far, top, bottom]
     }
     
     @inlinable @inline(__always)
     public func pointInside(_ point: Position3) -> Bool {
-        var count = 0
-        for plane in planes {
-            if plane.classifyPoint(point) == .front {
-                count += 1
-            }else{
-                break
-            }
+        if planes[0].classifyPoint(point) != .front && planes[1].classifyPoint(point) != .front {
+            // if it's not within near and far it's not in the frustum
+            return false
         }
-        return count == planes.count
+        if planes[1].classifyPoint(point) != .front && planes[2].classifyPoint(point) != .front {
+            // if it's not within left and right it's not in the frustum
+            return false
+        }
+        if planes[3].classifyPoint(point) != .front && planes[4].classifyPoint(point) != .front {
+            // if it's not within top and bottom it's not in the frustum
+            return false
+        }
+        // Must be within the frustum
+        return true
     }
     
     @inlinable @inline(__always)
@@ -78,7 +83,8 @@ public struct ViewFrustum3D {
         for plane in planes {
             if plane.isCollidingWith(box) {
                 count += 1
-                if count > 1 {
+                if count == 2 {
+                    // If 2 planes intersect it must be colliding
                     return true
                 }
             }
@@ -90,23 +96,6 @@ public struct ViewFrustum3D {
 public extension ViewFrustum3D {
     @inlinable @inline(__always)
     func canSeeBox(_ box: AxisAlignedBoundingBox3D) -> Bool {
-        #warning("This is broken")
-        return true
-        
-        //If the frustum passes through the box its visible
-        guard isCollidingWith(box) == false else {return true}
-        
-        for point in box.points() {
-            //If any point of the box is inside the frustum its visible
-            if pointInside(point) {
-                return true
-            }
-        }
-        
-        if pointInside(box.center + box.offset) {
-            return true
-        }
-        
-        return false
+        return pointInside(box.position) || isCollidingWith(box)
     }
 }

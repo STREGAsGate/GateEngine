@@ -5,8 +5,7 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
+import class Foundation.JSONDecoder
 
 extension GLTF {
     enum ComponentType: Int, Decodable {
@@ -56,7 +55,7 @@ fileprivate class GLTF: Decodable {
         }
         var gameMathRotation: Quaternion? {
             if let array: [Float] = self.rotation, array.count == 4 {
-                return Quaternion(w: array[3], x: array[0], y: array[1], z: array[2])
+                return Quaternion(x: array[0], y: array[1], z: array[2], w: array[3])
             }
             return nil
         }
@@ -708,7 +707,7 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
             case .rotation:
                 jointAnimation.rotationOutput.times = times
                 jointAnimation.rotationOutput.rotations = stride(from: 0, to: values.count, by: 4).map({
-                    return Quaternion(w: values[$0 + 3], x: values[$0 + 0], y: values[$0 + 1], z: values[$0 + 2])
+                    return Quaternion(x: values[$0 + 0], y: values[$0 + 1], z: values[$0 + 2], w: values[$0 + 3])
                 })
                 switch sampler.interpolation {
                 case .step:

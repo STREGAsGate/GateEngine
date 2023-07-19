@@ -4,7 +4,6 @@
  *
  * http://stregasgate.com
  */
-
 import Foundation
 import Collections
 
@@ -13,23 +12,44 @@ public protocol Platform: AnyObject {
     func loadResource(from path: String) async throws -> Data
     
     var supportsMultipleWindows: Bool {get}
+    
+    #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
+    associatedtype FileSystem: GateEngine.FileSystem
+    static var fileSystem: FileSystem {get}
+    var fileSystem: FileSystem {get}
+    #endif
+}
+
+public extension Platform {
+    @_transparent
+    var fileSystem: Self.FileSystem {
+        return Self.fileSystem
+    }
 }
 
 internal protocol InternalPlatform: AnyObject, Platform {
-    var pathCache: [String:String] {get set}
-    static var staticSearchPaths: [URL] {get}
-    
-    func saveStateURL() throws -> URL
-    func saveState(_ state: Game.State) throws
-    func loadState() -> Game.State
+    var staticResourceLocations: [URL] {get}
     
     func systemTime() -> Double
     func main()
+    
+    func saveState(_ state: Game.State, as name: String) async throws
+    func loadState(named name: String) async -> Game.State
+    
+    #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
+    func saveStatePath(forStateNamed name: String) throws -> String
+    #endif
+    
+    #if GATEENGINE_ASYNCLOAD_CURRENTPLATFORM
+    init(delegate: GameDelegate) async
+    #else
+    init(delegate: GameDelegate)
+    #endif
 }
 
-#if !os(WASI)
+#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 extension InternalPlatform {
-    public static func getStaticSearchPaths() -> [URL] {
+    static func getStaticSearchPaths(delegate: GameDelegate) async -> [URL] {
         #if canImport(Darwin)
         let bundleExtension: String = "bundle"
         #else
@@ -38,77 +58,60 @@ extension InternalPlatform {
         
         let excludedResourceBundles = ["JavaScriptKit_JavaScriptKit.\(bundleExtension)"]
 
-        let resourceBundleSearchURLs: Set<URL> = {
-            var urls: [URL] = [Bundle.main.bundleURL, Bundle.main.resourceURL, Bundle.module.bundleURL.deletingLastPathComponent()].compactMap({$0})
+        let bundleURLs: Set<URL> = {
+            var urls: [URL?] = [Bundle.main.bundleURL,
+                               Bundle.main.resourceURL,
+                               Bundle.module.bundleURL.deletingLastPathComponent()]
             urls.append(contentsOf: Bundle.allBundles.compactMap({$0.resourceURL}))
-            return Set(urls)
+            return Set(urls.compactMap({$0}))
         }()
         
-        var files: [URL] = []
+        var resourceFolders: [URL] = []
         
-        for searchURL: URL in resourceBundleSearchURLs {
-            do {
-                let urls: [URL] = try FileManager.default.contentsOfDirectory(at: searchURL, includingPropertiesForKeys: nil, options: [])
-                files.append(contentsOf: urls)
-            }catch{
-                Log.info(error)
+        do {
+            for bundleURL in bundleURLs {
+                let contents = try await Self.fileSystem.contentsOfDirectory(at: bundleURL.path)
+                resourceFolders.append(contentsOf: contents.map({bundleURL.appendingPathComponent($0)}))
             }
-            
-            // Sometimes the URL variant returns empty arrays, use the path variant too and clear the duplicates later
-            do {
-                let paths: [String] = try FileManager.default.contentsOfDirectory(atPath: searchURL.path)
-                files.append(contentsOf: paths.map({searchURL.appendingPathComponent($0)}))
-            }catch{
-                Log.info(error)
-            }
+        }catch{
+            Log.error(error)
         }
         
         // Filter out non-resource bundles
         #if canImport(Darwin)
-        files = files.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame}).compactMap({Bundle(url: $0)?.resourceURL})
+        resourceFolders = resourceFolders.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame}).compactMap({Bundle(url: $0)?.resourceURL})
         #else
-        files = files.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame})
+        resourceFolders = resourceFolders.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame})
         #endif
 
         // Add the executables own path
-        files.insert(URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent(), at: 0)
+        resourceFolders.insert(URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent(), at: 0)
         
         // Add GateEngine bundles resource path
         if let gateEnigneResources: URL = Bundle.module.resourceURL {
-            files.insert(gateEnigneResources, at: 0)
+            resourceFolders.insert(gateEnigneResources, at: 0)
         }
 
         // Add the main bundles resource path
         if let mainResources: URL = Bundle.main.resourceURL {
-            files.insert(mainResources, at: 0)
+            resourceFolders.insert(mainResources, at: 0)
         }
 
         // Add the main bundles path
-        files.append(Bundle.main.bundleURL)
+        resourceFolders.append(Bundle.main.bundleURL)
 
-        // Resolve simlinks so duplicates can be removed
-        files = files.map({$0.resolvingSymlinksInPath()})
-        
-        // Expand tilde
-        // TODO: There's probably never going to be a tilde?
-        #if !os(iOS) && !os(tvOS)
-        files = files.map({
-            @_transparent
-            func expandTilde(_ path: String) -> String {
-                var components: [String] = path.components(separatedBy: "/")
-                guard components.first == "~" else {return path}
-                components.remove(at: 0)
-                
-                let home: [String] = FileManager.default.homeDirectoryForCurrentUser.path.components(separatedBy: "/")
-                components.insert(contentsOf: home, at: 0)
-                return components.joined(separator: "/")
-            }
-            return URL(fileURLWithPath: expandTilde($0.path))
-        })
-        #endif
+        do {
+            // Resolve simlinks so duplicates can be removed
+            resourceFolders = try resourceFolders.map({
+                let path = try fileSystem.resolvePath($0.path)
+                return URL(fileURLWithPath: path)
+            })
+        }catch{
+            Log.error(error)
+        }
         
         // Remove excluded
-        files.removeAll(where: {
+        resourceFolders.removeAll(where: {
             for excluded in excludedResourceBundles {
                 if $0.path.contains(excluded) {
                     return true
@@ -118,10 +121,10 @@ extension InternalPlatform {
         })
         
         // Remove duplicates
-        files = Array(OrderedSet(files))
+        resourceFolders = Array(OrderedSet(resourceFolders))
         
         // Remove unreachable
-        files = files.compactMap({
+        resourceFolders = resourceFolders.compactMap({
             var isDirectory: ObjCBool = false
             if FileManager.default.fileExists(atPath: $0.path, isDirectory: &isDirectory), isDirectory.boolValue {
                 return $0
@@ -129,16 +132,12 @@ extension InternalPlatform {
             return nil
         })
 
-        if files.isEmpty {
-            Log.error("Failed to load any resource bundles! Check code signing and directory permissions.")
+        if resourceFolders.isEmpty {
+            Log.error("Failed to load any resource bundles! Check code signing and directory premissions.")
         }else{
-            #if os(WASI)
-            let relativeDescriptor: String = "."
-            #else
             let relativeDescriptor: String = "[MainBundle]"
-            #endif
             let relativePath = Bundle.main.bundleURL.path
-            Log.debug("Loaded static resource search paths: (GameDelegate search paths not included)", files.map({
+            Log.debug("Loaded static resource search paths: (GameDelegate search paths not included)", resourceFolders.map({
                 let relativeDescriptor = "\n  \"\(relativeDescriptor)"
                 var path = $0.path.replacingOccurrences(of: relativePath, with: relativeDescriptor)
                 if path == relativeDescriptor {
@@ -148,16 +147,13 @@ extension InternalPlatform {
             }).joined())
         }
 
-        return files
+        return resourceFolders
     }
 }
 
 extension InternalPlatform {
-    func saveStateURL() throws -> URL {
-        var url: URL = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-        url.appendPathComponent(Bundle.main.bundleIdentifier ?? CommandLine.arguments[0])
-        url.appendPathComponent("SaveState.data")
-        return url
+    func saveStatePath(forStateNamed name: String) throws -> String {
+        return URL(fileURLWithPath: try fileSystem.pathForSearchPath(.persistent, in: .currentUser)).appendingPathComponent(name).path
     }
     
     #if os(macOS) || os(iOS) || os(tvOS) || os(Windows) || os(Linux)
@@ -172,20 +168,32 @@ extension InternalPlatform {
 }
 
 extension InternalPlatform {
-    func loadState() -> Game.State {
+    func loadState(named name: String) async -> Game.State {
         do {
-            let data = try Data(contentsOf: try saveStateURL())
-            return try JSONDecoder().decode(Game.State.self, from: data)
-        }catch{
-            Log.error("Game.State failed to restore:", error)
-            return Game.State()
+            let data = try await fileSystem.read(from: try saveStatePath(forStateNamed: name))
+            let state = try JSONDecoder().decode(Game.State.self, from: data)
+            state.name = name
+            return state
+        }catch let error as NSError {
+            if error.domain == NSCocoaErrorDomain && error.code == 260 {// File not found
+                Log.debug("No Game State \"\(name)\" found. Creating new Game State.")
+            }else if error.domain == NSPOSIXErrorDomain && error.code == 2 {// File not found
+                Log.debug("No Game State \"\(name)\" found. Creating new Game State.")
+            }else{
+                Log.error("Game State \"\(name)\" failed to restore:", error)
+            }
+            return Game.State(name: name)
         }
     }
     
-    func saveState(_ state: Game.State) throws {
-        let url = try saveStateURL()
+    func saveState(_ state: Game.State, as name: String) async throws {
         let data = try JSONEncoder().encode(state)
-        try data.write(to: url, options: .atomic)
+        let path = try self.saveStatePath(forStateNamed: name)
+        let dir = URL(fileURLWithPath: path).deletingLastPathComponent().path
+        if await fileSystem.itemExists(at: dir) == false {
+            try await fileSystem.createDirectory(at: dir)
+        }
+        try await fileSystem.write(data, to: path)
     }
 }
 #endif

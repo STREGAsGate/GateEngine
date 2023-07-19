@@ -8,7 +8,6 @@
 
 import WinSDK
 
-
 /// Specifies filtering options during texture sampling.
 public struct D3DFilter: OptionSet {
     public typealias RawType = WinSDK.D3D12_FILTER

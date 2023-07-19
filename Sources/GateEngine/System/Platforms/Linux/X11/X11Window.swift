@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 #if os(Linux)
-
-import Foundation
-import GameMath
 import LinuxSupport
 
 final class X11Window: WindowBacking {
@@ -93,19 +90,19 @@ final class X11Window: WindowBacking {
         case KeyPress:
             let event: XKeyEvent = event.xkey
             previousKeyEvent = event
-            Game.shared.hid.keyboardDidHandle(key: keyFromEvent(event),
-                                              character: characterFromEvent(event),
-                                              modifiers: modifierKeyFromState(Int32(event.state)),
-                                              isRepeat: isRepeatedKey(event),
-                                              event: .keyDown)
+            _ = Game.shared.hid.keyboardDidHandle(key: keyFromEvent(event),
+                                                  character: characterFromEvent(event),
+                                                  modifiers: modifierKeyFromState(Int32(event.state)),
+                                                  isRepeat: isRepeatedKey(event),
+                                                  event: .keyDown)
         case KeyRelease:
             let event: XKeyEvent = event.xkey
             previousKeyEvent = event
-            Game.shared.hid.keyboardDidHandle(key: keyFromEvent(event),
-                                              character: characterFromEvent(event),
-                                              modifiers: modifierKeyFromState(Int32(event.state)),
-                                              isRepeat: isRepeatedKey(event),
-                                              event: .keyUp)
+            _ = Game.shared.hid.keyboardDidHandle(key: keyFromEvent(event),
+                                                  character: characterFromEvent(event),
+                                                  modifiers: modifierKeyFromState(Int32(event.state)),
+                                                  isRepeat: isRepeatedKey(event),
+                                                  event: .keyUp)
         case EnterNotify:
             let event: XMotionEvent = event.xmotion
             guard event.same_screen != 0 else {return}
@@ -138,9 +135,8 @@ final class X11Window: WindowBacking {
                                               isMomentum: false, 
                                               window: self.window)
             }else{
-                let button: MouseButton = mouseButtonFromEvent(event)
                 Game.shared.hid.mouseClick(event: .buttonDown, 
-                                        button: button, 
+                                        button: mouseButtonFromEvent(event), 
                                         position: Position2(Float(event.x), Float(event.y)),
                                         delta: .zero, 
                                         window: self.window)
@@ -148,14 +144,13 @@ final class X11Window: WindowBacking {
         case ButtonRelease:
             let event: XButtonEvent = event.xbutton
             guard event.same_screen != 0 else {return}
-            let button: MouseButton = mouseButtonFromEvent(event)
             Game.shared.hid.mouseClick(event: .buttonUp, 
                                         button: mouseButtonFromEvent(event), 
                                         position: Position2(Float(event.x), Float(event.y)),
                                         delta: .zero, 
                                         window: self.window)
         default:
-            Log.warn("Unhandled Event", event.type)
+            Log.warn("X11 window server event", event.type, "is unhandled.")
         }
     }
 

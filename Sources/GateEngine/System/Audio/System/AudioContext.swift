@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 internal protocol AudioContextBackend: AnyObject {
     func createSpacialMixerReference() -> SpacialAudioMixerReference
     func createAudioMixerReference() -> AudioMixerReference

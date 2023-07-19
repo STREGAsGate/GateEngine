@@ -3,10 +3,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - '**' # matches every branch
+    - 'main'
   pull_request:
     branches:
-    - 'main'
+    - '**'
 
 jobs:
   Build_Test-Linux-Android:
@@ -14,10 +14,16 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
+    - name: Install Android SDK
+      run: |
+        cd ..
+        wget -q https://github.com/finagolfin/swift-android-sdk/releases/download/5.8/swift-5.8-android-24-sdk.tar.xz
+        tar xf swift-5.8-android-24-sdk.tar.xz
+        cd GateEngine
     - name: Swift Version
       run: swift --version
     
     - name: Build using Swift
-      run: swift build
+      run: swift build --destination ../swift-5.8-android-24-sdk/usr/swiftpm-android-aarch64.json -Xlinker -rpath -Xlinker \$ORIGIN/lib/swift/android
     - name: Test using Swift
-      run: swift test
+      run: swift test --destination ../swift-5.8-android-24-sdk/usr/swiftpm-android-aarch64.json -Xlinker -rpath -Xlinker \$ORIGIN/lib/swift/android

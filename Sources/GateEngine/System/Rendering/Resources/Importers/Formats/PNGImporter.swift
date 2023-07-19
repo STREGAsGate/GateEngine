@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 public class PNGImporter: TextureImporter {
     public required init() {}
     

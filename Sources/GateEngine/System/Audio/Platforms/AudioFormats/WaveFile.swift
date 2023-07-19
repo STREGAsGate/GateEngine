@@ -4,7 +4,6 @@
  *
  * http://stregasgate.com
  */
-import Foundation
 
 fileprivate extension Data {
     func boundTo<T>(_ type: T.Type) -> T? {

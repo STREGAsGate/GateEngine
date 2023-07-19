@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 public extension HID {
     @MainActor final class GamePadManger {
         var hid: HID {Game.shared.hid}

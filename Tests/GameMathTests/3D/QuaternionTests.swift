@@ -3,11 +3,11 @@ import XCTest
 
 final class QuaternionTests: XCTestCase {
     func testInit() {
-        let quaternion = Quaternion(w: 1, x: 2, y: 3, z: 4)
-        XCTAssertEqual(quaternion.w, 1)
-        XCTAssertEqual(quaternion.x, 2)
-        XCTAssertEqual(quaternion.y, 3)
-        XCTAssertEqual(quaternion.z, 4)
+        let quaternion = Quaternion(x: 1, y: 2, z: 3, w: 4)
+        XCTAssertEqual(quaternion.x, 1)
+        XCTAssertEqual(quaternion.y, 2)
+        XCTAssertEqual(quaternion.z, 3)
+        XCTAssertEqual(quaternion.w, 4)
     }
 
     func testInitDirectionUpRight() {

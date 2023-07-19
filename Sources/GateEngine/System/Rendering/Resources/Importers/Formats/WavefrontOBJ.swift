@@ -6,7 +6,6 @@
  */
 
 import Foundation
-import GameMath
 
 public class WavefrontOBJImporter: GeometryImporter {
     public required init() {}

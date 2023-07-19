@@ -4,7 +4,6 @@
  *
  * http://stregasgate.com
  */
-import Foundation
 
 internal protocol AudioMixerReference: AnyObject {
     var volume: Float {get set}

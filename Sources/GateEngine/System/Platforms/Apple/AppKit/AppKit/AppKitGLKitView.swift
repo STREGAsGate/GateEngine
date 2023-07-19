@@ -6,7 +6,6 @@
  * http://stregasgate.com
  */
 #if canImport(AppKit) && canImport(GLKit) && !targetEnvironment(macCatalyst)
-import Foundation
 import GLKit
 
 internal class GLKitView: NSOpenGLView {

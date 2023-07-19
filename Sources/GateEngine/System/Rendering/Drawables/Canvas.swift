@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 /**
  A Canvas is a drawing space with no depth and an orthographic camera.
  */
@@ -183,7 +180,7 @@ import GameMath
         let aspectRatio = size.aspectRatio
         
         let inverseView = camera.matricies(withAspectRatio: aspectRatio).view.inverse
-        let halfFOV = tanf(camera._fieldOfView.rawValue * 0.5)
+        let halfFOV = tan(camera._fieldOfView.rawValue * 0.5)
         let near = camera.clippingPlane.near
         let far = camera.clippingPlane.far
         

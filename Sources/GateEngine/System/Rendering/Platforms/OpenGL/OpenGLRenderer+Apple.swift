@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 #if os(macOS)
-import Foundation
 import GLKit
 
 internal extension OpenGLRenderer {

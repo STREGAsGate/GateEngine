@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 @propertyWrapper public struct RequiresState<Value> {
     #if DEBUG
     let state: ResourceState

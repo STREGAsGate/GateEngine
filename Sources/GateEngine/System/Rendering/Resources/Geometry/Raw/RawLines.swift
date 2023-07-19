@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-import GameMath
-
 /// An element array object formatted as Line primitives
 public struct RawLines {
     var positions: [Float]

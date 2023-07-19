@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 extension ResourceManager {
     public func addTileMapImporter(_ type: TileMapImporter.Type) {
         guard importers.tileMapImporters.contains(where: {$0 == type}) == false else {return}

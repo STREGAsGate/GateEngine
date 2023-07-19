@@ -6,8 +6,6 @@
  */
 #if targetEnvironment(macCatalyst) || os(Windows)
 
-import Foundation
-
 @_transparent @usableFromInline internal var GL_VENDOR: Int32 {fatalError("OpenGL Not Supported")}
 @_transparent @usableFromInline internal var GL_RENDERER: Int32 {fatalError("OpenGL Not Supported")}
 @_transparent @usableFromInline internal var GL_VERSION: Int32 {fatalError("OpenGL Not Supported")}

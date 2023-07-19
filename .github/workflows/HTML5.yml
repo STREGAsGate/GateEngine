@@ -1,26 +1,29 @@
 name: HTML5
-
 on:
   workflow_dispatch:
   push:
     branches:
-    - '**' # matches every branch
+    - 'main'
   pull_request:
     branches:
-    - 'main'
+    - '**'
 
 jobs:
-  Build_Test-Linux-WASI:
-    runs-on: ubuntu-latest
-    
-    container:
-      image: ghcr.io/swiftwasm/carton:latest
-      
+  Build_Test-macOS-WASI:
+    runs-on: macos-latest
+
     steps:
     - uses: actions/checkout@v3
     
-    - name: Swift Version
-      run: swift --version
+    - name: Install Carton
+      run: brew install swiftwasm/tap/carton
     
-    - name: Test
-      run: carton test --environment node
+    - name: Test Insecure Context
+      run: carton test --environment defaultBrowser --host 127.0.0.1
+     
+    #TODO: Figure out how to make chrome default without a confirmation
+    #- name: Make Chrome Default
+    #  run: open -a "Google Chrome" --args --make-default-browser
+      
+    #- name: Test Secure Context
+    #  run: carton test --environment defaultBrowser --host localhost

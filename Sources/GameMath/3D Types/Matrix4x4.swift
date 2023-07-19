@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 #if GameMathUseSIMD
 public struct Matrix4x4 {
     @usableFromInline internal var storage: [SIMD4<Float>]

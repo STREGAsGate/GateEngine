@@ -62,6 +62,7 @@ let package = Package(
                         dependencies.append(contentsOf: [
                             .product(name: "JavaScriptEventLoop", package: "JavaScriptKit", condition: .when(platforms: [.wasi])),
                             .product(name: "DOM", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
+                            .product(name: "FileSystem", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
                             .product(name: "WebAudio", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
                             .product(name: "Gamepad", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
                             .product(name: "WebGL2", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
@@ -74,7 +75,7 @@ let package = Package(
                         .copy("_Resources/GateEngine"),
                     ],
                     cSettings: [
-                        .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS, .iOS, .tvOS])),
+                        .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS])),
                         .define("GLES_SILENCE_DEPRECATION", .when(platforms: [.iOS, .tvOS])),
                     ],
                     swiftSettings: {
@@ -92,14 +93,20 @@ let package = Package(
                             .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
                             /// The host platform updates and draws from an event callback, so GateEngine won't create a game loop.
                             .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.wasi])),
-                            /// The host pltfrom requires an intermediate task, so GateEngine won't load default systems.
+                            /// The host platform requires an intermediate task, so GateEngine won't load default systems.
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH", .when(platforms: [.wasi])),
+                            /// The host platform supports file system read/write
+                            .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android, .wasi])),
+                            /// The host platform supports Foundation.FileManager
+                            .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])),
+                            /// The host platform requires an intermediate task, so GateEngine won't load default systems.
+                            .define("GATEENGINE_ASYNCLOAD_CURRENTPLATFORM", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])),
                         ])
                         
                         #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
-                        // Options for developments of WASI platform
+                        // Options for development of WASI platform
                         #if false
                         settings.append(contentsOf: [
                             /// Allows HTML5 platform to be compiled from a compatible host, such as macOS. This allows the IDE to show compile errors without targeting WASI.
@@ -110,14 +117,16 @@ let package = Package(
                         #endif
                         
                         settings.append(contentsOf: [
-                            /// Printers the output of generated shaders
+                            /// Prints the output of generated shaders
                             .define("GATEENGINE_LOG_SHADERS"),
                             /// Enables various additional checks and output for rendering
                             .define("GATEENGINE_DEBUG_RENDERING"),
                             /// Enables various additional checks and output for input
                             .define("GATEENGINE_DEBUG_HID"),
+                            /// Enables varius additional, additional, checks and output for input
+                            .define("GATEENGINE_DEBUG_HID_VERBOSE"),
                             /// Forces Apple platforms to use OpenGL for rendering
-                            .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, .iOS, .tvOS])),
+                            .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, /*.iOS, .tvOS*/])),
                         ])
                         #endif
                         return settings

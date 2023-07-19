@@ -4,41 +4,40 @@
  *
  * http://stregasgate.com
  */
-#if os(macOS)
+#if canImport(AppKit) && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 
 import AppKit
 import System
 
 public final class AppKitPlatform: InternalPlatform {
-    static let staticSearchPaths: [URL] = getStaticSearchPaths()
-    var pathCache: [String:String] = [:]
+    public static let fileSystem: AppleFileSystem = AppleFileSystem()
+    let staticResourceLocations: [URL]
+    
+    init(delegate: GameDelegate) async {
+        self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
+    }
     
     public var supportsMultipleWindows: Bool {
         return true
     }
     
     public func locateResource(from path: String) async -> String? {
-        if let existing = pathCache[path] {
-            return existing
-        }
-        let searchPaths = Game.shared.delegate.resourceSearchPaths() + Self.staticSearchPaths
+        let searchPaths = Game.shared.delegate.customResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
-            let path = file.path
-            if FileManager.default.fileExists(atPath: path) {
-                return path
+            if await fileSystem.itemExists(at: file.path) {
+                return file.path
             }
         }
         return nil
     }
     
     public func loadResource(from path: String) async throws -> Data {
-        if let path = await locateResource(from: path) {
+        if let resolvedPath = await locateResource(from: path) {
             do {
-                let url: URL = URL(fileURLWithPath: path)
-                return try Data(contentsOf: url, options: .mappedIfSafe)
+                return try await fileSystem.read(from: resolvedPath)
             }catch{
-                Log.error("Failed to load resource \"\(path)\".")
+                Log.error("Failed to load resource \"\(resolvedPath)\".")
                 throw error
             }
         }
@@ -70,7 +69,9 @@ fileprivate class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Game.shared.resourceManager.addTextureImporter(ApplePlatformImageImporter.self, atEnd: true)
         Game.shared.resourceManager.addGeometryImporter(ApplePlatformModelImporter.self, atEnd: true)
-        Game.shared.didFinishLaunching()
+        Task(priority: .high) {@MainActor in
+            await Game.shared.didFinishLaunching()
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -169,7 +170,7 @@ extension AppKitPlatform {
             }
         }
         
-        class CustomApp: NSApplication {
+        final class CustomApp: NSApplication {
             #if GATEENGINE_DEBUG_HID
             // can't prevent the system from sending media keys to other apps, like music, so these are dead in the water for usability
             override func sendEvent(_ event: NSEvent) {
