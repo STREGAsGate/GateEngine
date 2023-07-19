@@ -41,9 +41,9 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: colors, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(lines.indicies).arrayBuffer)
+        let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(lines.indices).arrayBuffer)
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[2])
-        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indices, usage: GL.STATIC_DRAW)
+        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
         
         self.buffers = buffers
         self.indicesCount = GLsizei(lines.indices.count)
@@ -76,9 +76,9 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: colors, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(points.indicies).arrayBuffer)
+        let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(points.indices).arrayBuffer)
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[2])
-        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indices, usage: GL.STATIC_DRAW)
+        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
         
         self.buffers = buffers
         self.indicesCount = GLsizei(points.indices.count)
@@ -135,9 +135,9 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: colors, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(geometry.indicies).arrayBuffer)
+        let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(geometry.indices).arrayBuffer)
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[6])
-        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indices, usage: GL.STATIC_DRAW)
+        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
         
         self.buffers = buffers
         self.indicesCount = GLsizei(geometry.indices.count)
@@ -196,9 +196,9 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: colors, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let jointIndicies: AllowSharedBufferSource = .arrayBuffer(Uint32Array(skin.jointIndicies).arrayBuffer)
+        let jointIndicies: AllowSharedBufferSource = .arrayBuffer(Uint32Array(skin.jointIndices).arrayBuffer)
         gl.bindBuffer(target: GL.ARRAY_BUFFER, buffer: buffers[6])
-        gl.bufferData(target: GL.ARRAY_BUFFER, srcData: jointIndices, usage: GL.STATIC_DRAW)
+        gl.bufferData(target: GL.ARRAY_BUFFER, srcData: jointIndicies, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
         let jointWeights: AllowSharedBufferSource = .arrayBuffer(Float32Array(skin.jointWeights).arrayBuffer)
@@ -206,9 +206,9 @@ class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
         gl.bufferData(target: GL.ARRAY_BUFFER, srcData: jointWeights, usage: GL.STATIC_DRAW)
         
         buffers.append(gl.createBuffer()!)
-        let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(geometry.indicies).arrayBuffer)
+        let indicies: AllowSharedBufferSource = .arrayBuffer(Uint16Array(geometry.indices).arrayBuffer)
         gl.bindBuffer(target: GL.ELEMENT_ARRAY_BUFFER, buffer: buffers[8])
-        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indices, usage: GL.STATIC_DRAW)
+        gl.bufferData(target: GL.ELEMENT_ARRAY_BUFFER, srcData: indicies, usage: GL.STATIC_DRAW)
         
         self.buffers = buffers
         self.indicesCount = GLsizei(geometry.indices.count)
