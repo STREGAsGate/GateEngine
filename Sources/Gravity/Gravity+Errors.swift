@@ -14,7 +14,7 @@ internal func errorCallback(vm: OpaquePointer?, errorType: error_type_t, descrip
     guard let gravity = Gravity(unwrappingVM: vm) ?? unsafeBitCast(xdata, to: Optional<Gravity>.self) else {return}
     
     #if DEBUG // When running unit tests throw everything
-    if gravity.unitTestExpected != nil {
+    if Gravity.unitTestExpected != nil {
         if gravity.recentError == nil {
             let fileName = gravity.filenameForID(errorDesc.fileid) ?? "UNKNOWN_GRAVITY_FILE"
             gravity.recentError = Gravity.Error(errorType: errorType, fileName: fileName, row: Int32(errorDesc.lineno), column: Int32(errorDesc.colno), explanation: string, details: errorDesc)
