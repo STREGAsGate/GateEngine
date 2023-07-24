@@ -34,7 +34,7 @@ let package = Package(
             .target(name: "GateEngine",
                     dependencies: {
                         var dependencies: [Target.Dependency] = []
-                        dependencies.append(contentsOf: ["GameMath", "Shaders", "TrueType", "LibSPNG"])
+                        dependencies.append(contentsOf: ["GameMath", "Shaders", "TrueType", "LibSPNG", "Gravity"])
                         dependencies.append(.target(name: "Vorbis", condition: .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])))
                         
                         #if os(macOS) || os(Linux)
@@ -199,6 +199,26 @@ let package = Package(
                         .define("STB_TRUETYPE_IMPLEMENTATION"), .define("STB_RECT_PACK_IMPLEMENTATION"),
                         .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows])),
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])), // Silence warnings
+                    ]),
+            
+            // Gravity
+            .target(name: "Gravity", dependencies: ["GravityC"], exclude: ["Xcode Syntax Highlighting"]),
+            .target(name: "GravityC",
+                    path: "Sources/GateEngineDependencies/GravityC",
+                    cSettings: [
+                        .define("BUILD_GRAVITY_API"),
+                        // WASI doesn't have umask
+                        .define("umask(x)", to: "022", .when(platforms: [.wasi])),
+                        // Silence deprecation warning on windows
+                        .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
+                        // Windows doesn't support PIC flag
+                        .unsafeFlags(["-fPIC"], .when(platforms: .any(except: .windows))),
+                        .unsafeFlags(["-Wno-everything"]),
+                    ], linkerSettings: [
+                        //For math functions
+                        .linkedLibrary("m", .when(platforms: .any(except: .windows))),
+                        //For path functions
+                        .linkedLibrary("Shlwapi", .when(platforms: [.windows])),
                     ]),
         ])
         
@@ -487,3 +507,25 @@ var openALSources: [String] {
     return array
 }
 #endif
+
+
+// Package.swift Helpers
+extension Array where Element == Platform {
+    static func any(except excluding: Platform...) -> Self {
+        var array = self.all
+        for platform in excluding {
+            array.removeAll(where: {$0 == platform})
+        }
+        return array
+    }
+    
+    private static var all: Self {
+        return [
+            .macOS, .macCatalyst, .iOS, .tvOS, .watchOS, .driverKit,
+            .linux, .android,
+            .windows,
+            .wasi,
+        ]
+    }
+}
+

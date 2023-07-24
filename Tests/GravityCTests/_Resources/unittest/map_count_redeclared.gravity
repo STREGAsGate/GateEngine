@@ -1,0 +1,9 @@
+#unittest {
+	name: "Map count redeclared (when GRAVITY_MAP_DOTSUGAR is set to 1).";
+	result: 669;
+};
+
+func main() {
+	var map = ["Andrea":22, "Marco":23, "count":666];
+	return map.count + map["count"];
+}
