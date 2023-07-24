@@ -6,9 +6,7 @@
  */
 
 import GravityC
-#if canImport(Foundation) && !os(WASI)
 import struct Foundation.URL
-#endif
 
 extension Gravity {
     static var version: String {
