@@ -25,7 +25,7 @@ public class GravityInstance: GravityValueEmitting, GravityInstanceEmitting {
     }()
     
     internal convenience init(value: GravityValue, gravity: Gravity) {
-        assert(value.valueType == .instance)
+        assert(value.valueType == .instance || value.valueType == .null)
         self.init(value: value.gValue.p, gravity: gravity)
     }
     

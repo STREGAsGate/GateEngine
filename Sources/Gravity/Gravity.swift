@@ -85,11 +85,7 @@ public class Gravity {
     }
     
     #if DEBUG
-    @inline(__always)
-    var unitTestExpected: Testing? {
-        get {Self.storage[vm]!.unitTestExpected}
-        set {Self.storage[vm]!.unitTestExpected = newValue}
-    }
+    static var unitTestExpected: Testing? = nil
     #endif
     
     /**
@@ -336,9 +332,6 @@ extension Gravity {
         var mainClosure: UnsafeMutablePointer<gravity_closure_t>? = nil
         var didRunMain: Bool = false
         var recentError: Error? = nil
-        #if DEBUG
-        var unitTestExpected: Testing? = nil
-        #endif
         
         var loadedFilesByID: [UInt32:URL] = [:]
         

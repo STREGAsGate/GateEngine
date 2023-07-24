@@ -286,7 +286,10 @@ let package = Package(
         ])
         #endif
         
+        
         // MARK: - Tests
+        
+        // GameMath Tests
         targets.append(contentsOf: [
             .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"]),
             .testTarget(name: "GameMathTests",
@@ -302,6 +305,11 @@ let package = Package(
                         ]),
         ])
         #endif
+        // Gravity Tests
+        targets.append(contentsOf: [
+            .testTarget(name: "GravityTests", dependencies: ["GravityC", "Gravity"]),
+            .testTarget(name: "GravityCTests", dependencies: ["GravityC", "Gravity"], resources: [.copy("_Resources")])
+        ])
         
         return targets
     }(),

@@ -17,9 +17,9 @@ extension XCTestCase {
         do {
             try gravity.compile(url)
             let result = try gravity.runMain().gValue
-            XCTAssertTrue(gravity_value_equals(gravity.unitTestExpected!.value, result))
+            XCTAssertTrue(gravity_value_equals(Gravity.unitTestExpected!.value, result))
         }catch let error as Gravity.Error {
-            let expected = gravity.unitTestExpected!
+            let expected = Gravity.unitTestExpected!
             if expected.row > -1 {// -1 means don't compare value
                 XCTAssertEqual(expected.row, error.row)
             }
