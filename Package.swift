@@ -252,7 +252,7 @@ let package = Package(
                                    .targetItem(name: "LinuxExtensions", condition: .when(platforms: [.linux]))],
                     path: "Dependencies/LinuxSupport/LinuxSupport"),
             .target(name: "LinuxExtensions",
-                    path: "Sources/GateEngineDependencies/LinuxSupport/LinuxExtensions"),
+                    path: "Dependencies/LinuxSupport/LinuxExtensions"),
             .systemLibrary(name: "LinuxImports",
                            path: "Dependencies/LinuxSupport/LinuxImports"),
             
