@@ -156,12 +156,12 @@ let package = Package(
             }()),
         ])
         
-        // MARK: - GateEngineDependencies
+        // MARK: - _Dependencies
         
         targets.append(contentsOf: [
             // Vorbis
             .target(name: "Vorbis",
-                    path: "Sources/GateEngineDependencies/Vorbis",
+                    path: "Dependencies/Vorbis",
                     publicHeadersPath: "include",
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
@@ -170,7 +170,7 @@ let package = Package(
             
             // miniz
             .target(name: "MiniZ",
-                    path: "Sources/GateEngineDependencies/MiniZ",
+                    path: "Dependencies/MiniZ",
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
                         // Silence warnings
@@ -180,7 +180,7 @@ let package = Package(
             // libspng
             .target(name: "LibSPNG",
                     dependencies: ["MiniZ"],
-                    path: "Sources/GateEngineDependencies/LibSPNG",
+                    path: "Dependencies/LibSPNG",
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
                         .define("SPNG_STATIC"),
@@ -193,7 +193,7 @@ let package = Package(
             
             // TrueType
             .target(name: "TrueType",
-                    path: "Sources/GateEngineDependencies/TrueType",
+                    path: "Dependencies/TrueType",
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
                         .define("STB_TRUETYPE_IMPLEMENTATION"), .define("STB_RECT_PACK_IMPLEMENTATION"),
@@ -204,7 +204,7 @@ let package = Package(
             // Gravity
             .target(name: "Gravity", dependencies: ["GravityC"], exclude: ["Xcode Syntax Highlighting"]),
             .target(name: "GravityC",
-                    path: "Sources/GateEngineDependencies/GravityC",
+                    path: "Dependencies/GravityC",
                     cSettings: [
                         .define("BUILD_GRAVITY_API"),
                         // WASI doesn't have umask
@@ -226,7 +226,7 @@ let package = Package(
         targets.append(
             // Direct3D12
             .target(name: "Direct3D12",
-                    path: "Sources/GateEngineDependencies/Direct3D12",
+                    path: "Dependencies/Direct3D12",
                     swiftSettings: [
                         .define("Direct3D12ExcludeOriginalStyleAPI", .when(configuration: .release)),
                     ])
@@ -236,7 +236,7 @@ let package = Package(
         #if os(macOS)
         targets.append(contentsOf: [
             .target(name: "OpenGL_GateEngine",
-                    path: "Sources/GateEngineDependencies/OpenGL/OpenGL_GateEngine",
+                    path: "Dependencies/OpenGL/OpenGL_GateEngine",
                     cSettings: [
                         .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS])),
                         .define("GLES_SILENCE_DEPRECATION", .when(platforms: [.iOS, .tvOS])),
@@ -250,18 +250,18 @@ let package = Package(
             .target(name: "LinuxSupport",
                     dependencies: [.targetItem(name: "LinuxImports", condition: .when(platforms: [.linux])),
                                    .targetItem(name: "LinuxExtensions", condition: .when(platforms: [.linux]))],
-                    path: "Sources/GateEngineDependencies/LinuxSupport/LinuxSupport"),
+                    path: "Dependencies/LinuxSupport/LinuxSupport"),
             .target(name: "LinuxExtensions",
                     path: "Sources/GateEngineDependencies/LinuxSupport/LinuxExtensions"),
             .systemLibrary(name: "LinuxImports",
-                           path: "Sources/GateEngineDependencies/LinuxSupport/LinuxImports"),
+                           path: "Dependencies/LinuxSupport/LinuxImports"),
             
             // OpenGL
             .systemLibrary(name: "OpenGL_Linux",
-                           path: "Sources/GateEngineDependencies/OpenGL/OpenGL_Linux"),
+                           path: "Dependencies/OpenGL/OpenGL_Linux"),
             .target(name: "OpenGL_GateEngine",
                     dependencies: ["OpenGL_Linux"],
-                    path: "Sources/GateEngineDependencies/OpenGL/OpenGL_GateEngine")
+                    path: "Dependencies/OpenGL/OpenGL_GateEngine")
         ])
         #endif
         
@@ -269,7 +269,7 @@ let package = Package(
         targets.append(contentsOf: [
         // OpenALSoft
         .target(name: "OpenALSoft",
-                path: "Sources/GateEngineDependencies/OpenAL/OpenALSoft",
+                path: "Dependencies/OpenAL/OpenALSoft",
                 sources: openALSources,
                 publicHeadersPath: "UnmodifiedSource/include",
                 cxxSettings: openALCXXSettings,
