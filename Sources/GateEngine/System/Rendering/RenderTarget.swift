@@ -36,20 +36,20 @@ extension RenderTargetProtocol {
 extension _RenderTargetProtocol {
     @inlinable @inline(__always)
     public func insert(_ scene: Scene) {
-        precondition(Game.shared.renderingIsPermitted, "Rendering can only be changed from a RenderingSystem.")
+        precondition(Game.shared.attributes.contains(.renderingIsPermitted), "Rendering can only be changed from a RenderingSystem.")
         self.drawables.append(scene)
     }
     
     @inlinable @inline(__always)
     public func insert(_ canvas: Canvas) {
-        precondition(Game.shared.renderingIsPermitted, "Rendering can only be changed from a RenderingSystem.")
+        precondition(Game.shared.attributes.contains(.renderingIsPermitted), "Rendering can only be changed from a RenderingSystem.")
         precondition(canvas.size == nil || canvas.size! == self.size, "Canvas.size.aspectRatio must equal RenderTarget.size.aspectRatio to insert.")
         self.drawables.append(canvas)
     }
     
     @inlinable @inline(__always)
     public func insert(_ drawCommand: DrawCommand) {
-        precondition(Game.shared.renderingIsPermitted, "Rendering can only be changed from a RenderingSystem.")
+        precondition(Game.shared.attributes.contains(.renderingIsPermitted), "Rendering can only be changed from a RenderingSystem.")
         self.drawables.append(drawCommand)
     }
     
@@ -92,7 +92,7 @@ extension _RenderTargetProtocol {
             return renderTargetBackend.size
         }
         set {
-            precondition(Game.shared.renderingIsPermitted, "Resizing a RenderTarget can only be done from a RenderingSystem.")
+            precondition(Game.shared.attributes.contains(.renderingIsPermitted), "Resizing a RenderTarget can only be done from a RenderingSystem.")
             renderTargetBackend.size = newValue
         }
     }
@@ -106,7 +106,7 @@ extension _RenderTargetProtocol {
     }
     
     public init() {
-        precondition(Game.shared.renderingIsPermitted, "RenderTarget can only be created from a RenderingSystem.")
+        precondition(Game.shared.attributes.contains(.renderingIsPermitted), "RenderTarget can only be created from a RenderingSystem.")
         self.renderTargetBackend = getRenderTargetBackend()
         self.clearColor = .black
     }
@@ -125,7 +125,7 @@ extension _RenderTargetProtocol {
             return renderTargetBackend.size
         }
         set {
-            precondition(Game.shared.renderingIsPermitted, "Resizing a RenderTarget can only be done from a RenderingSystem.")
+            precondition(Game.shared.attributes.contains(.renderingIsPermitted), "Resizing a RenderTarget can only be done from a RenderingSystem.")
             renderTargetBackend.size = newValue
         }
     }

@@ -28,7 +28,7 @@ import GameMath
     @discardableResult
     public func createWindow(identifier: String, style: WindowStyle = .system, options: WindowOptions = .default) throws -> Window {
         guard game.isHeadless == false else {throw "Cannot create a window when running headless."}
-        precondition(game.renderingIsPermitted, "A window can only be created from a RenderingSystem.")
+        precondition(game.attributes.contains(.renderingIsPermitted), "A window can only be created from a RenderingSystem.")
         guard game.platform.supportsMultipleWindows || windows.isEmpty else {throw "This platform doesn't support multiple windows."}
         if let existing = self.window(withIdentifier: identifier) {
             Log.warn("Window with identifier \(identifier) already exists. It was returned with it's original style and options.")
@@ -70,12 +70,12 @@ import GameMath
     
     @inline(__always)
     func drawWindows() {
-        game.renderingIsPermitted = true
+        game.attributes.insert(.renderingIsPermitted)
         for pair: (window: Window, deltaTime: Float) in windowsThatRequestedDraw {
             game.ecs.updateRendering(withTimePassed: pair.deltaTime, window: pair.window)
             pair.window.didDrawSomething = true
         }
-        game.renderingIsPermitted = false
+        game.attributes.remove(.renderingIsPermitted)
         self.windowsThatRequestedDraw.removeAll(keepingCapacity: true)
     }
 }
