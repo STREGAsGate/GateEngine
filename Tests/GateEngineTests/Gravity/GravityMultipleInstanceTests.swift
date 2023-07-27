@@ -1,6 +1,5 @@
 import XCTest
-@testable import GravityC
-@testable import Gravity
+@testable import GateEngine
 
 // These tests make sure multiple instances of `Gravity` can co-exist.
 

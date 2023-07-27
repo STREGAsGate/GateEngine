@@ -1,6 +1,5 @@
 import XCTest
-@testable import GravityC
-@testable import Gravity
+@testable import GateEngine
 
 
 final class GravityExtendingTests: XCTestCase {

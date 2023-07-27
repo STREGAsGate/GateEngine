@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import GravityC
+import Gravity
 
 public protocol GravityValueConvertible {
     var gravityValue: GravityValue {get}

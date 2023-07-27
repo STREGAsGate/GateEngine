@@ -7,7 +7,7 @@
 
 #if canImport(Foundation) && !os(WASI)
 import struct Foundation.URL
-import GravityC
+import Gravity
 
 internal func filenameCallback(fileID: UInt32, xData: UnsafeMutableRawPointer?) -> UnsafePointer<CChar>? {
     guard let gravity = unsafeBitCast(xData, to: Optional<Gravity>.self) else {return nil}
@@ -17,23 +17,14 @@ internal func filenameCallback(fileID: UInt32, xData: UnsafeMutableRawPointer?) 
     }
 }
 
-internal func loadFileCallback(file: UnsafePointer<CChar>!, size: UnsafeMutablePointer<Int>!, fileID: UnsafeMutablePointer<UInt32>!, xData: UnsafeMutableRawPointer?, isStatic: UnsafeMutablePointer<Bool>!) -> UnsafePointer<CChar>? {
+@MainActor @preconcurrency internal func loadFileCallback(file: UnsafePointer<CChar>!, size: UnsafeMutablePointer<Int>!, fileID: UnsafeMutablePointer<UInt32>!, xData: UnsafeMutableRawPointer?, isStatic: UnsafeMutablePointer<Bool>!) -> UnsafePointer<CChar>? {
     guard let cFile = file else {return nil}
     guard let gravity = unsafeBitCast(xData, to: Optional<Gravity>.self) else {return nil}
-    
-    let file = String(cString: cFile)
-    guard let url: URL = {
-        for baseURL in gravity.sourceCodeSearchPaths {
-            let url = baseURL.appendingPathComponent(file).resolvingSymlinksInPath()
-            if GravityC.file_exists(url.path) {
-                return url
-            }
-        }
-        return nil
-    }() else {return nil}
+    let path = String(cString: cFile)
+    let url = URL(fileURLWithPath: path)
     
     if gravity.loadedFilesByID.values.contains(where: {$0 == url}) {
-        print("Gravity Skip File: \(gravity.filenameForID(0)!) ->", url.lastPathComponent, "(Already Loaded)")
+        Log.debug("Gravity Skip File: \(gravity.filenameForID(0)!) ->", url.lastPathComponent, "(Already Loaded)")
         // give a fileID. Will overwrite it the next load
         fileID.pointee = UInt32(gravity.loadedFilesByID.count + 1)
         return "".withCString { sourceCode in
@@ -41,16 +32,21 @@ internal func loadFileCallback(file: UnsafePointer<CChar>!, size: UnsafeMutableP
         }
     }
     
-    let sourceCode: String = url.path.withCString { cString in
-        guard let sourceC = GravityC.file_read(cString, nil) else {return ""}
-        return String(cString: sourceC)
-    }
+    guard let sourceCode: String = {
+        for baseURL in gravity.sourceCodeSearchPaths {
+            let url = baseURL.appendingPathComponent(path).resolvingSymlinksInPath()
+            if let data: Data = Game.sync({try? await Game.shared.platform.loadResource(from: url.path)}) {
+                return String(data: data, encoding: .utf8)
+            }
+        }
+        return nil
+    }() else {return nil}
 
     size.pointee = sourceCode.count
     
     let newFileID = UInt32(gravity.loadedFilesByID.count + 1)
     fileID.pointee = newFileID
-    print("Gravity Load File: \(gravity.filenameForID(0)!) ->", url.lastPathComponent)
+    Log.debug("Gravity Load File: \(gravity.filenameForID(0)!) ->", url.lastPathComponent)
     gravity.loadedFilesByID[newFileID] = url
     gravity.sourceCodeSearchPaths.insert(url.deletingLastPathComponent())
     return sourceCode.withCString { sourceCode in
@@ -65,16 +61,13 @@ public extension Gravity {
      - parameter addDebug: `true` to add debug. nil to add debug only in DEBUG configurations.
      - throws: Gravity compilation errors such as syntax problems and file loading problems.
      */
-    func compile(_ source: URL, addDebug: Bool? = nil) throws {
-//        loadedFilesByID.removeAll(keepingCapacity: true)
-        
-        let sourceCode: String = source.path.withCString { cString in
-            guard let sourceC = GravityC.file_read(cString, nil) else {return ""}
-            return String(cString: sourceC)
-        }
-        self.sourceCodeBaseURL = source.deletingLastPathComponent()
-        self.loadedFilesByID[0] = source
-        try self.compile(sourceCode, addDebug: addDebug)
+    func compileFromPath(_ path: String, addDebug: Bool? = nil) async throws {
+        let url =  URL(fileURLWithPath: path)
+        let data = try await Game.shared.platform.loadResource(from: path)
+        guard let sourceCode = String(data: data, encoding: .utf8) else {throw "File corrupted or in the wrong format."}
+        self.sourceCodeBaseURL = url.deletingLastPathComponent()
+        self.loadedFilesByID[0] = url
+        try self.compileFromSource(sourceCode, addDebug: addDebug)
     }
 }
 

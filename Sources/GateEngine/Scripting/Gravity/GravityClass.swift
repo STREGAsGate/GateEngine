@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import GravityC
+import Gravity
 
 /// A gravity script class definition.
 public class GravityClass: GravityValueEmitting, GravityClassEmitting {

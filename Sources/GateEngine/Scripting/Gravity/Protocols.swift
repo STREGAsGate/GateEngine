@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import GravityC
+import Gravity
 
 //MARK: - Emitters
 protocol GravityValueEmitting {

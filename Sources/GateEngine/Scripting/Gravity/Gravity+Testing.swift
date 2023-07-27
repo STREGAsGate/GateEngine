@@ -6,7 +6,7 @@
  */
 
 #if DEBUG
-import GravityC
+import Gravity
 
 internal func unittestCallback(vm: OpaquePointer!, errorType: error_type_t, desc: UnsafePointer<CChar>?, note: UnsafePointer<CChar>?, value: gravity_value_t, row: Int32, column: Int32, xdata: UnsafeMutableRawPointer?) {
     Gravity.unitTestExpected = Gravity.Testing(description: String(cString: desc!), errorType: errorType, row: row, column: column, value: value)

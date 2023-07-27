@@ -261,3 +261,20 @@ internal enum Log {
         return Swift.fatalError(resolvedMessage, file: file, line: line)
     }
 }
+
+internal extension Game {
+    @MainActor static func sync<Result>(priority: TaskPriority = .medium, _ closure: @escaping (() async -> Result)) -> Result {
+        var result: Optional<Result> = nil
+        var done = false
+        Task(priority: priority) { @MainActor in
+            result = await closure()
+            done = true
+        }
+        while done != true {
+            #if canImport(Foundation.NSRunLoop)
+            RunLoop.current.run(until: Date())
+            #endif
+        }
+        return result!
+    }
+}

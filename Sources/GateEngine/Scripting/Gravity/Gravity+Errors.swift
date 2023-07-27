@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import GravityC
+import Gravity
 
 internal func errorCallback(vm: OpaquePointer?, errorType: error_type_t, description: UnsafePointer<CChar>?, errorDesc: error_desc_t, xdata: UnsafeMutableRawPointer?) -> Void {
     guard let description = description else {return}
@@ -58,5 +58,3 @@ extension Gravity {
         }
     }
 }
-
-extension String: Error {}

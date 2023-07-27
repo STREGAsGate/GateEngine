@@ -35,7 +35,7 @@ let package = Package(
                     dependencies: {
                         var dependencies: [Target.Dependency] = []
                         dependencies.append(contentsOf: ["GameMath", "Shaders", "TrueType", "LibSPNG", "Gravity"])
-                        dependencies.append(.target(name: "Vorbis", condition: .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])))
+                        dependencies.append(.target(name: "Vorbis", condition: .when(platforms: .any(except: .wasi))))
                         
                         #if os(macOS) || os(Linux)
                         dependencies.append(.target(name: "OpenGL_GateEngine", condition: .when(platforms: [.macOS, .iOS, .tvOS, .linux, .android])))
@@ -55,7 +55,7 @@ let package = Package(
                         // dependencies.append(.target(name: "OpenALSoft", condition: .when(platforms: [.linux, .android])))
                         #endif
                         
-                        dependencies.append(.product(name: "Atomics", package: "swift-atomics", condition: .when(platforms: [.macOS, .linux, .iOS, .tvOS, .android, .wasi])))
+                        dependencies.append(.product(name: "Atomics", package: "swift-atomics", condition: .when(platforms: .any(except: .windows))))
                         dependencies.append(.product(name: "Collections", package: "swift-collections"))
 
                         #if os(macOS) || os(Linux)
@@ -84,9 +84,9 @@ let package = Package(
                         settings.append(contentsOf: [
                             // MARK: Gate Engine options.
                             /// Closes all open windows when the main window is closed
-                            .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW", .when(platforms: [.macOS, .windows, .linux])),
+                            .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW", .when(platforms: .desktop)),
                             /// Checks for reloadable resources and reloads them if they have changed
-                            .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
+                            .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: .desktop, configuration: .debug)),
                             /// The host platform requests the main window, so GateEngine won't create one until it's requested
                             .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
                             /// The host platform can't be usaed to compile HTML5 products
@@ -96,11 +96,11 @@ let package = Package(
                             /// The host platform requires an intermediate task, so GateEngine won't load default systems.
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH", .when(platforms: [.wasi])),
                             /// The host platform supports file system read/write
-                            .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android, .wasi])),
+                            .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM", .when(platforms: .any)),
                             /// The host platform supports Foundation.FileManager
-                            .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])),
+                            .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER", .when(platforms: .any(except: .wasi))),
                             /// The host platform requires an intermediate task, so GateEngine won't load default systems.
-                            .define("GATEENGINE_ASYNCLOAD_CURRENTPLATFORM", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])),
+                            .define("GATEENGINE_ASYNCLOAD_CURRENTPLATFORM", .when(platforms: .any(except: .wasi))),
                         ])
                         
                         #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
@@ -202,9 +202,8 @@ let package = Package(
                     ]),
             
             // Gravity
-            .target(name: "Gravity", dependencies: ["GravityC"], exclude: ["Xcode Syntax Highlighting"]),
-            .target(name: "GravityC",
-                    path: "Dependencies/GravityC",
+            .target(name: "Gravity",
+                    path: "Dependencies/Gravity",
                     cSettings: [
                         .define("BUILD_GRAVITY_API"),
                         // WASI doesn't have umask
@@ -289,11 +288,10 @@ let package = Package(
         
         // MARK: - Tests
         
-        // GameMath Tests
         targets.append(contentsOf: [
             .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"]),
-            .testTarget(name: "GameMathTests",
-                        dependencies: ["GameMath"]),
+            .testTarget(name: "GameMathTests", dependencies: ["GameMath"]),
+            .testTarget(name: "GravityTests", dependencies: ["Gravity", "GateEngine"], resources: [.copy("_Resources")]),
         ])
         #if !os(Windows)
         targets.append(contentsOf: [
@@ -305,11 +303,6 @@ let package = Package(
                         ]),
         ])
         #endif
-        // Gravity Tests
-        targets.append(contentsOf: [
-            .testTarget(name: "GravityTests", dependencies: ["GravityC", "Gravity"]),
-            .testTarget(name: "GravityCTests", dependencies: ["GravityC", "Gravity"], resources: [.copy("_Resources")])
-        ])
         
         return targets
     }(),
@@ -323,9 +316,9 @@ var openALLinkerSettings: [LinkerSetting] {
     var array: [LinkerSetting] = []
     
     array.append(contentsOf: [
-        .linkedFramework("AudioToolbox", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])),
-        .linkedFramework("CoreFoundation", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])),
-        .linkedFramework("CoreAudio", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])),
+        .linkedFramework("AudioToolbox", .when(platforms: .anyApple)),
+        .linkedFramework("CoreFoundation", .when(platforms: .anyApple)),
+        .linkedFramework("CoreAudio", .when(platforms: .anyApple)),
     ])
     // array.append(contentsOf: [
     //     .linkedLibrary("winmm", .when(platforms: [.windows])),
@@ -520,20 +513,22 @@ var openALSources: [String] {
 // Package.swift Helpers
 extension Array where Element == Platform {
     static func any(except excluding: Platform...) -> Self {
-        var array = self.all
+        var array = self.any
         for platform in excluding {
             array.removeAll(where: {$0 == platform})
         }
         return array
     }
     
-    private static var all: Self {
-        return [
-            .macOS, .macCatalyst, .iOS, .tvOS, .watchOS, .driverKit,
-            .linux, .android,
-            .windows,
-            .wasi,
-        ]
-    }
+    static var desktop: Self {[.windows, .linux, .macOS]}
+    static var mobile: Self {[.iOS, .tvOS, .android]}
+    static var anyApple: Self {[.iOS, .tvOS, .macOS]}
+    
+    static var any: Self {[
+        .macOS, .iOS, .tvOS,
+        .linux, .android,
+        .windows,
+        .wasi,
+    ]}
 }
 

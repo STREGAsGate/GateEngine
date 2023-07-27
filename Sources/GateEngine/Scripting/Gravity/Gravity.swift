@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import GravityC
+import Gravity
 import struct Foundation.URL
 
 extension Gravity {
@@ -150,7 +150,7 @@ public class Gravity {
      - parameter addDebug: `true` to add debug. nil to add debug only in DEBUG configurations.
      - throws: Gravity compilation errors such as syntax problems.
      */
-    public func compile(_ sourceCode: String, addDebug: Bool? = nil) throws {
+    public func compileFromSource(_ sourceCode: String, addDebug: Bool? = nil) throws {
         self.mainClosure = nil
         self.didRunMain = false
         try sourceCode.withCString { cString in

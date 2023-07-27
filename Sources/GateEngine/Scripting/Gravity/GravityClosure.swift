@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import GravityC
+import Gravity
 
 public class GravityClosure: GravityValueEmitting, GravityClosureEmitting {
     let gravity: Gravity
