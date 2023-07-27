@@ -267,10 +267,11 @@ internal enum Log {
 }
 
 internal extension Game {
-    @MainActor static func sync<Result>(priority: TaskPriority = .medium, _ closure: @escaping (() async -> Result)) -> Result {
+    @MainActor static func sync<Result>(_ closure: @escaping (() async -> Result)) -> Result {
         var result: Optional<Result> = nil
         var done = false
-        Task(priority: priority) { @MainActor in
+        // Becuase it's going to block, make it high priority
+        Task(priority: .high) { @MainActor in
             result = await closure()
             done = true
         }

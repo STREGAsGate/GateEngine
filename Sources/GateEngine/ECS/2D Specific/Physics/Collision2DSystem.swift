@@ -13,7 +13,7 @@ public final class Collision2DSystem: System {
         for entity in game.entities {
             guard entity.hasComponent(Collision2DComponent.self) else {continue}
             guard entity.hasComponent(Transform2Component.self) else {continue}
-            entity.configure(Transform2Component.self) { transformComponent in
+            await entity.configure(Transform2Component.self) { transformComponent in
                 let object = entity[Collision2DComponent.self]
                 object.primitive.update(transform: transformComponent.transform)
                 

@@ -68,7 +68,7 @@ public final class Game {
         
         #if !GATEENGINE_PLATFORM_DEFERS_LAUNCH
         self.addPlatformSystems()
-        self.delegate.didFinishLaunching(game: self, options: [])
+        await self.delegate.didFinishLaunching(game: self, options: [])
         #endif
         
         self.primeDeltaTime()
@@ -78,7 +78,9 @@ public final class Game {
         #endif
     }
     @MainActor func willTerminate() {
-        self.delegate.willTerminate(game: self)
+        Self.sync {
+            await self.delegate.willTerminate(game: self)
+        }
     }
     
     @MainActor internal func addPlatformSystems() {

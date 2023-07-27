@@ -90,24 +90,8 @@ public extension Entity {
     
     /// Allows changing a component, addind it first if needed.
     @inlinable @inline(__always)
-    func configure<T: Component, ResultType>(_ type: T.Type, _ config: (_ component: inout T) -> ResultType) -> ResultType {
-        return config(&self[T.self])
-    }
-    
-    /// Allows changing a component with async, creating the component if needed.
-    /// The component is added to the Entity after the async operation is complete.
-    @inlinable @inline(__always)
-    func configure<T: Component>(_ type: T.Type, _ config: @escaping (_ component: inout T) async throws -> Void) {
-        Task(priority: .medium) {
-            var component = self.component(ofType: type) ?? T.init()
-            
-            try await config(&component)
-            
-            let immutableComponent = component
-            Task {@MainActor in
-                self[T.self] = immutableComponent
-            }
-        }
+    func configure<T: Component, ResultType>(_ type: T.Type, _ config: @escaping (_ component: inout T) async -> ResultType) async -> ResultType {
+        return await config(&self[T.self])
     }
     
     /// - returns The removed componen or nil if no component was found.

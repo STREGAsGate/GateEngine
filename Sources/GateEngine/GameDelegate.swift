@@ -17,7 +17,7 @@ public struct LaunchOptions: OptionSet {
 
 public protocol GameDelegate: AnyObject {
     /// Called when the app finishes loading.
-    @MainActor func didFinishLaunching(game: Game, options: LaunchOptions)
+    @MainActor func didFinishLaunching(game: Game, options: LaunchOptions) async
     
     /**
      Create a customized mainWindow
@@ -35,10 +35,10 @@ public protocol GameDelegate: AnyObject {
      A display has been attached.
      - returns: A new window instance to put on the screen. Passing an existing window is undefined behaviour.
     */
-    @MainActor func createWindowForExternalscreen(game: Game) throws -> Window?
+    @MainActor func createWindowForExternalScreen(game: Game) throws -> Window?
     
     /// Might be called immediately before the app closes.
-    @MainActor func willTerminate(game: Game)
+    @MainActor func willTerminate(game: Game) async
     
     /**
      Start the game with no window and skip updating RenderingSystem(s).
@@ -78,9 +78,9 @@ public extension GameDelegate {
         return try game.windowManager.createWindow(identifier: identifier, style: .system, options: .defaultForMainWindow)
     }
     func createUserRequestedWindow(game: Game) throws -> Window? {return nil}
-    func createWindowForExternalscreen(game: Game) throws -> Window? {return nil}
+    func createWindowForExternalScreen(game: Game) throws -> Window? {return nil}
     
-    func willTerminate(game: Game) {}
+    func willTerminate(game: Game) async {}
     func isHeadless() -> Bool {return false}
     func customResourceLocations() -> [URL] {return []}
 

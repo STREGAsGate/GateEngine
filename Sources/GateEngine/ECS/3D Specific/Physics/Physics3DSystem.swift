@@ -15,7 +15,7 @@ public final class Physics3DSystem: System {
         for entity in game.entities {
             guard let physicsComponent = entity.component(ofType: Physics3DComponent.self) else {continue}
             guard entity.hasComponent(Transform3Component.self) else {continue}
-            entity.configure(Transform3Component.self) { transformComponent in
+            await entity.configure(Transform3Component.self) { transformComponent in
                 var deltaTime = deltaTime
                 if let scale = entity.component(ofType: TimeScaleComponent.self)?.scale {
                     deltaTime *= scale
