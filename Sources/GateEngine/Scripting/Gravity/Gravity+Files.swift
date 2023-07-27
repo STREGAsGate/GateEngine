@@ -33,7 +33,7 @@ internal func filenameCallback(fileID: UInt32, xData: UnsafeMutableRawPointer?) 
     
     guard let sourceCode: String = {
         for baseURL in gravity.sourceCodeSearchPaths {
-            let url = baseURL.appendingPathComponent(path).resolvingSymlinksInPath()
+            let url = baseURL.appendingPathComponent(path)
             if let data: Data = Game.sync({try? await Game.shared.platform.loadResource(from: url.path)}) {
                 return String(data: data, encoding: .utf8)
             }
