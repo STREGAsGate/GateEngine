@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-#if canImport(Foundation) && !os(WASI)
 import struct Foundation.URL
 import Gravity
 
@@ -70,5 +69,3 @@ public extension Gravity {
         try self.compile(source: sourceCode, addDebug: addDebug)
     }
 }
-
-#endif
