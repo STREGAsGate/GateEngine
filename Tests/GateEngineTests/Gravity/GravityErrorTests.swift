@@ -12,13 +12,13 @@ final class GravityErrorTests: XCTestCase {
     
     // Make sure syntax errors throw
     func testGravitySyntaxError() throws {
-        XCTAssertThrowsError(try gravity.compile("vir myVar = 10; func main() {}"))
+        XCTAssertThrowsError(try gravity.compile(source: "vir myVar = 10; func main() {}"))
     }
     
     // Make sure runtime errors throw
     func testGravityRuntimeError() throws {
         // runMain when there is no main
-        try gravity.compile("var myVar = 10; func myFunc() {return 1}")
+        try gravity.compile(source: "var myVar = 10; func myFunc() {return 1}")
         XCTAssertThrowsError(try gravity.runMain())
     }
     
@@ -29,9 +29,9 @@ final class GravityErrorTests: XCTestCase {
     
     // Is this legal? No idea
     func testCompilingMultipleTimes() throws {
-        try gravity.compile("var myVar = 10; func main() {return 100}")
+        try gravity.compile(source: "var myVar = 10; func main() {return 100}")
         XCTAssertEqual(try gravity.runMain(), 100)
-        try gravity.compile("func main() {return 101}")
+        try gravity.compile(source: "func main() {return 101}")
         XCTAssertEqual(try gravity.runMain(), 101)
         XCTAssertEqual(gravity.getVar("myVar"), 10)
     }

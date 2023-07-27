@@ -61,13 +61,13 @@ public extension Gravity {
      - parameter addDebug: `true` to add debug. nil to add debug only in DEBUG configurations.
      - throws: Gravity compilation errors such as syntax problems and file loading problems.
      */
-    func compileFromPath(_ path: String, addDebug: Bool? = nil) async throws {
+    func compile(file path: String, addDebug: Bool? = nil) async throws {
         let url =  URL(fileURLWithPath: path)
         let data = try await Game.shared.platform.loadResource(from: path)
         guard let sourceCode = String(data: data, encoding: .utf8) else {throw "File corrupted or in the wrong format."}
         self.sourceCodeBaseURL = url.deletingLastPathComponent()
         self.loadedFilesByID[0] = url
-        try self.compileFromSource(sourceCode, addDebug: addDebug)
+        try self.compile(source: sourceCode, addDebug: addDebug)
     }
 }
 

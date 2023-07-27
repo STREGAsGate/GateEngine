@@ -10,10 +10,10 @@ final class GravityMultipleInstanceTests: XCTestCase {
         let gravity1 = Gravity()
         let gravity2 = Gravity()
         
-        try gravity1.compile(script)
+        try gravity1.compile(source: script)
         gravity1.setVar("myVar", to: 66)
         
-        try gravity2.compile(script)
+        try gravity2.compile(source: script)
         gravity2.setVar("myVar", to: 77)
         
         gravity1.setVar("myVar", to: 11)

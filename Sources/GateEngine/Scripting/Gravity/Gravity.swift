@@ -150,7 +150,7 @@ public class Gravity {
      - parameter addDebug: `true` to add debug. nil to add debug only in DEBUG configurations.
      - throws: Gravity compilation errors such as syntax problems.
      */
-    public func compileFromSource(_ sourceCode: String, addDebug: Bool? = nil) throws {
+    public func compile(source sourceCode: String, addDebug: Bool? = nil) throws {
         self.mainClosure = nil
         self.didRunMain = false
         try sourceCode.withCString { cString in
