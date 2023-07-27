@@ -175,7 +175,7 @@ public class Gravity {
                 throw error
             }else{
                 gravity_compiler_free(compiler)
-                throw "Gravity Error: Failed to compile."
+                throw "Failed to compile."
             }
         }
         #if canImport(Foundation) && !os(WASI)

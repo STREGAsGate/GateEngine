@@ -1,81 +1,65 @@
 import XCTest
-@testable import GravityC
 @testable import Gravity
 
 final class Unittest03SemanticStep2Tests: XCTestCase {
-    func testClass1AccessSpecifier() {
-        let url = URL(resource: "unittest/03-semantic_step2/class1_access_specifier.gravity")
-        runGravity(at: url)
+    func testClass1AccessSpecifier() async {
+        await runGravity(at: "unittest/03-semantic_step2/class1_access_specifier.gravity")
     }
     
-    func testClass2AccessSpecifier() {
-        let url = URL(resource: "unittest/03-semantic_step2/class2_access_specifier.gravity")
-        runGravity(at: url)
+    func testClass2AccessSpecifier() async {
+        await runGravity(at: "unittest/03-semantic_step2/class2_access_specifier.gravity")
     }
     
-    func testEnum1AccessSpecifier() {
-        let url = URL(resource: "unittest/03-semantic_step2/enum1_access_specifier.gravity")
-        runGravity(at: url)
+    func testEnum1AccessSpecifier() async {
+        await runGravity(at: "unittest/03-semantic_step2/enum1_access_specifier.gravity")
     }
     
-    func testEnum2AccessSpecifier() {
-        let url = URL(resource: "unittest/03-semantic_step2/enum2_access_specifier.gravity")
-        runGravity(at: url)
+    func testEnum2AccessSpecifier() async {
+        await runGravity(at: "unittest/03-semantic_step2/enum2_access_specifier.gravity")
     }
     
-    func testFor1IdentifierNotFound() {
-        let url = URL(resource: "unittest/03-semantic_step2/for1_identifier_not_found.gravity")
-        runGravity(at: url)
+    func testFor1IdentifierNotFound() async {
+        await runGravity(at: "unittest/03-semantic_step2/for1_identifier_not_found.gravity")
     }
     
-    func testFunc1AccessSpecifier() {
-        let url = URL(resource: "unittest/03-semantic_step2/func1_access_specifier.gravity")
-        runGravity(at: url)
+    func testFunc1AccessSpecifier() async {
+        await runGravity(at: "unittest/03-semantic_step2/func1_access_specifier.gravity")
     }
     
-    func testFunc2AccessSpecifier() {
-        let url = URL(resource: "unittest/03-semantic_step2/func2_access_specifier.gravity")
-        runGravity(at: url)
+    func testFunc2AccessSpecifier() async {
+        await runGravity(at: "unittest/03-semantic_step2/func2_access_specifier.gravity")
     }
     
-    func testFunc3IdentifierRedeclared() {
-        let url = URL(resource: "unittest/03-semantic_step2/func3_identifier_redeclared.gravity")
-        runGravity(at: url)
+    func testFunc3IdentifierRedeclared() async {
+        await runGravity(at: "unittest/03-semantic_step2/func3_identifier_redeclared.gravity")
     }
     
-    func testFunc4IdentifierRedeclared() {
-        let url = URL(resource: "unittest/03-semantic_step2/func4_identifier_redeclared.gravity")
-        runGravity(at: url)
+    func testFunc4IdentifierRedeclared() async {
+        await runGravity(at: "unittest/03-semantic_step2/func4_identifier_redeclared.gravity")
     }
     
-    func testInvalidConditionIf() {
-        let url = URL(resource: "unittest/03-semantic_step2/invalid_condition_if.gravity")
-        runGravity(at: url)
+    func testInvalidConditionIf() async {
+        await runGravity(at: "unittest/03-semantic_step2/invalid_condition_if.gravity")
     }
     
-    func testInvalidConditionWhile() {
-        let url = URL(resource: "unittest/03-semantic_step2/invalid_condition_while.gravity")
-        runGravity(at: url)
+    func testInvalidConditionWhile() async {
+        await runGravity(at: "unittest/03-semantic_step2/invalid_condition_while.gravity")
     }
     
-    func testOverrideProperty() {
-        let url = URL(resource: "unittest/03-semantic_step2/override_property.gravity")
-        runGravity(at: url)
+    func testOverrideProperty() async {
+        await runGravity(at: "unittest/03-semantic_step2/override_property.gravity")
     }
     
-    func testVar1AccessSpecifier() {
-        let url = URL(resource: "unittest/03-semantic_step2/var1_access_specifier.gravity")
-        runGravity(at: url)
+    func testVar1AccessSpecifier() async {
+        await runGravity(at: "unittest/03-semantic_step2/var1_access_specifier.gravity")
     }
     
-    func testVar2AccessSpecifier() {
-        let url = URL(resource: "unittest/03-semantic_step2/var2_access_specifier.gravity")
-        runGravity(at: url)
+    func testVar2AccessSpecifier() async {
+        await runGravity(at: "unittest/03-semantic_step2/var2_access_specifier.gravity")
     }
     
-    func testVarContainer() {
-        let url = URL(resource: "unittest/03-semantic_step2/var_container.gravity")
-        runGravity(at: url)
+    func testVarContainer() async {
+        await runGravity(at: "unittest/03-semantic_step2/var_container.gravity")
     }
 }
 

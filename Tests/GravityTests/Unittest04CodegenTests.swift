@@ -1,84 +1,71 @@
 import XCTest
-@testable import GravityC
+@testable import GateEngine
 @testable import Gravity
 
 
 final class Unittest04CodegenTests: XCTestCase {
-    func testAssignment1() {
-        let url = URL(resource: "unittest/04-codegen/assignment1.gravity")
-        runGravity(at: url)
+    func testAssignment1() async {
+        await runGravity(at: "unittest/04-codegen/assignment1.gravity")
     }
     
-    func testAssignment2() {
-        let url = URL(resource: "unittest/04-codegen/assignment2.gravity")
-        runGravity(at: url)
+    func testAssignment2() async {
+        await runGravity(at: "unittest/04-codegen/assignment2.gravity")
     }
     
-    func testAssignment3() {
-        let url = URL(resource: "unittest/04-codegen/assignment3.gravity")
-        runGravity(at: url)
+    func testAssignment3() async {
+        await runGravity(at: "unittest/04-codegen/assignment3.gravity")
     }
     
-    func testAssignment4() {
-        let url = URL(resource: "unittest/04-codegen/assignment4.gravity")
-        runGravity(at: url)
+    func testAssignment4() async {
+        await runGravity(at: "unittest/04-codegen/assignment4.gravity")
     }
     
-    func testClass() throws {
-        let url = URL(resource: "unittest/04-codegen/class")
-        let files = try Foundation.FileManager.default.contentsOfDirectory(atPath: url.path)
-        for file in files {
-            let url = url.appendingPathComponent(file)
-            runGravity(at: url)
-        }
+    func testClass() async throws {
+        await runGravity(at: "unittest/04-codegen/class/1.gravity")
+        await runGravity(at: "unittest/04-codegen/class/2.gravity")
+        await runGravity(at: "unittest/04-codegen/class/3.gravity")
+        await runGravity(at: "unittest/04-codegen/class/4.gravity")
+        await runGravity(at: "unittest/04-codegen/class/5.gravity")
+        await runGravity(at: "unittest/04-codegen/class/6.gravity")
+        await runGravity(at: "unittest/04-codegen/class/7.gravity")
+        await runGravity(at: "unittest/04-codegen/class/8.gravity")
+        await runGravity(at: "unittest/04-codegen/class/12.gravity")
+        await runGravity(at: "unittest/04-codegen/class/13.gravity")
     }
     
-    func testComplexExpression() {
-        let url = URL(resource: "unittest/04-codegen/complex_expression.gravity")
-        runGravity(at: url)
+    func testComplexExpression() async {
+        await runGravity(at: "unittest/04-codegen/complex_expression.gravity")
     }
     
-    func testFibonacci() {
-        let url = URL(resource: "unittest/04-codegen/fibonacci.gravity")
-        runGravity(at: url)
+    func testFibonacci() async {
+        await runGravity(at: "unittest/04-codegen/fibonacci.gravity")
     }
     
-    func testFileAccess() {
-        let url = URL(resource: "unittest/04-codegen/file_access.gravity")
-        runGravity(at: url)
+    func testFileAccess() async {
+        await runGravity(at: "unittest/04-codegen/file_access.gravity")
     }
     
-    func testKeywords() throws {
-        let url = URL(resource: "unittest/04-codegen/keywords")
-        let files = try Foundation.FileManager.default.contentsOfDirectory(atPath: url.path)
-        for file in files {
-            let url = url.appendingPathComponent(file)
-            runGravity(at: url)
-        }
+    func testKeywords() async throws {
+        await runGravity(at: "unittest/04-codegen/keywords/_func.gravity")
     }
     
-    func testListMap() throws {
-        let url = URL(resource: "unittest/04-codegen/list_map")
-        let files = try Foundation.FileManager.default.contentsOfDirectory(atPath: url.path)
-        for file in files {
-            let url = url.appendingPathComponent(file)
-            runGravity(at: url)
-        }
+    func testListMap() async throws {
+        await runGravity(at: "unittest/04-codegen/list_map/list1.gravity")
+        await runGravity(at: "unittest/04-codegen/list_map/list2.gravity")
+        await runGravity(at: "unittest/04-codegen/list_map/map1.gravity")
+        await runGravity(at: "unittest/04-codegen/list_map/map2.gravity")
     }
     
-    func testLiterals() {
-        let url = URL(resource: "unittest/04-codegen/literals.gravity")
-        runGravity(at: url)
+    func testLiterals() async {
+        await runGravity(at: "unittest/04-codegen/literals.gravity")
     }
     
-    func testMultipleCall() {
-        let url = URL(resource: "unittest/04-codegen/multiple_call.gravity")
-        runGravity(at: url)
+    func testMultipleCall() async {
+        await runGravity(at: "unittest/04-codegen/multiple_call.gravity")
     }
     
-    func testVarDefault() {
-        let url = URL(resource: "unittest/04-codegen/var_default.gravity")
-        runGravity(at: url)
+    func testVarDefault() async {
+        await runGravity(at: "unittest/04-codegen/var_default.gravity")
     }
 }
 
