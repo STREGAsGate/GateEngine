@@ -33,10 +33,12 @@ import WebAPIBase
 #endif
 
 #if targetEnvironment(macCatalyst)
-#error("macCatalyst is not a supported platform.")
+#error("macCatalyst is not a supported platform. Use macOS instead.")
 #endif
 
 #if os(watchOS)
+// Apple doesn't allow 3rd party developers to use Metal on watchOS so it's not possible to run an engine.
+// Apple's own SceneKit engine does use Metal on watchOS, but GateEngine isn't allowed to do the same.
 #error("watchOS is not a supported platform.")
 #endif
 
