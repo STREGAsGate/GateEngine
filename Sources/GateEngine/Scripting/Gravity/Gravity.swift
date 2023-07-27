@@ -20,10 +20,8 @@ extension Gravity {
 internal var gravityDelegate: gravity_delegate_t = {
     var delegate: gravity_delegate_t = gravity_delegate_t()
     delegate.error_callback = errorCallback(vm:errorType:description:errorDesc:xdata:)
-    #if canImport(Foundation) && !os(WASI)
     delegate.filename_callback = filenameCallback(fileID:xData:)
     delegate.loadfile_callback = loadFileCallback(file:size:fileID:xData:isStatic:)
-    #endif
     #if DEBUG
     delegate.unittest_callback = unittestCallback(vm:errorType:desc:note:value:row:column:xdata:)
     #endif
@@ -178,9 +176,7 @@ public class Gravity {
                 throw "Failed to compile."
             }
         }
-        #if canImport(Foundation) && !os(WASI)
         sourceCodeBaseURL = nil
-        #endif
     }
     
     /// Runs the  `func main()` of the gravity script.
@@ -335,7 +331,6 @@ extension Gravity {
         
         var loadedFilesByID: [UInt32:URL] = [:]
         
-        #if canImport(Foundation) && !os(WASI)
         var sourceCodeBaseURL: URL? = nil {
             willSet {
                 if let newValue = newValue {
@@ -346,7 +341,6 @@ extension Gravity {
             }
         }
         var sourceCodeSearchPaths: Set<URL> = []
-        #endif
         
         var userDataReferences: Set<UserDataReference> = []
         
