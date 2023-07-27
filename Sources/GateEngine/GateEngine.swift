@@ -275,7 +275,7 @@ internal extension Game {
             done = true
         }
         while done != true {
-            #if canImport(Foundation.NSRunLoop)
+            #if !os(WASI)
             RunLoop.current.run(until: Date())
             #endif
         }
