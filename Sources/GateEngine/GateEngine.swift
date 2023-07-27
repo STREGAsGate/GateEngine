@@ -42,8 +42,10 @@ import WebAPIBase
 #error("watchOS is not a supported platform.")
 #endif
 
+#if swift(>=5.9)
 #if os(xrOS)
 #error("visionOS is not a supported platform.")
+#endif
 #endif
 
 #if os(Android)
