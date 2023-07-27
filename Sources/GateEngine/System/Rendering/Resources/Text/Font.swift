@@ -47,11 +47,13 @@ public class Font: OldResource {
                     self.backend = backend
                     self.state = .ready
                 }
-            }catch{
+            }catch let error as GateEngineError {
                 Task { @MainActor in
                     Log.debug("Resource \(regular) failed ->", error)
-                    self.state = .failed(reason: "\(error)")
+                    self.state = .failed(error: error)
                 }
+            }catch{
+                Log.fatalError("error must be a GateEngineError")
             }
         }
         #else
@@ -74,11 +76,13 @@ public class Font: OldResource {
                     self.backend = backend
                     self.state = .ready
                 }
-            }catch{
+            }catch let error as GateEngineError {
                 Task { @MainActor in
                     Log.debug("Resource \(regular) failed ->", error)
-                    self.state = .failed(reason: "\(error)")
+                    self.state = .failed(error: error)
                 }
+            }catch{
+                fatalError("error must be a GateEngineError")
             }
         }
     }

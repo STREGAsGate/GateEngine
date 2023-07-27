@@ -178,11 +178,13 @@ internal extension ResourceManager {
                         self.cache.geometries[key]!.geometryBackend = backend
                         self.cache.geometries[key]!.state = .ready
                     }
-                }catch{
+                }catch let error as GateEngineError {
                     Task {@MainActor in
                         Log.warn("Resource \"\(path)\"", error)
-                        self.cache.geometries[key]!.state = .failed(reason: "\(error)")
+                        self.cache.geometries[key]!.state = .failed(error: error)
                     }
+                }catch{
+                    Log.fatalError("error must be a GateEngineError")
                 }
             }
         }
@@ -326,11 +328,13 @@ internal extension ResourceManager {
                             cache.state = .ready
                         }
                     }
-                }catch{
+                }catch let error as GateEngineError {
                     Task {@MainActor in
                         Log.warn("Resource \"\(path)\"", error)
-                        self.cache.skinnedGeometries[key]!.state = .failed(reason: "\(error)")
+                        self.cache.skinnedGeometries[key]!.state = .failed(error: error)
                     }
+                }catch{
+                    Log.fatalError("error must be a GateEngineError")
                 }
             }
         }
@@ -616,14 +620,14 @@ internal extension ResourceManager {
             do {
                 let path = key.requestedPath
                 guard let fileExtension = path.components(separatedBy: ".").last else {
-                    throw "Unknown file type."
+                    throw GateEngineError.failedToLoad("Unknown file type.")
                 }
                 guard let importer = await Game.shared.resourceManager.textureImporterForFile(URL(fileURLWithPath: key.requestedPath)) else {
-                    throw "No importer for \(fileExtension)."
+                    throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
                 }
                 
                 let v = try await importer.loadData(path: path, options: key.textureOptions)
-                guard v.data.isEmpty == false else {throw "No data found at " + path}
+                guard v.data.isEmpty == false else {throw GateEngineError.failedToLoad("File is empty.")}
                 let texture = try importer.process(data: v.data, size: v.size, options: key.textureOptions)
                 
                 let backend = await self.textureBackend(data: texture.data, size: texture.size, mipMapping: key.mipMapping)
@@ -631,11 +635,13 @@ internal extension ResourceManager {
                     self.cache.textures[key]!.textureBackend = backend
                     self.cache.textures[key]!.state = .ready
                 }
-            }catch{
+            }catch let error as GateEngineError {
                 Task {@MainActor in
                     Log.warn("Resource \"\(key.requestedPath)\"", error)
-                    self.cache.textures[key]!.state = .failed(reason: "\(error)")
+                    self.cache.textures[key]!.state = .failed(error: error)
                 }
+            }catch{
+                Log.fatalError("error must be a GateEngineError")
             }
         }
     }

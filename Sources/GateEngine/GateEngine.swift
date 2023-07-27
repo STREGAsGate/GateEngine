@@ -56,7 +56,48 @@ extension Color {
     internal static let stregasgateBackground: Color = #colorLiteral(red: 0.094117634, green: 0.0941176638, blue: 0.094117634, alpha: 1)
 }
 
-extension String: Error {}
+public enum GateEngineError: Error, Equatable, Hashable {
+    case failedToLocate
+    case failedToLoad(_ reason: String)
+    case failedToDecode(_ reason: String)
+
+    case generic(_ description: String)
+    
+    case failedToCreateWindow(_ reason: String)
+    
+    public init(decodingError error: Swift.Error) {
+        switch error {
+        case let error as GateEngineError:
+            self = error
+        case let error as DecodingError:
+            self.init(error)
+        case let error as NSError:
+            self = .failedToDecode(error.localizedDescription)
+        default:
+            self = .failedToDecode("\(error)")
+        }
+    }
+    
+    public init(_ error: DecodingError) {
+        switch error {
+        case let DecodingError.dataCorrupted(context):
+            self = GateEngineError.failedToDecode("corrupt data (\(Swift.type(of: self)): \(context))")
+        case let DecodingError.keyNotFound(key, context):
+            self = GateEngineError.failedToDecode("key '\(key)' not found: \(context.debugDescription), codingPath: \(context.codingPath)")
+        case let DecodingError.valueNotFound(value, context):
+            self = GateEngineError.failedToDecode("value '\(value)' not found: \(context.debugDescription), codingPath: \(context.codingPath)")
+        case let DecodingError.typeMismatch(type, context):
+            self = GateEngineError.failedToDecode("type '\(type)' mismatch: \(context.debugDescription), codingPath: \(context.codingPath)")
+        default:
+            self = GateEngineError.failedToDecode("\(error)")
+        }
+    }
+}
+extension GateEngineError: ExpressibleByStringLiteral {
+    public init(stringLiteral value: StringLiteralType) {
+        self = .generic(value)
+    }
+}
 
 internal extension CommandLine {
 #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))

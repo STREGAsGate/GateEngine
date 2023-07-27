@@ -39,11 +39,11 @@ public final class AppKitPlatform: InternalPlatform {
             do {
                 return try await fileSystem.read(from: resolvedPath)
             }catch{
-                Log.error("Failed to load resource \"\(resolvedPath)\".")
-                throw error
+                Log.error("Failed to load resource \"\(resolvedPath)\".", error)
+                throw GateEngineError.failedToLoad(resolvedPath)
             }
         }
-        throw "Failed to load resource: \"\(path)\"."
+        throw GateEngineError.failedToLocate
     }
 }
 

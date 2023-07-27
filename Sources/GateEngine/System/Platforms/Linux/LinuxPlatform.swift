@@ -33,18 +33,18 @@ public final class LinuxPlatform: Platform, InternalPlatform {
     }
     
     public func loadResource(from path: String) async throws -> Data {
-        if let path = await locateResource(from: path) {
+        if let resolvedPath = await locateResource(from: path) {
             do {
-                let url: URL = URL(fileURLWithPath: path)
+                let url: URL = URL(fileURLWithPath: resolvedPath)
                 return try Data(contentsOf: url, options: .mappedIfSafe)
             }catch{
-                Log.error("Failed to load resource \"\(path)\".")
-                throw error
+                Log.error("Failed to load resource \"\(resolvedPath)\". Platform error:", error)
+                throw GateEngineError.failedToLoad(path)
             }
         }
         
-        Log.debug("Failed to locate Resource: \"\(path)\"")
-        throw "failed to locate \"\(path)\"."
+        Log.error("Failed to load resource \"\(path)\".")
+        throw GateEngineError.failedToLoad(path)
     }
 }
 

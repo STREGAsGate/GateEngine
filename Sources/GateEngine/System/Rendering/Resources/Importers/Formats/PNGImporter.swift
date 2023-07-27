@@ -34,14 +34,14 @@ extension PNGImporter {
             /* Set an input buffer */
             let set_buffer_err: Int32 = spng_set_png_buffer(ctx, data.baseAddress, data.count)
             if set_buffer_err != 0 {
-                throw String(cString: spng_strerror(set_buffer_err))
+                throw GateEngineError.failedToDecode(String(cString: spng_strerror(set_buffer_err)))
             }
             
             /* Determine output image size */
             var out_size: Int = -1
             let out_size_err: Int32 = spng_decoded_image_size(ctx, Int32(SPNG_FMT_RGBA8.rawValue), &out_size)
             if out_size_err != 0 {
-                throw String(cString: spng_strerror(out_size_err))
+                throw GateEngineError.failedToDecode(String(cString: spng_strerror(out_size_err)))
             }
             
             /* Decode to 8-bit RGBA */
@@ -50,13 +50,13 @@ extension PNGImporter {
                 return spng_decode_image(ctx, data.baseAddress, out_size, Int32(SPNG_FMT_RGBA8.rawValue), 0)
             })
             if decode_err != 0 {
-                throw String(cString: spng_strerror(decode_err))
+                throw GateEngineError.failedToDecode(String(cString: spng_strerror(decode_err)))
             }
             
             var header: spng_ihdr = spng_ihdr()
             let header_err: Int32 = spng_get_ihdr(ctx, &header)
             if header_err != 0 {
-                throw String(cString: spng_strerror(header_err))
+                throw GateEngineError.failedToDecode(String(cString: spng_strerror(header_err)))
             }
           
             return (Data(out), Size2(width: Float(header.width), height: Float(header.height)))

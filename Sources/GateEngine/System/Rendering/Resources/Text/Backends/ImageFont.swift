@@ -13,7 +13,10 @@ struct ImageFont: FontBackend {
     
     init(regular: String) async throws {
         let url = URL(fileURLWithPath: regular)
-        guard let importer = await Game.shared.resourceManager.textureImporterForFile(url) else {throw "Unsupported file type \(regular)."}
+        guard let importer = await Game.shared.resourceManager.textureImporterForFile(url) else {
+            Log.debug("No TextureImporter for file \"\(regular)\"")
+            throw GateEngineError.failedToDecode("No TextureImporter for file \"\(regular)\"")
+        }
         let regular = try await importer.loadData(path: regular, options: .none)
         
         let fontData: [Font.Style:(data: Data, size: Size2?, importer: TextureImporter.Type)] = [.regular : (regular.data, regular.size, type(of: importer))]

@@ -78,22 +78,14 @@ extension RawGeometry {
     public init(path: String, options: GeometryImporterOptions = .none) async throws {
         let file = URL(fileURLWithPath: path)
         guard let importer: GeometryImporter = await Game.shared.resourceManager.importerForFile(file) else {
-            throw "No importer for \(file.pathExtension)."
+            throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
         }
         
         do {
             let data = try await importer.loadData(path: path, options: options)
             self = try await importer.process(data: data, baseURL: file.deletingLastPathComponent(), options: options)
-        }catch let DecodingError.dataCorrupted(context) {
-            throw "corrupt data (\(Swift.type(of: self)): \(context))"
-        }catch let DecodingError.keyNotFound(key, context) {
-            throw "key '\(key)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
-        }catch let DecodingError.valueNotFound(value, context) {
-            throw "value '\(value)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
-        }catch let DecodingError.typeMismatch(type, context)  {
-            throw "type '\(type)' mismatch: \(context.debugDescription), codingPath: \(context.codingPath)"
-        }catch {
-            throw "\(error)"
+        }catch{
+            throw GateEngineError(decodingError: error)
         }
     }
 }
