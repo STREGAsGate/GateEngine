@@ -1,13 +1,11 @@
-import XCTest
-@testable import Gravity
+/*
+ * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
 
-
-final class Unittest01SyntaxTests: XCTestCase {
-    override func setUp() async throws {
-        try await Self.doSetUp()
-    }
-    
-    
+final class Unittest01SyntaxTests: GravityXCTestCase {
     func testSyntaxClassDeclaration() async {
         await runGravity(at: "unittest/01-syntax/class_declaration.gravity")
     }

@@ -2,7 +2,7 @@ import XCTest
 @testable import GateEngine
 
 
-final class GravityExtendingTests: XCTestCase {
+final class GravityExtendingTests: GateEngineXCTestCase {
     var gravity: Gravity! = nil
     var randomValue: Int = 0
     override func setUp() {

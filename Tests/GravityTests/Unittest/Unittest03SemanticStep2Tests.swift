@@ -1,12 +1,11 @@
-import XCTest
-@testable import Gravity
+/*
+ * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
 
-final class Unittest03SemanticStep2Tests: XCTestCase {
-    override func setUp() async throws {
-        try await Self.doSetUp()
-    }
-    
-    
+final class Unittest03SemanticStep2Tests: GravityXCTestCase {
     func testClass1AccessSpecifier() async {
         await runGravity(at: "unittest/03-semantic_step2/class1_access_specifier.gravity")
     }

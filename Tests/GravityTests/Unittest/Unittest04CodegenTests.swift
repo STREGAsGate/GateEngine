@@ -1,14 +1,11 @@
-import XCTest
-@testable import GateEngine
-@testable import Gravity
+/*
+ * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
 
-
-final class Unittest04CodegenTests: XCTestCase {
-    override func setUp() async throws {
-        try await Self.doSetUp()
-    }
-    
-    
+final class Unittest04CodegenTests: GravityXCTestCase {
     func testAssignment1() async {
         await runGravity(at: "unittest/04-codegen/assignment1.gravity")
     }

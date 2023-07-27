@@ -3,7 +3,7 @@ import XCTest
 
 // These tests make sure multiple instances of `Gravity` can co-exist.
 
-final class GravityMultipleInstanceTests: XCTestCase {
+final class GravityMultipleInstanceTests: GateEngineXCTestCase {
     func testMultipleInstanceSetVar() throws {
         let script = "extern var myVar; func main() {return myVar}"
         

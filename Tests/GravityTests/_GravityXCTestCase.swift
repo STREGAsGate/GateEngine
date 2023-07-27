@@ -1,8 +1,15 @@
+/*
+ * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
+
 import XCTest
 @testable import GateEngine
 @testable import Gravity
 
-extension XCTestCase {
+open class GravityXCTestCase: XCTestCase {
     func runGravity(at path: String) async {
         let gravity = Gravity()
         
@@ -25,20 +32,25 @@ extension XCTestCase {
         }
     }
     
-    static func doSetUp() async throws {
-        final class TestGameDelegate: GameDelegate {
-            func didFinishLaunching(game: Game, options: LaunchOptions) {
-                
-            }
-            func isHeadless() -> Bool {
-                return true
-            }
-            nonisolated func gameIdentifier() -> StaticString? {
-                return "com.STREGAsGate.GateEngine.tests"
-            }
+    final class TestGameDelegate: GameDelegate {
+        func didFinishLaunching(game: Game, options: LaunchOptions) {
+            
         }
-        let delegate = await TestGameDelegate()
-        Game.shared = await Game(delegate: delegate, currentPlatform: CurrentPlatform(delegate: delegate))
-        await Game.shared.delegate.didFinishLaunching(game: Game.shared, options: [])
+        func isHeadless() -> Bool {
+            return true
+        }
+        nonisolated func gameIdentifier() -> StaticString? {
+            return "com.STREGAsGate.GateEngine.tests"
+        }
+    }
+    
+    @MainActor open override func setUp() async throws {
+        if Game.shared == nil {
+            let delegate = TestGameDelegate()
+            let platform = await CurrentPlatform(delegate: delegate)
+            Game.shared = Game(delegate: delegate, currentPlatform: platform)
+            
+            await Game.shared.didFinishLaunching()
+        }
     }
 }
