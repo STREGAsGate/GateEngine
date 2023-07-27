@@ -25,7 +25,7 @@ extension XCTestCase {
         }
     }
     
-    open override func setUp() async throws {
+    static func doSetUp() async throws {
         final class TestGameDelegate: GameDelegate {
             func didFinishLaunching(game: Game, options: LaunchOptions) {
                 

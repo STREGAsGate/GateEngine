@@ -3,6 +3,11 @@ import XCTest
 
 
 final class Unittest02SemanticStep1Tests: XCTestCase {
+    override func setUp() async throws {
+        try await Self.doSetUp()
+    }
+    
+    
     func testClass1Redeclared() async {
         await runGravity(at: "unittest/02-semantic_step1/class1_redeclared.gravity")
     }

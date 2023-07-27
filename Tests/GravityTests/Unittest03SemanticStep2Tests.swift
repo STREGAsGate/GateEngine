@@ -2,6 +2,11 @@ import XCTest
 @testable import Gravity
 
 final class Unittest03SemanticStep2Tests: XCTestCase {
+    override func setUp() async throws {
+        try await Self.doSetUp()
+    }
+    
+    
     func testClass1AccessSpecifier() async {
         await runGravity(at: "unittest/03-semantic_step2/class1_access_specifier.gravity")
     }

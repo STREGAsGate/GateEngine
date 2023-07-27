@@ -3,6 +3,11 @@ import XCTest
 
 
 final class Unittest01SyntaxTests: XCTestCase {
+    override func setUp() async throws {
+        try await Self.doSetUp()
+    }
+    
+    
     func testSyntaxClassDeclaration() async {
         await runGravity(at: "unittest/01-syntax/class_declaration.gravity")
     }
