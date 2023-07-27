@@ -29,6 +29,8 @@ public final class AppKitPlatform: InternalPlatform {
                 return file.path
             }
         }
+        
+        Log.debug("Failed to locate Resource: \"\(path)\"")
         return nil
     }
     
@@ -41,7 +43,7 @@ public final class AppKitPlatform: InternalPlatform {
                 throw error
             }
         }
-        throw "failed to locate."
+        throw "Failed to load resource: \"\(path)\"."
     }
 }
 

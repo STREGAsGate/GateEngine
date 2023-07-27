@@ -41,7 +41,9 @@ public final class Win32Platform: InternalPlatform {
                 throw error
             }
         }
-        throw "failed to locate."
+        
+        Log.debug("Failed to locate Resource: \"\(path)\"")
+        throw "failed to locate \"\(path)\"."
     }
 }
 

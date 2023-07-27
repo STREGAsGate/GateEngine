@@ -49,7 +49,9 @@ public final class UIKitPlatform: Platform, InternalPlatform {
                 throw error
             }
         }
-        throw "failed to locate."
+        
+        Log.debug("Failed to load resource: \"\(path)\"")
+        throw "Failed to load resource \"\(path)\"."
     }
 }
 

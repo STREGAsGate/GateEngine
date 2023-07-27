@@ -58,7 +58,6 @@ public final class WASIPlatform: Platform, InternalPlatform {
 
     public func locateResource(from path: String) async -> String? {
         if let existing = pathCache[path] {
-            Log.info("Located Resource: \"\(path)\" at \"\(existing)\"")
             return existing
         }
         let delegatePaths = Game.shared.delegate.customResourceLocations()
@@ -75,7 +74,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
             }
         }
         
-        Log.debug("Failed to located Resource: \"\(path)\"")
+        Log.debug("Failed to locate Resource: \"\(path)\"")
         return nil
     }
     
@@ -94,7 +93,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
             }
         }
         
-        throw "failed to locate."
+        throw "failed to locate \"\(path)\"."
     }
     
     public func loadResource(from path: String) async throws -> Data {
