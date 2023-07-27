@@ -51,12 +51,12 @@ internal protocol InternalPlatform: AnyObject, Platform {
 extension InternalPlatform {
     static func getStaticSearchPaths(delegate: GameDelegate) async -> [URL] {
         #if canImport(Darwin)
-        let bundleExtension: String = "bundle"
+        let bundleExtensions: [String] = ["bundle", "xctest"]
         #else
-        let bundleExtension: String = "resources"
+        let bundleExtensions: [String] = ["resources"]
         #endif
         
-        let excludedResourceBundles = ["JavaScriptKit_JavaScriptKit.\(bundleExtension)"]
+        let excludedResourceBundles = ["JavaScriptKit_JavaScriptKit.\(bundleExtensions[0])"]
 
         let bundleURLs: Set<URL> = {
             var urls: [URL?] = [Bundle.main.bundleURL,
@@ -78,10 +78,16 @@ extension InternalPlatform {
         }
         
         // Filter out non-resource bundles
+        resourceFolders = resourceFolders.filter({
+            for bundleExtension in bundleExtensions {
+                if $0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame {
+                    return true
+                }
+            }
+            return false
+        })
         #if canImport(Darwin)
-        resourceFolders = resourceFolders.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame}).compactMap({Bundle(url: $0)?.resourceURL})
-        #else
-        resourceFolders = resourceFolders.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame})
+        .compactMap({Bundle(url: $0)?.resourceURL})
         #endif
 
         // Add the executables own path
