@@ -291,7 +291,12 @@ let package = Package(
         targets.append(contentsOf: [
             .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"]),
             .testTarget(name: "GameMathTests", dependencies: ["GameMath"]),
-            .testTarget(name: "GravityTests", dependencies: ["Gravity", "GateEngine"], resources: [.copy("Resources/unittest")]),
+            .testTarget(name: "GravityTests", dependencies: ["Gravity", "GateEngine"], resources: [
+                .copy("Resources/disabled"),
+                .copy("Resources/fuzzy"),
+                .copy("Resources/infiniteloop"),
+                .copy("Resources/unittest"),
+            ]),
         ])
         #if !os(Windows)
         targets.append(contentsOf: [
