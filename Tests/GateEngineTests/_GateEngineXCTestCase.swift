@@ -11,7 +11,7 @@ import XCTest
 
 open class GateEngineXCTestCase: XCTestCase {
     final class TestGameDelegate: GameDelegate {
-        func didFinishLaunching(game: Game, options: LaunchOptions) async {
+        func didFinishLaunching(game: Game, options: LaunchOptions) {
             
         }
         func isHeadless() -> Bool {

@@ -300,7 +300,7 @@ let package = Package(
         // MARK: - Tests
         
         targets.append(contentsOf: [
-            .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"]),
+            .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"], resources: [.copy("Resources")]),
             .testTarget(name: "GameMathTests", dependencies: ["GameMath"]),
             .testTarget(name: "GravityTests", dependencies: ["Gravity", "GateEngine"], resources: [
                 .copy("Resources/disabled"),

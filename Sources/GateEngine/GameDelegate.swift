@@ -80,7 +80,7 @@ public extension GameDelegate {
     func createUserRequestedWindow(game: Game) throws -> Window? {return nil}
     func createWindowForExternalScreen(game: Game) throws -> Window? {return nil}
     
-    func willTerminate(game: Game) async {}
+    func willTerminate(game: Game) {}
     func isHeadless() -> Bool {return false}
     func customResourceLocations() -> [URL] {return []}
 

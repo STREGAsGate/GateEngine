@@ -66,6 +66,25 @@ public class Gravity {
     }
     
     @inline(__always)
+    func appendIncludesCache(_ cache: [URL:String]) {
+        for key in cache.keys {
+            Self.storage[vm]!.fileIncludeSourceCode[key] = cache[key]
+        }
+    }
+    @inline(__always)
+    func getSourceCode(forIncludedFile url: URL) -> String? {
+        return Self.storage[vm]!.getSourceCode(forIncludedFile: url)
+    }
+    @inline(__always)
+    func hasSourceCacheForInclude(_ url: URL) -> Bool {
+        return Self.storage[vm]!.hasSourceCacheForInclude(url)
+    }
+    @inline(__always)
+    func clearFileIncludeSourceCode() {
+        Self.storage[vm]!.clearFileIncludeSourceCode()
+    }
+    
+    @inline(__always)
     func filenameForID(_ id: UInt32) -> String? {
         return Self.storage[vm]!.loadedFilesByID[id]?.lastPathComponent
     }
@@ -170,7 +189,7 @@ public class Gravity {
                     gravity_compiler_free(compiler)
                     recentError = nil
                 }
-                throw GateEngineError.scriptCompileError(String(describing: recentError))
+                throw GateEngineError.scriptCompileError("\(error)")
             }else{
                 gravity_compiler_free(compiler)
                 throw GateEngineError.scriptCompileError("Unknown error.")
@@ -343,6 +362,16 @@ extension Gravity {
             }
         }
         var sourceCodeSearchPaths: Set<URL> = []
+        var fileIncludeSourceCode: [URL:String] = [:]
+        mutating func getSourceCode(forIncludedFile url: URL) -> String? {
+            return fileIncludeSourceCode[url]
+        }
+        func hasSourceCacheForInclude(_ url: URL) -> Bool {
+            return fileIncludeSourceCode[url] != nil
+        }
+        mutating func clearFileIncludeSourceCode() {
+            fileIncludeSourceCode = [:]
+        }
         
         var userDataReferences: Set<UserDataReference> = []
         

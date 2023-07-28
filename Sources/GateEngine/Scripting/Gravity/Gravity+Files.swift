@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import struct Foundation.URL
+import Foundation
 import Gravity
 
 internal func filenameCallback(fileID: UInt32, xData: UnsafeMutableRawPointer?) -> UnsafePointer<CChar>? {
@@ -20,7 +20,7 @@ internal func filenameCallback(fileID: UInt32, xData: UnsafeMutableRawPointer?) 
     guard let cFile = file else {return nil}
     guard let gravity = unsafeBitCast(xData, to: Optional<Gravity>.self) else {return nil}
     let path = String(cString: cFile)
-    let url = URL(fileURLWithPath: path)
+    guard let url = URL(string: path) else {return nil}
     
     if gravity.loadedFilesByID.values.contains(where: {$0 == url}) {
         Log.debug("Gravity Skip File: \(gravity.filenameForID(0)!) ->", url.lastPathComponent, "(Already Loaded)")
@@ -31,29 +31,69 @@ internal func filenameCallback(fileID: UInt32, xData: UnsafeMutableRawPointer?) 
         }
     }
     
-    guard let sourceCode: String = {
-        for baseURL in gravity.sourceCodeSearchPaths {
-            let url = baseURL.appendingPathComponent(path)
-            if let data: Data = Game.sync({try? await Game.shared.platform.loadResource(from: url.path)}) {
-                return String(data: data, encoding: .utf8)
-            }
-        }
+    guard let sourceCode = gravity.getSourceCode(forIncludedFile: url) else {
         return nil
-    }() else {return nil}
-
-    size.pointee = sourceCode.count
+    }
     
     let newFileID = UInt32(gravity.loadedFilesByID.count + 1)
     fileID.pointee = newFileID
     Log.debug("Gravity Load File: \(gravity.filenameForID(0)!) ->", url.lastPathComponent)
     gravity.loadedFilesByID[newFileID] = url
-    gravity.sourceCodeSearchPaths.insert(url.deletingLastPathComponent())
+    size.pointee = sourceCode.count
     return sourceCode.withCString { sourceCode in
         return UnsafePointer(strdup(sourceCode))
     }
 }
 
 public extension Gravity {
+    @inline(__always)
+    private func fileIncludesFromSource(_ source: String) -> Set<URL> {
+        var imports = source.components(separatedBy: .newlines)
+        imports = imports.filter({$0.contains("#include")})
+        imports = imports.compactMap({
+            let trimSet = CharacterSet.whitespacesAndNewlines.union(.init(charactersIn: ";\"'"))
+            return $0.components(separatedBy: .whitespaces).last?.trimmingCharacters(in: trimSet)
+        })
+        let urls = imports.compactMap({URL(string: $0)})
+        return Set(urls)
+    }
+    
+    @inline(__always)
+    private func sourceCode(forFileIncludes includes: Set<URL>) async throws -> [URL:String] {
+        return try await withThrowingTaskGroup(of: (url: URL, sourceCode: String).self) { group in
+            for url in includes {
+                group.addTask {
+                    let data = try await Game.shared.platform.loadResource(from: url.path)
+                    guard let sourceCode = String(data: data, encoding: .utf8) else {
+                        throw GateEngineError.failedToLoad("File is corrupt or in the wrong format.")
+                    }
+                    return (url, sourceCode)
+                }
+            }
+            
+            var sources: [URL:String] = [:]
+            sources.reserveCapacity(includes.count)
+            
+            for try await result in group {
+                sources[result.url] = result.sourceCode
+            }
+            
+            return sources
+        }
+    }
+    
+    @inline(__always)
+    private func cacheIncludes(fromSource sourceCode: String) async throws {
+        let includes = self.fileIncludesFromSource(sourceCode).filter({
+            return self.hasSourceCacheForInclude($0) == false
+        })
+        let sources = try await self.sourceCode(forFileIncludes: includes)
+        self.appendIncludesCache(sources)
+        for pair in sources {
+            try await cacheIncludes(fromSource: pair.value)
+        }
+    }
+    
     /**
      Compile a gravity script.
      - parameter sourceCode: The gravity script as a `String`.
@@ -62,12 +102,17 @@ public extension Gravity {
      */
     func compile(file path: String, addDebug: Bool? = nil) async throws {
         let url = URL(fileURLWithPath: path)
+        let baseURL = url.deletingLastPathComponent()
         let data = try await Game.shared.platform.loadResource(from: path)
         guard let sourceCode = String(data: data, encoding: .utf8) else {
             throw GateEngineError.scriptCompileError("File corrupted or in the wrong format.")
         }
-        self.sourceCodeBaseURL = url.deletingLastPathComponent()
+        
+        try await cacheIncludes(fromSource: sourceCode)
+        
+        self.sourceCodeBaseURL = baseURL
         self.loadedFilesByID[0] = url
         try self.compile(source: sourceCode, addDebug: addDebug)
+        self.clearFileIncludeSourceCode()
     }
 }
