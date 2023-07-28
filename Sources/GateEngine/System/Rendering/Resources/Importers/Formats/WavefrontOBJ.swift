@@ -12,7 +12,7 @@ public class WavefrontOBJImporter: GeometryImporter {
 
     public func process(data: Data, baseURL: URL, options: GeometryImporterOptions) async throws -> RawGeometry {
         guard let obj = String(data: data, encoding: .utf8) else {
-            throw "Failed to decode as UTF8."
+            throw GateEngineError.failedToDecode("File is not UTF8 or is corrupt.")
         }
         let lines = obj.components(separatedBy: "\n").map({$0.trimmingCharacters(in: .whitespacesAndNewlines)})
         var prefix = "o "
@@ -41,7 +41,7 @@ public class WavefrontOBJImporter: GeometryImporter {
                     let comps = string.components(separatedBy: " ")
                     let floats = comps.compactMap({Float($0)})
                     guard floats.count == 3 else {
-                        throw "File malformed vertex position: \(line)"
+                        throw GateEngineError.failedToDecode("File malformed vertex position: \(line)")
                     }
                     return Position3(floats[0], floats[1], floats[2])
                 }
@@ -51,7 +51,7 @@ public class WavefrontOBJImporter: GeometryImporter {
                     let comps = string.components(separatedBy: " ")
                     let floats = comps.compactMap({Float($0)})
                     guard floats.count == 2 else {
-                        throw "File malformed vertex texture coord: \(line)"
+                        throw GateEngineError.failedToDecode("File malformed vertex texture coord: \(line)")
                     }
                     return Position2(floats[0], 1 - floats[1])
                 }
@@ -61,7 +61,7 @@ public class WavefrontOBJImporter: GeometryImporter {
                     let comps = string.components(separatedBy: " ")
                     let floats = comps.compactMap({Float($0)})
                     guard floats.count == 3 else {
-                        throw "File malformed at vertex Normal: \(line)."
+                        throw GateEngineError.failedToDecode("File malformed at vertex Normal: \(line).")
                     }
                     return Direction3(floats[0], floats[1], floats[2])
                 }
@@ -77,7 +77,7 @@ public class WavefrontOBJImporter: GeometryImporter {
                     }else if indices.count == 1 {// Just position
                         return Vertex(positions[indices[0]], .zero, .zero)
                     }else{
-                        throw "File malformed at vertex from face: \(string)."
+                        throw GateEngineError.failedToDecode("File malformed at vertex from face: \(string).")
                     }
                 }
                 func rawTriangleConvert(_ string: String) throws -> [Triangle] {
@@ -94,14 +94,14 @@ public class WavefrontOBJImporter: GeometryImporter {
                         }
                         return triangles
                     }else{
-                        throw "File malformed at face: \(string)"
+                        throw GateEngineError.failedToDecode("File malformed at face: \(string)")
                     }
                 }
                 triangles.append(contentsOf: try rawTriangleConvert(line))
             }
         }
         guard triangles.isEmpty == false else {
-            throw "No triangles to create the geometry with."
+            throw GateEngineError.failedToDecode("No triangles to create the geometry with.")
         }
 
         return RawGeometry(triangles: triangles)

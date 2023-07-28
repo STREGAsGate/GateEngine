@@ -12,25 +12,35 @@ public class ApplePlatformModelImporter: GeometryImporter {
     public required init() {}
     
     public func loadData(path: String, options: GeometryImporterOptions) async throws -> Data {
-        guard let path = await Game.shared.platform.locateResource(from: path) else {throw "Failed to locate resource."}
+        guard let path = await Game.shared.platform.locateResource(from: path) else {
+            throw GateEngineError.failedToLocate
+        }
         return path.data(using: .utf8)!
     }
     
     public func process(data: Data, baseURL: URL, options: GeometryImporterOptions) async throws -> RawGeometry {
-        guard let path = String(data: data, encoding: .utf8) else {throw "File path corrupted."}
+        guard let path = String(data: data, encoding: .utf8) else {
+            throw GateEngineError.failedToDecode("File path corrupted.")
+        }
         let asset = MDLAsset(url: URL(fileURLWithPath: path))
         
         for meshIndex in 0 ..< asset.count {
-            guard let mesh = asset.object(at: meshIndex) as? MDLMesh else {throw "Failed to decode."}
+            guard let mesh = asset.object(at: meshIndex) as? MDLMesh else {
+                throw GateEngineError.failedToDecode("mesh[\(meshIndex)] is not a MDLMesh instance.")
+            }
             if let name = options.subobjectName {
                 guard mesh.name.caseInsensitiveCompare(name) == .orderedSame else {continue}
             }
             
-            guard let submeshes = mesh.submeshes as? [MDLSubmesh] else {throw "File contains no models to decode."}
+            guard let submeshes = mesh.submeshes as? [MDLSubmesh] else {
+                throw GateEngineError.failedToDecode("mesh[\(meshIndex)] contains no submeshes.")
+            }
             
             @inline(__always)
             func positions() throws -> [Float] {
-                guard let attributeData = mesh.vertexAttributeData(forAttributeNamed: MDLVertexAttributePosition, as: .float3) else {throw "Model has no positions (required)."}
+                guard let attributeData = mesh.vertexAttributeData(forAttributeNamed: MDLVertexAttributePosition, as: .float3) else {
+                    throw GateEngineError.failedToDecode("Model has no positions.")
+                }
                 var values: [Float] = []
                 values.reserveCapacity(mesh.vertexCount * 3)
                 for index in 0 ..< mesh.vertexCount {
@@ -109,7 +119,7 @@ public class ApplePlatformModelImporter: GeometryImporter {
                     let start = indexBuffer.map().bytes
                     switch submesh.indexType {
                     case .invalid:
-                        throw "Model has corrupted indices."
+                        throw GateEngineError.failedToDecode("Model has corrupted indices.")
                     case .uInt8, .uint8:
                         let buffer = UnsafeBufferPointer(start: start.assumingMemoryBound(to: UInt8.self), count: submesh.indexCount)
                         indices.append(contentsOf: Array(buffer).map({UInt16($0)}))
@@ -120,7 +130,7 @@ public class ApplePlatformModelImporter: GeometryImporter {
                         let buffer = UnsafeBufferPointer(start: start.assumingMemoryBound(to: UInt32.self), count: submesh.indexCount)
                         indices.append(contentsOf: Array(buffer).map({UInt16($0)}))
                     @unknown default:
-                        throw "Can't pase indices. Unhandled index type."
+                        throw GateEngineError.failedToDecode("Can't parse indices. Unhandled index type.")
                     }
                 }
                 return indices
@@ -129,9 +139,9 @@ public class ApplePlatformModelImporter: GeometryImporter {
             return RawGeometry(positions: try positions(), uvSets: uvSets(), normals: normals(), tangents: tangents(), colors: colors(), indices: try indices())
         }
         if let name = options.subobjectName {
-            throw "Failed to locate model named \(name)."
+            throw GateEngineError.failedToDecode("Failed to locate model named \(name).")
         }
-        throw "Failed to locate model."
+        throw GateEngineError.failedToDecode("Failed to locate model.")
     }
     
     public static func canProcessFile(_ file: URL) -> Bool {

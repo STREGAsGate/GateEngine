@@ -44,10 +44,10 @@ public protocol TileSetImporter: AnyObject {
 extension TileSet {
     public convenience init(path: String, options: TileSetImporterOptions = .none) async throws {
         guard let fileExtension = path.components(separatedBy: ".").last else {
-            throw "Unknown file type."
+            throw GateEngineError.failedToLoad("Unknown file type.")
         }
         guard let importer: TileSetImporter = await Game.shared.resourceManager.importerForFileType(fileExtension) else {
-            throw "No importer for \(fileExtension)."
+            throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
         }
 
         do {
@@ -59,16 +59,8 @@ extension TileSet {
                       columns: copy.columns,
                       tileSize: copy.tileSize,
                       tiles: copy.tiles)
-        }catch let DecodingError.dataCorrupted(context) {
-            throw "corrupt data (\(Swift.type(of: self)): \(context))"
-        }catch let DecodingError.keyNotFound(key, context) {
-            throw "key '\(key)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
-        }catch let DecodingError.valueNotFound(value, context) {
-            throw "value '\(value)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
-        }catch let DecodingError.typeMismatch(type, context)  {
-            throw "type '\(type)' mismatch: \(context.debugDescription), codingPath: \(context.codingPath)"
-        }catch {
-            throw "\(error)"
+        }catch{
+            throw GateEngineError(decodingError: error)
         }
     }
 }

@@ -13,10 +13,16 @@ public class ApplePlatformImageImporter: TextureImporter {
     public required init() {}
     
     public func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (data: Data, size: Size2) {
-        guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil) else {throw "Failed to decode image source."}
-        guard let image = CGImageSourceCreateImageAtIndex(imageSource, 0, nil) else {throw "Failed to decode subimage zero."}
+        guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil) else {
+            throw GateEngineError.generic("Failed to decode image source.")
+        }
+        guard let image = CGImageSourceCreateImageAtIndex(imageSource, 0, nil) else {
+            throw GateEngineError.generic("Failed to decode subimage zero.")
+        }
         let size = Size2(Float(image.width), Float(image.height))
-        guard let data = image.dataProvider?.data as? Data else {throw "Failed to decode data."}
+        guard let data = image.dataProvider?.data as? Data else {
+            throw GateEngineError.generic("Failed to decode data.")
+        }
         return (data, size)
     }
 

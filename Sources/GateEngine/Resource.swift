@@ -53,9 +53,9 @@ public enum ResourceState: Equatable {
     case ready
     /** The resource had an issue becoming `ready` and will never be usable. It should be discarded.
      The provided failure reason exists for debugging and does not guaranteed the same string for the same failure. Do not compare against it.
-    - parameter reason: The rason the resource state is `failed`.
+    - parameter error: The error thrown that caused the resource state to be `failed`.
     */
-    case failed(reason: String)
+    case failed(error: GateEngineError)
 }
 
 extension Resource {

@@ -421,13 +421,13 @@ extension GLTransmissionFormat: GeometryImporter {
             }else{
                 let meshNames = gltf.meshes.map({$0.name})
                 let nodeNames = gltf.nodes.filter({$0.mesh != nil}).map({$0.name})
-                throw "Couldn't find geometry named \(name).\nAvailable mesh names: \(meshNames)\nAvaliable node names: \(nodeNames)"
+                throw GateEngineError.failedToDecode("Couldn't find geometry named \(name).\nAvailable mesh names: \(meshNames)\nAvaliable node names: \(nodeNames)")
             }
         }else{
             mesh = gltf.meshes.first
         }
         guard let mesh = mesh else {
-            throw "No geometry."
+            throw GateEngineError.failedToDecode("No geometry.")
         }
         
         var geometries: [RawGeometry] = []
@@ -491,7 +491,9 @@ extension GLTransmissionFormat: GeometryImporter {
             geometries.append(geometry)
         }
         
-        guard geometries.isEmpty == false else {throw "Failed to decode geometry."}
+        guard geometries.isEmpty == false else {
+            throw GateEngineError.failedToDecode("Failed to decode geometry.")
+        }
 
         var geometry = RawGeometry(geometries: geometries)
         if options.applyRootTransform {
@@ -544,7 +546,7 @@ extension GLTransmissionFormat: SkinImporter {
     public func process(data: Data, baseURL: URL, options: SkinImporterOptions) async throws -> Skin {
         let gltf = try gltf(from: data, baseURL: baseURL)
         guard let skins = gltf.skins, skins.isEmpty == false else {
-            throw "File contains no skins."
+            throw GateEngineError.failedToDecode("File contains no skins.")
         }
         
         var skinIndex = 0
@@ -558,19 +560,19 @@ extension GLTransmissionFormat: SkinImporter {
         
         let skin = skins[skinIndex]
         guard let inverseBindMatrices = await inverseBindMatrices(from: gltf.bufferViews[skin.inverseBindMatrices], expecting: skin.joints.count, in: gltf) else {
-            throw "Failed to parse skin."
+            throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
         
         guard let meshID = meshForSkin(skinID: skinIndex, in: gltf) else {
-            throw "Couldn't locate skin geometry."
+            throw GateEngineError.failedToDecode("Couldn't locate skin geometry.")
         }
         let mesh = gltf.meshes[meshID]
         
         guard let meshJoints: [UInt32] = await gltf.values(forAccessor: mesh.primitives[0][.joints]!) else {
-            throw "Failed to parse skin."
+            throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
         guard let meshWeights: [Float] = await gltf.values(forAccessor: mesh.primitives[0][.weights]!) else {
-            throw "Failed to parse skin."
+            throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
         
         var joints: [Skin.Joint] = []
@@ -613,7 +615,7 @@ extension GLTransmissionFormat: SkeletonImporter {
     public func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) throws -> Skeleton.Joint {
         let gltf = try gltf(from: data, baseURL: baseURL)
         guard let rootNode = skeletonNode(named: options.subobjectName, in: gltf) else {
-            throw "Couldn't find skeleton root."
+            throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
         }
         let rootJoint = Skeleton.Joint(id: rootNode, name: gltf.nodes[rootNode].name)
         rootJoint.localTransform = gltf.nodes[rootNode].transform
@@ -643,7 +645,7 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
         let gltf = try gltf(from: data, baseURL: baseURL)
         
         guard let animation = animation(named: options.subobjectName, from: gltf) else {
-            throw "Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))"
+            throw GateEngineError.failedToDecode("Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))")
         }
         var animations: [Skeleton.Joint.ID : SkeletalAnimation.JointAnimation] = [:]
         func jointAnimation(forTarget target: Skeleton.Joint.ID) -> SkeletalAnimation.JointAnimation {
@@ -656,7 +658,7 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
         }
         do {// Add bind pose
             guard let rootNode = skeletonNode(named: nil, in: gltf) else {
-                throw "Couldn't find skeleton root."
+                throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
             }
             let rootJoint = Skeleton.Joint(id: rootNode, name: gltf.nodes[rootNode].name)
             rootJoint.localTransform = gltf.nodes[rootNode].transform

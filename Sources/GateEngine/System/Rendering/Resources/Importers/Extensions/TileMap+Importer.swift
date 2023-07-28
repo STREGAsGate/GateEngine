@@ -44,26 +44,18 @@ public protocol TileMapImporter: AnyObject {
 extension TileMap {
     public convenience init(path: String, options: TileMapImporterOptions = .none) async throws {
         guard let fileExtension = path.components(separatedBy: ".").last else {
-            throw "Unknown file type."
+            throw GateEngineError.failedToLoad("Unknown file type.")
         }
         guard let importer: TileMapImporter = await Game.shared.resourceManager.importerForFileType(fileExtension) else {
-            throw "No importer for \(fileExtension)."
+            throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
         }
 
         do {
             let data = try await Game.shared.platform.loadResource(from: path)
             let copy = try await importer.process(data: data, baseURL: URL(string: path)!.deletingLastPathComponent(), options: options)
             self.init(layers: copy.layers)
-        }catch let DecodingError.dataCorrupted(context) {
-            throw "corrupt data (\(Swift.type(of: self)): \(context))"
-        }catch let DecodingError.keyNotFound(key, context) {
-            throw "key '\(key)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
-        }catch let DecodingError.valueNotFound(value, context) {
-            throw "value '\(value)' not found: \(context.debugDescription), codingPath: \(context.codingPath)"
-        }catch let DecodingError.typeMismatch(type, context)  {
-            throw "type '\(type)' mismatch: \(context.debugDescription), codingPath: \(context.codingPath)"
-        }catch {
-            throw "\(error)"
+        }catch{
+            throw GateEngineError(decodingError: error)
         }
     }
 }
