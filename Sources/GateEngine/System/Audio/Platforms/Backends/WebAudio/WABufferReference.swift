@@ -22,27 +22,17 @@ internal class WABufferReference: AudioBufferBackend {
             let platform: WASIPlatform = Game.shared.platform
             let context = (context.reference as! WAContextReference).ctx
             
-            do {
-                let audioBuffer = try await context.decodeAudioData(audioData: try await platform.loadResourceAsArrayBuffer(from: path), successCallback: { buffer in
-                    Task {@MainActor in
-                        self.audioBuffer.state = .ready
-                    }
-                }, errorCallback: { error in
-                    Log.error("Failed audio decode for", path, error)
-                    Task {@MainActor in
-#if DEBUG
-                        Log.warn("Resource \"\(path)\" failed ->", error)
-#endif
-                        self.audioBuffer.state = .failed(error: .failedToDecode("\(error)"))
-                    }
-                })
-            }catch let error as GateEngineError {
-                self.audioBuffer.state = .failed(error: error)
-            }catch{
-                fatalError("error must be a gateEngineError")
-            }
-            
-            self.buffer = audioBuffer
+            self.buffer = try await context.decodeAudioData(audioData: try await platform.loadResourceAsArrayBuffer(from: path), successCallback: { buffer in
+                Task {@MainActor in
+                    self.buffer = buffer
+                    self.audioBuffer.state = .ready
+                }
+            }, errorCallback: { error in
+                #if DEBUG
+                Log.warn("Resource \"\(path)\" failed ->", error)
+                #endif
+                self.audioBuffer.state = .failed(error: GateEngineError.failedToDecode("\(error)"))
+            })
         }
     }
 }
