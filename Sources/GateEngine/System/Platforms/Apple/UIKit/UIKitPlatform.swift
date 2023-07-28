@@ -32,26 +32,25 @@ public final class UIKitPlatform: Platform, InternalPlatform {
         let searchPaths = Game.shared.delegate.customResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
-            let path = file.path
-            if await fileSystem.itemExists(at: path) {
-                return path
+            if await fileSystem.itemExists(at: file.path) {
+                return file.path
             }
         }
+        
         return nil
     }
     
     public func loadResource(from path: String) async throws -> Data {
-        if let path = await locateResource(from: path) {
+        if let resolvedPath = await locateResource(from: path) {
             do {
-                return try await fileSystem.read(from: path)
+                return try await fileSystem.read(from: resolvedPath)
             }catch{
-                Log.error("Failed to load resource \"\(path)\".")
-                throw error
+                Log.error("Failed to load resource \"\(resolvedPath)\".", error)
+                throw GateEngineError.failedToLoad("\(error)")
             }
         }
         
-        Log.debug("Failed to load resource: \"\(path)\"")
-        throw "Failed to load resource \"\(path)\"."
+        throw GateEngineError.failedToLocate
     }
 }
 

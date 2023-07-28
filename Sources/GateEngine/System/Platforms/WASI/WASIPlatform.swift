@@ -80,7 +80,6 @@ public final class WASIPlatform: Platform, InternalPlatform {
     
     public func loadResourceAsArrayBuffer(from path: String) async throws -> ArrayBuffer {
         if let path = await locateResource(from: path) {
-            Log.debug("Loading Resource: \"\(path)\"")
             do {
                 if let object = try await fetch(path).object {
                     if let response = Response(from: object) {
@@ -88,12 +87,12 @@ public final class WASIPlatform: Platform, InternalPlatform {
                     }
                 }
             }catch{
-                Log.error("Failed to load resource \"\(path)\".")
-                throw error
+                Log.error("Failed to load resource \"\(resolvedPath)\".", error)
+                throw GateEngineError.failedToLoad("\(error)")
             }
         }
         
-        throw "failed to locate \"\(path)\"."
+        throw GateEngineError.failedToLocate
     }
     
     public func loadResource(from path: String) async throws -> Data {
