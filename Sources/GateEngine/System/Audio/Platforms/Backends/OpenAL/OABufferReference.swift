@@ -22,7 +22,9 @@ internal class OABufferReference: AudioBufferBackend {
         self.audioBuffer = audioBuffer
         Task(priority: .utility) {
             do {
-                guard let path = await Game.shared.platform.locateResource(from: path) else {throw "Failed to locate resource: \"\(path)\""}
+                guard let path = await Game.shared.platform.locateResource(from: path) else {
+                    throw GateEngineError.failedToLocate
+                }
 
                 let data = try await Game.shared.platform.loadResource(from: path)
                 #if canImport(Vorbis)
@@ -37,7 +39,7 @@ internal class OABufferReference: AudioBufferBackend {
                     self.audioBuffer.state = .ready
                     return
                 }
-                throw "Audio format not supported for resource: \"\(path)\""
+                throw GateEngineError.failedToDecode("Audio format not supported for resource: \"\(path)\"")
             }catch{
                 Log.warn("Resource \"\(path)\" failed ->", error)
                 self.audioBuffer.state = .failed(reason: error.localizedDescription)
