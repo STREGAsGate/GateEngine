@@ -143,7 +143,7 @@ public struct WASIFileSystem: FileSystem {
                 window.localStorage[destinationPath] = value
                 window.localStorage.removeValue(forKey: originPath)
             }else{
-                throw "Item \"\(originPath)\" doesn't exist."
+                throw GateEngineError.failedToLocate
             }
         }
     }
@@ -188,7 +188,7 @@ public struct WASIFileSystem: FileSystem {
                 try await stream.write(data: .bufferSource(BufferSource.arrayBuffer(Uint8Array(data).arrayBuffer)))
                 try await stream.close()
             }
-            throw "No such file or directory."
+            throw GateEngineError.failedToLocate
         }else{
             let window: DOM.Window = globalThis
             window.localStorage[url.path] = data.base64EncodedString()
@@ -204,17 +204,17 @@ public struct WASIFileSystem: FileSystem {
                 let buffer = try await file.arrayBuffer()
                 return Data(buffer)
             }
-            throw "No such file or directory."
+            throw GateEngineError.failedToLocate
         }else{
             let window: DOM.Window = globalThis
             if let base64 = window.localStorage[url.path] {
                 if let data = Data(base64Encoded: base64) {
                     return data
                 }else{
-                    throw "Data is corrupted and cannot be read."
+                    throw GateEngineError.failedToLoad("Data is corrupted and cannot be read.")
                 }
             }else{
-                throw "No such file or directory."
+                throw GateEngineError.failedToLocate
             }
         }
     }

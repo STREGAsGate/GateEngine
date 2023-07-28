@@ -79,7 +79,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
     }
     
     public func loadResourceAsArrayBuffer(from path: String) async throws -> ArrayBuffer {
-        if let path = await locateResource(from: path) {
+        if let resolvedPath = await locateResource(from: path) {
             do {
                 if let object = try await fetch(path).object {
                     if let response = Response(from: object) {
