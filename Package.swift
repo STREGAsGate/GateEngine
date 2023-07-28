@@ -89,7 +89,7 @@ let package = Package(
                             .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
                             /// The host platform requests the main window, so GateEngine won't create one until it's requested
                             .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
-                            /// The host platform can't be usaed to compile HTML5 products
+                            /// The host platform can't be used to compile HTML5 products
                             .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
                             /// The host platform updates and draws from an event callback, so GateEngine won't create a game loop.
                             .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.wasi])),
