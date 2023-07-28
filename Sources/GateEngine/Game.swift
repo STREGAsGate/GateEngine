@@ -78,9 +78,7 @@ public final class Game {
         #endif
     }
     @MainActor func willTerminate() {
-        Self.sync {
-            await self.delegate.willTerminate(game: self)
-        }
+        self.delegate.willTerminate(game: self)
     }
     
     @MainActor internal func addPlatformSystems() {

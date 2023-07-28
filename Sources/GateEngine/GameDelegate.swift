@@ -17,7 +17,7 @@ public struct LaunchOptions: OptionSet {
 
 public protocol GameDelegate: AnyObject {
     /// Called when the app finishes loading.
-    @MainActor func didFinishLaunching(game: Game, options: LaunchOptions) async
+    @MainActor func didFinishLaunching(game: Game, options: LaunchOptions)
     
     /**
      Create a customized mainWindow
@@ -38,7 +38,7 @@ public protocol GameDelegate: AnyObject {
     @MainActor func createWindowForExternalScreen(game: Game) throws -> Window?
     
     /// Might be called immediately before the app closes.
-    @MainActor func willTerminate(game: Game) async
+    @MainActor func willTerminate(game: Game)
     
     /**
      Start the game with no window and skip updating RenderingSystem(s).

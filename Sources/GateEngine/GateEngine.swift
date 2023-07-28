@@ -100,6 +100,7 @@ public enum GateEngineError: Error, Equatable, Hashable {
         }
     }
 }
+
 extension GateEngineError: ExpressibleByStringLiteral {
     public init(stringLiteral value: StringLiteralType) {
         self = .generic(value)
@@ -307,23 +308,5 @@ internal enum Log {
         #endif
         
         return Swift.fatalError(resolvedMessage, file: file, line: line)
-    }
-}
-
-internal extension Game {
-    @MainActor static func sync<Result>(_ closure: @escaping (() async -> Result)) -> Result {
-        var result: Optional<Result> = nil
-        var done = false
-        // Becuase it's going to block, make it high priority
-        Task(priority: .high) { @MainActor in
-            result = await closure()
-            done = true
-        }
-        while done != true {
-            #if !os(WASI)
-            RunLoop.current.run(until: Date())
-            #endif
-        }
-        return result!
     }
 }
