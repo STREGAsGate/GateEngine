@@ -59,7 +59,7 @@ extension String: GravityValueConvertible {
     public var gravityValue: GravityValue {GravityValue(self)}
 }
 
-extension Array: GravityValueConvertible where Element == GravityValueConvertible {
+extension Array: GravityValueConvertible where Element == any GravityValueConvertible {
     public var gravityValue: GravityValue {GravityValue(self.map({$0.gravityValue}))}
 }
 

@@ -48,9 +48,9 @@ public struct WindowOptions: OptionSet {
     }
     
     @usableFromInline
-    internal lazy var windowBacking: WindowBacking = createWindowBacking()
+    internal lazy var windowBacking: any WindowBacking = createWindowBacking()
     @usableFromInline
-    lazy var renderTargetBackend: RenderTargetBackend = windowBacking.createWindowRenderTargetBackend()
+    lazy var renderTargetBackend: any RenderTargetBackend = windowBacking.createWindowRenderTargetBackend()
     
     var drawables: [Any] = []
     public private(set) lazy var texture: Texture = Texture(renderTarget: self)
@@ -182,12 +182,12 @@ internal protocol WindowBacking: AnyObject {
     func show()
     func close()
 
-    @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend
+    @MainActor func createWindowRenderTargetBackend() -> any RenderTargetBackend
 }
 
 internal extension Window {
     @_transparent
-    func createWindowBacking() -> WindowBacking {
+    func createWindowBacking() -> any WindowBacking {
         #if canImport(UIKit)
         return UIKitWindow(window: self)
         #elseif canImport(AppKit)

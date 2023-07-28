@@ -8,7 +8,7 @@
 import struct Foundation.URL
 
 extension ResourceManager {
-    public func addGeometryImporter(_ type: GeometryImporter.Type, atEnd: Bool = false) {
+    public func addGeometryImporter(_ type: any GeometryImporter.Type, atEnd: Bool = false) {
         guard importers.geometryImporters.contains(where: {$0 == type}) == false else {return}
         if atEnd {
             importers.geometryImporters.append(type)
@@ -17,7 +17,7 @@ extension ResourceManager {
         }
     }
     
-    fileprivate func importerForFile(_ file: URL) -> GeometryImporter? {
+    fileprivate func importerForFile(_ file: URL) -> (any GeometryImporter)? {
         for type in self.importers.geometryImporters {
             if type.canProcessFile(file) {
                 return type.init()
@@ -77,7 +77,7 @@ extension RawGeometry {
     }
     public init(path: String, options: GeometryImporterOptions = .none) async throws {
         let file = URL(fileURLWithPath: path)
-        guard let importer: GeometryImporter = await Game.shared.resourceManager.importerForFile(file) else {
+        guard let importer: any GeometryImporter = await Game.shared.resourceManager.importerForFile(file) else {
             throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
         }
         

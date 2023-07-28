@@ -300,7 +300,7 @@ public extension GamePad {
 }
 
 @MainActor public class GamePad {
-    internal let interpreter: GamePadInterpreter
+    internal let interpreter: any GamePadInterpreter
     internal var identifier: Any? = nil
     
     public internal(set) var state: State = .connected
@@ -318,7 +318,7 @@ public extension GamePad {
         }
     }
     
-    internal init(interpreter: GamePadInterpreter, identifier: Any?) {
+    internal init(interpreter: any GamePadInterpreter, identifier: Any?) {
         self.interpreter = interpreter
         self.identifier = identifier
         self.interpreter.setupGamePad(self)

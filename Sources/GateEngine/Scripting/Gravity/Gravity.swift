@@ -170,10 +170,10 @@ public class Gravity {
                     gravity_compiler_free(compiler)
                     recentError = nil
                 }
-                throw error
+                throw GateEngineError.scriptCompileError(String(describing: recentError))
             }else{
                 gravity_compiler_free(compiler)
-                throw "Failed to compile."
+                throw GateEngineError.scriptCompileError("Unknown error.")
             }
         }
         sourceCodeBaseURL = nil
@@ -182,7 +182,9 @@ public class Gravity {
     /// Runs the  `func main()` of the gravity script.
     @discardableResult
     public func runMain() throws -> GravityValue {
-        guard let mainClosure = mainClosure else {throw "No main closure found. Did you forget to compile?"}
+        guard let mainClosure = mainClosure else {
+            throw GateEngineError.scriptExecutionError("No main closure found. Did you forget to compile?")
+        }
         self.didRunMain = true
         gravity_vm_runmain(vm, mainClosure)
         if let error = recentError {throw error}
@@ -445,13 +447,17 @@ extension Gravity: GravityGetFuncExtended {
     
     @discardableResult @inline(__always)
     public func runFunc(_ name: String, withArguments args: [GravityValue]) throws -> GravityValue {
-        guard let closure = getFunc(name) else {throw "Gravity: Failed to get closure \(name)."}
+        guard let closure = getFunc(name) else {
+            throw GateEngineError.scriptExecutionError("Failed to get closure \(name).")
+        }
         return try closure.run(withArguments: args.map({$0.gValue}))
     }
     
     @discardableResult @inline(__always)
     public func runFunc(_ name: String, withArguments args: GravityValue...) throws -> GravityValue {
-        guard let closure = getFunc(name) else {throw "Gravity: Failed to get closure \(name)."}
+        guard let closure = getFunc(name) else {
+            throw GateEngineError.scriptExecutionError("Failed to get closure \(name).")
+        }
         return try closure.run(withArguments: args.map({$0.gValue}))
     }
 }

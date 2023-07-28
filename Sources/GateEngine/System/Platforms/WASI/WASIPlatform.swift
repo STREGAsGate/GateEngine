@@ -357,7 +357,9 @@ fileprivate final class WASIUserActivationRenderingSystem: RenderingSystem {
     override func teardown(game: Game) {
         game.windowManager.mainWindow?.clearColor = .black
         game.addPlatformSystems()
-        game.delegate.didFinishLaunching(game: game, options: [])
+        Task {
+            await game.delegate.didFinishLaunching(game: game, options: [])
+        }
     }
 }
 

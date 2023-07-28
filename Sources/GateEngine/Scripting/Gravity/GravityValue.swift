@@ -320,7 +320,7 @@ extension GravityValue {
 // MARK: - Closure
 extension GravityValue {
     @inline(__always)
-    public func getClosure(gravity: Gravity, sender: GravityValueConvertible?) -> GravityClosure? {
+    public func getClosure(gravity: Gravity, sender: (any GravityValueConvertible)?) -> GravityClosure? {
         guard valueType == .closure else {
             assert(valueType == .null, "Gravity: Expected \"closure\" but found \"\(valueType)\". Check your spelling.")
             return nil

@@ -13,7 +13,7 @@ public final class AppKitPlatform: InternalPlatform {
     public static let fileSystem: AppleFileSystem = AppleFileSystem()
     let staticResourceLocations: [URL]
     
-    init(delegate: GameDelegate) async {
+    init(delegate: any GameDelegate) async {
         self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
     }
     

@@ -11,9 +11,9 @@ import GameMath
 
 final class MetalTexture: TextureBackend {
     private let renderTarget: MetalRenderTarget?
-    private let _mtlTexture: MTLTexture?
+    private let _mtlTexture: (any MTLTexture)?
     
-    var mtlTexture: MTLTexture {
+    var mtlTexture: any MTLTexture {
         if let _mtlTexture {
             return _mtlTexture
         }
@@ -24,7 +24,7 @@ final class MetalTexture: TextureBackend {
         return Size2(Float(mtlTexture.width), Float(mtlTexture.height))
     }
     
-    required init(renderTargetBackend: RenderTargetBackend) {
+    required init(renderTargetBackend: any RenderTargetBackend) {
         renderTarget = (renderTargetBackend as! MetalRenderTarget)
         _mtlTexture = nil
     }

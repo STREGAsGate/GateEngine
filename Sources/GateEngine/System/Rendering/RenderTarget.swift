@@ -18,7 +18,7 @@ import GameMath
 @MainActor protocol _RenderTargetProtocol: RenderTargetProtocol {
     var lastDrawnFrame: UInt {get set}
     var texture: Texture {get}
-    var renderTargetBackend: RenderTargetBackend {get set}
+    var renderTargetBackend: any RenderTargetBackend {get set}
     var drawables: [Any] {get set}
     var size: Size2 {get set}
     
@@ -81,7 +81,7 @@ extension _RenderTargetProtocol {
 
 @MainActor public final class RenderTarget: RenderTargetProtocol, _RenderTargetProtocol {
     @usableFromInline
-    var renderTargetBackend: RenderTargetBackend
+    var renderTargetBackend: any RenderTargetBackend
     var drawables: [Any] = []
     var previousSize: Size2? = nil
     var lastDrawnFrame: UInt = .max
@@ -111,7 +111,7 @@ extension _RenderTargetProtocol {
         self.clearColor = .black
     }
     
-    internal init(backend: RenderTargetBackend) {
+    internal init(backend: any RenderTargetBackend) {
         self.renderTargetBackend = backend
     }
     
@@ -267,7 +267,7 @@ extension RenderTargetBackend {
 }
 
 @_transparent
-@MainActor func getRenderTargetBackend() -> RenderTargetBackend {
+@MainActor func getRenderTargetBackend() -> any RenderTargetBackend {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
     return OpenGLRenderTarget(windowBacking: nil)
 #elseif canImport(MetalKit)

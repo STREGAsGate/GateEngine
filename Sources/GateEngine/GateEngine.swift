@@ -65,6 +65,9 @@ public enum GateEngineError: Error, Equatable, Hashable {
     case failedToLoad(_ reason: String)
     case failedToDecode(_ reason: String)
 
+    case scriptCompileError(_ reason: String)
+    case scriptExecutionError(_ reason: String)
+    
     case generic(_ description: String)
     
     case failedToCreateWindow(_ reason: String)

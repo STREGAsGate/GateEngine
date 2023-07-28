@@ -23,7 +23,7 @@ internal protocol SpatialAudioSourceReference: AnyObject {
 public class SpatialAudioSource {
     internal unowned let mixer: SpatialAudioMixer
     @usableFromInline
-    internal let reference: SpatialAudioSourceReference
+    internal let reference: any SpatialAudioSourceReference
     
     @usableFromInline
     internal init(_ mixer: SpatialAudioMixer) {

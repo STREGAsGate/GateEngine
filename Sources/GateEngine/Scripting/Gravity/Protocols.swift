@@ -82,7 +82,7 @@ public protocol GravityGetVarExtendedVMReferencing: GravityGetVarExtended, Gravi
 extension GravityGetVarExtendedVMReferencing {
     @inline(__always)
     public func getVar(_ key: String) -> GravityClosure? {
-        return getVar(key)?.getClosure(gravity: _gravity, sender: self as? GravityValueConvertible)
+        return getVar(key)?.getClosure(gravity: _gravity, sender: self as? any GravityValueConvertible)
     }
     
     @inlinable

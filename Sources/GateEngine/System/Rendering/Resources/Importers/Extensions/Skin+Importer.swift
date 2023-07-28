@@ -6,12 +6,12 @@
  */
 
 extension ResourceManager {
-    public func addSkinImporter(_ type: SkinImporter.Type) {
+    public func addSkinImporter(_ type: any SkinImporter.Type) {
         guard importers.skinImporters.contains(where: {$0 == type}) == false else {return}
         importers.skinImporters.insert(type, at: 0)
     }
     
-    fileprivate func importerForFile(_ file: URL) -> SkinImporter? {
+    fileprivate func importerForFile(_ file: URL) -> (any SkinImporter)? {
         for type in self.importers.skinImporters {
             if type.canProcessFile(file) {
                 return type.init()
@@ -51,7 +51,7 @@ public extension SkinImporter {
 extension Skin {
     public init(path: String, options: SkinImporterOptions = .none) async throws {
         let file = URL(fileURLWithPath: path)
-        guard let importer: SkinImporter = await Game.shared.resourceManager.importerForFile(file) else {
+        guard let importer: any SkinImporter = await Game.shared.resourceManager.importerForFile(file) else {
             throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
         }
         

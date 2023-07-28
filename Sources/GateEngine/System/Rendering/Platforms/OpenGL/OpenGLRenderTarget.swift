@@ -29,7 +29,7 @@ class OpenGLRenderTarget: RenderTargetBackend {
     }
     
     var windowRenderTarget: RenderTarget? = nil
-    init(windowBacking: WindowBacking?) {
+    init(windowBacking: (any WindowBacking)?) {
         self.framebuffer = glGenFramebuffers(count: 1)[0]
         let textures = glGenTextures(count: 2)
         self.colorTexture = textures[0]

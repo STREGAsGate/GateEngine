@@ -6,12 +6,12 @@
  */
 
 extension ResourceManager {
-    public func addSkeletonImporter(_ type: SkeletonImporter.Type) {
+    public func addSkeletonImporter(_ type: any SkeletonImporter.Type) {
         guard importers.skeletonImporters.contains(where: {$0 == type}) == false else {return}
         importers.skeletonImporters.insert(type, at: 0)
     }
     
-    internal func importerForFile(_ file: URL) -> SkeletonImporter? {
+    internal func importerForFile(_ file: URL) -> (any SkeletonImporter)? {
         for type in self.importers.skeletonImporters {
             if type.canProcessFile(file) {
                 return type.init()

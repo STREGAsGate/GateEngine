@@ -167,7 +167,7 @@ class OpenGLRenderer: RendererBackend {
     final class OpenGLSizeOnlyRenderTarget: _RenderTargetProtocol {
         var lastDrawnFrame: UInt = .max
         var texture: Texture {get {fatalError()}set{}}
-        var renderTargetBackend: RenderTargetBackend {get{fatalError()}set{}}
+        var renderTargetBackend: any RenderTargetBackend {get{fatalError()}set{}}
         var drawables: [Any] {get{fatalError()}set{}}
         func reshapeIfNeeded() {}
         var size: Size2 = .zero

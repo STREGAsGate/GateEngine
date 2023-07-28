@@ -226,7 +226,7 @@ final class AppKitWindow: WindowBacking {
         self.state = .destroyed
     }
 
-    @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
+    @MainActor func createWindowRenderTargetBackend() -> any RenderTargetBackend {
         #if GATEENGINE_FORCE_OPNEGL_APPLE
             return OpenGLRenderTarget(windowBacking: self)
         #else

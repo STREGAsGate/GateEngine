@@ -14,7 +14,7 @@ When this object deinitializes it's contents will also be removed from GPU memor
     internal let cacheKey: ResourceManager.Cache.GeometryKey
     
     @usableFromInline
-    internal var backend: GeometryBackend? {
+    internal var backend: (any GeometryBackend)? {
         return Game.shared.resourceManager.geometryCache(for: cacheKey)?.geometryBackend
     }
     

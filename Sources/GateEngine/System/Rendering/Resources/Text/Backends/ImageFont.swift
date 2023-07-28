@@ -6,7 +6,7 @@
  */
 
 struct ImageFont: FontBackend {
-    private let fontData: [Font.Style:(data: Data, size: Size2?, importer: TextureImporter.Type)]
+    private let fontData: [Font.Style:(data: Data, size: Size2?, importer: any TextureImporter.Type)]
     internal var nativePointSizes: [Font.Style:UInt] = [:]
     internal var textures: [Font.Style:Texture] = [:]
     internal var characterXAdvances: [Font.Style:[Float]] = [:]
@@ -19,7 +19,7 @@ struct ImageFont: FontBackend {
         }
         let regular = try await importer.loadData(path: regular, options: .none)
         
-        let fontData: [Font.Style:(data: Data, size: Size2?, importer: TextureImporter.Type)] = [.regular : (regular.data, regular.size, type(of: importer))]
+        let fontData: [Font.Style:(data: Data, size: Size2?, importer: any TextureImporter.Type)] = [.regular : (regular.data, regular.size, type(of: importer))]
 //        fontData[.bold] = bold
 //        fontData[.italic] = italic
 //        fontData[.boldItalic] = boldItalic

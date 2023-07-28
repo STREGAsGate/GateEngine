@@ -107,13 +107,17 @@ extension GravityInstance: GravityGetFuncExtended {
     
     @discardableResult @inline(__always)
     public func runFunc(_ name: String, withArguments args: [GravityValue]) throws -> GravityValue {
-        guard let closure = getFunc(name) else {throw "Gravity: Failed to get closure \(name)."}
+        guard let closure = getFunc(name) else {
+            throw GateEngineError.scriptExecutionError("Failed to get closure \(name).")
+        }
         return try closure.run(withArguments: args.map({$0.gValue}))
     }
     
     @discardableResult @inline(__always)
     public func runFunc(_ name: String, withArguments args: GravityValue...) throws -> GravityValue {
-        guard let closure = getFunc(name) else {throw "Gravity: Failed to get closure \(name)."}
+        guard let closure = getFunc(name) else {
+            throw GateEngineError.scriptExecutionError("Failed to get closure \(name).")
+        }
         return try closure.run(withArguments: args.map({$0.gValue}))
     }
 }

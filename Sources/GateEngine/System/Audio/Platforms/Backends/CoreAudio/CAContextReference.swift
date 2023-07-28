@@ -28,11 +28,11 @@ internal class CAContextReference: AudioContextBackend {
     }
     
     @inlinable
-    func createSpacialMixerReference() -> SpacialAudioMixerReference {
+    func createSpacialMixerReference() -> any SpacialAudioMixerReference {
         return CASpacialMixerReference(self)
     }
     @inlinable
-    func createAudioMixerReference() -> AudioMixerReference {
+    func createAudioMixerReference() -> any AudioMixerReference {
         return CAAudioMixerReference(self)
     }
     

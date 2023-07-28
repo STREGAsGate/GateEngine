@@ -17,7 +17,7 @@ internal protocol AudioTrackReference: AnyObject {
 
 public class AudioTrack {
     internal unowned let mixer: AudioMixer
-    internal let reference: AudioTrackReference
+    internal let reference: any AudioTrackReference
     
     internal init(_ mixer: AudioMixer) {
         self.mixer = mixer

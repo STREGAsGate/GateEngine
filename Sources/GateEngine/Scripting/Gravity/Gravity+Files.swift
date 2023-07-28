@@ -63,7 +63,9 @@ public extension Gravity {
     func compile(file path: String, addDebug: Bool? = nil) async throws {
         let url = URL(fileURLWithPath: path)
         let data = try await Game.shared.platform.loadResource(from: path)
-        guard let sourceCode = String(data: data, encoding: .utf8) else {throw "File corrupted or in the wrong format."}
+        guard let sourceCode = String(data: data, encoding: .utf8) else {
+            throw GateEngineError.scriptCompileError("File corrupted or in the wrong format.")
+        }
         self.sourceCodeBaseURL = url.deletingLastPathComponent()
         self.loadedFilesByID[0] = url
         try self.compile(source: sourceCode, addDebug: addDebug)

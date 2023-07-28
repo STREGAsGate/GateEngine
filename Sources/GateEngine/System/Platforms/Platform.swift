@@ -41,15 +41,15 @@ internal protocol InternalPlatform: AnyObject, Platform {
     #endif
     
     #if GATEENGINE_ASYNCLOAD_CURRENTPLATFORM
-    init(delegate: GameDelegate) async
+    init(delegate: any GameDelegate) async
     #else
-    init(delegate: GameDelegate)
+    init(delegate: any GameDelegate)
     #endif
 }
 
 #if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 extension InternalPlatform {
-    static func getStaticSearchPaths(delegate: GameDelegate) async -> [URL] {
+    static func getStaticSearchPaths(delegate: any GameDelegate) async -> [URL] {
         #if canImport(Darwin)
         let bundleExtension: String = "bundle"
         #else

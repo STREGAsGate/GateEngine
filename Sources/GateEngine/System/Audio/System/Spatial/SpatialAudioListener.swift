@@ -13,7 +13,7 @@ internal protocol SpatialAudioListenerBackend {
 
 public struct SpatialAudioListener {
     internal unowned let mixer: SpatialAudioMixer
-    internal let reference: SpatialAudioListenerBackend
+    internal let reference: any SpatialAudioListenerBackend
     
     init(_ mixer: SpatialAudioMixer) {
         self.mixer = mixer

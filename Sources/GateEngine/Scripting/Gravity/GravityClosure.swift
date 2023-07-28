@@ -12,7 +12,7 @@ public class GravityClosure: GravityValueEmitting, GravityClosureEmitting {
     public let gClosure: UnsafeMutablePointer<gravity_closure_t>!
     let sender: GravityValue?
 
-    internal init(gravity: Gravity, closure: UnsafeMutablePointer<gravity_closure_t>, sender: GravityValueConvertible?) {
+    internal init(gravity: Gravity, closure: UnsafeMutablePointer<gravity_closure_t>, sender: (any GravityValueConvertible)?) {
         self.gravity = gravity
         self.gClosure = closure
         self.sender = sender?.gravityValue
@@ -26,7 +26,7 @@ public class GravityClosure: GravityValueEmitting, GravityClosureEmitting {
     }
     
     @discardableResult @usableFromInline
-    internal func run(withArguments args: [gravity_value_t], sender: GravityValueConvertible? = nil) throws -> GravityValue {
+    internal func run(withArguments args: [gravity_value_t], sender: (any GravityValueConvertible)? = nil) throws -> GravityValue {
         var args = args
         gravity_vm_runclosure(gravity.vm, gClosure, sender?.gravityValue.gValue ?? gravity_value_from_null(), &args, UInt16(args.count))
 
@@ -41,12 +41,12 @@ public class GravityClosure: GravityValueEmitting, GravityClosureEmitting {
     }
     
     @discardableResult @inlinable
-    public func run(withArguments args: [GravityValueConvertible]) throws -> GravityValue {
+    public func run(withArguments args: [any GravityValueConvertible]) throws -> GravityValue {
         return try run(withArguments: args.map({$0.gravityValue.gValue}))
     }
     
     @discardableResult @inlinable
-    public func run(withArguments args: GravityValueConvertible...) throws -> GravityValue {
+    public func run(withArguments args: any GravityValueConvertible...) throws -> GravityValue {
         return try run(withArguments: args.map({$0.gravityValue.gValue}))
     }
 }

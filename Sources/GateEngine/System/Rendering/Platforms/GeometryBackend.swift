@@ -16,7 +16,7 @@ import Shaders
     init(lines: RawLines)
     init(points: RawPoints)
 #if GATEENGINE_DEBUG_RENDERING || DEBUG
-    nonisolated func isDrawCommandValid(sharedWith backend: GeometryBackend) -> Bool
+    nonisolated func isDrawCommandValid(sharedWith backend: any GeometryBackend) -> Bool
 #endif
 }
 

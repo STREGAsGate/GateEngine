@@ -17,7 +17,7 @@ public enum RenderingAPI {
 }
 
 @MainActor public final class Renderer {
-    let _backend: RendererBackend = getDefaultBackend()
+    let _backend: any RendererBackend = getDefaultBackend()
     @inline(__always)
     nonisolated public var api: RenderingAPI {_backend.renderingAPI}
     
@@ -112,7 +112,7 @@ public enum RenderingAPI {
 }
 
 @_transparent
-@MainActor fileprivate func getDefaultBackend() -> RendererBackend {
+@MainActor fileprivate func getDefaultBackend() -> any RendererBackend {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
     return OpenGLRenderer()
 #elseif canImport(MetalKit)

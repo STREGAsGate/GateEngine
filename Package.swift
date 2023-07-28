@@ -103,6 +103,17 @@ let package = Package(
                             .define("GATEENGINE_ASYNCLOAD_CURRENTPLATFORM", .when(platforms: .any(except: .wasi))),
                         ])
                         
+                        // Upcoming Swift 6 Language Features
+                        // https://www.swift.org/swift-evolution/#?upcoming=true
+                        settings.append(contentsOf: [
+                            .unsafeFlags(["-enable-upcoming-feature", "DisableOutwardActorInference"]),
+                            .unsafeFlags(["-enable-upcoming-feature", "ImportObjcForwardDeclarations"]),
+                            .unsafeFlags(["-enable-upcoming-feature", "BareSlashRegexLiterals"]),
+                            .unsafeFlags(["-enable-upcoming-feature", "ExistentialAny"]),
+                            .unsafeFlags(["-enable-upcoming-feature", "ForwardTrailingClosures"]),
+                            .unsafeFlags(["-enable-upcoming-feature", "ConciseMagicFile"]),
+                        ])
+                        
                         #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         

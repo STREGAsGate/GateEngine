@@ -11,7 +11,7 @@ internal protocol AudioBufferBackend: AnyObject {
 }
 
 public class AudioBuffer: OldResource {
-    internal var reference: AudioBufferBackend! = nil
+    internal var reference: (any AudioBufferBackend)! = nil
     
     internal init(path: String, context: AudioContext) {
         super.init()
@@ -98,7 +98,7 @@ public class AudioBuffer: OldResource {
 }
 
 @_transparent
-fileprivate func getBackend(path: String, context: AudioContext, audioBuffer: AudioBuffer) -> AudioBufferBackend {
+fileprivate func getBackend(path: String, context: AudioContext, audioBuffer: AudioBuffer) -> any AudioBufferBackend {
     #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
     return CABufferReference(path: path, context: context, audioBuffer: audioBuffer)
     #elseif os(WASI)
