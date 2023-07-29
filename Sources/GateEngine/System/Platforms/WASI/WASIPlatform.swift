@@ -20,7 +20,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
         self.staticResourceLocations = Self.staticResourceLocations(delegate: delegate)
     }
     
-    static func staticResourceLocations(delegate: GameDelegate) -> [Foundation.URL] {
+    static func staticResourceLocations(delegate: any GameDelegate) -> [Foundation.URL] {
         func getGameModuleName(_ delegate: AnyObject) -> String {
             let ref = String(reflecting: type(of: delegate))
             return String(ref.split(separator: ".")[0])
