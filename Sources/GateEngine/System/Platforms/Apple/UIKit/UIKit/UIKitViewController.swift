@@ -781,7 +781,7 @@ extension UIKitViewController: UIPointerInteractionDelegate {
     }
     
     // Called when the pointer enters a given region.
-    func pointerInteraction(_ interaction: UIPointerInteraction, willEnter region: UIPointerRegion, animator: UIPointerInteractionAnimating) {
+    func pointerInteraction(_ interaction: UIPointerInteraction, willEnter region: UIPointerRegion, animator: any UIPointerInteractionAnimating) {
         Game.shared.hid.mouseChange(event: .entered,
                                     position: .zero,
                                     delta: .zero,
@@ -789,7 +789,7 @@ extension UIKitViewController: UIPointerInteractionDelegate {
     }
 
     // Called when the pointer exists a given region.
-    func pointerInteraction(_ interaction: UIPointerInteraction, willExit region: UIPointerRegion, animator: UIPointerInteractionAnimating) {
+    func pointerInteraction(_ interaction: UIPointerInteraction, willExit region: UIPointerRegion, animator: any UIPointerInteractionAnimating) {
         Game.shared.hid.mouseChange(event: .exited,
                                     position: .zero,
                                     delta: .zero,
