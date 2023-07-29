@@ -107,7 +107,7 @@ final class WASIWindow: WindowBacking {
         // not possible in HTML5
     }
 
-    @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
+    @MainActor func createWindowRenderTargetBackend() -> any RenderTargetBackend {
         return WebGL2RenderTarget(isWindow: true)
     }
     

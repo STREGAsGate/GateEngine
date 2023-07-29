@@ -100,7 +100,7 @@ final class UIKitWindow: WindowBacking {
         
     }
 
-    @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
+    @MainActor func createWindowRenderTargetBackend() -> any RenderTargetBackend {
         #if GATEENGINE_FORCE_OPNEGL_APPLE
             return OpenGLRenderTarget(windowBacking: self)
         #else

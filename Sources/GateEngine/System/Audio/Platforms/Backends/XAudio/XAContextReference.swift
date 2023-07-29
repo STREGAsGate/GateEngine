@@ -15,10 +15,10 @@ internal class XAContextReference: AudioContextBackend {
 
     }
     
-    func createSpacialMixerReference() -> SpacialAudioMixerReference {
+    func createSpacialMixerReference() -> any SpacialAudioMixerReference {
         return XASpacialMixerReference(self)
     }
-    func createAudioMixerReference() -> AudioMixerReference {
+    func createAudioMixerReference() -> any AudioMixerReference {
         return XAAudioMixerReference(self)
     }
     

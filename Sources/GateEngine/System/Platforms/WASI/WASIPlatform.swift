@@ -16,7 +16,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
     var staticResourceLocations: [URL]
     var pathCache: [String:String] = [:]
     
-    init(delegate: GameDelegate) {
+    init(delegate: any GameDelegate) {
         self.staticResourceLocations = Self.staticResourceLocations(delegate: delegate)
     }
     

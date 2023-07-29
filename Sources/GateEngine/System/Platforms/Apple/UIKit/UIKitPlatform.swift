@@ -13,7 +13,7 @@ public final class UIKitPlatform: Platform, InternalPlatform {
     public static let fileSystem: AppleFileSystem = AppleFileSystem()
     public let staticResourceLocations: [URL]
     
-    init(delegate: GameDelegate) {
+    init(delegate: any GameDelegate) {
         self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
     }
     

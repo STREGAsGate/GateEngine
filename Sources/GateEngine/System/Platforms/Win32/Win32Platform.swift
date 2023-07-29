@@ -12,7 +12,7 @@ public final class Win32Platform: InternalPlatform {
     public static let fileSystem: Win32FileSystem = Win32FileSystem()
     var staticResourceLocations: [URL]
     
-    init(delegate: GameDelegate) {
+    init(delegate: any GameDelegate) {
         self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
     }
 

@@ -25,7 +25,7 @@ internal class XAAudioMixerReference: AudioMixerReference {
         }
     }
     
-    func createAudioTrackReference() -> AudioTrackReference {
+    func createAudioTrackReference() -> any AudioTrackReference {
         return XAAudioTrackReference(self)
     }
 }

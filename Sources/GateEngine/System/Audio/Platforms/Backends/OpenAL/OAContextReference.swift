@@ -18,11 +18,11 @@ internal class OAContextReference: AudioContextBackend {
         self.device = OpenALDevice()
     }
     
-    func createSpacialMixerReference() -> SpacialAudioMixerReference {
+    func createSpacialMixerReference() -> any SpacialAudioMixerReference {
         return OASpacialMixerReference(self)
     }
     
-    func createAudioMixerReference() -> AudioMixerReference {
+    func createAudioMixerReference() -> any AudioMixerReference {
         return OAAudioMixerReference(self)
     }
     

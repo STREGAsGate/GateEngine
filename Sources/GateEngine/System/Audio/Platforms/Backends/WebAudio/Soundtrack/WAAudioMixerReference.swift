@@ -32,7 +32,7 @@ internal class WAAudioMixerReference: AudioMixerReference {
     }
     
     @inlinable
-    func createAudioTrackReference() -> AudioTrackReference {
+    func createAudioTrackReference() -> any AudioTrackReference {
         return WAAudioTrackReference(self)
     }
 }

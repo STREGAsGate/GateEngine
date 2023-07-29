@@ -42,11 +42,11 @@ internal class WASpacialMixerReference: SpacialAudioMixerReference {
     }
     
     @inlinable
-    func createListenerReference() -> SpatialAudioListenerBackend {
+    func createListenerReference() -> any SpatialAudioListenerBackend {
         return WAListenerReference(self)
     }
     @inlinable
-    func createSourceReference() -> SpatialAudioSourceReference {
+    func createSourceReference() -> any SpatialAudioSourceReference {
         return WASourceReference(self)
     }
 }

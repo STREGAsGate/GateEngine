@@ -30,7 +30,7 @@ internal class OAAudioMixerReference: AudioMixerReference {
         }
     }
     
-    func createAudioTrackReference() -> AudioTrackReference {
+    func createAudioTrackReference() -> any AudioTrackReference {
         return OAAudioTrackReference(self)
     }
 }

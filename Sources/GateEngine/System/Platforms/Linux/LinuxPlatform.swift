@@ -12,7 +12,7 @@ public final class LinuxPlatform: Platform, InternalPlatform {
     public static let fileSystem: LinuxFileSystem = LinuxFileSystem()
     let staticResourceLocations: [URL]
     
-    init(delegate: GameDelegate) {
+    init(delegate: any GameDelegate) {
         self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
     }
 
