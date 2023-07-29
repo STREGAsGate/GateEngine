@@ -2,7 +2,6 @@ import XCTest
 @testable import GateEngine
 
 // These tests make sure multiple instances of `Gravity` can co-exist.
-
 final class GravityIncludesTests: GateEngineXCTestCase {
     func testIncludes() async throws {
         let gravity = Gravity()

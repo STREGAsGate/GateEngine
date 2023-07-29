@@ -161,9 +161,7 @@ extension Mouse {
     func mouseChange(event: ChangeEvent, position: Position2, delta: Position2, window: Window?) {
         switch event {
         case .entered, .moved:
-            if abs(delta.min) < 500 && abs(delta.max) < 500 {
-                self._nextDeltaPosition += delta
-            }
+            self._nextDeltaPosition += delta
             self._position = position
             self._window = window
         case .exited:

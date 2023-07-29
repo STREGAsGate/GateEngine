@@ -1,7 +1,6 @@
 import XCTest
 @testable import GateEngine
 
-
 final class GravityExtendingTests: GateEngineXCTestCase {
     var gravity: Gravity! = nil
     var randomValue: Int = 0
