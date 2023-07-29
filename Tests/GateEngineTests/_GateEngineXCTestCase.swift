@@ -22,16 +22,22 @@ open class GateEngineXCTestCase: XCTestCase {
         }
         
         nonisolated func customResourceLocations() -> [String] {
-            #if hasFeature(ConciseMagicFile)
-            let module = #file.components(separatedBy: "/")[0]
-            #else
-            let module = "\(type(of: Self.self))".components(separatedBy: ".")[0]
-            #endif
-            
+            func moduleName() -> String {
+                #if swift(>=6)
+                return #file.components(separatedBy: "/")[0]
+                #else
+                class ModuleLocator {
+                    
+                }
+                let ref = String(reflecting: type(of: ModuleLocator()))
+                return String(ref.split(separator: ".")[0])
+                #endif
+            }
+
             #if canImport(Darwin)
-            return ["Contents/Resources/GateEngine_\(module).bundle"]
+            return ["GateEngine_\(moduleName()).bundle"]
             #else
-            return ["GateEngine_\(module).resources"]
+            return ["GateEngine_\(moduleName()).resources"]
             #endif
         }
     }

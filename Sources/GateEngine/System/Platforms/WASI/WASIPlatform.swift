@@ -50,7 +50,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
                     // Already root
                     return "\n    \"[WebDir]/\","
                 }
-                return "\"[WebDir]/" + path + "/\","
+                return "\n    \"[WebDir]/" + path + "/\","
             }).joined(), "\n    ")
         }
         return files

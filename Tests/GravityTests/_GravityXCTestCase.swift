@@ -17,7 +17,7 @@ open class GravityXCTestCase: XCTestCase {
             try await gravity.compile(file: path)
             let result = try gravity.runMain().gValue
             XCTAssertTrue(gravity_value_equals(Gravity.unitTestExpected!.value, result))
-        }catch let GateEngineError.scriptCompileError(gravityError) {
+        }catch GateEngineError.scriptCompileError(_) {
             let error = gravity.unitTestError!
             let expected = Gravity.unitTestExpected!
             if expected.row > -1 {// -1 means don't compare value
@@ -43,6 +43,26 @@ open class GravityXCTestCase: XCTestCase {
         }
         nonisolated func gameIdentifier() -> StaticString? {
             return "com.STREGAsGate.GateEngine.tests"
+        }
+        
+        nonisolated func customResourceLocations() -> [String] {
+            func moduleName() -> String {
+                #if swift(>=6)
+                return #file.components(separatedBy: "/")[0]
+                #else
+                class ModuleLocator {
+                    
+                }
+                let ref = String(reflecting: type(of: ModuleLocator()))
+                return String(ref.split(separator: ".")[0])
+                #endif
+            }
+
+            #if canImport(Darwin)
+            return ["GateEngine_\(moduleName()).bundle"]
+            #else
+            return ["GateEngine_\(moduleName()).resources"]
+            #endif
         }
     }
     
