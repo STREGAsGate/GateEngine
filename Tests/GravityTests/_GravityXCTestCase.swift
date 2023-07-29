@@ -17,7 +17,8 @@ open class GravityXCTestCase: XCTestCase {
             try await gravity.compile(file: path)
             let result = try gravity.runMain().gValue
             XCTAssertTrue(gravity_value_equals(Gravity.unitTestExpected!.value, result))
-        }catch let error as Gravity.Error {
+        }catch let GateEngineError.scriptCompileError(gravityError) {
+            let error = gravity.unitTestError!
             let expected = Gravity.unitTestExpected!
             if expected.row > -1 {// -1 means don't compare value
                 XCTAssertEqual(expected.row, error.row)
@@ -28,7 +29,8 @@ open class GravityXCTestCase: XCTestCase {
             XCTAssertEqual(expected.errorType, error.errorType)
         }catch{
             // A non gravity error is a failure
-            XCTFail()
+            Log.error("Gravity Non-Test", error)
+            XCTFail("\(error)")
         }
     }
     

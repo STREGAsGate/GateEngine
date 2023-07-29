@@ -98,11 +98,19 @@ public class Gravity {
     @inline(__always)
     var recentError: Error? {
         get {Self.storage[vm]!.recentError}
-        set {Self.storage[vm]!.recentError = newValue}
+        set {
+            Self.storage[vm]!.recentError = newValue
+            #if DEBUG
+            if let newValue {
+                self.unitTestError = newValue
+            }
+            #endif
+        }
     }
     
     #if DEBUG
-    static var unitTestExpected: Testing? = nil
+    internal static var unitTestExpected: Testing? = nil
+    internal var unitTestError: Error? = nil
     #endif
     
     /**
@@ -206,7 +214,9 @@ public class Gravity {
         }
         self.didRunMain = true
         gravity_vm_runmain(vm, mainClosure)
-        if let error = recentError {throw error}
+        if let error = recentError {
+            throw GateEngineError.scriptCompileError("\(error)")
+        }
         return GravityValue(gValue: gravity_vm_result(vm))
     }
     
