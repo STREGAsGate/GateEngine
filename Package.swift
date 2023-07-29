@@ -100,9 +100,10 @@ let package = Package(
                             /// The host platform supports Foundation.FileManager
                             .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER", .when(platforms: .any(except: .wasi))),
                         ])
-                        
-                        // Upcoming Swift 6 Language Features
+
+                        // Use upcoming Swift Language Features
                         // https://www.swift.org/swift-evolution/#?upcoming=true
+                        #if swift(>=5.8)
                         settings.append(contentsOf: [
                             .unsafeFlags(["-enable-upcoming-feature", "DisableOutwardActorInference"]),
                             .unsafeFlags(["-enable-upcoming-feature", "ImportObjcForwardDeclarations"]),
@@ -111,6 +112,7 @@ let package = Package(
                             .unsafeFlags(["-enable-upcoming-feature", "ForwardTrailingClosures"]),
                             .unsafeFlags(["-enable-upcoming-feature", "ConciseMagicFile"]),
                         ])
+                        #endif
                         
                         #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")

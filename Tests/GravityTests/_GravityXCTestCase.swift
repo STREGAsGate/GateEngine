@@ -47,7 +47,7 @@ open class GravityXCTestCase: XCTestCase {
     @MainActor open override func setUp() async throws {
         if Game.shared == nil {
             let delegate = TestGameDelegate()
-            let platform = await CurrentPlatform(delegate: delegate)
+            let platform = CurrentPlatform(delegate: delegate)
             Game.shared = Game(delegate: delegate, currentPlatform: platform)
             
             await Game.shared.didFinishLaunching()
