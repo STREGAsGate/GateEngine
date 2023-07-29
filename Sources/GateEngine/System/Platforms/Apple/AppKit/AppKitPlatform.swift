@@ -13,8 +13,8 @@ public final class AppKitPlatform: InternalPlatform {
     public static let fileSystem: AppleFileSystem = AppleFileSystem()
     let staticResourceLocations: [URL]
     
-    init(delegate: any GameDelegate) async {
-        self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
+    init(delegate: any GameDelegate) {
+        self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
     }
     
     public var supportsMultipleWindows: Bool {
@@ -271,6 +271,8 @@ extension AppKitPlatform {
         self.setupStatusBarMenu()
         
         app.run()
+        
+        exit(1)
     }
 }
 

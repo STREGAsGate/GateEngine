@@ -12,8 +12,8 @@ public final class Win32Platform: InternalPlatform {
     public static let fileSystem: Win32FileSystem = Win32FileSystem()
     var staticResourceLocations: [URL]
     
-    init(delegate: GameDelegate) async {
-        self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
+    init(delegate: GameDelegate) {
+        self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
     }
 
     public var supportsMultipleWindows: Bool {

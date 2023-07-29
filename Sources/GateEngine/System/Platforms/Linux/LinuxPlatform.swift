@@ -12,8 +12,8 @@ public final class LinuxPlatform: Platform, InternalPlatform {
     public static let fileSystem: LinuxFileSystem = LinuxFileSystem()
     let staticResourceLocations: [URL]
     
-    init(delegate: GameDelegate) async {
-        self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
+    init(delegate: GameDelegate) {
+        self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
     }
 
     public var supportsMultipleWindows: Bool {

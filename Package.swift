@@ -99,8 +99,6 @@ let package = Package(
                             .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM", .when(platforms: .any)),
                             /// The host platform supports Foundation.FileManager
                             .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER", .when(platforms: .any(except: .wasi))),
-                            /// The host platform requires an intermediate task, so GateEngine won't load default systems.
-                            .define("GATEENGINE_ASYNCLOAD_CURRENTPLATFORM", .when(platforms: .any(except: .wasi))),
                         ])
                         
                         // Upcoming Swift 6 Language Features

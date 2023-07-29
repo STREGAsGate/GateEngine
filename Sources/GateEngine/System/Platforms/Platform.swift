@@ -40,16 +40,12 @@ internal protocol InternalPlatform: AnyObject, Platform {
     func saveStatePath(forStateNamed name: String) throws -> String
     #endif
     
-    #if GATEENGINE_ASYNCLOAD_CURRENTPLATFORM
-    init(delegate: any GameDelegate) async
-    #else
     init(delegate: any GameDelegate)
-    #endif
 }
 
 #if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 extension InternalPlatform {
-    static func getStaticSearchPaths(delegate: any GameDelegate) async -> [URL] {
+    static func getStaticSearchPaths(delegate: any GameDelegate) -> [URL] {
         #if canImport(Darwin)
         let bundleExtension: String = "bundle"
         #else
@@ -70,7 +66,7 @@ extension InternalPlatform {
         
         do {
             for bundleURL in bundleURLs {
-                let contents = try await Self.fileSystem.contentsOfDirectory(at: bundleURL.path)
+                let contents = try FileManager.default.contentsOfDirectory(atPath: bundleURL.path)
                 resourceFolders.append(contentsOf: contents.map({bundleURL.appendingPathComponent($0)}))
             }
         }catch{
