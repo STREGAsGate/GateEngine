@@ -50,8 +50,8 @@ public final class WASIPlatform: Platform, InternalPlatform {
                     // Already root
                     return "\n    \"[WebDir]/\","
                 }
-                return "\n    \"[WebDir]/" + path + "/\","
-            }).joined(), "\n")
+                return "\"[WebDir]/" + path + "/\","
+            }).joined(), "\n    ")
         }
         return files
     }
@@ -60,7 +60,7 @@ public final class WASIPlatform: Platform, InternalPlatform {
         if let existing = pathCache[path] {
             return existing
         }
-        let delegatePaths = Game.shared.delegate.customResourceLocations()
+        let delegatePaths = Game.shared.delegate.resolvedCustomResourceLocations()
 
         let searchPaths = OrderedSet(delegatePaths + staticResourceLocations)
         for searchPath in searchPaths {

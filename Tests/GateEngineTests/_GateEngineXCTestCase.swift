@@ -20,6 +20,20 @@ open class GateEngineXCTestCase: XCTestCase {
         nonisolated func gameIdentifier() -> StaticString? {
             return "com.STREGAsGate.GateEngine.tests"
         }
+        
+        nonisolated func customResourceLocations() -> [String] {
+            #if hasFeature(ConciseMagicFile)
+            let module = #file.components(separatedBy: "/")[0]
+            #else
+            let module = "\(type(of: Self.self))".components(separatedBy: ".")[0]
+            #endif
+            
+            #if canImport(Darwin)
+            return ["Contents/Resources/GateEngine_\(module).bundle"]
+            #else
+            return ["GateEngine_\(module).resources"]
+            #endif
+        }
     }
     
     @MainActor open override func setUp() async throws {

@@ -60,7 +60,7 @@ public protocol GameDelegate: AnyObject {
      Search paths for your Swift Packages are already located automatically and don't need to be added here.
      - returns: An array of URLs each pointing to a directory containing game resources.
      */
-    nonisolated func customResourceLocations() -> [URL]
+    nonisolated func customResourceLocations() -> [String]
     
     /**
     An ID for the current game. This identifier is used for storing user settings.
@@ -82,7 +82,10 @@ public extension GameDelegate {
     
     func willTerminate(game: Game) {}
     func isHeadless() -> Bool {return false}
-    func customResourceLocations() -> [URL] {return []}
+    func customResourceLocations() -> [String] {return []}
+    internal func resolvedCustomResourceLocations() -> [URL] {
+        return customResourceLocations().compactMap({URL(string: $0)})
+    }
 
     func gameIdentifier() -> StaticString? {return nil}
 
