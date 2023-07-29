@@ -32,6 +32,15 @@ public struct Quaternion: Vector4, SIMD {
     @inlinable
     public var x: Scalar {
         @_transparent get {
+            return _storage[0]
+        }
+        @_transparent set {
+            _storage[0] = newValue
+        }
+    }
+    @inlinable
+    public var y: Scalar {
+        @_transparent get {
             return _storage[1]
         }
         @_transparent set {
@@ -39,21 +48,12 @@ public struct Quaternion: Vector4, SIMD {
         }
     }
     @inlinable
-    public var y: Scalar {
+    public var z: Scalar {
         @_transparent get {
             return _storage[2]
         }
         @_transparent set {
             _storage[2] = newValue
-        }
-    }
-    @inlinable
-    public var z: Scalar {
-        @_transparent get {
-            return _storage[3]
-        }
-        @_transparent set {
-            _storage[3] = newValue
         }
     }
     @inlinable
