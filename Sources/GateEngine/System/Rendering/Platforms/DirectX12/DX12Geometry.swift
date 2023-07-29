@@ -110,7 +110,7 @@ class DX12Geometry: GeometryBackend, SkinnedGeometryBackend {
     
     
 #if GATEENGINE_DEBUG_RENDERING || DEBUG
-    func isDrawCommandValid(sharedWith backend: GeometryBackend) -> Bool {
+    func isDrawCommandValid(sharedWith backend: any GeometryBackend) -> Bool {
         let backend: Self = backend as! Self
         if indicesCount != backend.indicesCount {
             return false

@@ -31,7 +31,7 @@ class WebGL2Texture: TextureBackend {
         return _size!
     }
     
-    required init(renderTargetBackend: RenderTargetBackend) {
+    required init(renderTargetBackend: any RenderTargetBackend) {
         self.renderTarget = (renderTargetBackend as! WebGL2RenderTarget)
         self._size = nil
         self._textureId = nil
