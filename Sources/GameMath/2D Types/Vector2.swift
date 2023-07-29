@@ -62,7 +62,7 @@ extension Vector2 {
 
 extension Vector2 {
     @inlinable
-    public subscript (_ index: Array<Float>.Index) -> Float {
+    public subscript (_ index: Int) -> Float {
         @_transparent get {
             switch index {
             case 0: return x

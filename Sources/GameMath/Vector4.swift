@@ -41,7 +41,7 @@ public extension Vector4 {
     var scalarCount: Int {return 4}
     
     @_transparent
-    init(_ simd: SIMD3<Float>) {
+    init(_ simd: SIMD4<Float>) {
         self.init(simd[0], simd[1], simd[2], simd[3])
     }
 }
@@ -49,7 +49,7 @@ public extension Vector4 {
  
 public extension Vector4 {
     @inlinable
-    subscript (_ index: Array<Float>.Index) -> Float {
+    subscript (_ index: Int) -> Float {
         @_transparent get {
             switch index {
             case 0: return x

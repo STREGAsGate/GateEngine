@@ -228,7 +228,7 @@ public extension Matrix4x4 {
     //MARK: Subscript
 public extension Matrix4x4 {
     @inlinable
-    subscript (_ index: Array<Float>.Index) -> Float {
+    subscript (_ index: Int) -> Float {
         @_transparent get {
             switch index {
             case 0: return a
@@ -367,10 +367,10 @@ public extension Matrix4x4 {
 public extension Matrix4x4 {
     @inlinable
     init(rotation quaternion: Quaternion) {
-        let w: Float = quaternion.w
         let x: Float = quaternion.x
         let y: Float = quaternion.y
         let z: Float = quaternion.z
+        let w: Float = quaternion.w
 
 
         var fx: Float = x * z
