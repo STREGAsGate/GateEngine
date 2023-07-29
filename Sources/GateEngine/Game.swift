@@ -82,8 +82,10 @@ public final class Game {
     }
     
     @MainActor internal func addPlatformSystems() {
-        self.insertSystem(HIDSystem.self)
-        self.insertSystem(AudioSystem.self)
+        if isHeadless == false {
+            self.insertSystem(HIDSystem.self)
+            self.insertSystem(AudioSystem.self)
+        }
         self.insertSystem(CacheSystem.self)
     }
     
