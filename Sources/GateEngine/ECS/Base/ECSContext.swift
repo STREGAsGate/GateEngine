@@ -35,7 +35,7 @@
         return ecs.entity(withID: id)
     }
     @inlinable @inline(__always)
-    func firstEntity(withComponent component: Component.Type) -> Entity? {
+    func firstEntity(withComponent component: any Component.Type) -> Entity? {
         return ecs.firstEntity(withComponent: component)
     }
     @inlinable @inline(__always)
@@ -336,7 +336,7 @@ extension ECSContext {
         return entities.first(where: {$0.id == id})
     }
     @inlinable @inline(__always)
-    func firstEntity(withComponent type: Component.Type) -> Entity? {
+    func firstEntity(withComponent type: any Component.Type) -> Entity? {
         return entities.first(where: {$0.hasComponent(type)})
     }
 }

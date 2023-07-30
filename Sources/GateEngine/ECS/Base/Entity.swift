@@ -9,9 +9,9 @@ public final class Entity: Identifiable {
     public var name: String? = nil
     public let priority: Priority
     @usableFromInline
-    internal var components: [ComponentID : Component]
+    internal var components: [ComponentID : any Component]
 
-    public init(name: String? = nil, priority: Priority = .normal, components: [Component]? = nil) {
+    public init(name: String? = nil, priority: Priority = .normal, components: [any Component]? = nil) {
         self.name = name
         self.priority = priority
         self.components = Dictionary(minimumCapacity: components?.count ?? 5)
@@ -22,7 +22,7 @@ public final class Entity: Identifiable {
         }
     }
     
-    public convenience init(name: String? = nil, priority: Priority = .normal, components: [Component.Type]) {
+    public convenience init(name: String? = nil, priority: Priority = .normal, components: [any Component.Type]) {
         self.init(name: name, priority: priority, components: components.map({$0.init()}))
     }
 }
@@ -31,7 +31,7 @@ public final class Entity: Identifiable {
 public extension Entity {
     /// - returns true if the entity has the component
     @inlinable @inline(__always)
-    func hasComponent(_ type: Component.Type) -> Bool {
+    func hasComponent(_ type: any Component.Type) -> Bool {
         return components.keys.contains(type.componentID)
     }
 
@@ -71,7 +71,7 @@ public extension Entity {
     /// - returns true if an existing component was replaced
     @inlinable @inline(__always)
     @discardableResult
-    func insert(_ component: Component, replacingExisting: Bool = true) -> Bool {
+    func insert<T: Component>(_ component: T, replacingExisting: Bool = true) -> Bool {
         let key = type(of: component).componentID
         let exists = components.keys.contains(key)
         guard (replacingExisting && exists) || exists == false else {return false}
@@ -90,24 +90,8 @@ public extension Entity {
     
     /// Allows changing a component, addind it first if needed.
     @inlinable @inline(__always)
-    func configure<T: Component, ResultType>(_ type: T.Type, _ config: (_ component: inout T) -> ResultType) -> ResultType {
-        return config(&self[T.self])
-    }
-    
-    /// Allows changing a component with async, creating the component if needed.
-    /// The component is added to the Entity after the async operation is complete.
-    @inlinable @inline(__always)
-    func configure<T: Component>(_ type: T.Type, _ config: @escaping (_ component: inout T) async throws -> Void) {
-        Task(priority: .medium) {
-            var component = self.component(ofType: type) ?? T.init()
-            
-            try await config(&component)
-            
-            let immutableComponent = component
-            Task {@MainActor in
-                self[T.self] = immutableComponent
-            }
-        }
+    func configure<T: Component, ResultType>(_ type: T.Type, _ config: @escaping (_ component: inout T) async -> ResultType) async -> ResultType {
+        return await config(&self[T.self])
     }
     
     /// - returns The removed componen or nil if no component was found.

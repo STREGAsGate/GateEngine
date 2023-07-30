@@ -40,16 +40,12 @@ internal protocol InternalPlatform: AnyObject, Platform {
     func saveStatePath(forStateNamed name: String) throws -> String
     #endif
     
-    #if GATEENGINE_ASYNCLOAD_CURRENTPLATFORM
-    init(delegate: GameDelegate) async
-    #else
-    init(delegate: GameDelegate)
-    #endif
+    init(delegate: any GameDelegate)
 }
 
 #if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 extension InternalPlatform {
-    static func getStaticSearchPaths(delegate: GameDelegate) async -> [URL] {
+    static func getStaticSearchPaths(delegate: any GameDelegate) -> [URL] {
         #if canImport(Darwin)
         let bundleExtension: String = "bundle"
         #else
@@ -62,7 +58,14 @@ extension InternalPlatform {
             var urls: [URL?] = [Bundle.main.bundleURL,
                                Bundle.main.resourceURL,
                                Bundle.module.bundleURL.deletingLastPathComponent()]
-            urls.append(contentsOf: Bundle.allBundles.compactMap({$0.resourceURL}))
+            urls.append(contentsOf: Bundle.allBundles.compactMap({
+                if FileManager.default.fileExists(atPath: $0.bundleURL.appendingPathComponent("Contents/Info.plist").path) {
+                    if let url = $0.resourceURL {
+                        return url
+                    }
+                }
+                return $0.bundleURL
+            }))
             return Set(urls.compactMap({$0}))
         }()
         
@@ -70,8 +73,11 @@ extension InternalPlatform {
         
         do {
             for bundleURL in bundleURLs {
-                let contents = try await Self.fileSystem.contentsOfDirectory(at: bundleURL.path)
-                resourceFolders.append(contentsOf: contents.map({bundleURL.appendingPathComponent($0)}))
+                let path = bundleURL.path
+                if FileManager.default.fileExists(atPath: path) {
+                    let contents = try FileManager.default.contentsOfDirectory(atPath: path)
+                    resourceFolders.append(contentsOf: contents.map({bundleURL.appendingPathComponent($0)}))
+                }
             }
         }catch{
             Log.error(error)
@@ -79,7 +85,17 @@ extension InternalPlatform {
         
         // Filter out non-resource bundles
         #if canImport(Darwin)
-        resourceFolders = resourceFolders.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame}).compactMap({Bundle(url: $0)?.resourceURL})
+        resourceFolders = resourceFolders.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame}).compactMap({
+            if let bundle = Bundle(url: $0) {
+                if FileManager.default.fileExists(atPath: bundle.bundleURL.appendingPathComponent("Contents/Info.plist").path) {
+                    if let url = bundle.resourceURL {
+                        return url
+                    }
+                }
+                return bundle.bundleURL
+            }
+            return nil
+        })
         #else
         resourceFolders = resourceFolders.filter({$0.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame})
         #endif
@@ -135,16 +151,16 @@ extension InternalPlatform {
         if resourceFolders.isEmpty {
             Log.error("Failed to load any resource bundles! Check code signing and directory premissions.")
         }else{
-            let relativeDescriptor: String = "[MainBundle]"
+            let relativeDescriptor: String = "\n  [MainBundle]"
             let relativePath = Bundle.main.bundleURL.path
             Log.debug("Loaded static resource search paths: (GameDelegate search paths not included)", resourceFolders.map({
-                let relativeDescriptor = "\n  \"\(relativeDescriptor)"
+                let relativeDescriptor = "\"\(relativeDescriptor)"
                 var path = $0.path.replacingOccurrences(of: relativePath, with: relativeDescriptor)
                 if path == relativeDescriptor {
                     path += "/"
                 }
                 return path + "\","
-            }).joined())
+            }).joined(separator: "\n  "))
         }
 
         return resourceFolders

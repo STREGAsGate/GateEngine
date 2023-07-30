@@ -8,7 +8,7 @@
 public extension HID {
     @MainActor final class GamePadManger {
         var hid: HID {Game.shared.hid}
-        let interpreters: [GamePadInterpreter]
+        let interpreters: [any GamePadInterpreter]
         public private(set) var all: [GamePad] = []
         public private(set) var any: GamePad
         let nullGamePad: GamePad
@@ -58,9 +58,9 @@ extension HID.GamePadManger {
 }
 
 @_transparent
-@MainActor fileprivate func getGamepadInterpreters() -> [GamePadInterpreter] {
+@MainActor fileprivate func getGamepadInterpreters() -> [any GamePadInterpreter] {
     #if os(macOS) || os(iOS) || os(tvOS)
-    var interpreters: [GamePadInterpreter?] = []
+    var interpreters: [(any GamePadInterpreter)?] = []
     #if canImport(IOKit)
     interpreters.append(IOKitGamePadInterpreter())
     #endif

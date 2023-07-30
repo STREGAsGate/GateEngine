@@ -13,8 +13,8 @@ public final class UIKitPlatform: Platform, InternalPlatform {
     public static let fileSystem: AppleFileSystem = AppleFileSystem()
     public let staticResourceLocations: [URL]
     
-    init(delegate: GameDelegate) async {
-        self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
+    init(delegate: any GameDelegate) {
+        self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
     }
     
     internal var applicationRequestedWindow: Bool = false
@@ -29,7 +29,7 @@ public final class UIKitPlatform: Platform, InternalPlatform {
     }
     
     public func locateResource(from path: String) async -> String? {
-        let searchPaths = Game.shared.delegate.customResourceLocations() + staticResourceLocations
+        let searchPaths = Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             if await fileSystem.itemExists(at: file.path) {
@@ -136,7 +136,7 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else {return}
         do {
-            Game.shared.renderingIsPermitted = true
+            Game.shared.attributes.insert(.renderingIsPermitted)
             if let restoredWindow = attachExistingWindow(forSession: session, options: connectionOptions) {
                 assert(restoredWindow.window.isMainWindow == false)
                 restoredWindow.uiWindow.windowScene = windowScene
@@ -153,7 +153,7 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                 Game.shared.platform.applicationRequestedWindow = true
                 if session.role == .windowExternalDisplay {
                     Game.shared.platform.overrideSupportsMultipleWindows = true
-                    if let window = try Game.shared.delegate.createWindowForExternalscreen(game: Game.shared) {
+                    if let window = try Game.shared.delegate.createWindowForExternalScreen(game: Game.shared) {
                         let uiKitWindow = (window.windowBacking as! UIKitWindow)
                         uiKitWindow.uiWindow.windowScene = windowScene
                         windowScene.title = window.title
@@ -173,7 +173,7 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                     Game.shared.platform.overrideSupportsMultipleWindows = nil
                 }
             }
-            Game.shared.renderingIsPermitted = false
+            Game.shared.attributes.remove(.renderingIsPermitted)
         }catch{
             Log.error(error)
         }

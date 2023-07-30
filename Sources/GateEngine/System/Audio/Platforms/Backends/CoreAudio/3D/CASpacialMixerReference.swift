@@ -52,12 +52,12 @@ internal class CASpacialMixerReference: SpacialAudioMixerReference {
     }
     
     @inlinable
-    func createListenerReference() -> SpatialAudioListenerBackend {
+    func createListenerReference() -> any SpatialAudioListenerBackend {
         return CAListenerReference(environmentNode: environmentNode)
     }
     
     @inlinable
-    func createSourceReference() -> SpatialAudioSourceReference {
+    func createSourceReference() -> any SpatialAudioSourceReference {
         return CASourceReference(self)
     }
 }

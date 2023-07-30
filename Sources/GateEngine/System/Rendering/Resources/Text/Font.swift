@@ -28,7 +28,7 @@ protocol FontBackend {
 
 public class Font: OldResource {
     @RequiresState(.ready)
-    var backend: FontBackend! = nil
+    var backend: (any FontBackend)! = nil
     
     internal var preferredSampleFilter: Text.SampleFilter {
         return backend.preferredSampleFilter

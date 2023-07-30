@@ -39,7 +39,7 @@ internal class CAAudioMixerReference: AudioMixerReference {
     }
     
     @inlinable
-    func createAudioTrackReference() -> AudioTrackReference {
+    func createAudioTrackReference() -> any AudioTrackReference {
         return CAAudioTrackReference(self)
     }
 }

@@ -30,7 +30,7 @@ import GameMath
         guard game.isHeadless == false else {
             throw GateEngineError.failedToCreateWindow("Cannot create a window when running headless.")
         }
-        precondition(game.renderingIsPermitted, "A window can only be created from a RenderingSystem.")
+        precondition(game.attributes.contains(.renderingIsPermitted), "A window can only be created from a RenderingSystem.")
         guard game.platform.supportsMultipleWindows || windows.isEmpty else {
             throw GateEngineError.failedToCreateWindow("This platform doesn't support multiple windows.")
         }
@@ -74,12 +74,12 @@ import GameMath
     
     @inline(__always)
     func drawWindows() {
-        game.renderingIsPermitted = true
+        game.attributes.insert(.renderingIsPermitted)
         for pair: (window: Window, deltaTime: Float) in windowsThatRequestedDraw {
             game.ecs.updateRendering(withTimePassed: pair.deltaTime, window: pair.window)
             pair.window.didDrawSomething = true
         }
-        game.renderingIsPermitted = false
+        game.attributes.remove(.renderingIsPermitted)
         self.windowsThatRequestedDraw.removeAll(keepingCapacity: true)
     }
 }

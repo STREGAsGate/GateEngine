@@ -8,8 +8,8 @@
 internal protocol SpacialAudioMixerReference: AnyObject {
     var minimumAttenuationDistance: Float {get set}
     var volume: Float {get set}
-    func createListenerReference() -> SpatialAudioListenerBackend
-    func createSourceReference() -> SpatialAudioSourceReference
+    func createListenerReference() -> any SpatialAudioListenerBackend
+    func createSourceReference() -> any SpatialAudioSourceReference
 }
 
 /*!
@@ -17,7 +17,7 @@ internal protocol SpacialAudioMixerReference: AnyObject {
  */
 public class SpatialAudioMixer {
     internal unowned let context: AudioContext
-    internal var reference: SpacialAudioMixerReference
+    internal var reference: any SpacialAudioMixerReference
     
     ///This is where audio sources are heard from
     public private(set) lazy var listener = SpatialAudioListener(self)

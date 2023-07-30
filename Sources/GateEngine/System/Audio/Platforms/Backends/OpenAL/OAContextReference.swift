@@ -12,17 +12,17 @@ import LinuxSupport
 #endif
 
 internal class OAContextReference: AudioContextBackend {
-    let device: OpenALDevice!
+    let device: OpenALDevice
     
     init() {
         self.device = OpenALDevice()
     }
     
-    func createSpacialMixerReference() -> SpacialAudioMixerReference {
+    func createSpacialMixerReference() -> any SpacialAudioMixerReference {
         return OASpacialMixerReference(self)
     }
     
-    func createAudioMixerReference() -> AudioMixerReference {
+    func createAudioMixerReference() -> any AudioMixerReference {
         return OAAudioMixerReference(self)
     }
     

@@ -7,7 +7,7 @@
 
 internal protocol AudioMixerReference: AnyObject {
     var volume: Float {get set}
-    func createAudioTrackReference() -> AudioTrackReference
+    func createAudioTrackReference() -> any AudioTrackReference
 }
 
 /*!
@@ -15,7 +15,7 @@ internal protocol AudioMixerReference: AnyObject {
  */
 public class AudioMixer {
     internal unowned let context: AudioContext
-    internal var reference: AudioMixerReference
+    internal var reference: any AudioMixerReference
     
     internal init(_ context: AudioContext) {
         self.context = context

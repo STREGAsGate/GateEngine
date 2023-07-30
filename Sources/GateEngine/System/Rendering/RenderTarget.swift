@@ -18,7 +18,7 @@ import GameMath
 @MainActor protocol _RenderTargetProtocol: RenderTargetProtocol {
     var lastDrawnFrame: UInt {get set}
     var texture: Texture {get}
-    var renderTargetBackend: RenderTargetBackend {get set}
+    var renderTargetBackend: any RenderTargetBackend {get set}
     var drawables: [Any] {get set}
     var size: Size2 {get set}
     
@@ -36,20 +36,20 @@ extension RenderTargetProtocol {
 extension _RenderTargetProtocol {
     @inlinable @inline(__always)
     public func insert(_ scene: Scene) {
-        precondition(Game.shared.renderingIsPermitted, "Rendering can only be changed from a RenderingSystem.")
+        precondition(Game.shared.attributes.contains(.renderingIsPermitted), "Rendering can only be changed from a RenderingSystem.")
         self.drawables.append(scene)
     }
     
     @inlinable @inline(__always)
     public func insert(_ canvas: Canvas) {
-        precondition(Game.shared.renderingIsPermitted, "Rendering can only be changed from a RenderingSystem.")
+        precondition(Game.shared.attributes.contains(.renderingIsPermitted), "Rendering can only be changed from a RenderingSystem.")
         precondition(canvas.size == nil || canvas.size! == self.size, "Canvas.size.aspectRatio must equal RenderTarget.size.aspectRatio to insert.")
         self.drawables.append(canvas)
     }
     
     @inlinable @inline(__always)
     public func insert(_ drawCommand: DrawCommand) {
-        precondition(Game.shared.renderingIsPermitted, "Rendering can only be changed from a RenderingSystem.")
+        precondition(Game.shared.attributes.contains(.renderingIsPermitted), "Rendering can only be changed from a RenderingSystem.")
         self.drawables.append(drawCommand)
     }
     
@@ -81,7 +81,7 @@ extension _RenderTargetProtocol {
 
 @MainActor public final class RenderTarget: RenderTargetProtocol, _RenderTargetProtocol {
     @usableFromInline
-    var renderTargetBackend: RenderTargetBackend
+    var renderTargetBackend: any RenderTargetBackend
     var drawables: [Any] = []
     var previousSize: Size2? = nil
     var lastDrawnFrame: UInt = .max
@@ -92,7 +92,7 @@ extension _RenderTargetProtocol {
             return renderTargetBackend.size
         }
         set {
-            precondition(Game.shared.renderingIsPermitted, "Resizing a RenderTarget can only be done from a RenderingSystem.")
+            precondition(Game.shared.attributes.contains(.renderingIsPermitted), "Resizing a RenderTarget can only be done from a RenderingSystem.")
             renderTargetBackend.size = newValue
         }
     }
@@ -106,12 +106,12 @@ extension _RenderTargetProtocol {
     }
     
     public init() {
-        precondition(Game.shared.renderingIsPermitted, "RenderTarget can only be created from a RenderingSystem.")
+        precondition(Game.shared.attributes.contains(.renderingIsPermitted), "RenderTarget can only be created from a RenderingSystem.")
         self.renderTargetBackend = getRenderTargetBackend()
         self.clearColor = .black
     }
     
-    internal init(backend: RenderTargetBackend) {
+    internal init(backend: any RenderTargetBackend) {
         self.renderTargetBackend = backend
     }
     
@@ -125,7 +125,7 @@ extension _RenderTargetProtocol {
             return renderTargetBackend.size
         }
         set {
-            precondition(Game.shared.renderingIsPermitted, "Resizing a RenderTarget can only be done from a RenderingSystem.")
+            precondition(Game.shared.attributes.contains(.renderingIsPermitted), "Resizing a RenderTarget can only be done from a RenderingSystem.")
             renderTargetBackend.size = newValue
         }
     }
@@ -267,7 +267,7 @@ extension RenderTargetBackend {
 }
 
 @_transparent
-@MainActor func getRenderTargetBackend() -> RenderTargetBackend {
+@MainActor func getRenderTargetBackend() -> any RenderTargetBackend {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
     return OpenGLRenderTarget(windowBacking: nil)
 #elseif canImport(MetalKit)

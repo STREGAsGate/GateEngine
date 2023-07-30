@@ -1,28 +1,14 @@
+/*
+ * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
+
 import XCTest
 @testable import GateEngine
 
-final class FileSystemTests: XCTestCase {
-    override func setUp() async throws {
-        final class TestGameDelegate: GameDelegate {
-            func didFinishLaunching(game: Game, options: LaunchOptions) {
-                
-            }
-            func isHeadless() -> Bool {
-                return true
-            }
-            nonisolated func gameIdentifier() -> StaticString? {
-                return "com.STREGAsGate.GateEngine.tests"
-            }
-        }
-        let delegate = await TestGameDelegate()
-        Game.shared = await Game(delegate: delegate, currentPlatform: CurrentPlatform(delegate: delegate))
-        await Game.shared.delegate.didFinishLaunching(game: Game.shared, options: [])
-    }
-    
-    override func tearDown() async throws {
-        await Game.shared.delegate.willTerminate(game: Game.shared)
-    }
-    
+final class FileSystemTests: GateEngineXCTestCase {
     func testDirectoryCreateExistsMoveDelete() async throws {
         let fileSystem = Game.shared.platform.fileSystem
         let path = try fileSystem.pathForSearchPath(.persistent, in: .currentUser) + "/test-NewFolder"

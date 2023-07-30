@@ -47,7 +47,7 @@ public extension Vector3 {
  
 public extension Vector3 {
     @inlinable
-    subscript (_ index: Array<Float>.Index) -> Float {
+    subscript (_ index: Int) -> Float {
         @_transparent get {
             switch index {
             case 0: return x

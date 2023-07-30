@@ -34,7 +34,7 @@ fileprivate func getBakedQuad(characterData: [CharData], pixelsWidth: Int32, pix
     
     init(regular: String) async throws {
         let regular = try await Game.shared.platform.loadResource(from: regular)
-        
+        assert(regular.isEmpty == false, "ttf file cannot be empty.")
         let fontData: [Font.Style:Data] = [.regular : regular]
 //        fontData[.bold] = bold
 //        fontData[.italic] = italic

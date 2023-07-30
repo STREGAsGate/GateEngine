@@ -33,7 +33,7 @@ final class DX12Texture: TextureBackend {
         return renderTarget!.colorTexture!
     }
     
-    required init(renderTargetBackend: RenderTargetBackend) {
+    required init(renderTargetBackend: any RenderTargetBackend) {
         renderTarget = (renderTargetBackend as! DX12RenderTarget)
         _dxTexture = nil
         _size = nil

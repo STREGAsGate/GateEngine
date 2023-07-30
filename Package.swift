@@ -34,8 +34,8 @@ let package = Package(
             .target(name: "GateEngine",
                     dependencies: {
                         var dependencies: [Target.Dependency] = []
-                        dependencies.append(contentsOf: ["GameMath", "Shaders", "TrueType", "LibSPNG"])
-                        dependencies.append(.target(name: "Vorbis", condition: .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])))
+                        dependencies.append(contentsOf: ["GameMath", "Shaders", "TrueType", "LibSPNG", "Gravity"])
+                        dependencies.append(.target(name: "Vorbis", condition: .when(platforms: .any(except: .wasi))))
                         
                         #if os(macOS) || os(Linux)
                         dependencies.append(.target(name: "OpenGL_GateEngine", condition: .when(platforms: [.macOS, .iOS, .tvOS, .linux, .android])))
@@ -55,7 +55,7 @@ let package = Package(
                         // dependencies.append(.target(name: "OpenALSoft", condition: .when(platforms: [.linux, .android])))
                         #endif
                         
-                        dependencies.append(.product(name: "Atomics", package: "swift-atomics", condition: .when(platforms: [.macOS, .linux, .iOS, .tvOS, .android, .wasi])))
+                        dependencies.append(.product(name: "Atomics", package: "swift-atomics", condition: .when(platforms: .any(except: .windows))))
                         dependencies.append(.product(name: "Collections", package: "swift-collections"))
 
                         #if os(macOS) || os(Linux)
@@ -84,9 +84,9 @@ let package = Package(
                         settings.append(contentsOf: [
                             // MARK: Gate Engine options.
                             /// Closes all open windows when the main window is closed
-                            .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW", .when(platforms: [.macOS, .windows, .linux])),
+                            .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW", .when(platforms: .desktop)),
                             /// Checks for reloadable resources and reloads them if they have changed
-                            .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: [.macOS, .windows, .linux], configuration: .debug)),
+                            .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: .desktop, configuration: .debug)),
                             /// The host platform requests the main window, so GateEngine won't create one until it's requested
                             .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
                             /// The host platform can't be used to compile HTML5 products
@@ -96,12 +96,23 @@ let package = Package(
                             /// The host platform requires an intermediate task, so GateEngine won't load default systems.
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH", .when(platforms: [.wasi])),
                             /// The host platform supports file system read/write
-                            .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android, .wasi])),
+                            .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM", .when(platforms: .any)),
                             /// The host platform supports Foundation.FileManager
-                            .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])),
-                            /// The host platform requires an intermediate task, so GateEngine won't load default systems.
-                            .define("GATEENGINE_ASYNCLOAD_CURRENTPLATFORM", .when(platforms: [.macOS, .windows, .linux, .iOS, .tvOS, .android])),
+                            .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER", .when(platforms: .any(except: .wasi))),
                         ])
+
+                        // Use upcoming Swift Language Features
+                        // https://www.swift.org/swift-evolution/#?upcoming=true
+                        #if swift(>=5.8)
+                        settings.append(contentsOf: [
+                            .unsafeFlags(["-enable-upcoming-feature", "DisableOutwardActorInference"]),
+                            .unsafeFlags(["-enable-upcoming-feature", "ImportObjcForwardDeclarations"]),
+                            .unsafeFlags(["-enable-upcoming-feature", "BareSlashRegexLiterals"]),
+                            .unsafeFlags(["-enable-upcoming-feature", "ExistentialAny"]),
+                            .unsafeFlags(["-enable-upcoming-feature", "ForwardTrailingClosures"]),
+                            .unsafeFlags(["-enable-upcoming-feature", "ConciseMagicFile"]),
+                        ])
+                        #endif
                         
                         #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
@@ -156,12 +167,12 @@ let package = Package(
             }()),
         ])
         
-        // MARK: - GateEngineDependencies
+        // MARK: - Dependencies
         
         targets.append(contentsOf: [
             // Vorbis
             .target(name: "Vorbis",
-                    path: "Sources/GateEngineDependencies/Vorbis",
+                    path: "Dependencies/Vorbis",
                     publicHeadersPath: "include",
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
@@ -170,7 +181,7 @@ let package = Package(
             
             // miniz
             .target(name: "MiniZ",
-                    path: "Sources/GateEngineDependencies/MiniZ",
+                    path: "Dependencies/MiniZ",
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
                         // Silence warnings
@@ -180,7 +191,7 @@ let package = Package(
             // libspng
             .target(name: "LibSPNG",
                     dependencies: ["MiniZ"],
-                    path: "Sources/GateEngineDependencies/LibSPNG",
+                    path: "Dependencies/LibSPNG",
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
                         .define("SPNG_STATIC"),
@@ -193,12 +204,31 @@ let package = Package(
             
             // TrueType
             .target(name: "TrueType",
-                    path: "Sources/GateEngineDependencies/TrueType",
+                    path: "Dependencies/TrueType",
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
                         .define("STB_TRUETYPE_IMPLEMENTATION"), .define("STB_RECT_PACK_IMPLEMENTATION"),
                         .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows])),
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])), // Silence warnings
+                    ]),
+            
+            // Gravity
+            .target(name: "Gravity",
+                    path: "Dependencies/Gravity",
+                    cSettings: [
+                        .define("BUILD_GRAVITY_API"),
+                        // WASI doesn't have umask
+                        .define("umask(x)", to: "022", .when(platforms: [.wasi])),
+                        // Silence deprecation warning on windows
+                        .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
+                        // Windows doesn't support PIC flag
+                        .unsafeFlags(["-fPIC"], .when(platforms: .any(except: .windows))),
+                        .unsafeFlags(["-Wno-everything"]),
+                    ], linkerSettings: [
+                        //For math functions
+                        .linkedLibrary("m", .when(platforms: .any(except: .windows))),
+                        //For path functions
+                        .linkedLibrary("Shlwapi", .when(platforms: [.windows])),
                     ]),
         ])
         
@@ -206,7 +236,7 @@ let package = Package(
         targets.append(
             // Direct3D12
             .target(name: "Direct3D12",
-                    path: "Sources/GateEngineDependencies/Direct3D12",
+                    path: "Dependencies/Direct3D12",
                     swiftSettings: [
                         .define("Direct3D12ExcludeOriginalStyleAPI", .when(configuration: .release)),
                     ])
@@ -216,7 +246,7 @@ let package = Package(
         #if os(macOS)
         targets.append(contentsOf: [
             .target(name: "OpenGL_GateEngine",
-                    path: "Sources/GateEngineDependencies/OpenGL/OpenGL_GateEngine",
+                    path: "Dependencies/OpenGL/OpenGL_GateEngine",
                     cSettings: [
                         .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS])),
                         .define("GLES_SILENCE_DEPRECATION", .when(platforms: [.iOS, .tvOS])),
@@ -230,18 +260,18 @@ let package = Package(
             .target(name: "LinuxSupport",
                     dependencies: [.targetItem(name: "LinuxImports", condition: .when(platforms: [.linux])),
                                    .targetItem(name: "LinuxExtensions", condition: .when(platforms: [.linux]))],
-                    path: "Sources/GateEngineDependencies/LinuxSupport/LinuxSupport"),
+                    path: "Dependencies/LinuxSupport/LinuxSupport"),
             .target(name: "LinuxExtensions",
-                    path: "Sources/GateEngineDependencies/LinuxSupport/LinuxExtensions"),
+                    path: "Dependencies/LinuxSupport/LinuxExtensions"),
             .systemLibrary(name: "LinuxImports",
-                           path: "Sources/GateEngineDependencies/LinuxSupport/LinuxImports"),
+                           path: "Dependencies/LinuxSupport/LinuxImports"),
             
             // OpenGL
             .systemLibrary(name: "OpenGL_Linux",
-                           path: "Sources/GateEngineDependencies/OpenGL/OpenGL_Linux"),
+                           path: "Dependencies/OpenGL/OpenGL_Linux"),
             .target(name: "OpenGL_GateEngine",
                     dependencies: ["OpenGL_Linux"],
-                    path: "Sources/GateEngineDependencies/OpenGL/OpenGL_GateEngine")
+                    path: "Dependencies/OpenGL/OpenGL_GateEngine")
         ])
         #endif
         
@@ -249,7 +279,7 @@ let package = Package(
         targets.append(contentsOf: [
         // OpenALSoft
         .target(name: "OpenALSoft",
-                path: "Sources/GateEngineDependencies/OpenAL/OpenALSoft",
+                path: "Dependencies/OpenAL/OpenALSoft",
                 sources: openALSources,
                 publicHeadersPath: "UnmodifiedSource/include",
                 cxxSettings: openALCXXSettings,
@@ -266,11 +296,29 @@ let package = Package(
         ])
         #endif
         
+        
         // MARK: - Tests
+        
         targets.append(contentsOf: [
-            .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"]),
+            .testTarget(name: "GateEngineTests",
+                        dependencies: ["GateEngine"],
+                        resources: [.copy("Resources")],
+                        swiftSettings: [
+                            .define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])),
+                        ]),
             .testTarget(name: "GameMathTests",
                         dependencies: ["GameMath"]),
+            .testTarget(name: "GravityTests",
+                        dependencies: ["Gravity", "GateEngine"],
+                        resources: [
+                            .copy("Resources/disabled"),
+                            .copy("Resources/fuzzy"),
+                            .copy("Resources/infiniteloop"),
+                            .copy("Resources/unittest"),
+                        ],
+                        swiftSettings: [
+                            .define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])),
+                        ]),
         ])
         #if !os(Windows)
         targets.append(contentsOf: [
@@ -295,9 +343,9 @@ var openALLinkerSettings: [LinkerSetting] {
     var array: [LinkerSetting] = []
     
     array.append(contentsOf: [
-        .linkedFramework("AudioToolbox", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])),
-        .linkedFramework("CoreFoundation", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])),
-        .linkedFramework("CoreAudio", .when(platforms: [.macOS, .tvOS, .iOS, .watchOS, .macCatalyst])),
+        .linkedFramework("AudioToolbox", .when(platforms: .anyApple)),
+        .linkedFramework("CoreFoundation", .when(platforms: .anyApple)),
+        .linkedFramework("CoreAudio", .when(platforms: .anyApple)),
     ])
     // array.append(contentsOf: [
     //     .linkedLibrary("winmm", .when(platforms: [.windows])),
@@ -487,3 +535,27 @@ var openALSources: [String] {
     return array
 }
 #endif
+
+
+// Package.swift Helpers
+extension Array where Element == Platform {
+    static func any(except excluding: Platform...) -> Self {
+        var array = self.any
+        for platform in excluding {
+            array.removeAll(where: {$0 == platform})
+        }
+        return array
+    }
+    
+    static var desktop: Self {[.windows, .linux, .macOS]}
+    static var mobile: Self {[.iOS, .tvOS, .android]}
+    static var anyApple: Self {[.iOS, .tvOS, .macOS]}
+    
+    static var any: Self {[
+        .macOS, .iOS, .tvOS,
+        .linux, .android,
+        .windows,
+        .wasi,
+    ]}
+}
+

@@ -6,15 +6,15 @@
  */
 
 internal protocol AudioContextBackend: AnyObject {
-    func createSpacialMixerReference() -> SpacialAudioMixerReference
-    func createAudioMixerReference() -> AudioMixerReference
+    func createSpacialMixerReference() -> any SpacialAudioMixerReference
+    func createAudioMixerReference() -> any AudioMixerReference
     
     var endianness: Endianness {get}
     func supportsBitRate(_ bitRate: AudioBuffer.Format.BitRate) -> Bool
 }
 
 public class AudioContext {
-    internal let reference: AudioContextBackend
+    internal let reference: any AudioContextBackend
     
     internal init() {
         #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)

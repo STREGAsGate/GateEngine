@@ -7,7 +7,7 @@
 
 public final class Game {
     public let platform: CurrentPlatform
-    public let delegate: GameDelegate
+    public let delegate: any GameDelegate
     
     @MainActor public private(set) var state: State! = nil
     @MainActor internal private(set) var internalState: State! = nil
@@ -15,7 +15,7 @@ public final class Game {
     lazy private(set) var identifier: String = delegate.resolvedGameIdentifier()
     
     nonisolated public let isHeadless: Bool
-    @MainActor internal init(delegate: GameDelegate, currentPlatform: CurrentPlatform) {
+    @MainActor internal init(delegate: any GameDelegate, currentPlatform: CurrentPlatform) {
         self.platform = currentPlatform
         self.delegate = delegate
         if delegate.isHeadless() {
@@ -30,10 +30,19 @@ public final class Game {
         }
     }
     
+    public struct Attributes: OptionSet {
+        public let rawValue: UInt
+        public init(rawValue: UInt) {
+            self.rawValue = rawValue
+        }
+        
+        public static let renderingIsPermitted = Self(rawValue: 1 << 2)
+    }
+    @MainActor public internal(set) var attributes: Attributes = []
+    
     /// The graphics library being used to render.
     public let renderingAPI: RenderingAPI
     @MainActor @usableFromInline let renderer: Renderer!
-    @MainActor @usableFromInline internal var renderingIsPermitted: Bool = false
     
     @MainActor public private(set) lazy var windowManager: WindowManager = WindowManager(self)
     @MainActor @usableFromInline private(set) lazy var ecs: ECSContext = ECSContext(game: self)
@@ -47,10 +56,10 @@ public final class Game {
         if isHeadless == false {
             do {
                 // Allow the main window to be created even though we're not rendering
-                self.renderingIsPermitted = true
+                self.attributes.insert(.renderingIsPermitted)
                 _ = try delegate.createMainWindow(game: self, identifier: WindowManager.mainWindowIdentifier)
                 assert(windowManager.mainWindow?.identifier == WindowManager.mainWindowIdentifier, "Must use the provided identifier to make the mainWindow.")
-                self.renderingIsPermitted = false
+                self.attributes.remove(.renderingIsPermitted)
             }catch{
                 Log.fatalError("Failed to create main window. \(error)")
             }
@@ -59,7 +68,7 @@ public final class Game {
         
         #if !GATEENGINE_PLATFORM_DEFERS_LAUNCH
         self.addPlatformSystems()
-        self.delegate.didFinishLaunching(game: self, options: [])
+        await self.delegate.didFinishLaunching(game: self, options: [])
         #endif
         
         self.primeDeltaTime()
@@ -73,8 +82,10 @@ public final class Game {
     }
     
     @MainActor internal func addPlatformSystems() {
-        self.insertSystem(HIDSystem.self)
-        self.insertSystem(AudioSystem.self)
+        if isHeadless == false {
+            self.insertSystem(HIDSystem.self)
+            self.insertSystem(AudioSystem.self)
+        }
         self.insertSystem(CacheSystem.self)
     }
     

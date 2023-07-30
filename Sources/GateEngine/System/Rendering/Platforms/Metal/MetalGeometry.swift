@@ -12,9 +12,9 @@ import Collections
 class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
     let primitive: DrawFlags.Primitive
     let attributes: ContiguousArray<GeometryAttribute>
-    let buffers: ContiguousArray<MTLBuffer>
+    let buffers: ContiguousArray<any MTLBuffer>
     let indicesCount: Int
-    var indexBuffer: MTLBuffer {
+    var indexBuffer: any MTLBuffer {
         return buffers.last!
     }
     required init(geometry: RawGeometry) {
@@ -30,7 +30,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
         ]
         
-        let sharedBuffers: ContiguousArray<MTLBuffer> = [
+        let sharedBuffers: ContiguousArray<any MTLBuffer> = [
             device.makeBuffer(bytes: geometry.positions, length: MemoryLayout<Float>.stride * geometry.positions.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.uvSet1, length: MemoryLayout<Float>.stride * geometry.uvSet1.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.uvSet2, length: MemoryLayout<Float>.stride * geometry.uvSet2.count, options: .storageModeShared)!,
@@ -69,7 +69,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 4, shaderAttribute: .jointWeights),
         ]
         
-        let sharedBuffers: ContiguousArray<MTLBuffer> = [
+        let sharedBuffers: ContiguousArray<any MTLBuffer> = [
             device.makeBuffer(bytes: geometry.positions, length: MemoryLayout<Float>.stride * geometry.positions.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.uvSet1, length: MemoryLayout<Float>.stride * geometry.uvSet1.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: geometry.uvSet2, length: MemoryLayout<Float>.stride * geometry.uvSet2.count, options: .storageModeShared)!,
@@ -105,7 +105,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
         ]
         
-        let sharedBuffers: ContiguousArray<MTLBuffer> = [
+        let sharedBuffers: ContiguousArray<any MTLBuffer> = [
             device.makeBuffer(bytes: lines.positions, length: MemoryLayout<Float>.stride * lines.positions.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: lines.colors, length: MemoryLayout<Float>.stride * lines.colors.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: lines.indices, length: MemoryLayout<UInt16>.stride * lines.indices.count, options: .storageModeShared)!
@@ -130,7 +130,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
         ]
         
-        let sharedBuffers: ContiguousArray<MTLBuffer> = [
+        let sharedBuffers: ContiguousArray<any MTLBuffer> = [
             device.makeBuffer(bytes: points.positions, length: MemoryLayout<Float>.stride * points.positions.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: points.colors, length: MemoryLayout<Float>.stride * points.colors.count, options: .storageModeShared)!,
             device.makeBuffer(bytes: points.indices, length: MemoryLayout<UInt16>.stride * points.indices.count, options: .storageModeShared)!
@@ -145,7 +145,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
         self.blit(sharedBuffers, buffers)
     }
     
-    private func blit(_ source: ContiguousArray<MTLBuffer>, _ destination: ContiguousArray<MTLBuffer>) {
+    private func blit(_ source: ContiguousArray<any MTLBuffer>, _ destination: ContiguousArray<any MTLBuffer>) {
         assert(source.count == destination.count)
         
         let buffer = Game.shared.renderer.commandQueue.makeCommandBuffer()!
@@ -160,7 +160,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
     }
     
 #if GATEENGINE_DEBUG_RENDERING || DEBUG
-    func isDrawCommandValid(sharedWith backend: GeometryBackend) -> Bool {
+    func isDrawCommandValid(sharedWith backend: any GeometryBackend) -> Bool {
         let backend = backend as! Self
         if indicesCount != backend.indicesCount {
             return false

@@ -74,7 +74,7 @@ public class RigSystem: System {
  
         for entity in game.entities {
             if let rigAttachmentComponent = entity.component(ofType: RigAttachmentComponent.self) {
-                updateRigAttachmentTransform(game, entity: entity, rigAttachmentComponent: rigAttachmentComponent)
+                await updateRigAttachmentTransform(game, entity: entity, rigAttachmentComponent: rigAttachmentComponent)
             }
         }
     }
@@ -87,7 +87,7 @@ public class RigSystem: System {
         joint.localTransform.scale = (joint.localTransform.scale + transform.scale) / 2
     }
     
-    private func updateRigAttachmentTransform(_ game: Game, entity: Entity, rigAttachmentComponent: RigAttachmentComponent) {
+    private func updateRigAttachmentTransform(_ game: Game, entity: Entity, rigAttachmentComponent: RigAttachmentComponent) async {
         guard let parent = game.entities.first(where: {$0.id == rigAttachmentComponent.parentEntityID}) else {
             //If the parent is gone trash the attachment
             game.removeEntity(entity)
@@ -96,7 +96,7 @@ public class RigSystem: System {
         guard let parentTransform = parent.component(ofType: Transform3Component.self) else {return}
         guard let parentRig = parent.component(ofType: Rig3DComponent.self) else {return}
         guard let joint = parentRig.skeleton.jointNamed(rigAttachmentComponent.parentJointName) else {return}
-        entity.configure(Transform3Component.self) { component in
+        await entity.configure(Transform3Component.self) { component in
             let transform = (parentTransform.transform.createMatrix() * joint.modelSpace).transform
             component.transform.position = transform.position
             component.rotation = parentTransform.rotation * joint.modelSpace.rotation.conjugate * Quaternion(90°, axis: .right)

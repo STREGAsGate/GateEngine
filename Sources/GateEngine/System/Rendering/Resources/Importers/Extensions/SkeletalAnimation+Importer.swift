@@ -6,12 +6,12 @@
  */
 
 extension ResourceManager {
-    public func addSkeletalAnimationImporter(_ type: SkeletalAnimationImporter.Type) {
+    public func addSkeletalAnimationImporter(_ type: any SkeletalAnimationImporter.Type) {
         guard importers.skeletalAnimationImporters.contains(where: {$0 == type}) == false else {return}
         importers.skeletalAnimationImporters.insert(type, at: 0)
     }
     
-    fileprivate func importerForFile(_ file: URL) -> SkeletalAnimationImporter? {
+    fileprivate func importerForFile(_ file: URL) -> (any SkeletalAnimationImporter)? {
         for type in self.importers.skeletalAnimationImporters {
             if type.canProcessFile(file) {
                 return type.init()
@@ -51,7 +51,7 @@ public extension SkeletalAnimationImporter {
 extension SkeletalAnimation {
     public convenience init(path: String, options: SkeletalAnimationImporterOptions = .none) async throws {
         let file = URL(fileURLWithPath: path)
-        guard let importer: SkeletalAnimationImporter = await Game.shared.resourceManager.importerForFile(file) else {
+        guard let importer: any SkeletalAnimationImporter = await Game.shared.resourceManager.importerForFile(file) else {
             throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
         }
         

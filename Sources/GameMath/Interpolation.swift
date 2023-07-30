@@ -81,6 +81,7 @@ internal extension Float {
 internal extension Float {
     @usableFromInline @_transparent
     func easedIn(to: Float, factor: Float) -> Float {
+        #warning("Variable 'to' unused")
         return 1 - cos((factor * .pi) / 2)
     }
     

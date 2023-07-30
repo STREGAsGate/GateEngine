@@ -132,7 +132,7 @@ final class Win32Window: WindowBacking {
         }
     }
 
-    @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
+    @MainActor func createWindowRenderTargetBackend() -> any RenderTargetBackend {
         return DX12RenderTarget(windowBacking: self)
     }
 

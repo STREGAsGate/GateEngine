@@ -170,7 +170,7 @@ final class X11Window: WindowBacking {
         XCloseDisplay(xDisplay)
     }
 
-    @MainActor func createWindowRenderTargetBackend() -> RenderTargetBackend {
+    @MainActor func createWindowRenderTargetBackend() -> any RenderTargetBackend {
         glXMakeCurrent(xDisplay, xWindow, glxContext)
         return OpenGLRenderTarget(windowBacking: self)
     }

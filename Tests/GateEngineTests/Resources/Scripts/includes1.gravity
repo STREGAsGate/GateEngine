@@ -1,0 +1,6 @@
+
+#include "Resources/Scripts/includes2.gravity"
+
+func main() {
+    return valueFromIncludes3;
+}

@@ -15,7 +15,7 @@ public enum MipMapping: Hashable {
 @MainActor internal protocol TextureBackend: AnyObject {
     var size: Size2 {get}
     init(data: Data, size: Size2, mipMapping: MipMapping)
-    init(renderTargetBackend: RenderTargetBackend)
+    init(renderTargetBackend: any RenderTargetBackend)
     func replaceData(with data: Data, size: Size2, mipMapping: MipMapping)
 }
 
@@ -45,7 +45,7 @@ public enum MipMapping: Hashable {
         return renderTarget != nil
     }
 
-    internal var textureBackend: TextureBackend? {
+    internal var textureBackend: (any TextureBackend)? {
         return Game.shared.resourceManager.textureCache(for: cacheKey)?.textureBackend
     }
     

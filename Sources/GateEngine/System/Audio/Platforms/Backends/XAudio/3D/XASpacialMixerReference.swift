@@ -34,11 +34,11 @@ internal class XASpacialMixerReference: SpacialAudioMixerReference {
         }
     }
     
-    func createListenerReference() -> SpatialAudioListenerBackend {
+    func createListenerReference() -> any SpatialAudioListenerBackend {
         return XAListenerReference()
     }
     
-    func createSourceReference() -> SpatialAudioSourceReference {
+    func createSourceReference() -> any SpatialAudioSourceReference {
         return XASourceReference(self)
     }
 }

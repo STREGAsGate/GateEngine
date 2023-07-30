@@ -63,7 +63,7 @@ class DX12RenderTarget: RenderTargetBackend {
         }
     }()
     
-    init(windowBacking: WindowBacking?) {
+    init(windowBacking: (any WindowBacking)?) {
         if let windowBacking {
             let windowBacking: Win32Window = windowBacking as! Win32Window
             self.swapChain = windowBacking.swapChain

@@ -6,7 +6,7 @@
  */
 
 extension ResourceManager {
-    public func addTextureImporter(_ type: TextureImporter.Type, atEnd: Bool = false) {
+    public func addTextureImporter(_ type: any TextureImporter.Type, atEnd: Bool = false) {
         guard importers.textureImporters.contains(where: {$0 == type}) == false else {return}
         if atEnd {
             importers.textureImporters.append(type)
@@ -15,7 +15,7 @@ extension ResourceManager {
         }
     }
     
-    internal func textureImporterForFile(_ file: URL) -> TextureImporter? {
+    internal func textureImporterForFile(_ file: URL) -> (any TextureImporter)? {
         for type in self.importers.textureImporters {
             if type.canProcessFile(file) {
                 return type.init()

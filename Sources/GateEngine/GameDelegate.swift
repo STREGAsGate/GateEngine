@@ -17,7 +17,7 @@ public struct LaunchOptions: OptionSet {
 
 public protocol GameDelegate: AnyObject {
     /// Called when the app finishes loading.
-    @MainActor func didFinishLaunching(game: Game, options: LaunchOptions)
+    @MainActor func didFinishLaunching(game: Game, options: LaunchOptions) async
     
     /**
      Create a customized mainWindow
@@ -35,7 +35,7 @@ public protocol GameDelegate: AnyObject {
      A display has been attached.
      - returns: A new window instance to put on the screen. Passing an existing window is undefined behaviour.
     */
-    @MainActor func createWindowForExternalscreen(game: Game) throws -> Window?
+    @MainActor func createWindowForExternalScreen(game: Game) throws -> Window?
     
     /// Might be called immediately before the app closes.
     @MainActor func willTerminate(game: Game)
@@ -60,7 +60,7 @@ public protocol GameDelegate: AnyObject {
      Search paths for your Swift Packages are already located automatically and don't need to be added here.
      - returns: An array of URLs each pointing to a directory containing game resources.
      */
-    nonisolated func customResourceLocations() -> [URL]
+    nonisolated func customResourceLocations() -> [String]
     
     /**
     An ID for the current game. This identifier is used for storing user settings.
@@ -78,11 +78,14 @@ public extension GameDelegate {
         return try game.windowManager.createWindow(identifier: identifier, style: .system, options: .defaultForMainWindow)
     }
     func createUserRequestedWindow(game: Game) throws -> Window? {return nil}
-    func createWindowForExternalscreen(game: Game) throws -> Window? {return nil}
+    func createWindowForExternalScreen(game: Game) throws -> Window? {return nil}
     
     func willTerminate(game: Game) {}
     func isHeadless() -> Bool {return false}
-    func customResourceLocations() -> [URL] {return []}
+    func customResourceLocations() -> [String] {return []}
+    internal func resolvedCustomResourceLocations() -> [URL] {
+        return customResourceLocations().compactMap({URL(string: $0)})
+    }
 
     func gameIdentifier() -> StaticString? {return nil}
 
@@ -137,18 +140,8 @@ public extension GameDelegate {
 public extension GameDelegate {
     @MainActor static func main() {
         let delegate = Self()
-        #if GATEENGINE_ASYNCLOAD_CURRENTPLATFORM && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
-        Task(priority: .high) {@MainActor in
-            let platform = await CurrentPlatform(delegate: delegate)
-            Game.shared = Game(delegate: delegate, currentPlatform: platform)
-        }
-        while Game.shared == nil {
-            RunLoop.main.run(until: Date())
-        }
-        #else
         let platform = CurrentPlatform(delegate: delegate)
         Game.shared = Game(delegate: delegate, currentPlatform: platform)
-        #endif
         Game.shared.platform.main()
     }
 }

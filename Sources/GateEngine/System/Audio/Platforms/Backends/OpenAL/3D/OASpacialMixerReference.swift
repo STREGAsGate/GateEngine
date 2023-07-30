@@ -40,7 +40,7 @@ internal class OASpacialMixerReference: SpacialAudioMixerReference {
         }
     }
     
-    func createListenerReference() -> SpatialAudioListenerBackend {
+    func createListenerReference() -> any SpatialAudioListenerBackend {
         return OAListenerReference(self)
     }
     
@@ -60,7 +60,7 @@ internal class OASpacialMixerReference: SpacialAudioMixerReference {
     private var sourceReferences: [OASourceReference] {sourceWrappers.compactMap({$0.sourceReference})}
     
     ///Generates a brand new audio source. You must store the returned object yourself, it is not retained by the mixer.
-    func createSourceReference() -> SpatialAudioSourceReference {
+    func createSourceReference() -> any SpatialAudioSourceReference {
         let sourceReference = OASourceReference(self)
         let wrapper = getSourceWrapper()
         wrapper.sourceReference = sourceReference

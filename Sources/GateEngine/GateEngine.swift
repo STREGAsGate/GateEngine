@@ -33,15 +33,19 @@ import WebAPIBase
 #endif
 
 #if targetEnvironment(macCatalyst)
-#error("macCatalyst is not a supported platform.")
+#error("macCatalyst is not a supported platform. Use macOS instead.")
 #endif
 
 #if os(watchOS)
+// Apple doesn't allow 3rd party developers to use Metal on watchOS so it's not possible to run an engine.
+// Apple's own SceneKit engine does use Metal on watchOS, but GateEngine isn't allowed to do the same.
 #error("watchOS is not a supported platform.")
 #endif
 
+#if swift(>=5.9)
 #if os(xrOS)
 #error("visionOS is not a supported platform.")
+#endif
 #endif
 
 #if os(Android)
@@ -61,6 +65,9 @@ public enum GateEngineError: Error, Equatable, Hashable {
     case failedToLoad(_ reason: String)
     case failedToDecode(_ reason: String)
 
+    case scriptCompileError(_ reason: String)
+    case scriptExecutionError(_ reason: String)
+    
     case generic(_ description: String)
     
     case failedToCreateWindow(_ reason: String)
@@ -93,6 +100,7 @@ public enum GateEngineError: Error, Equatable, Hashable {
         }
     }
 }
+
 extension GateEngineError: ExpressibleByStringLiteral {
     public init(stringLiteral value: StringLiteralType) {
         self = .generic(value)

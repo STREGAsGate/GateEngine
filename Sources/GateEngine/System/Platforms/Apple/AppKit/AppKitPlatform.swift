@@ -13,8 +13,8 @@ public final class AppKitPlatform: InternalPlatform {
     public static let fileSystem: AppleFileSystem = AppleFileSystem()
     let staticResourceLocations: [URL]
     
-    init(delegate: GameDelegate) async {
-        self.staticResourceLocations = await Self.getStaticSearchPaths(delegate: delegate)
+    init(delegate: any GameDelegate) {
+        self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
     }
     
     public var supportsMultipleWindows: Bool {
@@ -22,7 +22,7 @@ public final class AppKitPlatform: InternalPlatform {
     }
     
     public func locateResource(from path: String) async -> String? {
-        let searchPaths = Game.shared.delegate.customResourceLocations() + staticResourceLocations
+        let searchPaths = Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             if await fileSystem.itemExists(at: file.path) {
@@ -271,6 +271,8 @@ extension AppKitPlatform {
         self.setupStatusBarMenu()
         
         app.run()
+        
+        exit(1)
     }
 }
 

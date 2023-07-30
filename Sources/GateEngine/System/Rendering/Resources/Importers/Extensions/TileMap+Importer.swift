@@ -6,12 +6,12 @@
  */
 
 extension ResourceManager {
-    public func addTileMapImporter(_ type: TileMapImporter.Type) {
+    public func addTileMapImporter(_ type: any TileMapImporter.Type) {
         guard importers.tileMapImporters.contains(where: {$0 == type}) == false else {return}
         importers.tileMapImporters.insert(type, at: 0)
     }
 
-    fileprivate func importerForFileType(_ file: String) -> TileMapImporter? {
+    fileprivate func importerForFileType(_ file: String) -> (any TileMapImporter)? {
         for type in self.importers.tileMapImporters {
             if type.supportedFileExtensions().contains(where: {$0.caseInsensitiveCompare(file) == .orderedSame}) {
                 return type.init()
@@ -46,7 +46,7 @@ extension TileMap {
         guard let fileExtension = path.components(separatedBy: ".").last else {
             throw GateEngineError.failedToLoad("Unknown file type.")
         }
-        guard let importer: TileMapImporter = await Game.shared.resourceManager.importerForFileType(fileExtension) else {
+        guard let importer: any TileMapImporter = await Game.shared.resourceManager.importerForFileType(fileExtension) else {
             throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
         }
 

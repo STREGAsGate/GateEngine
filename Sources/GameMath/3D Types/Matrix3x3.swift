@@ -61,7 +61,7 @@ public extension Matrix3x3 {
     
     //MARK: Subscript
     @inlinable
-    subscript (_ index: Array<Float>.Index) -> Float {
+    subscript (_ index: Int) -> Float {
         @_transparent get {
             switch index {
             case 0: return a

@@ -61,13 +61,13 @@ public struct DrawFlags: Hashable {
 }
 
 public struct DrawCommand {
-    let geometries: ContiguousArray<GeometryBackend>
+    let geometries: ContiguousArray<any GeometryBackend>
     let transforms: ContiguousArray<Transform3>
     let material: Material
     let flags: DrawFlags
 
     @usableFromInline
-    internal init(backends: ContiguousArray<GeometryBackend>, transforms: ContiguousArray<Transform3>, material: Material, flags: DrawFlags) {
+    internal init(backends: ContiguousArray<any GeometryBackend>, transforms: ContiguousArray<Transform3>, material: Material, flags: DrawFlags) {
         self.geometries = backends
         self.transforms = transforms
         self.material = material

@@ -11,15 +11,15 @@ import class Foundation.FileManager
 
 extension ResourceManager {
     struct Importers {
-        internal var textureImporters: [TextureImporter.Type] = [PNGImporter.self]
+        internal var textureImporters: [any TextureImporter.Type] = [PNGImporter.self]
         
-        internal var geometryImporters: [GeometryImporter.Type] = [GLTransmissionFormat.self, WavefrontOBJImporter.self]
-        internal var skeletonImporters: [SkeletonImporter.Type] = [GLTransmissionFormat.self]
-        internal var skinImporters: [SkinImporter.Type] = [GLTransmissionFormat.self]
-        internal var skeletalAnimationImporters: [SkeletalAnimationImporter.Type] = [GLTransmissionFormat.self]
+        internal var geometryImporters: [any GeometryImporter.Type] = [GLTransmissionFormat.self, WavefrontOBJImporter.self]
+        internal var skeletonImporters: [any SkeletonImporter.Type] = [GLTransmissionFormat.self]
+        internal var skinImporters: [any SkinImporter.Type] = [GLTransmissionFormat.self]
+        internal var skeletalAnimationImporters: [any SkeletalAnimationImporter.Type] = [GLTransmissionFormat.self]
         
-        internal var tileSetImporters: [TileSetImporter.Type] = [/*TiledTileSetImporter.self*/]
-        internal var tileMapImporters: [TileMapImporter.Type] = [/*TiledTileMapImporter.self*/]
+        internal var tileSetImporters: [any TileSetImporter.Type] = [/*TiledTileSetImporter.self*/]
+        internal var tileMapImporters: [any TileMapImporter.Type] = [/*TiledTileMapImporter.self*/]
     }
 }
 
@@ -127,7 +127,7 @@ extension ResourceManager {
             let path: String
         }
         struct AudioBufferCache {
-            weak var audioBuffer: AudioBufferBackend? = nil
+            weak var audioBuffer: (any AudioBufferBackend)? = nil
         }
         var audioBuffers: [AudioBufferKey : AudioBufferCache] = [:]
     }
@@ -144,7 +144,7 @@ internal extension ResourceManager.Cache {
     
     @usableFromInline
     class GeometryCache {
-        @usableFromInline var geometryBackend: GeometryBackend?
+        @usableFromInline var geometryBackend: (any GeometryBackend)?
         var lastLoaded: Date
         var state: ResourceState
         var referenceCount: UInt
@@ -256,7 +256,7 @@ internal extension ResourceManager {
         #endif
     }
     
-    func geometryBackend(from raw: RawGeometry) async -> GeometryBackend {
+    func geometryBackend(from raw: RawGeometry) async -> any GeometryBackend {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
         return await OpenGLGeometry(geometry: raw)
 #elseif canImport(MetalKit)
@@ -288,7 +288,7 @@ internal extension ResourceManager.Cache {
     }
     
     class SkinnedGeometryCache {
-        var geometryBackend: GeometryBackend?
+        var geometryBackend: (any GeometryBackend)?
         var skinJoints: [Skin.Joint]?
         var lastLoaded: Date
         var state: ResourceState
@@ -410,7 +410,7 @@ internal extension ResourceManager {
         #endif
     }
     
-    func geometryBackend(from raw: RawGeometry, skin: Skin) async -> GeometryBackend {
+    func geometryBackend(from raw: RawGeometry, skin: Skin) async -> any GeometryBackend {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
         return await OpenGLGeometry(geometry: raw, skin: skin)
 #elseif canImport(MetalKit)
@@ -452,7 +452,7 @@ internal extension ResourceManager {
         return key
     }
     
-    func geometryBackend(from raw: RawLines) async -> GeometryBackend {
+    func geometryBackend(from raw: RawLines) async -> any GeometryBackend {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
         return await OpenGLGeometry(lines: raw)
 #elseif canImport(MetalKit)
@@ -494,7 +494,7 @@ internal extension ResourceManager {
         return key
     }
     
-    func geometryBackend(from raw: RawPoints) async -> GeometryBackend {
+    func geometryBackend(from raw: RawPoints) async -> any GeometryBackend {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
         return await OpenGLGeometry(points: raw)
 #elseif canImport(MetalKit)
@@ -526,7 +526,7 @@ internal extension ResourceManager.Cache {
     
     class TextureCache {
         var isRenderTarget: Bool
-        var textureBackend: TextureBackend?
+        var textureBackend: (any TextureBackend)?
         var lastLoaded: Date
         var state: ResourceState
         var referenceCount: UInt
@@ -574,7 +574,7 @@ internal extension ResourceManager {
         return key
     }
     
-    func textureCacheKey(renderTargetBackend: RenderTargetBackend) -> Cache.TextureKey {
+    func textureCacheKey(renderTargetBackend: any RenderTargetBackend) -> Cache.TextureKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.TextureKey(requestedPath: path, mipMapping: .none, textureOptions: .none)
         if cache.textures[key] == nil {
@@ -667,7 +667,7 @@ internal extension ResourceManager {
         #endif
     }
     
-    func textureBackend(data: Data, size: Size2, mipMapping: MipMapping) async -> TextureBackend {
+    func textureBackend(data: Data, size: Size2, mipMapping: MipMapping) async -> any TextureBackend {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
         return await OpenGLTexture(data: data, size: size, mipMapping: mipMapping)
 #elseif canImport(MetalKit)
@@ -687,7 +687,7 @@ internal extension ResourceManager {
         #error("Not implemented")
 #endif
     }
-    func textureBackend(renderTargetBackend: RenderTargetBackend) async -> TextureBackend {
+    func textureBackend(renderTargetBackend: any RenderTargetBackend) async -> any TextureBackend {
 #if GATEENGINE_FORCE_OPNEGL_APPLE
         return await OpenGLTexture(renderTargetBackend: renderTargetBackend)
 #elseif canImport(MetalKit)

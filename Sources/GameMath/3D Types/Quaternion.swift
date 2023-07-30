@@ -32,6 +32,15 @@ public struct Quaternion: Vector4, SIMD {
     @inlinable
     public var x: Scalar {
         @_transparent get {
+            return _storage[0]
+        }
+        @_transparent set {
+            _storage[0] = newValue
+        }
+    }
+    @inlinable
+    public var y: Scalar {
+        @_transparent get {
             return _storage[1]
         }
         @_transparent set {
@@ -39,21 +48,12 @@ public struct Quaternion: Vector4, SIMD {
         }
     }
     @inlinable
-    public var y: Scalar {
+    public var z: Scalar {
         @_transparent get {
             return _storage[2]
         }
         @_transparent set {
             _storage[2] = newValue
-        }
-    }
-    @inlinable
-    public var z: Scalar {
-        @_transparent get {
-            return _storage[3]
-        }
-        @_transparent set {
-            _storage[3] = newValue
         }
     }
     @inlinable
@@ -84,10 +84,10 @@ public struct Quaternion: Vector4 {
     public var x, y, z, w: Float
     
     public init(_ x: Float, _ y: Float, _ z: Float, _ w: Float) {
-        self.w = w
         self.x = x
         self.y = y
         self.z = z
+        self.w = w
     }
 }
 #endif
@@ -106,23 +106,23 @@ public extension Quaternion {
 
 public extension Quaternion {
     @inlinable
-    subscript (_ index: Array<Float>.Index) -> Float {
+    subscript (_ index: Int) -> Float {
         @_transparent get {
             switch index {
-            case 0: return w
-            case 1: return x
-            case 2: return y
-            case 3: return z
+            case 0: return x
+            case 1: return y
+            case 2: return z
+            case 3: return w
             default:
                 fatalError("Index \(index) out of range \(0..<4) for type \(type(of: self))")
             }
         }
         @_transparent set {
             switch index {
-            case 0: w = newValue
-            case 1: x = newValue
-            case 2: y = newValue
-            case 3: z = newValue
+            case 0: x = newValue
+            case 1: y = newValue
+            case 2: z = newValue
+            case 3: w = newValue
             default:
                 fatalError("Index \(index) out of range \(0..<4) for type \(type(of: self))")
             }
@@ -203,29 +203,29 @@ extension Quaternion {
         
         if trace > 0 {
             let s: Float = 0.5 / (trace + 1.0).squareRoot()
-            w = 0.25 / s
             x = (rot.g - rot.j) * s
             y = (rot.i - rot.c) * s
             z = (rot.b - rot.e) * s
+            w = 0.25 / s
         }else{
             if rot.a > rot.f && rot.a > rot.k {
                 let s: Float = 2.0 * (1.0 + rot.a - rot.f - rot.k).squareRoot()
-                w = (rot.g - rot.j) / s
                 x = 0.25 * s
                 y = (rot.e + rot.b) / s
                 z = (rot.i + rot.c) / s
+                w = (rot.g - rot.j) / s
             }else if rot.f > rot.k {
                 let s: Float = 2.0 * (1.0 + rot.f - rot.a - rot.k).squareRoot()
-                w = (rot.i - rot.c) / s
                 x = (rot.e + rot.b) / s
                 y = 0.25 * s
                 z = (rot.j + rot.g) / s
+                w = (rot.i - rot.c) / s
             }else{
                 let s: Float = 2.0 * (1.0 + rot.k - rot.a - rot.f).squareRoot()
-                w = (rot.b - rot.e) / s
                 x = (rot.i + rot.c) / s
                 y = (rot.g + rot.j) / s
                 z = 0.25 * s
+                w = (rot.b - rot.e) / s
             }
         }
         
@@ -243,29 +243,29 @@ extension Quaternion {
         
         if trace > 0 {
             let s: Float = 0.5 / (trace + 1.0).squareRoot()
-            w = 0.25 / s
             x = (rot.g - rot.j) * s
             y = (rot.i - rot.c) * s
             z = (rot.b - rot.e) * s
+            w = 0.25 / s
         }else{
             if rot.a > rot.f && rot.a > rot.k {
                 let s: Float = 2.0 * (1.0 + rot.a - rot.f - rot.k).squareRoot()
-                w = (rot.g - rot.j) / s
                 x = 0.25 * s
                 y = (rot.e + rot.b) / s
                 z = (rot.i + rot.c) / s
+                w = (rot.g - rot.j) / s
             }else if rot.f > rot.k {
                 let s: Float = 2.0 * (1.0 + rot.f - rot.a - rot.k).squareRoot()
-                w = (rot.i - rot.c) / s
                 x = (rot.e + rot.b) / s
                 y = 0.25 * s
                 z = (rot.j + rot.g) / s
+                w = (rot.i - rot.c) / s
             }else{
                 let s: Float = 2.0 * (1.0 + rot.k - rot.a - rot.f).squareRoot()
-                w = (rot.b - rot.e) / s
                 x = (rot.i + rot.c) / s
                 y = (rot.g + rot.j) / s
                 z = 0.25 * s
+                w = (rot.b - rot.e) / s
             }
         }
         
@@ -585,16 +585,16 @@ public extension Quaternion {
 
 //MARK: - SIMD
 public extension Quaternion {
-    @_transparent
+    @inlinable
     var simd: SIMD4<Float> {
         @_transparent get {
-            return SIMD4<Float>(w, x, y, z)
+            return SIMD4<Float>(x, y, z, w)
         }
         @_transparent set {
-            w = newValue[0]
-            x = newValue[1]
-            y = newValue[2]
-            z = newValue[3]
+            x = newValue[0]
+            y = newValue[1]
+            z = newValue[2]
+            w = newValue[3]
         }
     }
 }
@@ -606,7 +606,7 @@ extension Quaternion: Codable {
     @inlinable
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        try container.encode([w, x, y, z])
+        try container.encode([x, y, z, w])
     }
     
     @inlinable
@@ -614,9 +614,9 @@ extension Quaternion: Codable {
         let container = try decoder.singleValueContainer()
         let values = try container.decode(Array<Float>.self)
         
-        self.w = values[0]
-        self.x = values[1]
-        self.y = values[2]
-        self.z = values[3]
+        self.x = values[0]
+        self.y = values[1]
+        self.z = values[2]
+        self.w = values[3]
     }
 }

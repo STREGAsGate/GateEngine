@@ -13,11 +13,11 @@ class MetalRenderTarget: RenderTargetBackend {
     var size: Size2 = Size2(2)
     var isFirstPass = true
     
-    internal var commandBuffer: MTLCommandBuffer! = nil
-    internal var commandEncoder: MTLRenderCommandEncoder! = nil
+    internal var commandBuffer: (any MTLCommandBuffer)! = nil
+    internal var commandEncoder: (any MTLRenderCommandEncoder)! = nil
     
-    internal private(set) var colorTexture: MTLTexture? = nil
-    internal private(set) var depthTexture: MTLTexture! = nil
+    internal private(set) var colorTexture: (any MTLTexture)? = nil
+    internal private(set) var depthTexture: (any MTLTexture)! = nil
     
     private var mtlClearColor: MTLClearColor = MTLClearColor(red: Double(Color.clear.red),
                                                              green: Double(Color.clear.green),
@@ -39,7 +39,7 @@ class MetalRenderTarget: RenderTargetBackend {
     }
     
     let metalView: MTKView?
-    init(windowBacking: WindowBacking?) {
+    init(windowBacking: (any WindowBacking)?) {
         if let windowBacking {
             #if canImport(AppKit)
             metalView = ((windowBacking as! AppKitWindow).nsWindowController.contentViewController!.view as! MTKView)

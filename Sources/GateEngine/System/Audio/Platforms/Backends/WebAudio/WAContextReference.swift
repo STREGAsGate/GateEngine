@@ -17,11 +17,11 @@ internal class WAContextReference: AudioContextBackend {
     }
     
     @inlinable
-    func createSpacialMixerReference() -> SpacialAudioMixerReference {
+    func createSpacialMixerReference() -> any SpacialAudioMixerReference {
         return WASpacialMixerReference(self)
     }
     @inlinable
-    func createAudioMixerReference() -> AudioMixerReference {
+    func createAudioMixerReference() -> any AudioMixerReference {
         return WAAudioMixerReference(self)
     }
     

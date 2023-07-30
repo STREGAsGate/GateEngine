@@ -5,21 +5,21 @@
  * http://stregasgate.com
  */
 
-public typealias DeferredBlock = () -> Void
+public typealias DeferredClosure = () -> Void
 
 internal final class DeferredSystem: PlatformSystem {
-    var deferredBlocks: [DeferredBlock] = []
+    var deferredClosures: [DeferredClosure] = []
     
     @inline(__always)
-    func insert(_ block: @escaping DeferredBlock) {
-        deferredBlocks.append(block)
+    func insert(_ block: @escaping DeferredClosure) {
+        deferredClosures.append(block)
     }
     
     override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
-        for block in deferredBlocks {
-            block()
+        for closure in deferredClosures {
+            closure()
         }
-        deferredBlocks.removeAll(keepingCapacity: true)
+        deferredClosures.removeAll(keepingCapacity: true)
     }
     
     public override class var phase: PlatformSystem.Phase {.postDeferred}
@@ -28,22 +28,22 @@ internal final class DeferredSystem: PlatformSystem {
 
 public extension System {
     @_transparent
-    func `defer`(_ block: @escaping DeferredBlock) {
-        Game.shared.defer(block)
+    func `defer`(_ closure: @escaping DeferredClosure) {
+        Game.shared.defer(closure)
     }
 }
 
 internal extension PlatformSystem {
     @_transparent
-    func `defer`(_ block: @escaping DeferredBlock) {
-        Game.shared.defer(block)
+    func `defer`(_ closure: @escaping DeferredClosure) {
+        Game.shared.defer(closure)
     }
 }
 
 @MainActor internal extension Game {
     @usableFromInline @inline(__always)
-    func `defer`(_ block: @escaping DeferredBlock) {
+    func `defer`(_ closure: @escaping DeferredClosure) {
         let system = self.system(ofType: DeferredSystem.self)
-        system.insert(block)
+        system.insert(closure)
     }
 }

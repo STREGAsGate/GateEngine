@@ -28,7 +28,7 @@ class OpenGLTexture: TextureBackend {
         return _size!
     }
     
-    required init(renderTargetBackend: RenderTargetBackend) {
+    required init(renderTargetBackend: any RenderTargetBackend) {
         self.renderTarget = (renderTargetBackend as! OpenGLRenderTarget)
         self._textureId = nil
         self._size = nil
