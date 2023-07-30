@@ -167,7 +167,7 @@ let package = Package(
             }()),
         ])
         
-        // MARK: - _Dependencies
+        // MARK: - Dependencies
         
         targets.append(contentsOf: [
             // Vorbis
