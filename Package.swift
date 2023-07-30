@@ -21,8 +21,9 @@ let package = Package(
         // SwiftWASM
         #if os(macOS) || os(Linux)
         packageDependencies.append(contentsOf: [
+            .package(path: "~/Documents/GitHub/JavaScriptKit"),
             .package(url: "https://github.com/swiftwasm/WebAPIKit.git", branch: "main"),
-            .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
+//            .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
         ])
         #endif
         
@@ -300,14 +301,25 @@ let package = Package(
         // MARK: - Tests
         
         targets.append(contentsOf: [
-            .testTarget(name: "GateEngineTests", dependencies: ["GateEngine"], resources: [.copy("Resources")]),
-            .testTarget(name: "GameMathTests", dependencies: ["GameMath"]),
-            .testTarget(name: "GravityTests", dependencies: ["Gravity", "GateEngine"], resources: [
-                .copy("Resources/disabled"),
-                .copy("Resources/fuzzy"),
-                .copy("Resources/infiniteloop"),
-                .copy("Resources/unittest"),
-            ]),
+            .testTarget(name: "GateEngineTests",
+                        dependencies: ["GateEngine"],
+                        resources: [.copy("Resources")],
+                        swiftSettings: [
+                            .define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])),
+                        ]),
+            .testTarget(name: "GameMathTests",
+                        dependencies: ["GameMath"]),
+            .testTarget(name: "GravityTests",
+                        dependencies: ["Gravity", "GateEngine"],
+                        resources: [
+                            .copy("Resources/disabled"),
+                            .copy("Resources/fuzzy"),
+                            .copy("Resources/infiniteloop"),
+                            .copy("Resources/unittest"),
+                        ],
+                        swiftSettings: [
+                            .define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])),
+                        ]),
         ])
         #if !os(Windows)
         targets.append(contentsOf: [

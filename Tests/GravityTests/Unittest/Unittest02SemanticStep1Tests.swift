@@ -4,6 +4,7 @@
  *
  * http://stregasgate.com
  */
+#if !DISABLE_GRAVITY_TESTS
 
 final class Unittest02SemanticStep1Tests: GravityXCTestCase {
     func testClass1Redeclared() async {
@@ -35,3 +36,4 @@ final class Unittest02SemanticStep1Tests: GravityXCTestCase {
     }
 }
 
+#endif

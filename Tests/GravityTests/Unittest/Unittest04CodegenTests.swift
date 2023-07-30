@@ -4,6 +4,7 @@
  *
  * http://stregasgate.com
  */
+#if !DISABLE_GRAVITY_TESTS
 
 final class Unittest04CodegenTests: GravityXCTestCase {
     func testAssignment1() async {
@@ -71,3 +72,4 @@ final class Unittest04CodegenTests: GravityXCTestCase {
     }
 }
 
+#endif

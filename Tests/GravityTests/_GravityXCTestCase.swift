@@ -4,6 +4,7 @@
  *
  * http://stregasgate.com
  */
+#if !DISABLE_GRAVITY_TESTS
 
 import XCTest
 @testable import GateEngine
@@ -81,3 +82,5 @@ open class GravityXCTestCase: XCTestCase {
         #endif
     }
 }
+
+#endif

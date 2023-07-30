@@ -4,6 +4,7 @@
  *
  * http://stregasgate.com
  */
+#if !DISABLE_GRAVITY_TESTS
 
 final class Unittest01SyntaxTests: GravityXCTestCase {
     func testSyntaxClassDeclaration() async {
@@ -45,3 +46,4 @@ final class Unittest01SyntaxTests: GravityXCTestCase {
     }
 }
 
+#endif

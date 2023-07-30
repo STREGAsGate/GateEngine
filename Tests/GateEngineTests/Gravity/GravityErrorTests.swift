@@ -1,3 +1,11 @@
+/*
+ * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
+#if !DISABLE_GRAVITY_TESTS
+
 import XCTest
 @testable import GateEngine
 
@@ -35,3 +43,5 @@ final class GravityErrorTests: GateEngineXCTestCase {
         XCTAssertEqual(gravity.getVar("myVar"), 10)
     }
 }
+
+#endif
