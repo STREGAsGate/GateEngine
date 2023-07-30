@@ -127,7 +127,9 @@ public final class WASIPlatform: Platform, InternalPlatform {
             state.name = name
             return state
         }catch{
-            if let error = error as? String, error != "No such file or directory." {
+            if case GateEngineError.failedToLocate = error {
+                // Do nothing
+            }else{
                 Log.error("Game State \"\(name)\" failed to restore:", error)
             }
             return Game.State(name: name)
@@ -306,7 +308,7 @@ extension WASIPlatform {
     }
 }
 
-fileprivate final class WASIUserActivationRenderingSystem: RenderingSystem {
+internal final class WASIUserActivationRenderingSystem: RenderingSystem {
     let text = Text(string: "Click to Start", pointSize: 64, style: .bold, color: .white)
     let banner = Sprite(texture: Texture(path: "GateEngine/Branding/Banner Logo Transparent.png", sizeHint: Size2(1200, 244)), bounds: Rect(size: Size2(1200, 244)), sampleFilter: .linear)
     

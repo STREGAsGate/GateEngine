@@ -43,12 +43,17 @@ open class GateEngineXCTestCase: XCTestCase {
     }
     
     @MainActor open override func setUp() async throws {
-        if Game.shared == nil {
-            let delegate = TestGameDelegate()
-            let platform = CurrentPlatform(delegate: delegate)
-            Game.shared = Game(delegate: delegate, currentPlatform: platform)
-            
-            await Game.shared.didFinishLaunching()
-        }
+        guard Game.shared == nil else {return}
+        
+        let delegate = TestGameDelegate()
+        let platform = CurrentPlatform(delegate: delegate)
+        Game.shared = Game(delegate: delegate, currentPlatform: platform)
+        
+        await Game.shared.didFinishLaunching()
+        
+        #if os(WASI)
+        // Removing the system finishes startup as if the user had clicked
+        Game.shared.removeSystem(WASIUserActivationRenderingSystem.self)
+        #endif
     }
 }
