@@ -45,7 +45,7 @@ public final class StandardRenderingSystem: RenderingSystem {
                     guard let transform = entity.component(ofType: Transform3Component.self)?.transform else {continue}
                     
                     if let renderingGeometry = entity.component(ofType: RenderingGeometryComponent.self) {
-                        if let geometry = renderingGeometry.geometry {
+                        for geometry in renderingGeometry.geometries {
                             scene.insert(geometry, withMaterial: material, at: transform, flags: renderingGeometry.flags)
                         }
                     }
