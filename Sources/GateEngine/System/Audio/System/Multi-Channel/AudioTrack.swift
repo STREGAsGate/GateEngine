@@ -6,9 +6,9 @@
  */
 
 internal protocol AudioTrackReference: AnyObject {
-    var repeats: Bool {get set}
-    var volume: Float {get set}
-    var pitch: Float {get set}
+    var repeats: Bool { get set }
+    var volume: Float { get set }
+    var pitch: Float { get set }
     func play()
     func pause()
     func stop()
@@ -18,12 +18,12 @@ internal protocol AudioTrackReference: AnyObject {
 public class AudioTrack {
     internal unowned let mixer: AudioMixer
     internal let reference: any AudioTrackReference
-    
+
     internal init(_ mixer: AudioMixer) {
         self.mixer = mixer
         self.reference = mixer.reference.createAudioTrackReference()
     }
-    
+
     public var repeats: Bool {
         get {
             return reference.repeats
@@ -48,7 +48,7 @@ public class AudioTrack {
             reference.pitch = newValue
         }
     }
-    
+
     public func play() {
         reference.play()
     }
@@ -58,7 +58,7 @@ public class AudioTrack {
     public func stop() {
         reference.stop()
     }
-    
+
     public func setBuffer(_ buffer: AudioBuffer) {
         reference.setBuffer(buffer)
     }

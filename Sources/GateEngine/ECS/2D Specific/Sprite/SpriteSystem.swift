@@ -11,8 +11,12 @@ public final class SpriteSystem: System {
             if let spriteComponent = entity.component(ofType: SpriteComponent.self) {
                 switch spriteComponent.playbackState {
                 case .play:
-                    if spriteComponent.animations.indices.contains(spriteComponent.activeAnimationIndex) {
-                        spriteComponent.animations[spriteComponent.activeAnimationIndex].appendTime(deltaTime)
+                    if spriteComponent.animations.indices.contains(
+                        spriteComponent.activeAnimationIndex
+                    ) {
+                        spriteComponent.animations[spriteComponent.activeAnimationIndex].appendTime(
+                            deltaTime
+                        )
                     }
                 case .stop:
                     spriteComponent.activeAnimation?.progress = 0
@@ -21,8 +25,6 @@ public final class SpriteSystem: System {
         }
     }
 
-    public override class var phase: System.Phase {.updating}
-    public override class func sortOrder() -> SystemSortOrder? {
-        return .spriteSystem
-    }
+    public override class var phase: System.Phase { .updating }
+    public override class func sortOrder() -> SystemSortOrder? { .spriteSystem }
 }

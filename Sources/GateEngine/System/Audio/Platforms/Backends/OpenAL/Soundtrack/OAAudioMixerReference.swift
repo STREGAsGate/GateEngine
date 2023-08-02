@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 #if (canImport(OpenALSoft) || canImport(LinuxSupport)) && !os(WASI)
-#if canImport(OpenALSoft) 
+#if canImport(OpenALSoft)
 import OpenALSoft
 #elseif canImport(LinuxSupport)
 import LinuxSupport
@@ -13,14 +13,14 @@ import LinuxSupport
 
 internal class OAAudioMixerReference: AudioMixerReference {
     let context: OpenALContext
-    
+
     init(_ contextReference: OAContextReference) {
         self.context = OpenALContext(stereoWithDevice: contextReference.device)
         try? context.listener.setPosition(x: 0, y: 0, z: 0)
         volume = 1
         context.resume()
     }
-    
+
     var volume: Float {
         get {
             return context.gain
@@ -29,7 +29,7 @@ internal class OAAudioMixerReference: AudioMixerReference {
             context.gain = newValue
         }
     }
-    
+
     func createAudioTrackReference() -> any AudioTrackReference {
         return OAAudioTrackReference(self)
     }

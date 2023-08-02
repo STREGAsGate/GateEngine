@@ -14,12 +14,12 @@ import JavaScriptEventLoop
 public final class WASIPlatform: Platform, InternalPlatform {
     public static let fileSystem: WASIFileSystem = WASIFileSystem()
     var staticResourceLocations: [URL]
-    var pathCache: [String:String] = [:]
-    
+    var pathCache: [String: String] = [:]
+
     init(delegate: any GameDelegate) {
         self.staticResourceLocations = Self.staticResourceLocations(delegate: delegate)
     }
-    
+
     static func staticResourceLocations(delegate: any GameDelegate) -> [Foundation.URL] {
         func getGameModuleName(_ delegate: AnyObject) -> String {
             let ref = String(reflecting: type(of: delegate))
@@ -34,24 +34,30 @@ public final class WASIPlatform: Platform, InternalPlatform {
              - First so projects with delegate defined paths are the most efficient
              */
             Foundation.URL(fileURLWithPath: "\(engineModule)_\(engineModule).resources"),
-            
+
             // For when the package and target share a name for convenience
             Foundation.URL(fileURLWithPath: "\(gameModule)_\(gameModule).resources"),
-            
+
             // Root
             Foundation.URL(fileURLWithPath: Bundle.main.bundlePath),
         ]
         if files.isEmpty {
-            Log.error("Failed to load any resource bundles! Check code signing and directory permissions.")
-        }else{
-            Log.debug("Loaded static resource search paths: (GameDelegate search paths not included)", files.map({
-                let path = $0.path
-                if path == "." || path == "./" || path.isEmpty {
-                    // Already root
-                    return "\n    \"[WebDir]/\","
-                }
-                return "\n    \"[WebDir]/" + path + "/\","
-            }).joined(), "\n    ")
+            Log.error(
+                "Failed to load any resource bundles! Check code signing and directory permissions."
+            )
+        } else {
+            Log.debug(
+                "Loaded static resource search paths: (GameDelegate search paths not included)",
+                files.map({
+                    let path = $0.path
+                    if path == "." || path == "./" || path.isEmpty {
+                        // Already root
+                        return "\n    \"[WebDir]/\","
+                    }
+                    return "\n    \"[WebDir]/" + path + "/\","
+                }).joined(),
+                "\n    "
+            )
         }
         return files
     }
@@ -73,11 +79,11 @@ public final class WASIPlatform: Platform, InternalPlatform {
                 }
             }
         }
-        
+
         Log.debug("Failed to locate Resource: \"\(path)\"")
         return nil
     }
-    
+
     public func loadResourceAsArrayBuffer(from path: String) async throws -> ArrayBuffer {
         if let resolvedPath = await locateResource(from: path) {
             do {
@@ -86,30 +92,31 @@ public final class WASIPlatform: Platform, InternalPlatform {
                         return try await response.arrayBuffer()
                     }
                 }
-            }catch{
+            } catch {
                 Log.error("Failed to load resource \"\(resolvedPath)\".", error)
                 throw GateEngineError.failedToLoad("\(error)")
             }
         }
-        
+
         throw GateEngineError.failedToLocate
     }
-    
+
     public func loadResource(from path: String) async throws -> Data {
         let arrayBuffer: ArrayBuffer = try await loadResourceAsArrayBuffer(from: path)
         return Data(arrayBuffer)
     }
-    
+
     @inline(__always)
     func fetch(_ url: String, _ options: [String: JSValue] = [:]) async throws -> JSValue {
         let jsFetch = JSObject.global.fetch.function!
         return try await JSPromise(jsFetch(url, options).object!)!.value
     }
-    
+
     func saveStatePath(forStateNamed name: String) throws -> String {
-        return URL(fileURLWithPath: try fileSystem.pathForSearchPath(.persistent, in: .currentUser)).appendingPathComponent(name).path
+        return URL(fileURLWithPath: try fileSystem.pathForSearchPath(.persistent, in: .currentUser))
+            .appendingPathComponent(name).path
     }
-    
+
     func saveState(_ state: Game.State, as name: String) async throws {
         let data = try JSONEncoder().encode(state)
         let path = try self.saveStatePath(forStateNamed: name)
@@ -119,23 +126,23 @@ public final class WASIPlatform: Platform, InternalPlatform {
         }
         try await fileSystem.write(data, to: path)
     }
-    
+
     func loadState(named name: String) async -> Game.State {
         do {
             let data = try await fileSystem.read(from: try saveStatePath(forStateNamed: name))
             let state = try JSONDecoder().decode(Game.State.self, from: data)
             state.name = name
             return state
-        }catch{
+        } catch {
             if case GateEngineError.failedToLocate = error {
                 // Do nothing
-            }else{
+            } else {
                 Log.error("Game State \"\(name)\" failed to restore:", error)
             }
             return Game.State(name: name)
         }
     }
-    
+
     func systemTime() -> Double {
         #if os(WASI)
         var time = timespec()
@@ -144,15 +151,15 @@ public final class WASIPlatform: Platform, InternalPlatform {
             return -1
         }
         return Double(time.tv_sec) + (Double(time.tv_nsec) / 1e+9)
-        #else //GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        #else  //GATEENGINE_ENABLE_WASI_IDE_SUPPORT
         return Date().timeIntervalSinceReferenceDate
         #endif
     }
-    
+
     public var supportsMultipleWindows: Bool {
         return false
     }
-    
+
     internal enum Browser: CustomStringConvertible {
         case safari(version: Version)
         case mobileSafari(version: Version)
@@ -161,13 +168,13 @@ public final class WASIPlatform: Platform, InternalPlatform {
         case edge(version: Version)
         case opera(version: Version)
         case unknown(name: String, version: Version)
-        
+
         struct Version: CustomStringConvertible {
             let major: UInt
             let minor: UInt
             let patch: UInt
             let build: UInt
-            
+
             var description: String {
                 return "\(major).\(minor).\(patch).\(build)"
             }
@@ -191,14 +198,14 @@ public final class WASIPlatform: Platform, InternalPlatform {
             }
         }
     }
-    
-    var browser: Browser {Self.browser}
+
+    var browser: Browser { Self.browser }
     internal static let browser: Browser = {
         let string: String = globalThis.navigator.userAgent
         let name = globalThis.navigator.appName
-        
+
         //TODO: Regex this whole thing...
-        
+
         func version(from string: String) -> Browser.Version {
             var fail: Bool = false
             let versionComponents = string.components(separatedBy: ".").map({
@@ -216,18 +223,33 @@ public final class WASIPlatform: Platform, InternalPlatform {
             case 1:
                 version = Browser.Version(major: versionComponents[0], minor: 0, patch: 0, build: 0)
             case 2:
-                version = Browser.Version(major: versionComponents[0], minor: versionComponents[1], patch: 0, build: 0)
+                version = Browser.Version(
+                    major: versionComponents[0],
+                    minor: versionComponents[1],
+                    patch: 0,
+                    build: 0
+                )
             case 3:
-                version = Browser.Version(major: versionComponents[0], minor: versionComponents[1], patch: versionComponents[2], build: 0)
+                version = Browser.Version(
+                    major: versionComponents[0],
+                    minor: versionComponents[1],
+                    patch: versionComponents[2],
+                    build: 0
+                )
             case 4:
-                version = Browser.Version(major: versionComponents[0], minor: versionComponents[1], patch: versionComponents[2], build: versionComponents[3])
+                version = Browser.Version(
+                    major: versionComponents[0],
+                    minor: versionComponents[1],
+                    patch: versionComponents[2],
+                    build: versionComponents[3]
+                )
             default:
                 Log.warn("Failed to determine browser version.")
                 version = Browser.Version(major: 0, minor: 0, patch: 0, build: 0)
             }
             return version
         }
-        
+
         if string.contains("OPR") {
             let versionString = string.components(separatedBy: "OPR/")[1]
             return .opera(version: version(from: versionString))
@@ -240,22 +262,30 @@ public final class WASIPlatform: Platform, InternalPlatform {
             let versionString = string.components(separatedBy: "Firefox/")[1]
             return .fireFox(version: version(from: versionString))
         }
-        
+
         // Non-Google user agents contain Chrome, so check for Chrame almost last
         if string.contains("Chrome") {
-            let versionString = string.components(separatedBy: ")").last!.components(separatedBy: "/")[1].components(separatedBy: " ")[0]
+            let versionString = string.components(separatedBy: ")").last!.components(
+                separatedBy: "/"
+            )[1].components(separatedBy: " ")[0]
             return .chrome(version: version(from: versionString))
         }
         // Non-Apple user agents contain Safari, so check for Safari last
         if string.contains("Mobile") && string.contains("Safari") && string.contains("iPhone OS") {
-            let versionString = string.components(separatedBy: ")").last!.components(separatedBy: "/")[1].components(separatedBy: " ")[0]
+            let versionString = string.components(separatedBy: ")").last!.components(
+                separatedBy: "/"
+            )[1].components(separatedBy: " ")[0]
             return .mobileSafari(version: version(from: versionString))
         }
         if string.contains("Safari") {
-            let versionString = string.components(separatedBy: ")").last!.components(separatedBy: "/")[1].components(separatedBy: " ")[0]
+            let versionString = string.components(separatedBy: ")").last!.components(
+                separatedBy: "/"
+            )[1].components(separatedBy: " ")[0]
             return .safari(version: version(from: versionString))
         }
-        let versionString = string.components(separatedBy: ")").last!.components(separatedBy: "/")[1].components(separatedBy: " ")[0]
+        let versionString = string.components(separatedBy: ")").last!.components(separatedBy: "/")[
+            1
+        ].components(separatedBy: " ")[0]
         return .unknown(name: name, version: version(from: versionString))
     }()
 }
@@ -276,20 +306,20 @@ extension WASIPlatform {
 
         if let style = HTMLStyleElement(from: document.createElement(localName: "style")) {
             style.innerText = """
-html, body, canvas {
-    margin: 0 !important; padding: 0 !important; height: 100%; overflow: hidden;
-    width: 100%;
-    width: -moz-available;          /* WebKit-based browsers will ignore this. */
-    width: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
-    width: fill-available;
-}
-:root {
-    --sat: env(safe-area-inset-top);
-    --sar: env(safe-area-inset-right);
-    --sab: env(safe-area-inset-bottom);
-    --sal: env(safe-area-inset-left);
-}
-"""
+                html, body, canvas {
+                    margin: 0 !important; padding: 0 !important; height: 100%; overflow: hidden;
+                    width: 100%;
+                    width: -moz-available;          /* WebKit-based browsers will ignore this. */
+                    width: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
+                    width: fill-available;
+                }
+                :root {
+                    --sat: env(safe-area-inset-top);
+                    --sar: env(safe-area-inset-right);
+                    --sab: env(safe-area-inset-bottom);
+                    --sal: env(safe-area-inset-left);
+                }
+                """
             _ = document.body?.appendChild(node: style)
         }
     }
@@ -299,9 +329,11 @@ extension WASIPlatform {
     @MainActor func main() {
         JavaScriptEventLoop.installGlobalExecutor()
         setupDocument()
-        Log.info("Notice: Browser resource errors are expected and normal. Ignore them. Only rely on the logs starting with \"[GateEngine]\".")
+        Log.info(
+            "Notice: Browser resource errors are expected and normal. Ignore them. Only rely on the logs starting with \"[GateEngine]\"."
+        )
         Log.info("Detected Browser As:", Game.shared.platform.browser)
-        Task(priority: .high) {@MainActor in
+        Task(priority: .high) { @MainActor in
             await Game.shared.didFinishLaunching()
             Game.shared.insertSystem(WASIUserActivationRenderingSystem.self)
         }
@@ -310,26 +342,38 @@ extension WASIPlatform {
 
 internal final class WASIUserActivationRenderingSystem: RenderingSystem {
     let text = Text(string: "Click to Start", pointSize: 64, style: .bold, color: .white)
-    let banner = Sprite(texture: Texture(path: "GateEngine/Branding/Banner Logo Transparent.png", sizeHint: Size2(1200, 244)), bounds: Rect(size: Size2(1200, 244)), sampleFilter: .linear)
-    
+    let banner = Sprite(
+        texture: Texture(
+            path: "GateEngine/Branding/Banner Logo Transparent.png",
+            sizeHint: Size2(1200, 244)
+        ),
+        bounds: Rect(size: Size2(1200, 244)),
+        sampleFilter: .linear
+    )
+
     override func setup(game: Game) {
         game.insertSystem(HIDSystem.self)
         game.windowManager.mainWindow?.clearColor = .stregasgateBackground
         banner.texture.cacheHint = .whileReferenced
     }
-    
+
     var somethingWasPressed = false
     override func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
         var canvas = Canvas()
-        
-        canvas.insert(banner, at: Position2(window.size / 2), scale: Size2(window.size.width) / (banner.bounds.size.width * 1.25))
-        
+
+        canvas.insert(
+            banner,
+            at: Position2(window.size / 2),
+            scale: Size2(window.size.width) / (banner.bounds.size.width * 1.25)
+        )
+
         var textPosition = Position2((window.size / 2) - (text.size / 2))
-        textPosition.y = window.size.height - text.size.height - max(window.safeAreaInsets.bottom, 60)
+        textPosition.y =
+            window.size.height - text.size.height - max(window.safeAreaInsets.bottom, 60)
         canvas.insert(text, at: textPosition)
-        
+
         window.insert(canvas)
-        
+
         var noInputsPressed: Bool = true
         if game.hid.gamePads.any.button.confirmButton.isPressed {
             somethingWasPressed = true
@@ -347,7 +391,7 @@ internal final class WASIUserActivationRenderingSystem: RenderingSystem {
             somethingWasPressed = true
             noInputsPressed = false
         }
-        
+
         // If something was pressed and nothing is currently pressed
         // This ensures inputs from this screen are not immediteley sent to the game
         // Since no other platform would have this happen, doing this will reduce platform specific per-project bugs.
@@ -355,7 +399,7 @@ internal final class WASIUserActivationRenderingSystem: RenderingSystem {
             game.removeSystem(self)
         }
     }
-    
+
     override func teardown(game: Game) {
         game.windowManager.mainWindow?.clearColor = .black
         game.addPlatformSystems()

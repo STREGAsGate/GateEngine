@@ -21,7 +21,7 @@ public final class Transform2Component: Component {
             needsUpdate = true
         }
     }
-    
+
     public private(set) var _distanceTraveled: Float = 0
     @inlinable @inline(__always)
     public func distanceTraveled() -> Float {
@@ -30,7 +30,7 @@ public final class Transform2Component: Component {
         }
         return _distanceTraveled
     }
-    
+
     public private(set) var _directionTraveled: Direction2 = .right
     @inlinable @inline(__always)
     public func directionTraveled() -> Direction2 {
@@ -39,7 +39,7 @@ public final class Transform2Component: Component {
         }
         return _directionTraveled
     }
-    
+
     @usableFromInline @inline(__always)
     internal func update() {
         needsUpdate = false
@@ -49,20 +49,20 @@ public final class Transform2Component: Component {
             self._directionTraveled = .right
         }
     }
-    
+
     @inlinable @inline(__always)
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<Transform2, T>) -> T {
-        get {return transform[keyPath: keyPath]}
-        set {transform[keyPath: keyPath] = newValue}
+        get { return transform[keyPath: keyPath] }
+        set { transform[keyPath: keyPath] = newValue }
     }
 
     public init() {}
     public static let componentID: ComponentID = ComponentID()
 }
 
-public extension Entity {
+extension Entity {
     @inlinable @inline(__always)
-    var transform2: Transform2 {
+    public var transform2: Transform2 {
         @inlinable get {
             return self[Transform2Component.self].transform
         }
@@ -70,9 +70,9 @@ public extension Entity {
             self[Transform2Component.self].transform = newValue
         }
     }
-    
+
     @inlinable @inline(__always)
-    var position2: Position2 {
+    public var position2: Position2 {
         @inlinable get {
             return transform2.position
         }
@@ -82,7 +82,7 @@ public extension Entity {
     }
 
     @inlinable @inline(__always)
-    func distance(from position: Position2) -> Float {
+    public func distance(from position: Position2) -> Float {
         return self.transform2.position.distance(from: position)
     }
 }

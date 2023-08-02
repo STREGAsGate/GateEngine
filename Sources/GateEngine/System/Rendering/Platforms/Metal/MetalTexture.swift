@@ -12,26 +12,26 @@ import GameMath
 final class MetalTexture: TextureBackend {
     private let renderTarget: MetalRenderTarget?
     private let _mtlTexture: (any MTLTexture)?
-    
+
     var mtlTexture: any MTLTexture {
         if let _mtlTexture {
             return _mtlTexture
         }
         return renderTarget!.colorTexture!
     }
-    
+
     var size: Size2 {
         return Size2(Float(mtlTexture.width), Float(mtlTexture.height))
     }
-    
+
     required init(renderTargetBackend: any RenderTargetBackend) {
         renderTarget = (renderTargetBackend as! MetalRenderTarget)
         _mtlTexture = nil
     }
-    
+
     required init(data: Data, size: Size2, mipMapping: MipMapping) {
         let device = Game.shared.renderer.device
-        
+
         let descriptor = MTLTextureDescriptor()
         descriptor.pixelFormat = .rgba8Unorm
         descriptor.width = Int(size.width)
@@ -49,13 +49,13 @@ final class MetalTexture: TextureBackend {
                 descriptor.mipmapLevelCount += 1
             }
         }
-        
+
         self.renderTarget = nil
         self._mtlTexture = device.makeTexture(descriptor: descriptor)!
-        
+
         replaceData(with: data, size: size, mipMapping: mipMapping)
     }
-    
+
     func replaceData(with data: Data, size: Size2, mipMapping: MipMapping) {
         let descriptor = MTLTextureDescriptor()
         descriptor.pixelFormat = .rgba8Unorm
@@ -74,23 +74,33 @@ final class MetalTexture: TextureBackend {
                 descriptor.mipmapLevelCount += 1
             }
         }
-        
+
         if case .auto(_) = mipMapping, descriptor.mipmapLevelCount > 1 {
             let region = MTLRegionMake2D(0, 0, Int(size.width), Int(size.height))
             data.withUnsafeBytes { (pointer) -> Void in
-                mtlTexture.replace(region: region, mipmapLevel: 0, withBytes: pointer.baseAddress!, bytesPerRow: 4 * Int(size.width))
+                mtlTexture.replace(
+                    region: region,
+                    mipmapLevel: 0,
+                    withBytes: pointer.baseAddress!,
+                    bytesPerRow: 4 * Int(size.width)
+                )
             }
-            
+
             let buffer = Game.shared.renderer.commandQueue.makeCommandBuffer()!
             let blit = buffer.makeBlitCommandEncoder()!
             blit.generateMipmaps(for: mtlTexture)
             blit.endEncoding()
             buffer.commit()
             buffer.waitUntilCompleted()
-        }else{
+        } else {
             let region = MTLRegionMake2D(0, 0, Int(size.width), Int(size.height))
             data.withUnsafeBytes { (pointer) -> Void in
-                mtlTexture.replace(region: region, mipmapLevel: 0, withBytes: pointer.baseAddress!, bytesPerRow: 4 * Int(size.width))
+                mtlTexture.replace(
+                    region: region,
+                    mipmapLevel: 0,
+                    withBytes: pointer.baseAddress!,
+                    bytesPerRow: 4 * Int(size.width)
+                )
             }
         }
     }

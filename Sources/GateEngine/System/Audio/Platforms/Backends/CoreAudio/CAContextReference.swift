@@ -9,24 +9,29 @@ import AVFoundation
 
 internal class CAContextReference: AudioContextBackend {
     let engine: AVAudioEngine
-    
+
     @objc func engineChanged(_ notification: Notification?) {
         do {
             try engine.start()
-        }catch{
+        } catch {
             Log.fatalError("AVAudioEngine Error: \(error)")
         }
     }
-    
+
     init() {
         engine = AVAudioEngine()
         _ = engine.mainMixerNode
-        
+
         engineChanged(nil)
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(engineChanged(_:)), name: .AVAudioEngineConfigurationChange, object: engine)
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(engineChanged(_:)),
+            name: .AVAudioEngineConfigurationChange,
+            object: engine
+        )
     }
-    
+
     @inlinable
     func createSpacialMixerReference() -> any SpacialAudioMixerReference {
         return CASpacialMixerReference(self)
@@ -35,12 +40,12 @@ internal class CAContextReference: AudioContextBackend {
     func createAudioMixerReference() -> any AudioMixerReference {
         return CAAudioMixerReference(self)
     }
-    
+
     @inlinable
     var endianness: Endianness {
         return .native
     }
-    
+
     @inlinable
     func supportsBitRate(_ bitRate: AudioBuffer.Format.BitRate) -> Bool {
         switch bitRate {

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import GameMath
 
 final class Size2Tests: XCTestCase {

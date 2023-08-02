@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import GameMath
 
 final class InsetsTests: XCTestCase {
@@ -9,7 +10,7 @@ final class InsetsTests: XCTestCase {
         XCTAssertEqual(insets.bottom, 3)
         XCTAssertEqual(insets.trailing, 4)
     }
-    
+
     func testZero() {
         let insetsFloat = Insets(top: 0, leading: 0, bottom: 0, trailing: 0)
         XCTAssertEqual(insetsFloat, .zero)

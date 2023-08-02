@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 #if (canImport(OpenALSoft) || canImport(LinuxSupport)) && !os(WASI)
-#if canImport(OpenALSoft) 
+#if canImport(OpenALSoft)
 import OpenALSoft
 #elseif canImport(LinuxSupport)
 import LinuxSupport
@@ -17,7 +17,7 @@ internal class OABufferReference: AudioBufferBackend {
     lazy private(set) var duration: Double = {
         fatalError("Not implemented")
     }()
-    
+
     required init(path: String, context: AudioContext, audioBuffer: AudioBuffer) {
         self.audioBuffer = audioBuffer
         Task(priority: .utility) {
@@ -39,23 +39,27 @@ internal class OABufferReference: AudioBufferBackend {
                     self.audioBuffer.state = .ready
                     return
                 }
-                throw GateEngineError.failedToDecode("Audio format not supported for resource: \"\(path)\"")
-            }catch let error as GateEngineError {
+                throw GateEngineError.failedToDecode(
+                    "Audio format not supported for resource: \"\(path)\""
+                )
+            } catch let error as GateEngineError {
                 Log.warn("Resource \"\(path)\" failed ->", error)
                 self.audioBuffer.state = .failed(error: error)
-            }catch{
+            } catch {
                 fatalError("error must be a GateEngineError")
             }
         }
     }
-    
+
     func load(data: Data, format: AudioBuffer.Format) {
         var id: [ALuint] = [0]
         alGenBuffers(1, &id)
         assert(alCheckError() == .noError)
         self.bufferID = id[0]
-        
-        var data = BufferConverter(data: data, format: format).reformat(as: format.bySetting(interlevedIfStereo: true))
+
+        var data = BufferConverter(data: data, format: format).reformat(
+            as: format.bySetting(interlevedIfStereo: true)
+        )
         var alFormat: Int32 {
             switch format.bitRate {
             case .int8:
@@ -63,17 +67,25 @@ internal class OABufferReference: AudioBufferBackend {
             case .int16:
                 return format.channels == .mono ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16
             default:
-                data = BufferConverter(data: data, format: format).reformat(as: format.bySetting(bitRate: .int16, interlevedIfStereo: true))
+                data = BufferConverter(data: data, format: format).reformat(
+                    as: format.bySetting(bitRate: .int16, interlevedIfStereo: true)
+                )
                 return format.channels == .mono ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16
             }
         }
-        
+
         data.withUnsafeBytes { (bytes) in
-            alBufferData(bufferID, alFormat, bytes.baseAddress, ALsizei(data.count), ALsizei(format.sampleRate))
+            alBufferData(
+                bufferID,
+                alFormat,
+                bytes.baseAddress,
+                ALsizei(data.count),
+                ALsizei(format.sampleRate)
+            )
             assert(alCheckError() == .noError)
         }
     }
-    
+
     deinit {
         alDeleteBuffers(1, [bufferID])
         assert(alCheckError() == .noError)

@@ -2,14 +2,14 @@
  * Copyright (c) 2022 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  * Licensed under Apache License v2.0
- * 
+ *
  * http://stregasgate.com
  */
 #if canImport(UIKit) && canImport(GLKit) && !targetEnvironment(macCatalyst)
 import GLKit
 
 class VK: GLKViewController {
-    
+
 }
 
 internal class GLKitView: GLKView {
@@ -22,11 +22,11 @@ internal class GLKitView: GLKView {
         super.init(frame: CGRect(origin: .zero, size: size), context: context)
         self.setup()
     }
-    
+
     required init(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func setup() {
         #if os(iOS)
         self.isMultipleTouchEnabled = true
@@ -36,12 +36,15 @@ internal class GLKitView: GLKView {
         self.bindDrawable()
         glFlush()
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
-        self.viewController.window.window.newPixelSize = Size2(Float(self.drawableWidth), Float(self.drawableHeight))
+        self.viewController.window.window.newPixelSize = Size2(
+            Float(self.drawableWidth),
+            Float(self.drawableHeight)
+        )
     }
-    
+
     override func draw(_ rect: CGRect) {
         self.bindDrawable()
         viewController.window.window?.vSyncCalled()

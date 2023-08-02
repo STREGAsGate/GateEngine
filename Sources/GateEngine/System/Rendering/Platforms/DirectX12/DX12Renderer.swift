@@ -12,7 +12,7 @@ import Shaders
 
 final class DX12Renderer: RendererBackend {
     @inline(__always)
-    var renderingAPI: RenderingAPI {.d3d12}
+    var renderingAPI: RenderingAPI { .d3d12 }
     let factory: DGIFactory
     let device: D3DDevice
 
@@ -25,13 +25,18 @@ final class DX12Renderer: RendererBackend {
 
     var cachedContent: [Any] = []
 
-    private var _shaders: [ShaderKey:DXShader] = [:]
+    private var _shaders: [ShaderKey: DXShader] = [:]
     struct ShaderKey: Hashable {
         let vshID: VertexShader.ID
         let fshID: FragmentShader.ID
         let flags: DrawFlags
         let attributes: ContiguousArray<CodeGenerator.InputAttribute>
-        init(vsh: VertexShader, fsh: FragmentShader, flags: DrawFlags, attributes: ContiguousArray<CodeGenerator.InputAttribute>) {
+        init(
+            vsh: VertexShader,
+            fsh: FragmentShader,
+            flags: DrawFlags,
+            attributes: ContiguousArray<CodeGenerator.InputAttribute>
+        ) {
             self.vshID = vsh.id
             self.fshID = fsh.id
             self.flags = flags
@@ -46,31 +51,55 @@ final class DX12Renderer: RendererBackend {
         let fragmentShader: FragmentShader
     }
 
-    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: any _RenderTargetProtocol) {
+    func draw(
+        _ drawCommand: DrawCommand,
+        camera: Camera?,
+        matrices: Matrices,
+        renderTarget: any _RenderTargetProtocol
+    ) {
         let renderTarget: DX12RenderTarget = renderTarget.renderTargetBackend as! DX12RenderTarget
-        let geometries: ContiguousArray<DX12Geometry> = ContiguousArray(drawCommand.geometries.map({$0 as! DX12Geometry}))
+        let geometries: ContiguousArray<DX12Geometry> = ContiguousArray(
+            drawCommand.geometries.map({ $0 as! DX12Geometry })
+        )
         let commandList: D3DGraphicsCommandList = renderTarget.commandList
         let data = createUniforms(drawCommand.material, camera, matrices)
-        let shader: DX12Renderer.DXShader = getShader(vsh: drawCommand.material.vertexShader, 
-                                                      fsh: drawCommand.material.fragmentShader, 
-                                                      flags: drawCommand.flags, 
-                                                      geometries: geometries, 
-                                                      textureCount: UInt32(data.textures.count))
+        let shader: DX12Renderer.DXShader = getShader(
+            vsh: drawCommand.material.vertexShader,
+            fsh: drawCommand.material.fragmentShader,
+            flags: drawCommand.flags,
+            geometries: geometries,
+            textureCount: UInt32(data.textures.count)
+        )
 
         #if GATEENGINE_DEBUG_RENDERING
         for geometry: DX12Geometry in geometries {
             assert(drawCommand.flags.primitive == geometry.primitive)
         }
         #endif
-        
+
         commandList.setGraphicsRootSignature(shader.rootSignature)
         commandList.setPipelineState(shader.pipelineState)
         commandList.setDescriptorHeaps([shader.descriptorHeap])
-        
+
         var uniformsIndex: UInt32 = 0
-        self.setUniforms(data.uniforms, commandList: commandList, at: &uniformsIndex, heap: shader.descriptorHeap)
-        self.setMaterials(data.materials, commandList: commandList, at: &uniformsIndex, heap: shader.descriptorHeap)
-        self.setTextures(data.textures, commandList: commandList, at: &uniformsIndex, heap: shader.descriptorHeap)
+        self.setUniforms(
+            data.uniforms,
+            commandList: commandList,
+            at: &uniformsIndex,
+            heap: shader.descriptorHeap
+        )
+        self.setMaterials(
+            data.materials,
+            commandList: commandList,
+            at: &uniformsIndex,
+            heap: shader.descriptorHeap
+        )
+        self.setTextures(
+            data.textures,
+            commandList: commandList,
+            at: &uniformsIndex,
+            heap: shader.descriptorHeap
+        )
 
         var vertexIndex: UInt32 = 0
         self.setGeometries(geometries, on: commandList, at: &vertexIndex)
@@ -93,14 +122,20 @@ final class DX12Renderer: RendererBackend {
         case .triangleStrip:
             commandList.setPrimitiveTopology(.triangleStrip)
         }
-        
-        let indexBufferView: D3DIndexBufferView = D3DIndexBufferView(bufferLocation: geometries[0].indexBuffer.gpuVirtualAddress, 
-                                                                     byteCount: UInt32(MemoryLayout<UInt16>.stride * geometries[0].indicesCount), 
-                                                                     format: .r16UInt)
+
+        let indexBufferView: D3DIndexBufferView = D3DIndexBufferView(
+            bufferLocation: geometries[0].indexBuffer.gpuVirtualAddress,
+            byteCount: UInt32(MemoryLayout<UInt16>.stride * geometries[0].indicesCount),
+            format: .r16UInt
+        )
         commandList.setIndexBuffer(indexBufferView)
-        commandList.drawIndexedInstanced(indexCountPerInstance: UInt32(geometries[0].indicesCount), 
-                                         instanceCount: UInt32(drawCommand.transforms.count), 
-                                         startIndexLocation: 0, baseVertexLocation: 0, startInstanceLocation: 0)
+        commandList.drawIndexedInstanced(
+            indexCountPerInstance: UInt32(geometries[0].indicesCount),
+            instanceCount: UInt32(drawCommand.transforms.count),
+            startIndexLocation: 0,
+            baseVertexLocation: 0,
+            startInstanceLocation: 0
+        )
     }
 
     init() {
@@ -114,12 +149,17 @@ final class DX12Renderer: RendererBackend {
             self.factory = factory
             self.device = device
             self.commandQueue = try device.createCommandQueue(type: .direct, priority: .high)
-            self.backgroundCommandQueue = try device.createCommandQueue(type: .direct, priority: .normal)
+            self.backgroundCommandQueue = try device.createCommandQueue(
+                type: .direct,
+                priority: .normal
+            )
 
             self.rtvIncermentSize = device.descriptorHandleIncrementSize(for: .renderTargetView)
             self.dsvIncrementSize = device.descriptorHandleIncrementSize(for: .depthStencilView)
-            self.cbvIncrementSize = device.descriptorHandleIncrementSize(for: .constantBufferShaderResourceAndUnordererAccess)
-        }catch{
+            self.cbvIncrementSize = device.descriptorHandleIncrementSize(
+                for: .constantBufferShaderResourceAndUnordererAccess
+            )
+        } catch {
             DX12Renderer.checkError(error)
         }
     }
@@ -134,7 +174,7 @@ final class DX12Renderer: RendererBackend {
         try commandQueue.signal(fence: fence, value: fenceValue)
         if fence.value < fenceValue {
             let h: HANDLE? = WinSDK.CreateEventW(nil, false, false, nil)
-            defer {_ = CloseHandle(h)}
+            defer { _ = CloseHandle(h) }
             try fence.setCompletionEvent(h, whenValueIs: fenceValue)
             _ = WinSDK.WaitForSingleObject(h, INFINITE)
         }
@@ -143,11 +183,17 @@ final class DX12Renderer: RendererBackend {
 
 extension DX12Renderer {
     @inline(__always)
-    private func setGeometries(_ geometries: ContiguousArray<DX12Geometry>, on commandList: D3DGraphicsCommandList, at index: inout UInt32) {
+    private func setGeometries(
+        _ geometries: ContiguousArray<DX12Geometry>,
+        on commandList: D3DGraphicsCommandList,
+        at index: inout UInt32
+    ) {
         var bufferViews: [D3DVertexBufferView] = []
         bufferViews.reserveCapacity(geometries[0].attributes.count * geometries.count)
         for geometry: DX12Geometry in geometries {
-            for attributeIndex: Range<ContiguousArray<GeometryAttribute>.Index>.Element in geometry.attributes.indices {
+            for attributeIndex: Range<ContiguousArray<GeometryAttribute>.Index>.Element in geometry
+                .attributes.indices
+            {
                 let attribute: GeometryAttribute = geometry.attributes[attributeIndex]
                 let stride: Int
                 switch attribute.type {
@@ -158,9 +204,11 @@ extension DX12Renderer {
                 case .uInt16:
                     stride = MemoryLayout<UInt16>.stride
                 }
-                let bufferView: D3DVertexBufferView = D3DVertexBufferView(bufferLocation: geometry.buffers[attributeIndex].gpuVirtualAddress,
-                                                                          byteCount: UInt32(stride * attribute.componentLength * geometry.indicesCount),
-                                                                          byteStride: UInt32(stride * attribute.componentLength))
+                let bufferView: D3DVertexBufferView = D3DVertexBufferView(
+                    bufferLocation: geometry.buffers[attributeIndex].gpuVirtualAddress,
+                    byteCount: UInt32(stride * attribute.componentLength * geometry.indicesCount),
+                    byteStride: UInt32(stride * attribute.componentLength)
+                )
                 bufferViews.append(bufferView)
             }
         }
@@ -169,27 +217,40 @@ extension DX12Renderer {
     }
 
     @inline(__always)
-    private func setTransforms(_ transforms: ContiguousArray<Transform3>, on commandList: D3DGraphicsCommandList, at index: inout UInt32) {
+    private func setTransforms(
+        _ transforms: ContiguousArray<Transform3>,
+        on commandList: D3DGraphicsCommandList,
+        at index: inout UInt32
+    ) {
         var instancedUniforms: ContiguousArray<InstancedUniforms> = []
         instancedUniforms.reserveCapacity(transforms.count)
         for transform: Transform3 in transforms {
             let matrix: Matrix4x4 = transform.createMatrix()
-            let uniforms: DX12Renderer.InstancedUniforms = InstancedUniforms(modelMatrix: matrix, inverseModelMatrix: matrix.inverse)
+            let uniforms: DX12Renderer.InstancedUniforms = InstancedUniforms(
+                modelMatrix: matrix,
+                inverseModelMatrix: matrix.inverse
+            )
             instancedUniforms.append(uniforms)
         }
-        
-        let buffer: D3DResource = DX12Renderer.createBuffer(withData: instancedUniforms, heapProperties: .forBuffer, state: .genericRead)
+
+        let buffer: D3DResource = DX12Renderer.createBuffer(
+            withData: instancedUniforms,
+            heapProperties: .forBuffer,
+            state: .genericRead
+        )
         #if GATEENGINE_DEBUG_RENDERING
         do {
             try buffer.setDebugName("\(type(of: self)).\(#function)")
-        }catch{
+        } catch {
             DX12Renderer.checkError(error)
         }
         #endif
-        
-        let bufferView: D3DVertexBufferView = D3DVertexBufferView(bufferLocation: buffer.gpuVirtualAddress,
-                                                                  byteCount: UInt32(MemoryLayout<Float>.stride * 16 * transforms.count),
-                                                                  byteStride: UInt32(MemoryLayout<Float>.stride * 16))
+
+        let bufferView: D3DVertexBufferView = D3DVertexBufferView(
+            bufferLocation: buffer.gpuVirtualAddress,
+            byteCount: UInt32(MemoryLayout<Float>.stride * 16 * transforms.count),
+            byteStride: UInt32(MemoryLayout<Float>.stride * 16)
+        )
         commandList.setVertexBuffers([bufferView], startingAt: index)
 
         self.cachedContent.append(buffer)
@@ -198,50 +259,79 @@ extension DX12Renderer {
     }
 
     @inline(__always)
-    private func setUniforms(_ uniforms: ContiguousArray<UInt8>, commandList: D3DGraphicsCommandList, at index: inout UInt32, heap: D3DDescriptorHeap) {
+    private func setUniforms(
+        _ uniforms: ContiguousArray<UInt8>,
+        commandList: D3DGraphicsCommandList,
+        at index: inout UInt32,
+        heap: D3DDescriptorHeap
+    ) {
         do {
-            let buffer: D3DResource = DX12Renderer.createBuffer(withData: uniforms, heapProperties: .forBuffer, state: .genericRead)
-            
+            let buffer: D3DResource = DX12Renderer.createBuffer(
+                withData: uniforms,
+                heapProperties: .forBuffer,
+                state: .genericRead
+            )
+
             let value: UnsafeMutableRawPointer? = try buffer.map()
             let location: UInt64 = buffer.gpuVirtualAddress
-            let description: D3DConstantBufferViewDescription = D3DConstantBufferViewDescription(location: location, size: UInt32((uniforms.count + 255) & ~255))
+            let description: D3DConstantBufferViewDescription = D3DConstantBufferViewDescription(
+                location: location,
+                size: UInt32((uniforms.count + 255) & ~255)
+            )
             var blockDestination: D3DCPUDescriptorHandle = heap.cpuDescriptorHandleForHeapStart
             blockDestination.pointer += UInt64(cbvIncrementSize * index)
-            device.createConstantBufferView(description: description, destination: blockDestination)  
-            
+            device.createConstantBufferView(description: description, destination: blockDestination)
+
             self.cachedContent.append(buffer as Any)
             self.cachedContent.append(value as Any)
             index += 1
-        }catch{
+        } catch {
             DX12Renderer.checkError(error)
         }
     }
 
     @inline(__always)
-    private func setMaterials(_ materials: ContiguousArray<ShaderMaterial>, commandList: D3DGraphicsCommandList, at index: inout UInt32, heap: D3DDescriptorHeap) {
+    private func setMaterials(
+        _ materials: ContiguousArray<ShaderMaterial>,
+        commandList: D3DGraphicsCommandList,
+        at index: inout UInt32,
+        heap: D3DDescriptorHeap
+    ) {
         do {
-            let buffer: D3DResource = DX12Renderer.createBuffer(withData: materials, heapProperties: .forBuffer, state: .genericRead)
-            
+            let buffer: D3DResource = DX12Renderer.createBuffer(
+                withData: materials,
+                heapProperties: .forBuffer,
+                state: .genericRead
+            )
+
             let value: UnsafeMutableRawPointer? = try buffer.map()
             let location: UInt64 = buffer.gpuVirtualAddress
-            let description: D3DConstantBufferViewDescription = D3DConstantBufferViewDescription(location: location, size: UInt32((MemoryLayout<ShaderMaterial>.size * materials.count + 255) & ~255))
+            let description: D3DConstantBufferViewDescription = D3DConstantBufferViewDescription(
+                location: location,
+                size: UInt32((MemoryLayout<ShaderMaterial>.size * materials.count + 255) & ~255)
+            )
             var blockDestination: D3DCPUDescriptorHandle = heap.cpuDescriptorHandleForHeapStart
             blockDestination.pointer += UInt64(cbvIncrementSize * index)
-            device.createConstantBufferView(description: description, destination: blockDestination)  
-           
+            device.createConstantBufferView(description: description, destination: blockDestination)
+
             self.cachedContent.append(buffer as Any)
             self.cachedContent.append(value as Any)
             index += 1
-        }catch{
+        } catch {
             DX12Renderer.checkError(error)
         }
     }
 
     @inline(__always)
-    private func setTextures(_ textures: ContiguousArray<D3DResource?>, commandList: D3DGraphicsCommandList, at index: inout UInt32, heap: D3DDescriptorHeap) {
+    private func setTextures(
+        _ textures: ContiguousArray<D3DResource?>,
+        commandList: D3DGraphicsCommandList,
+        at index: inout UInt32,
+        heap: D3DDescriptorHeap
+    ) {
         var blockDestination: D3DCPUDescriptorHandle = heap.cpuDescriptorHandleForHeapStart
         blockDestination.pointer += UInt64(cbvIncrementSize * index)
-  
+
         for dxTexture: D3DResource? in textures {
             if let dxTexture: D3DResource = dxTexture {
                 var srvDesc: D3DShaderResourceViewDescription = D3DShaderResourceViewDescription()
@@ -249,7 +339,11 @@ extension DX12Renderer {
                 srvDesc.format = .r8g8b8a8Unorm
                 srvDesc.dimension = .texture2D
                 srvDesc.texture2D.mipLevels = 1
-                device.createShaderResourceView(resource: dxTexture, description: srvDesc, destination: blockDestination)
+                device.createShaderResourceView(
+                    resource: dxTexture,
+                    description: srvDesc,
+                    destination: blockDestination
+                )
             }
             blockDestination.pointer += UInt64(cbvIncrementSize)
             index += 1
@@ -266,18 +360,18 @@ extension DX12Renderer {
             // self.inverseModelMatrix = inverseModelMatrix.transposedSIMD
         }
     }
-    
+
     struct ShaderMaterial {
         enum SampleFilter: UInt32 {
             case linear = 1
             case nearest = 2
         }
-        
+
         let scale: SIMD2<Float>
         let offset: SIMD2<Float>
         let color: SIMD4<Float>
         let sampleFilter: SampleFilter.RawValue
-        
+
         init(scale: Size2, offset: Position2, color: Color, sampleFilter: SampleFilter) {
             self.scale = scale.simd
             self.offset = offset.simd
@@ -287,7 +381,10 @@ extension DX12Renderer {
     }
 
     @inline(__always)
-    private func createUniforms(_ material: Material, _ camera: Camera?, _ matricies: Matrices) -> (uniforms: ContiguousArray<UInt8>, materials: ContiguousArray<ShaderMaterial>, textures: ContiguousArray<D3DResource?>) {
+    private func createUniforms(_ material: Material, _ camera: Camera?, _ matricies: Matrices) -> (
+        uniforms: ContiguousArray<UInt8>, materials: ContiguousArray<ShaderMaterial>,
+        textures: ContiguousArray<D3DResource?>
+    ) {
         var uniforms: ContiguousArray<UInt8> = []
         uniforms.reserveCapacity(16 * 2)
         withUnsafeBytes(of: matricies.projection.transposedSIMD) { pointer in
@@ -330,8 +427,10 @@ extension DX12Renderer {
                     value.transposedArray().withUnsafeBytes { pointer in
                         uniforms.append(contentsOf: pointer)
                     }
-                case let value as Array<Matrix4x4>:
-                    let capacity = material.vertexShader.arrayCapacityForUniform(named: name) ?? material.fragmentShader.arrayCapacityForUniform(named: name)!
+                case let value as [Matrix4x4]:
+                    let capacity =
+                        material.vertexShader.arrayCapacityForUniform(named: name) ?? material
+                        .fragmentShader.arrayCapacityForUniform(named: name)!
                     var floats: [Float] = []
                     floats.reserveCapacity(value.count * 16 * capacity)
                     for mtx in value {
@@ -342,7 +441,9 @@ extension DX12Renderer {
                     }
                     if floats.count > capacity * 16 {
                         floats = Array(floats[..<capacity])
-                        Log.warnOnce("Custom uniform \(name) exceeded max array capacity \(capacity) and was truncated.")
+                        Log.warnOnce(
+                            "Custom uniform \(name) exceeded max array capacity \(capacity) and was truncated."
+                        )
                     }
                     floats.withUnsafeBytes { pointer in
                         uniforms.append(contentsOf: pointer)
@@ -353,15 +454,17 @@ extension DX12Renderer {
             }
         }
         //Add padding
-        for _ in 0 ..< MemoryLayout<SIMD16<Float>>.alignment - (uniforms.count % MemoryLayout<SIMD16<Float>>.alignment) {
+        for _ in 0 ..< MemoryLayout<SIMD16<Float>>.alignment
+            - (uniforms.count % MemoryLayout<SIMD16<Float>>.alignment)
+        {
             uniforms.append(0)
         }
-    
+
         var materials: ContiguousArray<ShaderMaterial> = []
         var textures: ContiguousArray<D3DResource?> = []
         for index in material.channels.indices {
             let channel = material.channels[index]
-            
+
             let sampleFilter: ShaderMaterial.SampleFilter
             switch channel.sampleFilter {
             case .linear:
@@ -369,12 +472,16 @@ extension DX12Renderer {
             case .nearest:
                 sampleFilter = .nearest
             }
-            
-            materials.append(ShaderMaterial(scale: channel.scale,
-                                            offset: channel.offset,
-                                            color: channel.color,
-                                            sampleFilter: sampleFilter))
-            
+
+            materials.append(
+                ShaderMaterial(
+                    scale: channel.scale,
+                    offset: channel.offset,
+                    color: channel.color,
+                    sampleFilter: sampleFilter
+                )
+            )
+
             textures.append((channel.texture?.textureBackend as? DX12Texture)?.dxTexture)
         }
 
@@ -383,29 +490,67 @@ extension DX12Renderer {
 }
 
 extension DX12Renderer {
-    func getShader(vsh: VertexShader, fsh: FragmentShader, flags: DrawFlags, geometries: ContiguousArray<DX12Geometry>, textureCount srvCount: UInt32) -> DXShader {
-        let key: DX12Renderer.ShaderKey = ShaderKey(vsh: vsh, fsh: fsh, flags: flags, attributes: DX12Geometry.shaderAttributes(from: geometries))
+    func getShader(
+        vsh: VertexShader,
+        fsh: FragmentShader,
+        flags: DrawFlags,
+        geometries: ContiguousArray<DX12Geometry>,
+        textureCount srvCount: UInt32
+    ) -> DXShader {
+        let key: DX12Renderer.ShaderKey = ShaderKey(
+            vsh: vsh,
+            fsh: fsh,
+            flags: flags,
+            attributes: DX12Geometry.shaderAttributes(from: geometries)
+        )
         if let existing: DX12Renderer.DXShader = _shaders[key] {
             return existing
         }
 
         do {
             let cbvCount: UInt32 = 2
-            let rootSignature: D3DRootSignature = rootSignature(cbvCount: cbvCount, srvCount: srvCount)
-            let pipelineState: D3DPipelineState = createPipelineState(vsh: vsh, fsh: fsh, flags: flags, geometries: geometries, rootSignature: rootSignature)
+            let rootSignature: D3DRootSignature = rootSignature(
+                cbvCount: cbvCount,
+                srvCount: srvCount
+            )
+            let pipelineState: D3DPipelineState = createPipelineState(
+                vsh: vsh,
+                fsh: fsh,
+                flags: flags,
+                geometries: geometries,
+                rootSignature: rootSignature
+            )
 
-            let descriptorHeapDesc: D3DDescriptorHeapDescription = D3DDescriptorHeapDescription(type: .constantBufferShaderResourceAndUnordererAccess, count: cbvCount + srvCount, flags: .shaderVisible)
-            let descriptorHeap: D3DDescriptorHeap = try device.createDescriptorHeap(description: descriptorHeapDesc)
+            let descriptorHeapDesc: D3DDescriptorHeapDescription = D3DDescriptorHeapDescription(
+                type: .constantBufferShaderResourceAndUnordererAccess,
+                count: cbvCount + srvCount,
+                flags: .shaderVisible
+            )
+            let descriptorHeap: D3DDescriptorHeap = try device.createDescriptorHeap(
+                description: descriptorHeapDesc
+            )
 
-            let shader: DX12Renderer.DXShader = DXShader(rootSignature: rootSignature, pipelineState: pipelineState, descriptorHeap: descriptorHeap, vertexShader: vsh, fragmentShader: fsh)
+            let shader: DX12Renderer.DXShader = DXShader(
+                rootSignature: rootSignature,
+                pipelineState: pipelineState,
+                descriptorHeap: descriptorHeap,
+                vertexShader: vsh,
+                fragmentShader: fsh
+            )
             _shaders[key] = shader
             return shader
-        }catch{
+        } catch {
             DX12Renderer.checkError(error)
         }
     }
 
-    private func createPipelineState(vsh: VertexShader, fsh: FragmentShader, flags: DrawFlags, geometries: ContiguousArray<DX12Geometry>, rootSignature: D3DRootSignature) -> D3DPipelineState {
+    private func createPipelineState(
+        vsh: VertexShader,
+        fsh: FragmentShader,
+        flags: DrawFlags,
+        geometries: ContiguousArray<DX12Geometry>,
+        rootSignature: D3DRootSignature
+    ) -> D3DPipelineState {
         do {
             @_transparent
             var primitive: D3DPrimitiveTopologyType {
@@ -424,7 +569,7 @@ extension DX12Renderer {
                 let append: UInt32 = WinSDK.D3D11_APPEND_ALIGNED_ELEMENT
                 var elementDescriptions: [D3DInputElementDescription] = []
                 var index: UInt32 = 0
-              
+
                 for geometry: DX12Geometry in geometries {
                     for attribute: GeometryAttribute in geometry.attributes {
                         let format: Direct3D12.DGIFormat
@@ -498,28 +643,72 @@ extension DX12Renderer {
                             semantic = "BONEWEIGHT"
                             semanticIndex = 0
                         }
-                        let element: D3DInputElementDescription = D3DInputElementDescription(semanticName: semantic, semanticIndex: semanticIndex, format: format, inputSlot: index, alignedByteOffset: 0, inputSlotClassification: .perVertexData)
+                        let element: D3DInputElementDescription = D3DInputElementDescription(
+                            semanticName: semantic,
+                            semanticIndex: semanticIndex,
+                            format: format,
+                            inputSlot: index,
+                            alignedByteOffset: 0,
+                            inputSlotClassification: .perVertexData
+                        )
                         elementDescriptions.append(element)
                         index += 1
                     }
                 }
 
                 elementDescriptions.append(contentsOf: [
-                    D3DInputElementDescription(semanticName: "ModelMatrixA", format: .r32g32b32a32Float, inputSlot: index, alignedByteOffset: append, inputSlotClassification: .perInstanceData, instanceDataStepRate: 1),
-                    D3DInputElementDescription(semanticName: "ModelMatrixB", format: .r32g32b32a32Float, inputSlot: index, alignedByteOffset: append, inputSlotClassification: .perInstanceData, instanceDataStepRate: 1),
-                    D3DInputElementDescription(semanticName: "ModelMatrixC", format: .r32g32b32a32Float, inputSlot: index, alignedByteOffset: append, inputSlotClassification: .perInstanceData, instanceDataStepRate: 1),
-                    D3DInputElementDescription(semanticName: "ModelMatrixD", format: .r32g32b32a32Float, inputSlot: index, alignedByteOffset: append, inputSlotClassification: .perInstanceData, instanceDataStepRate: 1),
+                    D3DInputElementDescription(
+                        semanticName: "ModelMatrixA",
+                        format: .r32g32b32a32Float,
+                        inputSlot: index,
+                        alignedByteOffset: append,
+                        inputSlotClassification: .perInstanceData,
+                        instanceDataStepRate: 1
+                    ),
+                    D3DInputElementDescription(
+                        semanticName: "ModelMatrixB",
+                        format: .r32g32b32a32Float,
+                        inputSlot: index,
+                        alignedByteOffset: append,
+                        inputSlotClassification: .perInstanceData,
+                        instanceDataStepRate: 1
+                    ),
+                    D3DInputElementDescription(
+                        semanticName: "ModelMatrixC",
+                        format: .r32g32b32a32Float,
+                        inputSlot: index,
+                        alignedByteOffset: append,
+                        inputSlotClassification: .perInstanceData,
+                        instanceDataStepRate: 1
+                    ),
+                    D3DInputElementDescription(
+                        semanticName: "ModelMatrixD",
+                        format: .r32g32b32a32Float,
+                        inputSlot: index,
+                        alignedByteOffset: append,
+                        inputSlotClassification: .perInstanceData,
+                        instanceDataStepRate: 1
+                    ),
                 ])
-                
+
                 return D3DInputLayoutDescription(elementDescriptions: elementDescriptions)
             }
 
             let generator: HLSLCodeGenerator = HLSLCodeGenerator()
-            let shaderAttributes: ContiguousArray<CodeGenerator.InputAttribute> = DX12Geometry.shaderAttributes(from: geometries)
-            let shaders: (vsh: String, fsh: String) = try generator.generateShaderCode(vertexShader: vsh, fragmentShader: fsh, attributes: shaderAttributes)
+            let shaderAttributes: ContiguousArray<CodeGenerator.InputAttribute> =
+                DX12Geometry.shaderAttributes(from: geometries)
+            let shaders: (vsh: String, fsh: String) = try generator.generateShaderCode(
+                vertexShader: vsh,
+                fragmentShader: fsh,
+                attributes: shaderAttributes
+            )
             #if GATEENGINE_LOG_SHADERS
-            Log.info("Generated DirectX Vertex Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.vsh))\n")
-            Log.info("Generated DirectX Fragment Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.fsh))\n")
+            Log.info(
+                "Generated DirectX Vertex Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.vsh))\n"
+            )
+            Log.info(
+                "Generated DirectX Fragment Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.fsh))\n"
+            )
             #endif
             #if GATEENGINE_DEBUG_RENDERING
             let debug: Bool = true
@@ -527,24 +716,39 @@ extension DX12Renderer {
             let debug: Bool = false
             #endif
 
-            var description: D3DGraphicsPipelineStateDescription = D3DGraphicsPipelineStateDescription(
-                rootSignature: rootSignature,
-                vertexShader: D3DShaderBytecode(byteCodeBlob: try Direct3D12.compileFromSource(shaders.vsh, functionName: "VSMain", target: "vs_5_0", forDebug: debug)),
-                pixelShader: D3DShaderBytecode(byteCodeBlob: try Direct3D12.compileFromSource(shaders.fsh, functionName: "PSMain", target: "ps_5_0", forDebug: debug)),
-                blendState: .additive,
-                inputLayout: inputLayoutDescription,
-                primitiveTopologyType: primitive,
-                renderTargetFormats: [.r8g8b8a8Unorm],
-                depthStencilFormat: .d32Float
-            )
-            
+            var description: D3DGraphicsPipelineStateDescription =
+                D3DGraphicsPipelineStateDescription(
+                    rootSignature: rootSignature,
+                    vertexShader: D3DShaderBytecode(
+                        byteCodeBlob: try Direct3D12.compileFromSource(
+                            shaders.vsh,
+                            functionName: "VSMain",
+                            target: "vs_5_0",
+                            forDebug: debug
+                        )
+                    ),
+                    pixelShader: D3DShaderBytecode(
+                        byteCodeBlob: try Direct3D12.compileFromSource(
+                            shaders.fsh,
+                            functionName: "PSMain",
+                            target: "ps_5_0",
+                            forDebug: debug
+                        )
+                    ),
+                    blendState: .additive,
+                    inputLayout: inputLayoutDescription,
+                    primitiveTopologyType: primitive,
+                    renderTargetFormats: [.r8g8b8a8Unorm],
+                    depthStencilFormat: .d32Float
+                )
+
             switch flags.winding {
             case .clockwise:
                 description.rasterizerState.windingDirection = .clockwise
             case .counterClockwise:
                 description.rasterizerState.windingDirection = .counterClockwise
             }
-            
+
             switch flags.cull {
             case .disabled:
                 description.rasterizerState.cullMode = .disabled
@@ -573,13 +777,15 @@ extension DX12Renderer {
             case .enabled:
                 description.depthStencilState.depthWriteMask = .all
             }
-        
-            let pipelineState: D3DPipelineState = try device.createGraphicsPipelineState(description: description)
-#if GATEENGINE_DEBUG_RENDERING
+
+            let pipelineState: D3DPipelineState = try device.createGraphicsPipelineState(
+                description: description
+            )
+            #if GATEENGINE_DEBUG_RENDERING
             try pipelineState.setDebugName("\(type(of: self)).\(#function)")
-#endif
+            #endif
             return pipelineState
-        }catch{
+        } catch {
             DX12Renderer.checkError(error)
         }
     }
@@ -587,19 +793,52 @@ extension DX12Renderer {
     @inline(__always)
     func rootSignature(cbvCount: UInt32, srvCount: UInt32) -> D3DRootSignature {
         do {
-            let table1: D3DRootDescriptorTable = D3DRootDescriptorTable(descriptorRanges: [D3DDescriptorRange(type: .constantBufferView, descriptorCount: cbvCount, baseShaderRegister: 0)])
-            let table2: D3DRootDescriptorTable = D3DRootDescriptorTable(descriptorRanges: [D3DDescriptorRange(type: .shaderResourceView, descriptorCount: srvCount, baseShaderRegister: 0)])
-            let parameters: [D3DRootParameter] = [D3DRootParameter(type: .descriptorTable, descriptorTable: table1, shaderVisibility: .all),
-                              D3DRootParameter(type: .descriptorTable, descriptorTable: table2, shaderVisibility: .all)]
-            let staticSamplers: [D3DStaticSamplerDescription] = [D3DStaticSamplerDescription(filter: .minMagMipLinear, shaderRegister: 0),
-                                  D3DStaticSamplerDescription(filter: .minMagPointMipLinear, shaderRegister: 1)]
-            let description: D3DRootSignatureDescription = D3DRootSignatureDescription(parameters: parameters, staticSamplers: staticSamplers, flags: [.allowInputAssemblerInputLayout,
-                                                                                                                          .denyDomainShaderRootAccess,
-                                                                                                                          .denyGeometryShaderRootAccess,
-                                                                                                                          .denyHullShaderRootAccess])
-            let rootSignature: D3DRootSignature = try device.createRootSignature(description: description, version: .v1_0)
+            let table1: D3DRootDescriptorTable = D3DRootDescriptorTable(descriptorRanges: [
+                D3DDescriptorRange(
+                    type: .constantBufferView,
+                    descriptorCount: cbvCount,
+                    baseShaderRegister: 0
+                )
+            ])
+            let table2: D3DRootDescriptorTable = D3DRootDescriptorTable(descriptorRanges: [
+                D3DDescriptorRange(
+                    type: .shaderResourceView,
+                    descriptorCount: srvCount,
+                    baseShaderRegister: 0
+                )
+            ])
+            let parameters: [D3DRootParameter] = [
+                D3DRootParameter(
+                    type: .descriptorTable,
+                    descriptorTable: table1,
+                    shaderVisibility: .all
+                ),
+                D3DRootParameter(
+                    type: .descriptorTable,
+                    descriptorTable: table2,
+                    shaderVisibility: .all
+                ),
+            ]
+            let staticSamplers: [D3DStaticSamplerDescription] = [
+                D3DStaticSamplerDescription(filter: .minMagMipLinear, shaderRegister: 0),
+                D3DStaticSamplerDescription(filter: .minMagPointMipLinear, shaderRegister: 1),
+            ]
+            let description: D3DRootSignatureDescription = D3DRootSignatureDescription(
+                parameters: parameters,
+                staticSamplers: staticSamplers,
+                flags: [
+                    .allowInputAssemblerInputLayout,
+                    .denyDomainShaderRootAccess,
+                    .denyGeometryShaderRootAccess,
+                    .denyHullShaderRootAccess,
+                ]
+            )
+            let rootSignature: D3DRootSignature = try device.createRootSignature(
+                description: description,
+                version: .v1_0
+            )
             return rootSignature
-        }catch{
+        } catch {
             DX12Renderer.checkError(error)
         }
     }
@@ -607,25 +846,64 @@ extension DX12Renderer {
 
 extension DX12Renderer {
     @inline(__always)
-    static func createBuffer<T>(withData data: Array<T>, heapProperties: D3DHeapProperties, state: D3DResourceStates, function: String = #function) -> D3DResource {
+    static func createBuffer<T>(
+        withData data: [T],
+        heapProperties: D3DHeapProperties,
+        state: D3DResourceStates,
+        function: String = #function
+    ) -> D3DResource {
         return data.withUnsafeBytes {
-            createBuffer(withStart: $0.baseAddress!, count: $0.count, heapProperties: heapProperties, state: state, function: function)
+            createBuffer(
+                withStart: $0.baseAddress!,
+                count: $0.count,
+                heapProperties: heapProperties,
+                state: state,
+                function: function
+            )
         }
     }
 
     @inline(__always)
-    static func createBuffer<T>(withData data: ContiguousArray<T>, heapProperties: D3DHeapProperties, state: D3DResourceStates, function: String = #function) -> D3DResource {
+    static func createBuffer<T>(
+        withData data: ContiguousArray<T>,
+        heapProperties: D3DHeapProperties,
+        state: D3DResourceStates,
+        function: String = #function
+    ) -> D3DResource {
         return data.withUnsafeBytes {
-            createBuffer(withStart: $0.baseAddress!, count: $0.count, heapProperties: heapProperties, state: state, function: function)
+            createBuffer(
+                withStart: $0.baseAddress!,
+                count: $0.count,
+                heapProperties: heapProperties,
+                state: state,
+                function: function
+            )
         }
     }
 
     @_transparent
-    static func createBuffer<T>(withData data: UnsafeBufferPointer<T>, heapProperties: D3DHeapProperties, state: D3DResourceStates, function: String = #function) -> D3DResource {
-        createBuffer(withStart: data.baseAddress!, count: data.count, heapProperties: heapProperties, state: state, function: function)
+    static func createBuffer<T>(
+        withData data: UnsafeBufferPointer<T>,
+        heapProperties: D3DHeapProperties,
+        state: D3DResourceStates,
+        function: String = #function
+    ) -> D3DResource {
+        createBuffer(
+            withStart: data.baseAddress!,
+            count: data.count,
+            heapProperties: heapProperties,
+            state: state,
+            function: function
+        )
     }
 
-    static func createBuffer(withStart start: UnsafeRawPointer, count: Int, heapProperties: D3DHeapProperties, state: D3DResourceStates, function: String = #function) -> D3DResource {
+    static func createBuffer(
+        withStart start: UnsafeRawPointer,
+        count: Int,
+        heapProperties: D3DHeapProperties,
+        state: D3DResourceStates,
+        function: String = #function
+    ) -> D3DResource {
         var resourceDescription: D3DResourceDescription = D3DResourceDescription()
         resourceDescription.dimension = .buffer
         resourceDescription.format = .unknown
@@ -637,7 +915,11 @@ extension DX12Renderer {
         resourceDescription.sampleDescription.count = 1
 
         do {
-            let resource: D3DResource = try Game.shared.renderer.device.createCommittedResource(description: resourceDescription, properties: heapProperties, state: state)
+            let resource: D3DResource = try Game.shared.renderer.device.createCommittedResource(
+                description: resourceDescription,
+                properties: heapProperties,
+                state: state
+            )
             #if GATEENGINE_DEBUG_RENDERING
             try resource.setDebugName("\(type(of: self)).\(function)")
             #endif
@@ -645,43 +927,55 @@ extension DX12Renderer {
             let buffer: UnsafeMutableRawPointer? = try resource.map()
             _ = memcpy(buffer, start, count)
             resource.unmap()
-            
+
             return resource
-        }catch{
+        } catch {
             DX12Renderer.checkError(error)
         }
     }
 
-    func createTextureShaderResourceView(for resource: D3DResource, withFormat format: DGIFormat, at blockDestination: D3DCPUDescriptorHandle) {
+    func createTextureShaderResourceView(
+        for resource: D3DResource,
+        withFormat format: DGIFormat,
+        at blockDestination: D3DCPUDescriptorHandle
+    ) {
         var srvDesc: D3DShaderResourceViewDescription = D3DShaderResourceViewDescription()
         srvDesc.componentMapping = .default
         srvDesc.format = format
         srvDesc.dimension = .texture2D
         srvDesc.texture2D.mipLevels = 2
-        device.createShaderResourceView(resource: resource, description: srvDesc, destination: blockDestination)
+        device.createShaderResourceView(
+            resource: resource,
+            description: srvDesc,
+            destination: blockDestination
+        )
     }
 
-    @_optimize(none) // Prevent compiler crash on release builds
-    static func checkError(_ error: Swift.Error, function: String = #function, line: Int = #line) -> Never {
+    @_optimize(none)  // Prevent compiler crash on release builds
+    static func checkError(_ error: Swift.Error, function: String = #function, line: Int = #line)
+        -> Never
+    {
         Log.error(error)
 
         #if GATEENGINE_DEBUG_RENDERING
-        if let infoQueue: D3DInfoQueue = Game.shared.renderer.device.queryInterface(D3DInfoQueue.self) {
+        if let infoQueue: D3DInfoQueue = Game.shared.renderer.device.queryInterface(
+            D3DInfoQueue.self
+        ) {
             for index: UInt64 in 0 ..< infoQueue.storedMessageCount {
                 infoQueue.getMessage(messageIndex: index) { message in
                     if let message {
                         print(message)
-                    }else{
+                    } else {
                         print("---failed to load error message---")
                     }
                 }
             }
         }
         #endif
-        
+
         do {
             try Game.shared.renderer.device.checkDeviceRemovedReason()
-        }catch{
+        } catch {
             Log.error("Device Removed Reason ->", error)
         }
         fatalError()

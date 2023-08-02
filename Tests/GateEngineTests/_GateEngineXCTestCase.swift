@@ -6,13 +6,14 @@
  */
 
 import XCTest
+
 @testable import GateEngine
 @testable import Gravity
 
 open class GateEngineXCTestCase: XCTestCase {
     final class TestGameDelegate: GameDelegate {
         func didFinishLaunching(game: Game, options: LaunchOptions) {
-            
+
         }
         func isHeadless() -> Bool {
             return true
@@ -20,14 +21,14 @@ open class GateEngineXCTestCase: XCTestCase {
         nonisolated func gameIdentifier() -> StaticString? {
             return "com.STREGAsGate.GateEngine.tests"
         }
-        
+
         nonisolated func customResourceLocations() -> [String] {
             func moduleName() -> String {
                 #if swift(>=6)
                 return #file.components(separatedBy: "/")[0]
                 #else
                 class ModuleLocator {
-                    
+
                 }
                 let ref = String(reflecting: type(of: ModuleLocator()))
                 return String(ref.split(separator: ".")[0])
@@ -41,16 +42,16 @@ open class GateEngineXCTestCase: XCTestCase {
             #endif
         }
     }
-    
+
     @MainActor open override func setUp() async throws {
-        guard Game.shared == nil else {return}
-        
+        guard Game.shared == nil else { return }
+
         let delegate = TestGameDelegate()
         let platform = CurrentPlatform(delegate: delegate)
         Game.shared = Game(delegate: delegate, currentPlatform: platform)
-        
+
         await Game.shared.didFinishLaunching()
-        
+
         #if os(WASI)
         // Removing the system finishes startup as if the user had clicked
         Game.shared.removeSystem(WASIUserActivationRenderingSystem.self)

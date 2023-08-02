@@ -13,16 +13,18 @@ internal class WASpacialMixerReference: SpacialAudioMixerReference {
     unowned let contextReference: WAContextReference
     let mixerNode: PannerNode
     let gainNode: GainNode
-    
+
     init(_ contextReference: WAContextReference) {
         self.contextReference = contextReference
 
         self.mixerNode = contextReference.ctx.createPanner()
         self.gainNode = contextReference.ctx.createGain()
-        
-        gainNode.connect(destinationNode: mixerNode).connect(destinationNode: contextReference.ctx.destination)
+
+        gainNode.connect(destinationNode: mixerNode).connect(
+            destinationNode: contextReference.ctx.destination
+        )
     }
-    
+
     public var minimumAttenuationDistance: Float {
         get {
             return Float(mixerNode.refDistance)
@@ -40,7 +42,7 @@ internal class WASpacialMixerReference: SpacialAudioMixerReference {
             gainNode.gain.value = newValue
         }
     }
-    
+
     @inlinable
     func createListenerReference() -> any SpatialAudioListenerBackend {
         return WAListenerReference(self)

@@ -11,8 +11,10 @@ import CoreServices
 
 public class ApplePlatformImageImporter: TextureImporter {
     public required init() {}
-    
-    public func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (data: Data, size: Size2) {
+
+    public func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (
+        data: Data, size: Size2
+    ) {
         guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil) else {
             throw GateEngineError.generic("Failed to decode image source.")
         }
@@ -27,9 +29,17 @@ public class ApplePlatformImageImporter: TextureImporter {
     }
 
     public class func canProcessFile(_ file: URL) -> Bool {
-        guard let identifiers = (CGImageSourceCopyTypeIdentifiers() as? [CFString]) else {return false}
-        guard let uttype = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, file.pathExtension as CFString, kUTTypeImage)?.takeRetainedValue() else {return false}
-        return identifiers.contains(where: {$0 == uttype})
+        guard let identifiers = (CGImageSourceCopyTypeIdentifiers() as? [CFString]) else {
+            return false
+        }
+        guard
+            let uttype = UTTypeCreatePreferredIdentifierForTag(
+                kUTTagClassFilenameExtension,
+                file.pathExtension as CFString,
+                kUTTypeImage
+            )?.takeRetainedValue()
+        else { return false }
+        return identifiers.contains(where: { $0 == uttype })
     }
 }
 #endif

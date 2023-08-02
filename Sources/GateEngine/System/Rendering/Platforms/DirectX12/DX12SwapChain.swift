@@ -29,11 +29,19 @@ import Direct3D12
                 scaling: .none,
                 swapEffect: .flipDiscard,
                 alphaMode: .unspecified,
-                flags: [.allowTearing])
-            let fullScreen: DGISwapChainFullscreenDescription = DGISwapChainFullscreenDescription(refreshRate: refreshRate)
+                flags: [.allowTearing]
+            )
+            let fullScreen: DGISwapChainFullscreenDescription = DGISwapChainFullscreenDescription(
+                refreshRate: refreshRate
+            )
             self.hWnd = hWnd
-            self.swapChain = try factory.createSwapChain(description: description, window: hWnd, fullScreen: fullScreen, commandQueue: Game.shared.renderer.backend.commandQueue)
-        }catch{
+            self.swapChain = try factory.createSwapChain(
+                description: description,
+                window: hWnd,
+                fullScreen: fullScreen,
+                commandQueue: Game.shared.renderer.backend.commandQueue
+            )
+        } catch {
             DX12Renderer.checkError(error)
         }
     }
@@ -46,7 +54,7 @@ import Direct3D12
         if start {
             barrier.transition.stateBefore = .present
             barrier.transition.stateAfter = .renderTarget
-        }else{
+        } else {
             barrier.transition.stateBefore = .renderTarget
             barrier.transition.stateAfter = .present
         }
@@ -66,13 +74,18 @@ import Direct3D12
         do {
             try self.swapChain.resizeBuffers(flags: [.allowTearing])
             current = 0
-            var targetLocation: D3DCPUDescriptorHandle = renderTarget.renderTargetViewHeap.cpuDescriptorHandleForHeapStart
+            var targetLocation: D3DCPUDescriptorHandle = renderTarget.renderTargetViewHeap
+                .cpuDescriptorHandleForHeapStart
             for index: UInt in 0 ..< bufferCount {
                 let buffer: D3DResource = try swapChain.backBuffer(at: UInt32(index))
-                Game.shared.renderer.device.createRenderTargetView(resource: buffer, description: nil, destination: targetLocation)
+                Game.shared.renderer.device.createRenderTargetView(
+                    resource: buffer,
+                    description: nil,
+                    destination: targetLocation
+                )
                 targetLocation.pointer += UInt64(Game.shared.renderer.backend.rtvIncermentSize)
             }
-        }catch{
+        } catch {
             DX12Renderer.checkError(error)
         }
     }
@@ -82,7 +95,7 @@ import Direct3D12
             try swapChain.present()
             try Game.shared.renderer.backend.wait()
             InvalidateRect(self.hWnd, nil, false)
-        }catch{
+        } catch {
             DX12Renderer.checkError(error)
         }
         current += 1

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import GameMath
 
 final class Matrix4x4Tests: XCTestCase {
@@ -8,7 +9,13 @@ final class Matrix4x4Tests: XCTestCase {
             XCTAssertEqual(matrix.array(), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
         }
         do {
-            let matrix = Matrix4x4(a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16)
+            // swift-format-ignore
+            let matrix = Matrix4x4(
+                a: 1, b: 2, c: 3, d: 4,
+                e: 5, f: 6, g: 7, h: 8,
+                i: 9, j: 10, k: 11, l: 12,
+                m: 13, n: 14, o: 15, p: 16
+            )
             XCTAssertEqual(matrix.array(), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
         }
         do {
@@ -26,10 +33,13 @@ final class Matrix4x4Tests: XCTestCase {
     }
 
     func testIdentity() {
-        let identity = Matrix4x4(a: 1, b: 0, c: 0, d: 0,
-                                        e: 0, f: 1, g: 0, h: 0,
-                                        i: 0, j: 0, k: 1, l: 0,
-                                        m: 0, n: 0, o: 0, p: 1)
+        // swift-format-ignore
+        let identity = Matrix4x4(
+            a: 1, b: 0, c: 0, d: 0,
+            e: 0, f: 1, g: 0, h: 0,
+            i: 0, j: 0, k: 1, l: 0,
+            m: 0, n: 0, o: 0, p: 1
+        )
         XCTAssertEqual(identity, .identity)
     }
 
@@ -41,10 +51,13 @@ final class Matrix4x4Tests: XCTestCase {
 
     func testInverse() {
         let mtx = Matrix4x4(position: Position3(1, 2, 3))
-        let expected = Matrix4x4(a: 1.0, b: 0.0, c: 0.0, d: -1.0,
-                                        e: 0.0, f: 1.0, g: 0.0, h: -2.0,
-                                        i: 0.0, j: 0.0, k: 1.0, l: -3.0,
-                                        m: 0.0, n: 0.0, o: 0.0, p: 1.0)
+        // swift-format-ignore
+        let expected = Matrix4x4(
+            a: 1.0, b: 0.0, c: 0.0, d: -1.0,
+            e: 0.0, f: 1.0, g: 0.0, h: -2.0,
+            i: 0.0, j: 0.0, k: 1.0, l: -3.0,
+            m: 0.0, n: 0.0, o: 0.0, p: 1.0
+        )
         XCTAssertEqual(mtx.inverse, expected)
     }
 
@@ -100,7 +113,7 @@ final class Matrix4x4Tests: XCTestCase {
     func testTransform() {
         var matrix = Matrix4x4(position: Position3(1, 2, 3))
         XCTAssertEqual(matrix.transform.position, Position3(1, 2, 3))
-        matrix.position = Position3(3,2,1)
+        matrix.position = Position3(3, 2, 1)
         XCTAssertEqual(matrix.position, Position3(3, 2, 1))
     }
 
@@ -114,15 +127,21 @@ final class Matrix4x4Tests: XCTestCase {
 
     #if false
     func testMultiplicationPerformance() {
-        let m1 = Transform3(position: Position3(128, 128, 128),
-                                   rotation: Quaternion(128°, axis: .up),
-                                   scale: .one).createMatrix()
-        let m2 = Transform3(position: Position3(0, 1, 2),
-                                   rotation: Quaternion(90°, axis: .up),
-                                   scale: Size3(-100, -15, -1)).createMatrix()
-        let m3 = Transform3(position: Position3(-128, -128, -128),
-                                   rotation: Quaternion(-65°, axis: .up),
-                                   scale: Size3(100, 15, 1)).createMatrix()
+        let m1 = Transform3(
+            position: Position3(128, 128, 128),
+            rotation: Quaternion(128°, axis: .up),
+            scale: .one
+        ).createMatrix()
+        let m2 = Transform3(
+            position: Position3(0, 1, 2),
+            rotation: Quaternion(90°, axis: .up),
+            scale: Size3(-100, -15, -1)
+        ).createMatrix()
+        let m3 = Transform3(
+            position: Position3(-128, -128, -128),
+            rotation: Quaternion(-65°, axis: .up),
+            scale: Size3(100, 15, 1)
+        ).createMatrix()
 
         func doMath() {
             var mtx: Matrix4x4 = .identity

@@ -14,26 +14,26 @@ public enum FileSystemSearchPathDomain {
 public enum FileSystemSearchPath {
     /**
      The Save Directory for your game.
-     
+
      Files that you want to keep forever should go here.
      This includes player progression, stats, screenshots, etc...
      */
     case persistent
     /**
      The Cache Directory for your game.
-     
+
      Files that your game will regenerate when missing.
-     
+
      GateEngine or the host operating system will delete these files when your game is not using them.
-     
+
      For the best user expirience, you should delete them yourself when you are finished with them as you are the only one who knows when they are no longer needed.
      */
     case cache
     /**
      The Temporary Directory for your game.
-     
+
      Files placed here are volatile the momenet you're done writing them.
-     
+
      Use this directory to perfrom atomic operations and temporary scratch.
      - note: Do not store files here for any reason. They will randomly be destroyed.
      */
@@ -51,12 +51,12 @@ public struct FileSystemWriteOptions: OptionSet {
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
-    
+
     public static let createDirectories = Self(rawValue: 1 << 1)
     public static let atomically = Self(rawValue: 1 << 2)
-    
+
     @_transparent
-    public static var `default`: Self {[]}// {[.createDirectories, .atomically]}
+    public static var `default`: Self { [] }  // {[.createDirectories, .atomically]}
 }
 
 /*
@@ -67,18 +67,21 @@ public struct FileSystemWriteOptions: OptionSet {
 public protocol FileSystem {
     func itemExists(at path: String) async -> Bool
     func itemType(at path: String) async -> FileSystemItemType?
-    
+
     func contentsOfDirectory(at path: String) async throws -> [String]
     func createDirectory(at path: String) async throws
-    
+
     func deleteItem(at path: String) async throws
     func moveItem(at originPath: String, to destinationPath: String) async throws
-    
+
     func read(from path: String) async throws -> Data
     func write(_ data: Data, to path: String, options: FileSystemWriteOptions) async throws
-    
+
     func resolvePath(_ path: String) throws -> String
-    func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> String
+    func pathForSearchPath(
+        _ searchPath: FileSystemSearchPath,
+        in domain: FileSystemSearchPathDomain
+    ) throws -> String
 }
 
 #if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
@@ -88,7 +91,7 @@ extension FileSystem {
     public func itemExists(at path: String) async -> Bool {
         return FileManager.default.fileExists(atPath: path)
     }
-    
+
     public func itemType(at path: String) async -> FileSystemItemType? {
         var isDirectory: ObjCBool = ObjCBool(false)
         let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
@@ -100,43 +103,45 @@ extension FileSystem {
         }
         return nil
     }
-    
+
     public func contentsOfDirectory(at path: String) async throws -> [String] {
         return try FileManager.default.contentsOfDirectory(atPath: path)
     }
-    
+
     public func createDirectory(at path: String) async throws {
         let url = URL(fileURLWithPath: path)
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     }
-    
+
     public func deleteItem(at path: String) async throws {
         try FileManager.default.removeItem(atPath: path)
     }
-    
+
     public func moveItem(at originPath: String, to destinationPath: String) async throws {
         try FileManager.default.moveItem(atPath: originPath, toPath: destinationPath)
     }
-    
+
     public func read(from path: String) async throws -> Data {
         return try await withCheckedThrowingContinuation { continuation in
             do {
                 let url = URL(fileURLWithPath: path)
                 let data = try Data(contentsOf: url, options: .mappedIfSafe)
                 continuation.resume(returning: data)
-            }catch{
+            } catch {
                 continuation.resume(throwing: error)
             }
         }
     }
-    
-    public func write(_ data: Data, to path: String, options: FileSystemWriteOptions = .default) async throws {
+
+    public func write(_ data: Data, to path: String, options: FileSystemWriteOptions = .default)
+        async throws
+    {
         func writeData(to destinationPath: String) async throws {
             try await withCheckedThrowingContinuation { continuation in
                 do {
                     try data.write(to: URL(fileURLWithPath: destinationPath), options: [])
                     continuation.resume()
-                }catch{
+                } catch {
                     continuation.resume(throwing: error)
                 }
             }
@@ -152,29 +157,31 @@ extension FileSystem {
         }
         if options.contains(.atomically) {
             let tmpDir = URL(fileURLWithPath: try pathForSearchPath(.temporary, in: .currentUser))
-            let tmpPath = tmpDir.appendingPathComponent(URL(fileURLWithPath: path).lastPathComponent).path
+            let tmpPath = tmpDir.appendingPathComponent(
+                URL(fileURLWithPath: path).lastPathComponent
+            ).path
             try await createDirectoryIfNeeded(at: tmpDir.path)
             try await writeData(to: tmpPath)
             try await moveItem(at: tmpPath, to: path)
-        }else{
+        } else {
             try await writeData(to: path)
         }
     }
-    
+
     public func resolvePath(_ path: String) throws -> String {
         var url = URL(fileURLWithPath: path)
-        
+
         // Expand symlinks
         url.resolveSymlinksInPath()
 
         // Expand .. and remove .
         url.standardize()
-        
+
         // Expand Tilde
         #if canImport(Foundation.NSString)
         url = URL(fileURLWithPath: (url.path as NSString).expandingTildeInPath)
         #endif
-        
+
         return url.path
     }
 }

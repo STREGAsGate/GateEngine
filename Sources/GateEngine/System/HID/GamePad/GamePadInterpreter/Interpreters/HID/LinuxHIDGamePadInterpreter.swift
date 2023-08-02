@@ -8,7 +8,7 @@
 import Foundation
 import LinuxSupport
 
-fileprivate class HIDController {
+private class HIDController {
     var guid: SDL2ControllerGUID {
         return map.id
     }
@@ -17,7 +17,7 @@ fileprivate class HIDController {
     var buttonElements: [ElementCache] = []
     var axesElements: [ElementCache] = []
     var hatElements: [ElementCache] = []
-    
+
     struct ElementCache {
         let number: Int
         let min: Int
@@ -29,33 +29,37 @@ fileprivate class HIDController {
     }
 }
 
-fileprivate let BITS_PER_LONG: Int = MemoryLayout<CUnsignedLong>.size * 8
-fileprivate func NBITS(_ x: Int) -> Int {((((x)-1)/BITS_PER_LONG)+1)}
-fileprivate func EVDEV_OFF(_ x: Int) -> Int {((x)%BITS_PER_LONG)}
-fileprivate func EVDEV_LONG(_ x: Int) -> Int {((x)/BITS_PER_LONG)}
-fileprivate func test_bit(_ bit: Int, _ array: Array<UInt32>) -> Bool {((array[EVDEV_LONG(bit)] >> EVDEV_OFF(bit)) & 1) != 0}
+private let BITS_PER_LONG: Int = MemoryLayout<CUnsignedLong>.size * 8
+private func NBITS(_ x: Int) -> Int { ((((x) - 1) / BITS_PER_LONG) + 1) }
+private func EVDEV_OFF(_ x: Int) -> Int { ((x) % BITS_PER_LONG) }
+private func EVDEV_LONG(_ x: Int) -> Int { ((x) / BITS_PER_LONG) }
+private func test_bit(_ bit: Int, _ array: [UInt32]) -> Bool {
+    ((array[EVDEV_LONG(bit)] >> EVDEV_OFF(bit)) & 1) != 0
+}
 
 internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
     @inline(__always)
-    var hid: HID {Game.shared.hid}
+    var hid: HID { Game.shared.hid }
     let sdl2Database: SDL2Database
     required init() {
         self.sdl2Database = try! SDL2Database()
     }
 
-    var connected: [String:Int32] = [:]
-    
-    func guidFromPath(_ path: String, _ fd: Int32) -> SDL2ControllerGUID? {        
+    var connected: [String: Int32] = [:]
+
+    func guidFromPath(_ path: String, _ fd: Int32) -> SDL2ControllerGUID? {
         // SDL2 changes values for some devices to support db GUIDs
         // We duplicate that to make sure the db entries function as expected
         func fixUp(input: input_id) -> input_id {
             var input = input
             if inpid.vendor == 0x045e && inpid.product == 0x0b05 && inpid.version == 0x0903 {
                 /* This is a Microsoft Xbox One Elite Series 2 controller */
-                var keybit = Array<UInt32>(repeating: 0, count: Int(KEY_MAX))
+                var keybit = [UInt32](repeating: 0, count: Int(KEY_MAX))
 
                 /* The first version of the firmware duplicated all the inputs */
-                if ioctl(Int32(fd), Int32(EVIOCGBIT(EV_KEY, Int32(keybit.count))), &keybit) >= 0 && test_bit(0x2c0, keybit) {
+                if ioctl(Int32(fd), Int32(EVIOCGBIT(EV_KEY, Int32(keybit.count))), &keybit) >= 0
+                    && test_bit(0x2c0, keybit)
+                {
                     /* Change the version to 0x0902, so we can map it differently */
                     inpid.version = 0x0902
                 }
@@ -64,25 +68,37 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
             /* For Atari vcs modern and classic controllers have the version reflecting
             * firmware version, but the mapping stays stable so ignore
             * version information */
-            if (inpid.vendor == 0x3250 && (inpid.product == 0x1001 || inpid.product == 0x1002)) {
+            if inpid.vendor == 0x3250 && (inpid.product == 0x1001 || inpid.product == 0x1002) {
                 inpid.version = 0
             }
             return input
         }
 
         var inpid: input_id = input_id()
-        guard ioctl(fd, EVIOCGID, &inpid) >= 0 else {return nil}
+        guard ioctl(fd, EVIOCGID, &inpid) >= 0 else { return nil }
         inpid = fixUp(input: inpid)
 
-        return SDL2ControllerGUID(vendorID: Int(inpid.vendor), productID: Int(inpid.product), hidVersion: Int(inpid.version), transport: Int(inpid.bustype), name: "")
+        return SDL2ControllerGUID(
+            vendorID: Int(inpid.vendor),
+            productID: Int(inpid.product),
+            hidVersion: Int(inpid.version),
+            transport: Int(inpid.bustype),
+            name: ""
+        )
     }
 
     func checkConnectedJoysticks() {
-        guard let joysticks: [String] = try? FileManager.default.contentsOfDirectory(atPath: "/dev/input").map({"/dev/input/" + $0}) else {return}
+        guard
+            let joysticks: [String] = try? FileManager.default.contentsOfDirectory(
+                atPath: "/dev/input"
+            ).map({ "/dev/input/" + $0 })
+        else { return }
         let old: Dictionary<String, Int32>.Keys = self.connected.keys
         for val: String in old {
             if joysticks.contains(val) == false {
-                if let gamePad: GamePad = hid.gamePads.all.first(where: {($0.identifier as! HIDController).path == val}) {
+                if let gamePad: GamePad = hid.gamePads.all.first(where: {
+                    ($0.identifier as! HIDController).path == val
+                }) {
                     hid.gamePads.removedDisconnectedGamePad(gamePad)
                 }
                 if let fd: Int32 = connected[val] {
@@ -92,7 +108,7 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
             }
         }
         for val: String in joysticks {
-            if self.connected.keys.contains(val) == false {                
+            if self.connected.keys.contains(val) == false {
                 let fd: Int32 = open(val, O_RDONLY, 0)
                 self.connected[val] = fd
 
@@ -101,12 +117,21 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
                     self.connected[val] = nil
                 }
 
-                guard let guid: SDL2ControllerGUID = guidFromPath(val, fd) else {failed(); continue}
-                guard var map: SDL2ControllerMap = sdl2Database.controllers[guid] else {failed(); continue}
+                guard let guid: SDL2ControllerGUID = guidFromPath(val, fd) else {
+                    failed()
+                    continue
+                }
+                guard var map: SDL2ControllerMap = sdl2Database.controllers[guid] else {
+                    failed()
+                    continue
+                }
                 //Use our generated guid with vendor and product IDs
                 map.id = guid
-                
-                let gamePad: GamePad = GamePad(interpreter: self, identifier: HIDController(map: map, path: val))
+
+                let gamePad: GamePad = GamePad(
+                    interpreter: self,
+                    identifier: HIDController(map: map, path: val)
+                )
                 hid.gamePads.addNewlyConnectedGamePad(gamePad)
             }
         }
@@ -119,11 +144,11 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
     var lastUpdate: Date = .distantPast
     func update() {
         // Check controller changes every 3 seconds
-        guard lastUpdate.timeIntervalSinceNow < -3 else {return}
+        guard lastUpdate.timeIntervalSinceNow < -3 else { return }
         checkConnectedJoysticks()
         lastUpdate = Date()
     }
-    
+
     func endInterpreting() {
         for fd in connected.values {
             close(fd)
@@ -131,54 +156,68 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
         connected.removeAll()
     }
     func setupGamePad(_ gamePad: GamePad) {
-        guard let controller = gamePad.identifier as? HIDController else {return}
-        guard let fd = connected[controller.path] else {return}
+        guard let controller = gamePad.identifier as? HIDController else { return }
+        guard let fd = connected[controller.path] else { return }
 
         gamePad.symbols = controller.map.symbols()
 
-        var keybit = Array<UInt32>(repeating: 0, count: NBITS(Int(KEY_MAX)))
-        var absbit = Array<UInt32>(repeating: 0, count: NBITS(Int(ABS_MAX)))
-        var relbit = Array<UInt32>(repeating: 0, count: NBITS(Int(REL_MAX)))
-        var ffbit  = Array<UInt32>(repeating: 0, count: NBITS(Int(FF_MAX)))
-        
-        let k = ioctl(fd, EVIOCGBIT(EV_KEY, Int32(MemoryLayout<UInt32>.size * keybit.count)), &keybit) >= 0
-        let a = ioctl(fd, EVIOCGBIT(EV_ABS, Int32(MemoryLayout<UInt32>.size * absbit.count)), &absbit) >= 0
-        let r = ioctl(fd, EVIOCGBIT(EV_REL, Int32(MemoryLayout<UInt32>.size * relbit.count)), &relbit) >= 0
+        var keybit = [UInt32](repeating: 0, count: NBITS(Int(KEY_MAX)))
+        var absbit = [UInt32](repeating: 0, count: NBITS(Int(ABS_MAX)))
+        var relbit = [UInt32](repeating: 0, count: NBITS(Int(REL_MAX)))
+        var ffbit = [UInt32](repeating: 0, count: NBITS(Int(FF_MAX)))
 
-        if (k && a && r) {
+        let k =
+            ioctl(fd, EVIOCGBIT(EV_KEY, Int32(MemoryLayout<UInt32>.size * keybit.count)), &keybit)
+            >= 0
+        let a =
+            ioctl(fd, EVIOCGBIT(EV_ABS, Int32(MemoryLayout<UInt32>.size * absbit.count)), &absbit)
+            >= 0
+        let r =
+            ioctl(fd, EVIOCGBIT(EV_REL, Int32(MemoryLayout<UInt32>.size * relbit.count)), &relbit)
+            >= 0
+
+        if k && a && r {
             for i in 0 ..< ABS_MAX {
-                guard (ABS_HAT0X ..< ABS_HAT3Y).contains(i) == false else {continue}
-                guard test_bit(Int(i), absbit) else {continue}
+                guard (ABS_HAT0X ..< ABS_HAT3Y).contains(i) == false else { continue }
+                guard test_bit(Int(i), absbit) else { continue }
 
                 var absinfo = input_absinfo()
-                guard ioctl(fd, EVIOCGABS(i), &absinfo) >= 0 else {continue}
+                guard ioctl(fd, EVIOCGABS(i), &absinfo) >= 0 else { continue }
 
-                let element = HIDController.ElementCache(number: Int(i), min: Int(absinfo.minimum), max: Int(absinfo.maximum))
+                let element = HIDController.ElementCache(
+                    number: Int(i),
+                    min: Int(absinfo.minimum),
+                    max: Int(absinfo.maximum)
+                )
                 controller.axesElements.append(element)
             }
 
             for i in stride(from: Int(ABS_HAT0X), through: Int(ABS_HAT3Y), by: 2) {
-                if (test_bit(i, absbit) || test_bit(i + 1, absbit)) {
+                if test_bit(i, absbit) || test_bit(i + 1, absbit) {
                     var absinfo = input_absinfo()
                     let hat_index = (i - Int(ABS_HAT0X)) / 2
 
-                    if (ioctl(fd, EVIOCGABS(Int32(i)), &absinfo) < 0) {
+                    if ioctl(fd, EVIOCGABS(Int32(i)), &absinfo) < 0 {
                         continue
                     }
 
-                    let element = HIDController.ElementCache(number: hat_index, min: Int(absinfo.minimum), max: Int(absinfo.maximum))
+                    let element = HIDController.ElementCache(
+                        number: hat_index,
+                        min: Int(absinfo.minimum),
+                        max: Int(absinfo.maximum)
+                    )
                     controller.hatElements.append(element)
                 }
             }
 
             for i in Int(BTN_JOYSTICK) ..< Int(KEY_MAX) {
-                if (test_bit(i, keybit)) {
+                if test_bit(i, keybit) {
                     let element = HIDController.ElementCache(number: i, min: 0, max: 1)
                     controller.buttonElements.append(element)
                 }
             }
             for i in 0 ..< Int(BTN_JOYSTICK) {
-                if (test_bit(i, keybit)) {
+                if test_bit(i, keybit) {
                     let element = HIDController.ElementCache(number: i, min: 0, max: 1)
                     controller.buttonElements.append(element)
                 }
@@ -186,17 +225,16 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
         }
     }
 
-
-
     func updateState(of gamePad: GamePad) {
-        guard let controller = gamePad.identifier as? HIDController else {return}
-        guard let fd = connected[controller.path] else {return}
+        guard let controller = gamePad.identifier as? HIDController else { return }
+        guard let fd = connected[controller.path] else { return }
 
-        var keyinfo = Array<UInt32>(repeating: 0, count: NBITS(Int(KEY_MAX)))
-        guard ioctl(fd, EVIOCGKEY(Int32(MemoryLayout<UInt32>.size * keyinfo.count)), &keyinfo) >= 0 else {return}
+        var keyinfo = [UInt32](repeating: 0, count: NBITS(Int(KEY_MAX)))
+        guard ioctl(fd, EVIOCGKEY(Int32(MemoryLayout<UInt32>.size * keyinfo.count)), &keyinfo) >= 0
+        else { return }
 
         func value(from controller: HIDController, for button: SDL2ControllerMap.Element) -> Float {
-            guard let element = controller.map.elements[button] else {return 0}
+            guard let element = controller.map.elements[button] else { return 0 }
             switch element.kind {
             case .button:
                 let number = controller.buttonElements[element.id].number
@@ -204,26 +242,30 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
             case let .hat(position):
                 let number = controller.hatElements[element.id].number
                 var hatInfoX = input_absinfo()
-                guard ioctl(fd, EVIOCGABS(Int32(number) + ABS_HAT0X), &hatInfoX) >= 0 else {return 8}
+                guard ioctl(fd, EVIOCGABS(Int32(number) + ABS_HAT0X), &hatInfoX) >= 0 else {
+                    return 8
+                }
                 var hatInfoY = input_absinfo()
-                guard ioctl(fd, EVIOCGABS(Int32( number) + ABS_HAT0Y), &hatInfoY) >= 0 else {return 8}
-                
+                guard ioctl(fd, EVIOCGABS(Int32(number) + ABS_HAT0Y), &hatInfoY) >= 0 else {
+                    return 8
+                }
+
                 switch (hatInfoX.value, hatInfoY.value) {
-                case (0, -1)://up
+                case (0, -1):  //up
                     return position == 1 ? 1 : 0
-                case (1, -1)://upRight
+                case (1, -1):  //upRight
                     return (position == 1 || position == 2) ? 1 : 0
-                case (1, 0)://right
+                case (1, 0):  //right
                     return position == 2 ? 1 : 0
-                case (1, 1)://rightDown
+                case (1, 1):  //rightDown
                     return (position == 2 || position == 4) ? 1 : 0
-                case (0, 1)://down
+                case (0, 1):  //down
                     return position == 4 ? 1 : 0
-                case (-1, 1)://leftDown
+                case (-1, 1):  //leftDown
                     return (position == 4 || position == 8) ? 1 : 0
-                case (-1, 0)://left
+                case (-1, 0):  //left
                     return position == 8 ? 1 : 0
-                case (-1, -1)://upLeft
+                case (-1, -1):  //upLeft
                     return (position == 1 || position == 8) ? 1 : 0
                 default:
                     return 0
@@ -231,11 +273,13 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
             case let .analog(axis):
                 let number = controller.axesElements[element.id].number
                 var axisInfo = input_absinfo()
-                guard ioctl(fd, EVIOCGABS(Int32(number)), &axisInfo) >= 0 else {return 0}
+                guard ioctl(fd, EVIOCGABS(Int32(number)), &axisInfo) >= 0 else { return 0 }
                 let factor: Float = {
                     switch axis {
                     case .whole, .wholeInverted:
-                        var value = Float(axisInfo.value - axisInfo.minimum) / Float(axisInfo.maximum - axisInfo.minimum)
+                        var value =
+                            Float(axisInfo.value - axisInfo.minimum)
+                            / Float(axisInfo.maximum - axisInfo.minimum)
                         if axis == .wholeInverted {
                             value *= -1
                         }
@@ -310,7 +354,7 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
         gamePad.menu.tertiary.value = value(from: controller, for: .menuGuid)
         gamePad.menu.tertiary.isPressed = gamePad.menu.tertiary.value > 0.1
     }
-    
+
     func description(of gamePad: GamePad) -> String {
         let identifier: HIDController = gamePad.identifier as! HIDController
         #if GATEENGINE_DEBUG_HID
@@ -319,8 +363,8 @@ internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
         return (identifier.map.name ?? "[Unknown]")
         #endif
     }
-    
-    var userReadableName: String {return "Joystick API"}
+
+    var userReadableName: String { return "Joystick API" }
 }
 
 #endif

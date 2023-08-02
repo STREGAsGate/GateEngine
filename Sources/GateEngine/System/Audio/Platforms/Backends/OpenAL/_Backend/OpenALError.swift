@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 #if (canImport(OpenALSoft) || canImport(LinuxSupport)) && !os(WASI)
-#if canImport(OpenALSoft) 
+#if canImport(OpenALSoft)
 import OpenALSoft
 #elseif canImport(LinuxSupport)
 import LinuxSupport
@@ -19,7 +19,7 @@ internal enum OpenALError {
     case invalidValue
     case invalidOperation
     case outOfMemory
-    
+
     var value: ALenum {
         switch self {
         case .noError: return AL_NO_ERROR
@@ -31,7 +31,7 @@ internal enum OpenALError {
         case .unknown: return -1
         }
     }
-    
+
     static func from(_ value: ALenum) -> OpenALError {
         switch value {
         case AL_NO_ERROR: return .noError

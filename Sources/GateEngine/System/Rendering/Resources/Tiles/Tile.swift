@@ -13,7 +13,7 @@ extension Tile: Identifiable {}
 public struct Tile {
     public typealias ID = Int
     public let id: ID
-    public let properties: [String : String]
+    public let properties: [String: String]
     public let colliders: [Collider]?
 
     public struct Collider {

@@ -26,41 +26,66 @@ final class DX12Texture: TextureBackend {
         fatalError()
     }
 
-     var dxTexture: D3DResource {
+    var dxTexture: D3DResource {
         if let _dxTexture {
             return _dxTexture
         }
         return renderTarget!.colorTexture!
     }
-    
+
     required init(renderTargetBackend: any RenderTargetBackend) {
         renderTarget = (renderTargetBackend as! DX12RenderTarget)
         _dxTexture = nil
         _size = nil
     }
-    
+
     required init(data: Data, size: Size2, mipMapping: MipMapping) {
-        let device: D3DDevice =  Game.shared.renderer.device
+        let device: D3DDevice = Game.shared.renderer.device
         do {
-            let textureResourceDesc: D3DResourceDescription = Self.textureResourceDesc(size: size, mipMapping: mipMapping)
-            self._dxTexture = try device.createCommittedResource(description: textureResourceDesc, properties: .forTexture, state: .copyDestination)
+            let textureResourceDesc: D3DResourceDescription = Self.textureResourceDesc(
+                size: size,
+                mipMapping: mipMapping
+            )
+            self._dxTexture = try device.createCommittedResource(
+                description: textureResourceDesc,
+                properties: .forTexture,
+                state: .copyDestination
+            )
             self._size = size
             self.renderTarget = nil
-            try self.processTexture(data: data, size: size, textureResourceDesc: textureResourceDesc)
-        }catch{
+            try self.processTexture(
+                data: data,
+                size: size,
+                textureResourceDesc: textureResourceDesc
+            )
+        } catch {
             DX12Renderer.checkError(error)
         }
     }
 
     func replaceData(with data: Data, size: Size2, mipMapping: MipMapping) {
-        assert(renderTarget == nil, "Cannot manipulate a renderTarget through a texture. You must draw to the renderTarget.")
-        let device: D3DDevice =  Game.shared.renderer.device
+        assert(
+            renderTarget == nil,
+            "Cannot manipulate a renderTarget through a texture. You must draw to the renderTarget."
+        )
+        let device: D3DDevice = Game.shared.renderer.device
         do {
-            let textureResourceDesc: D3DResourceDescription = Self.textureResourceDesc(size: size, mipMapping: mipMapping)
-            self._dxTexture = try device.createCommittedResource(description: textureResourceDesc, properties: .forTexture, state: .copyDestination)
+            let textureResourceDesc: D3DResourceDescription = Self.textureResourceDesc(
+                size: size,
+                mipMapping: mipMapping
+            )
+            self._dxTexture = try device.createCommittedResource(
+                description: textureResourceDesc,
+                properties: .forTexture,
+                state: .copyDestination
+            )
             self._size = size
-            try self.processTexture(data: data, size: size, textureResourceDesc: textureResourceDesc)
-        }catch{
+            try self.processTexture(
+                data: data,
+                size: size,
+                textureResourceDesc: textureResourceDesc
+            )
+        } catch {
             DX12Renderer.checkError(error)
         }
     }
@@ -89,13 +114,20 @@ final class DX12Texture: TextureBackend {
         return textureResourceDesc
     }
 
-    private func processTexture(data: Data, size: Size2, textureResourceDesc: D3DResourceDescription) throws {
-        guard let dxTexture: D3DResource = _dxTexture else {return}
+    private func processTexture(
+        data: Data,
+        size: Size2,
+        textureResourceDesc: D3DResourceDescription
+    ) throws {
+        guard let dxTexture: D3DResource = _dxTexture else { return }
         let renderer: DX12Renderer = Game.shared.renderer.backend
         let device: D3DDevice = renderer.device
         let fence: D3DFence = try device.createFence()
         let commandAllocator: D3DCommandAllocator = try device.createCommandAllocator(type: .direct)
-        let commandList: D3DGraphicsCommandList = try device.createGraphicsCommandList(type: .direct, commandAllocator: commandAllocator)
+        let commandList: D3DGraphicsCommandList = try device.createGraphicsCommandList(
+            type: .direct,
+            commandAllocator: commandAllocator
+        )
 
         let pitch: UInt32 = {
             let alignment: UInt32 = UInt32(D3D12_TEXTURE_DATA_PITCH_ALIGNMENT)
@@ -116,8 +148,12 @@ final class DX12Texture: TextureBackend {
             resourceDescription.layout = .rowMajor
             resourceDescription.flags = []
             do {
-                let heap: D3DResource = try device.createCommittedResource(description: resourceDescription, properties: heapProperties, state: .genericRead)
-                
+                let heap: D3DResource = try device.createCommittedResource(
+                    description: resourceDescription,
+                    properties: heapProperties,
+                    state: .genericRead
+                )
+
                 var pitchedData: Data = Data(repeating: 0, count: Int(resourceDescription.width))
                 let pitch: Int = Int(pitch)
                 let width: Int = Int(size.width)
@@ -126,7 +162,10 @@ final class DX12Texture: TextureBackend {
                     let srcStart: Int = row * rowSize
                     let subSource: Data = data.subdata(in: srcStart ..< srcStart + rowSize)
                     let dstStart: Int = pitch * row
-                    pitchedData.replaceSubrange(dstStart ..< dstStart + rowSize, with: Data(subSource))
+                    pitchedData.replaceSubrange(
+                        dstStart ..< dstStart + rowSize,
+                        with: Data(subSource)
+                    )
                 }
                 try pitchedData.withUnsafeBytes {
                     let buffer: UnsafeMutableRawPointer = try heap.map()!
@@ -134,20 +173,39 @@ final class DX12Texture: TextureBackend {
                     heap.unmap()
                 }
                 return heap
-            }catch{
+            } catch {
                 DX12Renderer.checkError(error)
             }
         }()
-        
+
         var rect: D3DBox = D3DBox()
         rect.right = UInt32(size.width)
         rect.bottom = UInt32(size.height)
         rect.back = 1
 
-        let footprint: D3DSubresourceFootprint = D3DSubresourceFootprint(format: .r8g8b8a8Unorm, width: UInt32(size.width), height: UInt32(size.height), depth: 1, rowPitch: pitch)
-        let suresourceFootprint: D3DPlacedSubresourceFootprint = D3DPlacedSubresourceFootprint(offset: 0, footprint: footprint)
-        let source: D3DTextureCopyLocation = D3DTextureCopyLocation(resource: uploadHeap, type: .placedFootprint, placedFootprint: suresourceFootprint, subresourceIndex: 0)
-        let blockDestination: D3DTextureCopyLocation = D3DTextureCopyLocation(resource: dxTexture, type: .subresourceIndex, placedFootprint: suresourceFootprint, subresourceIndex: 0)
+        let footprint: D3DSubresourceFootprint = D3DSubresourceFootprint(
+            format: .r8g8b8a8Unorm,
+            width: UInt32(size.width),
+            height: UInt32(size.height),
+            depth: 1,
+            rowPitch: pitch
+        )
+        let suresourceFootprint: D3DPlacedSubresourceFootprint = D3DPlacedSubresourceFootprint(
+            offset: 0,
+            footprint: footprint
+        )
+        let source: D3DTextureCopyLocation = D3DTextureCopyLocation(
+            resource: uploadHeap,
+            type: .placedFootprint,
+            placedFootprint: suresourceFootprint,
+            subresourceIndex: 0
+        )
+        let blockDestination: D3DTextureCopyLocation = D3DTextureCopyLocation(
+            resource: dxTexture,
+            type: .subresourceIndex,
+            placedFootprint: suresourceFootprint,
+            subresourceIndex: 0
+        )
 
         commandList.copyTextureRegion(rect, from: source, to: blockDestination)
         // commandList.copyResource(uploadHeap, to: dxTexture!)
@@ -168,7 +226,7 @@ final class DX12Texture: TextureBackend {
             try renderer.backgroundCommandQueue.signal(fence: fence, value: 1)
             if fence.value < 1 {
                 let h: HANDLE? = WinSDK.CreateEventW(nil, false, false, nil)
-                defer {_ = CloseHandle(h)}
+                defer { _ = CloseHandle(h) }
                 try fence.setCompletionEvent(h, whenValueIs: 1)
                 _ = WinSDK.WaitForSingleObject(h, INFINITE)
             }

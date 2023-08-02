@@ -11,33 +11,34 @@ extension ECSContext {
         var fps: Int = 0
         private var _fpsStart: Double = 0
         private var _fpsCount: Int = 0
-        
+
         private var _systemsStart: Double = 0
         private var _systemsFrameTime: Double = 0
         var systemsFrameTime: Double = 0
-        
+
         private var _renderingSystemsStart: Double = 0
         private var _renderingSystemsFrameTime: Double = 0
         var renderingSystemsFrameTime: Double = 0
-        
-        private var cumulatedStatistics: ContiguousArray<ContiguousArray<Statistic>> = ContiguousArray(repeating: ContiguousArray(), count: 15)
+
+        private var cumulatedStatistics: ContiguousArray<ContiguousArray<Statistic>> =
+            ContiguousArray(repeating: ContiguousArray(), count: 15)
         var currentIndex: Int = 0
 
-        public func averageSortedStatistics() -> [Dictionary<String,Double>.Element] {
+        public func averageSortedStatistics() -> [Dictionary<String, Double>.Element] {
             calculateAverageStatistics()
-            return averageStatistics.sorted(by: {$0.value > $1.value})
+            return averageStatistics.sorted(by: { $0.value > $1.value })
         }
 
-        private var averageStatistics: [String:Double] = [:]
+        private var averageStatistics: [String: Double] = [:]
         private func calculateAverageStatistics() {
             averageStatistics.removeAll(keepingCapacity: true)
-            var counts: [String:Int] = [:]
+            var counts: [String: Int] = [:]
             for statistics in cumulatedStatistics {
                 for statisic in statistics {
                     let key = "\(statisic.system)"
                     if averageStatistics[key] == nil {
                         averageStatistics[key] = statisic.duration
-                    }else{
+                    } else {
                         averageStatistics[key]! += statisic.duration
                     }
                     counts[key] = (counts[key] ?? 0) + 1
@@ -119,7 +120,6 @@ extension ECSContext {
                 self.endDate = Game.shared.platform.systemTime()
             }
         }
-        
 
         @inlinable
         func startSystems() {
@@ -134,7 +134,7 @@ extension ECSContext {
             systemsFrameTime = _systemsFrameTime * 1000
             _systemsFrameTime = 0
         }
-        
+
         @inlinable
         func startRenderingSystems() {
             _renderingSystemsStart = Game.shared.platform.systemTime()
@@ -142,7 +142,7 @@ extension ECSContext {
         @inlinable
         func endRenderingSystems() {
             _renderingSystemsFrameTime += Game.shared.platform.systemTime() - _systemsStart
-            
+
             _fpsCount += 1
             let now = Game.shared.platform.systemTime()
             let duration = now - _fpsStart

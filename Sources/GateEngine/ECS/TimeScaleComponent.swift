@@ -7,7 +7,7 @@
 
 public struct TimeScaleComponent: Component {
     public var scale: Float = 1
-    
-    public init(){}
+
+    public init() {}
     public static let componentID: ComponentID = ComponentID()
 }

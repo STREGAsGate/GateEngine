@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 #if (canImport(OpenALSoft) || canImport(LinuxSupport)) && !os(WASI)
-#if canImport(OpenALSoft) 
+#if canImport(OpenALSoft)
 import OpenALSoft
 #elseif canImport(LinuxSupport)
 import LinuxSupport
@@ -14,14 +14,14 @@ import LinuxSupport
 internal class OAAudioTrackReference: AudioTrackReference {
     unowned let mixerReference: OAAudioMixerReference
     let source: OpenALSource
-    
+
     init(_ mixerReference: OAAudioMixerReference) {
         self.mixerReference = mixerReference
         self.source = mixerReference.context.createNewSource()
         //Bring it forward a little
         source.setPosition(x: 0, y: 0, z: -0.001)
     }
-    
+
     var repeats: Bool {
         get {
             return source.repeats
@@ -46,7 +46,7 @@ internal class OAAudioTrackReference: AudioTrackReference {
             source.pitch = newValue
         }
     }
-    
+
     func play() {
         source.play()
     }
@@ -56,7 +56,7 @@ internal class OAAudioTrackReference: AudioTrackReference {
     func stop() {
         source.stop()
     }
-    
+
     func setBuffer(_ buffer: AudioBuffer) {
         let buffer = buffer.reference as! OABufferReference
         source.setBuffer(buffer)

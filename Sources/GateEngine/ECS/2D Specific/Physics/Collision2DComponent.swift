@@ -7,8 +7,8 @@
 
 public final class Collision2DComponent: Component {
     public var primitive: AxisAlignedBoundingBox2D! = nil
-    public var complex: Collider2D? = nil
-    
+    public var complex: (any Collider2D)? = nil
+
     public init() {}
 
     public static let componentID: ComponentID = ComponentID()

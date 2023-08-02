@@ -11,7 +11,7 @@ import WinSDK
 public final class Win32Platform: InternalPlatform {
     public static let fileSystem: Win32FileSystem = Win32FileSystem()
     var staticResourceLocations: [URL]
-    
+
     init(delegate: any GameDelegate) {
         self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
     }
@@ -19,35 +19,38 @@ public final class Win32Platform: InternalPlatform {
     public var supportsMultipleWindows: Bool {
         return true
     }
-    
+
     public func locateResource(from path: String) async -> String? {
-        let searchPaths = Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
+        let searchPaths =
+            Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             if await fileSystem.itemExists(at: file.path) {
                 return file.path
             }
         }
-        
+
         return nil
     }
-    
+
     public func loadResource(from path: String) async throws -> Data {
         if let resolvedPath = await locateResource(from: path) {
             do {
                 return try await fileSystem.read(from: resolvedPath)
-            }catch{
+            } catch {
                 Log.error("Failed to load resource \"\(resolvedPath)\".", error)
                 throw GateEngineError.failedToLoad("\(error)")
             }
         }
-        
+
         throw GateEngineError.failedToLocate
     }
 }
 
-internal extension Win32Platform {
-    private func _queryRegistry(forKey path: String, dataSize: Int) -> (data: [UInt8], size: DWORD, type: DWORD)? {
+extension Win32Platform {
+    private func _queryRegistry(forKey path: String, dataSize: Int) -> (
+        data: [UInt8], size: DWORD, type: DWORD
+    )? {
         var components: [String] = path.components(separatedBy: "\\")
         let _hkey = components.removeFirst()
         let key = components.removeLast()
@@ -63,7 +66,15 @@ internal extension Win32Platform {
         var resultType: DWORD = 0
         var resultData: [UInt8] = Array(repeating: 0, count: dataSize)
         var resultSize: DWORD = DWORD(resultData.count)
-        let nError: LSTATUS = WinSDK.RegGetValueW(hKey, subKey.windowsUTF16, key.windowsUTF16, DWORD(RRF_RT_ANY), &resultType, &resultData, &resultSize)
+        let nError: LSTATUS = WinSDK.RegGetValueW(
+            hKey,
+            subKey.windowsUTF16,
+            key.windowsUTF16,
+            DWORD(RRF_RT_ANY),
+            &resultType,
+            &resultData,
+            &resultSize
+        )
         if nError != ERROR_SUCCESS {
             switch nError {
             case ERROR_MORE_DATA:
@@ -83,8 +94,10 @@ internal extension Win32Platform {
     }
 
     func queryRegistry(forKey path: String) -> Int? {
-        guard let result = _queryRegistry(forKey: path, dataSize: MemoryLayout<Int>.size) else {return nil}
-        return result.data.withUnsafeBytes{ resultData in
+        guard let result = _queryRegistry(forKey: path, dataSize: MemoryLayout<Int>.size) else {
+            return nil
+        }
+        return result.data.withUnsafeBytes { resultData in
             switch result.type {
             case REG_DWORD, REG_DWORD_LITTLE_ENDIAN:
                 return Int(littleEndian: Int(resultData.loadUnaligned(as: Int32.self)))
@@ -106,13 +119,15 @@ internal extension Win32Platform {
         return false
     }
     func queryRegistry(forKey path: String) -> String? {
-        guard let result = _queryRegistry(forKey: path, dataSize: 255) else {return nil}
-        return result.data.withUnsafeBytes{ data in
+        guard let result = _queryRegistry(forKey: path, dataSize: 255) else { return nil }
+        return result.data.withUnsafeBytes { data in
             switch result.type {
             case REG_SZ:
                 return String(windowsUTF16: data.baseAddress!.assumingMemoryBound(to: WCHAR.self))
             case REG_EXPAND_SZ:
-                let stringIn: UnsafePointer<WCHAR> = data.baseAddress!.assumingMemoryBound(to: WCHAR.self)
+                let stringIn: UnsafePointer<WCHAR> = data.baseAddress!.assumingMemoryBound(
+                    to: WCHAR.self
+                )
                 let stringOut: UnsafeMutablePointer<WCHAR>! = nil
                 let result = ExpandEnvironmentStringsW(stringIn, stringOut, result.size)
                 if result != ERROR_SUCCESS {
@@ -130,16 +145,16 @@ extension Win32Platform {
     private func makeManifest() {
         var url = URL(fileURLWithPath: CommandLine.arguments[0])
         let manifest: String = """
-            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
-            <asmv3:application>
-                <asmv3:windowsSettings>
-                <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
-                <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
-                </asmv3:windowsSettings>
-            </asmv3:application>
-            </assembly>
-        """
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
+                <asmv3:application>
+                    <asmv3:windowsSettings>
+                    <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+                    <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+                    </asmv3:windowsSettings>
+                </asmv3:application>
+                </assembly>
+            """
         let name: String = url.lastPathComponent + ".manifest"
         url.deleteLastPathComponent()
         url.appendPathComponent(name)
@@ -147,7 +162,7 @@ extension Win32Platform {
             if FileManager.default.fileExists(atPath: url.path) == false {
                 try manifest.write(to: url, atomically: false, encoding: .utf8)
             }
-        }catch{
+        } catch {
             Log.error("Failed to create manifest: \(name)\n", error)
         }
     }
@@ -166,7 +181,7 @@ extension Win32Platform {
         while done == false {
             RunLoop.main.run(until: Date())
         }
-        
+
         mainLoop: while true {
             if Game.shared.windowManager.windows.isEmpty {
                 WinSDK.PostQuitMessage(WinSDK.EXIT_SUCCESS)
@@ -201,10 +216,16 @@ extension Win32Platform {
 
             // Yield control to the system until the earlier of a requisite timer
             // expiration or a message is posted to the runloop.
-            if let time: Date = time, let exactly: UInt32 = DWORD(exactly: time.timeIntervalSinceNow) {
-                _ = MsgWaitForMultipleObjects(0, nil, false,
-                                            exactly,
-                                            DWORD(QS_ALLINPUT) | DWORD(QS_KEY) | DWORD(QS_MOUSE) | DWORD(QS_RAWINPUT))
+            if let time: Date = time,
+                let exactly: UInt32 = DWORD(exactly: time.timeIntervalSinceNow)
+            {
+                _ = MsgWaitForMultipleObjects(
+                    0,
+                    nil,
+                    false,
+                    exactly,
+                    DWORD(QS_ALLINPUT) | DWORD(QS_KEY) | DWORD(QS_MOUSE) | DWORD(QS_RAWINPUT)
+                )
             }
         }
 

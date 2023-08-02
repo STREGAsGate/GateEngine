@@ -16,24 +16,24 @@ final class GravityErrorTests: GateEngineXCTestCase {
         gravity = Gravity()
         randomValue = Int.random(in: -10000 ..< 10000)
     }
-    
+
     // Make sure syntax errors throw
     func testGravitySyntaxError() throws {
         XCTAssertThrowsError(try gravity.compile(source: "vir myVar = 10; func main() {}"))
     }
-    
+
     // Make sure runtime errors throw
     func testGravityRuntimeError() throws {
         // runMain when there is no main
         try gravity.compile(source: "var myVar = 10; func myFunc() {return 1}")
         XCTAssertThrowsError(try gravity.runMain())
     }
-    
+
     func testMainBeforeCompiling() throws {
         // runMain before compiling
         XCTAssertThrowsError(try gravity.runMain())
     }
-    
+
     // Is this legal? No idea
     func testCompilingMultipleTimes() throws {
         try gravity.compile(source: "var myVar = 10; func main() {return 100}")

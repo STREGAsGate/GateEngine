@@ -7,8 +7,8 @@
 
 import GameMath
 
-public extension Sound {
-    enum Kind: Hashable {
+extension Sound {
+    public enum Kind: Hashable {
         /// A sound that is clearly emitted from an object.
         case soundEffect
         /// A background sound not requiring user attention.
@@ -32,7 +32,7 @@ extension Sound: ExpressibleByStringLiteral {
 }
 
 extension Sound: Equatable {
-    public static func ==(lhs: Sound, rhs: Sound) -> Bool {
+    public static func == (lhs: Sound, rhs: Sound) -> Bool {
         return lhs.path == rhs.path
     }
 }
@@ -52,7 +52,7 @@ public class ActiveSound {
     internal init() {
 
     }
-    
+
     /**
      Indicates if this sound is still active.
      When false the sound can never play again and this object can be discarded.
@@ -60,7 +60,7 @@ public class ActiveSound {
     var isValid: Bool {
         return playing != nil || playingWasSet == false
     }
-    
+
     private var _repeats: Bool = false
     public var repeats: Bool {
         get {
@@ -71,20 +71,20 @@ public class ActiveSound {
             playing?.source.repeats = newValue
         }
     }
-    
+
     var _stop: Bool = false
     public func stop() {
         _stop = true
         playing?.source.stop()
         playing?.forceRemove = true
     }
-    
+
     var _pendingAction: AudioSystem.PlayingSound.Action? = nil
     private func setAction(_ action: AudioSystem.PlayingSound.Action) {
         _pendingAction = action
         playing?.pendingAction = action
     }
-    
+
     public func fadeOut(_ duration: Float) {
         setAction(.fadeOut(duration: duration))
     }
@@ -95,10 +95,20 @@ public class ActiveSound {
 
 extension Sound {
     @discardableResult
-    public static func play(_ sound: Sound, as kind: Sound.Kind = .soundEffect, from entity: Entity? = nil, config: ((_ sound: ActiveSound)->())? = nil) -> ActiveSound {
+    public static func play(
+        _ sound: Sound,
+        as kind: Sound.Kind = .soundEffect,
+        from entity: Entity? = nil,
+        config: ((_ sound: ActiveSound) -> Void)? = nil
+    ) -> ActiveSound {
         let active = ActiveSound()
-        Task {@MainActor in
-            Game.shared.system(ofType: AudioSystem.self).queueSound(sound, as: kind, entity: entity, handle: active)
+        Task { @MainActor in
+            Game.shared.system(ofType: AudioSystem.self).queueSound(
+                sound,
+                as: kind,
+                entity: entity,
+                handle: active
+            )
         }
         config?(active)
         return active

@@ -7,7 +7,7 @@
 #if os(Linux)
 import LinuxSupport
 
-internal extension OpenGLRenderer {
+extension OpenGLRenderer {
     func setup() {
         let glxContext = X11Window.sharedContext
         glXMakeCurrent(X11Window.xDisplay, 0, glxContext)

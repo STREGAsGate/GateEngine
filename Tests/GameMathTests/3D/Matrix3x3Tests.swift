@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import GameMath
 
 final class Matrix3x3Tests: XCTestCase {
@@ -32,11 +33,11 @@ final class Matrix3x3Tests: XCTestCase {
             XCTAssertEqual(matrix, Matrix3x3(0, 0, 0, 0, 0, 0, 0, 0, 0))
         }
         do {
-            let matrix = Matrix3x3(Matrix4x4(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))
+            let matrix = Matrix3x3(Matrix4x4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16))
             XCTAssertEqual(matrix, Matrix3x3(1, 2, 3, 5, 6, 7, 9, 10, 11))
         }
     }
-    
+
     func testSubscript() {
         do {
             var matrix = Matrix3x3()
@@ -69,7 +70,7 @@ final class Matrix3x3Tests: XCTestCase {
             XCTAssertEqual(matrix[2], [7, 8, 9])
         }
     }
-    
+
     func testInitDirectionUpRight() {
         do {
             let matrix = Matrix3x3(direction: .left, up: .up, right: .right)
@@ -101,17 +102,17 @@ final class Matrix3x3Tests: XCTestCase {
         XCTAssertEqual(nr.w, Quaternion.zero.w, accuracy: 0.000001)
         XCTAssertEqual(nr.magnitude, 1)
     }
-    
+
     func testTransposedArray() {
         let matrix = Matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)
         XCTAssertEqual(matrix.transposedArray(), [1.0, 4.0, 7.0, 2.0, 5.0, 8.0, 3.0, 6.0, 9.0])
     }
-    
+
     func testArray() {
         let matrix = Matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)
         XCTAssertEqual(matrix.array(), [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])
     }
-    
+
     func testCodableJSON() {
         let matrix = Matrix3x3(1, 2, 3, 4, 5, 6, 7, 8, 9)
         do {
@@ -119,7 +120,7 @@ final class Matrix3x3Tests: XCTestCase {
             let val = try JSONDecoder().decode(Matrix3x3.self, from: data)
             XCTAssertEqual(matrix, val)
 
-        }catch{
+        } catch {
             XCTFail()
         }
     }

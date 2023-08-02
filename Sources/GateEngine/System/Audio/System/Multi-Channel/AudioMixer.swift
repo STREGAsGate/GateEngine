@@ -6,7 +6,7 @@
  */
 
 internal protocol AudioMixerReference: AnyObject {
-    var volume: Float {get set}
+    var volume: Float { get set }
     func createAudioTrackReference() -> any AudioTrackReference
 }
 
@@ -16,12 +16,12 @@ internal protocol AudioMixerReference: AnyObject {
 public class AudioMixer {
     internal unowned let context: AudioContext
     internal var reference: any AudioMixerReference
-    
+
     internal init(_ context: AudioContext) {
         self.context = context
         self.reference = context.reference.createAudioMixerReference()
     }
-    
+
     public var volume: Float {
         get {
             return reference.volume
@@ -30,7 +30,7 @@ public class AudioMixer {
             reference.volume = newValue
         }
     }
-    
+
     ///Generates a brand new audio source. You must store the returned object yourself, it is not retained by the mixer.
     public func createAudioTrack() -> AudioTrack {
         return AudioTrack(self)

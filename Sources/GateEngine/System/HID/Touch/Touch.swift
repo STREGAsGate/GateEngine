@@ -18,7 +18,7 @@ import GameMath
         case up
         case cancelled
     }
-    
+
     @inlinable @inline(__always)
     public var normalizedPosition: Position2 {
         var p = position
@@ -28,8 +28,9 @@ import GameMath
         }
         return p
     }
-    
-    init(id: AnyHashable, window: Window? = nil, position: Position2, phase: Phase, kind: TouchKind) {
+
+    init(id: AnyHashable, window: Window? = nil, position: Position2, phase: Phase, kind: TouchKind)
+    {
         self.id = id
         self.window = window
         self.position = position
@@ -40,7 +41,7 @@ import GameMath
 
 extension Touch: Equatable {
     @_transparent
-    public static func ==(lhs: Touch, rhs: Touch) -> Bool {
+    public static func == (lhs: Touch, rhs: Touch) -> Bool {
         return lhs.id == rhs.id
     }
 }

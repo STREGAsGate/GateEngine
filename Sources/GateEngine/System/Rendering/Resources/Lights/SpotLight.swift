@@ -17,7 +17,7 @@ public final class SpotLight: Light {
 
     /// `true` if the light can create shadows
     public var drawShadows: DrawShadows
-    
+
     public var position: Position3
     public var direction: Direction3
     public func setTransform(_ transform: Transform3) {
@@ -28,7 +28,16 @@ public final class SpotLight: Light {
         self.direction = rotation.forward
     }
 
-    init(brightness: Float = 1, radius: Float = 5, coneAngle: Degrees = Degrees(45), sharpness: Float, color: Color, drawShadows: DrawShadows, position: Position3, direction: Direction3) {
+    init(
+        brightness: Float = 1,
+        radius: Float = 5,
+        coneAngle: Degrees = Degrees(45),
+        sharpness: Float,
+        color: Color,
+        drawShadows: DrawShadows,
+        position: Position3,
+        direction: Direction3
+    ) {
         self.radius = radius
         self.coneAngle = coneAngle
         self.sharpness = sharpness

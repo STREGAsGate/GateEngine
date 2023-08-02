@@ -11,15 +11,17 @@ internal class WAAudioTrackReference: AudioTrackReference {
     unowned let mixerReference: WAAudioMixerReference
     let playerNode: AudioBufferSourceNode
     let gainNode: GainNode
-    
+
     @usableFromInline
     init(_ mixerReference: WAAudioMixerReference) {
         self.mixerReference = mixerReference
-        
+
         self.playerNode = AudioBufferSourceNode(context: mixerReference.contextReference.ctx)
         self.gainNode = mixerReference.contextReference.ctx.createGain()
-        
-        playerNode.connect(destinationNode: gainNode).connect(destinationNode: mixerReference.mixerNode)
+
+        playerNode.connect(destinationNode: gainNode).connect(
+            destinationNode: mixerReference.mixerNode
+        )
     }
 
     @inlinable
@@ -49,7 +51,7 @@ internal class WAAudioTrackReference: AudioTrackReference {
             playerNode.playbackRate.value = newValue
         }
     }
-    
+
     @inlinable
     func play() {
         playerNode.start()
@@ -62,7 +64,7 @@ internal class WAAudioTrackReference: AudioTrackReference {
     func stop() {
         playerNode.stop()
     }
-    
+
     @inlinable
     func setBuffer(_ buffer: AudioBuffer) {
         let buffer = buffer.reference as! WABufferReference
@@ -71,4 +73,3 @@ internal class WAAudioTrackReference: AudioTrackReference {
 }
 
 #endif
-

@@ -14,7 +14,10 @@
     public var wrappedValue: Value {
         get {
             assert(owner != nil, "Not configured!")
-            assert(owner!.state == state, "The state must be \(state) before accessing this property")
+            assert(
+                owner!.state == state,
+                "The state must be \(state) before accessing this property"
+            )
             return _wrappedValue
         }
         set {
@@ -38,13 +41,11 @@
 }
 
 public protocol Resource: AnyObject, Identifiable, Equatable, Hashable {
-    /** The current state of the resource. 
+    /** The current state of the resource.
     It is a programming error to use a resource or access it's properties while it's state is anything other then `ready`.
     */
-     @MainActor var state: ResourceState {get}
+    @MainActor var state: ResourceState { get }
 }
-
-
 
 public enum ResourceState: Equatable {
     /// The resource isn't ready for use but may eventually become `ready` or `failed`.
@@ -59,7 +60,7 @@ public enum ResourceState: Equatable {
 }
 
 extension Resource {
-    public static func ==(lhs: any Resource, rhs: any Resource) -> Bool {
+    public static func == (lhs: any Resource, rhs: any Resource) -> Bool {
         return lhs.id == rhs.id
     }
     public func hash(into hasher: inout Hasher) {
@@ -75,7 +76,7 @@ public class OldResource: Equatable, Hashable, Identifiable {
 }
 
 extension OldResource {
-    public static func ==(lhs: OldResource, rhs: OldResource) -> Bool {
+    public static func == (lhs: OldResource, rhs: OldResource) -> Bool {
         return lhs.id == rhs.id
     }
     public func hash(into hasher: inout Hasher) {

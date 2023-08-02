@@ -1,8 +1,9 @@
 import XCTest
+
 @testable import GameMath
 
 final class Vector3Tests: XCTestCase {
-    struct Imposter: Vector3 {        
+    struct Imposter: Vector3 {
         typealias T = Float
         var x: T
         var y: T
@@ -12,7 +13,7 @@ final class Vector3Tests: XCTestCase {
             self.y = y
             self.z = z
         }
-        static var zero: Self {return Self(0, 0, 0)}
+        static var zero: Self { return Self(0, 0, 0) }
     }
 
     func testInit() {

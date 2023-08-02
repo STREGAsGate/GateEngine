@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 #if (canImport(OpenALSoft) || canImport(LinuxSupport)) && !os(WASI)
-#if canImport(OpenALSoft) 
+#if canImport(OpenALSoft)
 import OpenALSoft
 #elseif canImport(LinuxSupport)
 import LinuxSupport
@@ -14,12 +14,12 @@ import LinuxSupport
 internal class OASourceReference: SpatialAudioSourceReference {
     unowned let mixerReference: OASpacialMixerReference
     let source: OpenALSource
-    
+
     init(_ mixerReference: OASpacialMixerReference) {
         self.mixerReference = mixerReference
         self.source = mixerReference.context.createNewSource()
     }
-    
+
     var repeats: Bool {
         get {
             return source.repeats
@@ -44,7 +44,7 @@ internal class OASourceReference: SpatialAudioSourceReference {
             source.pitch = newValue
         }
     }
-    
+
     func play() {
         source.play()
     }
@@ -54,11 +54,11 @@ internal class OASourceReference: SpatialAudioSourceReference {
     func stop() {
         source.stop()
     }
-    
+
     func setPosition(_ position: GameMath.Position3) {
         source.setPosition(x: position.x, y: position.y, z: position.z)
     }
-    
+
     func setBuffer(_ buffer: AudioBuffer) {
         let buffer = buffer.reference as! OABufferReference
         source.setBuffer(buffer)

@@ -7,7 +7,7 @@
 
 public protocol Component {
     init()
-    nonisolated static var componentID: ComponentID {get}
+    nonisolated static var componentID: ComponentID { get }
 }
 
 public struct ComponentID: Equatable, Hashable {
@@ -17,4 +17,3 @@ public struct ComponentID: Equatable, Hashable {
         self.value = Self.idGenerator.generateID()
     }
 }
-

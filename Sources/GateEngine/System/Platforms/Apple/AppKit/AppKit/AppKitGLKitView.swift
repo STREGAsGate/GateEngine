@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  * Licensed under Apache License v2.0
- * 
+ *
  * http://stregasgate.com
  */
 #if canImport(AppKit) && canImport(GLKit) && !targetEnvironment(macCatalyst)
@@ -10,38 +10,41 @@ import GLKit
 
 internal class GLKitView: NSOpenGLView {
     unowned let viewController: AppKitViewController
-        
+
     init(viewController: AppKitViewController, size: CGSize) {
         self.viewController = viewController
-        
-        let context = NSOpenGLContext(format: OpenGLRenderer.pixelFormat, share: OpenGLRenderer.sharedOpenGLContext)!
+
+        let context = NSOpenGLContext(
+            format: OpenGLRenderer.pixelFormat,
+            share: OpenGLRenderer.sharedOpenGLContext
+        )!
         super.init(frame: NSRect(origin: .zero, size: size), pixelFormat: context.pixelFormat)!
         self.openGLContext = context
         self.setup()
     }
-    
+
     required public init?(coder: NSCoder) {
         fatalError()
     }
-        
+
     func setup() {
         if let context = self.openGLContext?.cglContextObj {
             CGLSetCurrentContext(context)
         }
-        
+
         self.wantsLayer = true
         self.wantsBestResolutionOpenGLSurface = true
-        
+
         if #available(macOS 10.12.2, *) {
             self.allowedTouchTypes = [.direct, .indirect]
-        }else{
+        } else {
             self.acceptsTouchEvents = true
         }
     }
-    
+
     override func prepareOpenGL() {
-        guard let context = self.openGLContext else {fatalError()}
-        guard let obj = context.cglContextObj else {fatalError()}
+        guard let context = self.openGLContext else { fatalError() }
+        guard let obj = context.cglContextObj else { fatalError() }
         context.setValues([GLint(4)], for: .swapInterval)
         CGLEnable(obj, kCGLCECrashOnRemovedFunctions)
         CGLSetCurrentContext(obj)
@@ -52,12 +55,13 @@ internal class GLKitView: NSOpenGLView {
         super.viewDidMoveToWindow()
         self.update()
     }
-    
+
     override func update() {
         super.update()
         if let window = self.viewController.window {
             let scale = window.interfaceScaleFactor
-            self.viewController.window?.window?.newPixelSize = Size2(Float(self.bounds.size.width), Float(self.bounds.size.height)) * scale
+            self.viewController.window?.window?.newPixelSize =
+                Size2(Float(self.bounds.size.width), Float(self.bounds.size.height)) * scale
         }
     }
 
@@ -66,12 +70,12 @@ internal class GLKitView: NSOpenGLView {
     }
 
     func drawOpenGL() {
-        guard let window = viewController.window?.window else {return}
-        guard let ctxObj = self.openGLContext?.cglContextObj else {return}
-        
+        guard let window = viewController.window?.window else { return }
+        guard let ctxObj = self.openGLContext?.cglContextObj else { return }
+
         CGLLockContext(ctxObj)
         CGLSetCurrentContext(ctxObj)
-        
+
         window.vSyncCalled()
         if window.didDrawSomething == true {
             CGLFlushDrawable(ctxObj)
@@ -90,11 +94,17 @@ internal class GLKitView: NSOpenGLView {
             self.removeTrackingArea(trackingArea)
         }
 
-        let trackingArea = NSTrackingArea(rect: self.bounds, options: [.activeAlways,
-                                                                       .mouseEnteredAndExited,
-                                                                       .mouseMoved,
-                                                                       .cursorUpdate],
-                                          owner: self, userInfo: nil)
+        let trackingArea = NSTrackingArea(
+            rect: self.bounds,
+            options: [
+                .activeAlways,
+                .mouseEnteredAndExited,
+                .mouseMoved,
+                .cursorUpdate,
+            ],
+            owner: self,
+            userInfo: nil
+        )
         self.addTrackingArea(trackingArea)
     }
 }

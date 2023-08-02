@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 #if (canImport(OpenALSoft) || canImport(LinuxSupport)) && !os(WASI)
-#if canImport(OpenALSoft) 
+#if canImport(OpenALSoft)
 import OpenALSoft
 #elseif canImport(LinuxSupport)
 import LinuxSupport
@@ -13,23 +13,23 @@ import LinuxSupport
 
 internal class OAContextReference: AudioContextBackend {
     let device: OpenALDevice
-    
+
     init() {
         self.device = OpenALDevice()
     }
-    
+
     func createSpacialMixerReference() -> any SpacialAudioMixerReference {
         return OASpacialMixerReference(self)
     }
-    
+
     func createAudioMixerReference() -> any AudioMixerReference {
         return OAAudioMixerReference(self)
     }
-    
+
     var endianness: Endianness {
         return .little
     }
-    
+
     func supportsBitRate(_ bitRate: AudioBuffer.Format.BitRate) -> Bool {
         switch bitRate {
         case .int8, .int16:

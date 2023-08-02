@@ -1,14 +1,15 @@
 import XCTest
+
 @testable import GameMath
 
 final class BitStreamTests: XCTestCase {
-    
+
     func testSubscript() {
         let stream = BitStream(0b00000100)
         XCTAssertTrue(stream[2])
         XCTAssertFalse(stream[3])
     }
-    
+
     func testSeek() {
         var stream = BitStream(0b10000100)
         stream.seekBits(2)

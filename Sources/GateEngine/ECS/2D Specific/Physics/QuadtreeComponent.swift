@@ -7,7 +7,7 @@
 
 public final class QuadtreeComponent: Component {
     public var quadtree: Quadtree! = nil
-    
+
     public init() {}
 
     public static let componentID: ComponentID = ComponentID()

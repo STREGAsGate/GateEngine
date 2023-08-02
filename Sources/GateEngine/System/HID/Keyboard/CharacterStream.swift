@@ -8,13 +8,13 @@
 public final class CharacterStream {
     public internal(set) var string: String
     public var cursor: String.Index
-    
+
     public init() {
         let emptyString = ""
         string = emptyString
         cursor = emptyString.startIndex
     }
-    
+
     internal func insert(_ character: Character?, as key: KeyboardKey) {
         @_transparent
         func insertCharacter(_ character: Character) {
@@ -52,7 +52,7 @@ public final class CharacterStream {
                 string.remove(at: cursor)
             }
         case .delete:
-            guard cursor < string.endIndex else {return}
+            guard cursor < string.endIndex else { return }
             string.remove(at: cursor)
         case .left:
             moveLeft()
@@ -62,7 +62,7 @@ public final class CharacterStream {
             break
         }
     }
-    
+
     /// Clear the string
     public func erase() {
         string.removeAll(keepingCapacity: true)
@@ -75,13 +75,13 @@ public final class CharacterStream {
         await Game.shared.hid.keyboard.removeStream(self)
     }
     deinit {
-        Task {@MainActor in
+        Task { @MainActor in
             await self.stopCapture()
         }
     }
 }
 
-internal extension Keyboard {
+extension Keyboard {
     struct WeakCharacterStream: Hashable {
         let id: ObjectIdentifier
         weak var stream: CharacterStream? = nil
@@ -89,24 +89,24 @@ internal extension Keyboard {
             self.id = ObjectIdentifier(stream)
             self.stream = stream
         }
-        static func ==(lhs: Self, rhs: Self) -> Bool {
+        static func == (lhs: Self, rhs: Self) -> Bool {
             return lhs.id == rhs.id
         }
         func hash(into hasher: inout Hasher) {
             hasher.combine(id)
         }
     }
-    
+
     func insertStream(_ stream: CharacterStream) {
         let wrapper = Keyboard.WeakCharacterStream(stream: stream)
         self.activeStreams.insert(wrapper)
     }
-    
+
     func removeStream(_ stream: CharacterStream) {
         let wrapper = Keyboard.WeakCharacterStream(stream: stream)
         self.activeStreams.remove(wrapper)
     }
-    
+
     func updateStreams(with key: KeyboardKey, character: Character?) -> Bool {
         var handled: Bool = false
         for wrapper in activeStreams {
