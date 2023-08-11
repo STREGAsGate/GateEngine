@@ -172,12 +172,12 @@ extension InternalPlatform {
                 "Failed to load any resource bundles! Check code signing and directory premissions."
             )
         } else {
-            let relativeDescriptor: String = "\n  [MainBundle]"
+            let relativeDescriptor: String = "\n  \"[MainBundle]"
             let relativePath = Bundle.main.bundleURL.path
             Log.debug(
                 "Loaded static resource search paths: (GameDelegate search paths not included)",
                 resourceFolders.map({
-                    let relativeDescriptor = "\"\(relativeDescriptor)"
+                    let relativeDescriptor = "\(relativeDescriptor)"
                     var path = $0.path.replacingOccurrences(
                         of: relativePath,
                         with: relativeDescriptor
