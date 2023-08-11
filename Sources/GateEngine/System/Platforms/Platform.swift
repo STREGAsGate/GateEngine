@@ -186,7 +186,7 @@ extension InternalPlatform {
                         path += "/"
                     }
                     return path + "\","
-                }).joined(separator: "\n  ")
+                }).joined()
             )
         }
 
