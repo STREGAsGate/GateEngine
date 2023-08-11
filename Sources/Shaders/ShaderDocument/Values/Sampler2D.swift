@@ -18,9 +18,24 @@ public final class Sampler2D: ShaderValue {
     public enum Filter {
         case nearest
         case linear
+        
+        var identifier: Int {
+            switch self {
+            case .nearest:
+                return 1
+            case .linear:
+                return 2
+            }
+        }
     }
     
     public func sample(at textCoord: Vec2, filter: Filter = .linear) -> Vec4 {
         return Vec4(Operation(lhs: self, rhs: textCoord, operator: .sampler2D(filter: filter)))
+    }
+
+    public func documentIdentifierInputData() -> [Int] {
+        var values = operation?.documentIdentifierInputData() ?? []
+        
+        return values
     }
 }

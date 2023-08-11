@@ -125,24 +125,140 @@ public enum ValueRepresentation {
         }
     }
     
-    var isVertexInput: Bool {
-        #if DEBUG
+    var identifier: [Int] {
         switch self {
-        case .vertexInPosition(_), .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_), .vertexInJointWeights(_), .vertexInJointIndices(_):
-            return true
-        case .vertexOutPosition, .vertexOutPointSize, .vertexOut(_), .vertexInstanceID, .operation, .fragmentIn(_), .fragmentOutColor, .fragmentInstanceID, .uniformModelMatrix,
-                .uniformViewMatrix, .uniformProjectionMatrix, .uniformCustom(_,_), .channelScale(_), .channelOffset(_), .channelColor(_), .channelAttachment(_),
-                .scalarBool(_), .scalarInt(_), .scalarUInt(_), .scalarFloat(_), .vec2, .vec2Value(_, _), .vec3, .vec3Value(_, _), .vec4, .vec4Value(_, _), .uvec4, .uvec4Value(_, _), .mat4, .mat4Array, .mat4ArrayValue(_, _):
-            return false
+        case .operation:
+            return [3_101]
+            
+        case .vertexInPosition(let index):
+            return [3_201, Int(index)]
+        case .vertexInTexCoord0(let index):
+            return [3_202, Int(index)]
+        case .vertexInTexCoord1(let index):
+            return [3_203, Int(index)]
+        case .vertexInNormal(let index):
+            return [3_204, Int(index)]
+        case .vertexInTangent(let index):
+            return [3_205, Int(index)]
+        case .vertexInColor(let index):
+            return [3_206, Int(index)]
+        case .vertexInJointWeights(let index):
+            return [3_207, Int(index)]
+        case .vertexInJointIndices(let index):
+            return [3_208, Int(index)]
+            
+        case .vertexOutPosition:
+            return [3_301]
+        case .vertexOutPointSize:
+            return [3_302]
+        case .vertexOut(let name):
+            var values: [Int] = [3_303]
+            values.append(contentsOf: name.documentIdentifierInputData())
+            return values
+        case .vertexInstanceID:
+            return [3_304]
+            
+        case .fragmentIn(let name):
+            var values: [Int] = [3_401]
+            values.append(contentsOf: name.documentIdentifierInputData())
+            return values
+        case .fragmentOutColor:
+            return [3_402]
+        case .fragmentInstanceID:
+            return [3_403]
+            
+        case .uniformModelMatrix:
+            return [3_501]
+        case .uniformViewMatrix:
+            return [3_502]
+        case .uniformProjectionMatrix:
+            return [3_503]
+        case .uniformCustom(let index, type: let type):
+            var values: [Int] = [3_504, Int(index)]
+            values.append(contentsOf: type.identifier)
+            return values
+            
+        case .channelScale(let index):
+            return [3_601, Int(index)]
+        case .channelOffset(let index):
+            return [3_602, Int(index)]
+        case .channelColor(let index):
+            return [3_603, Int(index)]
+        case .channelAttachment(let index):
+            return [3_604, Int(index)]
+            
+        case .scalarBool(let bool):
+            return [3_701, bool ? 1 : 0]
+        case .scalarInt(let int):
+            return [3_702, int]
+        case .scalarUInt(let uInt):
+            return [3_703, Int(uInt)]
+        case .scalarFloat(let float):
+            return [3_704, Int(float)]
+        case .vec2:
+            return [3_810]
+        case .vec2Value(let vector, let index):
+            var values: [Int] = [3_811]
+            values.append(contentsOf: index.documentIdentifierInputData())
+            values.append(contentsOf: vector.documentIdentifierInputData())
+            return values
+        case .vec3:
+            return [3_820]
+        case .vec3Value(let vector, let index):
+            var values: [Int] = [3_821]
+            values.append(contentsOf: index.documentIdentifierInputData())
+            values.append(contentsOf: vector.documentIdentifierInputData())
+            return values
+        case .vec4:
+            return [3_830]
+        case .vec4Value(let vector, let index):
+            var values: [Int] = [3_831]
+            values.append(contentsOf: index.documentIdentifierInputData())
+            values.append(contentsOf: vector.documentIdentifierInputData())
+            return values
+        case .uvec4:
+            return [3_840]
+        case .uvec4Value(let vector, let index):
+            var values: [Int] = [3_841]
+            values.append(contentsOf: index.documentIdentifierInputData())
+            values.append(contentsOf: vector.documentIdentifierInputData())
+            return values
+        case .mat4:
+            return [3_850]
+        case .mat4Array(let capacity):
+            return [3_851, capacity]
+        case .mat4ArrayValue(let mat4Array, let index):
+            var values: [Int] = [3_852]
+            values.append(contentsOf: index.documentIdentifierInputData())
+            values.append(contentsOf: mat4Array.documentIdentifierInputData())
+            return values
         }
-        #else
+    }
+    
+    var isVertexInput: Bool {
         switch self {
-        case .vertexInPosition(_), .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_), .vertexInJointWeights(_), .vertexInJointIndices(_):
+        case .vertexInPosition(_), .vertexInTexCoord0(_), .vertexInTexCoord1(_),
+                .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_),
+                .vertexInJointWeights(_), .vertexInJointIndices(_):
             return true
+        #if DEBUG
+        case .operation,
+                .vertexOutPosition, .vertexOutPointSize, .vertexOut(_), .vertexInstanceID,
+                .fragmentIn(_), .fragmentOutColor, .fragmentInstanceID, .uniformModelMatrix,
+                .uniformViewMatrix, .uniformProjectionMatrix, .uniformCustom(_,_),
+                .channelScale(_), .channelOffset(_), .channelColor(_), .channelAttachment(_),
+                .scalarBool(_), .scalarInt(_), .scalarUInt(_), .scalarFloat(_),
+                .vec2, .vec2Value(_, _),
+                .vec3, .vec3Value(_, _),
+                .vec4, .vec4Value(_, _),
+                .uvec4, .uvec4Value(_, _),
+                .mat4, .mat4Array, .mat4ArrayValue(_, _):
+            return false
+        #else
         default:
             return false
-        }
         #endif
+        }
     }
 }
 
@@ -160,6 +276,37 @@ public enum ValueType {
     case float3x3
     case float4x4
     case float4x4Array(_ capacity: Int)
+    
+    var identifier: [Int] {
+        switch self {
+        case .texture2D:
+            return [1_001]
+        case .operation:
+            return [1_002]
+        case .bool:
+            return [1_003]
+        case .int:
+            return [1_004]
+        case .uint:
+            return [1_005]
+        case .float:
+            return [1_006]
+        case .float2:
+            return [1_007]
+        case .float3:
+            return [1_008]
+        case .float4:
+            return [1_009]
+        case .uint4:
+            return [1_010]
+        case .float3x3:
+            return [1_011]
+        case .float4x4:
+            return [1_012]
+        case .float4x4Array(let capacity):
+            return [1_013, capacity]
+        }
+    }
 }
 
 public enum CustomUniformValueType {
@@ -174,6 +321,33 @@ public enum CustomUniformValueType {
     case mat3
     case mat4
     case mat4Array(_ capacity: Int)
+    
+    var identifier: [Int] {
+        switch self {
+        case .bool:
+            return [2_001]
+        case .int:
+            return [2_002]
+        case .uint:
+            return [2_003]
+        case .float:
+            return [2_004]
+        case .vec2:
+            return [2_005]
+        case .vec3:
+            return [2_006]
+        case .vec4:
+            return [2_007]
+        case .uvec4:
+            return [2_008]
+        case .mat3:
+            return [2_009]
+        case .mat4:
+            return [2_010]
+        case .mat4Array(let capacity):
+            return [2_011, capacity]
+        }
+    }
 }
 
 enum Functions {
@@ -187,6 +361,7 @@ public protocol ShaderValue: AnyObject, Identifiable, CustomStringConvertible, S
 }
 
 public protocol ShaderElement: AnyObject {
+    func documentIdentifierInputData() -> [Int]
 //    func branch<T: Value>(_ comparison: Scalar, success: T, failure: T) -> T
     
 }
@@ -204,3 +379,17 @@ extension ShaderValue {
 //        return T(Operation(compare: compare, success: success, failure: failure))
 //    }
 //}
+
+internal extension String {
+    func documentIdentifierInputData() -> [Int] {
+        var values: [Int] = []
+        values.reserveCapacity(self.count)
+        
+        for charaacter in self {
+            for scalar in charaacter.unicodeScalars {
+                values.append(Int(bitPattern: UInt(scalar.value)))
+            }
+        }
+        return values
+    }
+}

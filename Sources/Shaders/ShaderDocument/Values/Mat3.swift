@@ -35,6 +35,19 @@ public final class Mat3: ShaderValue {
         self.valueMatrix3x3 = matrix
     }
     
+    public func documentIdentifierInputData() -> [Int] {
+        var values: [Int] = []
+        values.append(contentsOf: valueRepresentation.identifier)
+        values.append(contentsOf: valueType.identifier)
+        if let operation {
+            values.append(contentsOf: operation.documentIdentifierInputData())
+        }
+        if let valueMatrix3x3 {
+            values.append(contentsOf: valueMatrix3x3.array().map({Int($0)}))
+        }
+        return values
+    }
+    
     public static func +(lhs: Mat3, rhs: Mat3) -> Mat3 {
         return Mat3(Operation(lhs: lhs, operator: .add, rhs: rhs))
     }
