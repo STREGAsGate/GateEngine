@@ -82,16 +82,14 @@ let package = Package(
                     swiftSettings: {
                         var settings: [SwiftSetting] = []
                         
+                        // MARK: Gate Engine options.
                         settings.append(contentsOf: [
-                            // MARK: Gate Engine options.
                             /// Closes all open windows when the main window is closed
                             .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW", .when(platforms: .desktop)),
                             /// Checks for reloadable resources and reloads them if they have changed
                             .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: .desktop, configuration: .debug)),
                             /// The host platform requests the main window, so GateEngine won't create one until it's requested
                             .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
-                            /// The host platform can't be used to compile HTML5 products
-                            .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: .any(except: .macOS, .linux))),
                             /// The host platform updates and draws from an event callback, so GateEngine won't create a game loop.
                             .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.wasi])),
                             /// The host platform requires an intermediate task, so GateEngine won't load default systems.
@@ -101,6 +99,10 @@ let package = Package(
                             /// The host platform supports Foundation.FileManager
                             .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER", .when(platforms: .any(except: .wasi))),
                         ])
+                        #if !(os(macOS) || os(Linux))
+                        /// The host platform can't be used to compile HTML5 products
+                        settings.append(.define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.wasi])))
+                        #endif
 
                         // Use upcoming Swift Language Features
                         // https://www.swift.org/swift-evolution/#?upcoming=true
@@ -546,7 +548,7 @@ extension Array where Element == Platform {
     }
     
     static var desktop: Self {[.windows, .linux, .macOS]}
-    static var mobile: Self {[.iOS, .tvOS, .android]}
+    static var mobile: Self {[.iOS, .android]}
     static var anyApple: Self {[.iOS, .tvOS, .macOS]}
     
     static var any: Self {[
