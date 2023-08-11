@@ -91,7 +91,7 @@ let package = Package(
                             /// The host platform requests the main window, so GateEngine won't create one until it's requested
                             .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
                             /// The host platform can't be used to compile HTML5 products
-                            .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
+                            .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: .any(except: .macOS, .linux))),
                             /// The host platform updates and draws from an event callback, so GateEngine won't create a game loop.
                             .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.wasi])),
                             /// The host platform requires an intermediate task, so GateEngine won't load default systems.
@@ -104,7 +104,7 @@ let package = Package(
 
                         // Use upcoming Swift Language Features
                         // https://www.swift.org/swift-evolution/#?upcoming=true
-                        #if swift(>=5.8)
+                        #if compiler(>=5.8)
                         settings.append(contentsOf: [
                             .unsafeFlags(["-enable-upcoming-feature", "DisableOutwardActorInference"]),
                             .unsafeFlags(["-enable-upcoming-feature", "ImportObjcForwardDeclarations"]),
@@ -115,7 +115,7 @@ let package = Package(
                         ])
                         #endif
                         
-                        #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
+                        #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
                         // Options for development of WASI platform
@@ -153,8 +153,8 @@ let package = Package(
                 var array: [SwiftSetting] = []
                 
                 #if false
-                // A little bit faster on old hardware, but less accurate.
-                // Theres no reason to use this on modern hardware.
+                // Possibly faster on old hardware, but less accurate.
+                // There is no reason to use this on modern hardware.
                 array.append(.define("GameMathUseFastInverseSquareRoot"))
                 #endif
                 
@@ -185,7 +185,6 @@ let package = Package(
                     path: "Dependencies/MiniZ",
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
-                        // Silence warnings
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                     ]),
             
@@ -197,9 +196,8 @@ let package = Package(
                         .unsafeFlags(["-Wno-everything"]),
                         .define("SPNG_STATIC"),
                         .define("SPNG_USE_MINIZ"),
-                        // miniz.h crashes the Swift compiler on Windows, when public, as of Swift 5.8.0
+                        // When public, the miniz.h header crashes Clang on Windows since Swift 5.8.0
                         .headerSearchPath("src/"),
-                        // Silence warnings
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                     ]),
             
@@ -220,15 +218,14 @@ let package = Package(
                         .define("BUILD_GRAVITY_API"),
                         // WASI doesn't have umask
                         .define("umask(x)", to: "022", .when(platforms: [.wasi])),
-                        // Silence deprecation warning on windows
-                        .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                         // Windows doesn't support PIC flag
                         .unsafeFlags(["-fPIC"], .when(platforms: .any(except: .windows))),
                         .unsafeFlags(["-Wno-everything"]),
+                        .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                     ], linkerSettings: [
-                        //For math functions
+                        // For math functions
                         .linkedLibrary("m", .when(platforms: .any(except: .windows))),
-                        //For path functions
+                        // For path functions
                         .linkedLibrary("Shlwapi", .when(platforms: [.windows])),
                     ]),
         ])
