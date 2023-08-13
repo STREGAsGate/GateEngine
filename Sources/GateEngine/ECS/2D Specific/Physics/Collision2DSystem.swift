@@ -21,7 +21,7 @@ public final class Collision2DSystem: System {
                 var objectCollider = object.complex ?? object.primitive!
                 
                 var impactCount = 0
-                var hits: [(collider: Collider2D, interpenetration: Interpenetration2D)] = []
+                var hits: [(collider: any Collider2D, interpenetration: Interpenetration2D)] = []
                 for collider in colliders {
                     objectCollider.update(transform: transformComponent.transform)
                     guard let interpenetration = collider.interpenetration(comparing: objectCollider), interpenetration.isColiding else {continue}
