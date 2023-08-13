@@ -37,11 +37,11 @@ public final class Collision3DComponent: Component {
     public var primitiveCollider: AxisAlignedBoundingBox3D {collider.boundingBox}
     @available(*, deprecated /*0.0.5*/, renamed: "collider", message: "Set the collider property directly.")
     @inlinable @inline(__always)
-    public var detailCollider: Collider3D! {
+    public var detailCollider: (any Collider3D)? {
         get {return collider}
-        set {collider = newValue}
+        set {collider = newValue!}
     }
-    public var collider: Collider3D = AxisAlignedBoundingBox3D(center: .zero, offset: .zero, radius: .one)
+    public var collider: any Collider3D = AxisAlignedBoundingBox3D(center: .zero, offset: .zero, radius: .one)
     
     var touching: [(triangle: CollisionTriangle, interpenetration: Interpenetration3D)] = []
     var intersecting: [(entity: Entity, interpenetration: Interpenetration3D)] = []
@@ -55,7 +55,7 @@ public final class Collision3DComponent: Component {
     public var entityFilter: ((Entity)->(Bool))? = nil
     
     @inlinable @inline(__always)
-    func interpenetration(comparing: Collider3D) -> Interpenetration3D? {
+    func interpenetration(comparing: any Collider3D) -> Interpenetration3D? {
         return collider.interpenetration(comparing: comparing)
     }
     @inlinable @inline(__always)

@@ -410,7 +410,7 @@ public extension Collision3DSystem {
     }
     
     @inline(__always)
-    func entitiesProbablyHit(by collider: Collider3D, filter: ((Entity)->Bool)? = nil) -> [Entity] {
+    func entitiesProbablyHit(by collider: any Collider3D, filter: ((Entity)->Bool)? = nil) -> [Entity] {
         var entities: [Entity] = []
         
         for entity in self.entities {

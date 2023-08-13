@@ -72,7 +72,7 @@ public enum GateEngineError: Error, Equatable, Hashable {
     
     case failedToCreateWindow(_ reason: String)
     
-    public init(decodingError error: Swift.Error) {
+    public init(decodingError error: any Error) {
         switch error {
         case let error as GateEngineError:
             self = error

@@ -20,23 +20,23 @@ public final class Quadtree {
         var position: Position2
     }
     
-    public func colliders(inLayer layer: String) -> [Collider2D] {
+    public func colliders(inLayer layer: String) -> [any Collider2D] {
         return colliders(near: rootNode.boundingBox, inLayer: layer)
     }
     
-    public func colliders(hitBy ray: Ray2D, inLayer layer: String) -> [(point: Position2, collider: Collider2D)] {
+    public func colliders(hitBy ray: Ray2D, inLayer layer: String) -> [(point: Position2, collider: any Collider2D)] {
         return rootNode.collidersHit(by: ray, inLayer: layer)
     }
     
-    public func colliders(near box: AxisAlignedBoundingBox2D, inLayer layer: String) -> [Collider2D] {
-        var colliders: [Collider2D] = []
+    public func colliders(near box: AxisAlignedBoundingBox2D, inLayer layer: String) -> [any Collider2D] {
+        var colliders: [any Collider2D] = []
         for node in self.nodesNear(box) {
             colliders.append(contentsOf: node.layer(named: layer).colliders)
         }
         return colliders
     }
     
-    public func colliders(at position: Position2, depth: Int, inLayer layer: String) -> [Collider2D]? {
+    public func colliders(at position: Position2, depth: Int, inLayer layer: String) -> [any Collider2D]? {
         return node(at: position, depth: depth)?.layer(named: layer).colliders
     }
     
@@ -97,7 +97,7 @@ public final class Quadtree {
         self.rootNode = Node(depth: 0, boundingBox: box, children: buildChildren(forBox: box, depth: 0))
     }
     
-    public func insertColliders(_ colliders: [Collider2D], intoLayer layer: String) {
+    public func insertColliders(_ colliders: [any Collider2D], intoLayer layer: String) {
         self.rootNode.insertColliders(colliders, intoLayer: layer)
     }
 }
@@ -146,8 +146,8 @@ extension Quadtree {
             return nodes
         }
         
-        func collidersHit(by ray: Ray2D, inLayer layer: String) -> [(point: Position2, collider: Collider2D)] {
-            var hits: [(point: Position2, collider: Collider2D)] = []
+        func collidersHit(by ray: Ray2D, inLayer layer: String) -> [(point: Position2, collider: any Collider2D)] {
+            var hits: [(point: Position2, collider: any Collider2D)] = []
             if self.isLeaf {
                 for collider in self.layer(named: layer).colliders {
                     if let intersection = collider.surfacePoint(for: ray) {
@@ -172,7 +172,7 @@ extension Quadtree {
             return hits
         }
         
-        func insertColliders(_ colliders: [Collider2D], intoLayer layer: String) {
+        func insertColliders(_ colliders: [any Collider2D], intoLayer layer: String) {
             if self.isLeaf {
                 let layer = self.layer(named: layer)
                 for collider in colliders {
@@ -193,9 +193,9 @@ extension Quadtree {
 extension Quadtree.Node {
     final class Layer {
         let name: String
-        var colliders: [Collider2D] = []
+        var colliders: [any Collider2D] = []
         
-        func appendCollider(_ collider: Collider2D) {
+        func appendCollider(_ collider: any Collider2D) {
             self.colliders.append(collider)
         }
         
