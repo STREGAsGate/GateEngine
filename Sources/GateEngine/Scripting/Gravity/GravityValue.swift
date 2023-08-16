@@ -321,16 +321,18 @@ extension GravityValue {
         let map = unsafeBitCast(gValue.p, to: UnsafeMutablePointer<gravity_map_t>.self).pointee
         let hash = map.hash
         var dict = [GravityValue: GravityValue](minimumCapacity: Int(gravity_hash_count(hash)))
-        gravity_hash_iterate(
-            hash,
-            { hash, key, value, dictp in
-                let dict = dictp!.assumingMemoryBound(
-                    to: Dictionary<GravityValue, GravityValue>.self
-                )
-                dict.pointee[GravityValue(gValue: key)] = GravityValue(gValue: value)
-            },
-            &dict
-        )
+        withUnsafeMutablePointer(to: &dict) { dictPointer in
+            gravity_hash_iterate(
+                hash,
+                { hash, key, value, dictp in
+                    let dict = dictp!.assumingMemoryBound(
+                        to: Dictionary<GravityValue, GravityValue>.self
+                    )
+                    dict.pointee[GravityValue(gValue: key)] = GravityValue(gValue: value)
+                },
+                dictPointer
+            )
+        }
         return dict
     }
 }

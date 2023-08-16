@@ -71,7 +71,9 @@ public class GravityClass: GravityValueEmitting, GravityClassEmitting {
     ) {
         key.withCString { cName in
             var functionName = key
-            let gFunc = gravity_function_new_bridged(gravity.vm, cName, &functionName)
+            let gFunc = withUnsafeMutablePointer(to: &functionName) { functionNamePointer in
+                return gravity_function_new_bridged(gravity.vm, cName, functionNamePointer)
+            }
             let gClosure = gravity_closure_new(gravity.vm, gFunc)
             let userData = GravityCFuncBridgedUserData(functionName: key, gravityClass: self)
             gFunc!.pointee.xdata = gravity.retainedUserDataPointer(from: userData)
