@@ -84,7 +84,7 @@ public protocol FileSystem {
     ) throws -> String
 }
 
-#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
+#if GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
 import Foundation
 
 extension FileSystem {

@@ -179,4 +179,5 @@ public class ApplePlatformModelImporter: GeometryImporter {
         return MDLAsset.canImportFileExtension(file.pathExtension)
     }
 }
+
 #endif

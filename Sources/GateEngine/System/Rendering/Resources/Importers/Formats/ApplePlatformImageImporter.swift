@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 #if canImport(ImageIO) && canImport(CoreImage)
+
 import ImageIO
 import CoreImage
 import CoreServices
@@ -42,4 +43,5 @@ public class ApplePlatformImageImporter: TextureImporter {
         return identifiers.contains(where: { $0 == uttype })
     }
 }
+
 #endif

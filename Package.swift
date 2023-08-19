@@ -41,38 +41,77 @@ let package = Package(
             .target(name: "GateEngine",
                     dependencies: {
                         var dependencies: [Target.Dependency] = []
-                        dependencies.append(contentsOf: ["GameMath", "Shaders", "TrueType", "LibSPNG", "Gravity"])
-                        dependencies.append(.target(name: "Vorbis", condition: .when(platforms: .any(except: .wasi))))
+                        dependencies.append(contentsOf: [
+                            "GameMath",
+                            "Shaders",
+                            "TrueType",
+                            "LibSPNG",
+                            "Gravity",
+                            "uFBX",
+                        ])
+                        dependencies.append(
+                            .target(name: "Vorbis",
+                                    condition: .when(platforms: .any(except: .wasi)))
+                        )
                         
                         #if os(macOS) || os(Linux)
-                        dependencies.append(.target(name: "OpenGL_GateEngine", condition: .when(platforms: [.macOS, .iOS, .tvOS, .linux, .android])))
+                        dependencies.append(
+                            .target(name: "OpenGL_GateEngine",
+                                    condition: .when(platforms: .any(except: .windows, .wasi)))
+                        )
                         #endif
                         
                         #if os(Windows)
-                        dependencies.append(.target(name: "Direct3D12", condition: .when(platforms: [.windows])))
-                        // XAudio is C++ and won't be available on all Swift versions so we'll use OpenAL as a fallback
-                        dependencies.append(.target(name: "OpenALSoft", condition: .when(platforms: [.windows])))
-                        #if swift(>=5.10)
+                        dependencies.append(contentsOf: [
+                            .target(name: "Direct3D12",
+                                    condition: .when(platforms: [.windows])),
+                            // XAudio is C++ and won't be available on all Swift versions
+                            // so we'll use OpenAL as a fallback
+                            .target(name: "OpenALSoft",
+                                    condition: .when(platforms: [.windows])),
+                        ])
+                        #if swift(>=5.9)
                         #warning("Reminder: Check XAudio2 C++ build support.")
                         #endif
                         #endif
                         
                         #if os(Linux)
-                        dependencies.append(.target(name: "LinuxSupport", condition: .when(platforms: [.linux, .android])))
-                        // dependencies.append(.target(name: "OpenALSoft", condition: .when(platforms: [.linux, .android])))
+                        dependencies.append(contentsOf: [
+                            .target(name: "LinuxSupport",
+                                    condition: .when(platforms: [.linux, .android])),
+                            //.target(name: "OpenALSoft",
+                            //        condition: .when(platforms: [.linux, .android])),
+                        ])
                         #endif
                         
-                        dependencies.append(.product(name: "Atomics", package: "swift-atomics", condition: .when(platforms: .any(except: .windows))))
-                        dependencies.append(.product(name: "Collections", package: "swift-collections"))
+                        dependencies.append(contentsOf: [
+                            .product(name: "Atomics",
+                                     package: "swift-atomics",
+                                     condition: .when(platforms: .any(except: .windows))),
+                            .product(name: "Collections",
+                                     package: "swift-collections")
+                        ])
 
                         #if os(macOS) || os(Linux)
                         dependencies.append(contentsOf: [
-                            .product(name: "JavaScriptEventLoop", package: "JavaScriptKit", condition: .when(platforms: [.wasi])),
-                            .product(name: "DOM", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
-                            .product(name: "FileSystem", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
-                            .product(name: "WebAudio", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
-                            .product(name: "Gamepad", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
-                            .product(name: "WebGL2", package: "WebAPIKit", condition: .when(platforms: [.wasi])),
+                            .product(name: "JavaScriptEventLoop",
+                                     package: "JavaScriptKit",
+                                     condition: .when(platforms: [.wasi])),
+                            .product(name: "DOM",
+                                     package: "WebAPIKit",
+                                     condition: .when(platforms: [.wasi])),
+                            .product(name: "FileSystem",
+                                     package: "WebAPIKit",
+                                     condition: .when(platforms: [.wasi])),
+                            .product(name: "WebAudio",
+                                     package: "WebAPIKit",
+                                     condition: .when(platforms: [.wasi])),
+                            .product(name: "Gamepad",
+                                     package: "WebAPIKit",
+                                     condition: .when(platforms: [.wasi])),
+                            .product(name: "WebGL2",
+                                     package: "WebAPIKit",
+                                     condition: .when(platforms: [.wasi])),
                         ])
                         #endif
                         
@@ -82,8 +121,10 @@ let package = Package(
                         .copy("_Resources/GateEngine"),
                     ],
                     cSettings: [
-                        .define("GL_SILENCE_DEPRECATION", .when(platforms: [.macOS])),
-                        .define("GLES_SILENCE_DEPRECATION", .when(platforms: [.iOS, .tvOS])),
+                        .define("GL_SILENCE_DEPRECATION",
+                            .when(platforms: [.macOS])),
+                        .define("GLES_SILENCE_DEPRECATION",
+                            .when(platforms: [.iOS, .tvOS])),
                     ],
                     swiftSettings: {
                         var settings: [SwiftSetting] = []
@@ -91,19 +132,26 @@ let package = Package(
                         // MARK: Gate Engine options.
                         settings.append(contentsOf: [
                             /// Closes all open windows when the main window is closed
-                            .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW", .when(platforms: .desktop)),
+                            .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW",
+                                .when(platforms: .desktop)),
                             /// Checks for reloadable resources and reloads them if they have changed
-                            .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: .desktop, configuration: .debug)),
+                            .define("GATEENGINE_ENABLE_HOTRELOADING",
+                                .when(platforms: .desktop, configuration: .debug)),
                             /// The host platform requests the main window, so GateEngine won't create one until it's requested
-                            .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
+                            .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW",
+                                .when(platforms: [.iOS, .tvOS])),
                             /// The host platform updates and draws from an event callback, so GateEngine won't create a game loop.
-                            .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.wasi])),
+                            .define("GATEENGINE_PLATFORM_EVENT_DRIVEN",
+                                .when(platforms: [.wasi])),
                             /// The host platform requires an intermediate task, so GateEngine won't load default systems.
-                            .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH", .when(platforms: [.wasi])),
+                            .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH",
+                                .when(platforms: [.wasi])),
                             /// The host platform supports file system read/write
-                            .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM", .when(platforms: .any)),
+                            .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM",
+                                .when(platforms: .any)),
                             /// The host platform supports Foundation.FileManager
-                            .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER", .when(platforms: .any(except: .wasi))),
+                            .define("GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER",
+                                .when(platforms: .any(except: .wasi))),
                         ])
                         #if !(os(macOS) || os(Linux))
                         /// The host platform can't be used to compile HTML5 products
@@ -129,10 +177,13 @@ let package = Package(
                         // Options for development of WASI platform
                         #if false
                         settings.append(contentsOf: [
-                            /// Allows HTML5 platform to be compiled from a compatible host, such as macOS. This allows the IDE to show compile errors without targeting WASI.
-                            .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT", .when(platforms: [.macOS, .linux], configuration: .debug)),
+                            /// Allows HTML5 platform to be compiled from a compatible host, such as macOS.
+                            /// This allows the IDE to show compile errors without targeting WASI.
+                            .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT",
+                                .when(platforms: [.macOS, .linux], configuration: .debug)),
                             /// see comment in "Gate Engine options".
-                            .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.macOS, .linux, .wasi], configuration: .debug)),
+                            .define("GATEENGINE_PLATFORM_EVENT_DRIVEN",
+                                .when(platforms: [.macOS, .linux, .wasi], configuration: .debug)),
                         ])
                         #endif
                         
@@ -236,6 +287,13 @@ let package = Package(
                         // For path functions
                         .linkedLibrary("Shlwapi", .when(platforms: [.windows])),
                     ]),
+            
+            // uFBX
+            .target(name: "uFBX",
+                    path: "Dependencies/uFBX",
+                    cSettings: [
+                        .unsafeFlags(["-Wno-everything"]),
+                    ]),
         ])
         
         #if os(Windows)
@@ -264,8 +322,12 @@ let package = Package(
         targets.append(contentsOf: [
             // LinuxSupport
             .target(name: "LinuxSupport",
-                    dependencies: [.targetItem(name: "LinuxImports", condition: .when(platforms: [.linux])),
-                                   .targetItem(name: "LinuxExtensions", condition: .when(platforms: [.linux]))],
+                    dependencies: [
+                        .targetItem(name: "LinuxImports",
+                                    condition: .when(platforms: [.linux])),
+                        .targetItem(name: "LinuxExtensions",
+                                    condition: .when(platforms: [.linux]))
+                    ],
                     path: "Dependencies/LinuxSupport/LinuxSupport"),
             .target(name: "LinuxExtensions",
                     path: "Dependencies/LinuxSupport/LinuxExtensions"),

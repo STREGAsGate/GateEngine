@@ -77,4 +77,5 @@ extension PNGImporter {
         }
     }
 }
+
 #endif

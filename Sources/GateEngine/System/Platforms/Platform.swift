@@ -43,7 +43,7 @@ internal protocol InternalPlatform: AnyObject, Platform {
     init(delegate: any GameDelegate)
 }
 
-#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+#if GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 extension InternalPlatform {
     static func getStaticSearchPaths(delegate: any GameDelegate) -> [URL] {
         #if canImport(Darwin)
