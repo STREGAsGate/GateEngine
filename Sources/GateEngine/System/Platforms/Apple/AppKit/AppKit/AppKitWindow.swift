@@ -62,7 +62,7 @@ final class AppKitWindow: WindowBacking {
 
         let nsWindow = UGNSWindow(
             window: window,
-            contentRect: NSMakeRect(0, 0, CGFloat(size.width), CGFloat(size.height)),
+            contentRect: NSRect(x: 0, y: 0, width: CGFloat(size.width), height: CGFloat(size.height)),
             styleMask: styleMask,
             backing: .buffered,
             defer: false
@@ -90,7 +90,7 @@ final class AppKitWindow: WindowBacking {
 
     @MainActor private func restoreSizeAndPosition(ofWindow nsWindow: NSWindow) {
 
-        //restore size and relative position
+        // restore size and relative position
         nsWindow.setFrameUsingName(window.identifier)
 
         if window.isMainWindow == false {
@@ -99,36 +99,32 @@ final class AppKitWindow: WindowBacking {
             let screenID = CGDirectDisplayID(
                 UserDefaults.standard.integer(forKey: "ScreenID_\(window.identifier)")
             )
-            for screen in NSScreen.screens {
-                if screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")]
-                    as? CGDirectDisplayID == screenID
-                {
-                    // If the screen isn't the last screen the user preferred, move the window to the correct screen
-                    if nsWindow.screen !== screen {
-                        var frame = nsWindow.frame
-                        if let currentScreen = nsWindow.screen {
-                            // Remove the current screen offset
-                            frame.origin.x -= currentScreen.frame.origin.x
-                            frame.origin.y -= currentScreen.frame.origin.y
-                        }
-                        // Add the deired screen offset
-                        frame.origin.x += screen.frame.origin.x
-                        frame.origin.y += screen.frame.origin.y
-                        nsWindow.setFrame(frame, display: false)
+            for screen in NSScreen.screens
+            where screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID == screenID
+            && nsWindow.screen !== screen {
+                // If the screen isn't the last screen the user preferred, move the window to the correct screen
+                if nsWindow.screen !== screen {
+                    var frame = nsWindow.frame
+                    if let currentScreen = nsWindow.screen {
+                        // Remove the current screen offset
+                        frame.origin.x -= currentScreen.frame.origin.x
+                        frame.origin.y -= currentScreen.frame.origin.y
                     }
-                    break
+                    // Add the deired screen offset
+                    frame.origin.x += screen.frame.origin.x
+                    frame.origin.y += screen.frame.origin.y
+                    nsWindow.setFrame(frame, display: false)
                 }
+                break
             }
         }
 
         if nsWindow.styleMask.contains(.fullScreen) == false {
             if window.options.contains(.forceFullScreen)
-                || UserDefaults.standard.bool(forKey: "\(window.identifier)-WasFullScreen")
-            {
+                || UserDefaults.standard.bool(forKey: "\(window.identifier)-WasFullScreen") {
                 nsWindowController.window?.toggleFullScreen(nil)
             } else if window.options.contains(.firstLaunchFullScreen)
-                && UserDefaults.standard.object(forKey: "\(window.identifier)-WasFullScreen") == nil
-            {
+                      && UserDefaults.standard.object(forKey: "\(window.identifier)-WasFullScreen") == nil {
                 nsWindowController.window?.toggleFullScreen(nil)
             }
         }
@@ -202,7 +198,8 @@ final class AppKitWindow: WindowBacking {
             ] as? CGDirectDisplayID {
                 if let device = CGDirectDisplayCopyCurrentMetalDevice(screenID) {
                     Game.shared.renderer.device = device
-                    (nsWindowController.contentViewController!.view as! MTKView).device = device
+                    let mtkView = nsWindowController.contentViewController?.view as? MTKView
+                    mtkView!.device = device
                 }
             }
         }
@@ -213,18 +210,15 @@ final class AppKitWindow: WindowBacking {
         // Create a display link capable of being used with all active displays
         CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
 
-        func displayLinkOutputCallback(
-            _ displayLink: CVDisplayLink,
-            _ inNow: UnsafePointer<CVTimeStamp>,
-            _ inOutputTime: UnsafePointer<CVTimeStamp>,
-            _ flagsIn: CVOptionFlags,
-            _ flagsOut: UnsafeMutablePointer<CVOptionFlags>,
-            _ displayLinkContext: UnsafeMutableRawPointer?
-        ) -> CVReturn {
-            return unsafeBitCast(displayLinkContext, to: AppKitWindow.self).getFrameForTime(
-                now: inNow.pointee,
-                outputTime: inOutputTime.pointee
-            )
+        // swiftlint:disable:next function_parameter_count
+        func displayLinkOutputCallback(_ displayLink: CVDisplayLink,
+                                       _ inNow: UnsafePointer<CVTimeStamp>,
+                                       _ inOutputTime: UnsafePointer<CVTimeStamp>,
+                                       _ flagsIn: CVOptionFlags,
+                                       _ flagsOut: UnsafeMutablePointer<CVOptionFlags>,
+                                       _ displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn {
+            let appKitWindow = unsafeBitCast(displayLinkContext, to: AppKitWindow.self)
+            return appKitWindow.getFrameForTime(now: inNow.pointee, outputTime: inOutputTime.pointee)
         }
 
         // Set the renderer output callback function
@@ -350,21 +344,18 @@ extension AppKitWindow {
 
 final class UGNSWindow: AppKit.NSWindow {
     weak var window: Window!
+    private var touchesIDs: [ObjectIdentifier: UUID] = [:]
 
-    init(
-        window: Window,
-        contentRect: NSRect,
-        styleMask style: NSWindow.StyleMask,
-        backing backingStoreType: NSWindow.BackingStoreType,
-        defer flag: Bool
-    ) {
+    init(window: Window,
+         contentRect: NSRect,
+         styleMask style: NSWindow.StyleMask,
+         backing backingStoreType: NSWindow.BackingStoreType,
+         defer flag: Bool) {
         self.window = window
-        super.init(
-            contentRect: contentRect,
-            styleMask: style,
-            backing: backingStoreType,
-            defer: flag
-        )
+        super.init(contentRect: contentRect,
+                   styleMask: style,
+                   backing: backingStoreType,
+                   defer: flag)
     }
 
     override var acceptsFirstResponder: Bool {
@@ -378,9 +369,10 @@ final class UGNSWindow: AppKit.NSWindow {
     override var canBecomeMain: Bool {
         return self.window?.isMainWindow ?? false
     }
+}
 
-    //MARK: - Mouse
-
+// MARK: - Mouse
+extension UGNSWindow {
     @inline(__always)
     func positionFromEvent(_ event: NSEvent) -> Position2? {
         if let contentView = self.contentView ?? self.contentViewController?.view {
@@ -396,7 +388,7 @@ final class UGNSWindow: AppKit.NSWindow {
         guard event.type == .mouseMoved || event.type == .mouseEntered || event.type == .mouseExited
         else { return .zero }
         return Position2(Float(event.deltaX), Float(event.deltaY))
-            * Size2(Float(self.backingScaleFactor))
+        * Size2(Float(self.backingScaleFactor))
     }
 
     @inline(__always)
@@ -585,9 +577,10 @@ final class UGNSWindow: AppKit.NSWindow {
 
         super.scrollWheel(with: event)
     }
+}
 
-    //MARK: - Touches
-    private var touchesIDs: [ObjectIdentifier: UUID] = [:]
+// MARK: - Touches
+extension UGNSWindow {
     private func type(for touch: NSTouch) -> TouchKind {
         switch touch.type {
         case .direct:
@@ -743,10 +736,14 @@ final class UGNSWindow: AppKit.NSWindow {
             touchesIDs[ObjectIdentifier(touch)] = nil
         }
     }
+}
 
-    // MARK: - Keyboard
+// MARK: - Keyboard
+extension UGNSWindow {
+    // TODO: Test performance with `if` vs `switch`
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     func keyFromEvent(_ event: NSEvent) -> KeyboardKey {
-        let keyCode = Int(event.keyCode)
+        let keyCode = event.keyCode
         switch keyCode {
         case 0:  // A
             return .character("a", .standard)
@@ -1083,79 +1080,63 @@ final class UGNSWindow: AppKit.NSWindow {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     override func flagsChanged(with event: NSEvent) {
         var forward: Bool = true
         let keyCode = event.keyCode
         switch keyCode {
         case 56, 60:
             let key: KeyboardKey = keyCode == 56 ? .shift(.leftSide) : .shift(.rightSide)
-            forward =
-                Game.shared.hid.keyboardDidHandle(
-                    key: key,
-                    character: nil,
-                    modifiers: [],
-                    isRepeat: false,
-                    event: .toggle
-                ) == false
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
         case 55, 54:
             let key: KeyboardKey = keyCode == 55 ? .host(.leftSide) : .host(.rightSide)
-            forward =
-                Game.shared.hid.keyboardDidHandle(
-                    key: key,
-                    character: nil,
-                    modifiers: [],
-                    isRepeat: false,
-                    event: .toggle
-                ) == false
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
         case 59, 62:
             let key: KeyboardKey = keyCode == 59 ? .control(.leftSide) : .control(.rightSide)
-            forward =
-                Game.shared.hid.keyboardDidHandle(
-                    key: key,
-                    character: nil,
-                    modifiers: [],
-                    isRepeat: false,
-                    event: .toggle
-                ) == false
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
         case 58, 61:
             let key: KeyboardKey = keyCode == 58 ? .alt(.leftSide) : .alt(.rightSide)
-            forward =
-                Game.shared.hid.keyboardDidHandle(
-                    key: key,
-                    character: nil,
-                    modifiers: [],
-                    isRepeat: false,
-                    event: .toggle
-                ) == false
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
         case 63:
             let key: KeyboardKey = .fn
-            forward =
-                Game.shared.hid.keyboardDidHandle(
-                    key: key,
-                    character: nil,
-                    modifiers: [],
-                    isRepeat: false,
-                    event: .toggle
-                ) == false
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
         case 57:
             let key: KeyboardKey = .capsLock
-            forward =
-                Game.shared.hid.keyboardDidHandle(
-                    key: key,
-                    character: nil,
-                    modifiers: [],
-                    isRepeat: false,
-                    event: .toggle
-                ) == false
+            forward = Game.shared.hid.keyboardDidHandle(key: key,
+                                                        character: nil,
+                                                        modifiers: [],
+                                                        isRepeat: false,
+                                                        event: .toggle) == false
         default:
             #if GATEENGINE_DEBUG_HID
             Log.info("Unhandled Modifier Key", event.keyCode)
-            #endif
+            #else
             break
+            #endif
         }
         if forward {
             super.flagsChanged(with: event)
         }
     }
 }
-#endif
+#endif // swiftlint:disable:this file_length

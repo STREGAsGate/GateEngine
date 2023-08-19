@@ -328,7 +328,7 @@
         let aspectRatio = size.aspectRatio
 
         let inverseView = camera.matricies(withAspectRatio: aspectRatio).view.inverse
-        let halfFOV = tan(camera._fieldOfView.rawValue * 0.5)
+        let halfFOV = tan(camera.fieldOfViewAsRadians.rawValue * 0.5)
         let near = camera.clippingPlane.near
         let far = camera.clippingPlane.far
 

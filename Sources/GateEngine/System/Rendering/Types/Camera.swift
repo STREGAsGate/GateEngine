@@ -14,8 +14,8 @@ public class Camera {
         }
     }
     public var fieldOfView: Degrees {
-        @inlinable get { return Degrees(_fieldOfView) }
-        @inlinable set { self._fieldOfView = Radians(newValue) }
+        @inlinable get { return Degrees(fieldOfViewAsRadians) }
+        @inlinable set { self.fieldOfViewAsRadians = Radians(newValue) }
     }
     public var clippingPlane: ClippingPlane {
         didSet {
@@ -23,7 +23,7 @@ public class Camera {
         }
     }
 
-    @usableFromInline internal var _fieldOfView: Radians {
+    @usableFromInline internal var fieldOfViewAsRadians: Radians {
         didSet {
             needsUpdateProjection = true
         }
@@ -34,7 +34,7 @@ public class Camera {
         fieldOfView: Degrees = Degrees(70),
         clippingPlane: ClippingPlane = ClippingPlane()
     ) {
-        self._fieldOfView = Radians(fieldOfView)
+        self.fieldOfViewAsRadians = Radians(fieldOfView)
         self.transform = transform
         self.clippingPlane = clippingPlane
     }
@@ -68,7 +68,7 @@ public class Camera {
             self.needsUpdateProjection = false
             self.aspect = aspect
             self.perspective = Matrix4x4(
-                perspectiveWithFOV: _fieldOfView.rawValue,
+                perspectiveWithFOV: fieldOfViewAsRadians.rawValue,
                 aspect: aspect,
                 near: clippingPlane.near,
                 far: clippingPlane.far

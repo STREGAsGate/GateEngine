@@ -100,10 +100,9 @@ private class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 extension AppKitPlatform {
-    @MainActor func main() {
+    func makeInfoPlistIfNeeded() {
         if Bundle.main.bundleIdentifier == nil {
-            Log.info("Info.plist not found.")
-            Log.info("Creating generic Info.plist")
+            Log.info("Info.plist not found.", "Creating generic Info.plist")
             var url = URL(fileURLWithPath: CommandLine.arguments[0])
             let plist = """
                 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -133,8 +132,14 @@ extension AppKitPlatform {
             do {
                 if CommandLine.isDebuggingWithXcode {
                     let alert = NSAlert()
-                    alert.messageText =
-                        "Created mock Info.plist in the build directory. This is required so macOS see's your executable as an App. Game Controllers may not function without it.\n\nClick continue to ignore. Quit and launch again to ensure everything functions correctly."
+
+                    alert.messageText = """
+Created mock Info.plist in the build directory.
+
+This is required so macOS see's your executable as an App. Game Controllers may not function without it.
+
+Click continue to ignore. Quit and launch again to ensure everything functions correctly.
+"""
                     alert.addButton(withTitle: "Quit")
                     alert.addButton(withTitle: "Continue")
                     switch alert.runModal() {
@@ -154,51 +159,42 @@ extension AppKitPlatform {
                 }
             }
         }
+    }
 
-        if Bundle.main.infoDictionary?["CFBundleIconFile"] == nil
-            && Bundle.main.infoDictionary?["CFBundleIconName"] == nil
-        {
+    @MainActor func main() {
+        makeInfoPlistIfNeeded()
+        let iconFile = Bundle.main.infoDictionary?["CFBundleIconFile"]
+        let iconName = Bundle.main.infoDictionary?["CFBundleIconName"]
+        if iconFile == nil && iconName == nil {
             Game.shared.defer {
-                guard let rasterizationScale = Game.shared.windowManager.mainWindow?.interfaceScale
-                else { return }
+                guard let scale = Game.shared.windowManager.mainWindow?.interfaceScale else { return }
                 Task { @MainActor in
                     let filePath = URL(fileURLWithPath: CommandLine.arguments[0])
                         .deletingLastPathComponent().path
-                    let iconPath = await Game.shared.platform.locateResource(
-                        from: "GateEngine/Branding/Square Logo.png"
-                    )!
+                    let platform = Game.shared.platform
+                    let iconPath = await platform.locateResource(from: "GateEngine/Branding/Square Logo.png")!
                     if let image = NSImage(contentsOf: URL(fileURLWithPath: iconPath)) {
                         NSGraphicsContext.current?.saveGraphicsState()
-                        if let bitmapRepresentation = NSBitmapImageRep(
-                            bitmapDataPlanes: nil,
-                            pixelsWide: 512 / Int(rasterizationScale),
-                            pixelsHigh: 512 / Int(rasterizationScale),
-                            bitsPerSample: 8,
-                            samplesPerPixel: 4,
-                            hasAlpha: true,
-                            isPlanar: false,
-                            colorSpaceName: .deviceRGB,
-                            bytesPerRow: 0,
-                            bitsPerPixel: 0
-                        ) {
-                            NSGraphicsContext.current = NSGraphicsContext(
-                                bitmapImageRep: bitmapRepresentation
-                            )
-                            let resizedImage = NSImage(
-                                size: NSSize(
-                                    width: 512 / Int(rasterizationScale),
-                                    height: 512 / Int(rasterizationScale)
-                                )
-                            )
+                        if let bitmapRepresentation = NSBitmapImageRep(bitmapDataPlanes: nil,
+                                                                       pixelsWide: 512 / Int(scale),
+                                                                       pixelsHigh: 512 / Int(scale),
+                                                                       bitsPerSample: 8,
+                                                                       samplesPerPixel: 4,
+                                                                       hasAlpha: true,
+                                                                       isPlanar: false,
+                                                                       colorSpaceName: .deviceRGB,
+                                                                       bytesPerRow: 0,
+                                                                       bitsPerPixel: 0) {
+                            NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRepresentation)
+                            let resizedImage = NSImage(size: NSSize(width: 512 / Int(scale),
+                                                                    height: 512 / Int(scale)))
 
                             resizedImage.lockFocus()
                             NSGraphicsContext.current?.imageInterpolation = .high
-                            image.draw(
-                                in: NSRect(origin: .zero, size: resizedImage.size),
-                                from: .zero,
-                                operation: .copy,
-                                fraction: 1
-                            )
+                            image.draw(in: NSRect(origin: .zero, size: resizedImage.size),
+                                       from: .zero,
+                                       operation: .copy,
+                                       fraction: 1)
                             resizedImage.unlockFocus()
                             NSWorkspace.shared.setIcon(resizedImage, forFile: filePath)
                         }
@@ -210,15 +206,16 @@ extension AppKitPlatform {
 
         final class CustomApp: NSApplication {
             #if GATEENGINE_DEBUG_HID
-            // can't prevent the system from sending media keys to other apps, like music, so these are dead in the water for usability
+            // can't prevent the system from sending media keys to other apps,
+            // like music, so these are dead in the water for usability
             override func sendEvent(_ event: NSEvent) {
                 var forward: Bool = true
                 if event.type == .systemDefined && event.subtype.rawValue == 8 {
                     let keyCode = ((event.data1 & 0xFFFF_0000) >> 16)
                     let keyFlags = (event.data1 & 0x0000_FFFF)
                     // Get the key state. 0xA is KeyDown, OxB is KeyUp
-                    let keyState: KeyboardEvent =
-                        (((keyFlags & 0xFF00) >> 8)) == 0xA ? .keyDown : .keyUp
+                    let keyIsDown = (((keyFlags & 0xFF00) >> 8)) == 0xA
+                    let keyState: KeyboardEvent = isDown ? .keyDown : .keyUp
                     let keyRepeat: Bool = (keyFlags & 0x1) != 0
 
                     let key: KeyboardKey

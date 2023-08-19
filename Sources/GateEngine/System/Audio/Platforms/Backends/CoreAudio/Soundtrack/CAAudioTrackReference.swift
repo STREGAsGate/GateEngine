@@ -81,7 +81,7 @@ internal class CAAudioTrackReference: AudioTrackReference {
 
     @inlinable
     func setBuffer(_ alBuffer: AudioBuffer) {
-        let buffer = alBuffer.reference as! CABufferReference
+        let buffer = alBuffer.reference as! CABufferReference // swiftlint:disable:this force_cast
         let engine = mixerReference.contextReference.engine
         let mixerNode = mixerReference.mixerNode
         engine.disconnectNodeOutput(playerNode)

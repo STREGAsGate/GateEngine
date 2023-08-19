@@ -86,7 +86,7 @@ internal class BufferConverter {
     }
 }
 
-//Mark: - Int to Float
+// Mark: - Int to Float
 extension BufferConverter {
     fileprivate func convertToFloatFrom<T: FixedWidthInteger>(
         _ source: T.Type,
@@ -162,8 +162,7 @@ extension BufferConverter {
     fileprivate func convertIntToInt<S: FixedWidthInteger, D: FixedWidthInteger>(
         _ source: S.Type,
         _ destination: D.Type,
-        newFormat: AudioBuffer.Format
-    ) -> Data {
+        newFormat: AudioBuffer.Format ) -> Data {
         var array: [D] = {
             guard source != destination else {
                 return self.data.withUnsafeBytes({ Array($0.bindMemory(to: destination)) })
@@ -173,8 +172,7 @@ extension BufferConverter {
             array.reserveCapacity(data.count)
 
             func appendArray<IntegerType: FixedWidthInteger>(unsignedSType: IntegerType.Type) {
-                for value in self.data.withUnsafeBytes({ Array($0.bindMemory(to: unsignedSType)) })
-                {
+                for value in self.data.withUnsafeBytes({ Array($0.bindMemory(to: unsignedSType)) }) {
                     let m = Float(value) / Float(unsignedSType.max)
                     switch D.bitWidth {
                     case 8:

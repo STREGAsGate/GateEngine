@@ -8,15 +8,15 @@ let package = Package(
     platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13)],
     products: [
         .library(name: "GateEngine", targets: ["GateEngine"]),
+        .library(name: "GameMath", targets: ["GameMath"]),
     ],
     dependencies: {
         var packageDependencies: [Package.Dependency] = []
 
+        // Official
         packageDependencies.append(contentsOf: [
-            // Official
             .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.1.0")),
             .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0")),
-            //.package(url: "https://github.com/apple/swift-format", branch: "main"),
         ])
 
         // SwiftWASM
@@ -26,6 +26,12 @@ let package = Package(
             .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
         ])
         #endif
+        
+        // Linting / Formating
+        packageDependencies.append(contentsOf: [
+            //.package(url: "https://github.com/apple/swift-format", .upToNextMajor(from: "508.0.0")),
+            //.package(url: "https://github.com/realm/SwiftLint.git", .upToNextMajor(from: "0.52.0")),
+        ])
         
         return packageDependencies
     }(),
@@ -145,8 +151,8 @@ let package = Package(
                         #endif
                         return settings
                     }(),
-                    linkerSettings: [
-
+                    plugins: [
+                        //.plugin(name: "SwiftLintPlugin", package: "SwiftLint"),
                     ]),
             
             .target(name: "Shaders", dependencies: ["GameMath"]),
@@ -317,6 +323,7 @@ let package = Package(
                             .copy("Resources/unittest"),
                         ],
                         swiftSettings: [
+                            // https://github.com/STREGAsGate/GateEngine/issues/36
                             .define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])),
                         ]),
         ])
@@ -549,13 +556,30 @@ extension Array where Element == Platform {
     
     static var desktop: Self {[.windows, .linux, .macOS]}
     static var mobile: Self {[.iOS, .android]}
-    static var anyApple: Self {[.iOS, .tvOS, .macOS]}
+    static var anyApple: Self {
+        #if swift(>=5.9)
+        return [.macOS, .iOS, .tvOS, .watchOS, .visionOS]
+        #else
+        return [.macOS, .iOS, .tvOS, .watchOS]
+        #endif
+    }
     
-    static var any: Self {[
-        .macOS, .iOS, .tvOS,
-        .linux, .android,
-        .windows,
-        .wasi,
-    ]}
+    static var any: Self {
+        #if swift(>=5.9)
+        return [
+            .macOS, .iOS, .tvOS, .visionOS
+            .linux, .android,
+            .windows,
+            .wasi
+        ]
+        #else
+        return [
+            .macOS, .iOS, .tvOS,
+            .linux, .android,
+            .windows,
+            .wasi
+        ]
+        #endif
+    }
 }
 
