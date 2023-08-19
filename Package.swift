@@ -567,7 +567,7 @@ extension Array where Element == Platform {
     static var any: Self {
         #if swift(>=5.9)
         return [
-            .macOS, .iOS, .tvOS, .visionOS
+            .macOS, .iOS, .tvOS, .visionOS,
             .linux, .android,
             .windows,
             .wasi
