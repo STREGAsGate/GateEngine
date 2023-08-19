@@ -8,14 +8,14 @@
 internal protocol AudioContextBackend: AnyObject {
     func createSpacialMixerReference() -> any SpacialAudioMixerReference
     func createAudioMixerReference() -> any AudioMixerReference
-    
-    var endianness: Endianness {get}
+
+    var endianness: Endianness { get }
     func supportsBitRate(_ bitRate: AudioBuffer.Format.BitRate) -> Bool
 }
 
 public class AudioContext {
     internal let reference: any AudioContextBackend
-    
+
     internal init() {
         #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
         self.reference = CAContextReference()
@@ -32,17 +32,17 @@ public class AudioContext {
         #error("Not Implemented.")
         #endif
     }
-    
+
     ///Generates a brand new audio mixer 3D positional audio. You must store the returned object yourself, it is not retained by the ALContext.
     public func createSpacialMixer() -> SpatialAudioMixer {
         return SpatialAudioMixer(self)
     }
-    
+
     ///Generates a brand new audio mixer for multi-channel audio. You must store the returned object yourself, it is not retained by the ALContext.
     public func createAudioMixer() -> AudioMixer {
         return AudioMixer(self)
     }
-    
+
     public func createBuffer(path: String) -> AudioBuffer {
         return AudioBuffer(path: path, context: self)
     }

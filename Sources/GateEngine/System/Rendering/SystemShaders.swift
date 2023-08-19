@@ -7,30 +7,36 @@
 
 import Shaders
 
-@MainActor public extension VertexShader {
+@MainActor extension VertexShader {
     @usableFromInline
     internal static let renderTarget: VertexShader = {
         let vsh = VertexShader()
-        vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
+        vsh.output.position =
+            vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
         switch Game.shared.renderer.api {
         case .metal, .d3d12:
-            vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
+            vsh.output["texCoord0"] =
+                vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale
+                + vsh.channel(0).offset
         case .openGL, .openGLES, .webGL2:
             let texCood = vsh.input.geometry(0).textureCoordinate0
             let y = 1.0 - texCood.y
-            vsh.output["texCoord0"] = Vec2(x: texCood.x, y: y) * vsh.channel(0).scale + vsh.channel(0).offset
+            vsh.output["texCoord0"] =
+                Vec2(x: texCood.x, y: y) * vsh.channel(0).scale + vsh.channel(0).offset
         case .headless:
             break
         }
         return vsh
     }()
-    static let standard: VertexShader = {
+    public static let standard: VertexShader = {
         let vsh = VertexShader()
-        vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
-        vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
+        vsh.output.position =
+            vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
+        vsh.output["texCoord0"] =
+            vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
         return vsh
     }()
-    
+
     @usableFromInline
     internal static let skinned: VertexShader = {
         let vsh = VertexShader()
@@ -43,29 +49,32 @@ import Shaders
         position += bones[jointIndices[2]] * position * jointWeights[2]
         position += bones[jointIndices[3]] * position * jointWeights[3]
         vsh.output.position = vsh.modelViewProjectionMatrix * position
-        vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
+        vsh.output["texCoord0"] =
+            vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
         return vsh
     }()
-    
+
     /// Used by the system to draw point primitives
     @usableFromInline
     internal static let pointSizeAndColor: VertexShader = {
         let vsh = VertexShader()
-        vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
+        vsh.output.position =
+            vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
         vsh.output.pointSize = vsh.uniform(named: "pointSize", as: Scalar.self)
         vsh.output["color"] = vsh.input.geometry(0).color
         return vsh
     }()
-    
+
     /// Uses the colors in the vertices to shade objects
     /// Intended to be paired with `FragmentShader.vertexColors`
-    static let vertexColors: VertexShader = {
+    public static let vertexColors: VertexShader = {
         let vsh = VertexShader()
-        vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
+        vsh.output.position =
+            vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
         vsh.output["color"] = vsh.input.geometry(0).color
         return vsh
     }()
-    
+
     /// Handles 2 geometries, intended for use with FragmentShader.morphTextureSample
     @usableFromInline
     internal static let morph: VertexShader = {
@@ -81,7 +90,7 @@ import Shaders
     }()
 }
 
-@MainActor public extension FragmentShader {
+@MainActor extension FragmentShader {
     /// The same as `textureSample` but with an additional channel for a second geometry
     ///  Intended to be used with `VertexShader.morph`
     @usableFromInline
@@ -94,20 +103,23 @@ import Shaders
         return fsh
     }()
     /// Uses material.channel(0).texture to shade objects
-    static let textureSample: FragmentShader = {
+    public static let textureSample: FragmentShader = {
         let fsh = FragmentShader()
-        fsh.output.color = fsh.channel(0).texture.sample(at: fsh.input["texCoord0"], filter: .nearest)
+        fsh.output.color = fsh.channel(0).texture.sample(
+            at: fsh.input["texCoord0"],
+            filter: .nearest
+        )
         return fsh
     }()
     /// Uses material.channel(0).color to shade objects
-    static let materialColor: FragmentShader = {
+    public static let materialColor: FragmentShader = {
         let fsh = FragmentShader()
         fsh.output.color = fsh.channel(0).color
         return fsh
     }()
     /// Uses the colors in the vertices to shade objects
     /// Intended to be paired with `VertexShader.vertexColors`
-    static let vertexColor: FragmentShader = {
+    public static let vertexColor: FragmentShader = {
         let fsh = FragmentShader()
         fsh.output.color = fsh.input["color"]
         return fsh

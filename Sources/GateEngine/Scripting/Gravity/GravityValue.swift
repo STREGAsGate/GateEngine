@@ -14,21 +14,21 @@ public struct GravityValue: GravityValueEmitting {
     internal init(gValue: gravity_value_t) {
         self.gValue = gValue
     }
-    
+
     @usableFromInline
     internal init?(optionalGValue gValue: gravity_value_t) {
-        guard gValue.isa != gravity_class_null else {return nil}
+        guard gValue.isa != gravity_class_null else { return nil }
         self.init(gValue: gValue)
     }
 }
 
-public extension GravityValue {
-    static let null = GravityValue(gValue: gravity_value_from_null())
-    static let undefined = GravityValue(gValue: gravity_value_from_undefined())
+extension GravityValue {
+    public static let null = GravityValue(gValue: gravity_value_from_null())
+    public static let undefined = GravityValue(gValue: gravity_value_from_undefined())
 }
 
-public extension GravityValue {
-    enum ValueType {
+extension GravityValue {
+    public enum ValueType {
         case object
         case bool
         case null
@@ -46,8 +46,8 @@ public extension GravityValue {
         case range
         case upvalue
     }
-    
-    var valueType: ValueType {
+
+    public var valueType: ValueType {
         switch gValue.isa {
         case gravity_class_object:
             return .object
@@ -87,7 +87,6 @@ public extension GravityValue {
     }
 }
 
-
 // MARK: - Bool
 extension GravityValue {
     @inline(__always)
@@ -114,7 +113,7 @@ extension GravityValue {
     public func getInt() -> Int {
         return Int(gValue.n)
     }
-    
+
     /**
      Interpreted the value.
      Attempts to convert the value to the return type.
@@ -145,7 +144,7 @@ extension GravityValue {
         let value = gravity_float_t(value)
         if value.isFinite == false {
             gValue = gravity_value_from_undefined()
-        }else{
+        } else {
             gValue = gravity_value_from_float(value)
         }
     }
@@ -171,7 +170,7 @@ extension GravityValue {
             return Float(unsafeBitCast(gValue.p, to: Double.self))
         }
     }
-    
+
     @inlinable
     public func asDouble() -> Double {
         switch self.valueType {
@@ -194,7 +193,12 @@ extension GravityValue {
 extension GravityValue {
     @inline(__always) @usableFromInline
     internal init(_ value: Range<Int>, _ gravity: Gravity? = nil) {
-        let value = gravity_range_new(gravity?.vm, gravity_int_t(value.lowerBound), gravity_int_t(value.upperBound), true)
+        let value = gravity_range_new(
+            gravity?.vm,
+            gravity_int_t(value.lowerBound),
+            gravity_int_t(value.upperBound),
+            true
+        )
         gValue = gravity_value_from_object(value)
     }
     @inlinable
@@ -202,10 +206,15 @@ extension GravityValue {
         let range = unsafeBitCast(gValue.p, to: UnsafeMutablePointer<gravity_range_t>.self).pointee
         return Int(range.from) ..< Int(range.to)
     }
-    
+
     @inline(__always) @usableFromInline
     internal init(_ value: ClosedRange<Int>, _ gravity: Gravity? = nil) {
-        let value = gravity_range_new(gravity?.vm, gravity_int_t(value.lowerBound), gravity_int_t(value.upperBound), true)
+        let value = gravity_range_new(
+            gravity?.vm,
+            gravity_int_t(value.lowerBound),
+            gravity_int_t(value.upperBound),
+            true
+        )
         gValue = gravity_value_from_object(value)
     }
     @inlinable
@@ -213,21 +222,20 @@ extension GravityValue {
         let range = unsafeBitCast(gValue.p, to: UnsafeMutablePointer<gravity_range_t>.self).pointee
         return Int(range.from) ... Int(range.to)
     }
-    
+
     @inlinable
-    public static func ...(lhs: GravityValue, rhs: GravityValue) -> GravityValue {
+    public static func ... (lhs: GravityValue, rhs: GravityValue) -> GravityValue {
         let lower = lhs.getInt()
         let upper = rhs.getInt()
         return GravityValue(lower ... upper)
     }
     @inlinable
-    public static func ..<(lhs: GravityValue, rhs: GravityValue) -> GravityValue {
+    public static func ..< (lhs: GravityValue, rhs: GravityValue) -> GravityValue {
         let lower = lhs.getInt()
         let upper = rhs.getInt()
         return GravityValue(lower ..< upper)
     }
 }
-
 
 // MARK: - String
 extension GravityValue {
@@ -239,22 +247,26 @@ extension GravityValue {
     }
     @inline(__always)
     internal init(_ value: StaticString, _ gravity: Gravity) {
-        self.gValue = gravity_string_to_value(gravity.vm, value.utf8Start, UInt32(value.utf8CodeUnitCount))
+        self.gValue = gravity_string_to_value(
+            gravity.vm,
+            value.utf8Start,
+            UInt32(value.utf8CodeUnitCount)
+        )
     }
-    
+
     @inlinable
     internal var string: String {
         assert(self.valueType == .string)
         let string = unsafeBitCast(gValue.p, to: UnsafeMutablePointer<gravity_string_t>.self)
         return String(cString: string.pointee.s)
     }
-    
+
     @inlinable
     public func getString() -> String? {
-        guard self.valueType == .string else {return nil}
+        guard self.valueType == .string else { return nil }
         return self.string
     }
-    
+
     @inlinable
     public func asString() -> String {
         switch self.valueType {
@@ -269,26 +281,26 @@ extension GravityValue {
 // MARK: - List
 extension GravityValue {
     @inline(__always)
-    internal init(_ values: Array<GravityValue>, _ gravity: Gravity? = nil) {
-        var values = values.map({$0.gValue})
+    internal init(_ values: [GravityValue], _ gravity: Gravity? = nil) {
+        var values = values.map({ $0.gValue })
         let list = gravity_list_from_array(gravity?.vm, UInt32(values.count), &values)
         self.gValue = gravity_value_from_object(list)
     }
-    
+
     @inlinable
-    internal var array: Array<GravityValue> {
+    internal var array: [GravityValue] {
         assert(self.valueType == .list)
         let list = unsafeBitCast(gValue.p, to: UnsafeMutablePointer<gravity_list_t>.self).pointee
         let array = list.array
         let buffer = UnsafeBufferPointer(start: array.p, count: array.n)
-        return Array(buffer.map({GravityValue(gValue: $0)}))
+        return Array(buffer.map({ GravityValue(gValue: $0) }))
     }
-    
+
     @inlinable
-    public func getList() -> Array<GravityValue>? {
-        guard valueType == .list else {return nil}
+    public func getList() -> [GravityValue]? {
+        guard valueType == .list else { return nil }
         let a = array
-        guard a.isEmpty == false else {return nil}
+        guard a.isEmpty == false else { return nil }
         return a
     }
 }
@@ -296,7 +308,7 @@ extension GravityValue {
 // MARK: - Map
 extension GravityValue {
     @inline(__always)
-    internal init(_ values: Dictionary<GravityValue, GravityValue>, _ gravity: Gravity? = nil) {
+    internal init(_ values: [GravityValue: GravityValue], _ gravity: Gravity? = nil) {
         let map = gravity_map_new(gravity?.vm, UInt32(values.count))
         for pair in values {
             gravity_map_insert(gravity?.vm, map, pair.key.gValue, pair.value.gValue)
@@ -304,15 +316,23 @@ extension GravityValue {
         self.gValue = gravity_value_from_object(map)
     }
     @inline(__always) @usableFromInline
-    internal func getMap() -> Dictionary<GravityValue, GravityValue> {
+    internal func getMap() -> [GravityValue: GravityValue] {
         assert(valueType == .map, "Expected \"map\" but found \"\(valueType)\".")
         let map = unsafeBitCast(gValue.p, to: UnsafeMutablePointer<gravity_map_t>.self).pointee
         let hash = map.hash
-        var dict = Dictionary<GravityValue, GravityValue>(minimumCapacity: Int(gravity_hash_count(hash)))
-        gravity_hash_iterate(hash, { hash, key, value, dictp in
-            let dict = dictp!.assumingMemoryBound(to: Dictionary<GravityValue, GravityValue>.self)
-            dict.pointee[GravityValue(gValue: key)] = GravityValue(gValue: value)
-        }, &dict)
+        var dict = [GravityValue: GravityValue](minimumCapacity: Int(gravity_hash_count(hash)))
+        withUnsafeMutablePointer(to: &dict) { dictPointer in
+            gravity_hash_iterate(
+                hash,
+                { hash, key, value, dictp in
+                    let dict = dictp!.assumingMemoryBound(
+                        to: Dictionary<GravityValue, GravityValue>.self
+                    )
+                    dict.pointee[GravityValue(gValue: key)] = GravityValue(gValue: value)
+                },
+                dictPointer
+            )
+        }
         return dict
     }
 }
@@ -320,9 +340,15 @@ extension GravityValue {
 // MARK: - Closure
 extension GravityValue {
     @inline(__always)
-    public func getClosure(gravity: Gravity, sender: (any GravityValueConvertible)?) -> GravityClosure? {
+    public func getClosure(
+        gravity: Gravity,
+        sender: (any GravityValueConvertible)?
+    ) -> GravityClosure? {
         guard valueType == .closure else {
-            assert(valueType == .null, "Gravity: Expected \"closure\" but found \"\(valueType)\". Check your spelling.")
+            assert(
+                valueType == .null,
+                "Gravity: Expected \"closure\" but found \"\(valueType)\". Check your spelling."
+            )
             return nil
         }
         let closure = unsafeBitCast(gValue.p, to: UnsafeMutablePointer<gravity_closure_t>.self)
@@ -335,7 +361,10 @@ extension GravityValue {
     @inline(__always)
     public func getClass(gravity: Gravity) -> GravityClass? {
         guard valueType == .class else {
-            assert(valueType == .null, "Gravity: Expected \"class\" but found \"\(valueType)\". Check your spelling.")
+            assert(
+                valueType == .null,
+                "Gravity: Expected \"class\" but found \"\(valueType)\". Check your spelling."
+            )
             return nil
         }
         return GravityClass(value: self, gravity: gravity)
@@ -347,7 +376,10 @@ extension GravityValue {
     @inline(__always)
     public func getInstance(gravity: Gravity) -> GravityInstance? {
         guard valueType == .instance else {
-            assert(valueType == .null, "Gravity: Expected \"instance\" but found \"\(valueType)\". Check your spelling.")
+            assert(
+                valueType == .null,
+                "Gravity: Expected \"instance\" but found \"\(valueType)\". Check your spelling."
+            )
             return nil
         }
         return GravityInstance(value: self, gravity: gravity)
@@ -412,7 +444,7 @@ extension GravityValue: CustomReflectable {
 
 extension GravityValue: Equatable {
     @inline(__always)
-    public static func ==(lhs: GravityValue, rhs: GravityValue) -> Bool {
+    public static func == (lhs: GravityValue, rhs: GravityValue) -> Bool {
         return gravity_value_equals(lhs.gValue, rhs.gValue)
     }
 }
@@ -451,7 +483,7 @@ extension GravityValue: ExpressibleByIntegerLiteral {
 }
 
 extension GravityValue: ExpressibleByFloatLiteral {
-    #if arch(i386) || arch(arm) || arch(wasm32) // 32bit target
+    #if arch(i386) || arch(arm) || arch(wasm32)  // 32bit target
     public typealias FloatLiteralType = Float
     #else
     public typealias FloatLiteralType = Double  // 64bit target

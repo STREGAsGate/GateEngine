@@ -70,10 +70,29 @@ public final class VertexShader: ShaderDocument {
             get {_values[key] as? T}
             set {_values[key] = newValue}
         }
+        
+        internal func documentIdentifierInputData() -> [Int] {
+            var values: [Int] = []
+            if let position {
+                values.append(contentsOf: position.documentIdentifierInputData())
+            }
+            if let pointSize {
+                values.append(contentsOf: pointSize.documentIdentifierInputData())
+            }
+            for pair in _values {
+                values.append(contentsOf: pair.key.documentIdentifierInputData())
+                values.append(contentsOf: pair.value.documentIdentifierInputData())
+            }
+            return values
+        }
     }
     public var output: Output = Output()
     
     public init() {
         super.init(documentType: .vertex)
+    }
+    
+    override func documentIdentifierInputData() -> [Int] {
+        return output.documentIdentifierInputData()
     }
 }

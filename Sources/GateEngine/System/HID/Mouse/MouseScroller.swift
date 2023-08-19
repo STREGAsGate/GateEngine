@@ -9,26 +9,26 @@ public enum MouseScroller: Hashable {
     case x
     case y
     case z
-    
+
     @_transparent
-    public static var horizontal: Self {.x}
+    public static var horizontal: Self { .x }
     @_transparent
-    public static var vertical: Self {.y}
+    public static var vertical: Self { .y }
     @_transparent
-    public static var depth: Self {.z}
+    public static var depth: Self { .z }
 }
 
-public extension Mouse {
-    @MainActor final class ScrollerState {
+extension Mouse {
+    @MainActor public final class ScrollerState {
         @usableFromInline
         internal unowned let mouse: Mouse
         @usableFromInline
         internal var currentReceipt: UInt8 = 0
-        
+
         private var mostRecentDevice: Int = 0
         @usableFromInline
         internal var lastValueWasMomentum: Bool = false
-        
+
         public enum Direction {
             case positive
             case negative
@@ -36,7 +36,7 @@ public extension Mouse {
         public private(set) var direction: Direction? = nil
         public private(set) var delta: Float = 0
         public private(set) var uiDelta: Float = 0
-        
+
         public var ticks: Int {
             if lastValueWasMomentum == false {
                 if let min = ranges[mostRecentDevice]?.min {
@@ -46,29 +46,29 @@ public extension Mouse {
             }
             return 0
         }
-        
+
         struct DeviceRange {
             var min: Float = .greatestFiniteMagnitude
             var max: Float = -.greatestFiniteMagnitude
         }
-        private var ranges: [Int:DeviceRange] = [:]
+        private var ranges: [Int: DeviceRange] = [:]
         internal func setDelta(_ delta: Float, uiDelta: Float, device: Int, isMomentum: Bool) {
             self.delta = delta
             self.uiDelta = uiDelta
             self.mostRecentDevice = device
             self.lastValueWasMomentum = isMomentum
-            
+
             if delta != 0 {
                 currentReceipt &+= 1
             }
             if delta == 0 {
                 direction = nil
-            }else if delta < 0 {
+            } else if delta < 0 {
                 direction = .negative
-            }else{
+            } else {
                 direction = .positive
             }
-            
+
             if isMomentum == false {
                 var deviceRange = ranges[device] ?? DeviceRange()
                 deviceRange.max = Float.maximum(deviceRange.max, abs(delta))
@@ -79,24 +79,24 @@ public extension Mouse {
                 ranges[device] = deviceRange
             }
         }
-        
+
         @usableFromInline
         internal init(mouse: Mouse) {
             self.mouse = mouse
         }
-        
+
         /// The location of the mouse in the windows native pixels
         @inlinable @inline(__always)
         public var position: Position2? {
             return mouse.position
         }
-        
+
         /// The location of the mouse in the window
         @inlinable @inline(__always)
         public var interfacePosition: Position2? {
             return mouse.interfacePosition
         }
-        
+
         /**
          Returns a receipt for the current press or nil if not pressed.
          - parameter receipt: An existing receipt from a previous call to compare to the current pressed state.
@@ -104,10 +104,13 @@ public extension Mouse {
          - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          */
         @inlinable @inline(__always)
-        public func didScroll(ifDifferent receipt: inout InputReceipts, includingMomentum includeMomentum: Bool = false) -> Bool {
-            guard delta != 0 else {return false}
+        public func didScroll(
+            ifDifferent receipt: inout InputReceipts,
+            includingMomentum includeMomentum: Bool = false
+        ) -> Bool {
+            guard delta != 0 else { return false }
             let key = ObjectIdentifier(self)
-            
+
             if let receipt = receipt.values[key], receipt == currentReceipt {
                 return false
             }
@@ -117,7 +120,7 @@ public extension Mouse {
             }
             return true
         }
-        
+
         /**
          Returns a receipt for the current press or nil if not pressed.
          - parameter receipt: An existing receipt from a previous call to compare to the current pressed state.
@@ -126,7 +129,11 @@ public extension Mouse {
          - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          */
         @inlinable @inline(__always)
-        public func whenScrolled(ifDifferent receipt: inout InputReceipts, includingMomentum includeMomentum: Bool = false, run block: (_ scroller: ScrollerState)->Void) {
+        public func whenScrolled(
+            ifDifferent receipt: inout InputReceipts,
+            includingMomentum includeMomentum: Bool = false,
+            run block: (_ scroller: ScrollerState) -> Void
+        ) {
             if didScroll(ifDifferent: &receipt, includingMomentum: includeMomentum) {
                 block(self)
             }

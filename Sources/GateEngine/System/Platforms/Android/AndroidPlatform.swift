@@ -7,7 +7,7 @@
 #if os(Android)
 
 class AndroidPlatform: InternalPlatform {
-    
+
 }
 
 #endif

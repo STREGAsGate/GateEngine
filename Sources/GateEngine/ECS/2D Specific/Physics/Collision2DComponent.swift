@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2023 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
@@ -8,7 +8,7 @@
 public final class Collision2DComponent: Component {
     public var primitive: AxisAlignedBoundingBox2D! = nil
     public var complex: (any Collider2D)? = nil
-    
+
     public init() {}
 
     public static let componentID: ComponentID = ComponentID()

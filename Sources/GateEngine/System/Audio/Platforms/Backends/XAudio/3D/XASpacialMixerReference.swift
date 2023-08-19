@@ -15,7 +15,7 @@ internal class XASpacialMixerReference: SpacialAudioMixerReference {
     init(_ contextReference: XAContextReference) {
         self.contextReference = contextReference
     }
-    
+
     public var minimumAttenuationDistance: Float {
         get {
             return 0
@@ -33,11 +33,11 @@ internal class XASpacialMixerReference: SpacialAudioMixerReference {
 
         }
     }
-    
+
     func createListenerReference() -> any SpatialAudioListenerBackend {
         return XAListenerReference()
     }
-    
+
     func createSourceReference() -> any SpatialAudioSourceReference {
         return XASourceReference(self)
     }

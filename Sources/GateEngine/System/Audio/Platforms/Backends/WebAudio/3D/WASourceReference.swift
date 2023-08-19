@@ -12,18 +12,20 @@ internal class WASourceReference: SpatialAudioSourceReference {
     let playerNode: AudioBufferSourceNode
     let pannerNode: PannerNode
     let gainNode: GainNode
-    
+
     @usableFromInline
     init(_ mixerReference: WASpacialMixerReference) {
         self.mixerReference = mixerReference
-        
+
         self.playerNode = AudioBufferSourceNode(context: mixerReference.contextReference.ctx)
         self.gainNode = mixerReference.contextReference.ctx.createGain()
         self.pannerNode = mixerReference.contextReference.ctx.createPanner()
-        
-        playerNode.connect(destinationNode: gainNode).connect(destinationNode: pannerNode).connect(destinationNode: mixerReference.mixerNode)
+
+        playerNode.connect(destinationNode: gainNode).connect(destinationNode: pannerNode).connect(
+            destinationNode: mixerReference.mixerNode
+        )
     }
-    
+
     @inlinable
     var repeats: Bool {
         get {
@@ -51,7 +53,7 @@ internal class WASourceReference: SpatialAudioSourceReference {
             playerNode.playbackRate.value = newValue
         }
     }
-    
+
     @inlinable
     func play() {
         playerNode.start()

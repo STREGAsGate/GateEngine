@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-
 public struct KeyboardModifierMask: OptionSet {
     public typealias RawValue = UInt32
     public let rawValue: RawValue
@@ -22,12 +21,11 @@ public struct KeyboardModifierMask: OptionSet {
     public static let capsLock = KeyboardModifierMask(rawValue: 1 << 5)
     /// fn is down
     public static let function = KeyboardModifierMask(rawValue: 1 << 5)
-    
+
     public init(rawValue: UInt32) {
         self.rawValue = rawValue
     }
 }
-
 
 extension KeyboardModifierMask: CustomStringConvertible {
     public var description: String {

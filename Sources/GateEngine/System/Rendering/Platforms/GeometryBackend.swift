@@ -9,15 +9,15 @@ import Shaders
 
 @usableFromInline
 @MainActor internal protocol GeometryBackend: AnyObject {
-    nonisolated var primitive: DrawFlags.Primitive {get}
-    nonisolated var attributes: ContiguousArray<GeometryAttribute> {get}
+    nonisolated var primitive: DrawFlags.Primitive { get }
+    nonisolated var attributes: ContiguousArray<GeometryAttribute> { get }
     init(geometry: RawGeometry)
     init(geometry: RawGeometry, skin: Skin)
     init(lines: RawLines)
     init(points: RawPoints)
-#if GATEENGINE_DEBUG_RENDERING || DEBUG
+    #if GATEENGINE_DEBUG_RENDERING || DEBUG
     nonisolated func isDrawCommandValid(sharedWith backend: any GeometryBackend) -> Bool
-#endif
+    #endif
 }
 
 @usableFromInline
@@ -44,7 +44,9 @@ internal struct GeometryAttribute: Hashable {
 
 extension GeometryBackend {
     @inline(__always)
-    static func shaderAttributes(from geometries: ContiguousArray<Self>) -> ContiguousArray<Shaders.CodeGenerator.InputAttribute> {
+    static func shaderAttributes(from geometries: ContiguousArray<Self>) -> ContiguousArray<
+        Shaders.CodeGenerator.InputAttribute
+    > {
         var attributes: ContiguousArray<Shaders.CodeGenerator.InputAttribute> = []
         for geometryIndex in geometries.indices {
             let geometry = geometries[geometryIndex]

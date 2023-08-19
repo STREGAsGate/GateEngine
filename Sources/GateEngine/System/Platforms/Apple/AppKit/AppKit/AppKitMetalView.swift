@@ -18,20 +18,20 @@ internal class MetalView: MTKView, MTKViewDelegate {
         self.delegate = self
         self.setup()
     }
-    
+
     required init(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func setup() {
         self.colorPixelFormat = .bgra8Unorm
         if #available(macOS 10.12.2, *) {
             self.allowedTouchTypes = [.direct, .indirect]
-        }else{
+        } else {
             self.acceptsTouchEvents = true
         }
     }
-    
+
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         self.viewController.window?.window?.newPixelSize = Size2(size)
     }
@@ -51,13 +51,17 @@ internal class MetalView: MTKView, MTKViewDelegate {
             self.removeTrackingArea(trackingArea)
         }
 
-        let trackingArea = NSTrackingArea(rect: self.bounds,
-                                          options: [.activeAlways,
-                                                    .mouseEnteredAndExited,
-                                                    .mouseMoved,
-                                                    .cursorUpdate],
-                                          owner: self,
-                                          userInfo: nil)
+        let trackingArea = NSTrackingArea(
+            rect: self.bounds,
+            options: [
+                .activeAlways,
+                .mouseEnteredAndExited,
+                .mouseMoved,
+                .cursorUpdate,
+            ],
+            owner: self,
+            userInfo: nil
+        )
         self.addTrackingArea(trackingArea)
     }
 }

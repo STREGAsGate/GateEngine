@@ -117,6 +117,28 @@ public final class Vec4: ShaderValue {
         self.init(r: color.red, g: color.green, b: color.blue, a: color.alpha)
     }
     
+    public func documentIdentifierInputData() -> [Int] {
+        var values: [Int] = []
+        values.append(contentsOf: valueRepresentation.identifier)
+        values.append(contentsOf: valueType.identifier)
+        if let operation {
+            values.append(contentsOf: operation.documentIdentifierInputData())
+        }
+        if let _w {
+            values.append(contentsOf: _w.documentIdentifierInputData())
+        }
+        if let _x {
+            values.append(contentsOf: _x.documentIdentifierInputData())
+        }
+        if let _y {
+            values.append(contentsOf: _y.documentIdentifierInputData())
+        }
+        if let _z {
+            values.append(contentsOf: _z.documentIdentifierInputData())
+        }
+        return values
+    }
+    
     public func lerp(to dst: Vec4, factor: Scalar) -> Vec4 {
         return Vec4(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
     }

@@ -21,32 +21,32 @@ public struct RawLines {
     private var currentIndex: UInt16 {
         return UInt16(positions.count / 3)
     }
-    
+
     /** Creates a Line primitive element array object from triangles.
     - parameter boxEdgesOnly when true only the outermost vertices are kept. If the triangles make up a cube the result would be the cube's edges as lines.
      */
     public init(wireframeFrom triangles: [Triangle]) {
         func getSimilarVertex(to vertext: Vertex, from vertices: [Vertex]) -> Array<Vertex>.Index? {
-            return vertices.firstIndex(where: {$0.isSimilar(to: vertext)})
+            return vertices.firstIndex(where: { $0.isSimilar(to: vertext) })
         }
-        
+
         let inVertices: [Vertex] = triangles.vertices
         var outVertices: [Vertex] = []
-        
+
         var positions: [Position3] = []
         var colors: [Color] = []
         var indices: [UInt16] = []
-        
+
         var pairs: [(v1: Vertex, v2: Vertex)] = []
-        
+
         for triangle in triangles {
             func optimizedInsert(_ v1: Vertex) {
                 if let index = getSimilarVertex(to: v1, from: outVertices) {
                     indices.append(UInt16(index))
-                    
+
                     let vertex = inVertices[index]
                     colors[index] += vertex.color
-                }else{
+                } else {
                     insert(v1)
                 }
             }
@@ -59,7 +59,9 @@ public struct RawLines {
             func append(_ v1: Vertex, _ v2: Vertex) {
                 func pairExists() -> Bool {
                     for pair in pairs {
-                        if (pair.v1.isSimilar(to: v1) || pair.v1.isSimilar(to: v2)) && (pair.v2.isSimilar(to: v1) || pair.v2.isSimilar(to: v2)) {
+                        if (pair.v1.isSimilar(to: v1) || pair.v1.isSimilar(to: v2))
+                            && (pair.v2.isSimilar(to: v1) || pair.v2.isSimilar(to: v2))
+                        {
                             return true
                         }
                     }
@@ -81,12 +83,12 @@ public struct RawLines {
             insert(triangle.v3)
             insert(triangle.v1)
         }
-        
+
         var _positions: [Float] = []
         for position in positions {
             _positions.append(contentsOf: position.valuesArray())
         }
-        
+
         var _colors: [Float] = []
         for color in colors {
             _colors.append(contentsOf: [color.red, color.green, color.blue, color.alpha])
@@ -99,7 +101,7 @@ public struct RawLines {
 
     public init(boundingBoxFrom triangles: [Triangle]) {
         func getSimilarVertex(to vertext: Vertex, from vertices: [Vertex]) -> Array<Vertex>.Index? {
-            return vertices.firstIndex(where: {$0.isSimilar(to: vertext)})
+            return vertices.firstIndex(where: { $0.isSimilar(to: vertext) })
         }
 
         let inVertices: [Vertex] = triangles.vertices
@@ -118,7 +120,7 @@ public struct RawLines {
 
                     let vertex = inVertices[index]
                     colors[index] += vertex.color
-                }else{
+                } else {
                     insert(v1)
                 }
             }
@@ -131,7 +133,9 @@ public struct RawLines {
             func append(_ v1: Vertex, _ v2: Vertex) {
                 func pairExists() -> Bool {
                     for pair in pairs {
-                        if (pair.v1.isSimilar(to: v1) || pair.v1.isSimilar(to: v2)) && (pair.v2.isSimilar(to: v1) || pair.v2.isSimilar(to: v2)) {
+                        if (pair.v1.isSimilar(to: v1) || pair.v1.isSimilar(to: v2))
+                            && (pair.v2.isSimilar(to: v1) || pair.v2.isSimilar(to: v2))
+                        {
                             return true
                         }
                     }
@@ -172,37 +176,37 @@ public struct RawLines {
         for position in positions {
             _positions.append(contentsOf: position.valuesArray())
         }
-        
+
         var _colors: [Float] = []
         for color in colors {
             _colors.append(contentsOf: [color.red, color.green, color.blue, color.alpha])
         }
-        
+
         self.positions = _positions
         self.colors = _colors
         self.indices = indices
     }
 }
 
-public extension RawLines {// 2D
+extension RawLines {  // 2D
     @_transparent
-    mutating func insert(_ point: Position2, color: Color) {
+    public mutating func insert(_ point: Position2, color: Color) {
         let point = Position3(point.x, point.y, 0)
         self.insert(point, color: color)
     }
 }
 
-public extension RawLines {// 3D
-    mutating func insert(_ point: Position3, color: Color) {
+extension RawLines {  // 3D
+    public mutating func insert(_ point: Position3, color: Color) {
         let index = currentIndex
         if indices.count % 2 == 1 {
             positions.append(contentsOf: point.valuesArray())
             colors.append(contentsOf: color.valuesArray())
             indices.append(index)
-        }else {
+        } else {
             if lineStartIndex == nil {
                 self.lineStartIndex = index
-            }else{
+            } else {
                 indices.append(indices.last!)
             }
 
@@ -213,22 +217,22 @@ public extension RawLines {// 3D
     }
 
     /// Add a segment to from the current point to the lines first point
-    mutating func closeLine() {
-        guard indices.isEmpty == false else {return}
-        guard let index = lineStartIndex else {return}
+    public mutating func closeLine() {
+        guard indices.isEmpty == false else { return }
+        guard let index = lineStartIndex else { return }
         indices.append(indices.last!)
         indices.append(index)
     }
 
-    mutating func endLine() {
-        guard indices.isEmpty == false else {return}
+    public mutating func endLine() {
+        guard indices.isEmpty == false else { return }
         if indices.count % 2 == 1 {
             indices.removeLast()
         }
         lineStartIndex = nil
     }
-    
-    mutating func becomePixelPerfect() {
+
+    public mutating func becomePixelPerfect() {
         for index in stride(from: 0, through: positions.count - 1, by: 3) {
             for index in index ..< index + 1 {
                 positions[index] = floor(positions[index]) + 0.5
@@ -238,9 +242,10 @@ public extension RawLines {// 3D
 }
 
 extension RawLines: Equatable {
-    public static func ==(lhs: Self, rhs: Self) -> Bool {
-        guard lhs.indices.count == rhs.indices.count else {return false}
-        return lhs.positions == rhs.positions && lhs.colors == rhs.colors && lhs.indices == rhs.indices
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        guard lhs.indices.count == rhs.indices.count else { return false }
+        return lhs.positions == rhs.positions && lhs.colors == rhs.colors
+            && lhs.indices == rhs.indices
     }
 }
 

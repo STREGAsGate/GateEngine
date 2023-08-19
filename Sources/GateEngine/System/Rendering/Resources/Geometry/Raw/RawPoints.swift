@@ -26,8 +26,8 @@ public struct RawPoints: Codable, Equatable, Hashable {
     }
 }
 
-public extension RawPoints {// 3D
-    init(points: [Position3], color: Color) {
+extension RawPoints {  // 3D
+    public init(points: [Position3], color: Color) {
         var positions: [Float] = []
         positions.reserveCapacity(points.count * 3)
         var colors: [Float] = []
@@ -47,9 +47,9 @@ public extension RawPoints {// 3D
     /** Creates a Line primitive element array object from triangles.
     - parameter boxEdgesOnly when true only the outermost vertices are kept. If the triangles make up a cube the result would be the cube's edges as lines.
      */
-    init(pointCloudFrom triangles: [Triangle]) {
+    public init(pointCloudFrom triangles: [Triangle]) {
         func getSimilarVertex(to vertext: Vertex, from vertices: [Vertex]) -> Array<Vertex>.Index? {
-            return vertices.firstIndex(where: {$0.isSimilar(to: vertext)})
+            return vertices.firstIndex(where: { $0.isSimilar(to: vertext) })
         }
 
         let inVertices: [Vertex] = triangles.vertices
@@ -68,7 +68,7 @@ public extension RawPoints {// 3D
 
                     let vertex = inVertices[index]
                     colors[index] += vertex.color
-                }else{
+                } else {
                     insert(v1)
                 }
             }
@@ -81,7 +81,9 @@ public extension RawPoints {// 3D
             func append(_ v1: Vertex, _ v2: Vertex) {
                 func pairExists() -> Bool {
                     for pair in pairs {
-                        if (pair.v1.isSimilar(to: v1) || pair.v1.isSimilar(to: v2)) && (pair.v2.isSimilar(to: v1) || pair.v2.isSimilar(to: v2)) {
+                        if (pair.v1.isSimilar(to: v1) || pair.v1.isSimilar(to: v2))
+                            && (pair.v2.isSimilar(to: v1) || pair.v2.isSimilar(to: v2))
+                        {
                             return true
                         }
                     }
@@ -93,7 +95,7 @@ public extension RawPoints {// 3D
                     pairs.append((v1, v2))
                 }
             }
-            
+
             insert(triangle.v1)
             insert(triangle.v2)
 
@@ -103,12 +105,12 @@ public extension RawPoints {// 3D
             insert(triangle.v3)
             insert(triangle.v1)
         }
-        
+
         var _positions: [Float] = []
         for position in positions {
             _positions.append(contentsOf: position.valuesArray())
         }
-        
+
         var _colors: [Float] = []
         for color in colors {
             _colors.append(contentsOf: [color.red, color.green, color.blue, color.alpha])
@@ -119,22 +121,22 @@ public extension RawPoints {// 3D
         self.indices = indices
     }
 
-    mutating func insert(_ point: Position3, color: Color) {
+    public mutating func insert(_ point: Position3, color: Color) {
         positions.append(contentsOf: point.valuesArray())
         colors.append(contentsOf: color.valuesArray())
         indices.append(UInt16(indices.count))
     }
 }
 
-public extension RawPoints {// 2D
+extension RawPoints {  // 2D
     @_transparent
-    init(points: [Position2], color: Color) {
-        let points = points.map({Position3($0.x, $0.y, 0)})
+    public init(points: [Position2], color: Color) {
+        let points = points.map({ Position3($0.x, $0.y, 0) })
         self.init(points: points, color: color)
     }
 
     @_transparent
-    mutating func insert(_ point: Position2, color: Color) {
+    public mutating func insert(_ point: Position2, color: Color) {
         let point = Position3(point.x, point.y, 0)
         self.insert(point, color: color)
     }

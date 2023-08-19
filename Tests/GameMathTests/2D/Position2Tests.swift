@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import GameMath
 
 final class Position2Tests: XCTestCase {
@@ -21,12 +22,12 @@ final class Position2Tests: XCTestCase {
     }
 
     func testDistanceFrom() {
-        do {// X axis
+        do {  // X axis
             let src = Position2(-5, 0)
             let dst = Position2(5, 0)
             XCTAssertEqual(src.distance(from: dst), 10)
         }
-        do {// Y axis
+        do {  // Y axis
             let src = Position2(0, -5)
             let dst = Position2(0, 5)
             XCTAssertEqual(src.distance(from: dst), 10)
@@ -52,7 +53,7 @@ final class Position2Tests: XCTestCase {
     }
 
     func testDivision() {
-        do {// Integer
+        do {  // Integer
             var lhs = Position2(2, 2)
             let rhs = Position2(2, 2)
             XCTAssertEqual(lhs / rhs, Position2(1, 1))
@@ -60,7 +61,7 @@ final class Position2Tests: XCTestCase {
             lhs /= rhs
             XCTAssertEqual(lhs, Position2(1, 1))
         }
-        do {// FloatingPoint
+        do {  // FloatingPoint
             var lhs = Position2(2.5, 2.5)
             let rhs = Position2(2.5, 2.5)
             XCTAssertEqual(lhs / rhs, Position2(1, 1))

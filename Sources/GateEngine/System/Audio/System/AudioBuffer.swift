@@ -6,25 +6,25 @@
  */
 
 internal protocol AudioBufferBackend: AnyObject {
-    var duration: Double {get}
+    var duration: Double { get }
     init(path: String, context: AudioContext, audioBuffer: AudioBuffer)
 }
 
 public class AudioBuffer: OldResource {
     internal var reference: (any AudioBufferBackend)! = nil
-    
+
     internal init(path: String, context: AudioContext) {
         super.init()
         self.reference = getBackend(path: path, context: context, audioBuffer: self)
     }
-    
+
     var duration: Double {
         if state == .ready {
             return reference.duration
         }
         return 0
     }
-    
+
     public struct Format: Equatable, CustomStringConvertible {
         public enum BitRate {
             case uint8
@@ -36,7 +36,7 @@ public class AudioBuffer: OldResource {
         public enum Channels: Equatable {
             case mono
             case stereo(interleved: Bool)
-            
+
             var count: Int {
                 return self == .mono ? 1 : 2
             }
@@ -47,14 +47,19 @@ public class AudioBuffer: OldResource {
         var channels: Channels
         var bitRate: BitRate
         var sampleRate: Double
-        
+
         public init(channels: Channels, bitRate: BitRate, sampleRate: Double) {
             self.channels = channels
             self.bitRate = bitRate
             self.sampleRate = sampleRate
         }
-        
-        public func bySetting(channels: Channels? = nil, bitRate: BitRate? = nil, sampleRate: Double? = nil, interlevedIfStereo interleved: Bool? = nil) -> Self {
+
+        public func bySetting(
+            channels: Channels? = nil,
+            bitRate: BitRate? = nil,
+            sampleRate: Double? = nil,
+            interlevedIfStereo interleved: Bool? = nil
+        ) -> Self {
             var copy = self
             if let channels = channels {
                 copy.channels = channels
@@ -72,7 +77,7 @@ public class AudioBuffer: OldResource {
             }
             return copy
         }
-        
+
         public var description: String {
             var out = ""
             switch bitRate {
@@ -98,7 +103,9 @@ public class AudioBuffer: OldResource {
 }
 
 @_transparent
-fileprivate func getBackend(path: String, context: AudioContext, audioBuffer: AudioBuffer) -> any AudioBufferBackend {
+private func getBackend(path: String, context: AudioContext, audioBuffer: AudioBuffer)
+    -> any AudioBufferBackend
+{
     #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
     return CABufferReference(path: path, context: context, audioBuffer: audioBuffer)
     #elseif os(WASI)

@@ -7,13 +7,15 @@
 
 extension ResourceManager {
     public func addTileSetImporter(_ type: any TileSetImporter.Type) {
-        guard importers.tileSetImporters.contains(where: {$0 == type}) == false else {return}
+        guard importers.tileSetImporters.contains(where: { $0 == type }) == false else { return }
         importers.tileSetImporters.insert(type, at: 0)
     }
 
     fileprivate func importerForFileType(_ file: String) -> (any TileSetImporter)? {
         for type in self.importers.tileSetImporters {
-            if type.supportedFileExtensions().contains(where: {$0.caseInsensitiveCompare(file) == .orderedSame}) {
+            if type.supportedFileExtensions().contains(where: {
+                $0.caseInsensitiveCompare(file) == .orderedSame
+            }) {
                 return type.init()
             }
         }
@@ -46,20 +48,29 @@ extension TileSet {
         guard let fileExtension = path.components(separatedBy: ".").last else {
             throw GateEngineError.failedToLoad("Unknown file type.")
         }
-        guard let importer: any TileSetImporter = await Game.shared.resourceManager.importerForFileType(fileExtension) else {
+        guard
+            let importer: any TileSetImporter = await Game.shared.resourceManager
+                .importerForFileType(fileExtension)
+        else {
             throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
         }
 
         do {
             let data = try await Game.shared.platform.loadResource(from: path)
-            let copy = try await importer.process(data: data, baseURL: URL(string: path)!.deletingLastPathComponent(), options: options)
-            self.init(textureName: copy.textureName,
-                      textureSize: copy.textureSize,
-                      count: copy.count,
-                      columns: copy.columns,
-                      tileSize: copy.tileSize,
-                      tiles: copy.tiles)
-        }catch{
+            let copy = try await importer.process(
+                data: data,
+                baseURL: URL(string: path)!.deletingLastPathComponent(),
+                options: options
+            )
+            self.init(
+                textureName: copy.textureName,
+                textureSize: copy.textureSize,
+                count: copy.count,
+                columns: copy.columns,
+                tileSize: copy.tileSize,
+                tiles: copy.tiles
+            )
+        } catch {
             throw GateEngineError(decodingError: error)
         }
     }

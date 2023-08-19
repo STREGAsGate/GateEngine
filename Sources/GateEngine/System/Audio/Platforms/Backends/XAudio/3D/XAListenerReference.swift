@@ -11,7 +11,7 @@ import XAudio29
 
 internal class XAListenerReference: SpatialAudioListenerBackend {
     init() {}
-    
+
     func setPosition(_ position: Position3) {
         fatalError()
     }

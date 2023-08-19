@@ -12,14 +12,14 @@ public struct Skin: Hashable {
     public let jointIndices: [UInt32]
     public let jointWeights: [Float]
     public let bindShape: Matrix4x4
-    
+
     public init(joints: [Joint], indices: [UInt32], weights: [Float], bindShape: Matrix4x4) {
         self.joints = joints
         self.jointIndices = indices
         self.jointWeights = weights
         self.bindShape = bindShape
     }
-    
+
     public struct Joint: Hashable {
         public let id: Int
         public let inverseBindMatrix: Matrix4x4
@@ -27,7 +27,7 @@ public struct Skin: Hashable {
             self.id = id
             self.inverseBindMatrix = inverseBindMatrix
         }
-        
+
         public func hash(into hasher: inout Hasher) {
             hasher.combine(id)
         }

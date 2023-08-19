@@ -7,10 +7,10 @@
 
 extension ResourceManager {
     public func addSkinImporter(_ type: any SkinImporter.Type) {
-        guard importers.skinImporters.contains(where: {$0 == type}) == false else {return}
+        guard importers.skinImporters.contains(where: { $0 == type }) == false else { return }
         importers.skinImporters.insert(type, at: 0)
     }
-    
+
     fileprivate func importerForFile(_ file: URL) -> (any SkinImporter)? {
         for type in self.importers.skinImporters {
             if type.canProcessFile(file) {
@@ -42,8 +42,8 @@ public protocol SkinImporter: AnyObject {
     static func canProcessFile(_ file: URL) -> Bool
 }
 
-public extension SkinImporter {
-    func loadData(path: String, options: SkinImporterOptions) async throws -> Data {
+extension SkinImporter {
+    public func loadData(path: String, options: SkinImporterOptions) async throws -> Data {
         return try await Game.shared.platform.loadResource(from: path)
     }
 }
@@ -51,14 +51,20 @@ public extension SkinImporter {
 extension Skin {
     public init(path: String, options: SkinImporterOptions = .none) async throws {
         let file = URL(fileURLWithPath: path)
-        guard let importer: any SkinImporter = await Game.shared.resourceManager.importerForFile(file) else {
+        guard
+            let importer: any SkinImporter = await Game.shared.resourceManager.importerForFile(file)
+        else {
             throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
         }
-        
+
         do {
             let data = try await importer.loadData(path: path, options: options)
-            self = try await importer.process(data: data, baseURL: URL(string: path)!.deletingLastPathComponent(), options: options)
-        }catch{
+            self = try await importer.process(
+                data: data,
+                baseURL: URL(string: path)!.deletingLastPathComponent(),
+                options: options
+            )
+        } catch {
             throw GateEngineError(decodingError: error)
         }
     }

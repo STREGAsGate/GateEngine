@@ -11,12 +11,12 @@ import XAudio29
 
 internal class XASourceReference: SpatialAudioSourceReference {
     unowned let mixerReference: XASpacialMixerReference
-    
+
     init(_ mixerReference: XASpacialMixerReference) {
         self.mixerReference = mixerReference
-        
+
     }
-    
+
     var repeats: Bool = false
     var volume: Float {
         get {
@@ -34,7 +34,7 @@ internal class XASourceReference: SpatialAudioSourceReference {
             fatalError()
         }
     }
-    
+
     func play() {
         fatalError()
     }
@@ -44,11 +44,11 @@ internal class XASourceReference: SpatialAudioSourceReference {
     func stop() {
         fatalError()
     }
-    
+
     func setPosition(_ position: Position3) {
         fatalError()
     }
-    
+
     private weak var buffer: XABufferReference?
 
     func setBuffer(_ buffer: AudioBuffer) {

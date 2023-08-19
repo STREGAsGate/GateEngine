@@ -74,6 +74,25 @@ public final class Vec3: ShaderValue {
         self._z = z
     }
     
+    public func documentIdentifierInputData() -> [Int] {
+        var values: [Int] = []
+        values.append(contentsOf: valueRepresentation.identifier)
+        values.append(contentsOf: valueType.identifier)
+        if let operation {
+            values.append(contentsOf: operation.documentIdentifierInputData())
+        }
+        if let _x {
+            values.append(contentsOf: _x.documentIdentifierInputData())
+        }
+        if let _y {
+            values.append(contentsOf: _y.documentIdentifierInputData())
+        }
+        if let _z {
+            values.append(contentsOf: _z.documentIdentifierInputData())
+        }
+        return values
+    }
+    
     public func lerp(to dst: Vec3, factor: Scalar) -> Vec3 {
         return Vec3(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
     }

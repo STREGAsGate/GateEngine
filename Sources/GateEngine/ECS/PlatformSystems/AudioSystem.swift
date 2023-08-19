@@ -10,19 +10,19 @@ import GameMath
 internal class AudioSystem: PlatformSystem {
     let audioContext = AudioContext()
     var listenerID: ObjectIdentifier? = nil
-    
-    var musicMixers: [Music.Kind:AudioMixer] = [:]
+
+    var musicMixers: [Music.Kind: AudioMixer] = [:]
     var musicPlaying: ContiguousArray<PlayingMusic> = []
     var musicWaitingToPlay: ContiguousArray<WaitingMusic> = []
     var unusedMusicMixers: ContiguousArray<AudioMixer> = []
-    var unusedMusicTracks: [ObjectIdentifier:[AudioTrack]] = [:]
+    var unusedMusicTracks: [ObjectIdentifier: [AudioTrack]] = [:]
 
-    var spatialMixers: [Sound.Kind:SpatialAudioMixer] = [:]
+    var spatialMixers: [Sound.Kind: SpatialAudioMixer] = [:]
     var soundsPlaying: ContiguousArray<PlayingSound> = []
     var soundsWaitingToPlay: ContiguousArray<WaitingSound> = []
-    var unusedSpatialSources: [ObjectIdentifier:[SpatialAudioSource]] = [:]
-    
-    var cache: [String:AudioBuffer] = [:]
+    var unusedSpatialSources: [ObjectIdentifier: [SpatialAudioSource]] = [:]
+
+    var cache: [String: AudioBuffer] = [:]
     func buffer(for path: String) -> AudioBuffer {
         if let existing = cache[path] {
             return existing
@@ -32,16 +32,16 @@ internal class AudioSystem: PlatformSystem {
         return new
     }
     override func setup(game: Game, input: HID) async {
-        
+
     }
-    
+
     override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         updateSounds(game: game, withTimePassed: deltaTime)
         updateMusic(withTimePassed: deltaTime)
     }
 
-    override class var phase: PlatformSystem.Phase {.postDeferred}
-    override class func sortOrder() -> PlatformSystemSortOrder? {.audioSystem}
+    override class var phase: PlatformSystem.Phase { .postDeferred }
+    override class func sortOrder() -> PlatformSystemSortOrder? { .audioSystem }
 }
 
 // MARK: - Music
@@ -50,9 +50,9 @@ extension AudioSystem {
     func updateMusic(withTimePassed deltaTime: Float) {
         for index in musicPlaying.indices.reversed() {
             let music = musicPlaying[index]
-            
+
             music.update(deltaTime)
-            
+
             if music.isDone, case .failed(_) = music.buffer.state {
                 let playing = musicPlaying.remove(at: index)
                 markUnusedMusicTrack(from: playing)
@@ -64,15 +64,17 @@ extension AudioSystem {
             if waitingToPlay.handle._stop == false {
                 let mixer = musicMixer(for: waitingToPlay.kind)
                 if let track = musicTrack(for: mixer) {
-                    let playing = PlayingMusic(music: waitingToPlay.music,
-                                               mixerID: ObjectIdentifier(mixer),
-                                               track: track,
-                                               buffer: buffer(for: waitingToPlay.music.path),
-                                               accumulatedTime: 0)
-                    
+                    let playing = PlayingMusic(
+                        music: waitingToPlay.music,
+                        mixerID: ObjectIdentifier(mixer),
+                        track: track,
+                        buffer: buffer(for: waitingToPlay.music.path),
+                        accumulatedTime: 0
+                    )
+
                     track.repeats = waitingToPlay.handle.repeats
                     playing.pendingAction = waitingToPlay.handle._pendingAction
-                    
+
                     musicPlaying.append(playing)
                     waitingToPlay.handle.playing = playing
                 }
@@ -92,7 +94,9 @@ extension AudioSystem {
     func musicTrack(for mixer: AudioMixer) -> AudioTrack? {
         #if !os(WASI)
         let mixerID = ObjectIdentifier(mixer)
-        if unusedMusicTracks[mixerID]?.isEmpty == false, let existing = unusedMusicTracks[mixerID]?.removeLast() {
+        if unusedMusicTracks[mixerID]?.isEmpty == false,
+            let existing = unusedMusicTracks[mixerID]?.removeLast()
+        {
             return existing
         }
         #endif
@@ -113,7 +117,7 @@ extension AudioSystem {
         enum Action {
             case fadeOut(duration: Float)
             case fadeIn(duration: Float, endVolume: Float = 1)
-//            case crossFade(duration: Float)
+            //            case crossFade(duration: Float)
         }
         var pendingAction: Action? = nil
         var currentAction: Action? = nil
@@ -151,7 +155,10 @@ extension AudioSystem {
                 if bufferDuration < actionDuration {
                     actionDuration = bufferDuration
                 }
-                track.volume = actionStartVolume.interpolated(to: actionEndVolume, .linear(currentActionAccumulator / actionDuration))
+                track.volume = actionStartVolume.interpolated(
+                    to: actionEndVolume,
+                    .linear(currentActionAccumulator / actionDuration)
+                )
                 if currentActionAccumulator > actionDuration {
                     self.currentAction = nil
                     if case .fadeOut(_) = currentAction {
@@ -161,7 +168,7 @@ extension AudioSystem {
             }
             currentActionAccumulator += deltaTime
         }
-        
+
         let music: Music
         let mixerID: ObjectIdentifier
         let track: AudioTrack
@@ -170,25 +177,31 @@ extension AudioSystem {
         var duration: Double {
             return buffer.duration
         }
-        
+
         var forceRemove: Bool = false
         var isDone: Bool {
-            guard forceRemove == false else {return true}
-            guard track.repeats == false else {return false}
+            guard forceRemove == false else { return true }
+            guard track.repeats == false else { return false }
             return accumulatedTime > duration
         }
-        
-        init(music: Music, mixerID: ObjectIdentifier, track: AudioTrack, buffer: AudioBuffer, accumulatedTime: Double) {
+
+        init(
+            music: Music,
+            mixerID: ObjectIdentifier,
+            track: AudioTrack,
+            buffer: AudioBuffer,
+            accumulatedTime: Double
+        ) {
             self.music = music
             self.mixerID = mixerID
             self.track = track
             self.buffer = buffer
             self.accumulatedTime = accumulatedTime
         }
-        
+
         @inlinable
         func update(_ deltaTime: Float) {
-            guard buffer.state == .ready else {return}
+            guard buffer.state == .ready else { return }
             if accumulatedTime == 0 {
                 Task(priority: .medium) {
                     track.setBuffer(buffer)
@@ -199,7 +212,7 @@ extension AudioSystem {
             self.accumulatedTime += Double(deltaTime)
         }
     }
-    
+
     struct WaitingMusic {
         let music: Music
         let kind: Music.Kind
@@ -218,9 +231,9 @@ extension AudioSystem {
         updateListener(game: game)
         for index in soundsPlaying.indices.reversed() {
             let sound = soundsPlaying[index]
-            
+
             sound.update(deltaTime)
-                        
+
             var remove = sound.isDone
             if case .failed(_) = sound.buffer.state {
                 remove = true
@@ -238,23 +251,25 @@ extension AudioSystem {
                 // If the entity doesn't exist anymore skip playing
                 let mixer = spatialMixer(for: waitingToPlay.kind)
                 if let source = spacialSource(for: mixer) {
-                    let playing = PlayingSound(sound: waitingToPlay.sound,
-                                               mixerID: ObjectIdentifier(mixer),
-                                               source: source,
-                                               entity: waitingToPlay.entity,
-                                               buffer: buffer(for: waitingToPlay.sound.path),
-                                               accumulatedTime: 0)
-                    
+                    let playing = PlayingSound(
+                        sound: waitingToPlay.sound,
+                        mixerID: ObjectIdentifier(mixer),
+                        source: source,
+                        entity: waitingToPlay.entity,
+                        buffer: buffer(for: waitingToPlay.sound.path),
+                        accumulatedTime: 0
+                    )
+
                     source.repeats = waitingToPlay.handle.repeats
                     playing.pendingAction = waitingToPlay.handle._pendingAction
-                    
+
                     soundsPlaying.append(playing)
                     waitingToPlay.handle.playing = playing
                 }
             }
         }
     }
-    
+
     @inlinable
     func spatialMixer(for kind: Sound.Kind) -> SpatialAudioMixer {
         if let existing = spatialMixers[kind] {
@@ -268,7 +283,9 @@ extension AudioSystem {
     func spacialSource(for mixer: SpatialAudioMixer) -> SpatialAudioSource? {
         #if !os(WASI)
         let mixerID = ObjectIdentifier(mixer)
-        if unusedSpatialSources[mixerID]?.isEmpty == false, let existing = unusedSpatialSources[mixerID]?.removeLast() {
+        if unusedSpatialSources[mixerID]?.isEmpty == false,
+            let existing = unusedSpatialSources[mixerID]?.removeLast()
+        {
             return existing
         }
         #endif
@@ -285,7 +302,7 @@ extension AudioSystem {
         unusedSpatialSources[mixerID] = sources
         #endif
     }
-    
+
     class PlayingSound {
         enum Action {
             case fadeOut(duration: Float)
@@ -296,7 +313,7 @@ extension AudioSystem {
         var currentActionAccumulator: Float = 0
         var actionStartVolume: Float = 0
         var actionEndVolume: Float = 1
-        
+
         @inlinable
         func processAction(deltaTime: Float) {
             if let pendingAction {
@@ -328,7 +345,10 @@ extension AudioSystem {
                 if bufferDuration < actionDuration {
                     actionDuration = bufferDuration
                 }
-                source.volume = actionStartVolume.interpolated(to: actionEndVolume, .linear(currentActionAccumulator / actionDuration))
+                source.volume = actionStartVolume.interpolated(
+                    to: actionEndVolume,
+                    .linear(currentActionAccumulator / actionDuration)
+                )
                 if currentActionAccumulator > actionDuration {
                     self.currentAction = nil
                     if case .fadeOut(_) = currentAction {
@@ -338,7 +358,7 @@ extension AudioSystem {
             }
             currentActionAccumulator += deltaTime
         }
-        
+
         let sound: Sound
         let mixerID: ObjectIdentifier
         let source: SpatialAudioSource
@@ -349,16 +369,23 @@ extension AudioSystem {
         public var duration: Double {
             return buffer.duration
         }
-        
+
         var forceRemove: Bool = false
         @inlinable
         public var isDone: Bool {
-            guard forceRemove == false else {return true}
-            guard source.repeats == false else {return false}
+            guard forceRemove == false else { return true }
+            guard source.repeats == false else { return false }
             return accumulatedTime > duration
         }
-        
-        init(sound: Sound, mixerID: ObjectIdentifier, source: SpatialAudioSource, entity: Entity?, buffer: AudioBuffer, accumulatedTime: Double) {
+
+        init(
+            sound: Sound,
+            mixerID: ObjectIdentifier,
+            source: SpatialAudioSource,
+            entity: Entity?,
+            buffer: AudioBuffer,
+            accumulatedTime: Double
+        ) {
             self.sound = sound
             self.mixerID = mixerID
             self.source = source
@@ -366,10 +393,10 @@ extension AudioSystem {
             self.buffer = buffer
             self.accumulatedTime = accumulatedTime
         }
-        
+
         @inlinable
         @MainActor func update(_ deltaTime: Float) {
-            guard buffer.state == .ready else {return}
+            guard buffer.state == .ready else { return }
             if accumulatedTime == 0 {
                 Task(priority: .medium) {
                     source.setBuffer(buffer)
@@ -378,16 +405,16 @@ extension AudioSystem {
             }
             if let position = entity?.position3 {
                 source.setPosition(position)
-            }else if let camera = Game.shared.cameraEntity {
+            } else if let camera = Game.shared.cameraEntity {
                 source.setPosition(camera.position3.moved(0.001, toward: camera.rotation.forward))
-            }else{
+            } else {
                 source.setPosition(Position3(0, 0, -0.001))
             }
             self.processAction(deltaTime: deltaTime)
             self.accumulatedTime += Double(deltaTime)
         }
     }
-    
+
     struct WaitingSound {
         let sound: Sound
         let kind: Sound.Kind
@@ -420,30 +447,30 @@ extension AudioSystem {
     }
 }
 
-public extension Entity {
+extension Entity {
     /**
      Makes the entity a tracked object representing the "ears" or thing listening to Sounds.
-     
+
      This will default to the active camera and will automatically reset to the active camera if the Entity being tracked disappears.
      */
-    func becomeListener() {
-        Task(priority: .medium) {@MainActor in
+    public func becomeListener() {
+        Task(priority: .medium) { @MainActor in
             Game.shared.system(ofType: AudioSystem.self).listenerID = self.id
         }
     }
-    
-//    @discardableResult
-//    func playSound(_ sound: Sound, as kind: Sound.Kind = .soundEffect, config: ((_ sound: ActiveSound)->())? = nil) -> ActiveSound {
-//        let active = ActiveSound()
-//        Task {@MainActor in
-//            Game.shared.system(ofType: AudioSystem.self).queueSound(sound, as: kind, entity: self, handle: active)
-//        }
-//        config?(active)
-//        return active
-//    }
+
+    //    @discardableResult
+    //    func playSound(_ sound: Sound, as kind: Sound.Kind = .soundEffect, config: ((_ sound: ActiveSound)->())? = nil) -> ActiveSound {
+    //        let active = ActiveSound()
+    //        Task {@MainActor in
+    //            Game.shared.system(ofType: AudioSystem.self).queueSound(sound, as: kind, entity: self, handle: active)
+    //        }
+    //        config?(active)
+    //        return active
+    //    }
 }
 
-@MainActor internal extension Game {
+@MainActor extension Game {
     @_transparent
     var audio: AudioSystem {
         return system(ofType: AudioSystem.self)

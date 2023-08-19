@@ -8,14 +8,14 @@ import GameMath
 
 @usableFromInline
 internal protocol SpatialAudioSourceReference: AnyObject {
-    var repeats: Bool {get set}
-    var volume: Float {get set}
-    var pitch: Float {get set}
-    
+    var repeats: Bool { get set }
+    var volume: Float { get set }
+    var pitch: Float { get set }
+
     func play()
     func pause()
     func stop()
-    
+
     func setPosition(_ position: Position3)
     func setBuffer(_ buffer: AudioBuffer)
 }
@@ -24,13 +24,13 @@ public class SpatialAudioSource {
     internal unowned let mixer: SpatialAudioMixer
     @usableFromInline
     internal let reference: any SpatialAudioSourceReference
-    
+
     @usableFromInline
     internal init(_ mixer: SpatialAudioMixer) {
         self.mixer = mixer
         self.reference = mixer.reference.createSourceReference()
     }
-    
+
     @inlinable
     public var repeats: Bool {
         get {
@@ -58,7 +58,7 @@ public class SpatialAudioSource {
             reference.pitch = newValue
         }
     }
-    
+
     @inlinable
     public func play() {
         reference.play()
@@ -71,12 +71,12 @@ public class SpatialAudioSource {
     public func stop() {
         reference.stop()
     }
-    
+
     @inlinable
     public func setPosition(_ position: Position3) {
         reference.setPosition(position)
     }
-    
+
     @inlinable
     public func setBuffer(_ buffer: AudioBuffer) {
         reference.setBuffer(buffer)

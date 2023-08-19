@@ -15,14 +15,14 @@ final class X11Window: WindowBacking {
     }
     let glxContext: GLXContext
     var state: Window.State = .hidden
-    
+
     // Stoted Metadata
     var pointSafeAreaInsets: Insets = .zero
     var pixelSafeAreaInsets: Insets = .zero
     var pointSize: Size2 = Size2(640, 480)
     var pixelSize: Size2 = Size2(640, 480)
     var interfaceScaleFactor: Float = 1
-    
+
     @preconcurrency @MainActor func updateStoredMetaData(pixelSize: Size2? = nil) {
         let resourceString: UnsafeMutablePointer<CChar>? = XResourceManagerString(xDisplay)
         XrmInitialize() /* Need to initialize the DB before calling Xrm* functions */
@@ -30,37 +30,56 @@ final class X11Window: WindowBacking {
         var value: XrmValue = XrmValue()
         var type: UnsafeMutablePointer<CChar>? = nil
 
-        if (XrmGetResource(db, "Xft.dpi", "String", &type, &value) == True) {
+        if XrmGetResource(db, "Xft.dpi", "String", &type, &value) == True {
             if let addr: XPointer = value.addr {
                 let userDPI: Float = Float(atof(addr))
-                let screenDPIX: Float = Float(DisplayWidth_Ext(self.xDisplay, Self.xScreen)) / (Float(DisplayWidthMM_Ext(self.xDisplay, Self.xScreen)) / 25.4)
+                let screenDPIX: Float =
+                    Float(DisplayWidth_Ext(self.xDisplay, Self.xScreen))
+                    / (Float(DisplayWidthMM_Ext(self.xDisplay, Self.xScreen)) / 25.4)
                 self.interfaceScaleFactor = userDPI / screenDPIX
             }
         }
 
-        self.pixelSize = pixelSize ?? {
-            var xwa: XWindowAttributes = XWindowAttributes()
-            XGetWindowAttributes(xDisplay, xWindow, &xwa)
-            return Size2(Float(xwa.width), Float(xwa.height))
-        }()
+        self.pixelSize =
+            pixelSize
+            ?? {
+                var xwa: XWindowAttributes = XWindowAttributes()
+                XGetWindowAttributes(xDisplay, xWindow, &xwa)
+                return Size2(Float(xwa.width), Float(xwa.height))
+            }()
         self.pointSize = self.pixelSize / self.interfaceScaleFactor
         self.window.newPixelSize = self.pixelSize
 
     }
-    
+
     required init(window: Window) {
         self.window = window
 
         let xRoot: LinuxSupport.Window = XRootWindow(Self.xDisplay, Self.xScreen)
-        
+
         let vi: XVisualInfo = Self.visualInfo
         var swa: XSetWindowAttributes = XSetWindowAttributes()
         let cmap: Colormap = XCreateColormap(Self.xDisplay, xRoot, vi.visual, AllocNone)
         swa.colormap = cmap
-        swa.event_mask = (StructureNotifyMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask)
-        
-        self.xWindow = XCreateWindow(Self.xDisplay, xRoot, 0, 0, UInt32(640), UInt32(480), 0, vi.depth, UInt32(InputOutput), vi.visual, UInt(CWColormap | CWEventMask), &swa)
-         
+        swa.event_mask =
+            (StructureNotifyMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask
+                | ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask)
+
+        self.xWindow = XCreateWindow(
+            Self.xDisplay,
+            xRoot,
+            0,
+            0,
+            UInt32(640),
+            UInt32(480),
+            0,
+            vi.depth,
+            UInt32(InputOutput),
+            vi.visual,
+            UInt(CWColormap | CWEventMask),
+            &swa
+        )
+
         glxContext = Self.sharedContext
 
         glXMakeCurrent(xDisplay, xWindow, glxContext)
@@ -69,10 +88,10 @@ final class X11Window: WindowBacking {
 
         updateStoredMetaData()
     }
-    
+
     lazy var xic: XIC = XCreateIC(XOpenIM(xDisplay, nil, nil, nil), xWindow)
     private var previousKeyEvent: XKeyEvent = XKeyEvent()
-    
+
     @MainActor func processEvent(_ event: XEvent) {
         @_transparent
         func isRepeatedKey(_ event: XKeyEvent) -> Bool {
@@ -90,65 +109,81 @@ final class X11Window: WindowBacking {
         case KeyPress:
             let event: XKeyEvent = event.xkey
             previousKeyEvent = event
-            _ = Game.shared.hid.keyboardDidHandle(key: keyFromEvent(event),
-                                                  character: characterFromEvent(event),
-                                                  modifiers: modifierKeyFromState(Int32(event.state)),
-                                                  isRepeat: isRepeatedKey(event),
-                                                  event: .keyDown)
+            _ = Game.shared.hid.keyboardDidHandle(
+                key: keyFromEvent(event),
+                character: characterFromEvent(event),
+                modifiers: modifierKeyFromState(Int32(event.state)),
+                isRepeat: isRepeatedKey(event),
+                event: .keyDown
+            )
         case KeyRelease:
             let event: XKeyEvent = event.xkey
             previousKeyEvent = event
-            _ = Game.shared.hid.keyboardDidHandle(key: keyFromEvent(event),
-                                                  character: characterFromEvent(event),
-                                                  modifiers: modifierKeyFromState(Int32(event.state)),
-                                                  isRepeat: isRepeatedKey(event),
-                                                  event: .keyUp)
+            _ = Game.shared.hid.keyboardDidHandle(
+                key: keyFromEvent(event),
+                character: characterFromEvent(event),
+                modifiers: modifierKeyFromState(Int32(event.state)),
+                isRepeat: isRepeatedKey(event),
+                event: .keyUp
+            )
         case EnterNotify:
             let event: XMotionEvent = event.xmotion
-            guard event.same_screen != 0 else {return}
-            Game.shared.hid.mouseChange(event: .entered, 
-                                        position: Position2(Float(event.x), Float(event.y)),
-                                        delta: .zero,
-                                        window: self.window)
-        case MotionNotify/*, ButtonMotionMask*/:
+            guard event.same_screen != 0 else { return }
+            Game.shared.hid.mouseChange(
+                event: .entered,
+                position: Position2(Float(event.x), Float(event.y)),
+                delta: .zero,
+                window: self.window
+            )
+        case MotionNotify /*, ButtonMotionMask*/:
             let event: XMotionEvent = event.xmotion
-            guard event.same_screen != 0 else {return}
-            Game.shared.hid.mouseChange(event: .moved,
-                                        position: Position2(Float(event.x), Float(event.y)),
-                                        delta: .zero,
-                                        window: self.window)
+            guard event.same_screen != 0 else { return }
+            Game.shared.hid.mouseChange(
+                event: .moved,
+                position: Position2(Float(event.x), Float(event.y)),
+                delta: .zero,
+                window: self.window
+            )
         case LeaveNotify:
             let event: XMotionEvent = event.xmotion
-            guard event.same_screen != 0 else {return}
-            Game.shared.hid.mouseChange(event: .exited, 
-                                        position: Position2(Float(event.x), Float(event.y)), 
-                                        delta: .zero, 
-                                        window: self.window)
+            guard event.same_screen != 0 else { return }
+            Game.shared.hid.mouseChange(
+                event: .exited,
+                position: Position2(Float(event.x), Float(event.y)),
+                delta: .zero,
+                window: self.window
+            )
         case ButtonPress:
             let event: XButtonEvent = event.xbutton
-            guard event.same_screen != 0 else {return}
+            guard event.same_screen != 0 else { return }
 
             if let delta: Position3 = scrollDeltaFromEvent(event) {
-                Game.shared.hid.mouseScrolled(delta: -delta, 
-                                              uiDelta: delta, 
-                                              device: 1, 
-                                              isMomentum: false, 
-                                              window: self.window)
-            }else{
-                Game.shared.hid.mouseClick(event: .buttonDown, 
-                                        button: mouseButtonFromEvent(event), 
-                                        position: Position2(Float(event.x), Float(event.y)),
-                                        delta: .zero, 
-                                        window: self.window)
+                Game.shared.hid.mouseScrolled(
+                    delta: -delta,
+                    uiDelta: delta,
+                    device: 1,
+                    isMomentum: false,
+                    window: self.window
+                )
+            } else {
+                Game.shared.hid.mouseClick(
+                    event: .buttonDown,
+                    button: mouseButtonFromEvent(event),
+                    position: Position2(Float(event.x), Float(event.y)),
+                    delta: .zero,
+                    window: self.window
+                )
             }
         case ButtonRelease:
             let event: XButtonEvent = event.xbutton
-            guard event.same_screen != 0 else {return}
-            Game.shared.hid.mouseClick(event: .buttonUp, 
-                                        button: mouseButtonFromEvent(event), 
-                                        position: Position2(Float(event.x), Float(event.y)),
-                                        delta: .zero, 
-                                        window: self.window)
+            guard event.same_screen != 0 else { return }
+            Game.shared.hid.mouseClick(
+                event: .buttonUp,
+                button: mouseButtonFromEvent(event),
+                position: Position2(Float(event.x), Float(event.y)),
+                delta: .zero,
+                window: self.window
+            )
         default:
             Log.warn("X11 window server event", event.type, "is unhandled.")
         }
@@ -178,14 +213,14 @@ final class X11Window: WindowBacking {
     deinit {
         self.close()
         glXMakeCurrent(xDisplay, xWindow, nil)
- 		glXDestroyContext(xDisplay, glxContext)
+        glXDestroyContext(xDisplay, glxContext)
     }
 
     var title: String? {
         get {
             var optionalPointer: UnsafeMutablePointer<CChar>?
-            guard XFetchName(xDisplay, xWindow, &optionalPointer) != 0 else {return nil}
-            guard let pointer: UnsafeMutablePointer<CChar> = optionalPointer else {return nil}
+            guard XFetchName(xDisplay, xWindow, &optionalPointer) != 0 else { return nil }
+            guard let pointer: UnsafeMutablePointer<CChar> = optionalPointer else { return nil }
             let title = String(cString: pointer)
             if title.isEmpty == false {
                 return title
@@ -212,17 +247,27 @@ final class X11Window: WindowBacking {
     func setMouseHidden(_ hidden: Bool) {
         if hidden {
             XDefineCursor(xDisplay, xWindow, blankCursor)
-        }else{
+        } else {
             XUndefineCursor(xDisplay, xWindow)
         }
     }
 
     func setMousePosition(_ position: Position2) {
-        let result: Int32 = XWarpPointer(xDisplay, 0, xWindow, 0, 0, 0, 0, Int32(position.x), Int32(position.y))
+        let result: Int32 = XWarpPointer(
+            xDisplay,
+            0,
+            xWindow,
+            0,
+            0,
+            0,
+            0,
+            Int32(position.x),
+            Int32(position.y)
+        )
         if result != Success {
             if result == BadRequest {
                 Log.errorOnce("Failed to lock mouse cursor: BadRequest (Using Remote Desktop?)")
-            }else{
+            } else {
                 Log.errorOnce("Failed to lock mouse cursor:", result)
             }
         }
@@ -275,14 +320,14 @@ final class X11Window: WindowBacking {
         }
         return modifiers
     }
-    
+
     @inline(__always)
     func characterFromEvent(_ event: XKeyEvent) -> Character? {
         var status: Int32 = 0
         var event: XKeyEvent = event
         var data: [CChar] = Array(repeating: 0, count: 32)
         Xutf8LookupString(self.xic, &event, &data, Int32(data.count - 1), nil, &status)
-        
+
         if status == XLookupBoth {
             let character: String = String(cString: data)
             if character.isEmpty == false {
@@ -299,10 +344,18 @@ final class X11Window: WindowBacking {
             Log.error("Failed to create keyboard map! Keyboard input will not work.")
             return Array(repeating: .unhandledPlatformKeyCode(nil, nil), count: 256)
         }
-        var keys: [KeyboardKey] = Array(repeating: .unhandledPlatformKeyCode(nil, nil), count: Int(kbdDesc.pointee.max_key_code) + 1)
-        
-        for keyCode: Int in Int(kbdDesc.pointee.min_key_code) ... Int(kbdDesc.pointee.max_key_code) {
-            guard let _name: (CChar, CChar, CChar, CChar) = kbdDesc.pointee.names.pointee.keys?[keyCode].name else {continue}
+        var keys: [KeyboardKey] = Array(
+            repeating: .unhandledPlatformKeyCode(nil, nil),
+            count: Int(kbdDesc.pointee.max_key_code) + 1
+        )
+
+        for keyCode: Int in Int(kbdDesc.pointee.min_key_code) ... Int(kbdDesc.pointee.max_key_code)
+        {
+            guard
+                let _name: (CChar, CChar, CChar, CChar) = kbdDesc.pointee.names.pointee.keys?[
+                    keyCode
+                ].name
+            else { continue }
             let name: String = String(cString: [_name.0, _name.1, _name.2, _name.3, 0])
             switch name {
             case "ESC":
@@ -558,41 +611,66 @@ extension X11Window {
     static let xDisplay: OpaquePointer = XOpenDisplay(nil)!
     static let xScreen: Int32 = XDefaultScreen(xDisplay)
     static let visualInfo: XVisualInfo = {
-        var att: [Int32] = [GLX_RGBA, 1,
-                            GLX_RED_SIZE, 8,
-                            GLX_GREEN_SIZE, 8,
-                            GLX_BLUE_SIZE, 8,
-                            GLX_ALPHA_SIZE, 8,
-                            GLX_DEPTH_SIZE, 24, 
-                            GLX_DOUBLEBUFFER, 1,
-                            Int32(None)]
+        var att: [Int32] = [
+            GLX_RGBA, 1,
+            GLX_RED_SIZE, 8,
+            GLX_GREEN_SIZE, 8,
+            GLX_BLUE_SIZE, 8,
+            GLX_ALPHA_SIZE, 8,
+            GLX_DEPTH_SIZE, 24,
+            GLX_DOUBLEBUFFER, 1,
+            Int32(None),
+        ]
         return glXChooseVisual(xDisplay, xScreen, &att)!.pointee
     }()
     static let sharedContext: GLXContext = {
-        if X11Window.supportsARBCreate, let p = glXGetProcAddress("glXCreateContextAttribsARB") {// Supports glx 1.4
-            let visual_attribs: [Int32] = [GLX_RENDER_TYPE, GLX_RGBA_BIT,
-                                           GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-                                           GLX_DEPTH_SIZE, 24,
-                                           GLX_DOUBLEBUFFER, 1,
-                                           GLX_RED_SIZE, 8,
-                                           GLX_GREEN_SIZE, 8,
-                                           GLX_BLUE_SIZE, 8,
-                                           GLX_ALPHA_SIZE, 8,
-                                           Int32(None)]
+        if X11Window.supportsARBCreate, let p = glXGetProcAddress("glXCreateContextAttribsARB") {  // Supports glx 1.4
+            let visual_attribs: [Int32] = [
+                GLX_RENDER_TYPE, GLX_RGBA_BIT,
+                GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+                GLX_DEPTH_SIZE, 24,
+                GLX_DOUBLEBUFFER, 1,
+                GLX_RED_SIZE, 8,
+                GLX_GREEN_SIZE, 8,
+                GLX_BLUE_SIZE, 8,
+                GLX_ALPHA_SIZE, 8,
+                Int32(None),
+            ]
 
             var num_fbc: Int32 = 0
-            let configs: UnsafeMutablePointer<GLXFBConfig?> = glXChooseFBConfig(X11Window.xDisplay, X11Window.xScreen, visual_attribs, &num_fbc)!
-            let height: GLXFBConfig? = Array(UnsafeBufferPointer(start: configs, count: Int(num_fbc))).first!
-            let context_attribs: [Int32] = [GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-                                            GLX_CONTEXT_MINOR_VERSION_ARB, 3,
-                                            GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
-                                            Int32(None)]
-            
-            typealias glXCreateContextAttribsARBProc = @convention(c) (_ display: OpaquePointer?, _ config: GLXFBConfig?, _ share_context: GLXContext?, _ direct: Bool, _ attrib_list: UnsafePointer<Int32>) -> OpaquePointer
-            let glXCreateContextAttribsARB: glXCreateContextAttribsARBProc = unsafeBitCast(p, to: glXCreateContextAttribsARBProc.self)
+            let configs: UnsafeMutablePointer<GLXFBConfig?> = glXChooseFBConfig(
+                X11Window.xDisplay,
+                X11Window.xScreen,
+                visual_attribs,
+                &num_fbc
+            )!
+            let height: GLXFBConfig? = Array(
+                UnsafeBufferPointer(start: configs, count: Int(num_fbc))
+            ).first!
+            let context_attribs: [Int32] = [
+                GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+                GLX_CONTEXT_MINOR_VERSION_ARB, 3,
+                GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+                Int32(None),
+            ]
 
-            return glXCreateContextAttribsARB(X11Window.xDisplay, height, nil, true, context_attribs)
-        }else{
+            typealias glXCreateContextAttribsARBProc = @convention(c) (
+                _ display: OpaquePointer?, _ config: GLXFBConfig?, _ share_context: GLXContext?,
+                _ direct: Bool, _ attrib_list: UnsafePointer<Int32>
+            ) -> OpaquePointer
+            let glXCreateContextAttribsARB: glXCreateContextAttribsARBProc = unsafeBitCast(
+                p,
+                to: glXCreateContextAttribsARBProc.self
+            )
+
+            return glXCreateContextAttribsARB(
+                X11Window.xDisplay,
+                height,
+                nil,
+                true,
+                context_attribs
+            )
+        } else {
             var vi: XVisualInfo = visualInfo
             return glXCreateContext(X11Window.xDisplay, &vi, nil, GL_TRUE)
         }
@@ -602,7 +680,12 @@ extension X11Window {
         var major: Int32 = 0
         var minor: Int32 = 0
         glXQueryVersion(X11Window.xDisplay, &major, &minor)
-        if major >= 1, minor >= 4, let extensions: UnsafePointer<CChar> = glXQueryExtensionsString(X11Window.xDisplay, X11Window.xScreen) {
+        if major >= 1, minor >= 4,
+            let extensions: UnsafePointer<CChar> = glXQueryExtensionsString(
+                X11Window.xDisplay,
+                X11Window.xScreen
+            )
+        {
             return String(cString: extensions).contains("GLX_ARB_create_context")
         }
         return false

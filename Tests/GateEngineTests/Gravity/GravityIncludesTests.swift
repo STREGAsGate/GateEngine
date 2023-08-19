@@ -14,8 +14,8 @@ final class GravityIncludesTests: GateEngineXCTestCase {
     func testIncludes() async throws {
         let gravity = Gravity()
         try await gravity.compile(file: "Resources/Scripts/includes1.gravity")
-        
-        XCTAssertEqual(try gravity.runMain(), 123456789)
+
+        XCTAssertEqual(try gravity.runMain(), 123_456_789)
     }
 }
 

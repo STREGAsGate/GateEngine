@@ -11,7 +11,7 @@ import LinuxSupport
 public final class LinuxPlatform: Platform, InternalPlatform {
     public static let fileSystem: LinuxFileSystem = LinuxFileSystem()
     let staticResourceLocations: [URL]
-    
+
     init(delegate: any GameDelegate) {
         self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
     }
@@ -19,29 +19,30 @@ public final class LinuxPlatform: Platform, InternalPlatform {
     public var supportsMultipleWindows: Bool {
         return true
     }
-    
+
     public func locateResource(from path: String) async -> String? {
-        let searchPaths = Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
+        let searchPaths =
+            Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             if await fileSystem.itemExists(at: file.path) {
                 return file.path
             }
         }
-        
+
         return nil
     }
-    
+
     public func loadResource(from path: String) async throws -> Data {
         if let resolvedPath = await locateResource(from: path) {
             do {
                 return try await fileSystem.read(from: resolvedPath)
-            }catch{
+            } catch {
                 Log.error("Failed to load resource \"\(resolvedPath)\".", error)
                 throw GateEngineError.failedToLoad("\(error)")
             }
         }
-        
+
         throw GateEngineError.failedToLocate
     }
 }
@@ -60,16 +61,20 @@ extension LinuxPlatform {
         let window: Window? = Game.shared.windowManager.mainWindow
         mainLoop: while true {
 
-            let eventMask: Int = (StructureNotifyMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask)
+            let eventMask: Int =
+                (StructureNotifyMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask
+                    | ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask)
             for window: Window in Game.shared.windowManager.windows {
                 let x11Window: X11Window = window.windowBacking as! X11Window
                 var event: XEvent = XEvent()
-                while XCheckWindowEvent(x11Window.xDisplay, x11Window.xWindow, eventMask, &event) == 1 {
+                while XCheckWindowEvent(x11Window.xDisplay, x11Window.xWindow, eventMask, &event)
+                    == 1
+                {
                     x11Window.processEvent(event)
                 }
                 x11Window.draw()
             }
- 
+
             if Game.shared.windowManager.windows.isEmpty {
                 break
             }

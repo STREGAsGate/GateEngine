@@ -9,21 +9,21 @@ import Gravity
 
 //MARK: - Emitters
 protocol GravityValueEmitting {
-    var gValue: gravity_value_t {get}
+    var gValue: gravity_value_t { get }
 }
 protocol GravityClassEmitting {
-    var gClass: UnsafeMutablePointer<gravity_class_t>! {get}
+    var gClass: UnsafeMutablePointer<gravity_class_t>! { get }
 }
 protocol GravityInstanceEmitting {
-    var gInstance: UnsafeMutablePointer<gravity_instance_t> {get}
+    var gInstance: UnsafeMutablePointer<gravity_instance_t> { get }
 }
 protocol GravityClosureEmitting {
-    var gClosure: UnsafeMutablePointer<gravity_closure_t>! {get}
+    var gClosure: UnsafeMutablePointer<gravity_closure_t>! { get }
 }
 
 // MARK: - GravityVMReferencing
 public protocol GravityVMReferencing {
-    var _gravity: Gravity {get}
+    var _gravity: Gravity { get }
 }
 
 // MARK: - GravityGetValueExtended
@@ -39,7 +39,7 @@ extension GravityGetVarExtended {
     public func getVar(_ key: String) -> Bool? {
         return getVar(key)?.getBool()
     }
-    
+
     /**
      Obtain a value from gravity.
      - parameter key: The name of the `var` as written in the gravity script.
@@ -48,7 +48,7 @@ extension GravityGetVarExtended {
     public func getVar<T: BinaryInteger>(_ key: String) -> T? {
         return getVar(key)?.getInt()
     }
-    
+
     /**
      Obtain a value from gravity.
      - parameter key: The name of the `var` as written in the gravity script.
@@ -57,7 +57,7 @@ extension GravityGetVarExtended {
     public func getVar(_ key: String) -> Float? {
         return getVar(key)?.asFloat()
     }
-    
+
     /**
      Obtain a value from gravity.
      - parameter key: The name of the `var` as written in the gravity script.
@@ -66,7 +66,7 @@ extension GravityGetVarExtended {
     public func getVar(_ key: String) -> Double? {
         return getVar(key)?.asDouble()
     }
-    
+
     /**
      Obtain a value from gravity.
      - parameter key: The name of the `var` as written in the gravity script.
@@ -82,12 +82,15 @@ public protocol GravityGetVarExtendedVMReferencing: GravityGetVarExtended, Gravi
 extension GravityGetVarExtendedVMReferencing {
     @inline(__always)
     public func getVar(_ key: String) -> GravityClosure? {
-        return getVar(key)?.getClosure(gravity: _gravity, sender: self as? any GravityValueConvertible)
+        return getVar(key)?.getClosure(
+            gravity: _gravity,
+            sender: self as? any GravityValueConvertible
+        )
     }
-    
+
     @inlinable
     public func getVar(_ key: String) throws -> GravityInstance? {
-        guard let value = getVar(key) else {return nil}
+        guard let value = getVar(key) else { return nil }
         return value.getInstance(gravity: _gravity)
     }
 }
@@ -106,7 +109,7 @@ extension GravitySetVarExtended {
     public func setVar(_ key: String, to value: any BinaryInteger) {
         self.setVar(key, to: GravityValue(value))
     }
-    
+
     /**
      Assign a value to a `var` in the gravity script.
      - parameter value: The swift value to assign
@@ -126,7 +129,7 @@ extension GravitySetVarExtended {
     public func setVar(_ key: String, to value: String) {
         self.setVar(key, to: GravityValue(value))
     }
-    
+
     /**
      Assign a value to a `var` in the gravity script.
      - parameter value: The swift value to assign

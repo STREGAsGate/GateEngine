@@ -12,10 +12,10 @@ internal class BufferConverter {
         self.data = data
         self.format = format
     }
-    
+
     func reformat(as newFormat: AudioBuffer.Format) -> Data {
-        guard format != newFormat else {return data}
-        
+        guard format != newFormat else { return data }
+
         switch newFormat.bitRate {
         case .uint8:
             switch format.bitRate {
@@ -86,21 +86,24 @@ internal class BufferConverter {
     }
 }
 
-//Mark: - Int to Float
-fileprivate extension BufferConverter {
-    func convertToFloatFrom<T:FixedWidthInteger>(_ source: T.Type, newFormat: AudioBuffer.Format) -> Data {
+// Mark: - Int to Float
+extension BufferConverter {
+    fileprivate func convertToFloatFrom<T: FixedWidthInteger>(
+        _ source: T.Type,
+        newFormat: AudioBuffer.Format
+    ) -> Data {
         let divisor = 1 / (Float(T.max) + 1)
         var array: [Float32] = data.withUnsafeBytes { bytes -> [T] in
             return Array(bytes.assumingMemoryBound(to: T.self))
         }.map { integer -> Float in
             return divisor * Float(integer)
         }
-        
+
         if newFormat.channels != .mono {
             if format.channels.interleved != newFormat.channels.interleved {
                 if format.channels.interleved == false && newFormat.channels.interleved == true {
                     array = convertFromNoninterlevedToInterleave(array)
-                }else{
+                } else {
                     array = convertFromInterlevedToNoninterleave(array)
                 }
             }
@@ -109,20 +112,23 @@ fileprivate extension BufferConverter {
             return Data(buffer: buffer)
         }
     }
-    
-    func convertToIntFromFloat<D:FixedWidthInteger>(_ destination: D.Type, newFormat: AudioBuffer.Format) -> Data {
-        var array: [D] = data.withUnsafeBytes {(bytes) in
+
+    fileprivate func convertToIntFromFloat<D: FixedWidthInteger>(
+        _ destination: D.Type,
+        newFormat: AudioBuffer.Format
+    ) -> Data {
+        var array: [D] = data.withUnsafeBytes { (bytes) in
             return Array(bytes.bindMemory(to: Float32.self))
-        }.map{
+        }.map {
             let float = max(-1.0, min(1.0, $0))
             return D(float * Float(D.max - 1))
         }
-        
+
         if newFormat.channels != .mono {
             if format.channels.interleved != newFormat.channels.interleved {
                 if format.channels.interleved == false && newFormat.channels.interleved == true {
                     array = convertFromNoninterlevedToInterleave(array)
-                }else{
+                } else {
                     array = convertFromInterlevedToNoninterleave(array)
                 }
             }
@@ -131,16 +137,16 @@ fileprivate extension BufferConverter {
             return Data(buffer: buffer)
         }
     }
-    
-    func convertToFloatFromFloat(newFormat: AudioBuffer.Format) -> Data {
-        var array: [Float32] = data.withUnsafeBytes {(bytes) in
+
+    fileprivate func convertToFloatFromFloat(newFormat: AudioBuffer.Format) -> Data {
+        var array: [Float32] = data.withUnsafeBytes { (bytes) in
             return Array(bytes.bindMemory(to: Float32.self))
         }
         if newFormat.channels != .mono {
             if format.channels.interleved != newFormat.channels.interleved {
                 if format.channels.interleved == false && newFormat.channels.interleved == true {
                     array = convertFromNoninterlevedToInterleave(array)
-                }else{
+                } else {
                     array = convertFromInterlevedToNoninterleave(array)
                 }
             }
@@ -152,16 +158,21 @@ fileprivate extension BufferConverter {
 }
 
 // Mark: Int to Int
-fileprivate extension BufferConverter {
-    func convertIntToInt<S: FixedWidthInteger, D: FixedWidthInteger>(_ source: S.Type, _ destination: D.Type, newFormat: AudioBuffer.Format) -> Data {
+extension BufferConverter {
+    fileprivate func convertIntToInt<S: FixedWidthInteger, D: FixedWidthInteger>(
+        _ source: S.Type,
+        _ destination: D.Type,
+        newFormat: AudioBuffer.Format ) -> Data {
         var array: [D] = {
-            guard source != destination else {return self.data.withUnsafeBytes({Array($0.bindMemory(to: destination))})}
-            
+            guard source != destination else {
+                return self.data.withUnsafeBytes({ Array($0.bindMemory(to: destination)) })
+            }
+
             var array: [D] = []
             array.reserveCapacity(data.count)
-            
+
             func appendArray<IntegerType: FixedWidthInteger>(unsignedSType: IntegerType.Type) {
-                for value in self.data.withUnsafeBytes({Array($0.bindMemory(to: unsignedSType))}) {
+                for value in self.data.withUnsafeBytes({ Array($0.bindMemory(to: unsignedSType)) }) {
                     let m = Float(value) / Float(unsignedSType.max)
                     switch D.bitWidth {
                     case 8:
@@ -180,7 +191,7 @@ fileprivate extension BufferConverter {
                     }
                 }
             }
-            
+
             switch S.bitWidth {
             case 8:
                 appendArray(unsignedSType: UInt8.self)
@@ -196,12 +207,12 @@ fileprivate extension BufferConverter {
 
             return array
         }()
-        
-        if newFormat.channels != .mono {//Interleaved must have more then 1 channel
-            if format.channels.interleved != newFormat.channels.interleved {//Skip if there's no change
+
+        if newFormat.channels != .mono {  //Interleaved must have more then 1 channel
+            if format.channels.interleved != newFormat.channels.interleved {  //Skip if there's no change
                 if format.channels.interleved == false && newFormat.channels.interleved == true {
                     array = convertFromNoninterlevedToInterleave(array)
-                }else{
+                } else {
                     array = convertFromInterlevedToNoninterleave(array)
                 }
             }
@@ -214,25 +225,25 @@ fileprivate extension BufferConverter {
 }
 
 //Mark: - Interleave
-fileprivate extension BufferConverter {
-    func convertFromNoninterlevedToInterleave<T>(_ source: Array<T>) -> Array<T> {
-        var interleaved: Array<T> = []
-        
+extension BufferConverter {
+    fileprivate func convertFromNoninterlevedToInterleave<T>(_ source: [T]) -> [T] {
+        var interleaved: [T] = []
+
         let left = source[0 ..< source.indices.upperBound / 2]
         let right = source[(source.indices.upperBound / 2)...]
-        
+
         assert(left.count == right.count)
-        
+
         for index in left.indices {
             interleaved.append(left[index])
             interleaved.append(right[left.count + index])
         }
-        
+
         return interleaved
     }
-    
-    func convertFromInterlevedToNoninterleave<T: Numeric>(_ source: Array<T>) -> Array<T> {
-        var out: Array<T> = Array(repeating: 0, count: source.count)
+
+    fileprivate func convertFromInterlevedToNoninterleave<T: Numeric>(_ source: [T]) -> [T] {
+        var out: [T] = Array(repeating: 0, count: source.count)
         let half: Int = source.count / 2
         for index in 0 ..< half {
             out[index] = source[index * 2]
@@ -244,27 +255,29 @@ fileprivate extension BufferConverter {
 
 //Mark: - Deinterleave and to float32
 extension BufferConverter {
-    static func convertToDeinterleavedFloat<T:FixedWidthInteger>(_ data: Data, fromType source: T.Type) -> Data {
-        let array: [T] = data.withUnsafeBytes {(bytes) in
+    static func convertToDeinterleavedFloat<T: FixedWidthInteger>(
+        _ data: Data,
+        fromType source: T.Type
+    ) -> Data {
+        let array: [T] = data.withUnsafeBytes { (bytes) in
             return Array(bytes.bindMemory(to: T.self))
         }
-        
+
         let divisor = Float32(Int32(T.max) + 1)
         func toFloat(_ i: T) -> Float32 {
             let f = Float(i) / divisor
             return min(1.0, max(-1.0, f))
         }
-        
-        var out: Array<Float32> = Array(repeating: 0, count: array.count)
+
+        var out: [Float32] = Array(repeating: 0, count: array.count)
         let half: Int = array.count / 2
         for index in 0 ..< half {
             out[index] = toFloat(array[index * 2])
             out[half + index] = toFloat(array[index * 2 + 1])
         }
-        
+
         return out.withUnsafeBufferPointer { (buffer) -> Data in
             return Data(buffer: buffer)
         }
     }
 }
-

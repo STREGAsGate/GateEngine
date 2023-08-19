@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import GameMath
 
 final class AxisAlignedBoundingBox2DTests: XCTestCase {
@@ -22,7 +23,7 @@ final class AxisAlignedBoundingBox2DTests: XCTestCase {
             XCTAssertEqual(box1.radius, radius)
         }
     }
-    
+
     func testPoints() {
         let box = AxisAlignedBoundingBox2D(radius: .one)
         let expectedPoints: Set<Position2> = [
@@ -33,19 +34,27 @@ final class AxisAlignedBoundingBox2DTests: XCTestCase {
         ]
         XCTAssertEqual(Set(box.points()), expectedPoints)
     }
-    
+
     func testSelfInterpenetrationSelf() {
-        do {// ontop of eachother
+        do {  // ontop of eachother
             let box1 = AxisAlignedBoundingBox2D(radius: .one)
             let box2 = AxisAlignedBoundingBox2D(radius: .one)
-            guard let interpenetration = box1.interpenetration(comparing: box2) else {XCTFail("interpentation(comparing:) failed"); return}
+            guard let interpenetration = box1.interpenetration(comparing: box2) else {
+                XCTFail("interpentation(comparing:) failed")
+                return
+            }
             XCTAssertEqual(interpenetration.depth, -box1.radius.y)
         }
-        do {// postive/negative grid space
+        do {  // postive/negative grid space
             let box1 = AxisAlignedBoundingBox2D(center: Position2(0.9, 0.9), radius: .one)
             let box2 = AxisAlignedBoundingBox2D(center: Position2(-0.9, -0.9), radius: .one)
-            guard let interpenetration = box1.interpenetration(comparing: box2) else {XCTFail("interpentation(comparing:) failed"); return}
-            let expectedDepth = -Position2(box1.radius + 0.1).distance(from: Position2(box2.radius - 0.1))
+            guard let interpenetration = box1.interpenetration(comparing: box2) else {
+                XCTFail("interpentation(comparing:) failed")
+                return
+            }
+            let expectedDepth = -Position2(box1.radius + 0.1).distance(
+                from: Position2(box2.radius - 0.1)
+            )
             XCTAssertEqual(interpenetration.depth, expectedDepth)
         }
     }

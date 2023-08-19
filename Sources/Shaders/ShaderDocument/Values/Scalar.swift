@@ -47,6 +47,13 @@ public final class Scalar: ShaderValue {
         self.operation = nil
     }
     
+    public func documentIdentifierInputData() -> [Int] {
+        var values: [Int] = []
+        values.append(contentsOf: valueRepresentation.identifier)
+        values.append(contentsOf: valueType.identifier)
+        return values
+    }
+    
     public func lerp(to dst: Scalar, factor: Scalar) -> Scalar {
         return Scalar(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
     }

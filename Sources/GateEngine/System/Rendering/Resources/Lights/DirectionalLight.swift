@@ -18,7 +18,7 @@ public final class DirectionalLight: Light {
     public func setRotation(_ rotation: Quaternion) {
         self.direction = rotation.forward
     }
-    
+
     init(brightness: Float, color: Color, drawShadows: DrawShadows, direction: Direction3) {
         self.direction = direction
         self.drawShadows = drawShadows

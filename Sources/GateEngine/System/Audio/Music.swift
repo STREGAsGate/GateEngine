@@ -7,8 +7,8 @@
 
 import GameMath
 
-public extension Music {
-    enum Kind: Hashable {
+extension Music {
+    public enum Kind: Hashable {
         /// A foreground track
         case music
         /// A background track not requiring user attention.
@@ -20,12 +20,16 @@ public struct Music {
     public init(path: String) {
         self.path = path
     }
-    
+
     @discardableResult
-    public static func play(_ music: Music, as kind: Kind = .music, config: ((_ music: ActiveMusic)->())? = nil) -> ActiveMusic {
+    public static func play(
+        _ music: Music,
+        as kind: Kind = .music,
+        config: ((_ music: ActiveMusic) -> Void)? = nil
+    ) -> ActiveMusic {
         let handle = ActiveMusic()
         config?(handle)
-        Task {@MainActor in
+        Task { @MainActor in
             Game.shared.system(ofType: AudioSystem.self).queueMusic(music, as: kind, handle: handle)
         }
         return handle
@@ -40,7 +44,7 @@ extension Music: ExpressibleByStringLiteral {
 }
 
 extension Music: Equatable {
-    public static func ==(lhs: Music, rhs: Music) -> Bool {
+    public static func == (lhs: Music, rhs: Music) -> Bool {
         return lhs.path == rhs.path
     }
 }
@@ -60,7 +64,7 @@ public class ActiveMusic {
     internal init() {
 
     }
-    
+
     /**
      Indicates if this sound is still active.
      When false the sound can never play again and this object can be discarded.
@@ -68,7 +72,7 @@ public class ActiveMusic {
     var isValid: Bool {
         return playing != nil || playingWasSet == false
     }
-    
+
     private var _repeats: Bool = true
     public var repeats: Bool {
         get {
@@ -79,20 +83,20 @@ public class ActiveMusic {
             playing?.track.repeats = newValue
         }
     }
-    
+
     var _stop: Bool = false
     public func stop() {
         _stop = true
         playing?.track.stop()
         playing?.forceRemove = true
     }
-    
+
     var _pendingAction: AudioSystem.PlayingMusic.Action? = nil
     private func setAction(_ action: AudioSystem.PlayingMusic.Action) {
         _pendingAction = action
         playing?.pendingAction = action
     }
-    
+
     public func fadeOut(_ duration: Float) {
         setAction(.fadeOut(duration: duration))
     }

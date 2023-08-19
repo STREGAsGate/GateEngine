@@ -11,7 +11,7 @@ import XAudio29
 
 internal class XAAudioMixerReference: AudioMixerReference {
     unowned let contextReference: XAContextReference
-    
+
     init(_ contextReference: XAContextReference) {
         self.contextReference = contextReference
     }
@@ -24,10 +24,9 @@ internal class XAAudioMixerReference: AudioMixerReference {
 
         }
     }
-    
+
     func createAudioTrackReference() -> any AudioTrackReference {
         return XAAudioTrackReference(self)
     }
 }
 #endif
-

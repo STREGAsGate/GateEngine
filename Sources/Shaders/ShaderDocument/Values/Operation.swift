@@ -27,16 +27,72 @@ public final class Operation: ShaderElement {
             case lessEqual
             case and
             case or
+            
+            var identifer: Int {
+                switch self {
+                case .equal:
+                    return 4_101
+                case .notEqual:
+                    return 4_102
+                case .greater:
+                    return 4_103
+                case .greaterEqual:
+                    return 4_104
+                case .less:
+                    return 4_105
+                case .lessEqual:
+                    return 4_106
+                case .and:
+                    return 4_107
+                case .or:
+                    return 4_108
+                }
+            }
         }
         case compare(_ comparison: Comparison)
         
         case branch(comparing: Scalar)
         case sampler2D(filter: Sampler2D.Filter)
         case lerp(factor: Scalar)
+        
+        var identifier: [Int] {
+            switch self {
+            case .add:
+                return [5_101]
+            case .subtract:
+                return [5_102]
+            case .multiply:
+                return [5_103]
+            case .divide:
+                return [5_104]
+            case .compare(let operatorValue):
+                return [5_105, operatorValue.identifer]
+            case .branch(comparing: let comparing):
+                var values: [Int] = [5_106]
+                values.append(contentsOf: comparing.documentIdentifierInputData())
+                return values
+            case .sampler2D(filter: let filter):
+                return [5_107, filter.identifier]
+            case .lerp(factor: let factor):
+                var values: [Int] = [5_108]
+                values.append(contentsOf: factor.documentIdentifierInputData())
+                return values
+            }
+        }
     }
     let lhs: any ShaderValue
     let `operator`: Operator
     let rhs: any ShaderValue
+    
+    public func documentIdentifierInputData() -> [Int] {
+        var values: [Int] = []
+        values.append(contentsOf: self.valueRepresentation.identifier)
+        values.append(contentsOf: self.valueType.identifier)
+        values.append(contentsOf: self.lhs.documentIdentifierInputData())
+        values.append(contentsOf: self.rhs.documentIdentifierInputData())
+        values.append(contentsOf: self.operator.identifier)
+        return values
+    }
         
     public init(lhs: Scalar, operator: Operator, rhs: Scalar) {
         self.lhs = lhs

@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 #if (canImport(OpenALSoft) || canImport(LinuxSupport)) && !os(WASI)
-#if canImport(OpenALSoft) 
+#if canImport(OpenALSoft)
 import OpenALSoft
 #elseif canImport(LinuxSupport)
 import LinuxSupport
@@ -25,27 +25,27 @@ internal class OpenALContext {
         self.device = device
         self.contextID = alcCreateContext(device.deviceID, nil)!
     }
-    
+
     internal lazy var listener = OpenALListener(context: self)
-    
+
     internal func createNewSource() -> OpenALSource {
         return OpenALSource(self)
     }
-    
+
     func becomeCurrent() -> Bool {
         let success = alcMakeContextCurrent(contextID)
         assert(alCheckError() == .noError)
         return success != 0
     }
-    
+
     func resume() {
         alcProcessContext(contextID)
     }
-    
+
     func suspend() {
         alcSuspendContext(contextID)
     }
-    
+
     var gain: Float {
         set {
             if becomeCurrent() {
@@ -63,7 +63,7 @@ internal class OpenALContext {
             return 0
         }
     }
-    
+
     var referenceDistance: Float {
         get {
             if becomeCurrent() {
@@ -81,7 +81,7 @@ internal class OpenALContext {
             }
         }
     }
-    
+
     deinit {
         alcDestroyContext(contextID)
         assert(alCheckError() == .noError)
@@ -103,7 +103,10 @@ extension OpenALContext {
                 assert(alCheckError() == .noError)
             }
         }
-        func setOrientation(forward: (x: Float, y: Float, z: Float), up: (x: Float, y: Float, z: Float)) throws {
+        func setOrientation(
+            forward: (x: Float, y: Float, z: Float),
+            up: (x: Float, y: Float, z: Float)
+        ) throws {
             if context.becomeCurrent() {
                 alListenerfv(AL_ORIENTATION, [forward.x, forward.y, forward.z, up.x, up.y, up.z])
                 assert(alCheckError() == .noError)

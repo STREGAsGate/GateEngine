@@ -5,19 +5,17 @@
  * http://stregasgate.com
  */
 
-/**
- A Scene is a drawing space with 3 dimensions and a perspective camera.
- */
+/// A Scene is a drawing space with 3 dimensions and a perspective camera.
 @MainActor public struct Scene {
     @usableFromInline internal var camera: Camera
     @usableFromInline internal var viewport: Rect?
-    
+
     @usableFromInline internal var pointLights: Set<ScenePointLight> = []
     @usableFromInline internal var spotLights: Set<SceneSpotLight> = []
     @usableFromInline internal var directionalLight: SceneDirectionalLight? = nil
 
     @usableFromInline internal var drawCommands: ContiguousArray<DrawCommand> = []
-    
+
     /** Adds the camera to the scene
     Each scene can have a single camera. Only the most recent camera is kept.
     - parameter camera: The camera to view the scene from
@@ -26,12 +24,12 @@
     public mutating func setCamera(_ camera: Camera) {
         self.camera = camera
     }
-    
+
     @inlinable @inline(__always)
     public mutating func setViewport(_ viewport: Rect?) {
         self.viewport = viewport
     }
-    
+
     /** Adds geometry to the scene for rendering.
     - parameter geometry: The geometry to draw.
     - parameter material: The color information used to draw the geometry.
@@ -44,10 +42,15 @@
     - You may not explicitly choose the instancing, however you could create a new `Geometry` from the same URL which would have a different id and have separate instancing. This would allow both instancing types at the expense of an additional GPU resource for each `Geometry` reference.
     */
     @_transparent
-    public mutating func insert(_ geometry: Geometry, withMaterial material: Material, at transform: Transform3, flags: SceneElementFlags = .default) {
+    public mutating func insert(
+        _ geometry: Geometry,
+        withMaterial material: Material,
+        at transform: Transform3,
+        flags: SceneElementFlags = .default
+    ) {
         self.insert(geometry, withMaterial: material, at: [transform], flags: flags)
     }
-    
+
     /** Adds geometry to the scene for rendering.
     - parameter geometry: The geometry to draw.
     - parameter material: The color information used to draw the geometry.
@@ -56,15 +59,25 @@
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
     */
     @inlinable @inline(__always)
-    public mutating func insert(_ geometry: Geometry, withMaterial material: Material, at transforms: [Transform3], flags: SceneElementFlags = .default) {
-        guard geometry.state == .ready else {return}
-        guard material.isReady else {return}
-        guard let geometryBackend = geometry.backend else {return}
+    public mutating func insert(
+        _ geometry: Geometry,
+        withMaterial material: Material,
+        at transforms: [Transform3],
+        flags: SceneElementFlags = .default
+    ) {
+        guard geometry.state == .ready else { return }
+        guard material.isReady else { return }
+        guard let geometryBackend = geometry.backend else { return }
 
-        let command = DrawCommand(backends: [geometryBackend], transforms: ContiguousArray(transforms), material: material, flags: flags.drawFlags)
+        let command = DrawCommand(
+            backends: [geometryBackend],
+            transforms: ContiguousArray(transforms),
+            material: material,
+            flags: flags.drawFlags
+        )
         self.drawCommands.append(command)
     }
-    
+
     /** Adds geometry to the scene for rendering.
     - parameter geometry: The geometry to draw.
     - parameter material: The color information used to draw the geometry.
@@ -77,10 +90,16 @@
     - You may not explicitly choose the instancing, however you could create a new `Geometry` from the same URL which would have a different id and have separate instancing. This would allow both instancing types at the expense of an additional GPU resource for each `Geometry` reference.
     */
     @_transparent
-    public mutating func insert(_ geometry: SkinnedGeometry, withPose pose: Skeleton.Pose, material: Material, at transform: Transform3, flags: SceneElementFlags = .default) {
+    public mutating func insert(
+        _ geometry: SkinnedGeometry,
+        withPose pose: Skeleton.Pose,
+        material: Material,
+        at transform: Transform3,
+        flags: SceneElementFlags = .default
+    ) {
         self.insert(geometry, withPose: pose, material: material, at: [transform], flags: flags)
     }
-    
+
     /** Adds geometry to the scene for rendering.
     - parameter geometry: The geometry to draw.
     - parameter material: The color information used to draw the geometry.
@@ -93,95 +112,162 @@
     - You may not explicitly choose the instancing, however you could create a new `Geometry` from the same URL which would have a different id and have separate instancing. This would allow both instancing types at the expense of an additional GPU resource for each `Geometry` reference.
     */
     @inlinable @inline(__always)
-    public mutating func insert(_ geometry: SkinnedGeometry, withPose pose: Skeleton.Pose, material: Material, at transforms: [Transform3], flags: SceneElementFlags = .default) {
-        guard geometry.state == .ready else {return}
-        guard material.isReady else {return}
+    public mutating func insert(
+        _ geometry: SkinnedGeometry,
+        withPose pose: Skeleton.Pose,
+        material: Material,
+        at transforms: [Transform3],
+        flags: SceneElementFlags = .default
+    ) {
+        guard geometry.state == .ready else { return }
+        guard material.isReady else { return }
         var material = material
         material.vertexShader = .skinned
-        material.setCustomUniformValue(pose.shaderMatrixArray(orderedFromSkinJoints: geometry.skinJoints!), forUniform: "bones")
-        guard let geometryBackend = geometry.backend else {return}
+        material.setCustomUniformValue(
+            pose.shaderMatrixArray(orderedFromSkinJoints: geometry.skinJoints!),
+            forUniform: "bones"
+        )
+        guard let geometryBackend = geometry.backend else { return }
 
-        let command = DrawCommand(backends: [geometryBackend], transforms: ContiguousArray(transforms), material: material, flags: flags.drawFlags)
+        let command = DrawCommand(
+            backends: [geometryBackend],
+            transforms: ContiguousArray(transforms),
+            material: material,
+            flags: flags.drawFlags
+        )
         self.drawCommands.append(command)
     }
-    
+
     @inlinable @inline(__always)
-    public mutating func insert(_ source: Geometry, withSourceMaterial sourceMaterial: Material,
-                                morphingTo destination: Geometry, withDestinationMaterial destinationMaterial: Material,
-                                interpolationFactors factor: Float,
-                                at transforms: [Transform3],
-                                flags: SceneElementFlags = .default) {
-        guard source.state == .ready && destination.state == .ready else {return}
-        guard sourceMaterial.isReady && destinationMaterial.isReady else {return}
-        guard let sourceGeometryBackend = Game.shared.resourceManager.geometryCache(for: source.cacheKey)?.geometryBackend else {return}
-        guard let destinationGeometryBackend = Game.shared.resourceManager.geometryCache(for: destination.cacheKey)?.geometryBackend else {return}
+    public mutating func insert(
+        _ source: Geometry,
+        withSourceMaterial sourceMaterial: Material,
+        morphingTo destination: Geometry,
+        withDestinationMaterial destinationMaterial: Material,
+        interpolationFactors factor: Float,
+        at transforms: [Transform3],
+        flags: SceneElementFlags = .default
+    ) {
+        guard source.state == .ready && destination.state == .ready else { return }
+        guard sourceMaterial.isReady && destinationMaterial.isReady else { return }
+        guard
+            let sourceGeometryBackend = Game.shared.resourceManager.geometryCache(
+                for: source.cacheKey
+            )?.geometryBackend
+        else { return }
+        guard
+            let destinationGeometryBackend = Game.shared.resourceManager.geometryCache(
+                for: destination.cacheKey
+            )?.geometryBackend
+        else { return }
 
-        let command = DrawCommand(backends: [sourceGeometryBackend, destinationGeometryBackend], transforms: ContiguousArray(transforms), material: sourceMaterial, flags: flags.drawFlags)
+        let command = DrawCommand(
+            backends: [sourceGeometryBackend, destinationGeometryBackend],
+            transforms: ContiguousArray(transforms),
+            material: sourceMaterial,
+            flags: flags.drawFlags
+        )
         self.drawCommands.append(command)
     }
-    
+
     @_transparent
-    public mutating func insert(_ src: Geometry, withSourceMaterial srcMaterial: Material,
-                                morphingTo dst: Geometry, withDestinationMaterial dstMaterial: Material,
-                                interpolationFactor factor: Float,
-                                at transform: Transform3,
-                                flags: SceneElementFlags = .default) {
-        self.insert(src, withSourceMaterial: srcMaterial, morphingTo: dst, withDestinationMaterial: dstMaterial, interpolationFactors: factor, at: [transform], flags: flags)
+    public mutating func insert(
+        _ src: Geometry,
+        withSourceMaterial srcMaterial: Material,
+        morphingTo dst: Geometry,
+        withDestinationMaterial dstMaterial: Material,
+        interpolationFactor factor: Float,
+        at transform: Transform3,
+        flags: SceneElementFlags = .default
+    ) {
+        self.insert(
+            src,
+            withSourceMaterial: srcMaterial,
+            morphingTo: dst,
+            withDestinationMaterial: dstMaterial,
+            interpolationFactors: factor,
+            at: [transform],
+            flags: flags
+        )
     }
 
     @_transparent
-    public mutating func insert(_ source: Geometry, morphingTo destination: Geometry, withMaterial material: Material,
-                                interpolationFactors factor: Float,
-                                at transforms: [Transform3],
-                                withFlags flags: SceneElementFlags = .default) {
-        self.insert(source, withSourceMaterial: material, morphingTo: destination, withDestinationMaterial: material, interpolationFactors: factor, at: transforms, flags: flags)
+    public mutating func insert(
+        _ source: Geometry,
+        morphingTo destination: Geometry,
+        withMaterial material: Material,
+        interpolationFactors factor: Float,
+        at transforms: [Transform3],
+        withFlags flags: SceneElementFlags = .default
+    ) {
+        self.insert(
+            source,
+            withSourceMaterial: material,
+            morphingTo: destination,
+            withDestinationMaterial: material,
+            interpolationFactors: factor,
+            at: transforms,
+            flags: flags
+        )
     }
-    
+
     @_transparent
-    public mutating func insert(_ source: Geometry, morphingTo destination: Geometry, withMaterial material: Material,
-                                interpolationFactor factor: Float,
-                                at transform: Transform3,
-                                withFlags flags: SceneElementFlags = .default) {
-        self.insert(source, withSourceMaterial: material, morphingTo: destination, withDestinationMaterial: material, interpolationFactors: factor, at: [transform], flags: flags)
+    public mutating func insert(
+        _ source: Geometry,
+        morphingTo destination: Geometry,
+        withMaterial material: Material,
+        interpolationFactor factor: Float,
+        at transform: Transform3,
+        withFlags flags: SceneElementFlags = .default
+    ) {
+        self.insert(
+            source,
+            withSourceMaterial: material,
+            morphingTo: destination,
+            withDestinationMaterial: material,
+            interpolationFactors: factor,
+            at: [transform],
+            flags: flags
+        )
     }
-    
+
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
     @inline(__always)
     public mutating func insert(_ light: PointLight) {
-        guard light.state == .ready else {return}
+        guard light.state == .ready else { return }
         self.pointLights.insert(ScenePointLight(light))
     }
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
     @inline(__always)
     public mutating func insert(_ light: SpotLight) {
-        guard light.state == .ready else {return}
+        guard light.state == .ready else { return }
         self.spotLights.insert(SceneSpotLight(light))
     }
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
     @inline(__always)
     public mutating func insert(_ light: DirectionalLight) {
-        guard light.state == .ready else {return}
+        guard light.state == .ready else { return }
         self.directionalLight = SceneDirectionalLight(light)
     }
-    
+
     @_transparent
     internal var hasContent: Bool {
         return drawCommands.isEmpty == false
     }
-    
+
     @inlinable @inline(__always)
     internal var hasLights: Bool {
-        guard directionalLight != nil else {return true}
-        guard pointLights.isEmpty else {return true}
-        guard spotLights.isEmpty else {return true}
+        guard directionalLight != nil else { return true }
+        guard pointLights.isEmpty else { return true }
+        guard spotLights.isEmpty else { return true }
 
         return false
     }
-    
+
     public init(camera: Camera, viewport: Rect? = nil, estimatedCommandCount: Int = 10) {
         self.camera = camera
         self.viewport = viewport
-        
+
         self.drawCommands.reserveCapacity(estimatedCommandCount)
     }
 }
@@ -205,7 +291,7 @@ internal struct ScenePointLight: Hashable {
         self.drawShadows = pointer.drawShadows
         self.position = pointer.position.simd
     }
-    
+
     @usableFromInline func hash(into hasher: inout Hasher) {
         hasher.combine(pointer.id)
     }
@@ -222,7 +308,7 @@ internal struct SceneSpotLight: Hashable {
     let drawShadows: Light.DrawShadows
     let position: SIMD3<Float>
     let direction: SIMD3<Float>
-    
+
     init(_ pointer: SpotLight) {
         self.pointer = pointer
         self.brightness = pointer.brightness
@@ -234,7 +320,7 @@ internal struct SceneSpotLight: Hashable {
         self.position = pointer.position.simd
         self.direction = pointer.direction.simd
     }
-    
+
     @usableFromInline func hash(into hasher: inout Hasher) {
         hasher.combine(pointer.id)
     }
@@ -247,7 +333,7 @@ internal struct SceneDirectionalLight: Hashable {
     let color: SIMD3<Float>
     let drawShadows: Light.DrawShadows
     let direction: SIMD3<Float>
-    
+
     init(_ pointer: DirectionalLight) {
         self.pointer = pointer
         self.brightness = pointer.brightness
@@ -255,33 +341,39 @@ internal struct SceneDirectionalLight: Hashable {
         self.drawShadows = pointer.drawShadows
         self.direction = pointer.direction.simd
     }
-    
+
     @usableFromInline func hash(into hasher: inout Hasher) {
         hasher.combine(pointer.id)
     }
 }
 
-
 public struct SceneElementFlags: OptionSet, Hashable {
     public typealias RawValue = UInt32
     public let rawValue: RawValue
-    
+
     public static let cullBackface = SceneElementFlags(rawValue: 1 << 1)
     public static let disableDepthCull = SceneElementFlags(rawValue: 1 << 2)
     public static let disableDepthWrite = SceneElementFlags(rawValue: 1 << 3)
-//    public static let onlyDepthWrite = SceneElementFlags(rawValue: 1 << 4)
-    
+    //    public static let onlyDepthWrite = SceneElementFlags(rawValue: 1 << 4)
+
     public static let `default`: SceneElementFlags = [.cullBackface]
-    
+
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
-    
+
     @_transparent @usableFromInline
     internal var drawFlags: DrawFlags {
         let cull: DrawFlags.Cull = self.contains(.cullBackface) ? .back : .disabled
         let depthTest: DrawFlags.DepthTest = self.contains(.disableDepthCull) ? .always : .lessThan
-        let depthWrite: DrawFlags.DepthWrite = self.contains(.disableDepthWrite) ? .disabled : .enabled
-        return DrawFlags(cull: cull, depthTest: depthTest, depthWrite: depthWrite, winding: .counterClockwise, blendMode: .normal)
+        let depthWrite: DrawFlags.DepthWrite =
+            self.contains(.disableDepthWrite) ? .disabled : .enabled
+        return DrawFlags(
+            cull: cull,
+            depthTest: depthTest,
+            depthWrite: depthWrite,
+            winding: .counterClockwise,
+            blendMode: .normal
+        )
     }
 }

@@ -8,12 +8,13 @@ let package = Package(
     platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13)],
     products: [
         .library(name: "GateEngine", targets: ["GateEngine"]),
+        .library(name: "GameMath", targets: ["GameMath"]),
     ],
     dependencies: {
         var packageDependencies: [Package.Dependency] = []
 
+        // Official
         packageDependencies.append(contentsOf: [
-            // Official
             .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.1.0")),
             .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0")),
         ])
@@ -25,6 +26,12 @@ let package = Package(
             .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
         ])
         #endif
+        
+        // Linting / Formating
+        packageDependencies.append(contentsOf: [
+            //.package(url: "https://github.com/apple/swift-format", .upToNextMajor(from: "508.0.0")),
+            //.package(url: "https://github.com/realm/SwiftLint.git", .upToNextMajor(from: "0.52.0")),
+        ])
         
         return packageDependencies
     }(),
@@ -81,16 +88,14 @@ let package = Package(
                     swiftSettings: {
                         var settings: [SwiftSetting] = []
                         
+                        // MARK: Gate Engine options.
                         settings.append(contentsOf: [
-                            // MARK: Gate Engine options.
                             /// Closes all open windows when the main window is closed
                             .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW", .when(platforms: .desktop)),
                             /// Checks for reloadable resources and reloads them if they have changed
                             .define("GATEENGINE_ENABLE_HOTRELOADING", .when(platforms: .desktop, configuration: .debug)),
                             /// The host platform requests the main window, so GateEngine won't create one until it's requested
                             .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW", .when(platforms: [.iOS, .tvOS])),
-                            /// The host platform can't be used to compile HTML5 products
-                            .define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.windows])),
                             /// The host platform updates and draws from an event callback, so GateEngine won't create a game loop.
                             .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.wasi])),
                             /// The host platform requires an intermediate task, so GateEngine won't load default systems.
@@ -100,10 +105,14 @@ let package = Package(
                             /// The host platform supports Foundation.FileManager
                             .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER", .when(platforms: .any(except: .wasi))),
                         ])
+                        #if !(os(macOS) || os(Linux))
+                        /// The host platform can't be used to compile HTML5 products
+                        settings.append(.define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.wasi])))
+                        #endif
 
                         // Use upcoming Swift Language Features
                         // https://www.swift.org/swift-evolution/#?upcoming=true
-                        #if swift(>=5.8)
+                        #if compiler(>=5.8)
                         settings.append(contentsOf: [
                             .unsafeFlags(["-enable-upcoming-feature", "DisableOutwardActorInference"]),
                             .unsafeFlags(["-enable-upcoming-feature", "ImportObjcForwardDeclarations"]),
@@ -114,7 +123,7 @@ let package = Package(
                         ])
                         #endif
                         
-                        #if false // Options for development of GateEngine. These should be commented out for tagged version releases.
+                        #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
                         // Options for development of WASI platform
@@ -142,8 +151,8 @@ let package = Package(
                         #endif
                         return settings
                     }(),
-                    linkerSettings: [
-
+                    plugins: [
+                        //.plugin(name: "SwiftLintPlugin", package: "SwiftLint"),
                     ]),
             
             .target(name: "Shaders", dependencies: ["GameMath"]),
@@ -152,8 +161,8 @@ let package = Package(
                 var array: [SwiftSetting] = []
                 
                 #if false
-                // A little bit faster on old hardware, but less accurate.
-                // Theres no reason to use this on modern hardware.
+                // Possibly faster on old hardware, but less accurate.
+                // There is no reason to use this on modern hardware.
                 array.append(.define("GameMathUseFastInverseSquareRoot"))
                 #endif
                 
@@ -184,7 +193,6 @@ let package = Package(
                     path: "Dependencies/MiniZ",
                     cSettings: [
                         .unsafeFlags(["-Wno-everything"]),
-                        // Silence warnings
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                     ]),
             
@@ -196,9 +204,8 @@ let package = Package(
                         .unsafeFlags(["-Wno-everything"]),
                         .define("SPNG_STATIC"),
                         .define("SPNG_USE_MINIZ"),
-                        // miniz.h crashes the Swift compiler on Windows, when public, as of Swift 5.8.0
+                        // When public, the miniz.h header crashes Clang on Windows since Swift 5.8.0
                         .headerSearchPath("src/"),
-                        // Silence warnings
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                     ]),
             
@@ -219,15 +226,14 @@ let package = Package(
                         .define("BUILD_GRAVITY_API"),
                         // WASI doesn't have umask
                         .define("umask(x)", to: "022", .when(platforms: [.wasi])),
-                        // Silence deprecation warning on windows
-                        .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                         // Windows doesn't support PIC flag
                         .unsafeFlags(["-fPIC"], .when(platforms: .any(except: .windows))),
                         .unsafeFlags(["-Wno-everything"]),
+                        .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                     ], linkerSettings: [
-                        //For math functions
+                        // For math functions
                         .linkedLibrary("m", .when(platforms: .any(except: .windows))),
-                        //For path functions
+                        // For path functions
                         .linkedLibrary("Shlwapi", .when(platforms: [.windows])),
                     ]),
         ])
@@ -317,6 +323,7 @@ let package = Package(
                             .copy("Resources/unittest"),
                         ],
                         swiftSettings: [
+                            // https://github.com/STREGAsGate/GateEngine/issues/36
                             .define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])),
                         ]),
         ])
@@ -548,14 +555,31 @@ extension Array where Element == Platform {
     }
     
     static var desktop: Self {[.windows, .linux, .macOS]}
-    static var mobile: Self {[.iOS, .tvOS, .android]}
-    static var anyApple: Self {[.iOS, .tvOS, .macOS]}
+    static var mobile: Self {[.iOS, .android]}
+    static var anyApple: Self {
+        #if swift(>=5.9)
+        return [.macOS, .iOS, .tvOS, .watchOS, .visionOS]
+        #else
+        return [.macOS, .iOS, .tvOS, .watchOS]
+        #endif
+    }
     
-    static var any: Self {[
-        .macOS, .iOS, .tvOS,
-        .linux, .android,
-        .windows,
-        .wasi,
-    ]}
+    static var any: Self {
+        #if swift(>=5.9)
+        return [
+            .macOS, .iOS, .tvOS, .visionOS
+            .linux, .android,
+            .windows,
+            .wasi
+        ]
+        #else
+        return [
+            .macOS, .iOS, .tvOS,
+            .linux, .android,
+            .windows,
+            .wasi
+        ]
+        #endif
+    }
 }
 

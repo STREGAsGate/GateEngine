@@ -10,27 +10,31 @@ import AVFoundation
 internal class CASpacialMixerReference: SpacialAudioMixerReference {
     unowned let contextReference: CAContextReference
     let environmentNode: AVAudioEnvironmentNode
-    
+
     @usableFromInline
     init(_ contextReference: CAContextReference) {
         self.contextReference = contextReference
-        
+
         let environmentNode = AVAudioEnvironmentNode()
         if #available(macOS 10.15, iOS 13, tvOS 13, *) {
             environmentNode.renderingAlgorithm = .auto
         } else {
             environmentNode.renderingAlgorithm = .soundField
         }
-        
+
         environmentNode.distanceAttenuationParameters.distanceAttenuationModel = .inverse
-        
+
         let engine = contextReference.engine
         engine.attach(environmentNode)
-        engine.connect(environmentNode, to: engine.mainMixerNode, format: engine.outputNode.inputFormat(forBus: 0))
+        engine.connect(
+            environmentNode,
+            to: engine.mainMixerNode,
+            format: engine.outputNode.inputFormat(forBus: 0)
+        )
 
         self.environmentNode = environmentNode
     }
-    
+
     @inlinable
     public var minimumAttenuationDistance: Float {
         get {
@@ -50,12 +54,12 @@ internal class CASpacialMixerReference: SpacialAudioMixerReference {
             environmentNode.volume = newValue
         }
     }
-    
+
     @inlinable
     func createListenerReference() -> any SpatialAudioListenerBackend {
         return CAListenerReference(environmentNode: environmentNode)
     }
-    
+
     @inlinable
     func createSourceReference() -> any SpatialAudioSourceReference {
         return CASourceReference(self)

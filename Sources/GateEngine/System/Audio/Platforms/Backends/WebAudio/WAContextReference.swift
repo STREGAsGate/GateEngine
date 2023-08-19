@@ -11,11 +11,11 @@ import WebAudio
 
 internal class WAContextReference: AudioContextBackend {
     let ctx: WebAudio.AudioContext
-    
+
     init() {
         ctx = WebAudio.AudioContext()
     }
-    
+
     @inlinable
     func createSpacialMixerReference() -> any SpacialAudioMixerReference {
         return WASpacialMixerReference(self)
@@ -24,12 +24,12 @@ internal class WAContextReference: AudioContextBackend {
     func createAudioMixerReference() -> any AudioMixerReference {
         return WAAudioMixerReference(self)
     }
-    
+
     @inlinable
     var endianness: Endianness {
         return .native
     }
-    
+
     @inlinable
     func supportsBitRate(_ bitRate: AudioBuffer.Format.BitRate) -> Bool {
         switch bitRate {

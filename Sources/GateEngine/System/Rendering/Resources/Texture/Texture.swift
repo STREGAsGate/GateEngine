@@ -13,21 +13,20 @@ public enum MipMapping: Hashable {
 }
 
 @MainActor internal protocol TextureBackend: AnyObject {
-    var size: Size2 {get}
+    var size: Size2 { get }
     init(data: Data, size: Size2, mipMapping: MipMapping)
     init(renderTargetBackend: any RenderTargetBackend)
     func replaceData(with data: Data, size: Size2, mipMapping: MipMapping)
 }
 
-/** Texture represents a managed bitmap buffer object.
- It's contents are stored within GPU accessible memory and this object represents a reference to that memory.
- When this object deinitializes it's contents will also be removed from GPU memory.
- */
+/// Texture represents a managed bitmap buffer object.
+/// It's contents are stored within GPU accessible memory and this object represents a reference to that memory.
+/// When this object deinitializes it's contents will also be removed from GPU memory.
 @MainActor public class Texture: Resource {
     internal let cacheKey: ResourceManager.Cache.TextureKey
     internal var renderTarget: (any _RenderTargetProtocol)?
     private let sizeHint: Size2?
-    
+
     /** The dimensions of the texture.
      Guaranteed accurate when state is .ready, otherwise fails or returns the provided hint placeholder.
      */
@@ -38,9 +37,11 @@ public enum MipMapping: Hashable {
         if let sizeHint: Size2 = sizeHint {
             return sizeHint
         }
-        fatalError("The state must be \(ResourceState.ready), or a sizeHint must be provided during init, before accessing this property.")
+        fatalError(
+            "The state must be \(ResourceState.ready), or a sizeHint must be provided during init, before accessing this property."
+        )
     }
-    
+
     internal var isRenderTarget: Bool {
         return renderTarget != nil
     }
@@ -48,67 +49,87 @@ public enum MipMapping: Hashable {
     internal var textureBackend: (any TextureBackend)? {
         return Game.shared.resourceManager.textureCache(for: cacheKey)?.textureBackend
     }
-    
+
     public var cacheHint: CacheHint {
-        get {Game.shared.resourceManager.textureCache(for: cacheKey)!.cacheHint}
-        set {Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey)}
+        get { Game.shared.resourceManager.textureCache(for: cacheKey)!.cacheHint }
+        set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
     }
-    
+
     public var state: ResourceState {
         return Game.shared.resourceManager.textureCache(for: cacheKey)!.state
     }
-    
+
     /**
      Create a new texture.
-     
+
      - parameter path: The package resource path. This path is relative to a package resource. Using a fullyqualified disc path will fail.
      - parameter sizeHint: This hint will be returned by the `Texture.size` property before the texture data has been loaded. After the Texture data has loaded the actual texture file dimensions will be returned by `Texture.size`.
      - parameter options: Options that will be given to the texture importer.
      - parameter mipMapping: The mip level to generate for this texture.
      */
     @inlinable @inline(__always) @_disfavoredOverload
-    public convenience init(as path: TexturePath, sizeHint: Size2? = nil, mipMapping: MipMapping = .auto(), options: TextureImporterOptions = .none) {
+    public convenience init(
+        as path: TexturePath,
+        sizeHint: Size2? = nil,
+        mipMapping: MipMapping = .auto(),
+        options: TextureImporterOptions = .none
+    ) {
         self.init(path: path.value, sizeHint: sizeHint, mipMapping: mipMapping, options: options)
     }
-    
+
     /**
      Create a new texture.
-     
+
      - parameter path: The package resource path. This path is relative to a package resource. Using a fullyqualified disc path will fail.
      - parameter sizeHint: This hint will be returned by the `Texture.size` property before the texture data has been loaded. After the Texture data has loaded the actual texture file dimensions will be returned by `Texture.size`.
      - parameter options: Options that will be given to the texture importer.
      - parameter mipMapping: The mip level to generate for this texture.
      */
-    public init(path: String, sizeHint: Size2? = nil, mipMapping: MipMapping = .auto(), options: TextureImporterOptions = .none) {
+    public init(
+        path: String,
+        sizeHint: Size2? = nil,
+        mipMapping: MipMapping = .auto(),
+        options: TextureImporterOptions = .none
+    ) {
         let resourceManager = Game.shared.resourceManager
         self.renderTarget = nil
-        self.cacheKey = resourceManager.textureCacheKey(path: path, mipMapping: mipMapping, options: options)
+        self.cacheKey = resourceManager.textureCacheKey(
+            path: path,
+            mipMapping: mipMapping,
+            options: options
+        )
         self.sizeHint = sizeHint
         self.cacheHint = .until(minutes: 5)
         resourceManager.incrementReference(self.cacheKey)
     }
-    
+
     public init(data: Data, size: Size2, mipMapping: MipMapping) {
         let resourceManager = Game.shared.resourceManager
         self.renderTarget = nil
-        self.cacheKey = resourceManager.textureCacheKey(data: data, size: size, mipMapping: mipMapping)
+        self.cacheKey = resourceManager.textureCacheKey(
+            data: data,
+            size: size,
+            mipMapping: mipMapping
+        )
         self.sizeHint = size
         self.cacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
-    
+
     init(renderTarget: any _RenderTargetProtocol) {
         let resourceManager = Game.shared.resourceManager
         self.renderTarget = renderTarget
-        self.cacheKey = resourceManager.textureCacheKey(renderTargetBackend: renderTarget.renderTargetBackend)
+        self.cacheKey = resourceManager.textureCacheKey(
+            renderTargetBackend: renderTarget.renderTargetBackend
+        )
         self.sizeHint = renderTarget.size
         self.cacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
-    
+
     deinit {
         let cacheKey = self.cacheKey
-        Task.detached(priority: .low) {@MainActor in
+        Task.detached(priority: .low) { @MainActor in
             Game.shared.resourceManager.decrementReference(cacheKey)
         }
     }
@@ -118,7 +139,7 @@ extension Texture: Equatable, Hashable {
     nonisolated public static func == (lhs: Texture, rhs: Texture) -> Bool {
         return lhs.cacheKey == rhs.cacheKey
     }
-    
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(cacheKey)
     }

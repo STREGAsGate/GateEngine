@@ -20,16 +20,16 @@ public struct WindowOptions: OptionSet {
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
-    
+
     /// Allows the user to manually close the window. The main window is always closable and this option is ignored.
     public static let userClosable = WindowOptions(rawValue: 1 << 1)
-    
+
     /// When the window is open it will enter full screen \, regardless of the users previous poreference
     public static let forceFullScreen = WindowOptions(rawValue: 1 << 2)
-    
+
     /// The window will be full screen when first opened, but the users preference will be respected on subsequent launches
     public static let firstLaunchFullScreen = WindowOptions(rawValue: 1 << 3)
-    
+
     /// The recommended window options for the main window
     internal static let defaultForMainWindow: WindowOptions = [.firstLaunchFullScreen]
     /// The recommended window options for windows
@@ -41,23 +41,24 @@ public struct WindowOptions: OptionSet {
     public let identifier: String
     public let style: WindowStyle
     public let options: WindowOptions
-    
+
     @inlinable @inline(__always)
     public var isMainWindow: Bool {
         return identifier == WindowManager.mainWindowIdentifier
     }
-    
+
     @usableFromInline
     internal lazy var windowBacking: any WindowBacking = createWindowBacking()
     @usableFromInline
-    lazy var renderTargetBackend: any RenderTargetBackend = windowBacking.createWindowRenderTargetBackend()
-    
+    lazy var renderTargetBackend: any RenderTargetBackend =
+        windowBacking.createWindowRenderTargetBackend()
+
     var drawables: [Any] = []
     public private(set) lazy var texture: Texture = Texture(renderTarget: self)
-    
+
     // true if the last draw attempt changed the screen
     internal var didDrawSomething: Bool = false
-    
+
     public enum State {
         ///The window exists but isn't on screen
         case hidden
@@ -68,12 +69,12 @@ public struct WindowOptions: OptionSet {
         ///The window isn't visible and can never be shown again.
         case destroyed
     }
-    
+
     @inlinable @inline(__always)
     public var state: State {
         return windowBacking.state
     }
-    
+
     @inlinable @inline(__always)
     public var title: String? {
         get {
@@ -83,34 +84,34 @@ public struct WindowOptions: OptionSet {
             windowBacking.title = newValue
         }
     }
-    
+
     internal lazy var newPixelSize: Size2 = self.size
-    
+
     @inlinable @inline(__always)
     public var size: Size2 {
         return windowBacking.pixelSize
     }
-    
+
     @inlinable @inline(__always)
     public var pointSize: Size2 {
         return windowBacking.pointSize
     }
-    
+
     @inlinable @inline(__always)
     public var interfaceScale: Float {
         return windowBacking.interfaceScaleFactor
     }
-    
+
     @inlinable @inline(__always)
     public var safeAreaInsets: Insets {
         return windowBacking.pixelSafeAreaInsets
     }
-    
+
     @inlinable @inline(__always)
     public var pointSafeAreaInsets: Insets {
         return windowBacking.pointSafeAreaInsets
     }
-    
+
     @inline(__always)
     internal func reshapeIfNeeded() {
         if self.newPixelSize != renderTargetBackend.size || renderTargetBackend.wantsReshape {
@@ -118,16 +119,16 @@ public struct WindowOptions: OptionSet {
             renderTargetBackend.reshape()
         }
     }
-    
+
     internal init(identifier: String, style: WindowStyle, options: WindowOptions) {
         self.identifier = identifier
         self.style = style
         self.options = options
         self.clearColor = .black
     }
-    
+
     private var previousTime: Double = 0
-    
+
     /// The current delta time as a Double
     /// Use this instead of the System Float variant when keeping track of timers
     public var highPrecisionDeltaTime: Double = 0
@@ -138,14 +139,17 @@ public struct WindowOptions: OptionSet {
         self.highPrecisionDeltaTime = now - previousTime
         self.previousTime = now
         // Positive time change and minimum of 10 fps
-        guard highPrecisionDeltaTime > 0 && highPrecisionDeltaTime < 0.1 else {return}
+        guard highPrecisionDeltaTime > 0 && highPrecisionDeltaTime < 0.1 else { return }
 
-        Game.shared.windowManager.window(self, wantsUpdateForTimePassed: Float(highPrecisionDeltaTime))
+        Game.shared.windowManager.window(
+            self,
+            wantsUpdateForTimePassed: Float(highPrecisionDeltaTime)
+        )
         self.draw(frame)
-        
+
         frame &+= 1
     }
-    
+
     @usableFromInline @inline(__always)
     func setMouseHidden(_ hidden: Bool) {
         self.windowBacking.setMouseHidden(hidden)
@@ -156,7 +160,7 @@ public struct WindowOptions: OptionSet {
         let clampedToWindowFrame = position.clamped(within: windowFrame)
         self.windowBacking.setMousePosition(clampedToWindowFrame)
     }
-    
+
     func show() {
         self.windowBacking.show()
     }
@@ -164,28 +168,28 @@ public struct WindowOptions: OptionSet {
 
 @usableFromInline
 internal protocol WindowBacking: AnyObject {
-    var state: Window.State {get}
-    
-    var title: String? {get set}
-    
-    var pointSafeAreaInsets: Insets {get}
-    var pixelSafeAreaInsets: Insets {get}
-    var pointSize: Size2 {get}
-    var pixelSize: Size2 {get}
-    var interfaceScaleFactor: Float {get}
+    var state: Window.State { get }
+
+    var title: String? { get set }
+
+    var pointSafeAreaInsets: Insets { get }
+    var pixelSafeAreaInsets: Insets { get }
+    var pointSize: Size2 { get }
+    var pixelSize: Size2 { get }
+    var interfaceScaleFactor: Float { get }
 
     init(window: Window)
-    
+
     func setMouseHidden(_ hidden: Bool)
     func setMousePosition(_ position: Position2)
-    
+
     func show()
     func close()
 
     @MainActor func createWindowRenderTargetBackend() -> any RenderTargetBackend
 }
 
-internal extension Window {
+extension Window {
     @_transparent
     func createWindowBacking() -> any WindowBacking {
         #if canImport(UIKit)
@@ -205,8 +209,6 @@ internal extension Window {
         #endif
     }
 }
-
-
 
 public enum TouchChangeEvent {
     case began

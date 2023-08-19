@@ -7,13 +7,15 @@
 
 extension ResourceManager {
     public func addTileMapImporter(_ type: any TileMapImporter.Type) {
-        guard importers.tileMapImporters.contains(where: {$0 == type}) == false else {return}
+        guard importers.tileMapImporters.contains(where: { $0 == type }) == false else { return }
         importers.tileMapImporters.insert(type, at: 0)
     }
 
     fileprivate func importerForFileType(_ file: String) -> (any TileMapImporter)? {
         for type in self.importers.tileMapImporters {
-            if type.supportedFileExtensions().contains(where: {$0.caseInsensitiveCompare(file) == .orderedSame}) {
+            if type.supportedFileExtensions().contains(where: {
+                $0.caseInsensitiveCompare(file) == .orderedSame
+            }) {
                 return type.init()
             }
         }
@@ -46,15 +48,22 @@ extension TileMap {
         guard let fileExtension = path.components(separatedBy: ".").last else {
             throw GateEngineError.failedToLoad("Unknown file type.")
         }
-        guard let importer: any TileMapImporter = await Game.shared.resourceManager.importerForFileType(fileExtension) else {
+        guard
+            let importer: any TileMapImporter = await Game.shared.resourceManager
+                .importerForFileType(fileExtension)
+        else {
             throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
         }
 
         do {
             let data = try await Game.shared.platform.loadResource(from: path)
-            let copy = try await importer.process(data: data, baseURL: URL(string: path)!.deletingLastPathComponent(), options: options)
+            let copy = try await importer.process(
+                data: data,
+                baseURL: URL(string: path)!.deletingLastPathComponent(),
+                options: options
+            )
             self.init(layers: copy.layers)
-        }catch{
+        } catch {
             throw GateEngineError(decodingError: error)
         }
     }

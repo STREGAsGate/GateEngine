@@ -26,26 +26,26 @@ extension GLTF {
         case mat4 = "MAT4"
     }
 }
-fileprivate class GLTF: Decodable {
+private class GLTF: Decodable {
     var baseURL: URL? = nil
-    
+
     let scene: Int
-    let scenes: Array<Scene>
+    let scenes: [Scene]
     struct Scene: Decodable {
         let name: String
-        let nodes: Array<Int>
+        let nodes: [Int]
     }
-    
-    let nodes: Array<Node>
+
+    let nodes: [Node]
     struct Node: Decodable {
         let name: String
-        let children: Array<Int>?
+        let children: [Int]?
         let mesh: Int?
         let skin: Int?
         let skeleton: Int?
-        let rotation: Array<Float>?
-        let scale: Array<Float>?
-        let translation: Array<Float>?
+        let rotation: [Float]?
+        let scale: [Float]?
+        let translation: [Float]?
 
         var gameMathPosition: Position3? {
             if let array: [Float] = self.translation, array.count == 3 {
@@ -80,12 +80,12 @@ fileprivate class GLTF: Decodable {
             return transform
         }
     }
-    
-    let meshes: Array<Mesh>
+
+    let meshes: [Mesh]
     struct Mesh: Decodable {
         let name: String
 
-        let primitives: Array<Primitive>
+        let primitives: [Primitive]
         struct Primitive: Decodable {
             enum AttributeName: String, Codable {
                 case indices = "----"
@@ -102,31 +102,34 @@ fileprivate class GLTF: Decodable {
                 case weights = "WEIGHTS_0"
 
                 static var textureCoordinates: [Self] {
-                    return [.textureCoord, .textureCoord1, .textureCoord2, .textureCoord3, .textureCoord4]
+                    return [
+                        .textureCoord, .textureCoord1, .textureCoord2, .textureCoord3,
+                        .textureCoord4,
+                    ]
                 }
             }
-            let attributes: Dictionary<String, Int>
+            let attributes: [String: Int]
             let indices: Int
             let material: Int?
-            
-            subscript (value: AttributeName) -> Int? {
+
+            subscript(value: AttributeName) -> Int? {
                 return attributes[value.rawValue]
             }
         }
     }
-    
-    let skins: Array<Skin>?
+
+    let skins: [Skin]?
     struct Skin: Decodable {
         let name: String
         let inverseBindMatrices: Int
-        let joints: Array<Int>
+        let joints: [Int]
     }
-    
-    let animations: Array<Animation>?
+
+    let animations: [Animation]?
     struct Animation: Decodable {
         let name: String
-        let channels: Array<Channel>
-        let samplers: Array<Sampler>
+        let channels: [Channel]
+        let samplers: [Sampler]
         struct Channel: Decodable {
             let sampler: Int
             let target: Target
@@ -141,7 +144,7 @@ fileprivate class GLTF: Decodable {
                 }
             }
         }
-        
+
         struct Sampler: Decodable {
             let input: Int
             let interpolation: Interpolation
@@ -154,13 +157,13 @@ fileprivate class GLTF: Decodable {
         }
     }
 
-    let accessors: Array<Accessor>
+    let accessors: [Accessor]
     struct Accessor: Decodable {
         let bufferView: Int
         let componentType: ComponentType
         let count: Int
         let type: Type
-        
+
         var primitiveCount: Int {
             switch type {
             case .scalar:
@@ -199,32 +202,34 @@ fileprivate class GLTF: Decodable {
         }
     }
 
-    let bufferViews: Array<BufferView>
+    let bufferViews: [BufferView]
     struct BufferView: Decodable {
         let buffer: Int
         let byteLength: Int
         let byteOffset: Int
     }
 
-    let buffers: Array<Buffer>
+    let buffers: [Buffer]
     struct Buffer: Decodable {
         let byteLength: Int
         let uri: String?
     }
-    
+
     lazy var cachedBuffers: [Data?] = Array(repeating: nil, count: buffers.count)
     func buffer(at index: Int) async -> Data? {
         if let existing = cachedBuffers[index] {
             return existing
         }
-        guard let uri = buffers[index].uri else {return nil}
+        guard let uri = buffers[index].uri else { return nil }
 
         var buffer: Data? = nil
         if uri.hasPrefix("data"), let index = uri.firstIndex(of: ",") {
             let base64String = uri[uri.index(after: index)...]
             buffer = Data(base64Encoded: String(base64String))
-        }else{
-            buffer = try? await Game.shared.platform.loadResource(from: self.baseURL!.appendingPathComponent(uri).path)
+        } else {
+            buffer = try? await Game.shared.platform.loadResource(
+                from: self.baseURL!.appendingPathComponent(uri).path
+            )
         }
 
         cachedBuffers[index] = buffer
@@ -246,9 +251,11 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    array.append(Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self)))
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             case .uint16:
                 typealias Scalar = UInt16
                 let size = MemoryLayout<Scalar>.size
@@ -256,9 +263,11 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    array.append(Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self)))
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             case .uint32:
                 typealias Scalar = UInt32
                 let size = MemoryLayout<Scalar>.size
@@ -266,9 +275,11 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    array.append(Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self)))
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             case .int8:
                 typealias Scalar = Int8
                 let size = MemoryLayout<Scalar>.size
@@ -276,9 +287,11 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    array.append(Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self)))
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             case .int16:
                 typealias Scalar = Int16
                 let size = MemoryLayout<Scalar>.size
@@ -286,9 +299,11 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    array.append(Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self)))
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             case .float32:
                 typealias Scalar = Float
                 let size = MemoryLayout<Scalar>.size
@@ -296,14 +311,16 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    let pattern = UInt32(littleEndian: $0.load(fromByteOffset: offset, as: UInt32.self))
+                    let pattern = UInt32(
+                        littleEndian: $0.load(fromByteOffset: offset, as: UInt32.self)
+                    )
                     array.append(Float(bitPattern: pattern))
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             }
         }
     }
-    
+
     func values<T: BinaryFloatingPoint>(forAccessor accessorIndex: Int) async -> [T]? {
         let accessor = accessors[accessorIndex]
         let bufferView = bufferViews[accessor.bufferView]
@@ -318,9 +335,11 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    array.append(Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self)))
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             case .uint16:
                 typealias Scalar = UInt16
                 let size = MemoryLayout<Scalar>.size
@@ -328,9 +347,11 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    array.append(Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self)))
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             case .uint32:
                 typealias Scalar = UInt32
                 let size = MemoryLayout<Scalar>.size
@@ -338,9 +359,11 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    array.append(Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self)))
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             case .int8:
                 typealias Scalar = Int8
                 let size = MemoryLayout<Scalar>.size
@@ -348,9 +371,11 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    array.append(Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self)))
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             case .int16:
                 typealias Scalar = Int16
                 let size = MemoryLayout<Scalar>.size
@@ -358,9 +383,11 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    array.append(Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self)))
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             case .float32:
                 typealias Scalar = Float
                 let size = MemoryLayout<Scalar>.size
@@ -368,10 +395,12 @@ fileprivate class GLTF: Decodable {
                 array.reserveCapacity(count)
                 for index in 0 ..< count {
                     let offset = (index * size) + bufferView.byteOffset
-                    let pattern = UInt32(littleEndian: $0.load(fromByteOffset: offset, as: UInt32.self))
+                    let pattern = UInt32(
+                        littleEndian: $0.load(fromByteOffset: offset, as: UInt32.self)
+                    )
                     array.append(Float(bitPattern: pattern))
                 }
-                return array.map({T($0)})
+                return array.map({ T($0) })
             }
         }
     }
@@ -383,7 +412,7 @@ public class GLTransmissionFormat {
     fileprivate func gltf(from data: Data, baseURL: URL) throws -> GLTF {
         var jsonData: Data = data
         var bufferData: Data? = nil
-        if data[0..<4] == Data("glTF".utf8) {
+        if data[0 ..< 4] == Data("glTF".utf8) {
             let byteCount: Int = data.advanced(by: 12).withUnsafeBytes {
                 return Int(UInt32(littleEndian: $0.load(as: UInt32.self)))
             }
@@ -395,7 +424,7 @@ public class GLTransmissionFormat {
         gltf.cachedBuffers[0] = bufferData
         return gltf
     }
-    
+
     public static func canProcessFile(_ file: URL) -> Bool {
         let fileType = file.pathExtension
         if fileType.caseInsensitiveCompare("glb") == .orderedSame {
@@ -409,34 +438,41 @@ public class GLTransmissionFormat {
 }
 
 extension GLTransmissionFormat: GeometryImporter {
-    public func process(data: Data, baseURL: URL, options: GeometryImporterOptions) async throws -> RawGeometry {
+    public func process(data: Data, baseURL: URL, options: GeometryImporterOptions) async throws
+        -> RawGeometry
+    {
         let gltf = try gltf(from: data, baseURL: baseURL)
 
         var mesh: GLTF.Mesh? = nil
         if let name = options.subobjectName {
-            if let meshID = gltf.nodes.first(where: {$0.name == name})?.mesh {
+            if let meshID = gltf.nodes.first(where: { $0.name == name })?.mesh {
                 mesh = gltf.meshes[meshID]
-            }else if let _mesh = gltf.meshes.first(where: {$0.name == name}) {
+            } else if let _mesh = gltf.meshes.first(where: { $0.name == name }) {
                 mesh = _mesh
-            }else{
-                let meshNames = gltf.meshes.map({$0.name})
-                let nodeNames = gltf.nodes.filter({$0.mesh != nil}).map({$0.name})
-                throw GateEngineError.failedToDecode("Couldn't find geometry named \(name).\nAvailable mesh names: \(meshNames)\nAvaliable node names: \(nodeNames)")
+            } else {
+                let meshNames = gltf.meshes.map({ $0.name })
+                let nodeNames = gltf.nodes.filter({ $0.mesh != nil }).map({ $0.name })
+                throw GateEngineError.failedToDecode(
+                    "Couldn't find geometry named \(name).\nAvailable mesh names: \(meshNames)\nAvaliable node names: \(nodeNames)"
+                )
             }
-        }else{
+        } else {
             mesh = gltf.meshes.first
         }
         guard let mesh = mesh else {
             throw GateEngineError.failedToDecode("No geometry.")
         }
-        
-        var geometries: [RawGeometry] = []
-        
-        for primitive in mesh.primitives {
-            guard let indices: [UInt16] = await gltf.values(forAccessor: primitive.indices) else {continue}
 
-            guard let positionsAccessorIndex = primitive[.position] else {continue}
-            guard let positions: [Float] = await gltf.values(forAccessor: positionsAccessorIndex) else {continue}
+        var geometries: [RawGeometry] = []
+
+        for primitive in mesh.primitives {
+            guard let indices: [UInt16] = await gltf.values(forAccessor: primitive.indices) else {
+                continue
+            }
+
+            guard let positionsAccessorIndex = primitive[.position] else { continue }
+            guard let positions: [Float] = await gltf.values(forAccessor: positionsAccessorIndex)
+            else { continue }
 
             var uvSets: [[Float]] = []
             for setID in GLTF.Mesh.Primitive.AttributeName.textureCoordinates {
@@ -444,32 +480,32 @@ extension GLTransmissionFormat: GeometryImporter {
                     if let uvs: [Float] = await gltf.values(forAccessor: uvsAccessorIndex) {
                         uvSets.append(uvs)
                     }
-                }else{
+                } else {
                     break
                 }
             }
-            
+
             var normals: [Float]? = nil
             if let normalsAccessorIndex = primitive[.normal] {
                 normals = await gltf.values(forAccessor: normalsAccessorIndex)
             }
-            
+
             var tangents: [Float]? = nil
             if let accessorIndex = primitive[.tangent] {
                 tangents = await gltf.values(forAccessor: accessorIndex)
                 #warning("Tangents not filtered to vec3")
             }
-            
+
             var colors: [Float]? = nil
             if let accessorIndex = primitive[.vertexColor] {
                 switch gltf.accessors[accessorIndex].componentType {
                 case .uint8:
                     if let eightBit: [UInt8] = await gltf.values(forAccessor: accessorIndex) {
-                        colors = eightBit.map({Float($0) / Float(UInt8.max)})
+                        colors = eightBit.map({ Float($0) / Float(UInt8.max) })
                     }
                 case .uint16:
                     if let eightBit: [UInt16] = await gltf.values(forAccessor: accessorIndex) {
-                        colors = eightBit.map({Float($0) / Float(UInt16.max)})
+                        colors = eightBit.map({ Float($0) / Float(UInt16.max) })
                     }
                 case .float32:
                     colors = await gltf.values(forAccessor: accessorIndex)
@@ -486,11 +522,18 @@ extension GLTransmissionFormat: GeometryImporter {
                     }
                 }
             }
-            
-            let geometry = RawGeometry(positions: positions, uvSets: uvSets, normals: normals, tangents: tangents, colors: colors, indices: indices)
+
+            let geometry = RawGeometry(
+                positions: positions,
+                uvSets: uvSets,
+                normals: normals,
+                tangents: tangents,
+                colors: colors,
+                indices: indices
+            )
             geometries.append(geometry)
         }
-        
+
         guard geometries.isEmpty == false else {
             throw GateEngineError.failedToDecode("Failed to decode geometry.")
         }
@@ -500,7 +543,7 @@ extension GLTransmissionFormat: GeometryImporter {
             let transform = gltf.nodes[gltf.scenes[gltf.scene].nodes[0]].transform.createMatrix()
             geometry = geometry * transform
         }
-        
+
         return geometry
     }
 }
@@ -529,10 +572,18 @@ extension GLTransmissionFormat: SkinImporter {
         }
         return nil
     }
-    private func inverseBindMatrices(from bufferView: GLTF.BufferView, expecting count: Int, in gltf: GLTF) async -> [Matrix4x4]? {
-        guard let buffer = await gltf.buffer(at: bufferView.buffer)?.advanced(by: bufferView.byteOffset) else {return nil}
+    private func inverseBindMatrices(
+        from bufferView: GLTF.BufferView,
+        expecting count: Int,
+        in gltf: GLTF
+    ) async -> [Matrix4x4]? {
+        guard
+            let buffer = await gltf.buffer(at: bufferView.buffer)?.advanced(
+                by: bufferView.byteOffset
+            )
+        else { return nil }
         let count = count * 16
-        var array = Array<Float>(repeating: 0, count: count)
+        var array = [Float](repeating: 0, count: count)
 
         for index in 0 ..< count {
             buffer.advanced(by: index * MemoryLayout<Float>.size).withUnsafeBytes {
@@ -540,47 +591,66 @@ extension GLTransmissionFormat: SkinImporter {
                 array[index] = Float(bitPattern: pattern)
             }
         }
-        
-        return stride(from: 0, to: array.count, by: 16).map({Array(array[$0 ..< $0 + 16])}).map({Matrix4x4(transposedArray: $0)})
+
+        return stride(from: 0, to: array.count, by: 16).map({ Array(array[$0 ..< $0 + 16]) }).map({
+            Matrix4x4(transposedArray: $0)
+        })
     }
-    public func process(data: Data, baseURL: URL, options: SkinImporterOptions) async throws -> Skin {
+    public func process(data: Data, baseURL: URL, options: SkinImporterOptions) async throws -> Skin
+    {
         let gltf = try gltf(from: data, baseURL: baseURL)
         guard let skins = gltf.skins, skins.isEmpty == false else {
             throw GateEngineError.failedToDecode("File contains no skins.")
         }
-        
+
         var skinIndex = 0
         if let desired = options.subobjectName {
-            if let direct = gltf.skins?.firstIndex(where: {$0.name.caseInsensitiveCompare(options.subobjectName ?? "") == .orderedSame}) {
+            if let direct = gltf.skins?.firstIndex(where: {
+                $0.name.caseInsensitiveCompare(options.subobjectName ?? "") == .orderedSame
+            }) {
                 skinIndex = direct
-            }else if let nodeSkinIndex = gltf.nodes.first(where: {$0.skin != nil && $0.name == desired})?.skin {
+            } else if let nodeSkinIndex = gltf.nodes.first(where: {
+                $0.skin != nil && $0.name == desired
+            })?.skin {
                 skinIndex = nodeSkinIndex
             }
         }
-        
+
         let skin = skins[skinIndex]
-        guard let inverseBindMatrices = await inverseBindMatrices(from: gltf.bufferViews[skin.inverseBindMatrices], expecting: skin.joints.count, in: gltf) else {
+        guard
+            let inverseBindMatrices = await inverseBindMatrices(
+                from: gltf.bufferViews[skin.inverseBindMatrices],
+                expecting: skin.joints.count,
+                in: gltf
+            )
+        else {
             throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
-        
+
         guard let meshID = meshForSkin(skinID: skinIndex, in: gltf) else {
             throw GateEngineError.failedToDecode("Couldn't locate skin geometry.")
         }
         let mesh = gltf.meshes[meshID]
-        
-        guard let meshJoints: [UInt32] = await gltf.values(forAccessor: mesh.primitives[0][.joints]!) else {
+
+        guard
+            let meshJoints: [UInt32] = await gltf.values(forAccessor: mesh.primitives[0][.joints]!)
+        else {
             throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
-        guard let meshWeights: [Float] = await gltf.values(forAccessor: mesh.primitives[0][.weights]!) else {
+        guard
+            let meshWeights: [Float] = await gltf.values(forAccessor: mesh.primitives[0][.weights]!)
+        else {
             throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
-        
+
         var joints: [Skin.Joint] = []
         joints.reserveCapacity(skin.joints.count)
         for index in skin.joints.indices {
-            joints.append(Skin.Joint(id: skin.joints[index], inverseBindMatrix: inverseBindMatrices[index]))
+            joints.append(
+                Skin.Joint(id: skin.joints[index], inverseBindMatrix: inverseBindMatrices[index])
+            )
         }
-        
+
         return Skin(joints: joints, indices: meshJoints, weights: meshWeights, bindShape: .identity)
     }
 }
@@ -593,7 +663,9 @@ extension GLTransmissionFormat: SkeletonImporter {
                 let node = gltf.nodes[index]
                 if let skeleton = node.skeleton {
                     if let name = name {
-                        guard node.name.caseInsensitiveCompare(name) == .orderedSame else {continue}
+                        guard node.name.caseInsensitiveCompare(name) == .orderedSame else {
+                            continue
+                        }
                     }
                     return skeleton
                 }
@@ -612,14 +684,16 @@ extension GLTransmissionFormat: SkeletonImporter {
         }
         return gltf.scenes[gltf.scene].nodes.first
     }
-    public func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) throws -> Skeleton.Joint {
+    public func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) throws
+        -> Skeleton.Joint
+    {
         let gltf = try gltf(from: data, baseURL: baseURL)
         guard let rootNode = skeletonNode(named: options.subobjectName, in: gltf) else {
             throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
         }
         let rootJoint = Skeleton.Joint(id: rootNode, name: gltf.nodes[rootNode].name)
         rootJoint.localTransform = gltf.nodes[rootNode].transform
-        
+
         func addChildren(gltfNode: Int, parentJoint: Skeleton.Joint) {
             for index in gltf.nodes[gltfNode].children ?? [] {
                 let node = gltf.nodes[index]
@@ -637,18 +711,25 @@ extension GLTransmissionFormat: SkeletonImporter {
 extension GLTransmissionFormat: SkeletalAnimationImporter {
     fileprivate func animation(named name: String?, from gltf: GLTF) -> GLTF.Animation? {
         if let name = name {
-            return gltf.animations?.first(where: {$0.name.caseInsensitiveCompare(name) == .orderedSame})
+            return gltf.animations?.first(where: {
+                $0.name.caseInsensitiveCompare(name) == .orderedSame
+            })
         }
         return gltf.animations?.first
     }
-    public func process(data: Data, baseURL: URL, options: SkeletalAnimationImporterOptions) async throws -> SkeletalAnimation {
+    public func process(data: Data, baseURL: URL, options: SkeletalAnimationImporterOptions)
+        async throws -> SkeletalAnimation
+    {
         let gltf = try gltf(from: data, baseURL: baseURL)
-        
+
         guard let animation = animation(named: options.subobjectName, from: gltf) else {
-            throw GateEngineError.failedToDecode("Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))")
+            throw GateEngineError.failedToDecode(
+                "Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))"
+            )
         }
-        var animations: [Skeleton.Joint.ID : SkeletalAnimation.JointAnimation] = [:]
-        func jointAnimation(forTarget target: Skeleton.Joint.ID) -> SkeletalAnimation.JointAnimation {
+        var animations: [Skeleton.Joint.ID: SkeletalAnimation.JointAnimation] = [:]
+        func jointAnimation(forTarget target: Skeleton.Joint.ID) -> SkeletalAnimation.JointAnimation
+        {
             if let existing = animations[target] {
                 return existing
             }
@@ -656,26 +737,26 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
             animations[target] = new
             return new
         }
-        do {// Add bind pose
+        do {  // Add bind pose
             guard let rootNode = skeletonNode(named: nil, in: gltf) else {
                 throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
             }
             let rootJoint = Skeleton.Joint(id: rootNode, name: gltf.nodes[rootNode].name)
             rootJoint.localTransform = gltf.nodes[rootNode].transform
-            
+
             func addChildren(gltfNode: Int, parentJoint: Skeleton.Joint) {
                 for index in gltf.nodes[gltfNode].children ?? [] {
                     let node = gltf.nodes[index]
-                    
+
                     let jointAnimation = jointAnimation(forTarget: index)
                     jointAnimation.positionOutput.times.append(0)
                     jointAnimation.positionOutput.positions.append(node.transform.position)
                     jointAnimation.positionOutput.interpolation = .step
-                    
+
                     jointAnimation.rotationOutput.times.append(0)
                     jointAnimation.rotationOutput.rotations.append(node.transform.rotation)
                     jointAnimation.rotationOutput.interpolation = .step
-                    
+
                     jointAnimation.scaleOutput.times.append(0)
                     jointAnimation.scaleOutput.scales.append(node.transform.scale)
                     jointAnimation.scaleOutput.interpolation = .step
@@ -683,23 +764,28 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
             }
             addChildren(gltfNode: rootNode, parentJoint: rootJoint)
         }
-        
-        var timeMax: Float = -1000000000
-        
+
+        var timeMax: Float = -1_000_000_000
+
         for channel in animation.channels {
             let jointAnimation = jointAnimation(forTarget: channel.target.node)
 
             let sampler = animation.samplers[channel.sampler]
-            
-            guard let times: [Float] = await gltf.values(forAccessor: sampler.input) else {continue}
-            guard let values: [Float] = await gltf.values(forAccessor: sampler.output) else {continue}
+
+            guard let times: [Float] = await gltf.values(forAccessor: sampler.input) else {
+                continue
+            }
+            guard let values: [Float] = await gltf.values(forAccessor: sampler.output) else {
+                continue
+            }
 
             switch channel.target.path {
             case .translation:
                 jointAnimation.positionOutput.times = times
-                jointAnimation.positionOutput.positions = stride(from: 0, to: values.count, by: 3).map({
-                    return Position3(x: values[$0 + 0], y: values[$0 + 1], z: values[$0 + 2])
-                })
+                jointAnimation.positionOutput.positions = stride(from: 0, to: values.count, by: 3)
+                    .map({
+                        return Position3(x: values[$0 + 0], y: values[$0 + 1], z: values[$0 + 2])
+                    })
                 switch sampler.interpolation {
                 case .step:
                     jointAnimation.positionOutput.interpolation = .step
@@ -708,9 +794,15 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
                 }
             case .rotation:
                 jointAnimation.rotationOutput.times = times
-                jointAnimation.rotationOutput.rotations = stride(from: 0, to: values.count, by: 4).map({
-                    return Quaternion(x: values[$0 + 0], y: values[$0 + 1], z: values[$0 + 2], w: values[$0 + 3])
-                })
+                jointAnimation.rotationOutput.rotations = stride(from: 0, to: values.count, by: 4)
+                    .map({
+                        return Quaternion(
+                            x: values[$0 + 0],
+                            y: values[$0 + 1],
+                            z: values[$0 + 2],
+                            w: values[$0 + 3]
+                        )
+                    })
                 switch sampler.interpolation {
                 case .step:
                     jointAnimation.rotationOutput.interpolation = .step
@@ -720,7 +812,11 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
             case .scale:
                 jointAnimation.scaleOutput.times = times
                 jointAnimation.scaleOutput.scales = stride(from: 0, to: values.count, by: 3).map({
-                    return Size3(width: values[$0 + 0], height: values[$0 + 1], depth: values[$0 + 2])
+                    return Size3(
+                        width: values[$0 + 0],
+                        height: values[$0 + 1],
+                        depth: values[$0 + 2]
+                    )
                 })
                 switch sampler.interpolation {
                 case .step:
@@ -731,7 +827,7 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
             case .weight:
                 break
             }
-            
+
             timeMax = .maximum(times.max()!, timeMax)
         }
 

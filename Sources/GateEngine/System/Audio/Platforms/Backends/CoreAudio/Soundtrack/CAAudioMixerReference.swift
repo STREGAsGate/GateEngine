@@ -10,11 +10,11 @@ import AVFoundation
 internal class CAAudioMixerReference: AudioMixerReference {
     unowned let contextReference: CAContextReference
     let mixerNode: AVAudioMixerNode
-    
+
     @usableFromInline
     init(_ contextReference: CAContextReference) {
         self.contextReference = contextReference
-        
+
         let engine = contextReference.engine
         let mixerNode = AVAudioMixerNode()
         if #available(macOS 10.15, iOS 13, tvOS 13, *) {
@@ -23,8 +23,12 @@ internal class CAAudioMixerReference: AudioMixerReference {
             mixerNode.renderingAlgorithm = .stereoPassThrough
         }
         engine.attach(mixerNode)
-        engine.connect(mixerNode, to: engine.mainMixerNode, format: engine.outputNode.inputFormat(forBus: 0))
-        
+        engine.connect(
+            mixerNode,
+            to: engine.mainMixerNode,
+            format: engine.outputNode.inputFormat(forBus: 0)
+        )
+
         self.mixerNode = mixerNode
     }
 
@@ -37,11 +41,10 @@ internal class CAAudioMixerReference: AudioMixerReference {
             mixerNode.volume = newValue
         }
     }
-    
+
     @inlinable
     func createAudioTrackReference() -> any AudioTrackReference {
         return CAAudioTrackReference(self)
     }
 }
 #endif
-

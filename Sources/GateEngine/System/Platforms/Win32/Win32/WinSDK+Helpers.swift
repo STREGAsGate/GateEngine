@@ -50,12 +50,14 @@ internal func positionFrom(_ lparam: LPARAM) -> Position2 {
 
 @_transparent
 internal var QS_INPUT: DWORD {
-    return DWORD(QS_MOUSE) | DWORD(QS_KEY) | DWORD(QS_RAWINPUT) | DWORD(QS_TOUCH) | DWORD(QS_POINTER)
+    return DWORD(QS_MOUSE) | DWORD(QS_KEY) | DWORD(QS_RAWINPUT) | DWORD(QS_TOUCH)
+        | DWORD(QS_POINTER)
 }
 
 @_transparent
 internal var QS_ALLINPUT: DWORD {
-    return QS_INPUT | DWORD(QS_POSTMESSAGE) | DWORD(QS_TIMER) | DWORD(QS_PAINT) | DWORD(QS_HOTKEY) | DWORD(QS_SENDMESSAGE)
+    return QS_INPUT | DWORD(QS_POSTMESSAGE) | DWORD(QS_TIMER) | DWORD(QS_PAINT) | DWORD(QS_HOTKEY)
+        | DWORD(QS_SENDMESSAGE)
 }
 
 @inline(__always)
@@ -78,11 +80,11 @@ func getFILETIMEoffset() -> WinSDK.LARGE_INTEGER {
     return t
 }
 
-fileprivate var offset: WinSDK.LARGE_INTEGER = WinSDK.LARGE_INTEGER()
-fileprivate var frequencyToMicroseconds: Double = 0
-fileprivate var initialized: Bool = false
-fileprivate var usePerformanceCounter: Bool = false
-internal struct timespec { 
+private var offset: WinSDK.LARGE_INTEGER = WinSDK.LARGE_INTEGER()
+private var frequencyToMicroseconds: Double = 0
+private var initialized: Bool = false
+private var usePerformanceCounter: Bool = false
+internal struct timespec {
     var tv_sec: Double = 0
     var tv_nsec: Double = 0
 }
@@ -93,13 +95,13 @@ internal func clock_gettime(_ X: Int, _ tv: inout timespec) -> Int {
     var f: WinSDK.FILETIME = FILETIME()
     var microseconds: Double = 0
 
-    if (!initialized) {
+    if !initialized {
         var performanceFrequency: WinSDK.LARGE_INTEGER = WinSDK.LARGE_INTEGER()
         initialized = true
         usePerformanceCounter = WinSDK.QueryPerformanceFrequency(&performanceFrequency)
-        if (usePerformanceCounter) {
+        if usePerformanceCounter {
             WinSDK.QueryPerformanceCounter(&offset)
-            frequencyToMicroseconds = Double(performanceFrequency.QuadPart) / 1000000
+            frequencyToMicroseconds = Double(performanceFrequency.QuadPart) / 1_000_000
         } else {
             offset = getFILETIMEoffset()
             frequencyToMicroseconds = 10
@@ -107,7 +109,7 @@ internal func clock_gettime(_ X: Int, _ tv: inout timespec) -> Int {
     }
     if usePerformanceCounter {
         WinSDK.QueryPerformanceCounter(&t)
-    }else{
+    } else {
         WinSDK.GetSystemTimeAsFileTime(&f)
         t.QuadPart = LONGLONG(f.dwHighDateTime)
         t.QuadPart <<= 32
@@ -117,12 +119,12 @@ internal func clock_gettime(_ X: Int, _ tv: inout timespec) -> Int {
     t.QuadPart -= offset.QuadPart
     microseconds = Double(t.QuadPart) / frequencyToMicroseconds
     t.QuadPart = LONGLONG(microseconds)
-    tv.tv_sec = Double(t.QuadPart) / 1000000
-    tv.tv_nsec = Double(t.QuadPart).truncatingRemainder(dividingBy: 1000000)
+    tv.tv_sec = Double(t.QuadPart) / 1_000_000
+    tv.tv_nsec = Double(t.QuadPart).truncatingRemainder(dividingBy: 1_000_000)
     return 0
 }
 
-internal extension String {
+extension String {
     @inlinable @inline(__always)
     init(windowsUTF8 lpcstr: LPCSTR) {
         self = withUnsafePointer(to: lpcstr) {
@@ -133,7 +135,7 @@ internal extension String {
     }
 
     @inlinable @inline(__always)
-    var windowsUTF8: Array<CHAR> {
+    var windowsUTF8: [CHAR] {
         return self.withCString(encodedAs: UTF8.self) {
             return $0.withMemoryRebound(to: CHAR.self, capacity: self.utf8.count + 1) {
                 return Array(UnsafeBufferPointer(start: $0, count: self.utf8.count + 1))
@@ -147,7 +149,7 @@ internal extension String {
     }
 
     @inlinable @inline(__always)
-    var windowsUTF16: Array<WCHAR> {
+    var windowsUTF16: [WCHAR] {
         return self.withCString(encodedAs: UTF16.self) {
             return $0.withMemoryRebound(to: WCHAR.self, capacity: self.utf16.count + 1) {
                 return Array(UnsafeBufferPointer(start: $0, count: self.utf16.count + 1))

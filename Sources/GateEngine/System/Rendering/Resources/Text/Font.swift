@@ -20,20 +20,26 @@ struct AlignedCharacter {
 }
 
 protocol FontBackend {
-    nonisolated var preferredSampleFilter: Text.SampleFilter {get}
+    nonisolated var preferredSampleFilter: Text.SampleFilter { get }
     @MainActor mutating func texture(forKey key: Font.Key) -> Texture
-    @MainActor mutating func characterData(forKey key: Font.Key, character: Character) -> CharacterData
-    @MainActor mutating func alignedCharacter(forKey key: Font.Key, character: Character, origin: Position2, xAdvance: inout Float) -> AlignedCharacter
+    @MainActor mutating func characterData(forKey key: Font.Key, character: Character)
+        -> CharacterData
+    @MainActor mutating func alignedCharacter(
+        forKey key: Font.Key,
+        character: Character,
+        origin: Position2,
+        xAdvance: inout Float
+    ) -> AlignedCharacter
 }
 
 public class Font: OldResource {
     @RequiresState(.ready)
     var backend: (any FontBackend)! = nil
-    
+
     internal var preferredSampleFilter: Text.SampleFilter {
         return backend.preferredSampleFilter
     }
-    
+
     public init(ttfRegular regular: String) {
         super.init()
         #if DEBUG
@@ -47,12 +53,12 @@ public class Font: OldResource {
                     self.backend = backend
                     self.state = .ready
                 }
-            }catch let error as GateEngineError {
+            } catch let error as GateEngineError {
                 Task { @MainActor in
                     Log.debug("Resource \(regular) failed ->", error)
                     self.state = .failed(error: error)
                 }
-            }catch{
+            } catch {
                 Log.fatalError("error must be a GateEngineError")
             }
         }
@@ -63,7 +69,7 @@ public class Font: OldResource {
         }
         #endif
     }
-    
+
     public init(pngRegular regular: String) {
         super.init()
         #if DEBUG
@@ -76,49 +82,64 @@ public class Font: OldResource {
                     self.backend = backend
                     self.state = .ready
                 }
-            }catch let error as GateEngineError {
+            } catch let error as GateEngineError {
                 Task { @MainActor in
                     Log.debug("Resource \(regular) failed ->", error)
                     self.state = .failed(error: error)
                 }
-            }catch{
+            } catch {
                 fatalError("error must be a GateEngineError")
             }
         }
     }
-    
-    @MainActor func characterData(forCharacter character: Character, pointSize: UInt, style: Font.Style) -> CharacterData {
+
+    @MainActor func characterData(
+        forCharacter character: Character,
+        pointSize: UInt,
+        style: Font.Style
+    ) -> CharacterData {
         let key = Key(style: style, pointSize: pointSize)
         return backend.characterData(forKey: key, character: character)
     }
-    
-    @MainActor func alignedCharacter(forCharacter character: Character, pointSize: UInt, style: Font.Style, origin: Position2, xAdvance: inout Float) -> AlignedCharacter {
+
+    @MainActor func alignedCharacter(
+        forCharacter character: Character,
+        pointSize: UInt,
+        style: Font.Style,
+        origin: Position2,
+        xAdvance: inout Float
+    ) -> AlignedCharacter {
         let key = Key(style: style, pointSize: pointSize)
-        return backend.alignedCharacter(forKey: key, character: character, origin: origin, xAdvance: &xAdvance)
+        return backend.alignedCharacter(
+            forKey: key,
+            character: character,
+            origin: origin,
+            xAdvance: &xAdvance
+        )
     }
-    
+
     @MainActor func texture(forPointSize pointSize: UInt, style: Font.Style) -> Texture {
         let key = Key(style: style, pointSize: pointSize)
         return backend.texture(forKey: key)
     }
 }
 
-@MainActor public extension Font {
-    enum Style: Int {
+@MainActor extension Font {
+    public enum Style: Int {
         case regular
         case bold
         case italic
         case boldItalic
     }
-    
-    struct Key: Hashable {
+
+    public struct Key: Hashable {
         let style: Font.Style
         let pointSize: UInt
     }
-    
-    static let `default`: Font = tuffy
-    
-    nonisolated static let tuffy: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy.ttf")
-    nonisolated static let micro: Font = Font(pngRegular: "GateEngine/Fonts/Micro/Micro.png")
-    nonisolated static let babel: Font = Font(pngRegular: "GateEngine/Fonts/Babel/Babel.png")
+
+    public static let `default`: Font = tuffy
+
+    public nonisolated static let tuffy: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy.ttf")
+    public nonisolated static let micro: Font = Font(pngRegular: "GateEngine/Fonts/Micro/Micro.png")
+    public nonisolated static let babel: Font = Font(pngRegular: "GateEngine/Fonts/Babel/Babel.png")
 }

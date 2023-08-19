@@ -15,20 +15,25 @@ final class WASIWindow: WindowBacking {
     unowned let window: Window
     var state: Window.State = .hidden
     let canvas: HTMLCanvasElement
-    
+
     // Stoted Metadata
     var pixelSafeAreaInsets: Insets = .zero
     var pointSafeAreaInsets: Insets = .zero
     var pixelSize: Size2 = Size2(640, 480)
     var pointSize: Size2 = Size2(640, 480)
     var interfaceScaleFactor: Float = 1
-    
+
     // Called from onreseize observer
     func updateStoredMetaData() {
         self.interfaceScaleFactor = Float(globalThis.document.defaultView?.devicePixelRatio ?? 1)
-        self.pointSize = Size2(Float(globalThis.window.innerWidth), Float(globalThis.window.innerHeight))
+        self.pointSize = Size2(
+            Float(globalThis.window.innerWidth),
+            Float(globalThis.window.innerHeight)
+        )
         self.pixelSize = self.pointSize * self.interfaceScaleFactor
-        if let doc = globalThis.document.documentElement, let obj = JSObject.global.getComputedStyle?(doc) {
+        if let doc = globalThis.document.documentElement,
+            let obj = JSObject.global.getComputedStyle?(doc)
+        {
             var insets: Insets = .zero
             if let s = obj.getPropertyValue("--sat").string {
                 let v = s[...s.index(before: s.index(before: s.index(before: s.endIndex)))]
@@ -58,12 +63,12 @@ final class WASIWindow: WindowBacking {
             self.pixelSafeAreaInsets = self.pointSafeAreaInsets * self.interfaceScaleFactor
         }
     }
-    
+
     required init(window: Window) {
         self.window = window
-        
+
         let document: Document = globalThis.document
-        
+
         let _canvas = document.createElement(localName: "canvas")
         _canvas.id = "mainCanvas"
         canvas = HTMLCanvasElement(from: _canvas)!
@@ -83,26 +88,26 @@ final class WASIWindow: WindowBacking {
 
     @preconcurrency @MainActor func vSync(_ deltaTime: Double) {
         self.window.vSyncCalled()
-        Game.shared.eventLoop() {
+        Game.shared.eventLoop {
             _ = globalThis.window.requestAnimationFrame(callback: self.vSync(_:))
         }
     }
-    
+
     @MainActor func show() {
         self.state = .shown
         self.updateStoredMetaData()
         self.vSync(0)
         self.addListeners()
     }
-    
+
     func setMouseHidden(_ hidden: Bool) {
         if hidden {
             globalThis.document.documentElement!.attributes["cursor"]?.value = "none"
-        }else{
+        } else {
             globalThis.document.documentElement!.attributes["cursor"]?.value = "default"
         }
     }
-    
+
     func setMousePosition(_ position: Position2) {
         // not possible in HTML5
     }
@@ -110,65 +115,68 @@ final class WASIWindow: WindowBacking {
     @MainActor func createWindowRenderTargetBackend() -> any RenderTargetBackend {
         return WebGL2RenderTarget(isWindow: true)
     }
-    
+
     internal struct PointerLock {
         private weak var canvas: HTMLCanvasElement?
-        
+
         fileprivate var locked: Bool = false
         private var requestedLockChange: Bool = false
         private var requestedLock: Bool = false
-        
+
         init(canvas: HTMLCanvasElement) {
             self.canvas = canvas
         }
 
         fileprivate mutating func setRequestedLockIfNeeded() {
-            guard self.requestedLockChange else {return}
+            guard self.requestedLockChange else { return }
             self.requestedLockChange = false
-            guard let this = canvas?.jsObject else {return}
+            guard let this = canvas?.jsObject else { return }
             if requestedLock {
                 this["requestPointerLock"].function?(this: this)
-            }else{
+            } else {
                 this["exitPointerLock"].function?(this: this)
             }
         }
-        
+
         internal mutating func requestLock(shouldLock lock: Bool) {
             self.requestedLockChange = true
             self.requestedLock = lock
         }
-        
+
         fileprivate mutating func toggleLocked() {
             self.locked = locked ? false : true
         }
     }
 
     internal lazy var pointerLock: PointerLock = PointerLock(canvas: canvas)
-    
+
     @MainActor private func performedUserGesture() {
         pointerLock.setRequestedLockIfNeeded()
     }
-    
+
     @inline(__always)
-    private func getPositionAndDelta(from event: MouseEvent) -> (position: Position2, delta: Position2) {
+    private func getPositionAndDelta(from event: MouseEvent) -> (
+        position: Position2, delta: Position2
+    ) {
         let backingScale = Float(globalThis.document.defaultView?.devicePixelRatio ?? 1)
-        let position: Position2 = Position2(x: Float(event.pageX), y: Float(event.pageY)) * backingScale
+        let position: Position2 =
+            Position2(x: Float(event.pageX), y: Float(event.pageY)) * backingScale
         let deltaX = Float(event.jsObject["movementX"].jsValue.number ?? 0)
         let deltaY = Float(event.jsObject["movementY"].jsValue.number ?? 0)
         let delta: Position2 = Position2(x: deltaX, y: deltaY) * backingScale
         return (position, delta)
     }
-    
+
     private func addListeners() {
         globalThis.addEventListener(type: "pointerlockchange") { event in
             self.pointerLock.toggleLocked()
             #if GATEENGINE_DEBUG_HID
             Log.info("pointerlockchange", self.pointerLock.locked)
             #endif
-            Task {@MainActor in
+            Task { @MainActor in
                 if self.pointerLock.locked {
                     Game.shared.hid.mouse.setMode(.locked)
-                }else{
+                } else {
                     Game.shared.hid.mouse.setMode(.standard)
                 }
             }
@@ -176,7 +184,7 @@ final class WASIWindow: WindowBacking {
         globalThis.addEventListener(type: "pointerlockerror") { event in
             Log.error("PointerLockError.", "Returning mouse to mode 'standard'.")
             self.pointerLock.locked = false
-            Task {@MainActor in
+            Task { @MainActor in
                 Game.shared.hid.mouse.mode = .standard
             }
         }
@@ -184,17 +192,19 @@ final class WASIWindow: WindowBacking {
             self.updateStoredMetaData()
             return .null
         }
-        
+
         globalThis.addEventListener(type: "keydown") { event in
             let event = DOM.KeyboardEvent(unsafelyWrapping: event.jsObject)
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
-            Task {@MainActor in
-                _ = Game.shared.hid.keyboardDidHandle(key: key,
-                                                      character: event.key.first,
-                                                      modifiers: modifiers,
-                                                      isRepeat: event.repeat,
-                                                      event: .keyDown)
+            Task { @MainActor in
+                _ = Game.shared.hid.keyboardDidHandle(
+                    key: key,
+                    character: event.key.first,
+                    modifiers: modifiers,
+                    isRepeat: event.repeat,
+                    event: .keyDown
+                )
                 if event.isTrusted && key != .escape {
                     self.performedUserGesture()
                 }
@@ -205,45 +215,53 @@ final class WASIWindow: WindowBacking {
             let event = DOM.KeyboardEvent(unsafelyWrapping: event.jsObject)
             let modifiers = self.modifiers(fromEvent: event)
             let key = self.key(fromEvent: event)
-            Task {@MainActor in
-                _ = Game.shared.hid.keyboardDidHandle(key: key,
-                                                       character: event.key.first,
-                                                       modifiers: modifiers,
-                                                       isRepeat: event.repeat,
-                                                       event: .keyUp)
+            Task { @MainActor in
+                _ = Game.shared.hid.keyboardDidHandle(
+                    key: key,
+                    character: event.key.first,
+                    modifiers: modifiers,
+                    isRepeat: event.repeat,
+                    event: .keyUp
+                )
             }
             event.preventDefault()
         }
         canvas.addEventListener(type: "mouseenter") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let locations = self.getPositionAndDelta(from: event)
-            Task {@MainActor in
-                Game.shared.hid.mouseChange(event: .entered,
-                                            position: locations.position,
-                                            delta: locations.delta,
-                                            window: self.window)
+            Task { @MainActor in
+                Game.shared.hid.mouseChange(
+                    event: .entered,
+                    position: locations.position,
+                    delta: locations.delta,
+                    window: self.window
+                )
             }
             event.preventDefault()
         }
         canvas.addEventListener(type: "mousemove") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let locations = self.getPositionAndDelta(from: event)
-            Task {@MainActor in
-                Game.shared.hid.mouseChange(event: .moved,
-                                            position: locations.position,
-                                            delta: locations.delta,
-                                            window: self.window)
+            Task { @MainActor in
+                Game.shared.hid.mouseChange(
+                    event: .moved,
+                    position: locations.position,
+                    delta: locations.delta,
+                    window: self.window
+                )
             }
             event.preventDefault()
         }
         canvas.addEventListener(type: "mouseleave") { event in
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let locations = self.getPositionAndDelta(from: event)
-            Task {@MainActor in
-                Game.shared.hid.mouseChange(event: .exited,
-                                            position: locations.position,
-                                            delta: locations.delta,
-                                            window: self.window)
+            Task { @MainActor in
+                Game.shared.hid.mouseChange(
+                    event: .exited,
+                    position: locations.position,
+                    delta: locations.delta,
+                    window: self.window
+                )
             }
             event.preventDefault()
         }
@@ -251,12 +269,14 @@ final class WASIWindow: WindowBacking {
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let button: MouseButton = self.mouseButton(fromEvent: event)
             let locations = self.getPositionAndDelta(from: event)
-            Task {@MainActor in
-                Game.shared.hid.mouseClick(event: .buttonDown,
-                                           button: button,
-                                           position: locations.position,
-                                           delta: locations.delta,
-                                           window: self.window)
+            Task { @MainActor in
+                Game.shared.hid.mouseClick(
+                    event: .buttonDown,
+                    button: button,
+                    position: locations.position,
+                    delta: locations.delta,
+                    window: self.window
+                )
                 if event.isTrusted {
                     self.performedUserGesture()
                 }
@@ -267,12 +287,14 @@ final class WASIWindow: WindowBacking {
             let event = DOM.MouseEvent(unsafelyWrapping: event.jsObject)
             let button: MouseButton = self.mouseButton(fromEvent: event)
             let locations = self.getPositionAndDelta(from: event)
-            Task {@MainActor in
-                Game.shared.hid.mouseClick(event: .buttonUp,
-                                           button: button,
-                                           position: locations.position,
-                                           delta: locations.delta,
-                                           window: self.window)
+            Task { @MainActor in
+                Game.shared.hid.mouseClick(
+                    event: .buttonUp,
+                    button: button,
+                    position: locations.position,
+                    delta: locations.delta,
+                    window: self.window
+                )
             }
             event.preventDefault()
         }
@@ -286,24 +308,30 @@ final class WASIWindow: WindowBacking {
                 delta /= 10
             case DOM.WheelEvent.DOM_DELTA_PAGE:
                 #if GATEENGINE_DEBUG_HID
-                Log.warn("Scroll Value is DOM_DELTA_PAGE, and is not being converted to expected DOM_DELTA_PIXEL")
+                Log.warn(
+                    "Scroll Value is DOM_DELTA_PAGE, and is not being converted to expected DOM_DELTA_PIXEL"
+                )
                 #endif
                 fallthrough
             case DOM.WheelEvent.DOM_DELTA_LINE:
                 #if GATEENGINE_DEBUG_HID
-                Log.warn("Scroll Value is DOM_DELTA_LINE, and is not being converted to expected DOM_DELTA_PIXEL")
+                Log.warn(
+                    "Scroll Value is DOM_DELTA_LINE, and is not being converted to expected DOM_DELTA_PIXEL"
+                )
                 #endif
                 fallthrough
             default:
                 uiDelta = delta
             }
             let immutableDelta = delta
-            Task {@MainActor in
-                Game.shared.hid.mouseScrolled(delta: immutableDelta,
-                                              uiDelta: uiDelta,
-                                              device: 1,
-                                              isMomentum: false,
-                                              window: self.window)
+            Task { @MainActor in
+                Game.shared.hid.mouseScrolled(
+                    delta: immutableDelta,
+                    uiDelta: uiDelta,
+                    device: 1,
+                    isMomentum: false,
+                    window: self.window
+                )
             }
             event.preventDefault()
         }
@@ -312,42 +340,57 @@ final class WASIWindow: WindowBacking {
         }
         canvas.addEventListener(type: "touchstart") { event in
             let event = DOM.TouchEvent(unsafelyWrapping: event.jsObject)
-            Task {@MainActor in
+            Task { @MainActor in
                 for index in 0 ..< event.changedTouches.length {
-                    guard let touch = event.changedTouches.item(index: index) else {continue}
-                    let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    Game.shared.hid.screenTouchChange(id: touch.identifier,
-                                                      kind: .physical,
-                                                      event: .began,
-                                                      position: position)
+                    guard let touch = event.changedTouches.item(index: index) else { continue }
+                    let position: Position2 = Position2(
+                        x: Float(touch.pageX),
+                        y: Float(touch.pageY)
+                    )
+                    Game.shared.hid.screenTouchChange(
+                        id: touch.identifier,
+                        kind: .physical,
+                        event: .began,
+                        position: position
+                    )
                 }
             }
             event.preventDefault()
         }
         canvas.addEventListener(type: "touchmove") { event in
             let event = DOM.TouchEvent(unsafelyWrapping: event.jsObject)
-            Task {@MainActor in
+            Task { @MainActor in
                 for index in 0 ..< event.changedTouches.length {
-                    guard let touch = event.changedTouches.item(index: index) else {continue}
-                    let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    Game.shared.hid.screenTouchChange(id: touch.identifier,
-                                                      kind: .physical,
-                                                      event: .moved,
-                                                      position: position)
+                    guard let touch = event.changedTouches.item(index: index) else { continue }
+                    let position: Position2 = Position2(
+                        x: Float(touch.pageX),
+                        y: Float(touch.pageY)
+                    )
+                    Game.shared.hid.screenTouchChange(
+                        id: touch.identifier,
+                        kind: .physical,
+                        event: .moved,
+                        position: position
+                    )
                 }
             }
             event.preventDefault()
         }
         canvas.addEventListener(type: "touchend") { event in
             let event = DOM.TouchEvent(unsafelyWrapping: event.jsObject)
-            Task {@MainActor in
+            Task { @MainActor in
                 for index in 0 ..< event.changedTouches.length {
-                    guard let touch = event.changedTouches.item(index: index) else {continue}
-                    let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    Game.shared.hid.screenTouchChange(id: touch.identifier,
-                                                      kind: .physical,
-                                                      event: .ended,
-                                                      position: position)
+                    guard let touch = event.changedTouches.item(index: index) else { continue }
+                    let position: Position2 = Position2(
+                        x: Float(touch.pageX),
+                        y: Float(touch.pageY)
+                    )
+                    Game.shared.hid.screenTouchChange(
+                        id: touch.identifier,
+                        kind: .physical,
+                        event: .ended,
+                        position: position
+                    )
                 }
                 if event.isTrusted {
                     self.performedUserGesture()
@@ -357,40 +400,45 @@ final class WASIWindow: WindowBacking {
         }
         canvas.addEventListener(type: "touchcancel") { event in
             let event = DOM.TouchEvent(unsafelyWrapping: event.jsObject)
-            Task {@MainActor in
+            Task { @MainActor in
                 for index in 0 ..< event.changedTouches.length {
-                    guard let touch = event.changedTouches.item(index: index) else {continue}
-                    let position: Position2 = Position2(x: Float(touch.pageX), y: Float(touch.pageY))
-                    Game.shared.hid.screenTouchChange(id: touch.identifier,
-                                                      kind: .physical,
-                                                      event: .canceled,
-                                                      position: position)
+                    guard let touch = event.changedTouches.item(index: index) else { continue }
+                    let position: Position2 = Position2(
+                        x: Float(touch.pageX),
+                        y: Float(touch.pageY)
+                    )
+                    Game.shared.hid.screenTouchChange(
+                        id: touch.identifier,
+                        kind: .physical,
+                        event: .canceled,
+                        position: position
+                    )
                 }
             }
             event.preventDefault()
         }
     }
-    
+
     @inlinable
     func mouseButton(fromEvent event: DOM.MouseEvent) -> MouseButton {
         let button: MouseButton
         switch event.button {
-        case 0:// Mouse Primary
+        case 0:  // Mouse Primary
             button = .button1
-        case 1:// Mouse Middle
+        case 1:  // Mouse Middle
             button = .button3
-        case 2:// Mouse Secondary
+        case 2:  // Mouse Secondary
             button = .button2
-        case 3: // Backward
+        case 3:  // Backward
             button = .button4
-        case 4: // Forawrd
+        case 4:  // Forawrd
             button = .button5
         default:
             button = .unknown(Int(event.button))
         }
         return button
     }
-    
+
     @inlinable
     func key(fromEvent event: DOM.KeyboardEvent) -> KeyboardKey {
         switch event.code {
@@ -627,7 +675,7 @@ final class WASIWindow: WindowBacking {
         Log.warnOnce("Key", event.key, event.code, event.keyCode, event.charCode, "is unhandled!")
         return .unhandledPlatformKeyCode(Int(event.keyCode), event.code.first)
     }
-    
+
     @inlinable
     func modifiers(fromEvent event: DOM.KeyboardEvent) -> KeyboardModifierMask {
         var modifiers: KeyboardModifierMask = []

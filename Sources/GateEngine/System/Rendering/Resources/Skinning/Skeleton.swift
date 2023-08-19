@@ -8,18 +8,18 @@
 public final class Skeleton: OldResource {
     internal let path: String?
     internal let options: SkeletonImporterOptions?
-    
+
     @RequiresState(.ready)
     internal var rootJoint: Skeleton.Joint! = nil
     @RequiresState(.ready)
     internal var bindPose: Pose! = nil
-    
+
     public func getPose() -> Pose {
         self.updateIfNeeded()
         return Pose(self.rootJoint)
     }
-    
-    private var jointIDCache: [Int : Joint] = [:]
+
+    private var jointIDCache: [Int: Joint] = [:]
     public func jointWithID(_ id: Skeleton.Joint.ID) -> Joint? {
         if let cached = jointIDCache[id] {
             return cached
@@ -30,8 +30,8 @@ public final class Skeleton: OldResource {
         }
         return nil
     }
-    
-    private var jointNameCache: [String : Joint] = [:]
+
+    private var jointNameCache: [String: Joint] = [:]
     public func jointNamed(_ name: String) -> Joint? {
         if let cached = jointNameCache[name] {
             return cached
@@ -42,7 +42,7 @@ public final class Skeleton: OldResource {
         }
         return nil
     }
-    
+
     public init(rootJoint joint: Skeleton.Joint) {
         self.path = nil
         self.options = nil
@@ -50,13 +50,13 @@ public final class Skeleton: OldResource {
         self.bindPose = Pose(joint)
         super.init()
         self.state = .ready
-        
+
         #if DEBUG
         self._bindPose.configure(withOwner: self)
         self._rootJoint.configure(withOwner: self)
         #endif
     }
-    
+
     @usableFromInline
     internal func updateIfNeeded() {
         func update(joint: Joint) {
@@ -69,8 +69,8 @@ public final class Skeleton: OldResource {
     }
 }
 
-public extension Skeleton {
-    struct SkipJoint: ExpressibleByStringLiteral {
+extension Skeleton {
+    public struct SkipJoint: ExpressibleByStringLiteral {
         public typealias StringLiteralType = String
         public var name: StringLiteralType
         public var method: Method
@@ -78,17 +78,17 @@ public extension Skeleton {
             case justThis
             case includingChildren
         }
-        
+
         public init(stringLiteral: StringLiteralType) {
             self.name = stringLiteral
             self.method = .includingChildren
         }
-        
+
         public init(name: StringLiteralType, method: Method) {
             self.name = name
             self.method = method
         }
-        
+
         public static func named(_ name: String, _ method: Method) -> Self {
             return Self(name: name, method: method)
         }
@@ -99,7 +99,7 @@ extension Skeleton {
     public func applyBindPose() {
         self.applyPose(bindPose)
     }
-    
+
     public func applyPose(_ pose: Pose) {
         func applyToJoint(_ joint: Skeleton.Joint) {
             if let poseJoint = pose.jointWithID(joint.id) {
@@ -113,19 +113,33 @@ extension Skeleton {
         }
         applyToJoint(rootJoint)
     }
-    
-    public func applyAnimation(_ skeletalAnimation: SkeletalAnimation, withTime time: Float, duration: Float, repeating: Bool, skipJoints: [SkipJoint], interpolateProgress: Float) {
-        
+
+    public func applyAnimation(
+        _ skeletalAnimation: SkeletalAnimation,
+        withTime time: Float,
+        duration: Float,
+        repeating: Bool,
+        skipJoints: [SkipJoint],
+        interpolateProgress: Float
+    ) {
+
         let interpolate = interpolateProgress < 1
-        
+
         func applyToJoint(_ joint: Skeleton.Joint) {
             var keyedComponents: SkeletalAnimation.KeyedComponents = []
             var transform: Transform3 = .default
             if let animation = skeletalAnimation.animations[joint.id] {
-                keyedComponents = animation.updateTransform(&transform, withTime: time, duration: duration, repeating: repeating)
+                keyedComponents = animation.updateTransform(
+                    &transform,
+                    withTime: time,
+                    duration: duration,
+                    repeating: repeating
+                )
             }
-            
-            if keyedComponents.isFull == false, let pose = bindPose.jointWithID(joint.id)?.localTransform {
+
+            if keyedComponents.isFull == false,
+                let pose = bindPose.jointWithID(joint.id)?.localTransform
+            {
                 if keyedComponents.contains(.position) == false {
                     transform.position = pose.position
                 }
@@ -136,27 +150,27 @@ extension Skeleton {
                     transform.scale = pose.scale
                 }
             }
-            
-            let skipJoint = skipJoints.first(where: {$0.name == joint.name})
+
+            let skipJoint = skipJoints.first(where: { $0.name == joint.name })
             let skipChildren: Bool = {
-                guard let skipJoint = skipJoint else {return false}
+                guard let skipJoint = skipJoint else { return false }
                 return skipJoint.method == .includingChildren
             }()
             let skip: Bool = {
-                guard let skipJoint = skipJoint else {return false}
+                guard let skipJoint = skipJoint else { return false }
                 return skipJoint.method == .justThis
             }()
-            
+
             if skipChildren == false {
                 for child in joint.children {
                     applyToJoint(child)
                 }
             }
-            
+
             if skip == false {
                 if interpolate {
                     joint.localTransform.interpolate(to: transform, .linear(interpolateProgress))
-                }else{
+                } else {
                     joint.localTransform = transform
                 }
             }
@@ -181,7 +195,7 @@ extension Skeleton {
             }
         }
         public private(set) var children: Set<Skeleton.Joint> = []
-        
+
         public var localTransform: Transform3 = .default {
             didSet {
                 if needsUpdate == false && localTransform != oldValue {
@@ -189,28 +203,28 @@ extension Skeleton {
                 }
             }
         }
-        
+
         internal var needsUpdate: Bool = true
         internal func markNeedsUpdate() {
-            guard needsUpdate == false else {return}
+            guard needsUpdate == false else { return }
             self.needsUpdate = true
             for child in children {
                 child.markNeedsUpdate()
             }
         }
-        
+
         fileprivate func updateIfNeeded() {
-            guard needsUpdate else {return}
+            guard needsUpdate else { return }
             needsUpdate = false
             updateModelSpace()
         }
-        
+
         private var _modelSpace: Matrix4x4 = .identity
         public var modelSpace: Matrix4x4 {
             updateIfNeeded()
             return _modelSpace
         }
-        
+
         ///Reusable to decrease allocations in the Skeleton.Joint.updateModelSpace() function
 
         private func updateModelSpace() {
@@ -220,29 +234,29 @@ extension Skeleton {
                 nodeArray.append(current!)
                 current = current?.parent
             }
-            
+
             var updateMTX: Matrix4x4 = .identity
             var updateRotationMTX: Matrix4x4 = .identity
             var updateScaleMTX: Matrix4x4 = .identity
-            
+
             var new: Matrix4x4 = .identity
             for node in nodeArray {
                 updateMTX.becomeIdentity()
                 updateMTX.position = node.localTransform.position
-                
+
                 updateRotationMTX.rotation = node.localTransform.rotation
                 updateMTX *= updateRotationMTX
-                
+
                 updateScaleMTX.scale = node.localTransform.scale
                 updateMTX *= updateScaleMTX
-                
+
                 new = updateMTX * new
             }
             if new.isFinite && new != .identity {
                 _modelSpace = new
             }
         }
-        
+
         public init(id: Joint.ID, name: String?) {
             self.id = id
             self.name = name
@@ -253,9 +267,9 @@ extension Skeleton {
 extension Skeleton.Joint {
     public func firstDescendant(withID id: Skeleton.Joint.ID) -> Skeleton.Joint? {
         func firstNode(withID id: Int, within node: Skeleton.Joint) -> Skeleton.Joint? {
-            if node.id == id {return node}
+            if node.id == id { return node }
             for node in node.children {
-                if node.id == id {return node}
+                if node.id == id { return node }
                 if let node = firstNode(withID: id, within: node) {
                     return node
                 }
@@ -266,9 +280,9 @@ extension Skeleton.Joint {
     }
     public func firstDescendant(named name: String) -> Skeleton.Joint? {
         func firstNode(named name: String, within node: Skeleton.Joint) -> Skeleton.Joint? {
-            if node.name == name {return node}
+            if node.name == name { return node }
             for node in node.children {
-                if node.name == name {return node}
+                if node.name == name { return node }
                 if let node = firstNode(named: name, within: node) {
                     return node
                 }
@@ -280,23 +294,21 @@ extension Skeleton.Joint {
 }
 
 extension Skeleton.Joint: Hashable {
-    final public class func ==(lhs: Skeleton.Joint, rhs: Skeleton.Joint) -> Bool {
+    final public class func == (lhs: Skeleton.Joint, rhs: Skeleton.Joint) -> Bool {
         return lhs.id == rhs.id
     }
-    
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
 }
-
-
 
 //MARK: - Pose
 
 extension Skeleton {
     public struct Pose {
         public let rootJoint: Skeleton.Pose.Joint
-        
+
         @usableFromInline
         internal init(_ rootJoint: Skeleton.Joint) {
             self.rootJoint = Skeleton.Pose.Joint(rootJoint)
@@ -310,13 +322,13 @@ extension Skeleton.Pose {
         public let parentID: Skeleton.Joint.ID?
         public let children: Set<Skeleton.Pose.Joint>
         public let localTransform: Transform3
-        
+
         public let modelSpace: Matrix4x4
-        
+
         internal init(_ joint: Skeleton.Joint) {
             self.id = joint.id
             self.parentID = joint.parent?.id
-            
+
             func children(from joint: Skeleton.Joint) -> Set<Skeleton.Pose.Joint> {
                 var children: Set<Skeleton.Pose.Joint> = []
                 for child in joint.children {
@@ -326,12 +338,12 @@ extension Skeleton.Pose {
                 return children
             }
             self.children = children(from: joint)
-            
+
             self.localTransform = joint.localTransform
             self.modelSpace = joint.modelSpace
         }
     }
-    
+
     public func jointWithID(_ id: Skeleton.Joint.ID) -> Skeleton.Pose.Joint? {
         if let joint = rootJoint.firstDescendant(withID: id) {
             return joint
@@ -344,9 +356,9 @@ extension Skeleton.Pose.Joint {
     @inlinable
     public func firstDescendant(withID id: Skeleton.Joint.ID) -> Skeleton.Pose.Joint? {
         func firstNode(withID id: Int, within node: Skeleton.Pose.Joint) -> Skeleton.Pose.Joint? {
-            if node.id == id {return node}
+            if node.id == id { return node }
             for node in node.children {
-                if node.id == id {return node}
+                if node.id == id { return node }
                 if let node = firstNode(withID: id, within: node) {
                     return node
                 }
@@ -357,20 +369,23 @@ extension Skeleton.Pose.Joint {
     }
 }
 
-public extension Skeleton.Pose {
+extension Skeleton.Pose {
     @inlinable
-    func shaderMatrixArray(orderedFromSkinJoints joints: [Skin.Joint]) -> [Matrix4x4] {
-//        return joints.map({$0.inverseBindMatrix.inverse})
+    public func shaderMatrixArray(orderedFromSkinJoints joints: [Skin.Joint]) -> [Matrix4x4] {
+        //        return joints.map({$0.inverseBindMatrix.inverse})
 
-        return joints.map({(rootJoint.firstDescendant(withID: $0.id)?.modelSpace ?? .identity) * $0.inverseBindMatrix})
+        return joints.map({
+            (rootJoint.firstDescendant(withID: $0.id)?.modelSpace ?? .identity)
+                * $0.inverseBindMatrix
+        })
     }
 }
 
 extension Skeleton.Pose.Joint: Hashable {
-    public static func ==(lhs: Skeleton.Pose.Joint, rhs: Skeleton.Pose.Joint) -> Bool {
+    public static func == (lhs: Skeleton.Pose.Joint, rhs: Skeleton.Pose.Joint) -> Bool {
         return lhs.id == rhs.id
     }
-    
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }

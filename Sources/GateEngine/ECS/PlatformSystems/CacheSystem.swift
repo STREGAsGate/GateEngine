@@ -10,7 +10,7 @@ internal class CacheSystem: PlatformSystem {
     override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         game.resourceManager.update(withTimePassed: highPrecisionDeltaTime)
     }
-    
-    override class var phase: PlatformSystem.Phase {return .postDeferred}
-    override class func sortOrder() -> PlatformSystemSortOrder? {.cacheSystem}
+
+    override class var phase: PlatformSystem.Phase { return .postDeferred }
+    override class func sortOrder() -> PlatformSystemSortOrder? { .cacheSystem }
 }

@@ -10,11 +10,11 @@ import AVFoundation
 internal class CAAudioTrackReference: AudioTrackReference {
     unowned let mixerReference: CAAudioMixerReference
     let playerNode: AVAudioPlayerNode
-    
+
     @usableFromInline
     init(_ mixerReference: CAAudioMixerReference) {
         self.mixerReference = mixerReference
-        
+
         let engine = mixerReference.contextReference.engine
         let playerNode = AVAudioPlayerNode()
         if #available(macOS 10.15, iOS 13.0, tvOS 13.0, *) {
@@ -30,9 +30,17 @@ internal class CAAudioTrackReference: AudioTrackReference {
         didSet {
             if playerNode.isPlaying, let buffer = self.buffer {
                 if repeats {
-                    playerNode.scheduleBuffer(buffer.pcmBuffer, at: nil, options: [.loops, .interruptsAtLoop])
-                }else{
-                    playerNode.scheduleBuffer(buffer.pcmBuffer, at: playerNode.lastRenderTime, options: [.interrupts])
+                    playerNode.scheduleBuffer(
+                        buffer.pcmBuffer,
+                        at: nil,
+                        options: [.loops, .interruptsAtLoop]
+                    )
+                } else {
+                    playerNode.scheduleBuffer(
+                        buffer.pcmBuffer,
+                        at: playerNode.lastRenderTime,
+                        options: [.interrupts]
+                    )
                 }
             }
         }
@@ -55,7 +63,7 @@ internal class CAAudioTrackReference: AudioTrackReference {
             playerNode.rate = newValue
         }
     }
-    
+
     @inlinable
     func play() {
         playerNode.play()
@@ -68,20 +76,23 @@ internal class CAAudioTrackReference: AudioTrackReference {
     func stop() {
         playerNode.stop()
     }
-    
+
     private weak var buffer: CABufferReference?
-    
+
     @inlinable
     func setBuffer(_ alBuffer: AudioBuffer) {
-        let buffer = alBuffer.reference as! CABufferReference
+        let buffer = alBuffer.reference as! CABufferReference // swiftlint:disable:this force_cast
         let engine = mixerReference.contextReference.engine
         let mixerNode = mixerReference.mixerNode
         engine.disconnectNodeOutput(playerNode)
         engine.connect(playerNode, to: mixerNode, format: buffer.format)
-        playerNode.scheduleBuffer(buffer.pcmBuffer, at: nil, options: repeats ? [.loops, .interrupts] : [.interrupts])
+        playerNode.scheduleBuffer(
+            buffer.pcmBuffer,
+            at: nil,
+            options: repeats ? [.loops, .interrupts] : [.interrupts]
+        )
         self.buffer = buffer
     }
 }
 
 #endif
-

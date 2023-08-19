@@ -12,7 +12,7 @@ import GameMath
 /// A 3D point and associated values. This is used to construct `Triangle`s.
 public struct Vertex: Codable, Equatable, Hashable {
     internal var storage: [Float] = Array(repeating: 0, count: 17)
-    
+
     /// The x component of the position
     public var x: Float {
         get {
@@ -85,7 +85,7 @@ public struct Vertex: Codable, Equatable, Hashable {
             storage[7] = newValue
         }
     }
-    
+
     /// The horizontal vertical texture coordinate
     public var u2: Float {
         get {
@@ -160,7 +160,7 @@ public struct Vertex: Codable, Equatable, Hashable {
             v1 = newValue.y
         }
     }
-    
+
     /// Texture coordante
     public var texturePosition2: Position2 {
         get {
@@ -171,24 +171,62 @@ public struct Vertex: Codable, Equatable, Hashable {
             v2 = newValue.y
         }
     }
-    
-    public init(_ position: Position3 = .zero, _ normal: Direction3 = .zero, _ uvSet1: Position2 = .zero, _ uvSet2: Position2 = .zero, color: SIMD4<Float> = SIMD4(0.5, 0.5, 0.5, 1)) {
-        self.init(px: position.x, py: position.y, pz: position.z, nx: normal.x, ny: normal.y, nz: normal.z, tu1: uvSet1.x, tv1: uvSet1.y, tu2: uvSet2.x, tv2: uvSet2.y, cr: color[0], cg: color[1], cb: color[2], ca: color[3])
+
+    public init(
+        _ position: Position3 = .zero,
+        _ normal: Direction3 = .zero,
+        _ uvSet1: Position2 = .zero,
+        _ uvSet2: Position2 = .zero,
+        color: SIMD4<Float> = SIMD4(0.5, 0.5, 0.5, 1)
+    ) {
+        self.init(
+            px: position.x,
+            py: position.y,
+            pz: position.z,
+            nx: normal.x,
+            ny: normal.y,
+            nz: normal.z,
+            tu1: uvSet1.x,
+            tv1: uvSet1.y,
+            tu2: uvSet2.x,
+            tv2: uvSet2.y,
+            cr: color[0],
+            cg: color[1],
+            cb: color[2],
+            ca: color[3]
+        )
     }
-    
-    public init(px: Float, py: Float, pz: Float, nx: Float = 0, ny: Float = 0, nz: Float = 0, tu1: Float = 0, tv1: Float = 0, tu2: Float = 0, tv2: Float = 0, cr: Float = 0.5, cg: Float = 0.5, cb: Float = 0.5, ca: Float = 1) {
+
+    public init(
+        px: Float,
+        py: Float,
+        pz: Float,
+        nx: Float = 0,
+        ny: Float = 0,
+        nz: Float = 0,
+        tu1: Float = 0,
+        tv1: Float = 0,
+        tu2: Float = 0,
+        tv2: Float = 0,
+        cr: Float = 0.5,
+        cg: Float = 0.5,
+        cb: Float = 0.5,
+        ca: Float = 1
+    ) {
         self.storage = [px, py, pz, nx, ny, nz, tu1, tv1, tu2, tv2, 0, 0, 0, cr, cg, cb, ca]
     }
-    
+
     /// - returns: `true` if `self` is within `threshold` of `v`.
     internal func isSimilar(to vertex: Vertex, threshold: Float = 0.001) -> Bool {
-        guard threshold > 0 else {return self.storage == vertex.storage}
-        guard self.position.distance(from: vertex.position) <= threshold else {return false}
-        guard self.normal.angle(to: vertex.normal) <= Radians(threshold) else {return false}
-        guard self.texturePosition1.distance(from: vertex.texturePosition1) <= threshold else {return false}
+        guard threshold > 0 else { return self.storage == vertex.storage }
+        guard self.position.distance(from: vertex.position) <= threshold else { return false }
+        guard self.normal.angle(to: vertex.normal) <= Radians(threshold) else { return false }
+        guard self.texturePosition1.distance(from: vertex.texturePosition1) <= threshold else {
+            return false
+        }
         return true
     }
-    
+
     public static func * (lhs: Self, rhs: Matrix4x4) -> Self {
         var lhs = lhs
         lhs.position = lhs.position * rhs
@@ -214,9 +252,9 @@ extension Vertex {
     }
 }
 
-public extension Array where Element == Vertex {
+extension Array where Element == Vertex {
     /// An array of triangles constructed from the vertex array
-    var triangles: [Triangle] {
+    public var triangles: [Triangle] {
         return stride(from: 0, to: count, by: 3).map({
             let slice = Array(self[$0 ..< Swift.min($0 + 3, count)])
             return Triangle(v1: slice[0], v2: slice[1], v3: slice[2], repairIfNeeded: false)

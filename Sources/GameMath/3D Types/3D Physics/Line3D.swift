@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2023 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *

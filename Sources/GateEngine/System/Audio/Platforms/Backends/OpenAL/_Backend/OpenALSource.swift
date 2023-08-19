@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 #if (canImport(OpenALSoft) || canImport(LinuxSupport)) && !os(WASI)
-#if canImport(OpenALSoft) 
+#if canImport(OpenALSoft)
 import OpenALSoft
 #elseif canImport(LinuxSupport)
 import LinuxSupport
@@ -36,7 +36,7 @@ internal class OpenALSource {
         self.setPosition(x: 0, y: 0, z: 0)
         self.setVelocity(x: 0, y: 0, z: 0)
     }
-    
+
     internal var state: State {
         var value: ALenum = 0
         if self.context.becomeCurrent() {
@@ -51,7 +51,7 @@ internal class OpenALSource {
         default: return .unknown
         }
     }
-    
+
     internal func play() {
         if self.context.becomeCurrent() {
             alSourcePlay(sourceID)
@@ -70,7 +70,7 @@ internal class OpenALSource {
             assert(alCheckError() == .noError)
         }
     }
-    
+
     internal var pitch: Float {
         set {
             if self.context.becomeCurrent() {
@@ -87,7 +87,7 @@ internal class OpenALSource {
             return value
         }
     }
-    
+
     internal var gain: Float {
         set {
             if self.context.becomeCurrent() {
@@ -104,7 +104,7 @@ internal class OpenALSource {
             return value
         }
     }
-    
+
     func setPosition(x: Float, y: Float, z: Float) {
         if self.context.becomeCurrent() {
             alSource3f(sourceID, AL_POSITION, x, y, z)
@@ -117,7 +117,7 @@ internal class OpenALSource {
             assert(alCheckError() == .noError)
         }
     }
-    
+
     internal var repeats: Bool {
         set {
             if self.context.becomeCurrent() {
@@ -134,7 +134,7 @@ internal class OpenALSource {
             return value == 1
         }
     }
-    
+
     internal var isRelative: Bool {
         set {
             if self.context.becomeCurrent() {
@@ -151,7 +151,7 @@ internal class OpenALSource {
             return value == 1
         }
     }
-    
+
     internal var referenceDistance: Float {
         set {
             if self.context.becomeCurrent() {
@@ -168,7 +168,7 @@ internal class OpenALSource {
             return value
         }
     }
-    
+
     private var buffer: OABufferReference? = nil
     internal func setBuffer(_ buffer: OABufferReference?) {
         if self.context.becomeCurrent() {
@@ -180,7 +180,7 @@ internal class OpenALSource {
         // Keep a reference so the buffer doesn't deallocate while playing
         self.buffer = buffer
     }
-    
+
     deinit {
         if self.context.becomeCurrent() {
             alDeleteSources(1, [sourceID])

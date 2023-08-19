@@ -5,26 +5,24 @@
  * http://stregasgate.com
  */
 
-/**
- A physical key representation. All values are stored as qwerty layout characters.
- These keys are for development use for binding actions. Do not use this for text input!
- 
- If you use a layout that is not qwerty, you can use the translation API.
- ```
- input.keyboard.button(.qwerty("w")).isPressed
- input.keyboard.button(.qwertz("w")).isPressed
- input.keyboard.button(.azerty("z")).isPressed
- ```
- The underlying key is still the qwerty representation.
- */
+/// A physical key representation. All values are stored as qwerty layout characters.
+/// These keys are for development use for binding actions. Do not use this for text input!
+///
+/// If you use a layout that is not qwerty, you can use the translation API.
+/// ```
+/// input.keyboard.button(.qwerty("w")).isPressed
+/// input.keyboard.button(.qwertz("w")).isPressed
+/// input.keyboard.button(.azerty("z")).isPressed
+/// ```
+/// The underlying key is still the qwerty representation.
 public enum KeyboardKey: Hashable {
     /// The Esc key
     case escape
-    
+
     case capsLock
     case numLock
     case scrollLock
-    
+
     case clear
 
     case contextMenu
@@ -42,7 +40,7 @@ public enum KeyboardKey: Hashable {
     case volumeUp
     case volumeDown
     case mute
-    
+
     case mediaPlayPause
     case mediaStop
     case mediaNextTrack
@@ -69,7 +67,7 @@ public enum KeyboardKey: Hashable {
      ``KeyboardKey.qwerty(_,_)``, ``KeyboardKey.qwertz(_,_)``, ``KeyboardKey.azerty(_,_)``
      */
     case character(_ character: Character, _ origin: KeyOrigin = .anyVariation)
-    
+
     /// The backspace or delete key
     case backspace
     /// The spacebar
@@ -92,7 +90,7 @@ public enum KeyboardKey: Hashable {
      - parameter string: A key represented as a String
      */
     case unhandledPlatformKeyCode(_ int: Int?, _ string: Character?)
-    
+
     public enum Alignment {
         // Any key
         case anyVariation
@@ -107,7 +105,7 @@ public enum KeyboardKey: Hashable {
     case shift(_ alignment: Alignment)
     // The Fn key
     case fn
-    
+
     @inline(__always)
     var asModifierMask: KeyboardModifierMask {
         switch self {
@@ -128,12 +126,12 @@ public enum KeyboardKey: Hashable {
 }
 
 extension KeyboardKey {
-    
+
     /**
      Maps the \"qwerty\" represented character to the default (qwerty) character.
-    
+
      If your development machine uses \"qwerty\" keyboard layout, then use this function to visually see your own characters.
-     
+
      The physical location of the keys is always the same. The character is simply for developers to reason about the key.
      - parameter character: The character on your keyboard, assuming your keyboard layout is \"qwerty\".
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
@@ -143,12 +141,12 @@ extension KeyboardKey {
     public static func qwerty(_ character: Character, origin: KeyOrigin = .anyVariation) -> Self {
         return .character(character, origin)
     }
-    
+
     /**
      Maps the \"qwertz\" represented character to the default (qwerty) character.
-    
+
      If your development machine uses \"qwertz\" keyboard layout, then use this function to visually see your own characters.
-     
+
      The physical location of the keys is always the same. The character is simply for developers to reason about the key.
      - parameter character: The character on your keyboard, assuming your keyboard layout is \"qwertz\".
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
@@ -158,43 +156,43 @@ extension KeyboardKey {
         switch character {
         case "<":
             return .character("`", origin)
-            
+
         case "ß":
             return .character("-", origin)
         case "´":
             return .character("=", origin)
-            
+
         case "z":
             return .character("y", origin)
-            
+
         case "ü":
             return .character("[", origin)
         case "+":
             return .character("]", origin)
         case "#":
             return .character("\\", origin)
-            
+
         case "ö":
             return .character(";", origin)
         case "ä":
             return .character("'", origin)
-            
+
         case "y":
             return .character("z", origin)
-            
+
         case "-":
             return .character("/", origin)
-            
+
         default:
             return .character(character, origin)
         }
     }
-    
+
     /**
      Maps the \"azerty\" represented character to the default (qwerty) character.
-    
+
      If your development machine uses \"azerty\" keyboard layout, then use this function to visually see your own characters.
-     
+
      The physical location of the keys is always the same. The character is simply for developers to reason about the key.
      - parameter character: The character on your keyboard, assuming your keyboard layout is \"azerty\".
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
@@ -228,36 +226,36 @@ extension KeyboardKey {
             return .character("-", origin)
         case "-":
             return .character("=", origin)
-            
+
         case "a":
             return .character("q", origin)
         case "z":
             return .character("w", origin)
-            
+
         case "^":
             return .character("[", origin)
         case "$":
             return .character("]", origin)
         case "`":
             return .character("\\", origin)
-            
+
         case "q":
             return .character("a", origin)
         case "m":
             return .character(";", origin)
         case "ù":
             return .character("'", origin)
-            
+
         case "w":
             return .character("z", origin)
-            
+
         case ";":
             return .character(",", origin)
         case ":":
             return .character(".", origin)
         case "=":
             return .character("/", origin)
-            
+
         default:
             return .character(character, origin)
         }

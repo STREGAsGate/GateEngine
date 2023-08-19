@@ -11,7 +11,7 @@ import XAudio29
 
 internal class XAAudioTrackReference: AudioTrackReference {
     unowned let mixerReference: XAAudioMixerReference
-    
+
     init(_ mixerReference: XAAudioMixerReference) {
         self.mixerReference = mixerReference
     }
@@ -33,7 +33,7 @@ internal class XAAudioTrackReference: AudioTrackReference {
 
         }
     }
-    
+
     func play() {
 
     }
@@ -43,13 +43,12 @@ internal class XAAudioTrackReference: AudioTrackReference {
     func stop() {
 
     }
-    
+
     private weak var buffer: XABufferReference? = nil
-    
+
     func setBuffer(_ alBuffer: AudioBuffer) {
         self.buffer = alBuffer.reference as? XABufferReference
     }
 }
 
 #endif
-

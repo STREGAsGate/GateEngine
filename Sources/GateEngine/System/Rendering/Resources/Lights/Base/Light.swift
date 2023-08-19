@@ -12,7 +12,7 @@ public class Light: OldResource {
     public var brightness: Float
     /// The color emitted by the light
     public var color: Color
-    
+
     public enum UpdateShadows: Equatable {
         /// Shadows get redrawn every frame
         case everyFrame
@@ -25,12 +25,12 @@ public class Light: OldResource {
         /// Shadows are created
         case always(updating: UpdateShadows = .everyFrame)
     }
-    
+
     internal init(brightness: Float, color: Color) {
         self.brightness = brightness
         self.color = color
         super.init()
-        
+
         self.state = .ready
     }
 }

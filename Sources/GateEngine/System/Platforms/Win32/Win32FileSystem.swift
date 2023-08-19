@@ -17,8 +17,11 @@ public struct Win32FileSystem: FileSystem {
         CoTaskMemFree(pwString)
         return URL(fileURLWithPath: string).appendingPathComponent(Game.shared.identifier)
     }
-    
-    public func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain) throws -> String {
+
+    public func pathForSearchPath(
+        _ searchPath: FileSystemSearchPath,
+        in domain: FileSystemSearchPathDomain
+    ) throws -> String {
         switch searchPath {
         case .persistent:
             switch domain {
@@ -32,7 +35,7 @@ public struct Win32FileSystem: FileSystem {
             case .currentUser:
                 return urlForFolderID(FOLDERID_ProgramData).appendingPathComponent("Cache").path
             case .shared:
-                return  urlForFolderID(FOLDERID_LocalAppData).appendingPathComponent("Cache").path
+                return urlForFolderID(FOLDERID_LocalAppData).appendingPathComponent("Cache").path
             }
         case .temporary:
             let length: DWORD = 128

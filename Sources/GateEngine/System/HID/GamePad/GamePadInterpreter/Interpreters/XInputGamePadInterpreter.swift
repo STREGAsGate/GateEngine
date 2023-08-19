@@ -9,14 +9,14 @@ import WinSDK.DirectX.XInput14
 
 internal class XInputGamePadInterpreter: GamePadInterpreter {
     @inline(__always)
-    var hid: HID {Game.shared.hid}
-    init() { }
-    
+    var hid: HID { Game.shared.hid }
+    init() {}
+
     func beginInterpreting() {
         XInputEnable(true)
     }
 
-    var connectedGamePads: Set<XInputIdentifier> = [] 
+    var connectedGamePads: Set<XInputIdentifier> = []
 
     class XInputIdentifier: Equatable, Hashable {
         let userIndex: UInt32
@@ -33,7 +33,7 @@ internal class XInputGamePadInterpreter: GamePadInterpreter {
             self.userIndex = userIndex
         }
 
-        static func ==(lhs: XInputIdentifier, rhs: XInputIdentifier) -> Bool {
+        static func == (lhs: XInputIdentifier, rhs: XInputIdentifier) -> Bool {
             return lhs.userIndex == rhs.userIndex
         }
         func hash(into hasher: inout Hasher) {
@@ -44,10 +44,15 @@ internal class XInputGamePadInterpreter: GamePadInterpreter {
     var updateInterval: UInt16 = .max
 
     func update() {
-        guard updateInterval > 100 else {updateInterval += 1; return}
+        guard updateInterval > 100 else {
+            updateInterval += 1
+            return
+        }
         updateInterval = 0
         for userIndex in 0 ..< UInt32(XUSER_MAX_COUNT) {
-            let id: XInputGamePadInterpreter.XInputIdentifier = XInputIdentifier(userIndex: userIndex)
+            let id: XInputGamePadInterpreter.XInputIdentifier = XInputIdentifier(
+                userIndex: userIndex
+            )
             id.previousPacket = id.state.dwPacketNumber
             id.state = XINPUT_STATE()
             id.stateUpdated = true
@@ -57,37 +62,39 @@ internal class XInputGamePadInterpreter: GamePadInterpreter {
                     let controller = GamePad(interpreter: self, identifier: id as AnyObject)
                     self.hid.gamePads.addNewlyConnectedGamePad(controller)
                 }
-            }else if self.connectedGamePads.contains(id) {
-                if let controller = self.hid.gamePads.all.first(where: {$0.identifier as? XInputIdentifier == id}) {
+            } else if self.connectedGamePads.contains(id) {
+                if let controller = self.hid.gamePads.all.first(where: {
+                    $0.identifier as? XInputIdentifier == id
+                }) {
                     self.hid.gamePads.removedDisconnectedGamePad(controller)
                 }
                 self.connectedGamePads.remove(id)
             }
         }
     }
-    
+
     func endInterpreting() {
         XInputEnable(false)
     }
-    
+
     func setupGamePad(_ gamePad: GamePad) {
         gamePad.symbols = .microsoftXbox
     }
-    
+
     func updateState(of gamePad: GamePad) {
-        guard let id = gamePad.identifier as? XInputIdentifier else {return}
+        guard let id = gamePad.identifier as? XInputIdentifier else { return }
         if id.stateUpdated {
             id.stateUpdated = false
-        }else{
+        } else {
             id.previousPacket = id.state.dwPacketNumber
-            guard XInputGetState(id.userIndex, &id.state) == ERROR_SUCCESS else {return}
+            guard XInputGetState(id.userIndex, &id.state) == ERROR_SUCCESS else { return }
         }
-        guard id.didChange else {return}
+        guard id.didChange else { return }
 
         // guard id.didChange else {return}
         let xGamePad = id.state.Gamepad
         let buttons = Int32(xGamePad.wButtons)
-    
+
         gamePad.dpad.up.isPressed = buttons & XINPUT_GAMEPAD_DPAD_UP != 0
         gamePad.dpad.up.value = gamePad.dpad.up.isPressed ? 1 : 0
 
@@ -119,13 +126,15 @@ internal class XInputGamePadInterpreter: GamePadInterpreter {
         let RT_DEADZONE: Float = Float(XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
         let RT_RANGE: Float = 255.0 - RT_DEADZONE
         let RT_VALUE: Float = Float(xGamePad.bLeftTrigger)
-        gamePad.trigger.right.value = RT_VALUE > RT_DEADZONE ? (RT_VALUE - RT_DEADZONE) / RT_RANGE : 0
-        
+        gamePad.trigger.right.value =
+            RT_VALUE > RT_DEADZONE ? (RT_VALUE - RT_DEADZONE) / RT_RANGE : 0
+
         gamePad.trigger.left.isPressed = xGamePad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD
         let LT_DEADZONE: Float = Float(XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
         let LT_RANGE: Float = 255.0 - LT_DEADZONE
         let LT_VALUE: Float = Float(xGamePad.bLeftTrigger)
-        gamePad.trigger.left.value = LT_VALUE > LT_DEADZONE ? (LT_VALUE - LT_DEADZONE) / LT_RANGE : 0
+        gamePad.trigger.left.value =
+            LT_VALUE > LT_DEADZONE ? (LT_VALUE - LT_DEADZONE) / LT_RANGE : 0
 
         gamePad.trigger.right.isPressed = xGamePad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD
         gamePad.trigger.right.value = Float(xGamePad.bRightTrigger) / 255.0
@@ -140,8 +149,14 @@ internal class XInputGamePadInterpreter: GamePadInterpreter {
         let L_RANGE: Float = 32767.0 - L_DEADZONE
         let LX_VALUE: Float = Float(xGamePad.sThumbLX)
         let LY_VALUE: Float = Float(xGamePad.sThumbLY)
-        gamePad.stick.left.xAxis = abs(LX_VALUE) > L_DEADZONE ? LX_VALUE < 0 ? (LX_VALUE + L_DEADZONE) / L_RANGE : (LX_VALUE - L_DEADZONE) / L_RANGE : 0
-        gamePad.stick.left.yAxis = abs(LY_VALUE) > L_DEADZONE ? LY_VALUE < 0 ? (LY_VALUE + L_DEADZONE) / L_RANGE : (LY_VALUE - L_DEADZONE) / L_RANGE : 0
+        gamePad.stick.left.xAxis =
+            abs(LX_VALUE) > L_DEADZONE
+            ? LX_VALUE < 0 ? (LX_VALUE + L_DEADZONE) / L_RANGE : (LX_VALUE - L_DEADZONE) / L_RANGE
+            : 0
+        gamePad.stick.left.yAxis =
+            abs(LY_VALUE) > L_DEADZONE
+            ? LY_VALUE < 0 ? (LY_VALUE + L_DEADZONE) / L_RANGE : (LY_VALUE - L_DEADZONE) / L_RANGE
+            : 0
         gamePad.stick.left.button.isPressed = buttons & XINPUT_GAMEPAD_LEFT_THUMB != 0
         gamePad.stick.left.button.value = gamePad.stick.left.button.isPressed ? 1 : 0
 
@@ -154,13 +169,13 @@ internal class XInputGamePadInterpreter: GamePadInterpreter {
         gamePad.stick.right.button.isPressed = buttons & XINPUT_GAMEPAD_RIGHT_THUMB != 0
         gamePad.stick.right.button.value = gamePad.stick.right.button.isPressed ? 1 : 0
     }
-    
+
     func description(of gamePad: GamePad) -> String {
-        guard let id = gamePad.identifier as? XInputIdentifier else {return "ID Missing"}
+        guard let id = gamePad.identifier as? XInputIdentifier else { return "ID Missing" }
         return "\(id.userIndex)"
     }
-    
-    var userReadableName: String {return "XInput"}
+
+    var userReadableName: String { return "XInput" }
 }
 
 #endif

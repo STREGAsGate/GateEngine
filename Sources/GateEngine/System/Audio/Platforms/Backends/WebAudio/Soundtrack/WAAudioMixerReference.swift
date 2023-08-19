@@ -11,14 +11,16 @@ internal class WAAudioMixerReference: AudioMixerReference {
     unowned let contextReference: WAContextReference
     let mixerNode: PannerNode
     let gainNode: GainNode
-    
+
     init(_ contextReference: WAContextReference) {
         self.contextReference = contextReference
-        
+
         self.mixerNode = contextReference.ctx.createPanner()
         self.gainNode = contextReference.ctx.createGain()
- 
-        mixerNode.connect(destinationNode: gainNode).connect(destinationNode: contextReference.ctx.destination)
+
+        mixerNode.connect(destinationNode: gainNode).connect(
+            destinationNode: contextReference.ctx.destination
+        )
     }
 
     @inlinable
@@ -30,11 +32,10 @@ internal class WAAudioMixerReference: AudioMixerReference {
             gainNode.gain.value = newValue
         }
     }
-    
+
     @inlinable
     func createAudioTrackReference() -> any AudioTrackReference {
         return WAAudioTrackReference(self)
     }
 }
 #endif
-

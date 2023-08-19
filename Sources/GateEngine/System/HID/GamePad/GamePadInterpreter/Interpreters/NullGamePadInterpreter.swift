@@ -6,13 +6,13 @@
  */
 
 internal class NullGamePadInterpreter: GamePadInterpreter {
-    var hid: HID {Game.shared.hid}
+    var hid: HID { Game.shared.hid }
     init() {}
     func beginInterpreting() {}
     func update() {}
     func endInterpreting() {}
     func setupGamePad(_ gamePad: GamePad) {}
     func updateState(of gamePad: GamePad) {}
-    func description(of gamePad: GamePad) -> String {"ID Missing"}
-    var userReadableName: String {return "Null"}
+    func description(of gamePad: GamePad) -> String { "ID Missing" }
+    var userReadableName: String { return "Null" }
 }
