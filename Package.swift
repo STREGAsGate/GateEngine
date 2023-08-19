@@ -118,7 +118,7 @@ let package = Package(
                         return dependencies
                     }(),
                     resources: [
-                        .copy("_Resources/GateEngine"),
+                        .copy("Resources/_PackageResources/GateEngine"),
                     ],
                     cSettings: [
                         .define("GL_SILENCE_DEPRECATION",

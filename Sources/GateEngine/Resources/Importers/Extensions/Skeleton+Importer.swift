@@ -36,17 +36,9 @@ public struct SkeletonImporterOptions: Equatable, Hashable {
 public protocol SkeletonImporter: AnyObject {
     init()
 
-    func loadData(path: String, options: SkeletonImporterOptions) async throws -> Data
-    func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) async throws
-        -> Skeleton.Joint
+    func loadData(path: String, options: SkeletonImporterOptions) async throws -> Skeleton.Joint
 
     static func canProcessFile(_ file: URL) -> Bool
-}
-
-extension SkeletonImporter {
-    public func loadData(path: String, options: SkeletonImporterOptions) async throws -> Data {
-        return try await Game.shared.platform.loadResource(from: path)
-    }
 }
 
 extension Skeleton {
@@ -57,12 +49,7 @@ extension Skeleton {
         }
 
         do {
-            let data = try await importer.loadData(path: path, options: options)
-            let rootJoint = try await importer.process(
-                data: data,
-                baseURL: URL(string: path)!.deletingLastPathComponent(),
-                options: options
-            )
+            let rootJoint = try await importer.loadData(path: path, options: options)
             self.init(rootJoint: rootJoint)
         } catch {
             throw GateEngineError(decodingError: error)

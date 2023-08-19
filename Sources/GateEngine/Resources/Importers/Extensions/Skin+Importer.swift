@@ -36,16 +36,9 @@ public struct SkinImporterOptions: Equatable, Hashable {
 public protocol SkinImporter: AnyObject {
     init()
 
-    func loadData(path: String, options: SkinImporterOptions) async throws -> Data
-    func process(data: Data, baseURL: URL, options: SkinImporterOptions) async throws -> Skin
+    func loadData(path: String, options: SkinImporterOptions) async throws -> Skin
 
     static func canProcessFile(_ file: URL) -> Bool
-}
-
-extension SkinImporter {
-    public func loadData(path: String, options: SkinImporterOptions) async throws -> Data {
-        return try await Game.shared.platform.loadResource(from: path)
-    }
 }
 
 extension Skin {
@@ -58,12 +51,7 @@ extension Skin {
         }
 
         do {
-            let data = try await importer.loadData(path: path, options: options)
-            self = try await importer.process(
-                data: data,
-                baseURL: URL(string: path)!.deletingLastPathComponent(),
-                options: options
-            )
+            self = try await importer.loadData(path: path, options: options)
         } catch {
             throw GateEngineError(decodingError: error)
         }

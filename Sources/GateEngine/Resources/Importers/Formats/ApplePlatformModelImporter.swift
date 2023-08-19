@@ -12,13 +12,6 @@ import ModelIO
 public class ApplePlatformModelImporter: GeometryImporter {
     public required init() {}
 
-    public func loadData(path: String, options: GeometryImporterOptions) async throws -> Data {
-        guard let path = await Game.shared.platform.locateResource(from: path) else {
-            throw GateEngineError.failedToLocate
-        }
-        return path.data(using: .utf8)!
-    }
-
     private func positions(from mesh: MDLMesh) throws -> [Float] {
         guard let attributeData = mesh.vertexAttributeData(
             forAttributeNamed: MDLVertexAttributePosition,
@@ -143,11 +136,8 @@ public class ApplePlatformModelImporter: GeometryImporter {
         }
         return indices
     }
-
-    public func process(data: Data, baseURL: URL, options: GeometryImporterOptions) async throws -> RawGeometry {
-        guard let path = String(data: data, encoding: .utf8) else {
-            throw GateEngineError.failedToDecode("File path corrupted.")
-        }
+    
+    public func loadData(path: String, options: GeometryImporterOptions) async throws -> RawGeometry {
         let asset = MDLAsset(url: URL(fileURLWithPath: path))
 
         for meshIndex in 0 ..< asset.count {

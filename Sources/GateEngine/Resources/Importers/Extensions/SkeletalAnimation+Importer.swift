@@ -38,19 +38,9 @@ public struct SkeletalAnimationImporterOptions: Equatable, Hashable {
 public protocol SkeletalAnimationImporter: AnyObject {
     init()
 
-    func loadData(path: String, options: SkeletalAnimationImporterOptions) async throws -> Data
-    func process(data: Data, baseURL: URL, options: SkeletalAnimationImporterOptions) async throws
-        -> SkeletalAnimation
+    func loadData(path: String, options: SkeletalAnimationImporterOptions) async throws -> SkeletalAnimation
 
     static func canProcessFile(_ file: URL) -> Bool
-}
-
-extension SkeletalAnimationImporter {
-    public func loadData(path: String, options: SkeletalAnimationImporterOptions) async throws
-        -> Data
-    {
-        return try await Game.shared.platform.loadResource(from: path)
-    }
 }
 
 extension SkeletalAnimation {
@@ -66,12 +56,7 @@ extension SkeletalAnimation {
         }
 
         do {
-            let data = try await importer.loadData(path: path, options: options)
-            let animation = try await importer.process(
-                data: data,
-                baseURL: URL(string: path)!.deletingLastPathComponent(),
-                options: options
-            )
+            let animation = try await importer.loadData(path: path, options: options)
             self.init(
                 name: animation.name,
                 duration: animation.duration,

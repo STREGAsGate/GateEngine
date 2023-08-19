@@ -438,9 +438,9 @@ public class GLTransmissionFormat {
 }
 
 extension GLTransmissionFormat: GeometryImporter {
-    public func process(data: Data, baseURL: URL, options: GeometryImporterOptions) async throws
-        -> RawGeometry
-    {
+    public func loadData(path: String, options: GeometryImporterOptions) async throws -> RawGeometry {
+        let baseURL = URL(string: path)!.deletingLastPathComponent()
+        let data = try await Game.shared.platform.loadResource(from: path)
         let gltf = try gltf(from: data, baseURL: baseURL)
 
         var mesh: GLTF.Mesh? = nil
@@ -596,8 +596,10 @@ extension GLTransmissionFormat: SkinImporter {
             Matrix4x4(transposedArray: $0)
         })
     }
-    public func process(data: Data, baseURL: URL, options: SkinImporterOptions) async throws -> Skin
-    {
+    
+    public func loadData(path: String, options: SkinImporterOptions) async throws -> Skin {
+        let baseURL = URL(string: path)!.deletingLastPathComponent()
+        let data = try await Game.shared.platform.loadResource(from: path)
         let gltf = try gltf(from: data, baseURL: baseURL)
         guard let skins = gltf.skins, skins.isEmpty == false else {
             throw GateEngineError.failedToDecode("File contains no skins.")
@@ -684,9 +686,10 @@ extension GLTransmissionFormat: SkeletonImporter {
         }
         return gltf.scenes[gltf.scene].nodes.first
     }
-    public func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) throws
-        -> Skeleton.Joint
-    {
+    
+    public func loadData(path: String, options: SkeletonImporterOptions) async throws -> Skeleton.Joint {
+        let baseURL = URL(string: path)!.deletingLastPathComponent()
+        let data = try await Game.shared.platform.loadResource(from: path)
         let gltf = try gltf(from: data, baseURL: baseURL)
         guard let rootNode = skeletonNode(named: options.subobjectName, in: gltf) else {
             throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
@@ -717,9 +720,10 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
         }
         return gltf.animations?.first
     }
-    public func process(data: Data, baseURL: URL, options: SkeletalAnimationImporterOptions)
-        async throws -> SkeletalAnimation
-    {
+    
+    public func loadData(path: String, options: SkeletalAnimationImporterOptions) async throws -> SkeletalAnimation {
+        let data = try await Game.shared.platform.loadResource(from: path)
+        let baseURL = URL(string: path)!.deletingLastPathComponent()
         let gltf = try gltf(from: data, baseURL: baseURL)
 
         guard let animation = animation(named: options.subobjectName, from: gltf) else {

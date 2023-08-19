@@ -58,17 +58,9 @@ public struct GeometryImporterOptions: Equatable, Hashable {
 public protocol GeometryImporter: AnyObject {
     init()
 
-    func loadData(path: String, options: GeometryImporterOptions) async throws -> Data
-    func process(data: Data, baseURL: URL, options: GeometryImporterOptions) async throws
-        -> RawGeometry
+    func loadData(path: String, options: GeometryImporterOptions) async throws -> RawGeometry
 
     static func canProcessFile(_ file: URL) -> Bool
-}
-
-extension GeometryImporter {
-    public func loadData(path: String, options: GeometryImporterOptions) async throws -> Data {
-        return try await Game.shared.platform.loadResource(from: path)
-    }
 }
 
 extension RawGeometry {
@@ -87,12 +79,7 @@ extension RawGeometry {
         }
 
         do {
-            let data = try await importer.loadData(path: path, options: options)
-            self = try await importer.process(
-                data: data,
-                baseURL: file.deletingLastPathComponent(),
-                options: options
-            )
+            self = try await importer.loadData(path: path, options: options)
         } catch {
             throw GateEngineError(decodingError: error)
         }

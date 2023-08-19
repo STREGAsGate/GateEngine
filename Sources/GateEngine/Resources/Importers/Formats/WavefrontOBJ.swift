@@ -10,9 +10,8 @@ import Foundation
 public class WavefrontOBJImporter: GeometryImporter {
     public required init() {}
 
-    public func process(data: Data, baseURL: URL, options: GeometryImporterOptions) async throws
-        -> RawGeometry
-    {
+    public func loadData(path: String, options: GeometryImporterOptions) async throws -> RawGeometry {
+        let data = try await Game.shared.platform.loadResource(from: path)
         guard let obj = String(data: data, encoding: .utf8) else {
             throw GateEngineError.failedToDecode("File is not UTF8 or is corrupt.")
         }
