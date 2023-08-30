@@ -38,7 +38,7 @@ public struct BitStream {
     /**
      Read bits into a value
      - parameter numBits: The number of bits to read
-     - returns: A FixedWidthInteger containing the value of the requestsed bits
+     - returns: A FixedWidthInteger containing the value of the requested bits
      */
     @_transparent
     public mutating func readBits<T: FixedWidthInteger>(_ numBits: Int) -> T {
