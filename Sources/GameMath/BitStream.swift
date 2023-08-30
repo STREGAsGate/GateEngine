@@ -28,8 +28,7 @@ public struct BitStream {
     @inlinable
     @inline(__always)
     public subscript (index: Int) -> Bool {
-        var pointer = bytes
-        return withUnsafeBytes(of: &pointer) { bytes in
+        return withUnsafeBytes(of: bytes) { bytes in
             let byte = bytes[byteOffset]
             return (byte >> index) % 2 == 1
         }
@@ -47,8 +46,7 @@ public struct BitStream {
         var result: [Bool] = []  // result accumulator
         result.reserveCapacity(numBits)
         
-        var pointer = bytes
-        withUnsafeBytes(of: &pointer) { bytes in
+        withUnsafeBytes(of: bytes) { bytes in
             for _ in 0 ..< numBits {
                 let byte = bytes[byteOffset]
                 let v = (byte >> bitOffset) % 2 == 1
