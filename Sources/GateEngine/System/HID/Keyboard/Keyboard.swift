@@ -37,64 +37,10 @@ import GameMath
         if let exactMatch = buttons[keyboardKey] {
             return exactMatch
         }
-        if let existing = buttons.first(where: { (key: KeyboardKey, value: ButtonState) in
-            if case let .character(character1, origin1) = keyboardKey {
-                if case let .character(character2, origin2) = key {
-                    guard character1 == character2 else { return false }
-                    if origin1 == origin2 || origin1 == .anyVariation {
-                        return value.isPressed
-                    }
-                }
-                return false
-            }
-            if case let .enter(origin1) = keyboardKey {
-                if case let .enter(origin2) = key {
-                    if origin1 == origin2 || origin1 == .anyVariation {
-                        return value.isPressed
-                    }
-                }
-                return false
-            }
-            if case let .shift(alignment1) = keyboardKey {
-                if case let .shift(alignment2) = key {
-                    if alignment1 == .anyVariation || alignment2 == .anyVariation {
-                        return value.isPressed
-                    }
-                }
-                return false
-            }
-            if case let .control(alignment1) = keyboardKey {
-                if case let .control(alignment2) = key {
-                    if alignment1 == .anyVariation || alignment2 == .anyVariation {
-                        return value.isPressed
-                    }
-                }
-                return false
-            }
-            if case let .alt(alignment1) = keyboardKey {
-                if case let .alt(alignment2) = key {
-                    if alignment1 == .anyVariation || alignment2 == .anyVariation {
-                        return value.isPressed
-                    }
-                }
-                return false
-            }
-            if case let .host(alignment1) = keyboardKey {
-                if case let .host(alignment2) = key {
-                    if alignment1 == .anyVariation || alignment2 == .anyVariation {
-                        return value.isPressed
-                    }
-                }
-                return false
-            }
-            return false
-        }) {
-            return existing.value
-        }
         switch keyboardKey {
         case .shift(.anyVariation), .alt(.anyVariation), .host(.anyVariation),
             .control(.anyVariation), .enter(.anyVariation),
-            .character(_, .anyVariation), .unhandledPlatformKeyCode(_, _):
+            .character(_, .anyVariation):
             // Non-physical keys can't have a button
             return ButtonState(keyboard: self, key: keyboardKey, isKeyVirtual: true)
         default:
