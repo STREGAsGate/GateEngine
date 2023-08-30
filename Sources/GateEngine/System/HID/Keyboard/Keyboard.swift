@@ -31,9 +31,9 @@ import GameMath
 
      - parameter keyboardKey: A ``KeyboardKey`` that represents a physical keyboard button.
      - note: Non-physical keys are keys which have no physical button, like `.control(.anything)` or `.character("0", .anyVariation)`
-     - returns: A ``ButtonState``, or `nil` if the key is not a physical key.
+     - returns: A ``ButtonState``.
      */
-    public func button(_ keyboardKey: KeyboardKey) -> ButtonState? {
+    public func button(_ keyboardKey: KeyboardKey) -> ButtonState {
         if let exactMatch = buttons[keyboardKey] {
             return exactMatch
         }
@@ -92,13 +92,13 @@ import GameMath
             return existing.value
         }
         switch keyboardKey {
-        // Non-physical keys can't have a button
         case .shift(.anyVariation), .alt(.anyVariation), .host(.anyVariation),
             .control(.anyVariation), .enter(.anyVariation),
             .character(_, .anyVariation), .unhandledPlatformKeyCode(_, _):
-            return nil
+            // Non-physical keys can't have a button
+            return ButtonState(keyboard: self, key: keyboardKey, isKeyVirtual: true)
         default:
-            let button = ButtonState(keyboard: self, key: keyboardKey)
+            let button = ButtonState(keyboard: self, key: keyboardKey, isKeyVirtual: false)
             buttons[keyboardKey] = button
             return button
         }
@@ -130,7 +130,7 @@ import GameMath
         if let exactMatch: ButtonState = buttons[keyboardKey] {
             return exactMatch
         }
-        let button: ButtonState = ButtonState(keyboard: self, key: keyboardKey)
+        let button: ButtonState = ButtonState(keyboard: self, key: keyboardKey, isKeyVirtual: false)
         buttons[keyboardKey] = button
         return button
     }
@@ -141,6 +141,9 @@ extension Keyboard {
         @usableFromInline
         internal unowned let keyboard: Keyboard
         let key: KeyboardKey
+        // true is the key is representation instead of a physical key
+        // such as .shift(anyVariation)
+        let isKeyVirtual: Bool
         @usableFromInline
         internal var currentReceipt: UInt8 = 0
 
@@ -199,9 +202,10 @@ extension Keyboard {
         }
 
         @usableFromInline
-        internal init(keyboard: Keyboard, key: KeyboardKey) {
+        internal init(keyboard: Keyboard, key: KeyboardKey, isKeyVirtual: Bool) {
             self.keyboard = keyboard
             self.key = key
+            self.isKeyVirtual = isKeyVirtual
         }
 
         /// A mask representing special keys that might alter the behavior of this key.
@@ -209,13 +213,70 @@ extension Keyboard {
         public var modifiers: KeyboardModifierMask {
             return keyboard.modifiers
         }
+        
+        internal var _isPressed: Bool = false
 
         /// `true` if the button is considered down.
-        public internal(set) var isPressed: Bool = false {
-            didSet {
-                if isPressed != oldValue {
-                    currentReceipt &+= 1
+        public internal(set) var isPressed: Bool {
+            set {
+                if isKeyVirtual == false {
+                    if _isPressed != newValue {
+                        _isPressed = newValue
+                        currentReceipt &+= 1
+                    }
                 }
+            }
+            get {
+                if isKeyVirtual == false {
+                    return _isPressed
+                }
+                switch self.key {
+                case .shift(.anyVariation):
+                    if keyboard.button(.shift(.leftSide)).isPressed {
+                        return true
+                    }
+                    if keyboard.button(.shift(.rightSide)).isPressed {
+                        return true
+                    }
+                case .alt(.anyVariation):
+                    if keyboard.button(.alt(.leftSide)).isPressed {
+                        return true
+                    }
+                    if keyboard.button(.alt(.rightSide)).isPressed {
+                        return true
+                    }
+                case .host(.anyVariation):
+                    if keyboard.button(.host(.leftSide)).isPressed {
+                        return true
+                    }
+                    if keyboard.button(.host(.rightSide)).isPressed {
+                        return true
+                    }
+                case .control(.anyVariation):
+                    if keyboard.button(.control(.leftSide)).isPressed {
+                        return true
+                    }
+                    if keyboard.button(.control(.rightSide)).isPressed {
+                        return true
+                    }
+                case .enter(.anyVariation):
+                    if keyboard.button(.enter(.standard)).isPressed {
+                        return true
+                    }
+                    if keyboard.button(.enter(.numberPad)).isPressed {
+                        return true
+                    }
+                case .character(let character, .anyVariation):
+                    if keyboard.button(.character(character, .standard)).isPressed {
+                        return true
+                    }
+                    if keyboard.button(.character(character, .numberPad)).isPressed {
+                        return true
+                    }
+                default:
+                    break
+                }
+                return false
             }
         }
 
@@ -226,18 +287,67 @@ extension Keyboard {
          - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
          */
-        @inlinable @inline(__always)
+        @inline(__always)
         public func isPressed(
             ifDifferent receipt: inout InputReceipts,
             andUsing modifiers: KeyboardModifierMask = []
         ) -> Bool {
             guard isPressed, keyboard.modifiers.contains(modifiers) else { return false }
             let key = ObjectIdentifier(self)
-            if let receipt = receipt.values[key], receipt == currentReceipt {
-                return false
+            if isKeyVirtual == false {
+                if let receipt = receipt.values[key], receipt == currentReceipt {
+                    return false
+                }
+                receipt.values[key] = currentReceipt
+                return true
             }
-            receipt.values[key] = currentReceipt
-            return true
+            switch self.key {
+            case .shift(.anyVariation):
+                if keyboard.button(.shift(.leftSide)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.shift(.rightSide)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            case .alt(.anyVariation):
+                if keyboard.button(.alt(.leftSide)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.alt(.rightSide)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            case .host(.anyVariation):
+                if keyboard.button(.host(.leftSide)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.host(.rightSide)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            case .control(.anyVariation):
+                if keyboard.button(.control(.leftSide)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.control(.rightSide)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            case .enter(.anyVariation):
+                if keyboard.button(.enter(.standard)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.enter(.numberPad)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            case .character(let character, .anyVariation):
+                if keyboard.button(.character(character, .standard)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.character(character, .numberPad)).isPressed(ifDifferent: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            default:
+                break
+            }
+            return false
         }
 
         /**
