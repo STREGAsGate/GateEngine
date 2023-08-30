@@ -86,8 +86,11 @@ public enum KeyboardKey: Hashable {
     case right
     /**
      Gives an opportunity to handle keyboard events not handled by GateEngine.
-     - parameter int: A key code represented as an Int
-     - parameter string: A key represented as a String
+     
+     - parameter int: The key code described by the host srepresented as an Int. This is not guaranteed
+     - parameter string: The key represented as a String as recommended by the host, if there is any.
+     - warning: It is strongly recommended you do not use this for any reason!
+     If a keyboard key is not available that you would like to use please file an issue on GitHub and we'll see about adding it.
      */
     case unhandledPlatformKeyCode(_ int: Int?, _ string: Character?)
 
