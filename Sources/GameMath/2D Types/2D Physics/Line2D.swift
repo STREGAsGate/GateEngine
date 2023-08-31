@@ -26,4 +26,25 @@ public extension Line2D {
         return Position2((p1.x + (valDp * e1.x) / len2),
                          (p1.y + (valDp * e1.y) / len2))
     }
+    
+    // TODO: This needs testing
+    func intersection(of ray: Ray2D) -> Position2? {
+        let v1 = ray.origin - p1
+        let v2 = p2 - p1
+        let v3 = Direction2(-ray.direction.y, ray.direction.x)
+        
+        let dot = v2.dot(v3)
+        if abs(dot) < 0.000001 {
+            return nil
+        }
+        
+        let t1 = v2.cross(v1) / dot
+        let t2 = v1.dot(v3) / dot
+        
+        if t1 >= 0.0 && (t2 >= 0.0 && t2 <= 1.0) {
+            return ray.origin.moved(t1, toward: ray.direction)
+        }
+
+        return nil
+    }
 }
