@@ -15,7 +15,7 @@ public struct Line2D {
     }
 }
 
-public extension Line3D {
+public extension Line2D {
     func pointNear(_ p: Position2) -> Position2 {
         // get dot product of e1, e2
         let e1 = Position2(p2.x - p1.x, p2.y - p1.y)
