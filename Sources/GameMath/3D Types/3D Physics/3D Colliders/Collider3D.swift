@@ -41,20 +41,32 @@ public extension Collider3D {
 }
 
 public struct Interpenetration3D {
-    public internal(set) var depth: Float
-    public internal(set) var direction: Direction3
-    public internal(set) var points: Set<Position3>
-    @inline(__always)
+    /// How far much the collider is penetrating.
+    /// Negative values are inside positive values are outside.
+    public var depth: Float
+    
+    /// The direction to move in ourder to resolve the penetration.
+    /// This is typically a surface normal.
+    public var direction: Direction3
+    
+    /// Points of intersection between the compared colliders
+    public var points: Set<Position3>
+    
+    /// - returns true if the two compared colliders have penetration
+    @inlinable @inline(__always)
     public var isColiding: Bool {
         return depth < -0.0001 && direction.isFinite && depth.isFinite
     }
-    @inline(__always)
+    
+    /// - returns true if the comparison can safely be used to determine penetration
+    @inlinable @inline(__always)
     public var isValid: Bool {
         return depth.isFinite
         && direction.isFinite
         && points.isEmpty == false
         && points.first(where: {$0.isFinite == false}) == nil
     }
+    
     public init(depth: Float, direction: Direction3, points: Set<Position3>) {
         self.depth = depth
         self.direction = direction
