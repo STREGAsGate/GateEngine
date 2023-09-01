@@ -250,15 +250,18 @@ final class AppKitWindow: WindowBacking {
         if UserDefaults.standard.bool(forKey: "\(window.identifier)-WasFullScreen") {
             self.nsWindowController.window!.toggleFullScreen(NSApp)
         }
+        
+        NSApplication.shared.activate(ignoringOtherApps: true)
 
-        nsWindowController.showWindow(NSApp)
-        self.nsWindowController.window?.makeKeyAndOrderFront(nil)
-
+        if self.window.isMainWindow {
+            self.nsWindowController.window?.makeMain()
+        }
+        nsWindowController.showWindow(nil)
+        
         if CVDisplayLinkIsRunning(self.displayLink) == false {
             CVDisplayLinkStart(self.displayLink)
         }
 
-        NSApplication.shared.activate(ignoringOtherApps: true)
         self.state = .shown
     }
 
