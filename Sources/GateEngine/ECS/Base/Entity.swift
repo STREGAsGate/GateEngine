@@ -47,9 +47,6 @@ extension Entity {
     @inlinable @inline(__always)
     public subscript<T: Component>(_ type: T.Type) -> T {
         get {
-            if self.hasComponent(type) == false {
-                self.insert(type.init(), replacingExisting: true)
-            }
             return components[type.componentID] as! T
         }
         set {
@@ -61,24 +58,17 @@ extension Entity {
     /// - returns The existing component or nil if it's not present.
     @inlinable @inline(__always)
     public func component<T: Component>(ofType type: T.Type) -> T? {
-        if let existing = components[type.componentID] as? T {
-            return existing
-        }
-        return nil
+        return components[type.componentID] as? T
     }
 
     /// Obtain a component by type. Useful for Component subclasses.
     @inlinable @inline(__always)
     public func component<T>(as type: T.Type) -> T? where T: AnyObject {
-        if let existing: T = components.first(where: { $0.value is T })?.value as? T {
-            return existing
-        }
-        return nil
+        return components.first(where: { $0.value is T })?.value as? T
     }
 
     /// - returns true if an existing component was replaced
-    @inlinable @inline(__always)
-    @discardableResult
+    @discardableResult @inlinable @inline(__always)
     public func insert<T: Component>(_ component: T, replacingExisting: Bool = true) -> Bool {
         let key = type(of: component).componentID
         let exists = components.keys.contains(key)
