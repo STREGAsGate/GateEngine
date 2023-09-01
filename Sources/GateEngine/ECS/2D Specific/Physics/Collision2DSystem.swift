@@ -7,6 +7,12 @@
 
 public final class Collision2DSystem: System {
     public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
+        for entity in game.entities {
+            guard entity.hasComponent(Collision2DComponent.self) else { continue }
+            guard entity.hasComponent(Transform2Component.self) else { continue }
+            entity[Collision2DComponent.self].primitive.update(transform: entity.transform2)
+        }
+        
         guard
             let quadtreeEntity = game.entities.first(where: {
                 $0.hasComponent(QuadtreeComponent.self)
@@ -42,8 +48,9 @@ public final class Collision2DSystem: System {
                 }
 
                 for hit in hits.sorted(by: {
-                    $0.collider.position.distance(from: objectCollider.position)
-                        < $1.collider.position.distance(from: objectCollider.position)
+                    let distance1 = $0.collider.position.distance(from: objectCollider.position)
+                    let distance2 = $1.collider.position.distance(from: objectCollider.position)
+                    return distance1 < distance2
                 }) {
                     objectCollider.update(transform: transformComponent.transform)
                     if let interpenetration = hit.collider.interpenetration(
