@@ -58,6 +58,11 @@ public struct Material {
         self.fragmentShader = .materialColor
     }
 
+    public init(texture: Texture, tintColor: Color = .white) {
+        self.channels[0] = Channel(color: tintColor, texture: texture)
+        self.fragmentShader = .textureSampleTintColor
+    }
+    
     public init(texture: Texture) {
         self.channels[0] = Channel(color: .defaultDiffuseMapColor, texture: texture)
         self.fragmentShader = .textureSample
