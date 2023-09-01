@@ -47,6 +47,7 @@ extension Entity {
     @inlinable @inline(__always)
     public subscript<T: Component>(_ type: T.Type) -> T {
         get {
+            assert(self.hasComponent(type), "Component \"\(type)\" is not a member of this entity.")
             return components[type.componentID] as! T
         }
         set {
@@ -99,7 +100,7 @@ extension Entity {
         return await config(&self[T.self])
     }
 
-    /// - returns The removed componen or nil if no component was found.
+    /// - returns The removed component or nil if no component was found.
     @inlinable @inline(__always)
     @discardableResult
     public func remove<T: Component>(_ type: T.Type) -> T? {
