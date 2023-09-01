@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-#if GameMathUseSIMD
 public struct Rect {
     public var position: Position2
     public var size: Size2
@@ -15,19 +14,13 @@ public struct Rect {
         self.position = position
         self.size = size
     }
-}
-#else
-public struct Rect {
-    public var position: Position2
-    public var size: Size2
     
     @inlinable
-    public init(position: Position2 = .zero, size: Size2) {
-        self.position = position
+    public init(size: Size2, center: Position2) {
+        self.position = center - size * 0.5
         self.size = size
     }
 }
-#endif
 
 public extension Rect {
     @inlinable
@@ -88,15 +81,27 @@ public extension Rect {
             size.height = height
         }
     }
-    
+}
+
+extension Rect {
+    // The left side of the rect
+    @_transparent
+    public var minX: Float {
+        return x
+    }
+    // The top of the rect
+    @_transparent
+    public var minY: Float {
+        return y
+    }
     // The right side of the rect
     @_transparent
-    var maxX: Float {
+    public var maxX: Float {
         return x + width
     }
     // The bottom of the rect
     @_transparent
-    var maxY: Float {
+    public var maxY: Float {
         return y + height
     }
 }
@@ -105,11 +110,10 @@ extension Rect {
     @_transparent
     public var center: Position2 {
         get {
-            return Position2(x: x + width / 2, y: y + height / 2)
+            return position + size * 0.5
         }
         set(point) {
-            x = point.x - width / 2
-            y = point.y - height / 2
+            position = point - size * 0.5
         }
     }
 }
@@ -153,20 +157,20 @@ extension Rect {
 
 extension Rect {
     @_transparent
-    public static func *=(lhs: inout Self, rhs: Float) {
-        lhs = lhs * rhs
+    public static func * (lhs: Self, rhs: Float) -> Self {
+        return Rect(position: lhs.position * rhs, size: lhs.size * rhs)
     }
     @_transparent
-    public static func *(lhs: Self, rhs: Float) -> Self {
-        return Rect(position: lhs.position * rhs, size: lhs.size * rhs)
+    public static func *= (lhs: inout Self, rhs: Float) {
+        lhs = lhs * rhs
     }
     
     @_transparent
-    public static func /=(lhs: inout Self, rhs: Float) {
-        lhs = lhs / rhs
+    public static func / (lhs: Self, rhs: Float) -> Self {
+        return Rect(position: lhs.position / rhs, size: lhs.size / rhs)
     }
     @_transparent
-    public static func /(lhs: Self, rhs: Float) -> Self {
-        return Rect(position: lhs.position / rhs, size: lhs.size / rhs)
+    public static func /= (lhs: inout Self, rhs: Float) {
+        lhs = lhs / rhs
     }
 }
