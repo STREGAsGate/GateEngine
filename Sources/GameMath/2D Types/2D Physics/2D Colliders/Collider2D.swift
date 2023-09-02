@@ -40,7 +40,6 @@ public extension Collider2D {
 
 public struct Interpenetration2D {
     /// How far much the collider is penetrating. 
-    /// Negative values are inside positive values are outside.
     public var depth: Float
     
     /// The direction to move in ourder to resolve the penetration.
