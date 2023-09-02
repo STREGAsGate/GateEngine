@@ -97,6 +97,9 @@ extension Entity {
         _ type: T.Type,
         _ config: @escaping (_ component: inout T) async -> ResultType
     ) async -> ResultType {
+        if self.hasComponent(type) == false {
+            self.insert(type.init())
+        }
         return await config(&self[T.self])
     }
 
