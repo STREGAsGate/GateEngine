@@ -11,20 +11,30 @@ import class Foundation.FileManager
 
 extension ResourceManager {
     struct Importers {
-        internal var textureImporters: [any TextureImporter.Type] = [PNGImporter.self]
+        internal var textureImporters: [any TextureImporter.Type] = [
+            PNGImporter.self
+        ]
 
         internal var geometryImporters: [any GeometryImporter.Type] = [
-            GLTransmissionFormat.self, WavefrontOBJImporter.self,
+            GLTransmissionFormat.self, 
+            WavefrontOBJImporter.self,
         ]
-        internal var skeletonImporters: [any SkeletonImporter.Type] = [GLTransmissionFormat.self]
-        internal var skinImporters: [any SkinImporter.Type] = [GLTransmissionFormat.self]
+        
+        internal var skeletonImporters: [any SkeletonImporter.Type] = [
+            GLTransmissionFormat.self,
+        ]
+        internal var skinImporters: [any SkinImporter.Type] = [
+            GLTransmissionFormat.self,
+        ]
         internal var skeletalAnimationImporters: [any SkeletalAnimationImporter.Type] = [
-            GLTransmissionFormat.self
+            GLTransmissionFormat.self,
         ]
 
-        internal var tileSetImporters: [any TileSetImporter.Type] = [ /*TiledTileSetImporter.self*/
+        internal var tileSetImporters: [any TileSetImporter.Type] = [
+            TiledTSJImporter.self,
         ]
-        internal var tileMapImporters: [any TileMapImporter.Type] = [ /*TiledTileMapImporter.self*/
+        internal var tileMapImporters: [any TileMapImporter.Type] = [
+            TiledTMJImporter.self,
         ]
     }
 }
