@@ -38,10 +38,10 @@ fileprivate struct TSJFile: Decodable {
 public class TiledTSJImporter: TileSetImporter {
     public required init() {}
 
-    public func process(data: Data, baseURL: URL, options: TileSetImporterOptions) async throws -> TileSet {
+    public func process(data: Data, baseURL: URL, options: TileSetImporterOptions) async throws -> TileSetBackend {
         let file = try JSONDecoder().decode(TSJFile.self, from: data)
         
-        let tiles: [Tile] = (0 ..< file.tilecount).map({ id in
+        let tiles: [TileSet.Tile] = (0 ..< file.tilecount).map({ id in
             var properties: [String: String] = [:]
             if let fileTiles = file.tiles {
                 if let fileTile = fileTiles.first(where: {$0.id == id}) {
@@ -52,15 +52,15 @@ public class TiledTSJImporter: TileSetImporter {
                     }
                 }
             }
-            return Tile(id: id, properties: properties, colliders: nil)
+            return TileSet.Tile(id: id, properties: properties, colliders: nil)
         })
 
-        return TileSet(textureName: file.image,
-                       textureSize: Size2(Float(file.imagewidth), Float(file.imageheight)),
-                       count: file.tilecount,
-                       columns: file.columns,
-                       tileSize: Size2(Float(file.tilewidth), Float(file.tileheight)),
-                       tiles: tiles)
+        return TileSetBackend(textureName: file.image,
+                              textureSize: Size2(Float(file.imagewidth), Float(file.imageheight)),
+                              count: file.tilecount,
+                              columns: file.columns,
+                              tileSize: Size2(Float(file.tilewidth), Float(file.tileheight)),
+                              tiles: tiles)
     }
     
     static public func supportedFileExtensions() -> [String] {

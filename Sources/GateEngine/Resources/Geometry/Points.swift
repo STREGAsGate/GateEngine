@@ -62,3 +62,46 @@ extension Points: Equatable, Hashable {
         hasher.combine(cacheKey)
     }
 }
+
+// MARK: - Resource Manager
+
+extension ResourceManager {
+    func geometryCacheKey(rawPoints points: RawPoints?) -> Cache.GeometryKey {
+        let path = "$\(rawCacheIDGenerator.generateID())"
+        let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
+        if cache.geometries[key] == nil {
+            cache.geometries[key] = Cache.GeometryCache()
+            if let points {
+                Task.detached(priority: .low) {
+                    let backend = await self.geometryBackend(from: points)
+                    Task { @MainActor in
+                        self.cache.geometries[key]!.geometryBackend = backend
+                        self.cache.geometries[key]!.state = .ready
+                    }
+                }
+            }
+        }
+        return key
+    }
+
+    func geometryBackend(from raw: RawPoints) async -> any GeometryBackend {
+        #if GATEENGINE_FORCE_OPNEGL_APPLE
+        return await OpenGLGeometry(points: raw)
+        #elseif canImport(MetalKit)
+        #if canImport(GLKit)
+        if await MetalRenderer.isSupported == false {
+            return await OpenGLGeometry(points: raw)
+        }
+        #endif
+        return await MetalGeometry(points: raw)
+        #elseif canImport(WebGL2)
+        return await WebGL2Geometry(points: raw)
+        #elseif canImport(WinSDK)
+        return await DX12Geometry(points: raw)
+        #elseif canImport(OpenGL_GateEngine)
+        return await OpenGLGeometry(points: raw)
+        #else
+        #error("Not implemented")
+        #endif
+    }
+}

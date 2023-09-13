@@ -40,11 +40,13 @@
     #endif
 }
 
-public protocol Resource: AnyObject, Identifiable, Equatable, Hashable {
+public protocol Resource: Equatable, Hashable {
     /** The current state of the resource.
     It is a programming error to use a resource or access it's properties while it's state is anything other then `ready`.
     */
     @MainActor var state: ResourceState { get }
+    
+    @MainActor var cacheHint: CacheHint {get}
 }
 
 public enum ResourceState: Equatable {
@@ -57,15 +59,6 @@ public enum ResourceState: Equatable {
     - parameter error: The error thrown that caused the resource state to be `failed`.
     */
     case failed(error: GateEngineError)
-}
-
-extension Resource {
-    public static func == (lhs: any Resource, rhs: any Resource) -> Bool {
-        return lhs.id == rhs.id
-    }
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.id)
-    }
 }
 
 public class OldResource: Equatable, Hashable, Identifiable {

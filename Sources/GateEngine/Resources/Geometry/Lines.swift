@@ -62,3 +62,47 @@ extension Lines: Equatable, Hashable {
         hasher.combine(cacheKey)
     }
 }
+
+
+// MARK: - Resource Manager
+
+extension ResourceManager {
+    func geometryCacheKey(rawLines lines: RawLines?) -> Cache.GeometryKey {
+        let path = "$\(rawCacheIDGenerator.generateID())"
+        let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
+        if cache.geometries[key] == nil {
+            cache.geometries[key] = Cache.GeometryCache()
+            if let lines = lines {
+                Task.detached(priority: .low) {
+                    let backend = await self.geometryBackend(from: lines)
+                    Task { @MainActor in
+                        self.cache.geometries[key]!.geometryBackend = backend
+                        self.cache.geometries[key]!.state = .ready
+                    }
+                }
+            }
+        }
+        return key
+    }
+
+    func geometryBackend(from raw: RawLines) async -> any GeometryBackend {
+        #if GATEENGINE_FORCE_OPNEGL_APPLE
+        return await OpenGLGeometry(lines: raw)
+        #elseif canImport(MetalKit)
+        #if canImport(GLKit)
+        if await MetalRenderer.isSupported == false {
+            return await OpenGLGeometry(lines: raw)
+        }
+        #endif
+        return await MetalGeometry(lines: raw)
+        #elseif canImport(WebGL2)
+        return await WebGL2Geometry(lines: raw)
+        #elseif canImport(WinSDK)
+        return await DX12Geometry(lines: raw)
+        #elseif canImport(OpenGL_GateEngine)
+        return await OpenGLGeometry(lines: raw)
+        #else
+        #error("Not implemented")
+        #endif
+    }
+}

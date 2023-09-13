@@ -5,6 +5,10 @@
  * http://stregasgate.com
  */
 
+#if GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
+import Foundation
+#endif
+
 public enum MipMapping: Hashable {
     /// No mipmapping
     case none
@@ -142,5 +146,294 @@ extension Texture: Equatable, Hashable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(cacheKey)
+    }
+}
+
+
+// MARK: - Resource Manager
+
+public protocol TextureImporter: AnyObject {
+    init()
+
+    func loadData(path: String, options: TextureImporterOptions) async throws -> (
+        data: Data, size: Size2?
+    )
+
+    func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (
+        data: Data, size: Size2
+    )
+
+    static func canProcessFile(_ file: URL) -> Bool
+}
+
+extension TextureImporter {
+    public func loadData(path: String, options: TextureImporterOptions) async throws -> (
+        data: Data, size: Size2?
+    ) {
+        return (try await Game.shared.platform.loadResource(from: path), nil)
+    }
+}
+
+public struct TextureImporterOptions: Equatable, Hashable {
+    public var subobjectName: String? = nil
+    public var option1: Bool = false
+
+    public static func with(name: String? = nil, option1: Bool = false) -> Self {
+        return TextureImporterOptions(subobjectName: name, option1: option1)
+    }
+
+    public static var option1: TextureImporterOptions {
+        return TextureImporterOptions(subobjectName: nil, option1: true)
+    }
+
+    public static func named(_ name: String) -> Self {
+        return TextureImporterOptions(subobjectName: name)
+    }
+
+    public static var none: TextureImporterOptions {
+        return TextureImporterOptions()
+    }
+}
+
+extension ResourceManager {
+    public func addTextureImporter(_ type: any TextureImporter.Type, atEnd: Bool = false) {
+        guard importers.textureImporters.contains(where: { $0 == type }) == false else { return }
+        if atEnd {
+            importers.textureImporters.append(type)
+        } else {
+            importers.textureImporters.insert(type, at: 0)
+        }
+    }
+
+    internal func textureImporterForFile(_ file: URL) -> (any TextureImporter)? {
+        for type in self.importers.textureImporters {
+            if type.canProcessFile(file) {
+                return type.init()
+            }
+        }
+        return nil
+    }
+}
+
+extension ResourceManager.Cache {
+    struct TextureKey: Hashable {
+        let requestedPath: String
+        let mipMapping: MipMapping
+        let textureOptions: TextureImporterOptions
+    }
+
+    class TextureCache {
+        var isRenderTarget: Bool
+        var textureBackend: (any TextureBackend)?
+        var lastLoaded: Date
+        var state: ResourceState
+        var referenceCount: UInt
+        var minutesDead: UInt
+        var cacheHint: CacheHint
+        init() {
+            self.isRenderTarget = false
+            self.textureBackend = nil
+            self.lastLoaded = Date()
+            self.state = .pending
+            self.referenceCount = 0
+            self.minutesDead = 0
+            self.cacheHint = .until(minutes: 5)
+        }
+    }
+}
+
+extension ResourceManager {
+    func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.TextureKey) {
+        cache.textures[key]?.cacheHint = cacheHint
+        cache.textures[key]?.minutesDead = 0
+    }
+
+    func textureCacheKey(path: String, mipMapping: MipMapping, options: TextureImporterOptions)
+        -> Cache.TextureKey
+    {
+        let key = Cache.TextureKey(
+            requestedPath: path,
+            mipMapping: mipMapping,
+            textureOptions: options
+        )
+        if cache.textures[key] == nil {
+            cache.textures[key] = Cache.TextureCache()
+            _reloadTexture(key: key)
+        }
+        return key
+    }
+
+    func textureCacheKey(data: Data, size: Size2, mipMapping: MipMapping) -> Cache.TextureKey {
+        let path = "$\(rawCacheIDGenerator.generateID())"
+        let key = Cache.TextureKey(
+            requestedPath: path,
+            mipMapping: mipMapping,
+            textureOptions: .none
+        )
+        if cache.textures[key] == nil {
+            cache.textures[key] = Cache.TextureCache()
+            Task.detached(priority: .low) {
+                let backend = await self.textureBackend(
+                    data: data,
+                    size: size,
+                    mipMapping: mipMapping
+                )
+                Task { @MainActor in
+                    self.cache.textures[key]!.textureBackend = backend
+                    self.cache.textures[key]!.state = .ready
+                }
+            }
+        }
+        return key
+    }
+
+    func textureCacheKey(renderTargetBackend: any RenderTargetBackend) -> Cache.TextureKey {
+        let path = "$\(rawCacheIDGenerator.generateID())"
+        let key = Cache.TextureKey(requestedPath: path, mipMapping: .none, textureOptions: .none)
+        if cache.textures[key] == nil {
+            let newCache = Cache.TextureCache()
+            newCache.isRenderTarget = true
+            cache.textures[key] = newCache
+            Task.detached(priority: .low) {
+                let backend = await self.textureBackend(renderTargetBackend: renderTargetBackend)
+                Task { @MainActor in
+                    self.cache.textures[key]!.textureBackend = backend
+                    self.cache.textures[key]!.state = .ready
+                }
+            }
+        }
+        return key
+    }
+
+    func textureCache(for key: Cache.TextureKey) -> Cache.TextureCache? {
+        return cache.textures[key]
+    }
+
+    func incrementReference(_ key: Cache.TextureKey) {
+        self.textureCache(for: key)?.referenceCount += 1
+    }
+    func decrementReference(_ key: Cache.TextureKey) {
+        self.textureCache(for: key)?.referenceCount -= 1
+    }
+
+    func reloadTextureIfNeeded(key: Cache.TextureKey) {
+        // Skip if made from rawCacheID
+        if key.requestedPath[key.requestedPath.startIndex] != "$" {
+            Task.detached(priority: .low) {
+                if self.textureNeedsReload(key: key) {
+                    self._reloadTexture(key: key)
+                }
+            }
+        }
+    }
+
+    @inline(__always)
+    private func _reloadTexture(key: Cache.TextureKey) {
+        Task.detached(priority: .low) {
+            do {
+                let path = key.requestedPath
+                guard let fileExtension = path.components(separatedBy: ".").last else {
+                    throw GateEngineError.failedToLoad("Unknown file type.")
+                }
+                guard
+                    let importer = await Game.shared.resourceManager.textureImporterForFile(
+                        URL(fileURLWithPath: key.requestedPath)
+                    )
+                else {
+                    throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
+                }
+
+                let v = try await importer.loadData(path: path, options: key.textureOptions)
+                guard v.data.isEmpty == false else {
+                    throw GateEngineError.failedToLoad("File is empty.")
+                }
+                let texture = try importer.process(
+                    data: v.data,
+                    size: v.size,
+                    options: key.textureOptions
+                )
+
+                let backend = await self.textureBackend(
+                    data: texture.data,
+                    size: texture.size,
+                    mipMapping: key.mipMapping
+                )
+                Task { @MainActor in
+                    self.cache.textures[key]!.textureBackend = backend
+                    self.cache.textures[key]!.state = .ready
+                }
+            } catch let error as GateEngineError {
+                Task { @MainActor in
+                    Log.warn("Resource \"\(key.requestedPath)\"", error)
+                    self.cache.textures[key]!.state = .failed(error: error)
+                }
+            } catch {
+                Log.fatalError("error must be a GateEngineError")
+            }
+        }
+    }
+
+    func textureNeedsReload(key: Cache.TextureKey) -> Bool {
+        // Skip if made from rawCacheID
+        guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
+        #if GATEENGINE_ENABLE_HOTRELOADING
+        guard let cache = cache.textures[key] else { return false }
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)
+            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date
+            {
+                return modified > cache.lastLoaded
+            } else {
+                return false
+            }
+        } catch {
+            Log.error(error)
+            return false
+        }
+        #else
+        return false
+        #endif
+    }
+
+    func textureBackend(data: Data, size: Size2, mipMapping: MipMapping) async -> any TextureBackend
+    {
+        #if GATEENGINE_FORCE_OPNEGL_APPLE
+        return await OpenGLTexture(data: data, size: size, mipMapping: mipMapping)
+        #elseif canImport(MetalKit)
+        #if canImport(GLKit)
+        if await MetalRenderer.isSupported == false {
+            return await OpenGLTexture(data: data, size: size, mipMapping: mipMapping)
+        }
+        #endif
+        return await MetalTexture(data: data, size: size, mipMapping: mipMapping)
+        #elseif canImport(WebGL2)
+        return await WebGL2Texture(data: data, size: size, mipMapping: mipMapping)
+        #elseif canImport(WinSDK)
+        return await DX12Texture(data: data, size: size, mipMapping: mipMapping)
+        #elseif canImport(OpenGL_GateEngine)
+        return await OpenGLTexture(data: data, size: size, mipMapping: mipMapping)
+        #else
+        #error("Not implemented")
+        #endif
+    }
+    func textureBackend(renderTargetBackend: any RenderTargetBackend) async -> any TextureBackend {
+        #if GATEENGINE_FORCE_OPNEGL_APPLE
+        return await OpenGLTexture(renderTargetBackend: renderTargetBackend)
+        #elseif canImport(MetalKit)
+        #if canImport(GLKit)
+        if await MetalRenderer.isSupported == false {
+            return await OpenGLTexture(renderTargetBackend: renderTargetBackend)
+        }
+        #endif
+        return await MetalTexture(renderTargetBackend: renderTargetBackend)
+        #elseif canImport(WebGL2)
+        return await WebGL2Texture(renderTargetBackend: renderTargetBackend)
+        #elseif canImport(WinSDK)
+        return await DX12Texture(renderTargetBackend: renderTargetBackend)
+        #elseif canImport(OpenGL_GateEngine)
+        return await OpenGLTexture(renderTargetBackend: renderTargetBackend)
+        #else
+        #error("Not implemented")
+        #endif
     }
 }

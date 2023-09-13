@@ -390,3 +390,58 @@ extension Skeleton.Pose.Joint: Hashable {
         hasher.combine(id)
     }
 }
+
+
+// MARK: - Resource Manager
+
+public protocol SkeletonImporter: AnyObject {
+    init()
+
+    func loadData(path: String, options: SkeletonImporterOptions) async throws -> Skeleton.Joint
+
+    static func canProcessFile(_ file: URL) -> Bool
+}
+
+public struct SkeletonImporterOptions: Equatable, Hashable {
+    public var subobjectName: String? = nil
+
+    public static func named(_ name: String) -> Self {
+        return SkeletonImporterOptions(subobjectName: name)
+    }
+
+    public static var none: SkeletonImporterOptions {
+        return SkeletonImporterOptions()
+    }
+}
+
+extension ResourceManager {
+    public func addSkeletonImporter(_ type: any SkeletonImporter.Type) {
+        guard importers.skeletonImporters.contains(where: { $0 == type }) == false else { return }
+        importers.skeletonImporters.insert(type, at: 0)
+    }
+
+    internal func importerForFile(_ file: URL) -> (any SkeletonImporter)? {
+        for type in self.importers.skeletonImporters {
+            if type.canProcessFile(file) {
+                return type.init()
+            }
+        }
+        return nil
+    }
+}
+
+extension Skeleton {
+    public convenience init(path: String, options: SkeletonImporterOptions = .none) async throws {
+        let file = URL(fileURLWithPath: path)
+        guard let importer = await Game.shared.resourceManager.importerForFile(file) else {
+            throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
+        }
+
+        do {
+            let rootJoint = try await importer.loadData(path: path, options: options)
+            self.init(rootJoint: rootJoint)
+        } catch {
+            throw GateEngineError(decodingError: error)
+        }
+    }
+}

@@ -39,7 +39,7 @@ fileprivate struct TMJFile: Decodable {
 public class TiledTMJImporter: TileMapImporter {
     public required init() {}
 
-    public func process(data: Data, baseURL: URL, options: TileMapImporterOptions) async throws -> TileMap {
+    public func process(data: Data, baseURL: URL, options: TileMapImporterOptions) async throws -> TileMapBackend {
         let file = try JSONDecoder().decode(TMJFile.self, from: data)
 
         var layers: [TileMap.Layer] = []
@@ -75,7 +75,7 @@ public class TiledTMJImporter: TileMapImporter {
             layers.append(layer)
         }
 
-        return TileMap(layers: layers)
+        return await TileMapBackend(layers: layers)
     }
     
     static public func supportedFileExtensions() -> [String] {
