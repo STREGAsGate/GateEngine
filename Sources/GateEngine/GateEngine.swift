@@ -42,10 +42,8 @@ import WebAPIBase
 #error("watchOS is not a supported platform.")
 #endif
 
-#if swift(>=5.9)
-#if os(xrOS)
+#if os(visionOS)
 #error("visionOS is not a supported platform.")
-#endif
 #endif
 
 #if os(Android)
@@ -57,12 +55,7 @@ import WebAPIBase
 #endif
 
 extension Color {
-    internal static let stregasgateBackground: Color = #colorLiteral(
-        red: 0.094117634,
-        green: 0.0941176638,
-        blue: 0.094117634,
-        alpha: 1
-    )
+    internal static let stregasgateBackground: Color = #colorLiteral(red: 0.094117634,green: 0.0941176638,blue: 0.094117634,alpha: 1)
 }
 
 public enum GateEngineError: Error, Equatable, Hashable {
@@ -121,7 +114,7 @@ extension GateEngineError: ExpressibleByStringLiteral {
 }
 
 extension CommandLine {
-    #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
+    #if os(macOS) || ((os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)) && targetEnvironment(simulator))
     @usableFromInline
     static let isDebuggingWithXcode: Bool = ProcessInfo.processInfo.environment.keys.first(where: {
         $0.lowercased().contains("xcode")
