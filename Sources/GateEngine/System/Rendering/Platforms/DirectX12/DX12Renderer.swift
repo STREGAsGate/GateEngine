@@ -952,7 +952,7 @@ extension DX12Renderer {
     }
 
     @_optimize(none)  // Prevent compiler crash on release builds
-    static func checkError(_ error: Swift.Error, function: String = #function, line: Int = #line)
+    static func checkError(_ error: any Swift.Error, function: String = #function, line: Int = #line)
         -> Never
     {
         Log.error(error)
