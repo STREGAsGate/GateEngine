@@ -9,7 +9,7 @@ public struct KeyboardModifierMask: OptionSet {
     public typealias RawValue = UInt32
     public let rawValue: RawValue
 
-    /// The Platform specific key Command for Apple, Flag for Windows, etc...
+    /// The Platform specific key. Command for Apple, Flag for Windows, etc...
     public static let host = KeyboardModifierMask(rawValue: 1 << 1)
     /// Any shift key is down
     public static let shift = KeyboardModifierMask(rawValue: 1 << 2)
@@ -20,7 +20,7 @@ public struct KeyboardModifierMask: OptionSet {
     /// capslock is enabled
     public static let capsLock = KeyboardModifierMask(rawValue: 1 << 5)
     /// fn is down
-    public static let function = KeyboardModifierMask(rawValue: 1 << 5)
+    public static let function = KeyboardModifierMask(rawValue: 1 << 6)
 
     public init(rawValue: UInt32) {
         self.rawValue = rawValue
@@ -41,6 +41,9 @@ extension KeyboardModifierMask: CustomStringConvertible {
         }
         if self.contains(.host) {
             text += "host, "
+        }
+        if self.contains(.function) {
+            text += "fn, "
         }
         if text.hasSuffix(", ") {
             text = String(text[..<text.lastIndex(of: ",")!])

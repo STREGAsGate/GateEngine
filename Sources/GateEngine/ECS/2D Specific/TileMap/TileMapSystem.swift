@@ -14,7 +14,6 @@ public final class TileMapSystem: System {
         }
     }
 
-    @inline(__always)
     func rebuild(_ tileMap: TileMapComponent) {
         guard tileMap.needsRebuild else { return }
         guard let tileSet = tileMap.tileSet else { return }

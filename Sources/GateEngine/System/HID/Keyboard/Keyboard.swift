@@ -87,7 +87,7 @@ extension Keyboard {
         @usableFromInline
         internal unowned let keyboard: Keyboard
         let key: KeyboardKey
-        // true is the key is representation instead of a physical key
+        // true if the key is a representation instead of a physical key
         // such as .shift(anyVariation)
         let isKeyVirtual: Bool
         @usableFromInline
@@ -120,18 +120,38 @@ extension Keyboard {
                 return "\(character)"
             case .function(let index):
                 return "F\(index)"
-            case .enter(.standard):
-                return "Enter"
+            case .return:
+                return "Return"
             case .enter(.numberPad):
-                return "Enter(NumPad)"
+                return "Enter"
             case .alt(.leftSide):
+                #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+                return "Left Option"
+                #else
                 return "Left Alt"
+                #endif
             case .alt(.rightSide):
+                #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+                return "Right Option"
+                #else
                 return "Right Alt"
+                #endif
             case .host(.leftSide):
+                #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+                return "Left Command"
+                #elseif os(Windows)
+                return "Left Flag"
+                #else
                 return "Left Host"
+                #endif
             case .host(.rightSide):
+                #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+                return "Right Command"
+                #elseif os(Windows)
+                return "Right Flag"
+                #else
                 return "Right Host"
+                #endif
             case .control(.leftSide):
                 return "Left Control"
             case .control(.rightSide):

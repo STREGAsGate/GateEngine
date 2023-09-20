@@ -74,6 +74,8 @@ public enum KeyboardKey: Hashable {
     case space
     /// An enter / return key
     case enter(_ origin: KeyOrigin)
+    /// An alias for the return key
+    public static let `return`: KeyboardKey = .enter(.standard)
     /// The tab key
     case tab
     /// The up arrow
