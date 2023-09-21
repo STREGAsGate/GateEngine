@@ -619,29 +619,16 @@ extension Array where Element == Platform {
     static var desktop: Self {[.windows, .linux, .macOS]}
     static var mobile: Self {[.iOS, .android]}
     static var anyApple: Self {
-        #if swift(>=5.9)
         return [.macOS, .iOS, .tvOS, .watchOS, .visionOS]
-        #else
-        return [.macOS, .iOS, .tvOS, .watchOS]
-        #endif
     }
     
     static var any: Self {
-        #if swift(>=5.9)
         return [
             .macOS, .iOS, .tvOS, .visionOS,
             .linux, .android,
             .windows,
             .wasi
         ]
-        #else
-        return [
-            .macOS, .iOS, .tvOS,
-            .linux, .android,
-            .windows,
-            .wasi
-        ]
-        #endif
     }
 }
 
