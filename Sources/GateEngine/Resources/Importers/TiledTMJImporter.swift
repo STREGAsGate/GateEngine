@@ -47,7 +47,7 @@ public class TiledTMJImporter: TileMapImporter {
         for fileLayer in file.layers {
             var tiles: [[TileMap.Tile]] = []
             let count = fileLayer.width * fileLayer.height
-            for start in stride(from: 0, through: count, by: fileLayer.width) {
+            for start in stride(from: 0, through: count - 1, by: fileLayer.width) {
                 let subset = fileLayer.data[start ..< start + fileLayer.width]
                 tiles.append(subset.map({ rawID in
                     var options: TileMap.Tile.Options = []
@@ -65,7 +65,7 @@ public class TiledTMJImporter: TileMapImporter {
                         options.insert(.rotatedHexagonal120)
                     }
                     flags.remove([.flippedHorizontal, .flippedVertical, .flippedDiagonal, .rotatedHexagonal120])
-                    return TileMap.Tile(id: Int(flags.rawValue), options: options)
+                    return TileMap.Tile(id: Int(flags.rawValue - 1), options: options)
                 }))
             }
             let layer = TileMap.Layer(name: fileLayer.name,

@@ -7,60 +7,60 @@
 
 import GameMath
 
-public class TileMapComponent: Component {
-    public var tileSet: TileSet? = nil
-    public var mapSize: Size2 = .zero {
-        didSet {
-            needsRebuild = true
-        }
+@MainActor public class TileMapComponent: Component {
+    internal var needsSetup: Bool = true
+    
+    public var tileSet: TileSet! = nil
+    public var tileMap: TileMap! = nil
+    
+    public var layers: [Layer] = []
+    
+    public init(tileSetPath: String, tileMapPath: String) {
+        self.tileSet = TileSet(path: tileSetPath)
+        self.tileMap = TileMap(path: tileMapPath)
     }
-    public var tileIndices: [Int] = [] {
-        didSet {
-            needsRebuild = true
-        }
-    }
-
-    @MainActor public internal(set) var geometry: MutableGeometry? = MutableGeometry()
-    internal var needsRebuild: Bool = true
-
-    public func tileIndexAtCoordinate(column: Int, row: Int) -> Int {
-        return tileIndices[(row * Int(mapSize.width)) + column]
-    }
-
-    public func tileIndexAtPosition(_ position: Position2) -> Int {
-        let column = position.x / tileSet!.tileSize.width
-        let row = position.y / tileSet!.tileSize.height
-        return tileIndexAtCoordinate(column: Int(column), row: Int(row))
-    }
-
-    public func pixelCenterForTileAt(column: Int, row: Int) -> Position2 {
-        return (Position2(Float(column), Float(row)) * tileSet!.tileSize)
-    }
-
-    public class TileSet {
+    
+    @MainActor public struct Layer {
+        public let name: String?
+        public let size: Size2
         public let tileSize: Size2
-        public let texture: Texture
-
-        public let count: Int
-        public let columns: Int
-
-        @MainActor public init(tileSize: Size2, texture: Texture) {
-            self.tileSize = tileSize
-            self.texture = texture
-            let columns = Int(texture.size.width / tileSize.width)
-            self.count = Int(texture.size.height / tileSize.height) * columns
-            self.columns = columns
+        public var tiles: [[TileMap.Tile]] {
+            didSet {
+                needsRebuild = true
+            }
+        }
+        public private(set) var geometry: MutableGeometry = MutableGeometry()
+        internal var needsRebuild: Bool = true
+        
+        public var rows: Int {
+            return tiles.count
+        }
+        public var columns: Int {
+            return tiles.first?.count ?? 0
         }
 
-        public func rectForTile(_ tile: Int) -> Rect {
-            let row = tile / columns
-            let column = tile % columns
-            let position = Position2(tileSize.width * Float(column), tileSize.height * Float(row))
-            let size = Size2(Float(tileSize.width), Float(tileSize.height))
-            return Rect(position: position, size: size)
+        public func tileIndexAtCoordinate(column: Int, row: Int) -> Int {
+            return tiles[row][column].id
+        }
+
+        public func tileIndexAtPosition(_ position: Position2) -> Int {
+            let column = position.x / tileSize.width
+            let row = position.y / tileSize.height
+            return tileIndexAtCoordinate(column: Int(column), row: Int(row))
+        }
+
+        public func pixelCenterForTileAt(column: Int, row: Int) -> Position2 {
+            return (Position2(Float(column), Float(row)) * tileSize)
+        }
+
+        internal init(layer: TileMap.Layer) {
+            self.name = layer.name
+            self.size = layer.size
+            self.tileSize = layer.tileSize
+            self.tiles = layer.tiles
         }
     }
-
-    required public init() {}
+    
+    nonisolated required public init() {}
     public static let componentID: ComponentID = ComponentID()
 }

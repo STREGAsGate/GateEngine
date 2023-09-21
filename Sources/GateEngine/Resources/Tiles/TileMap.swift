@@ -70,13 +70,14 @@ import GameMath
             public static let rotatedHexagonal120  = Options(rawValue: 0x10000000)
         }
     }
+    
 
-    public class Layer {
+    public struct Layer {
         public let name: String?
         public let size: Size2
         public let tileSize: Size2
         public let tiles: [[Tile]]
-
+        
         public var rows: Int {
             return tiles.count
         }

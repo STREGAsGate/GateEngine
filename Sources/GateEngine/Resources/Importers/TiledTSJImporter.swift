@@ -30,7 +30,31 @@ fileprivate struct TSJFile: Decodable {
         struct Property: Decodable {
             let name: String
             let type: String
-            let value: String
+            let value: Any?
+            
+            enum CodingKeys: String, CodingKey {
+              case name
+              case type
+              case value
+            }
+            
+            init(from decoder: any Decoder) throws {
+                var container = try decoder.container(keyedBy: CodingKeys.self)
+                self.name = try container.decode(String.self, forKey: .name)
+                self.type = try container.decode(String.self, forKey: .type)
+            
+                if let value = try? container.decode(String.self, forKey: .value) {
+                    self.value = value
+                }else if let value = try? container.decode(Int.self, forKey: .value) {
+                    self.value = value
+                }else if let value = try? container.decode(Bool.self, forKey: .value) {
+                    self.value = value
+                }else if let value = try? container.decode(Float.self, forKey: .value) {
+                    self.value = value
+                }else{
+                    throw GateEngineError.failedToDecode("\"value\"'s type is not handled.")
+                }
+            }
         }
     }
 }
@@ -47,20 +71,25 @@ public class TiledTSJImporter: TileSetImporter {
                 if let fileTile = fileTiles.first(where: {$0.id == id}) {
                     if let fileTileProperties = fileTile.properties {
                         for property in fileTileProperties {
-                            properties[property.name] = property.value
+                            if let value = property.value {
+                                properties[property.name] = "\(value)"
+                            }
                         }
                     }
                 }
             }
             return TileSet.Tile(id: id, properties: properties, colliders: nil)
         })
-
-        return TileSetBackend(textureName: file.image,
-                              textureSize: Size2(Float(file.imagewidth), Float(file.imageheight)),
-                              count: file.tilecount,
-                              columns: file.columns,
-                              tileSize: Size2(Float(file.tilewidth), Float(file.tileheight)),
-                              tiles: tiles)
+        
+        let textureURL = baseURL.appendingPathComponent(file.image)
+        
+        return await TileSetBackend(
+            texture: Texture(path: textureURL.path, sizeHint: Size2(Float(file.imagewidth), Float(file.imageheight))),
+            count: file.tilecount,
+            columns: file.columns,
+            tileSize: Size2(Float(file.tilewidth), Float(file.tileheight)),
+            tiles: tiles
+        )
     }
     
     static public func supportedFileExtensions() -> [String] {

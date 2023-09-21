@@ -102,6 +102,14 @@ public final class StandardRenderingSystem: RenderingSystem {
                         }
                     }
                 }
+                if let tileMapComponent = entity.component(ofType: TileMapComponent.self) {
+                    if tileMapComponent.tileSet.state == .ready {
+                        let material = Material(texture: tileMapComponent.tileSet.texture)
+                        for layer in tileMapComponent.layers {
+                            canvas.insert(layer.geometry, withMaterial: material, at: .zero)
+                        }
+                    }
+                }
             }
 
             if verticalResolution != nil {

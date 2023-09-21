@@ -27,11 +27,8 @@ import GameMath
         return Game.shared.resourceManager.tileSetCache(for: cacheKey)!.tileSetBackend!
     }
     
-    public var textureName: String {
-        return backend.textureName
-    }
-    public var textureSize: Size2 {
-        return backend.textureSize
+    public var texture: Texture {
+        return backend.texture
     }
 
     public var count: Int {
@@ -62,16 +59,14 @@ import GameMath
     }
     
     public init(
-        textureName: String,
-        textureSize: Size2,
+        texture: Texture,
         count: Int,
         columns: Int,
         tileSize: Size2,
         tiles: [TileSet.Tile]
     ) {
         let resourceManager = Game.shared.resourceManager
-        self.cacheKey = resourceManager.tileSetCacheKey(textureName: textureName,
-                                                        textureSize: textureSize,
+        self.cacheKey = resourceManager.tileSetCacheKey(texture: texture,
                                                         count: count,
                                                         columns: columns,
                                                         tileSize: tileSize,
@@ -80,13 +75,12 @@ import GameMath
         resourceManager.incrementReference(self.cacheKey)
     }
 
-    public func rect(for tile: Int) -> Rect {
+    public func rectForTile(_ tile: Int) -> Rect {
         let row = tile / columns
         let column = tile % columns
-        return Rect(
-            position: Position2(tileSize.width * Float(column), tileSize.height * Float(row)),
-            size: Size2(Float(tileSize.width), Float(tileSize.height))
-        )
+        let position = Position2(tileSize.width * Float(column), tileSize.height * Float(row))
+        let size = Size2(Float(tileSize.width), Float(tileSize.height))
+        return Rect(position: position, size: size)
     }
     
     deinit {
@@ -141,8 +135,7 @@ extension TileSet {
 }
 
 public final class TileSetBackend {
-    var textureName: String
-    var textureSize: Size2
+    let texture: Texture
 
     var count: Int
     var columns: Int
@@ -153,15 +146,13 @@ public final class TileSetBackend {
     var state: ResourceState = .pending
     
     init(
-        textureName: String,
-        textureSize: Size2,
+        texture: Texture,
         count: Int,
         columns: Int,
         tileSize: Size2,
         tiles: [TileSet.Tile]
     ) {
-        self.textureName = textureName
-        self.textureSize = textureSize
+        self.texture = texture
         self.count = count
         self.columns = columns
         self.tileSize = tileSize
@@ -247,8 +238,7 @@ extension ResourceManager {
         return key
     }
     
-    func tileSetCacheKey(textureName: String,
-                         textureSize: Size2,
+    func tileSetCacheKey(texture: Texture,
                          count: Int,
                          columns: Int,
                          tileSize: Size2,
@@ -257,8 +247,7 @@ extension ResourceManager {
         if cache.tileSets[key] == nil {
             cache.tileSets[key] = Cache.TileSetCache()
             Task.detached(priority: .low) {
-                let backend = TileSetBackend(textureName: textureName,
-                                             textureSize: textureSize,
+                let backend = TileSetBackend(texture: texture,
                                              count: count,
                                              columns: columns,
                                              tileSize: tileSize,
@@ -321,6 +310,12 @@ extension ResourceManager {
                     self.cache.tileSets[key]!.state = .ready
                 }
             } catch let error as GateEngineError {
+                Task { @MainActor in
+                    Log.warn("Resource \"\(path)\"", error)
+                    self.cache.tileSets[key]!.state = .failed(error: error)
+                }
+            } catch let error as DecodingError {
+                let error = GateEngineError(decodingError: error)
                 Task { @MainActor in
                     Log.warn("Resource \"\(path)\"", error)
                     self.cache.tileSets[key]!.state = .failed(error: error)
