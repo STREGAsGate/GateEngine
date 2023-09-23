@@ -92,7 +92,7 @@ import Shaders
 
 @MainActor extension FragmentShader {
     /// The same as `textureSample` but with an additional channel for a second geometry
-    ///  Intended to be used with `VertexShader.morph`
+    /// Intended to be used with `VertexShader.morph`
     @usableFromInline
     internal static let morphTextureSample: FragmentShader = {
         let fsh = FragmentShader()

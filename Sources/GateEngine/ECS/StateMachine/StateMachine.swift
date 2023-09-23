@@ -21,7 +21,7 @@ public final class StateMachine {
                 currentState.willMoveToNextState(for: entity, nextState: state, game: game)
                 let previousState = currentState
                 currentState = state.init()
-                print("State Switched:", type(of: currentState))
+                Log.debug("State Switched:", type(of: currentState))
                 currentState.apply(to: entity, previousState: previousState, game: game)
                 currentState.update(for: entity, inGame: game, withTimePassed: deltaTime)
                 return
