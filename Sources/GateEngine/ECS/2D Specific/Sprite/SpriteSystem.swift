@@ -11,12 +11,8 @@ public final class SpriteSystem: System {
             if let spriteComponent = entity.component(ofType: SpriteComponent.self) {
                 switch spriteComponent.playbackState {
                 case .play:
-                    if spriteComponent.animations.indices.contains(
-                        spriteComponent.activeAnimationIndex
-                    ) {
-                        spriteComponent.animations[spriteComponent.activeAnimationIndex].appendTime(
-                            deltaTime
-                        )
+                    if spriteComponent.animations.indices.contains(spriteComponent.activeAnimationIndex) {
+                        spriteComponent.animations[spriteComponent.activeAnimationIndex].appendTime(deltaTime)
                     }
                 case .stop:
                     spriteComponent.activeAnimation?.progress = 0
