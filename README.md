@@ -48,6 +48,10 @@ or
 [Patreon](https://www.patreon.com/STREGAsGate).
 
 ## Community & Followables
+A development journal is published on Discord [here](https://discord.gg/PfqFwQPV96) if you would like to follow along with upcoming changes.
+
+Discord is also a great place to ask questions or show off your creations.
+
 [![Discord](https://img.shields.io/discord/641809158051725322?label=Hang%20Out&logo=Discord&style=social)](https://discord.gg/5JdRJhD)
 [![Twitter](https://img.shields.io/twitter/follow/stregasgate?style=social)](https://twitter.com/stregasgate)
 [![YouTube](https://img.shields.io/youtube/channel/subscribers/UCBXFkK2B4w9856wBJfCGufg?label=Subscribe&style=social)](https://youtube.com/stregasgate)
