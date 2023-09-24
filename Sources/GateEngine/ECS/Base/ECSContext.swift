@@ -43,6 +43,10 @@
         return ecs.system(ofType: systemType) as! T
     }
     @inlinable @inline(__always)
+    public func hasSystem<T: System>(ofType systemType: T.Type) -> Bool {
+        return ecs.hasSystem(ofType: systemType)
+    }
+    @inlinable @inline(__always)
     public func system<T: RenderingSystem>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType) as! T
     }
@@ -356,6 +360,15 @@ extension ECSContext {
             }
         }
         return insertSystem(systemType)
+    }
+    @usableFromInline
+    func hasSystem(ofType systemType: System.Type) -> Bool {
+        for system in _systems {
+            if type(of: system) == systemType {
+                return true
+            }
+        }
+        return false
     }
     @usableFromInline
     func system(ofType systemType: RenderingSystem.Type) -> RenderingSystem {
