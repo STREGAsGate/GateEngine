@@ -17,7 +17,7 @@ public final class Physics2DSystem: System {
                 continue
             }
             guard entity.hasComponent(Transform2Component.self) else { continue }
-            await entity.configure(Transform2Component.self) { transformComponent in
+            if let transformComponent = entity.component(ofType: Transform2Component.self) {
                 var deltaTime = deltaTime
                 if let scale = entity.component(ofType: TimeScaleComponent.self)?.scale {
                     deltaTime *= scale
@@ -26,7 +26,7 @@ public final class Physics2DSystem: System {
                 transformComponent.previousTransform = transformComponent.transform
                 
                 physicsComponent.update(deltaTime)
-                transformComponent.position += Position2(physicsComponent.velocity.normalized * physicsComponent.speed)
+                transformComponent.position += Position2(physicsComponent.velocity.normalized * physicsComponent.speed * 100)
             }
         }
     }
