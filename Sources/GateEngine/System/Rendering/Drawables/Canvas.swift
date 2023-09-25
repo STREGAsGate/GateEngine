@@ -8,6 +8,7 @@
 /// A Canvas is a drawing space with no depth and an orthographic camera.
 @MainActor public struct Canvas {
     @usableFromInline let interfaceScale: Float
+    @usableFromInline internal var viewOrigin: Position2? = nil
     @usableFromInline internal var viewport: Rect? = nil
 
     @usableFromInline internal var size: Size2? = nil
@@ -20,6 +21,11 @@
     public mutating func setCamera(_ camera: Camera, size: Size2) {
         self.camera = camera
         self.size = size
+    }
+    
+    @inlinable @inline(__always)
+    public mutating func setViewOrigin(_ viewOrigin: Position2) {
+        self.viewOrigin = viewOrigin
     }
 
     @inlinable @inline(__always)
@@ -397,8 +403,8 @@
         let view =
             Matrix4x4(
                 position: Position3(
-                    x: -(viewport?.position.x ?? 0),
-                    y: -(viewport?.position.y ?? 0),
+                    x: -(viewOrigin?.x ?? 0),
+                    y: -(viewOrigin?.y ?? 0),
                     z: 1_000_000
                 )
             ) * Matrix4x4(scale: Size3(interfaceScale, interfaceScale, 1))
