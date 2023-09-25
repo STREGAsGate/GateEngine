@@ -7,4 +7,4 @@
 Sources/GateEngineDependencies/** linguist-vendored
 
 # Don't calculate the Extras when determining project languages
-Sources/Extras/** linguist-vendored
+Extras/** linguist-vendored
