@@ -90,6 +90,15 @@ extension Entity {
         }
         config?(&self[T.self])
     }
+    
+    /// Allows changing an existing component
+    @inlinable @inline(__always)
+    public func modify<T: Component, ResultType>(
+        _ type: T.Type,
+        _ config: @escaping (_ component: inout T) -> ResultType
+    ) -> ResultType {
+        return config(&self[T.self])
+    }
 
     /// Allows changing a component, addind it first if needed.
     @inlinable @inline(__always)
