@@ -218,7 +218,7 @@ extension _RenderTargetProtocol {
     private func drawCanvas(_ canvas: Canvas) {
         let matrices = canvas.matrices(withSize: self.size)
 
-        renderTargetBackend.willBeginContent(matrices: matrices, viewport: canvas.viewport)
+        renderTargetBackend.willBeginContent(matrices: matrices, viewport: canvas.clipRect)
         for command in canvas.drawCommands {
             Game.shared.renderer.draw(
                 command,

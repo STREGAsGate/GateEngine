@@ -9,7 +9,7 @@
 @MainActor public struct Canvas {
     @usableFromInline let interfaceScale: Float
     @usableFromInline internal var viewOrigin: Position2? = nil
-    @usableFromInline internal var viewport: Rect? = nil
+    @usableFromInline internal var clipRect: Rect? = nil
 
     @usableFromInline internal var size: Size2? = nil
     @usableFromInline internal var camera: Camera? = nil
@@ -29,8 +29,8 @@
     }
 
     @inlinable @inline(__always)
-    public mutating func setViewport(_ viewport: Rect?) {
-        self.viewport = viewport
+    public mutating func setClipRect(_ clipRect: Rect?) {
+        self.clipRect = clipRect
     }
 
     @inlinable @inline(__always)
