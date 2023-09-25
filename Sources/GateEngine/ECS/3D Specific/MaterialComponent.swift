@@ -25,11 +25,17 @@ public final class MaterialComponent: Component {
         return isOpaque == false  // || material.opacity < 1.0
     }
 
-    public init() {}
+    
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<Material, T>) -> T {
         get { return material[keyPath: keyPath] }
         set { material[keyPath: keyPath] = newValue }
     }
 
+    public init() {}
+    
+    public init(config: (_ material: inout Material) -> Void) {
+        config(&material)
+    }
+    
     public static let componentID: ComponentID = ComponentID()
 }

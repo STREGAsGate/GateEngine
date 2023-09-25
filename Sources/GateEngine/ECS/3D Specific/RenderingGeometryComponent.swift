@@ -22,5 +22,16 @@ public struct RenderingGeometryComponent: Component {
     }
 
     public init() {}
+    
+    public init(geometries: Set<Geometry>, flags: SceneElementFlags = .default) {
+        self.geometries = geometries
+        self.flags = flags
+    }
+    
+    public init(skinnedGeometries: Set<SkinnedGeometry>, flags: SceneElementFlags = .default) {
+        self.skinnedGeometries = skinnedGeometries
+        self.flags = flags
+    }
+    
     public static let componentID: ComponentID = ComponentID()
 }

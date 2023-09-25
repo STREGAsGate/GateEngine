@@ -104,7 +104,7 @@ public class RigSystem: System {
 
         for entity in game.entities {
             if let rigAttachmentComponent = entity.component(ofType: RigAttachmentComponent.self) {
-                await updateRigAttachmentTransform(
+                updateRigAttachmentTransform(
                     game,
                     entity: entity,
                     rigAttachmentComponent: rigAttachmentComponent
@@ -129,7 +129,7 @@ public class RigSystem: System {
         _ game: Game,
         entity: Entity,
         rigAttachmentComponent: RigAttachmentComponent
-    ) async {
+    ) {
         guard
             let parent = game.entities.first(where: {
                 $0.id == rigAttachmentComponent.parentEntityID
@@ -145,10 +145,10 @@ public class RigSystem: System {
         guard let parentRig = parent.component(ofType: Rig3DComponent.self) else { return }
         guard let joint = parentRig.skeleton.jointNamed(rigAttachmentComponent.parentJointName)
         else { return }
-        await entity.configure(Transform3Component.self) { component in
+        if let transformComponent = entity.component(ofType: Transform3Component.self) {
             let transform = (parentTransform.transform.createMatrix() * joint.modelSpace).transform
-            component.transform.position = transform.position
-            component.rotation =
+            transformComponent.transform.position = transform.position
+            transformComponent.rotation =
                 parentTransform.rotation * joint.modelSpace.rotation.conjugate
                 * Quaternion(90°, axis: .right)
         }
