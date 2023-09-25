@@ -62,7 +62,7 @@ public final class SpriteComponent: Component {
         /// Locks the active animation at the first frame next time it's encountered
         case stopAtLoop
     }
-    public var playbackState: PlaybackState = .stop
+    public var playbackState: PlaybackState
 
     internal var previousCoordinate: Position2 = .zero
     
@@ -101,13 +101,15 @@ public final class SpriteComponent: Component {
         self.spriteSheet = nil
         self.activeAnimationIndex = 0
         self.animations = []
+        self.playbackState = .play
     }
 
-    public init(spriteSize: Size2, spriteSheet: SpriteSheet, activeAnimationIndex: Int = 0, animations: [SpriteAnimation]) {
+    public init(spriteSize: Size2, spriteSheet: SpriteSheet, activeAnimationIndex: Int = 0, animations: [SpriteAnimation], playbackState: PlaybackState = .play) {
         self.spriteRect = Rect(size: spriteSize)
         self.spriteSheet = spriteSheet
         self.activeAnimationIndex = activeAnimationIndex
         self.animations = animations
+        self.playbackState = playbackState
     }
 
     public static let componentID: ComponentID = ComponentID()
