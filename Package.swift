@@ -142,7 +142,7 @@ let package = Package(
                                 .when(platforms: [.iOS, .tvOS])),
                             /// The host platform updates and draws from an event callback, so GateEngine won't create a game loop.
                             .define("GATEENGINE_PLATFORM_EVENT_DRIVEN",
-                                .when(platforms: [.wasi])),
+                                    .when(platforms: .any)),
                             /// The host platform requires an intermediate task, so GateEngine won't load default systems.
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH",
                                 .when(platforms: [.wasi])),
