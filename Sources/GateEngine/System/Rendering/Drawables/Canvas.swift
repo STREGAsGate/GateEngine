@@ -23,11 +23,21 @@
         self.size = size
     }
     
+    /**
+     Changes the location of the 2D camera for this Canvas.
+     
+     - parameter viewOrigin: The top left corner location for the camera
+     */
     @inlinable @inline(__always)
     public mutating func setViewOrigin(_ viewOrigin: Position2) {
         self.viewOrigin = viewOrigin
     }
-
+    
+    /**
+     Applys a clip rectangle to all content in this Canvas.
+     
+     - parameter clipRect: The area within this Rect will be drawn.
+     */
     @inlinable @inline(__always)
     public mutating func setClipRect(_ clipRect: Rect?) {
         self.clipRect = clipRect
