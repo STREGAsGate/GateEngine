@@ -12,18 +12,18 @@ public final class StateMachine {
         self.currentState = initialState.init()
     }
     
-    internal func updateState(for entity: Entity, game: Game, deltaTime: Double) {
-        currentState.update(for: entity, inGame: game, withTimePassed: deltaTime)
-        guard currentState.canMoveToNextState(for: entity, game: game) else {return}
+    @MainActor internal func updateState(for entity: Entity, game: Game, input: HID, deltaTime: Double) {
+        currentState.update(for: entity, inGame: game, input: input, withTimePassed: deltaTime)
+        guard currentState.canMoveToNextState(for: entity, game: game, input: input) else {return}
                 
-        for state in currentState.possibleNextStates(for: entity, game: game) {
-            if state.canBecomeCurrentState(for: entity, from: currentState, game: game) {
-                currentState.willMoveToNextState(for: entity, nextState: state, game: game)
+        for state in currentState.possibleNextStates(for: entity, game: game, input: input) {
+            if state.canBecomeCurrentState(for: entity, from: currentState, game: game, input: input) {
+                currentState.willMoveToNextState(for: entity, nextState: state, game: game, input: input)
                 let previousState = currentState
                 currentState = state.init()
                 Log.debug("State Switched:", type(of: currentState))
-                currentState.apply(to: entity, previousState: previousState, game: game)
-                currentState.update(for: entity, inGame: game, withTimePassed: deltaTime)
+                currentState.apply(to: entity, previousState: previousState, game: game, input: input)
+                currentState.update(for: entity, inGame: game, input: input, withTimePassed: deltaTime)
                 return
             }
         }
@@ -33,27 +33,27 @@ public final class StateMachine {
 public protocol State: AnyObject {
     init()
     
-    func apply(to entity: Entity, previousState: any State, game: Game)
-    func update(for entity: Entity, inGame game: Game, withTimePassed deltaTime: Double)
+    @MainActor func apply(to entity: Entity, previousState: any State, game: Game, input: HID)
+    @MainActor func update(for entity: Entity, inGame game: Game, input: HID, withTimePassed deltaTime: Double)
     
-    func canMoveToNextState(for entity: Entity, game: Game) -> Bool
-    func possibleNextStates(for entity: Entity, game: Game) -> [any State.Type]
+    @MainActor func canMoveToNextState(for entity: Entity, game: Game, input: HID) -> Bool
+    @MainActor func possibleNextStates(for entity: Entity, game: Game, input: HID) -> [any State.Type]
     
-    func willMoveToNextState(for entity: Entity, nextState: any State.Type, game: Game)
+    @MainActor func willMoveToNextState(for entity: Entity, nextState: any State.Type, game: Game, input: HID)
     
-    static func canBecomeCurrentState(for entity: Entity, from currentState: any State, game: Game) -> Bool
+    @MainActor static func canBecomeCurrentState(for entity: Entity, from currentState: any State, game: Game, input: HID) -> Bool
 }
 
 public extension State {
-    func canMoveToNextState(for entity: Entity, game: Game) -> Bool {
+    func canMoveToNextState(for entity: Entity, game: Game, input: HID) -> Bool {
         return true
     }
     
-    func willMoveToNextState(for entity: Entity, nextState: any State.Type, game: Game) {
+    func willMoveToNextState(for entity: Entity, nextState: any State.Type, game: Game, input: HID) {
         
     }
     
-    static func canBecomeCurrentState(for entity: Entity, from currentState: any State, game: Game) -> Bool {
+    static func canBecomeCurrentState(for entity: Entity, from currentState: any State, game: Game, input: HID) -> Bool {
         return true
     }
 }

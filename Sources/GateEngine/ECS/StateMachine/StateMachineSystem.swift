@@ -10,14 +10,14 @@ public final class StateMachineSystem: System {
         for entity in game.entities.filter({$0.hasComponent(StateMachineComponent.self)}) {
             let stateMachineComponent = entity[StateMachineComponent.self]
             if stateMachineComponent.shouldApplyInitialState {
-                applyInitialStateIfNeeded(for: stateMachineComponent, of: entity, inGame: game)
+                applyInitialStateIfNeeded(for: stateMachineComponent, of: entity, inGame: game, input: input)
             }
-            stateMachineComponent.stateMachine.updateState(for: entity, game: game, deltaTime: highPrecisionDeltaTime)
+            stateMachineComponent.stateMachine.updateState(for: entity, game: game, input: input, deltaTime: highPrecisionDeltaTime)
         }
     }
     
-    func applyInitialStateIfNeeded(for component: StateMachineComponent, of entity: Entity, inGame game: Game) {
-        component.stateMachine.currentState.apply(to: entity, previousState: component.stateMachine.currentState, game: game)
+    func applyInitialStateIfNeeded(for component: StateMachineComponent, of entity: Entity, inGame game: Game, input: HID) {
+        component.stateMachine.currentState.apply(to: entity, previousState: component.stateMachine.currentState, game: game, input: input)
         component.shouldApplyInitialState = false
     }
     
