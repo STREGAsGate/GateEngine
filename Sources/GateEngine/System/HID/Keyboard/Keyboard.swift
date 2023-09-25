@@ -80,6 +80,16 @@ import GameMath
         buttons[keyboardKey] = button
         return button
     }
+    
+    /// - returns: true if any key in keys has isPressed == true
+    public func anyKeyIsPressed(in keys: [KeyboardKey]) -> Bool {
+        for key in keys {
+            if self.button(key).isPressed {
+                return true
+            }
+        }
+        return false
+    }
 }
 
 extension Keyboard {
