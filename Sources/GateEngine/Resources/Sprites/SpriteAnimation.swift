@@ -89,14 +89,17 @@
         )
     }
 
-    public mutating func appendTime(_ deltaTime: Float) {
+    public mutating func didRepeatAfterAppendingTime(_ deltaTime: Float) -> Bool {
         accumulatedTime += deltaTime * scale
+        var didRepeat = false
         while accumulatedTime > duration {
             if repeats {
+                didRepeat = true
                 accumulatedTime -= duration
             } else {
                 accumulatedTime = duration
             }
         }
+        return didRepeat
     }
 }

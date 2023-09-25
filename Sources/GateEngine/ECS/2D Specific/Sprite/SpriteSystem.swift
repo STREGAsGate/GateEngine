@@ -10,12 +10,22 @@ public final class SpriteSystem: System {
         for entity in game.entities {
             if let spriteComponent = entity.component(ofType: SpriteComponent.self) {
                 switch spriteComponent.playbackState {
-                case .play:
+                case .play, .stopAtLoop, .pauseAtLoop:
                     if spriteComponent.animations.indices.contains(spriteComponent.activeAnimationIndex) {
-                        spriteComponent.animations[spriteComponent.activeAnimationIndex].appendTime(deltaTime)
+                        let didRepeat = spriteComponent.animations[spriteComponent.activeAnimationIndex].didRepeatAfterAppendingTime(deltaTime)
+                        if didRepeat {
+                            if spriteComponent.playbackState == .stopAtLoop {
+                                spriteComponent.playbackState = .stop
+                                fallthrough
+                            }else if spriteComponent.playbackState == .pauseAtLoop {
+                                spriteComponent.playbackState = .pause
+                            }
+                        }
                     }
                 case .stop:
                     spriteComponent.activeAnimation?.progress = 0
+                case .pause:
+                    break
                 }
             }
         }
