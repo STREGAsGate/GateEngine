@@ -6,11 +6,20 @@
  */
 
 public struct BoundingEllipsoid2D: Collider2D {
-    public private(set) var offset: Position2
-    public private(set) var center: Position2
-    public private(set) var radius: Size2
-    internal let _radius: Size2
-    internal let _offset: Position2
+    internal var _radius: Size2
+    internal var _offset: Position2
+    
+    public var center: Position2
+    public var radius: Size2 {
+        willSet {
+            _radius = newValue
+        }
+    }
+    public var offset: Position2 {
+        willSet {
+            _offset = newValue
+        }
+    }
     
     public init(center: Position2 = .zero, offset: Position2 = .zero, radius: Size2) {
         self.offset = offset
@@ -30,8 +39,18 @@ public struct BoundingEllipsoid2D: Collider2D {
         return (4 / 3) * Float.pi * radius.x * radius.y
     }
     
+    @inlinable @inline(__always)
+    public var boundingBox: AxisAlignedBoundingBox2D {
+        return AxisAlignedBoundingBox2D(center: center, offset: offset, radius: radius)
+    }
+    
     public mutating func update(transform: Transform2) {
         center = transform.position
+        offset = _offset * transform.scale
+        radius = _radius * transform.scale
+    }
+    
+    public mutating func update(sizeAndOffsetUsingTransform transform: Transform2) {
         offset = _offset * transform.scale
         radius = _radius * transform.scale
     }

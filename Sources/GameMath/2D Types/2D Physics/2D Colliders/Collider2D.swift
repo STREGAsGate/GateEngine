@@ -13,6 +13,7 @@ public protocol Collider2D: Codable {
     var position: Position2 {get}
 
     mutating func update(transform: Transform2)
+    mutating func update(sizeAndOffsetUsingTransform transform: Transform2)
     
     func closestSurfacePoint(from point: Position2) -> Position2
     func interpenetration(comparing collider: Collider2D) -> Interpenetration2D?
@@ -21,7 +22,7 @@ public protocol Collider2D: Codable {
     func surfaceNormal(facing point: Position2) -> Direction2
     func surfaceImpact(comparing ray: Ray2D) -> SurfaceImpact2D?
     
-    var volume: Float {get}
+    var boundingBox: AxisAlignedBoundingBox2D {get}
 }
 
 public extension Collider2D {

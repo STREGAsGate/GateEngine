@@ -6,14 +6,22 @@
  */
 
 public struct BoundingCircle2D: Collider2D {
-    public var offset: Position2
-    public var center: Position2
-    public var radius: Float
+    @usableFromInline
+    internal var _radius: Float
+    @usableFromInline
+    internal var _offset: Position2
     
-    @usableFromInline
-    internal let _radius: Float
-    @usableFromInline
-    internal let _offset: Position2
+    public var center: Position2
+    public var radius: Float {
+        willSet {
+            _radius = newValue
+        }
+    }
+    public var offset: Position2 {
+        willSet {
+            _offset = newValue
+        }
+    }
     
     public init(center: Position2 = .zero, offset: Position2 = .zero, radius: Float) {
         self.offset = offset
@@ -29,8 +37,19 @@ public struct BoundingCircle2D: Collider2D {
     }
     
     @inlinable @inline(__always)
+    public var boundingBox: AxisAlignedBoundingBox2D {
+        return AxisAlignedBoundingBox2D(center: center, offset: offset, radius: Size2(radius))
+    }
+    
+    @inlinable @inline(__always)
     public mutating func update(transform: Transform2) {
         self.center = transform.position
+        self.offset = _offset * transform.scale
+        self.radius = _radius * (transform.scale.length / 2)
+    }
+    
+    @inlinable @inline(__always)
+    public mutating func update(sizeAndOffsetUsingTransform transform: Transform2) {
         self.offset = _offset * transform.scale
         self.radius = _radius * (transform.scale.length / 2)
     }

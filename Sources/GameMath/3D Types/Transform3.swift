@@ -114,7 +114,7 @@ extension Transform3 {
     }
     
     //TODO: Remove this. Position is the only value that is clear. Scale and rotation are confusing.
-    @available(*, unavailable /*0.0.5*/, message: "This will be removed in a future update.")
+    @available(*, unavailable /*0.0.8*/, message: "This will be removed in a future update.")
     @_transparent
     public func difference(removing: Self) -> Self {
         var transform: Self = .default
@@ -133,12 +133,12 @@ extension Transform3 {
 
 //TODO: Remove operators. Position is the only value that is clear. Scale and rotation are confusing.
 public extension Transform3 {
-    @available(*, unavailable /*0.0.5*/, message: "This will be removed in a future update.")
+    @available(*, unavailable /*0.0.8*/, message: "This will be removed in a future update.")
     @_transparent
     static func +=(lhs: inout Self, rhs: Self) {
         fatalError()
     }
-    @available(*, unavailable /*0.0.5*/, message: "This will be removed in a future update.")
+    @available(*, unavailable /*0.0.8*/, message: "This will be removed in a future update.")
     @_transparent
     static func +(lhs: Self, rhs: Self) -> Self {
         fatalError()

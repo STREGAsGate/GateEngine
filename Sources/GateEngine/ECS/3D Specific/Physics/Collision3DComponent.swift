@@ -36,14 +36,14 @@ public final class Collision3DComponent: Component {
 
     @available(
         *,
-        unavailable,  //0.0.5
+        unavailable,  //0.0.8
         message: "Primitive colliders are generated automatically now."
     )
     public var primitiveCollider: AxisAlignedBoundingBox3D { collider.boundingBox }
 
     @available(
         *,
-        unavailable,  //0.0.5
+        unavailable,  //0.0.8
         renamed: "collider",
         message: "Set the collider property directly."
     )

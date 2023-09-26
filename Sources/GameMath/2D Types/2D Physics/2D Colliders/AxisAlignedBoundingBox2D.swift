@@ -6,82 +6,103 @@
  */
 
 public struct AxisAlignedBoundingBox2D: Collider2D {
+    @usableFromInline
+    internal var _radius: Size2
+    @usableFromInline
+    internal var _offset: Position2
+    
+    public var center: Position2
+    public var radius: Size2 {
+        willSet {
+            _radius = newValue
+        }
+    }
+    public var offset: Position2 {
+        willSet {
+            _offset = newValue
+        }
+    }
+    
+    @inlinable @inline(__always)
     public var volume: Float {
         return self.radius.x * self.radius.y
     }
-
-    /// The updated center of the collider
-    /// Use the `update(transform:)` function to update this value.
-    public private(set) var center: Position2
-    /// The updated radius of the collider
-    /// Use the `update(transform:)` function to update this value.
-    public private(set) var radius: Size2
-    /// The updated offset of the collider
-    /// Use the `update(transform:)` function to update this value.
-    public private(set) var offset: Position2
-
-    // The unmolested radius
-    internal var _radius: Size2
-    // The unmolested offset
-    internal var _offset: Position2
     
-    public var size: Size2 {return radius * 2}
-
-    /// A frame representation of the collider
     @inlinable @inline(__always)
-    public var rect: Rect {
-        return Rect(position: (position - radius) + offset, size: size)
-    }
-
-    /// The point on the box closest to negative infiintiy
-    @inlinable @inline(__always)
-    public var minPoint: Position2 {
-        return position - radius
-    }
-    /// The point on the box closest to positive infiintiy
-    @inlinable @inline(__always)
-    public var maxPoint: Position2 {
-        return position + radius
+    public var size: Size2 {
+        return radius * 2
     }
     
-    public init(center: Position2 = .zero, offset: Position2 = .zero, radius: Size2) {
+    @inlinable @inline(__always)
+    public var originalSize: Size2 {
+        return originalRadius * 2
+    }
+    @inlinable @inline(__always)
+    public var originalRadius: Size2 {
+        return _radius
+    }
+    @inlinable @inline(__always)
+    public var originalOffset: Position2 {
+        return _offset
+    }
+    
+    @inlinable @inline(__always)
+    public var boundingBox: AxisAlignedBoundingBox2D {
+        return self
+    }
+    
+    public init(center: Position2 = .zero, offset: Position2 = .zero, radius: Size2 = .one) {
         self.center = center
         self._offset = offset
         self.offset = _offset
         self._radius = radius
         self.radius = _radius
     }
-
-    /// Create a collider that contains all of the provided positions, a bounding box
+    
     public init(_ positions: [Position2]) {
-        var x: Size2 = .zero //min, max
-        var y: Size2 = .zero //min, max
-        
-        var accumulated: Position2 = .zero
-        
-        for position in positions {
-            x.x = Swift.min(position.x, x.x)
-            x.y = Swift.max(position.x, x.y)
-            
-            y.x = Swift.min(position.y, y.x)
-            y.y = Swift.max(position.y, y.y)
-            
-            accumulated += position
+        var minPosition: Position2 = positions.first ?? .zero
+        var maxPosition: Position2 = positions.first ?? .zero
+        for index in 1 ..< positions.count {
+            let position = positions[index]
+            minPosition = min(minPosition, position)
+            maxPosition = max(maxPosition, position)
         }
         
-        self._offset = Position2(x: x.y + x.x, y: y.y + y.x) / 2
+        self._offset = (minPosition + maxPosition) / 2
         self.offset = _offset
         self.center = .zero
-        self._radius = Size2(width: x.y - x.x, height: y.y - y.x) / 2
+        self._radius = Size2(maxPosition - minPosition) / 2
         self.radius = _radius
     }
-
-    /// Moves and scales the collider based on the transform.
+    
+    @available(*, unavailable  /*0.0.8*/, message: "Use self.center = newValue instead.")
+    mutating public func update(center: Position2) {
+        self.center = center
+    }
+    @available(*, unavailable  /*0.0.8*/, message: "Use self.offset = newValue instead.")
+    mutating public func update(offset: Position2) {
+        self.offset = offset
+        self._offset = offset
+    }
+    @available(*, unavailable  /*0.0.8*/, message: "Use self.radius = newValue instead.")
+    mutating public func update(radius: Size2) {
+        self._radius = radius
+        self.radius = radius
+    }
+    
     mutating public func update(transform: Transform2) {
         center = transform.position
         offset = _offset * transform.scale
         radius = _radius * transform.scale
     }
+    
+    mutating public func update(sizeAndOffsetUsingTransform transform: Transform2) {
+        _offset = transform.position
+        _radius = transform.scale
+    }
+    
+    public var minPosition: Position2 {self.position - self.radius}
+    public var maxPosition: Position2 {self.position + self.radius}
 
     public func interpenetration(comparing collider: AxisAlignedBoundingBox2D) -> Interpenetration2D? {
         guard self.isColiding(with: collider) else {return nil}
@@ -234,8 +255,8 @@ public struct AxisAlignedBoundingBox2D: Collider2D {
     public func closestSurfacePoint(from point: Position2) -> Position2 {
         var pos: Position2 = point
 
-        let max = self.maxPoint
-        let min = self.minPoint
+        let max = self.maxPosition
+        let min = self.minPosition
 
         if point.x > max.x {
             pos.x = max.x
@@ -253,11 +274,11 @@ public struct AxisAlignedBoundingBox2D: Collider2D {
 }
 
 extension AxisAlignedBoundingBox2D {
-    public func points() -> [Position2] {
-        let p1 = Position2(x: center.x - radius.x, y: center.y - radius.y)
-        let p2 = Position2(x: center.x + radius.x, y: center.y - radius.y)
-        let p3 = Position2(x: center.x - radius.x, y: center.y + radius.y)
-        let p4 = Position2(x: center.x + radius.x, y: center.y + radius.y)
+    public func points(insetBy inset: Size2 = .zero) -> [Position2] {
+        let p1 = Position2(x: position.x - radius.x + inset.width, y: position.y - radius.y + inset.height)
+        let p2 = Position2(x: position.x + radius.x - inset.width, y: position.y - radius.y + inset.height)
+        let p3 = Position2(x: position.x + radius.x - inset.width, y: position.y + radius.y - inset.height)
+        let p4 = Position2(x: position.x - radius.x + inset.width, y: position.y + radius.y - inset.height)
         
         return [p1, p2, p3, p4]
     }
@@ -275,8 +296,8 @@ internal extension AxisAlignedBoundingBox2D {
 
 public extension AxisAlignedBoundingBox2D {
     func surfacePoint(for ray: Ray2D) -> Position2? {
-        let minPosition = self.minPoint
-        let maxPosition = self.maxPoint
+        let minPosition = self.minPosition
+        let maxPosition = self.maxPosition
         
         var tmin = (minPosition.x - ray.origin.x) / ray.direction.x
         var tmax = (maxPosition.x - ray.origin.x) / ray.direction.x

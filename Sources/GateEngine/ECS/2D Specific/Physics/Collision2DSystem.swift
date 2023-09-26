@@ -10,7 +10,7 @@ public final class Collision2DSystem: System {
         for entity in game.entities {
             guard entity.hasComponent(Collision2DComponent.self) else { continue }
             guard entity.hasComponent(Transform2Component.self) else { continue }
-            entity[Collision2DComponent.self].primitive.update(transform: entity.transform2)
+            entity[Collision2DComponent.self].updateColliders(entity.transform2)
         }
         
         guard
@@ -26,10 +26,10 @@ public final class Collision2DSystem: System {
             guard entity.hasComponent(Collision2DComponent.self) else { continue }
             if let transformComponent = entity.component(ofType: Transform2Component.self) {
                 let object = entity[Collision2DComponent.self]
-                object.primitive.update(transform: transformComponent.transform)
+                object.updateColliders(transformComponent.transform)
 
-                let colliders = quadtree.colliders(near: object.primitive, inLayer: "Base")
-                var objectCollider = object.complex ?? object.primitive!
+                let colliders = quadtree.colliders(near: object.collider.boundingBox, inLayer: "Base")
+                var objectCollider = object.collider
 
                 var impactCount = 0
                 var hits: [(collider: any Collider2D, interpenetration: Interpenetration2D)] = []
