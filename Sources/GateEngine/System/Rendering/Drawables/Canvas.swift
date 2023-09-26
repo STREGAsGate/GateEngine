@@ -161,7 +161,7 @@
         let rotation = Quaternion(rotation, axis: .forward)
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
 
-        let material = Material(color: color)
+        let material = Material(color: color.withAlpha(opacity))
         let flags = DrawFlags(
             cull: .disabled,
             depthTest: .always,
