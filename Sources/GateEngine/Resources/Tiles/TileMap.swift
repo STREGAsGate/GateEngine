@@ -24,6 +24,7 @@ import GameMath
     
     @usableFromInline
     internal var backend: TileMapBackend {
+        assert(state == .ready, "This resource is not ready to be used. Make sure it's state property is .ready before accessing!")
         return Game.shared.resourceManager.tileMapCache(for: cacheKey)!.tileMapBackend!
     }
     
@@ -84,19 +85,47 @@ import GameMath
         public var columns: Int {
             return tiles.first?.count ?? 0
         }
-
-        public func tileIndexAtCoordinate(column: Int, row: Int) -> Int {
-            return tiles[row][column].id
+        
+        public struct Coordinate: Hashable {
+            public var row: Int
+            public var column: Int
+            
+            public init(row: Int, column: Int) {
+                self.row = row
+                self.column = column
+            }
         }
 
-        public func tileIndexAtPosition(_ position: Position2) -> Int {
-            let column = position.x / tileSize.width
-            let row = position.y / tileSize.height
-            return tileIndexAtCoordinate(column: Int(column), row: Int(row))
+        public func containsCoordinate(_ coordinate: Coordinate) -> Bool {
+            return tiles.indices.contains(coordinate.row)
+            && tiles[coordinate.row].indices.contains(coordinate.column)
+        }
+        
+        public func coordinate(at position: Position2) -> Coordinate? {
+            let row = Int(position.y / tileSize.height)
+            let column = Int(position.x / tileSize.width)
+            if tiles.indices.contains(row) && tiles[row].indices.contains(column) {
+                return Coordinate(row: row, column: column)
+            }
+            return nil
+        }
+        
+        public func identifierAtCoordinate(_ coordinate: Coordinate) -> Int {
+            assert(containsCoordinate(coordinate), "Coordinate out of range")
+            return tiles[coordinate.row][coordinate.column].id
         }
 
-        public func pixelCenterForTileAt(column: Int, row: Int) -> Position2 {
-            return (Position2(Float(column), Float(row)) * tileSize)
+        public func identifierAtPosition(_ position: Position2) -> Int? {
+            guard let coordinate = coordinate(at: position) else {return nil}
+            return identifierAtCoordinate(coordinate)
+        }
+        
+        public func rectForTileAt(_ coordinate: Coordinate) -> Rect {
+            assert(containsCoordinate(coordinate), "Coordinate out of range")
+            let x = Float(coordinate.column)
+            let y = Float(coordinate.row)
+            let position = Position2(x, y) * tileSize
+            return Rect(position: position, size: tileSize)
         }
 
         init(name: String?, size: Size2, tileSize: Size2, tiles: [[Tile]]) {
