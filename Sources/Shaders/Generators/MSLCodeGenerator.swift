@@ -6,7 +6,7 @@
  */
 #if DEBUG || canImport(MetalKit)
 
-package final class MSLCodeGenerator: CodeGenerator {
+public final class MSLCodeGenerator: CodeGenerator {
     override func type(for valueType: ValueType) -> String {
         switch valueType {
         case .texture2D:
