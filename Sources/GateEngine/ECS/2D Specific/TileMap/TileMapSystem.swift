@@ -41,42 +41,51 @@ public final class TileMapSystem: System {
             let hM: Float = 1 / tileSet.texture.size.height
             for hIndex in 0 ..< Int(component.tileMap.size.height) {
                 for wIndex in 0 ..< Int(component.tileMap.size.width) {
-                    let tile = tileSet.rectForTile(
-                        layer.tileIndexAtCoordinate(column: wIndex, row: hIndex)
-                    )
+                    let tile =  layer.tileAtCoordinate(TileMap.Layer.Coordinate(column: wIndex, row: hIndex))
+                    guard tile.id > -1 else {continue}
+                    let tileRect = tileSet.rectForTile(tile)
                     let position = Position2(
                         x: Float(wIndex) * tileSize.width,
                         y: Float(hIndex) * tileSize.height
                     )
                     let rect = Rect(position: position, size: tileSize)
-                    let v1 = Vertex(
+                    var v1 = Vertex(
                         px: rect.x,
                         py: rect.y,
                         pz: 0,
-                        tu1: tile.x * wM,
-                        tv1: tile.y * hM
+                        tu1: tileRect.x * wM,
+                        tv1: tileRect.y * hM
                     )
-                    let v2 = Vertex(
+                    var v2 = Vertex(
                         px: rect.maxX,
                         py: rect.y,
                         pz: 0,
-                        tu1: tile.maxX * wM,
-                        tv1: tile.y * hM
+                        tu1: tileRect.maxX * wM,
+                        tv1: tileRect.y * hM
                     )
-                    let v3 = Vertex(
+                    var v3 = Vertex(
                         px: rect.maxX,
                         py: rect.maxY,
                         pz: 0,
-                        tu1: tile.maxX * wM,
-                        tv1: tile.maxY * hM
+                        tu1: tileRect.maxX * wM,
+                        tv1: tileRect.maxY * hM
                     )
-                    let v4 = Vertex(
+                    var v4 = Vertex(
                         px: rect.x,
                         py: rect.maxY,
                         pz: 0,
-                        tu1: tile.x * wM,
-                        tv1: tile.maxY * hM
+                        tu1: tileRect.x * wM,
+                        tv1: tileRect.maxY * hM
                     )
+                    
+                    if tile.options.contains(.flippedHorizontal) || tile.options.contains(.flippedDiagonal) {
+                        swap(&v1.u1, &v2.u1)
+                        swap(&v3.u1, &v4.u1)
+                    }
+                    if tile.options.contains(.flippedVertical) || tile.options.contains(.flippedDiagonal) {
+                        swap(&v1.v1, &v3.v1)
+                        swap(&v2.v1, &v4.v1)
+                    }
                     
                     triangles.append(Triangle(v1: v1, v2: v3, v3: v2, repairIfNeeded: false))
                     triangles.append(Triangle(v1: v3, v2: v1, v3: v4, repairIfNeeded: false))
