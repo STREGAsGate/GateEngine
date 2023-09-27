@@ -350,16 +350,7 @@ let package = Package(
                 path: "Dependencies/OpenAL/OpenALSoft",
                 sources: openALSources,
                 publicHeadersPath: "UnmodifiedSource/include",
-                cxxSettings: openALCXXSettings,
-                swiftSettings: {
-                    var array: [SwiftSetting] = []
-                    #if compiler(>=5.9)
-                    array.append(.interoperabilityMode(.Cxx))
-                    #else
-                    array.append(.unsafeFlags(["-enable-experimental-cxx-interop", "-cxx-interoperability-mode=default"]))
-                    #endif
-                    return array
-                }(),
+                cSettings: openALCSettings,
                 linkerSettings: openALLinkerSettings),
         ])
         #endif
@@ -433,8 +424,8 @@ var openALLinkerSettings: [LinkerSetting] {
     return array
 }
 
-var openALCXXSettings: [CXXSetting] {
-    var array: [CXXSetting] = []
+var openALCSettings: [CSetting] {
+    var array: [CSetting] = []
     
     array.append(.headerSearchPath("ConfiguredSource/macOS/", .when(platforms: [.macOS])))
     array.append(.headerSearchPath("ConfiguredSource/Windows/", .when(platforms: [.windows])))
