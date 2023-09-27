@@ -234,10 +234,14 @@ extension OpenGLRenderer {
         switch flags.depthTest {
         case .always:
             glDepthFunc(.alwaysSucceed)
-        case .greaterThan:
+        case .greater:
             glDepthFunc(.greaterThan)
-        case .lessThan:
+        case .greaterEqual:
+            glDepthFunc(.greaterThanOrEqualTo)
+        case .less:
             glDepthFunc(.lessThan)
+        case .lessEqual:
+            glDepthFunc(.lessThanOrEqualTo)
         case .never:
             glDepthFunc(.neverSucceed)
         }

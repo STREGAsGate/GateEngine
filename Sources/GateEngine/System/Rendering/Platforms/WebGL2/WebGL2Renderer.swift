@@ -205,10 +205,14 @@ extension WebGL2Renderer {
         switch flags.depthTest {
         case .always:
             gl.depthFunc(func: GL.ALWAYS)
-        case .greaterThan:
+        case .greater:
             gl.depthFunc(func: GL.GREATER)
-        case .lessThan:
+        case .greaterEqual:
+            gl.depthFunc(func: GL.GEQUAL)
+        case .less:
             gl.depthFunc(func: GL.LESS)
+        case .lessEqual:
+            gl.depthFunc(func: GL.LEQUAL)
         case .never:
             gl.depthFunc(func: GL.NEVER)
         }

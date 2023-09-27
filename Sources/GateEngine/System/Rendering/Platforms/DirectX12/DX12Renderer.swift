@@ -763,10 +763,14 @@ extension DX12Renderer {
             switch flags.depthTest {
             case .always:
                 description.depthStencilState.depthFunction = .alwaysSucceed
-            case .greaterThan:
+            case .greater:
                 description.depthStencilState.depthFunction = .greaterThan
-            case .lessThan:
+            case .greaterEqual:
+                description.depthStencilState.depthFunction = .greaterThanOrEqual
+            case .less:
                 description.depthStencilState.depthFunction = .lessThan
+            case .lessEqual:
+                description.depthStencilState.depthFunction = .lessThanOrEqual
             case .never:
                 description.depthStencilState.depthFunction = .neverSucceed
             }

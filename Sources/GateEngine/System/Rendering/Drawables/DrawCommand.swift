@@ -17,8 +17,10 @@ public struct DrawFlags: Hashable {
 
     public enum DepthTest: Hashable {
         case always
-        case greaterThan
-        case lessThan
+        case greater
+        case greaterEqual
+        case less
+        case lessEqual
         case never
     }
     public var depthTest: DepthTest
@@ -52,7 +54,7 @@ public struct DrawFlags: Hashable {
 
     public init(
         cull: Cull = .back,
-        depthTest: DepthTest = .lessThan,
+        depthTest: DepthTest = .lessEqual,
         depthWrite: DepthWrite = .enabled,
         primitive: Primitive = .triangle,
         winding: Winding = .clockwise,

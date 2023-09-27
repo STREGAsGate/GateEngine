@@ -145,10 +145,14 @@ class MetalRenderer: RendererBackend {
             switch flags.depthTest {
             case .always:
                 depthStencilDescriptor.depthCompareFunction = .always
-            case .greaterThan:
+            case .greater:
                 depthStencilDescriptor.depthCompareFunction = .greater
-            case .lessThan:
+            case .greaterEqual:
+                depthStencilDescriptor.depthCompareFunction = .greaterEqual
+            case .less:
                 depthStencilDescriptor.depthCompareFunction = .less
+            case .lessEqual:
+                depthStencilDescriptor.depthCompareFunction = .lessEqual
             case .never:
                 depthStencilDescriptor.depthCompareFunction = .never
             }

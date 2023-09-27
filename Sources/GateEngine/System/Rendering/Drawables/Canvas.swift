@@ -77,7 +77,7 @@
         }
         let flags = DrawFlags(
             cull: .back,
-            depthTest: .lessThan,
+            depthTest: .lessEqual,
             depthWrite: .enabled,
             primitive: .point,
             winding: .clockwise,
@@ -119,7 +119,7 @@
         }
         let flags = DrawFlags(
             cull: .back,
-            depthTest: .lessThan,
+            depthTest: .lessEqual,
             depthWrite: .enabled,
             primitive: .line,
             winding: .clockwise,
