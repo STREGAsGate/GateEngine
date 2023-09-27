@@ -63,33 +63,37 @@ public class TiledTSJImporter: TileSetImporter {
     public required init() {}
 
     public func process(data: Data, baseURL: URL, options: TileSetImporterOptions) async throws -> TileSetBackend {
-        let file = try JSONDecoder().decode(TSJFile.self, from: data)
-        
-        let tiles: [TileSet.Tile] = (0 ..< file.tilecount).map({ id in
-            var properties: [String: String] = [:]
-            if let fileTiles = file.tiles {
-                if let fileTile = fileTiles.first(where: {$0.id == id}) {
-                    if let fileTileProperties = fileTile.properties {
-                        for property in fileTileProperties {
-                            if let value = property.value {
-                                properties[property.name] = "\(value)"
+        do {
+            let file = try JSONDecoder().decode(TSJFile.self, from: data)
+            
+            let tiles: [TileSet.Tile] = (0 ..< file.tilecount).map({ id in
+                var properties: [String: String] = [:]
+                if let fileTiles = file.tiles {
+                    if let fileTile = fileTiles.first(where: {$0.id == id}) {
+                        if let fileTileProperties = fileTile.properties {
+                            for property in fileTileProperties {
+                                if let value = property.value {
+                                    properties[property.name] = "\(value)"
+                                }
                             }
                         }
                     }
                 }
-            }
-            return TileSet.Tile(id: id, properties: properties, colliders: nil)
-        })
-        
-        let textureURL = baseURL.appendingPathComponent(file.image)
-        
-        return await TileSetBackend(
-            texture: Texture(path: textureURL.path, sizeHint: Size2(Float(file.imagewidth), Float(file.imageheight))),
-            count: file.tilecount,
-            columns: file.columns,
-            tileSize: Size2(Float(file.tilewidth), Float(file.tileheight)),
-            tiles: tiles
-        )
+                return TileSet.Tile(id: id, properties: properties, colliders: nil)
+            })
+            
+            let textureURL = baseURL.appendingPathComponent(file.image)
+            
+            return await TileSetBackend(
+                texture: Texture(path: textureURL.path, sizeHint: Size2(Float(file.imagewidth), Float(file.imageheight))),
+                count: file.tilecount,
+                columns: file.columns,
+                tileSize: Size2(Float(file.tilewidth), Float(file.tileheight)),
+                tiles: tiles
+            )
+        }catch{
+            throw GateEngineError(decodingError: error)
+        }
     }
     
     static public func supportedFileExtensions() -> [String] {
