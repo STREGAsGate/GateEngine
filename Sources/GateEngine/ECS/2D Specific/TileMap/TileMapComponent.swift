@@ -10,8 +10,16 @@ import GameMath
 @MainActor public class TileMapComponent: Component {
     internal var needsSetup: Bool = true
     
-    public var tileSet: TileSet! = nil
-    public var tileMap: TileMap! = nil
+    public var tileSet: TileSet! = nil {
+        didSet {
+            needsSetup = true
+        }
+    }
+    public var tileMap: TileMap! = nil {
+        didSet {
+            needsSetup = true
+        }
+    }
     
     public var layers: [Layer] = []
     
@@ -24,11 +32,8 @@ import GameMath
         public let name: String?
         public let size: Size2
         public let tileSize: Size2
-        public var tiles: [[TileMap.Tile]] {
-            didSet {
-                needsRebuild = true
-            }
-        }
+        public private(set) var tiles: [[TileMap.Tile]]
+        public var animations: [TileAnimation] = []
         public private(set) var geometry: MutableGeometry = MutableGeometry()
         internal var needsRebuild: Bool = true
         
@@ -37,6 +42,12 @@ import GameMath
         }
         public var columns: Int {
             return tiles.first?.count ?? 0
+        }
+        
+        public mutating func setTile(_ tile: TileMap.Tile, at coordinate: TileMap.Layer.Coordinate) {
+            assert(containsCoordinate(coordinate), "Coordinate out of range")
+            self.tiles[coordinate.row][coordinate.column] = tile
+            self.needsRebuild = true
         }
         
         public func containsCoordinate(_ coordinate: TileMap.Layer.Coordinate) -> Bool {
@@ -90,6 +101,50 @@ import GameMath
             self.size = layer.size
             self.tileSize = layer.tileSize
             self.tiles = layer.tiles
+        }
+        
+        public struct TileAnimation {
+            let coordinate: TileMap.Layer.Coordinate
+            let frames: [TileMap.Tile]
+            let duration: Double
+            var accumulatedTime: Double = 0
+            let timePerFrame: Double
+            var repeats: Bool
+            
+            var previousTileIndex: Int = -1
+            
+            private mutating func append(deltaTime: Double) {
+                accumulatedTime += deltaTime
+                if repeats {
+                    while accumulatedTime > duration {
+                        accumulatedTime -= duration
+                    }
+                }else if accumulatedTime > duration {
+                    accumulatedTime = duration
+                }
+            }
+            internal mutating func getNewTile(advancingBy deltaTime: Double) -> TileMap.Tile? {
+                self.append(deltaTime: deltaTime)
+                
+                let index = Int(accumulatedTime / timePerFrame)
+                if previousTileIndex != index {
+                    self.previousTileIndex = index
+                    return frames[index]
+                }
+                return nil
+            }
+            
+            public init(coordinate: TileMap.Layer.Coordinate, frames: [TileMap.Tile], duration: Double, repeats: Bool = true) {
+                self.coordinate = coordinate
+                self.frames = frames
+                if duration == 0 {
+                    self.duration = .ulpOfOne
+                }else{
+                    self.duration = duration
+                }
+                self.timePerFrame = duration / Double(frames.count)
+                self.repeats = repeats
+            }
         }
     }
     

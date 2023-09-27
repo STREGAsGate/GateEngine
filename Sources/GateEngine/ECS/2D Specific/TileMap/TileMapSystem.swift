@@ -12,6 +12,7 @@ public final class TileMapSystem: System {
                 if component.needsSetup {
                     self.setup(component)
                 }else{
+                    self.updateAnimations(component)
                     self.rebuild(component)
                 }
             }
@@ -19,17 +20,31 @@ public final class TileMapSystem: System {
     }
     
     func setup(_ component: TileMapComponent) {
-        guard component.tileSet.state == .ready else {return}
-        guard component.tileMap.state == .ready else {return}
+        guard component.tileSet?.state == .ready else {return}
+        guard component.tileMap?.state == .ready else {return}
         component.needsSetup = false
         component.layers = component.tileMap.layers.map({TileMapComponent.Layer(layer: $0)})
     }
+    
+    func updateAnimations(_ component: TileMapComponent) {
+        for layerIndex in component.layers.indices {
+            for animationIndex in component.layers[layerIndex].animations.indices {
+                if let tile = component.layers[layerIndex].animations[animationIndex].getNewTile(advancingBy: highPrecisionDeltaTime) {
+                    let coordinate = component.layers[layerIndex].animations[animationIndex].coordinate
+                    component.layers[layerIndex].setTile(tile, at: coordinate)
+                }
+            }
+        }
+    }
 
     func rebuild(_ component: TileMapComponent) {
+        guard let tileSet = component.tileSet else { return }
+        guard let tileMap = component.tileMap else { return }
+        
         for layerIndex in component.layers.indices {
             let layer = component.layers[layerIndex]
-            guard layer.needsRebuild else { return }
-            guard let tileSet = component.tileSet else { return }
+            guard layer.needsRebuild else { continue }
+           
             component.layers[layerIndex].needsRebuild = false
             
             var triangles: [Triangle] = []
@@ -39,9 +54,9 @@ public final class TileMapSystem: System {
             
             let wM: Float = 1 / tileSet.texture.size.width
             let hM: Float = 1 / tileSet.texture.size.height
-            for hIndex in 0 ..< Int(component.tileMap.size.height) {
-                for wIndex in 0 ..< Int(component.tileMap.size.width) {
-                    let tile =  layer.tileAtCoordinate(TileMap.Layer.Coordinate(column: wIndex, row: hIndex))
+            for hIndex in 0 ..< Int(tileMap.size.height) {
+                for wIndex in 0 ..< Int(tileMap.size.width) {
+                    let tile = layer.tileAtCoordinate(TileMap.Layer.Coordinate(column: wIndex, row: hIndex))
                     guard tile.id > -1 else {continue}
                     let tileRect = tileSet.rectForTile(tile)
                     let position = Position2(

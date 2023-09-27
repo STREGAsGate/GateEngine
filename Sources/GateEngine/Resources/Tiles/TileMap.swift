@@ -56,7 +56,7 @@ import GameMath
         resourceManager.incrementReference(self.cacheKey)
     }
     
-    public struct Tile {
+    public struct Tile: Equatable {
         public let id: Int
         public let options: Options
         public struct Options: OptionSet {
