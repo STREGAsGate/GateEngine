@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-package class CodeGenerator {
+public class CodeGenerator {
     var _nextVarIndex: UInt = 1
     var _varNames: [ObjectIdentifier:String] = [:]
     var _declaredValues: Set<ObjectIdentifier> = []
@@ -367,7 +367,7 @@ package class CodeGenerator {
 }
 
 
-package extension CodeGenerator {
+public extension CodeGenerator {
     static func addingLineNumbers(_ string: String) -> String {
         var string = string
         var count = 0

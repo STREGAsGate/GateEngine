@@ -6,7 +6,7 @@
  */
 #if DEBUG || (canImport(OpenGL_GateEngine) || canImport(WebGL2))
 
-package final class GLSLCodeGenerator: CodeGenerator {
+public final class GLSLCodeGenerator: CodeGenerator {
     public enum GLSLVersion: CustomStringConvertible {
         case v300es
         case v330core

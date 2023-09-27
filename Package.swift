@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:5.8
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -619,16 +619,29 @@ extension Array where Element == Platform {
     static var desktop: Self {[.windows, .linux, .macOS]}
     static var mobile: Self {[.iOS, .android]}
     static var anyApple: Self {
+        #if swift(>=5.9)
         return [.macOS, .iOS, .tvOS, .watchOS, .visionOS]
+        #else
+        return [.macOS, .iOS, .tvOS, .watchOS]
+        #endif
     }
     
     static var any: Self {
+        #if swift(>=5.9)
         return [
             .macOS, .iOS, .tvOS, .visionOS,
             .linux, .android,
             .windows,
             .wasi
         ]
+        #else
+        return [
+            .macOS, .iOS, .tvOS,
+            .linux, .android,
+            .windows,
+            .wasi
+        ]
+        #endif
     }
 }
 
