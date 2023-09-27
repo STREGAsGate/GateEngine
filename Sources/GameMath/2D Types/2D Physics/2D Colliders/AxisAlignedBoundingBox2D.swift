@@ -51,6 +51,12 @@ public struct AxisAlignedBoundingBox2D: Collider2D {
         return self
     }
     
+    /// A frame representation of the collider
+    @inlinable @inline(__always)
+    public var rect: Rect {
+        return Rect(size: size, center: position)
+    }
+    
     public init(center: Position2 = .zero, offset: Position2 = .zero, radius: Size2 = .one) {
         self.center = center
         self._offset = offset
