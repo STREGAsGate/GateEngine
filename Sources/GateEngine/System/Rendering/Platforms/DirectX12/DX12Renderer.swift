@@ -766,11 +766,11 @@ extension DX12Renderer {
             case .greater:
                 description.depthStencilState.depthFunction = .greaterThan
             case .greaterEqual:
-                description.depthStencilState.depthFunction = .greaterThanOrEqual
+                description.depthStencilState.depthFunction = .greaterThanOrEqualTo
             case .less:
                 description.depthStencilState.depthFunction = .lessThan
             case .lessEqual:
-                description.depthStencilState.depthFunction = .lessThanOrEqual
+                description.depthStencilState.depthFunction = .lessThanOrEqualTo
             case .never:
                 description.depthStencilState.depthFunction = .neverSucceed
             }
