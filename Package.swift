@@ -353,7 +353,7 @@ let package = Package(
                 cxxSettings: openALCXXSettings,
                 swiftSettings: {
                     var array: [SwiftSetting] = []
-                    #if swift(>=5.9)
+                    #if compiler(>=5.9)
                     array.append(.interoperabilityMode(.Cxx))
                     #else
                     array.append(.unsafeFlags(["-enable-experimental-cxx-interop", "-cxx-interoperability-mode=default"]))
