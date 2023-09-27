@@ -365,7 +365,7 @@ public struct SceneElementFlags: OptionSet, Hashable {
     @_transparent @usableFromInline
     internal var drawFlags: DrawFlags {
         let cull: DrawFlags.Cull = self.contains(.cullBackface) ? .back : .disabled
-        let depthTest: DrawFlags.DepthTest = self.contains(.disableDepthCull) ? .always : .lessThan
+        let depthTest: DrawFlags.DepthTest = self.contains(.disableDepthCull) ? .always : .less
         let depthWrite: DrawFlags.DepthWrite =
             self.contains(.disableDepthWrite) ? .disabled : .enabled
         return DrawFlags(

@@ -292,12 +292,13 @@
         let scale = Size3(scale.x, scale.y, 1)
         let rotation = Quaternion(rotation, axis: .forward)
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
-
+        var drawFlags = flags.drawFlags
+        drawFlags.depthTest = .lessEqual
         let command = DrawCommand(
             backends: [geometryBackend],
             transforms: [transform],
             material: material,
-            flags: flags.drawFlags
+            flags: drawFlags
         )
         drawCommands.append(command)
     }
