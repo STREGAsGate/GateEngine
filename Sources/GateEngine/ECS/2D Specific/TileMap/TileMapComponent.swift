@@ -38,20 +38,52 @@ import GameMath
         public var columns: Int {
             return tiles.first?.count ?? 0
         }
-
-        public func tileIndexAtCoordinate(column: Int, row: Int) -> Int {
-            return tiles[row][column].id
+        
+        public func containsCoordinate(_ coordinate: TileMap.Layer.Coordinate) -> Bool {
+            return tiles.indices.contains(coordinate.row)
+            && tiles[coordinate.row].indices.contains(coordinate.column)
+        }
+        
+        public func coordinate(at position: Position2) -> TileMap.Layer.Coordinate? {
+            let row = Int(position.y / tileSize.height)
+            let column = Int(position.x / tileSize.width)
+            if tiles.indices.contains(row) && tiles[row].indices.contains(column) {
+                return TileMap.Layer.Coordinate(column: column, row: row)
+            }
+            return nil
+        }
+        
+        public func tileAtCoordinate(_ coordinate: TileMap.Layer.Coordinate) -> TileMap.Tile {
+            assert(containsCoordinate(coordinate), "Coordinate out of range")
+            return tiles[coordinate.row][coordinate.column]
         }
 
-        public func tileIndexAtPosition(_ position: Position2) -> Int {
-            let column = position.x / tileSize.width
-            let row = position.y / tileSize.height
-            return tileIndexAtCoordinate(column: Int(column), row: Int(row))
+        public func tileAtPosition(_ position: Position2) -> TileMap.Tile? {
+            guard let coordinate = coordinate(at: position) else {return nil}
+            return tileAtCoordinate(coordinate)
+        }
+        
+        public func rectForTileAt(_ coordinate: TileMap.Layer.Coordinate) -> Rect {
+            assert(containsCoordinate(coordinate), "Coordinate out of range")
+            let x = Float(coordinate.column)
+            let y = Float(coordinate.row)
+            let position = Position2(x, y) * tileSize
+            return Rect(position: position, size: tileSize)
         }
 
-        public func pixelCenterForTileAt(column: Int, row: Int) -> Position2 {
-            return (Position2(Float(column), Float(row)) * tileSize)
-        }
+//        public func tileIndexAtCoordinate(column: Int, row: Int) -> Int {
+//            return tiles[row][column].id
+//        }
+//
+//        public func tileIndexAtPosition(_ position: Position2) -> Int {
+//            let column = position.x / tileSize.width
+//            let row = position.y / tileSize.height
+//            return tileIndexAtCoordinate(column: Int(column), row: Int(row))
+//        }
+//
+//        public func pixelCenterForTileAt(column: Int, row: Int) -> Position2 {
+//            return (Position2(Float(column), Float(row)) * tileSize)
+//        }
 
         internal init(layer: TileMap.Layer) {
             self.name = layer.name

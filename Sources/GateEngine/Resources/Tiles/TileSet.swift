@@ -75,9 +75,9 @@ import GameMath
         resourceManager.incrementReference(self.cacheKey)
     }
 
-    public func rectForTile(_ tile: Int) -> Rect {
-        let row = tile / columns
-        let column = tile % columns
+    public func rectForTile(_ tile: TileMap.Tile) -> Rect {
+        let row = tile.id / columns
+        let column = tile.id % columns
         let position = Position2(tileSize.width * Float(column), tileSize.height * Float(row))
         let size = Size2(Float(tileSize.width), Float(tileSize.height))
         return Rect(position: position, size: size)

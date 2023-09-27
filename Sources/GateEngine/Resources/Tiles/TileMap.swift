@@ -70,6 +70,11 @@ import GameMath
             public static let flippedDiagonal      = Options(rawValue: 0x20000000)
             public static let rotatedHexagonal120  = Options(rawValue: 0x10000000)
         }
+        
+        public init(id: Int, options: Options) {
+            self.id = id
+            self.options = options
+        }
     }
     
 
@@ -87,12 +92,13 @@ import GameMath
         }
         
         public struct Coordinate: Hashable {
-            public var row: Int
             public var column: Int
+            public var row: Int
             
-            public init(row: Int, column: Int) {
-                self.row = row
+            
+            public init(column: Int, row: Int) {
                 self.column = column
+                self.row = row
             }
         }
 
@@ -105,19 +111,19 @@ import GameMath
             let row = Int(position.y / tileSize.height)
             let column = Int(position.x / tileSize.width)
             if tiles.indices.contains(row) && tiles[row].indices.contains(column) {
-                return Coordinate(row: row, column: column)
+                return Coordinate(column: column, row: row)
             }
             return nil
         }
         
-        public func identifierAtCoordinate(_ coordinate: Coordinate) -> Int {
+        public func tileAtCoordinate(_ coordinate: TileMap.Layer.Coordinate) -> TileMap.Tile {
             assert(containsCoordinate(coordinate), "Coordinate out of range")
-            return tiles[coordinate.row][coordinate.column].id
+            return tiles[coordinate.row][coordinate.column]
         }
 
-        public func identifierAtPosition(_ position: Position2) -> Int? {
+        public func tileAtPosition(_ position: Position2) -> TileMap.Tile? {
             guard let coordinate = coordinate(at: position) else {return nil}
-            return identifierAtCoordinate(coordinate)
+            return tileAtCoordinate(coordinate)
         }
         
         public func rectForTileAt(_ coordinate: Coordinate) -> Rect {
