@@ -36,7 +36,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         for statistic in performance.averageSortedStatistics() {
             string += "\n"
             let duration = statistic.value
-            string += String(format: "%02d%% ", Int((duration / totalTime) * 100)) + statistic.key
+            string += String(format: "%02d%% ", Int((duration / totalSystemTime) * 100)) + statistic.key
         }
         text.string = string
     }
