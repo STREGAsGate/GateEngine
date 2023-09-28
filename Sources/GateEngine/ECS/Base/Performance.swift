@@ -11,6 +11,9 @@ extension ECSContext {
         var fps: Int = 0
         private var _fpsStart: Double = 0
         private var _fpsCount: Int = 0
+        
+        var _frameTimeStart: Double = 0
+        var frameTime: Double = 0
 
         private var _systemsStart: Double = 0
         private var _systemsFrameTime: Double = 0
@@ -51,10 +54,11 @@ extension ECSContext {
         }
 
         func prepareForReuse() {
-            currentIndex += 1
-            if currentIndex >= cumulatedStatistics.indices.upperBound {
-                currentIndex = 0
-            }
+            let now = Game.shared.platform.systemTime()
+            frameTime = now - _frameTimeStart
+            _frameTimeStart = now
+            
+            currentIndex = 0
             cumulatedStatistics[currentIndex].removeAll(keepingCapacity: true)
         }
 
@@ -93,7 +97,7 @@ extension ECSContext {
 
             @_transparent
             public var duration: Double {
-                return (endDate - startDate) * 100000
+                return endDate - startDate
             }
 
             init(startWithSystem system: PlatformSystem) {
@@ -129,7 +133,7 @@ extension ECSContext {
         }
         
         func finalizeSystemsFrameTime() {
-            systemsFrameTime = _systemsFrameTime * 100000
+            systemsFrameTime = _systemsFrameTime
             _systemsFrameTime = 0
         }
         
@@ -153,7 +157,7 @@ extension ECSContext {
         }
         
         func finalizeRenderingSystemsFrameTime() {
-            renderingSystemsFrameTime = _renderingSystemsFrameTime * 100000
+            renderingSystemsFrameTime = _renderingSystemsFrameTime
             _renderingSystemsFrameTime = 0
         }
     }

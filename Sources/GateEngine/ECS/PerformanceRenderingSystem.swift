@@ -12,25 +12,31 @@ public final class PerformanceRenderingSystem: RenderingSystem {
 
     lazy var text: Text = Text(string: "Accumulating Statistics...", pointSize: 20, color: .green)
     func rebuildText() {
-        let systemsFrameTime = game.ecs.performance!.systemsFrameTime
-        let renderingSystemsFrameTime = game.ecs.performance!.renderingSystemsFrameTime
-
-        var string: String = "\(game.ecs.performance!.fps) FPS"
-        if game.ecs.performance!.totalDroppedFrames > 0 {
-            string += ", \(game.ecs.performance!.totalDroppedFrames) All Time Dropped"
+        let performance = game.ecs.performance!
+        let systemsFrameTime = performance.systemsFrameTime
+        let renderingSystemsFrameTime = performance.renderingSystemsFrameTime
+        let totalSystemTime = systemsFrameTime + renderingSystemsFrameTime
+        let frameTime = performance.frameTime * 1000
+        
+        var string: String = "\(performance.fps) FPS"
+        if performance.totalDroppedFrames > 0 {
+            string += ", \(performance.totalDroppedFrames) All Time Dropped"
         }
+        string += "\n"
+        string += String(format: "%.1fms Frame Time", frameTime)
         string += "\n\n"
-        string += String(format: "%.1fms Total Systems Time", systemsFrameTime + renderingSystemsFrameTime)
-        string += "\n\(String(format: "%.1fms", renderingSystemsFrameTime)) Rendering Systems"
-        string += "\n\(String(format: "%.1fms", systemsFrameTime)) Systems\n"
+        
+        string += String(format: "%.1fms Total Systems Time", totalSystemTime * 1000)
+        string += "\n\(String(format: "%02d%%", Int((renderingSystemsFrameTime / totalSystemTime) * 100))) Rendering Systems"
+        string += "\n\(String(format: "%02d%%", Int((systemsFrameTime / totalSystemTime) * 100))) Systems\n"
         string += "\n\(game.entities.count) Entities,"
         string += " \(game.resourceManager.cache.geometries.count) Geometries,"
         string += " \(game.resourceManager.cache.textures.count) Textures\n"
 
-        for statistic in game.ecs.performance!.averageSortedStatistics() {
+        for statistic in performance.averageSortedStatistics() {
             string += "\n"
             let duration = statistic.value
-            string += String(format: "%.1fms ", duration) + statistic.key
+            string += String(format: "%02d%% ", Int((duration / totalTime) * 100)) + statistic.key
         }
         text.string = string
     }

@@ -251,7 +251,7 @@ extension ECSContext {
         let game = game
         let input = game.hid
 
-        //Discard spiked times
+        // Discard spiked times
         guard deltaTime < 1.0 else {
             game.ecs.performance?.totalDroppedFrames += 1
             return false
