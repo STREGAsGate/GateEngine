@@ -34,7 +34,7 @@ public final class Collision2DComponent: Component {
 
     public var options: Options = []
 
-    public var collider: some Collider2D = AxisAlignedBoundingBox2D(
+    public var collider: any Collider2D = AxisAlignedBoundingBox2D(
         center: .zero,
         offset: .zero,
         radius: .one
