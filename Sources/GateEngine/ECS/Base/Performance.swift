@@ -59,19 +59,19 @@ extension ECSContext {
         }
 
         public private(set) var currentStatistic: Statistic? = nil
-        @inlinable
+        
         func beginStatForSystem(_ system: System) {
             self.currentStatistic = Statistic(startWithSystem: system)
         }
-        @inlinable
+        
         func beginStatForSystem(_ system: PlatformSystem) {
             self.currentStatistic = Statistic(startWithSystem: system)
         }
-        @inlinable
+        
         func beginStatForSystem(_ system: RenderingSystem) {
             self.currentStatistic = Statistic(startWithSystem: system)
         }
-        @inlinable
+        
         func endCurrentStatistic() {
             self.currentStatistic?.end()
             if let currentStatistic = currentStatistic {
@@ -91,9 +91,9 @@ extension ECSContext {
                 case rendering
             }
 
-            @inlinable
+            @_transparent
             public var duration: Double {
-                return endDate - startDate
+                return (endDate - startDate) * 100000
             }
 
             init(startWithSystem system: PlatformSystem) {
@@ -105,7 +105,7 @@ extension ECSContext {
             init(startWithSystem system: System) {
                 let type = type(of: system)
                 self.kind = .project(type.phase)
-                self.system = "\(type)"
+                self.system = "[S] \(type)"
                 self.startDate = Game.shared.platform.systemTime()
             }
             init(startWithSystem system: RenderingSystem) {
@@ -115,36 +115,35 @@ extension ECSContext {
                 self.startDate = Game.shared.platform.systemTime()
             }
 
-            @inlinable
             mutating func end() {
                 self.endDate = Game.shared.platform.systemTime()
             }
         }
-
-        @inlinable
+        
         func startSystems() {
             _systemsStart = Game.shared.platform.systemTime()
         }
-        @inlinable
+        
         func endSystems() {
             _systemsFrameTime += Game.shared.platform.systemTime() - _systemsStart
         }
-        @inlinable
+        
         func finalizeSystemsFrameTime() {
-            systemsFrameTime = _systemsFrameTime * 1000
+            systemsFrameTime = _systemsFrameTime * 100000
             _systemsFrameTime = 0
         }
-
-        @inlinable
+        
+        
         func startRenderingSystems() {
             _renderingSystemsStart = Game.shared.platform.systemTime()
         }
-        @inlinable
+        
         func endRenderingSystems() {
-            _renderingSystemsFrameTime += Game.shared.platform.systemTime() - _systemsStart
-
-            _fpsCount += 1
             let now = Game.shared.platform.systemTime()
+            _renderingSystemsFrameTime += now - _renderingSystemsStart
+            
+            _fpsCount += 1
+
             let duration = now - _fpsStart
             if duration > 1 {
                 fps = _fpsCount
@@ -152,9 +151,9 @@ extension ECSContext {
                 _fpsCount = 0
             }
         }
-        @inlinable
+        
         func finalizeRenderingSystemsFrameTime() {
-            renderingSystemsFrameTime = _renderingSystemsFrameTime * 1000
+            renderingSystemsFrameTime = _renderingSystemsFrameTime * 100000
             _renderingSystemsFrameTime = 0
         }
     }

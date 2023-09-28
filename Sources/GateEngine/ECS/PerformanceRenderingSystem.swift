@@ -11,7 +11,6 @@ public final class PerformanceRenderingSystem: RenderingSystem {
     }
 
     lazy var text: Text = Text(string: "Accumulating Statistics...", pointSize: 20, color: .green)
-    @inline(__always)
     func rebuildText() {
         let systemsFrameTime = game.ecs.performance!.systemsFrameTime
         let renderingSystemsFrameTime = game.ecs.performance!.renderingSystemsFrameTime
@@ -21,19 +20,17 @@ public final class PerformanceRenderingSystem: RenderingSystem {
             string += ", \(game.ecs.performance!.totalDroppedFrames) All Time Dropped"
         }
         string += "\n\n"
-        string += String(format: "%.3fms Total Time", systemsFrameTime + renderingSystemsFrameTime)
-        string += "\n\(String(format: "%.3fms", renderingSystemsFrameTime)) Rendering Systems"
-        string += "\n\(String(format: "%.3fms", systemsFrameTime)) Systems\n"
+        string += String(format: "%02dms Total Time", Int(systemsFrameTime + renderingSystemsFrameTime))
+        string += "\n\(String(format: "%02dms", Int(renderingSystemsFrameTime))) Rendering Systems"
+        string += "\n\(String(format: "%02dms", Int(systemsFrameTime))) Systems\n"
         string += "\n\(game.entities.count) Entities,"
         string += " \(game.resourceManager.cache.geometries.count) Geometries,"
         string += " \(game.resourceManager.cache.textures.count) Textures\n"
 
-        var total: Double = 0
         for statistic in game.ecs.performance!.averageSortedStatistics() {
             string += "\n"
-            let duration = statistic.value * 1000
-            total += duration
-            string += String(format: "%.3fms ", duration) + statistic.key
+            let duration = statistic.value
+            string += String(format: "%02dms ", Int(duration)) + statistic.key
         }
         text.string = string
     }
@@ -56,7 +53,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         var canvas: Canvas = Canvas(window: window)
         canvas.insert(
             Rect(size: text.size).inset(by: Insets(-4)),
-            color: Color(0, 0, 0, 0.5),
+            color: Color(0, 0, 0, 0.6),
             at: position
         )
         canvas.insert(text, at: position)
