@@ -20,7 +20,7 @@ public final class IDGenerator<T: AtomicInteger> {
     }
 
     public func generateID() -> T {
-        return value.wrappingIncrementThenLoad(ordering: .sequentiallyConsistent)
+        return value.loadThenWrappingIncrement(ordering: .sequentiallyConsistent)
     }
 }
 #elseif canImport(Foundation.NSLock)
@@ -34,7 +34,8 @@ public final class IDGenerator<T: BinaryInteger> {
 
     public func generateID() -> T {
         lock.lock()
-        value += 1
+        let value = value
+        self.value += 1
         defer {
             lock.unlock()
         }
@@ -50,7 +51,8 @@ public final class IDGenerator<T: BinaryInteger> {
     }
 
     public func generateID() -> T {
-        value += 1
+        let value = value
+        self.value += 1
         return value
     }
 }
