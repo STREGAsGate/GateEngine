@@ -31,7 +31,7 @@ public class CodeGenerator {
         }
     }
     
-    final func declareVariableIfNeeded(_ value: any ShaderValue, declarations: inout String) {
+    final func declareVariableIfNeeded(_ value: some ShaderValue, declarations: inout String) {
         let objectID = value.id
         guard _declaredValues.contains(objectID) == false else {return}
         _declaredValues.insert(objectID)
@@ -94,7 +94,7 @@ public class CodeGenerator {
         }
     }
     
-    private final func declareVariable(_ value: any ShaderValue, declarations: inout String) {
+    private final func declareVariable(_ value: some ShaderValue, declarations: inout String) {
         var out = "\t\(type(for: value)) \(variable(for: value)) = "
         switch value.valueType {
         case .operation:
@@ -168,7 +168,7 @@ public class CodeGenerator {
         declarations += out + ";\n"
     }
     
-    final func variable(for value: any ShaderValue) -> String {
+    final func variable(for value: some ShaderValue) -> String {
         switch value.valueRepresentation {
         case let .scalarBool(bool):
             return "\(bool)"
@@ -238,11 +238,11 @@ public class CodeGenerator {
         preconditionFailure("Must override")
     }
     
-    final func type(for value: any ShaderValue) -> String {
+    final func type(for value: some ShaderValue) -> String {
         return type(for: valueType(for: value))
     }
     
-    final func valueType(for value: any ShaderValue) -> ValueType {
+    final func valueType(for value: some ShaderValue) -> ValueType {
         switch value.self {
         case is Scalar:
             switch value.valueRepresentation {

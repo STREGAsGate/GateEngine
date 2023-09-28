@@ -11,8 +11,8 @@ public protocol Angle: RawRepresentable, Numeric, Comparable, FloatingPoint wher
     var rawValueAsDegrees: RawValue {get}
     var rawValueAsRadians: RawValue {get}
     
-    mutating func interpolate(to: any Angle, _ method: InterpolationMethod)
-    func interpolated(to: any Angle, _ method: InterpolationMethod) -> Self
+    mutating func interpolate(to: some Angle, _ method: InterpolationMethod)
+    func interpolated(to: some Angle, _ method: InterpolationMethod) -> Self
     
     init(_ rawValue: RawValue)
     init(rawValue: RawValue)
@@ -26,12 +26,12 @@ public extension Angle {
     }
     
     @_transparent
-    mutating func interpolate(to: any Angle, _ method: InterpolationMethod) {
+    mutating func interpolate(to: some Angle, _ method: InterpolationMethod) {
         self.rawValue.interpolate(to: to.rawValue, method)
     }
     
     @_transparent
-    func interpolated(to: any Angle, _ method: InterpolationMethod) -> Self {
+    func interpolated(to: some Angle, _ method: InterpolationMethod) -> Self {
         var copy = self
         copy.interpolate(to: to, method)
         return copy
@@ -50,11 +50,11 @@ public extension Angle {
         return Self(rawValue: lhs.rawValue + rhs.rawValue)
     }
     @_transparent
-    static func +(_ lhs: Self, _ rhs: any Angle) -> Self {
+    static func +(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians + rhs.rawValueAsRadians)
     }
     @_transparent
-    static func +=(_ lhs: inout Self, _ rhs: any Angle) {
+    static func +=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs = lhs + rhs
     }
     @_transparent
@@ -72,11 +72,11 @@ public extension Angle {
         return Self(rawValue: lhs.rawValue - rhs.rawValue)
     }
     @_transparent
-    static func -(_ lhs: Self, _ rhs: any Angle) -> Self {
+    static func -(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians - rhs.rawValueAsRadians)
     }
     @_transparent
-    static func -=(_ lhs: inout Self, _ rhs: any Angle) {
+    static func -=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs = lhs - rhs
     }
     @_transparent
@@ -106,7 +106,7 @@ extension Angle {
         return Self(rawValue: lhs.rawValue * rhs.rawValue)
     }
     @_transparent
-    public static func *(_ lhs: Self, _ rhs: any Angle) -> Self {
+    public static func *(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians * rhs.rawValueAsRadians)
     }
     @_transparent
@@ -124,7 +124,7 @@ extension Angle {
         lhs.rawValue *= rhs.rawValue
     }
     @_transparent
-    public static func *=(_ lhs: inout Self, _ rhs: any Angle) {
+    public static func *=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs.rawValue = Self(rawValueAsRadians: lhs.rawValueAsRadians * rhs.rawValueAsRadians).rawValue
     }
     @_transparent
@@ -145,7 +145,7 @@ extension Angle {
         return Self(rawValue: lhs.rawValue / rhs.rawValue)
     }
     @_transparent
-    public static func /(_ lhs: Self, _ rhs: any Angle) -> Self {
+    public static func /(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians / rhs.rawValueAsRadians)
     }
     @_transparent
@@ -163,7 +163,7 @@ extension Angle {
         lhs.rawValue /= rhs.rawValue
     }
     @_transparent
-    public static func /=(_ lhs: inout Self, _ rhs: any Angle) {
+    public static func /=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs.rawValue = Self(rawValueAsRadians: lhs.rawValueAsRadians / rhs.rawValueAsRadians).rawValue
     }
     @_transparent
@@ -182,7 +182,7 @@ public extension Angle {
         return Self(.minimum(lhs.rawValue, rhs.rawValue))
     }
     @_transparent
-    static func minimum(_ lhs: any Angle, _ rhs: any Angle) -> Self {
+    static func minimum(_ lhs: some Angle, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: .minimum(lhs.rawValueAsRadians, rhs.rawValueAsRadians))
     }
     @_transparent
@@ -199,7 +199,7 @@ public extension Angle {
         return Self(.maximum(lhs.rawValue, rhs.rawValue))
     }
     @_transparent
-    static func maximum(_ lhs: any Angle, _ rhs: any Angle) -> Self {
+    static func maximum(_ lhs: some Angle, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: .maximum(lhs.rawValueAsRadians, rhs.rawValueAsRadians))
     }
     @_transparent
@@ -238,7 +238,7 @@ extension Angle {
         return lhs.rawValue < rhs.rawValue
     }
     @_transparent
-    public static func <(lhs: Self, rhs: any Angle) -> Bool {
+    public static func <(lhs: Self, rhs: some Angle) -> Bool {
         return lhs.rawValueAsRadians < rhs.rawValueAsRadians
     }
     @_transparent
@@ -255,7 +255,7 @@ extension Angle {
         return lhs.rawValue > rhs.rawValue
     }
     @_transparent
-    public static func >(lhs: Self, rhs: any Angle) -> Bool {
+    public static func >(lhs: Self, rhs: some Angle) -> Bool {
         return lhs.rawValueAsRadians > rhs.rawValueAsRadians
     }
     @_transparent
@@ -486,7 +486,7 @@ public struct Radians: Angle, Hashable, Codable {
         self.init(rawValue: rawValueAsRadians)
     }
     @_transparent
-    public init(_ value: any Angle) {
+    public init(_ value: some Angle) {
         self.init(rawValue: value.rawValueAsRadians)
     }
     
@@ -530,7 +530,7 @@ public struct Degrees: Angle, Hashable, Codable {
         self.init(rawValue: rawValueAsRadians * (180 / RawValue.pi))
     }
     @_transparent
-    public init(_ value: any Angle) {
+    public init(_ value: some Angle) {
         self.init(rawValue: value.rawValueAsDegrees)
     }
     

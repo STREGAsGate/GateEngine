@@ -34,26 +34,7 @@ public final class Collision3DComponent: Component {
 
     public var options: Options = []
 
-    @available(
-        *,
-        unavailable,  //0.0.8
-        message: "Primitive colliders are generated automatically now."
-    )
-    public var primitiveCollider: AxisAlignedBoundingBox3D { collider.boundingBox }
-
-    @available(
-        *,
-        unavailable,  //0.0.8
-        renamed: "collider",
-        message: "Set the collider property directly."
-    )
-    @inlinable @inline(__always)
-    public var detailCollider: (any Collider3D)! {
-        get { return collider }
-        set { collider = newValue }
-    }
-
-    public var collider: any Collider3D = AxisAlignedBoundingBox3D(
+    public var collider: some Collider3D = AxisAlignedBoundingBox3D(
         center: .zero,
         offset: .zero,
         radius: .one
@@ -73,7 +54,7 @@ public final class Collision3DComponent: Component {
     public var entityFilter: ((Entity) -> (Bool))? = nil
 
     @inlinable @inline(__always)
-    func interpenetration(comparing: any Collider3D) -> Interpenetration3D? {
+    func interpenetration(comparing: some Collider3D) -> Interpenetration3D? {
         return collider.interpenetration(comparing: comparing)
     }
 

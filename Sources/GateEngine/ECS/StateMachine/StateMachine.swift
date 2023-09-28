@@ -33,7 +33,7 @@ public final class StateMachine {
 public protocol State: AnyObject {
     init()
     
-    @MainActor func apply(to entity: Entity, previousState: any State, game: Game, input: HID)
+    @MainActor func apply(to entity: Entity, previousState: some State, game: Game, input: HID)
     @MainActor func update(for entity: Entity, inGame game: Game, input: HID, withTimePassed deltaTime: Double)
     
     @MainActor func canMoveToNextState(for entity: Entity, game: Game, input: HID) -> Bool
@@ -41,7 +41,7 @@ public protocol State: AnyObject {
     
     @MainActor func willMoveToNextState(for entity: Entity, nextState: any State.Type, game: Game, input: HID)
     
-    @MainActor static func canBecomeCurrentState(for entity: Entity, from currentState: any State, game: Game, input: HID) -> Bool
+    @MainActor static func canBecomeCurrentState(for entity: Entity, from currentState: some State, game: Game, input: HID) -> Bool
 }
 
 public extension State {
@@ -53,7 +53,7 @@ public extension State {
         
     }
     
-    static func canBecomeCurrentState(for entity: Entity, from currentState: any State, game: Game, input: HID) -> Bool {
+    static func canBecomeCurrentState(for entity: Entity, from currentState: some State, game: Game, input: HID) -> Bool {
         return true
     }
 }

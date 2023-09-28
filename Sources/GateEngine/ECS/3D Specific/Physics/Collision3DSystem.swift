@@ -566,7 +566,7 @@ extension Collision3DSystem {
     }
 
     @inline(__always)
-    public func entitiesProbablyHit(by collider: any Collider3D, filter: ((Entity) -> Bool)? = nil)
+    public func entitiesProbablyHit(by collider: some Collider3D, filter: ((Entity) -> Bool)? = nil)
         -> [Entity]
     {
         var entities: [Entity] = []

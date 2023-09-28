@@ -311,7 +311,7 @@ extension GamePad {
         }
     }
 
-    internal init(interpreter: any GamePadInterpreter, identifier: Any?) {
+    internal init(interpreter: some GamePadInterpreter, identifier: Any?) {
         self.interpreter = interpreter
         self.identifier = identifier
         self.interpreter.setupGamePad(self)

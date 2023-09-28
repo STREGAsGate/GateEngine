@@ -106,7 +106,7 @@ extension GravitySetVarExtended {
      - parameter key: The name of the `extern var` as written in the gravity script.
      */
     @inline(__always)
-    public func setVar(_ key: String, to value: any BinaryInteger) {
+    public func setVar(_ key: String, to value: some BinaryInteger) {
         self.setVar(key, to: GravityValue(value))
     }
 
@@ -116,7 +116,7 @@ extension GravitySetVarExtended {
      - parameter key: The name of the `extern var` as written in the gravity script.
      */
     @inline(__always)
-    public func setVar(_ key: String, to value: any BinaryFloatingPoint) {
+    public func setVar(_ key: String, to value: some BinaryFloatingPoint) {
         self.setVar(key, to: GravityValue(value))
     }
 

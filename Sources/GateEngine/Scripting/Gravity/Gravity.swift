@@ -257,7 +257,7 @@ public class Gravity {
      - parameter value: The Swift value to store in the `GravityValue`.
      - returns: A `GravityValue` representing the provided Swift vlaue.
      */
-    public func createValue(_ value: any BinaryInteger) -> GravityValue {
+    public func createValue(_ value: some BinaryInteger) -> GravityValue {
         return GravityValue(value)
     }
     /**
@@ -265,7 +265,7 @@ public class Gravity {
      - parameter value: The Swift value to store in the `GravityValue`.
      - returns: A `GravityValue` representing the provided Swift vlaue.
      */
-    public func createValue(_ value: any BinaryFloatingPoint) -> GravityValue {
+    public func createValue(_ value: some BinaryFloatingPoint) -> GravityValue {
         return GravityValue(value)
     }
 

@@ -10,7 +10,7 @@ public final class MaterialComponent: Component {
 
     public var material: Material = Material()
 
-    public func setCustomUniformValue(_ value: any CustomUniformType, forUniform name: String) {
+    public func setCustomUniformValue(_ value: some CustomUniformType, forUniform name: String) {
         material.setCustomUniformValue(value, forUniform: name)
     }
 

@@ -133,7 +133,7 @@ extension _RenderTargetProtocol {
         self.clearColor = .black
     }
 
-    internal init(backend: any RenderTargetBackend) {
+    internal init(backend: some RenderTargetBackend) {
         self.renderTargetBackend = backend
     }
 

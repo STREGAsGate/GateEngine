@@ -34,7 +34,7 @@ public final class Collision2DComponent: Component {
 
     public var options: Options = []
 
-    public var collider: any Collider2D = AxisAlignedBoundingBox2D(
+    public var collider: some Collider2D = AxisAlignedBoundingBox2D(
         center: .zero,
         offset: .zero,
         radius: .one
@@ -54,7 +54,7 @@ public final class Collision2DComponent: Component {
     public var entityFilter: ((Entity) -> (Bool))? = nil
 
     @inlinable @inline(__always)
-    func interpenetration(comparing: any Collider2D) -> Interpenetration2D? {
+    func interpenetration(comparing: some Collider2D) -> Interpenetration2D? {
         return collider.interpenetration(comparing: comparing)
     }
 

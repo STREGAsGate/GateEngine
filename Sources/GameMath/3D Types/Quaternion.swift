@@ -154,7 +154,7 @@ extension Quaternion {
      - parameter axis: The direction to rotate around
      */
     @inlinable
-    public init(_ angle: any Angle, axis: Direction3) {
+    public init(_ angle: some Angle, axis: Direction3) {
         // Will always be radians (becuase degrees is explicitly below), but leave ambiguous so degrees can use a literal
         let radians = angle.rawValueAsRadians
         let sinHalfAngle: Float = sin(radians / 2.0)
