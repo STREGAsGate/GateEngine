@@ -22,7 +22,7 @@ public enum RenderingAPI {
     nonisolated public var api: RenderingAPI { _backend.renderingAPI }
 
     @usableFromInline
-    lazy var rectOriginCentered: Geometry = {
+    static let rectOriginCentered: Geometry = {
         let positions: [Float] = [
             -0.5, -0.5, 0.0,
             0.5, -0.5, 0.0,
@@ -52,7 +52,7 @@ public enum RenderingAPI {
     }()
 
     @usableFromInline
-    lazy var rectOriginTopLeft: Geometry = {
+    static let rectOriginTopLeft: Geometry = {
         let positions: [Float] = [
             0.0, 0.0, 0.0,
             1.0, 0.0, 0.0,
@@ -88,10 +88,10 @@ public enum RenderingAPI {
         options: RenderTargetFillOptions,
         sampler: RenderTargetFillSampleFilter
     ) {
-        guard rectOriginCentered.state == .ready else { return }
+        guard Renderer.rectOriginCentered.state == .ready else { return }
         guard
             let geometryBackend = Game.shared.resourceManager.geometryCache(
-                for: rectOriginCentered.cacheKey
+                for: Renderer.rectOriginCentered.cacheKey
             )?.geometryBackend
         else { return }
 

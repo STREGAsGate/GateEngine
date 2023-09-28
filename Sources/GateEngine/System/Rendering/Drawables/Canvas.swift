@@ -145,10 +145,10 @@
         opacity: Float = 1,
         flags: CanvasElementPrimitiveFlags = .default
     ) {
-        guard Game.shared.renderer.rectOriginTopLeft.state == .ready else { return }
+        guard Renderer.rectOriginTopLeft.state == .ready else { return }
         guard
             let geometryBackend = Game.shared.resourceManager.geometryCache(
-                for: Game.shared.renderer.rectOriginTopLeft.cacheKey
+                for: Renderer.rectOriginTopLeft.cacheKey
             )?.geometryBackend
         else { return }
 
@@ -189,12 +189,12 @@
         opacity: Float = 1,
         flags: CanvasElementSpriteFlags = .default
     ) {
-        guard sprite.isReady && Game.shared.renderer.rectOriginCentered.state == .ready else {
+        guard sprite.isReady && Renderer.rectOriginCentered.state == .ready else {
             return
         }
         guard
             let geometryBackend = Game.shared.resourceManager.geometryCache(
-                for: Game.shared.renderer.rectOriginCentered.cacheKey
+                for: Renderer.rectOriginCentered.cacheKey
             )?.geometryBackend
         else { return }
 
