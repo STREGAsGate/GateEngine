@@ -436,7 +436,6 @@ extension GamePad {
 
          - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
          */
-        @inlinable @inline(__always)
         public func whenPressed(
             ifDifferent receipt: inout InputReceipts,
             run block: (ButtonState) -> Void

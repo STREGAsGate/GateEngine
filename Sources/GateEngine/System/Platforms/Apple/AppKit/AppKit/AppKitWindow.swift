@@ -376,7 +376,6 @@ final class UGNSWindow: AppKit.NSWindow {
 
 // MARK: - Mouse
 extension UGNSWindow {
-    @inline(__always)
     func positionFromEvent(_ event: NSEvent) -> Position2? {
         if let contentView = self.contentView ?? self.contentViewController?.view {
             let cgPoint = contentView.convert(event.locationInWindow, from: nil)
@@ -386,7 +385,6 @@ extension UGNSWindow {
         return nil
     }
 
-    @inline(__always)
     func deltaPositionFromEvent(_ event: NSEvent) -> Position2 {
         guard event.type == .mouseMoved || event.type == .mouseEntered || event.type == .mouseExited
         else { return .zero }
@@ -394,7 +392,6 @@ extension UGNSWindow {
         * Size2(Float(self.backingScaleFactor))
     }
 
-    @inline(__always)
     func mouseButtonFromEvent(_ event: NSEvent) -> MouseButton {
         switch event.buttonNumber {
         case 0:
@@ -421,7 +418,6 @@ extension UGNSWindow {
             delta: deltaPositionFromEvent(event),
             window: window
         )
-        super.mouseDown(with: event)
     }
 
     override func mouseUp(with event: NSEvent) {
@@ -433,7 +429,6 @@ extension UGNSWindow {
             delta: deltaPositionFromEvent(event),
             window: window
         )
-        super.mouseUp(with: event)
     }
 
     override func rightMouseDown(with event: NSEvent) {
@@ -445,7 +440,6 @@ extension UGNSWindow {
             delta: deltaPositionFromEvent(event),
             window: window
         )
-        super.rightMouseDown(with: event)
     }
 
     override func rightMouseUp(with event: NSEvent) {
@@ -457,7 +451,6 @@ extension UGNSWindow {
             delta: deltaPositionFromEvent(event),
             window: window
         )
-        super.rightMouseUp(with: event)
     }
 
     override func otherMouseDown(with event: NSEvent) {
@@ -469,7 +462,6 @@ extension UGNSWindow {
             delta: deltaPositionFromEvent(event),
             window: window
         )
-        super.otherMouseDown(with: event)
     }
 
     override func otherMouseUp(with event: NSEvent) {
@@ -481,7 +473,6 @@ extension UGNSWindow {
             delta: deltaPositionFromEvent(event),
             window: window
         )
-        super.otherMouseUp(with: event)
     }
 
     override func mouseEntered(with event: NSEvent) {
@@ -493,7 +484,6 @@ extension UGNSWindow {
                 window: window
             )
         }
-        super.mouseEntered(with: event)
     }
     override func mouseMoved(with event: NSEvent) {
         if let position = positionFromEvent(event) {
@@ -504,7 +494,6 @@ extension UGNSWindow {
                 window: window
             )
         }
-        super.mouseMoved(with: event)
     }
     override func mouseDragged(with event: NSEvent) {
         if let position = positionFromEvent(event) {
@@ -515,7 +504,6 @@ extension UGNSWindow {
                 window: window
             )
         }
-        super.mouseDown(with: event)
     }
     override func rightMouseDragged(with event: NSEvent) {
         if let position = positionFromEvent(event) {
@@ -526,7 +514,6 @@ extension UGNSWindow {
                 window: window
             )
         }
-        super.rightMouseDragged(with: event)
     }
     override func otherMouseDragged(with event: NSEvent) {
         if let position = positionFromEvent(event) {
@@ -537,7 +524,6 @@ extension UGNSWindow {
                 window: window
             )
         }
-        super.otherMouseDragged(with: event)
     }
 
     override func mouseExited(with event: NSEvent) {
@@ -549,7 +535,6 @@ extension UGNSWindow {
                 window: window
             )
         }
-        super.mouseExited(with: event)
     }
 
     override func scrollWheel(with event: NSEvent) {
@@ -577,8 +562,6 @@ extension UGNSWindow {
             isMomentum: isMomentum,
             window: window
         )
-
-        super.scrollWheel(with: event)
     }
 }
 
@@ -607,8 +590,6 @@ extension UGNSWindow {
     }
 
     override func touchesBegan(with event: NSEvent) {
-        super.touchesBegan(with: event)
-
         let touches = event.touches(matching: .began, in: nil)
 
         for touch in touches {
@@ -641,7 +622,6 @@ extension UGNSWindow {
     }
 
     override func touchesMoved(with event: NSEvent) {
-        super.touchesMoved(with: event)
         let touches = event.touches(matching: .moved, in: nil)
 
         for touch in touches {
@@ -673,8 +653,6 @@ extension UGNSWindow {
     }
 
     override func touchesEnded(with event: NSEvent) {
-        super.touchesEnded(with: event)
-
         let touches = event.touches(matching: .ended, in: nil)
 
         for touch in touches {
@@ -707,8 +685,6 @@ extension UGNSWindow {
     }
 
     override func touchesCancelled(with event: NSEvent) {
-        super.touchesCancelled(with: event)
-
         let touches = event.touches(matching: .cancelled, in: nil)
 
         for touch in touches {

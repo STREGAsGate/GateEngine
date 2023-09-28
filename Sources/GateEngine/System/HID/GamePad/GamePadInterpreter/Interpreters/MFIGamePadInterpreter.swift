@@ -8,8 +8,7 @@
 import GameController
 
 internal class MFIGamePadInterpreter: GamePadInterpreter {
-    @inline(__always)
-    var hid: HID { Game.shared.hid }
+    let hid: HID = Game.shared.hid
     init?() {
         guard Self.isSupported else { return nil }
         if #available(macOS 11.3, macCatalyst 14.5, iOS 14.5, tvOS 14.5, *) {
@@ -18,7 +17,6 @@ internal class MFIGamePadInterpreter: GamePadInterpreter {
     }
 
     func beginInterpreting() {
-
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(controllerConnected(_:)),

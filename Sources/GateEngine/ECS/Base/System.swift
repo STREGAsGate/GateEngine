@@ -116,7 +116,6 @@ extension System {
             case finished
         }
         public private(set) var state: State = .initial
-        @inline(__always)
         nonisolated public var isRunning: Bool {
             return state == .running
         }

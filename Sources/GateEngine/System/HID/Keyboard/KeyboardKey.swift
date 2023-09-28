@@ -111,7 +111,6 @@ public enum KeyboardKey: Hashable {
     // The Fn key
     case fn
 
-    @inline(__always)
     var asModifierMask: KeyboardModifierMask {
         switch self {
         case .alt(_):
@@ -142,7 +141,7 @@ extension KeyboardKey {
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
      - note: If you are solo and use qwerty, this function can be omitted as the unerlying representation is already \"qwerty\".
      */
-    @inlinable @inline(__always) @_transparent
+    @_transparent
     public static func qwerty(_ character: Character, origin: KeyOrigin = .anyVariation) -> Self {
         return .character(character, origin)
     }
@@ -156,7 +155,6 @@ extension KeyboardKey {
      - parameter character: The character on your keyboard, assuming your keyboard layout is \"qwertz\".
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
      */
-    @inlinable @inline(__always)
     public static func qwertz(_ character: Character, origin: KeyOrigin = .anyVariation) -> Self {
         switch character {
         case "<":
@@ -202,7 +200,6 @@ extension KeyboardKey {
      - parameter character: The character on your keyboard, assuming your keyboard layout is \"azerty\".
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
      */
-    @inlinable @inline(__always)
     public static func azerty(_ character: Character, origin: KeyOrigin = .anyVariation) -> Self {
         switch character {
         case "<":

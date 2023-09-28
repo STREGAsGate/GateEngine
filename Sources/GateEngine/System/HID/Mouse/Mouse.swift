@@ -8,9 +8,7 @@
 import GameMath
 
 @MainActor public final class Mouse {
-    @usableFromInline
     internal weak var _window: Window? = nil
-    @inlinable @inline(__always)
     public var window: Window? {
         return _window
     }
@@ -46,10 +44,8 @@ import GameMath
         }
     }
 
-    @usableFromInline
     internal var buttons: [MouseButton: ButtonState] = [:]
 
-    @inlinable @inline(__always)
     public func button(_ mouseButton: MouseButton) -> ButtonState {
         if let existing = buttons[mouseButton] {
             return existing
@@ -59,10 +55,8 @@ import GameMath
         return button
     }
 
-    @usableFromInline
     internal var scrollers: [MouseScroller: ScrollerState] = [:]
 
-    @inlinable @inline(__always)
     public func scroller(_ mouseScroller: MouseScroller) -> ScrollerState {
         if let existing = scrollers[mouseScroller] {
             return existing
@@ -72,10 +66,8 @@ import GameMath
         return scroller
     }
 
-    @usableFromInline
     internal var _hidden: Bool = false
     /// Hide or Unhide the mouse cursor
-    @inlinable @inline(__always)
     internal var hidden: Bool {
         get { return self._hidden }
         set {
@@ -99,7 +91,6 @@ import GameMath
     /// The distance the cursor moved since it's last update
     public internal(set) var deltaPosition: Position2 = .zero
 
-    @usableFromInline
     internal var _position: Position2? = nil
     /**
      The user interface scaled position of the mouse cursor
@@ -107,7 +98,6 @@ import GameMath
      Setting this value will "warp" the mouse to that position.
      - SeeAlso ``interfacePosition``
     */
-    @inlinable @inline(__always)
     public internal(set) var position: Position2? {
         get { return _position }
         set {
@@ -124,7 +114,6 @@ import GameMath
      Setting this value will "warp" the mouse to that position.
      - SeeAlso ``position``
      */
-    @inlinable @inline(__always)
     public internal(set) var interfacePosition: Position2? {
         get {
             if let position, let window {
@@ -141,7 +130,6 @@ import GameMath
         }
     }
 
-    @inline(__always)
     func update() {
         self.deltaPosition = self._nextDeltaPosition
         self._nextDeltaPosition = .zero
@@ -157,7 +145,7 @@ extension Mouse {
         case moved
         case exited
     }
-    @inline(__always)
+
     func mouseChange(event: ChangeEvent, position: Position2, delta: Position2, window: Window?) {
         switch event {
         case .entered, .moved:
@@ -174,7 +162,6 @@ extension Mouse {
         case buttonDown
         case buttonUp
     }
-    @inline(__always)
     func mouseClick(
         event: ClickEvent,
         button: MouseButton,
@@ -195,7 +182,6 @@ extension Mouse {
         self.button(button).setIsPressed((event == .buttonDown), multiClickTime: multiClickTime)
     }
 
-    @inline(__always)
     func mouseScrolled(
         delta: Position3,
         uiDelta: Position3,

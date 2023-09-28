@@ -17,7 +17,6 @@ extension HID {
             case touchUp
         }
 
-        @inlinable @inline(__always)
         public func anyTouch(withGesture gesture: Gesture) -> Touch? {
             return touches.first { touch in
                 return (gesture == .touchUp && touch.phase == .up)
@@ -25,17 +24,14 @@ extension HID {
             }
         }
 
-        @inlinable @inline(__always)
         public func anyTouch(withPhase phase: Touch.Phase) -> Touch? {
             return touches.first(where: { $0.phase == phase })
         }
 
-        @inline(__always)
         private func existingTouch(_ id: AnyHashable) -> Touch? {
             return touches.first(where: { $0.id == id })
         }
 
-        @usableFromInline
         internal func touchChange(
             id: AnyHashable,
             kind: TouchKind,
@@ -63,7 +59,6 @@ extension HID {
             nextTouches.insert(touch)
         }
 
-        @inline(__always)
         func update() {
             let oldTouches = touches
             touches = nextTouches

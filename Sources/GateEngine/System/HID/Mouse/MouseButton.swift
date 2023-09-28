@@ -27,24 +27,19 @@ public enum MouseButton: Hashable {
 
 extension Mouse {
     @MainActor public final class ButtonState {
-        @usableFromInline
         internal unowned let mouse: Mouse
-        @usableFromInline
         internal var currentReceipt: UInt8 = 0
 
-        @usableFromInline
         internal init(mouse: Mouse) {
             self.mouse = mouse
         }
 
         /// The location of the mouse in the windows native pixels
-        @inlinable @inline(__always)
         public var position: Position2? {
             return mouse.position
         }
 
         /// The location of the mouse in the window
-        @inlinable @inline(__always)
         public var interfacePosition: Position2? {
             return mouse.interfacePosition
         }
@@ -67,7 +62,6 @@ extension Mouse {
          - parameter gesture: A repetition based gesture to require for success.
          - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          */
-        @inlinable @inline(__always)
         public func isPressed(
             ifDifferent receipt: inout InputReceipts,
             andGesture gesture: Gesture? = nil
@@ -98,7 +92,6 @@ extension Mouse {
          - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
          */
-        @inlinable @inline(__always)
         public func whenPressed(
             ifDifferent receipt: inout InputReceipts,
             andGesture gesture: Gesture? = nil,

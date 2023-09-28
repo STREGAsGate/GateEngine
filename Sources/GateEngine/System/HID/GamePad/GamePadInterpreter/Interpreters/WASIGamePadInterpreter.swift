@@ -11,8 +11,7 @@ import DOM
 import Gamepad
 
 internal class WASIGamePadInterpreter: GamePadInterpreter {
-    @inline(__always)
-    var hid: HID { Game.shared.hid }
+    let hid: HID = Game.shared.hid
     var wGamepads: [Gamepad] = []
     init() {}
 

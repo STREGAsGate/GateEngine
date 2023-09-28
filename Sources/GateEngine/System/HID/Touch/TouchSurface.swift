@@ -11,7 +11,6 @@ extension HID {
     @MainActor public final class SurfaceDevices {
         public private(set) var surfaces: Set<TouchSurface> = []
 
-        @inline(__always)
         internal func surfaceForID(_ surfaceID: AnyHashable) -> TouchSurface {
             if let existing = surfaces.first(where: { $0.id == surfaceID }) {
                 return existing
@@ -21,7 +20,6 @@ extension HID {
             return new
         }
 
-        @inline(__always)
         func surfaceTouchChange(
             id: AnyHashable,
             event: TouchChangeEvent,
@@ -35,12 +33,10 @@ extension HID {
             )
         }
 
-        @inlinable @inline(__always)
         public var any: TouchSurface? {
             return surfaces.first(where: { $0.touches.isEmpty == false }) ?? surfaces.first
         }
 
-        @inline(__always)
         func update() {
             for surface in surfaces {
                 surface.update()
@@ -49,7 +45,6 @@ extension HID {
     }
 
     @MainActor public final class TouchSurface {
-        @usableFromInline
         nonisolated let id: AnyHashable
         public internal(set) var touches: Set<SurfaceTouch> = []
         internal var nextTouches: Set<SurfaceTouch> = []
@@ -63,7 +58,6 @@ extension HID {
             case touchUp
         }
 
-        @inlinable @inline(__always)
         public func anyTouch(if gesture: Gesture) -> SurfaceTouch? {
             return touches.first { touch in
                 return (gesture == .touchUp && touch.phase == .up)
@@ -71,17 +65,14 @@ extension HID {
             }
         }
 
-        @inlinable @inline(__always)
         public func anyTouch(withPhase phase: SurfaceTouch.Phase) -> SurfaceTouch? {
             return touches.first(where: { $0.phase == phase })
         }
 
-        @inline(__always)
         private func existingTouch(_ id: AnyHashable) -> SurfaceTouch? {
             return touches.first(where: { $0.id == id })
         }
 
-        @usableFromInline
         internal func touchChange(
             id: AnyHashable,
             event: TouchChangeEvent,
@@ -108,7 +99,6 @@ extension HID {
             nextTouches.insert(touch)
         }
 
-        @inline(__always)
         func update() {
             let oldTouches = touches
             touches = nextTouches
@@ -122,7 +112,6 @@ extension HID.TouchSurface: Hashable {
     nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
-    @_transparent
     nonisolated public static func == (lhs: HID.TouchSurface, rhs: HID.TouchSurface) -> Bool {
         return lhs.id == rhs.id
     }

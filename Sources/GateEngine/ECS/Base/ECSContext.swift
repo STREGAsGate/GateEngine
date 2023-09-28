@@ -6,79 +6,79 @@
  */
 
 @MainActor extension Game {
-    @inlinable @inline(__always)
+    @_transparent
     public var entities: ContiguousArray<Entity> {
         return ecs.sortedEntities()
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func insertEntity(_ entity: Entity) {
         ecs.insertEntity(entity)
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func removeEntity(_ entity: Entity) {
         ecs.removeEntity(entity)
     }
-    @inlinable @inline(__always) @discardableResult
+    @_transparent @discardableResult
     public func removeEntity(named name: String) -> Entity? {
         return ecs.removeEntity(named: name)
     }
-    @inlinable @inline(__always) @discardableResult
+    @_transparent @discardableResult
     public func removeEntity(where block: (Entity) -> (Bool)) -> Entity? {
         return ecs.removeEntity(where: block)
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func entity(named name: String) -> Entity? {
         return ecs.entity(named: name)
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func entity(withID id: ObjectIdentifier) -> Entity? {
         return ecs.entity(withID: id)
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func firstEntity(withComponent component: any Component.Type) -> Entity? {
         return ecs.firstEntity(withComponent: component)
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func system<T: System>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType) as! T
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func hasSystem<T: System>(ofType systemType: T.Type) -> Bool {
         return ecs.hasSystem(ofType: systemType)
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func system<T: RenderingSystem>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType) as! T
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func insertSystem(_ newSystem: System) {
         ecs.insertSystem(newSystem)
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func insertSystem(_ newSystem: RenderingSystem) {
         ecs.insertSystem(newSystem)
     }
-    @inlinable @inline(__always) @discardableResult
+    @_transparent @discardableResult
     public func insertSystem<T: System>(_ system: T.Type) -> T {
         return ecs.insertSystem(system) as! T
     }
-    @inlinable @inline(__always) @discardableResult
+    @_transparent @discardableResult
     public func insertSystem<T: RenderingSystem>(_ system: T.Type) -> T {
         return ecs.insertSystem(system) as! T
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func removeSystem(_ system: System) {
         ecs.removeSystem(system)
     }
-    @inlinable @inline(__always)
+    @_transparent
     public func removeSystem(_ system: RenderingSystem) {
         ecs.removeSystem(system)
     }
-    @inlinable @inline(__always) @discardableResult
+    @_transparent @discardableResult
     public func removeSystem<T: System>(_ system: T.Type) -> T? {
         return ecs.removeSystem(system) as? T
     }
-    @inlinable @inline(__always) @discardableResult
+    @_transparent @discardableResult
     public func removeSystem<T: RenderingSystem>(_ system: T.Type) -> T? {
         return ecs.removeSystem(system) as? T
     }
@@ -320,20 +320,19 @@ extension ECSContext {
 
 //MARK: Entity Management
 extension ECSContext {
-    @inlinable @inline(__always)
+    @usableFromInline @_transparent
     func insertEntity(_ entity: Entity) {
-        guard self.entities.contains(entity) == false else { return }
         self.entities.insert(entity)
     }
-    @inlinable @inline(__always) @discardableResult
+    @usableFromInline @discardableResult @_transparent
     func removeEntity(_ entity: Entity) -> Entity? {
         return self.entities.remove(entity)
     }
-    @inlinable @inline(__always) @discardableResult
+    @usableFromInline @discardableResult @_transparent
     func removeEntity(named name: String) -> Entity? {
         self.removeEntity(where: { $0.name == name })
     }
-    @inlinable @inline(__always) @discardableResult
+    @usableFromInline @discardableResult
     func removeEntity(where block: (Entity) -> (Bool)) -> Entity? {
         if let removed = self.entities.first(where: block) {
             self.entities.remove(removed)
@@ -341,15 +340,15 @@ extension ECSContext {
         }
         return nil
     }
-    @inlinable @inline(__always)
+    @usableFromInline @_transparent
     func entity(named name: String) -> Entity? {
         return entities.first(where: { $0.name == name })
     }
-    @inlinable @inline(__always)
+    @usableFromInline @_transparent
     func entity(withID id: ObjectIdentifier) -> Entity? {
         return entities.first(where: { $0.id == id })
     }
-    @inlinable @inline(__always)
+    @usableFromInline @_transparent
     func firstEntity(withComponent type: any Component.Type) -> Entity? {
         return entities.first(where: { $0.hasComponent(type) })
     }
@@ -452,7 +451,6 @@ extension ECSContext {
             self._renderingSystems.remove(at: index).teardown(game: game)
         }
     }
-    @_transparent
     func removeSystem(_ system: PlatformSystem) {
         if let index = self._platformSystems.firstIndex(where: { $0 === system }) {
             self._platformSystems.remove(at: index).teardown(game: game)

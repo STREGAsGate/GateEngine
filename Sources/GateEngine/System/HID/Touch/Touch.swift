@@ -19,7 +19,6 @@ import GameMath
         case cancelled
     }
 
-    @inlinable @inline(__always)
     public var normalizedPosition: Position2 {
         var p = position
         if let bounds = window?.size {

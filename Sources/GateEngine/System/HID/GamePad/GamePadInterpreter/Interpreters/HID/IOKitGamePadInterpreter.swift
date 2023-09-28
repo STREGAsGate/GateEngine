@@ -29,8 +29,7 @@ private class HIDController {
     }
 }
 internal class IOKitGamePadInterpreter: GamePadInterpreter {
-    @inline(__always)
-    var hid: HID { Game.shared.hid }
+    let hid: HID = Game.shared.hid
     init?() {}
 
     static let sdlDatabase = try! SDL2Database()

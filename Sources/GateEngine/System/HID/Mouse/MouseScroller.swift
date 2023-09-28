@@ -20,13 +20,10 @@ public enum MouseScroller: Hashable {
 
 extension Mouse {
     @MainActor public final class ScrollerState {
-        @usableFromInline
         internal unowned let mouse: Mouse
-        @usableFromInline
         internal var currentReceipt: UInt8 = 0
 
         private var mostRecentDevice: Int = 0
-        @usableFromInline
         internal var lastValueWasMomentum: Bool = false
 
         public enum Direction {
@@ -80,19 +77,16 @@ extension Mouse {
             }
         }
 
-        @usableFromInline
         internal init(mouse: Mouse) {
             self.mouse = mouse
         }
 
         /// The location of the mouse in the windows native pixels
-        @inlinable @inline(__always)
         public var position: Position2? {
             return mouse.position
         }
 
         /// The location of the mouse in the window
-        @inlinable @inline(__always)
         public var interfacePosition: Position2? {
             return mouse.interfacePosition
         }
@@ -103,7 +97,6 @@ extension Mouse {
          - parameter includeMomentum: When set to false, excludes values that were generated as momentum effects. Only works on some platforms (like macOS).
          - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          */
-        @inlinable @inline(__always)
         public func didScroll(
             ifDifferent receipt: inout InputReceipts,
             includingMomentum includeMomentum: Bool = false
@@ -128,7 +121,6 @@ extension Mouse {
          - parameter block: A code block, including this scroller, that is run if the request is true.
          - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          */
-        @inlinable @inline(__always)
         public func whenScrolled(
             ifDifferent receipt: inout InputReceipts,
             includingMomentum includeMomentum: Bool = false,

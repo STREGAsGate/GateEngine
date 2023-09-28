@@ -8,9 +8,7 @@
 import GameMath
 
 @MainActor public final class Keyboard {
-    @usableFromInline
     internal var modifiers: KeyboardModifierMask = []
-    @usableFromInline
     internal var buttons: [KeyboardKey: ButtonState] = [:]
 
     internal var activeStreams: Set<WeakCharacterStream> = []
@@ -52,7 +50,6 @@ import GameMath
 
     private var _pressedButtons: [(key: KeyboardKey, button: ButtonState)] = []
     /// All currently pressed keyboard key/button pairs
-    @inline(__always)
     public func pressedButtons() -> [(key: KeyboardKey, button: ButtonState)] {
         if needsUpdate.contains(.pressedButtons) {
             needsUpdate.remove(.pressedButtons)
@@ -94,13 +91,11 @@ import GameMath
 
 extension Keyboard {
     @MainActor public final class ButtonState: CustomStringConvertible {
-        @usableFromInline
         internal unowned let keyboard: Keyboard
         let key: KeyboardKey
         // true if the key is a representation instead of a physical key
         // such as .shift(anyVariation)
         let isKeyVirtual: Bool
-        @usableFromInline
         internal var currentReceipt: UInt8 = 0
 
         nonisolated public var description: String {
@@ -177,7 +172,6 @@ extension Keyboard {
             return "\(key)"
         }
 
-        @usableFromInline
         internal init(keyboard: Keyboard, key: KeyboardKey, isKeyVirtual: Bool) {
             self.keyboard = keyboard
             self.key = key
@@ -185,7 +179,6 @@ extension Keyboard {
         }
 
         /// A mask representing special keys that might alter the behavior of this key.
-        @inlinable @inline(__always)
         public var modifiers: KeyboardModifierMask {
             return keyboard.modifiers
         }
@@ -263,7 +256,6 @@ extension Keyboard {
          - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
          */
-        @inline(__always)
         public func isPressed(
             ifDifferent receipt: inout InputReceipts,
             andUsing modifiers: KeyboardModifierMask = []
@@ -334,7 +326,6 @@ extension Keyboard {
          - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
          - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
          */
-        @inlinable @inline(__always)
         public func whenPressed(
             ifDifferent receipt: inout InputReceipts,
             andUsing modifiers: KeyboardModifierMask = [],
@@ -348,7 +339,6 @@ extension Keyboard {
 }
 
 extension Keyboard {
-    @inline(__always)
     func keyboardDidHandle(
         key: KeyboardKey,
         character: Character?,
