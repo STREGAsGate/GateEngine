@@ -79,8 +79,6 @@ public final class Game {
         await self.delegate.didFinishLaunching(game: self, options: [])
         #endif
 
-        self.primeDeltaTime()
-
         #if !GATEENGINE_PLATFORM_EVENT_DRIVEN
         self.gameLoop()
         #endif
@@ -99,26 +97,24 @@ public final class Game {
 
     /// The current delta time as a Double
     @usableFromInline
-    internal var highPrecisionDeltaTime: Double = 0
+    internal var deltaTimeAccumulator: Double = 0
     private var previousTime: Double = 0
-
-    @inline(__always)
-    func primeDeltaTime() {
-        for _ in 0 ..< 2 {
-            let now: Double = Game.shared.platform.systemTime()
-            self.highPrecisionDeltaTime = now - self.previousTime
-            self.previousTime = now
-        }
-    }
 
     #if GATEENGINE_PLATFORM_EVENT_DRIVEN
     @MainActor internal func eventLoop(completion: @escaping () -> Void) {
+        let now: Double = Game.shared.platform.systemTime()
+        self.deltaTimeAccumulator += now - self.previousTime
+        self.previousTime = now
+        guard deltaTimeAccumulator >= 0.01 else {
+            completion()
+            return
+        }
         Task(priority: .high) { @MainActor in
-            let now: Double = Game.shared.platform.systemTime()
-            self.highPrecisionDeltaTime = now - self.previousTime
-            self.previousTime = now
+            let deltaTime = 0.01 * (deltaTimeAccumulator / 0.01)
+            deltaTimeAccumulator = deltaTimeAccumulator.truncatingRemainder(dividingBy: 0.01)
+            
             if await self.ecs.shouldRenderAfterUpdate(
-                withTimePassed: Float(highPrecisionDeltaTime)
+                withTimePassed: Float(deltaTime)
             ) {
                 Task(priority: .high) { @MainActor in
                     self.windowManager.drawWindows()

@@ -43,11 +43,9 @@ internal struct GeometryAttribute: Hashable {
 }
 
 extension GeometryBackend {
-    @inline(__always)
-    static func shaderAttributes(from geometries: ContiguousArray<Self>) -> ContiguousArray<
-        Shaders.CodeGenerator.InputAttribute
-    > {
+    static func shaderAttributes(from geometries: [Self]) -> ContiguousArray<Shaders.CodeGenerator.InputAttribute> {
         var attributes: ContiguousArray<Shaders.CodeGenerator.InputAttribute> = []
+        attributes.reserveCapacity(geometries.count * 8)
         for geometryIndex in geometries.indices {
             let geometry = geometries[geometryIndex]
             let geometryIndex = UInt8(geometryIndex)

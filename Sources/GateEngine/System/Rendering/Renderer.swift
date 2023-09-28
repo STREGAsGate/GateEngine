@@ -21,7 +21,6 @@ public enum RenderingAPI {
     @inline(__always)
     nonisolated public var api: RenderingAPI { _backend.renderingAPI }
 
-    @usableFromInline
     static let rectOriginCentered: Geometry = {
         let positions: [Float] = [
             -0.5, -0.5, 0.0,
@@ -51,7 +50,6 @@ public enum RenderingAPI {
         return Geometry(raw)
     }()
 
-    @usableFromInline
     static let rectOriginTopLeft: Geometry = {
         let positions: [Float] = [
             0.0, 0.0, 0.0,
@@ -81,7 +79,6 @@ public enum RenderingAPI {
         return Geometry(raw)
     }()
 
-    @inline(__always)
     func draw(
         _ renderTarget: any _RenderTargetProtocol,
         into destinationRenderTarget: any _RenderTargetProtocol,
@@ -151,12 +148,11 @@ public enum RenderingAPI {
         )
     }
 
-    @inline(__always)
     func draw(
         _ drawCommand: DrawCommand,
         camera: Camera?,
         matrices: Matrices,
-        renderTarget: any _RenderTargetProtocol
+        renderTarget: some _RenderTargetProtocol
     ) {
         self._backend.draw(
             drawCommand,
@@ -173,7 +169,7 @@ public enum RenderingAPI {
         _ drawCommand: DrawCommand,
         camera: Camera?,
         matrices: Matrices,
-        renderTarget: any _RenderTargetProtocol
+        renderTarget: some _RenderTargetProtocol
     )
 }
 

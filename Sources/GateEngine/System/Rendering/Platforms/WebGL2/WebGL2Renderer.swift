@@ -123,7 +123,7 @@ class WebGL2Renderer: RendererBackend {
         _ drawCommand: DrawCommand,
         camera: Camera?,
         matrices: Matrices,
-        renderTarget: any _RenderTargetProtocol
+        renderTarget: some _RenderTargetProtocol
     ) {
         let gl = WebGL2Renderer.context
         let geometries = ContiguousArray(drawCommand.geometries.map({ $0 as! WebGL2Geometry }))

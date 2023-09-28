@@ -18,7 +18,7 @@ public final class StateMachineComponent: Component {
         final class NoState: State {
             init() { }
             func apply(to entity: Entity, previousState: some State, game: Game, input: HID) { }
-            func update(for entity: Entity, inGame game: Game, input: HID, withTimePassed deltaTime: Double) { }
+            func update(for entity: Entity, inGame game: Game, input: HID, withTimePassed deltaTime: Float) { }
             func possibleNextStates(for entity: Entity, game: Game, input: HID) -> [any State.Type] {
                 return []
             }

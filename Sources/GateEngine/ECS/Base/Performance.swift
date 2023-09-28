@@ -142,14 +142,14 @@ extension ECSContext {
             let now = Game.shared.platform.systemTime()
             _renderingSystemsFrameTime += now - _renderingSystemsStart
             
-            _fpsCount += 1
-
             let duration = now - _fpsStart
             if duration > 1 {
                 fps = _fpsCount
                 _fpsStart = now
                 _fpsCount = 0
             }
+            
+            _fpsCount += 1
         }
         
         func finalizeRenderingSystemsFrameTime() {

@@ -47,7 +47,6 @@ class OpenGLRenderer: RendererBackend {
         let vertexShader: VertexShader
         let fragmentShader: FragmentShader
     }
-    @inline(__always)
     func openGLShader(
         vsh: VertexShader,
         fsh: FragmentShader,
@@ -127,9 +126,9 @@ class OpenGLRenderer: RendererBackend {
         _ drawCommand: DrawCommand,
         camera: Camera?,
         matrices: Matrices,
-        renderTarget: any _RenderTargetProtocol
+        renderTarget: some _RenderTargetProtocol
     ) {
-        let geometries = ContiguousArray(drawCommand.geometries.map({ $0 as! OpenGLGeometry }))
+        let geometries = drawCommand.geometries.map({ $0 as! OpenGLGeometry })
 
         #if GATEENGINE_DEBUG_RENDERING
         for geometry in geometries {
@@ -216,7 +215,6 @@ class OpenGLRenderer: RendererBackend {
 }
 
 extension OpenGLRenderer {
-    @inline(__always)
     private func setFlags(_ flags: DrawFlags) {
         switch flags.cull {
         case .disabled:
@@ -268,7 +266,6 @@ extension OpenGLRenderer {
         }
     }
 
-    @inline(__always)
     private func setWinding(_ winding: DrawFlags.Winding) {
         switch winding {
         case .clockwise:
@@ -278,7 +275,6 @@ extension OpenGLRenderer {
         }
     }
 
-    @inline(__always)
     private func setUniforms(_ matrices: Matrices, program: GLuint, generator: GLSLCodeGenerator) {
         if let vMatrixLocation = try? glGetUniformLocation(
             inProgram: program,
@@ -310,7 +306,6 @@ extension OpenGLRenderer {
         }
     }
 
-    @inline(__always)
     private func primitive(from primitive: DrawFlags.Primitive)
         -> OpenGL_GateEngine.OpenGL.Elements.Mode
     {
@@ -328,7 +323,6 @@ extension OpenGLRenderer {
         }
     }
 
-    @inline(__always)
     private func setTransforms(
         _ transforms: ContiguousArray<Transform3>,
         vbo: GLuint,
@@ -366,7 +360,6 @@ extension OpenGLRenderer {
         #endif
     }
 
-    @inline(__always)
     private func setMaterial(_ material: Material, generator: GLSLCodeGenerator, program: GLuint) {
         do {
             for index in material.channels.indices {
@@ -555,8 +548,7 @@ extension OpenGLRenderer {
         #endif
     }
 
-    @inline(__always)
-    private func setGeometries(_ geometries: ContiguousArray<OpenGLGeometry>, at index: inout Int) {
+    private func setGeometries(_ geometries: [OpenGLGeometry], at index: inout Int) {
         for geometry in geometries {
             for attributeIndex in geometry.attributes.indices {
                 let glIndex = GLuint(index)

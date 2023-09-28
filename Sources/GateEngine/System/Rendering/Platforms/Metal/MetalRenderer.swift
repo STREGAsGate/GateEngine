@@ -40,11 +40,11 @@ class MetalRenderer: RendererBackend {
         _ drawCommand: DrawCommand,
         camera: Camera?,
         matrices: Matrices,
-        renderTarget: any _RenderTargetProtocol
+        renderTarget: some _RenderTargetProtocol
     ) {
         let renderTarget = renderTarget.renderTargetBackend as! MetalRenderTarget
         let encoder = renderTarget.commandEncoder!
-        let geometries = ContiguousArray(drawCommand.geometries.map({ $0 as! MetalGeometry }))
+        let geometries = drawCommand.geometries.map({ $0 as! MetalGeometry })
         let data = createUniforms(drawCommand.material, camera, matrices)
 
         #if GATEENGINE_DEBUG_RENDERING
@@ -128,7 +128,7 @@ class MetalRenderer: RendererBackend {
         let depthWrite: DrawFlags.DepthWrite
     }
     var _storedDepthStencilStates: [DepthStencilStateKey: any MTLDepthStencilState] = [:]
-    @inline(__always)
+
     func getDepthStencilState(flags: DrawFlags) -> any MTLDepthStencilState {
         let key = DepthStencilStateKey(depthTest: flags.depthTest, depthWrite: flags.depthWrite)
         if let existing = _storedDepthStencilStates[key] {
@@ -139,7 +139,7 @@ class MetalRenderer: RendererBackend {
         return new
 
         @_transparent
-        func build() -> any MTLDepthStencilState {
+        func build() -> some MTLDepthStencilState {
             let depthStencilDescriptor = MTLDepthStencilDescriptor()
 
             switch flags.depthTest {
@@ -174,12 +174,11 @@ class MetalRenderer: RendererBackend {
         let blendMode: DrawFlags.BlendMode
     }
     var _storedRenderPipelineStates: [RenderPipelineStateKey: any MTLRenderPipelineState] = [:]
-    @inline(__always)
     func getRenderPipelineState(
         vsh: VertexShader,
         fsh: FragmentShader,
         flags: DrawFlags,
-        geometries: ContiguousArray<MetalGeometry>,
+        geometries: [MetalGeometry],
         library: some MTLLibrary
     ) -> any MTLRenderPipelineState {
         let key = RenderPipelineStateKey(
@@ -194,8 +193,7 @@ class MetalRenderer: RendererBackend {
         _storedRenderPipelineStates[key] = new
         return new
 
-        @inline(__always)
-        func buildRenderPipeline() -> any MTLRenderPipelineState {
+        func buildRenderPipeline() -> some MTLRenderPipelineState {
             let pipelineDescriptor = MTLRenderPipelineDescriptor()
 
             let vertexDescriptor = MTLVertexDescriptor()
@@ -326,11 +324,13 @@ extension MetalRenderer {
 }
 
 extension MetalRenderer {
-    @inline(__always)
+    #if !GATEENGINE_DEBUG_RENDERING
+    @_transparent
+    #endif
     func metalShader(
         vsh: VertexShader,
         fsh: FragmentShader,
-        geometries: ContiguousArray<MetalGeometry>,
+        geometries: [MetalGeometry],
         flags: DrawFlags
     ) -> MetalShader {
         let key = ShaderKey(vsh: vsh, fsh: fsh)
@@ -369,13 +369,15 @@ extension MetalRenderer {
         }
     }
 
-    @inline(__always)
+    #if !GATEENGINE_DEBUG_RENDERING
+    @_transparent
+    #endif
     private func setFlags(
         _ flags: DrawFlags,
         vsh: VertexShader,
         fsh: FragmentShader,
-        geometries: ContiguousArray<MetalGeometry>,
-        encoder: any MTLRenderCommandEncoder
+        geometries: [MetalGeometry],
+        encoder: some MTLRenderCommandEncoder
     ) {
         switch flags.cull {
         case .disabled:
@@ -391,8 +393,10 @@ extension MetalRenderer {
         encoder.setRenderPipelineState(shader.renderPipelineState)
     }
 
-    @inline(__always)
-    private func setWinding(_ winding: DrawFlags.Winding, encoder: any MTLRenderCommandEncoder) {
+    #if !GATEENGINE_DEBUG_RENDERING
+    @_transparent
+    #endif
+    private func setWinding(_ winding: DrawFlags.Winding, encoder: some MTLRenderCommandEncoder) {
         switch winding {
         case .clockwise:
             encoder.setFrontFacing(.clockwise)
@@ -401,10 +405,12 @@ extension MetalRenderer {
         }
     }
 
-    @inline(__always)
+    #if !GATEENGINE_DEBUG_RENDERING
+    @_transparent
+    #endif
     private func setUniforms(
         _ uniforms: ContiguousArray<UInt8>,
-        encoder: any MTLRenderCommandEncoder,
+        encoder: some MTLRenderCommandEncoder,
         vertexIndex: inout Int,
         fragmentIndex: inout Int
     ) {
@@ -428,8 +434,10 @@ extension MetalRenderer {
             fragmentIndex += 1
         }
     }
-
-    @inline(__always)
+    
+    #if !GATEENGINE_DEBUG_RENDERING
+    @_transparent
+    #endif
     private func primitive(from primitive: DrawFlags.Primitive) -> MTLPrimitiveType {
         switch primitive {
         case .point:
@@ -445,20 +453,24 @@ extension MetalRenderer {
         }
     }
 
-    @inline(__always)
+    #if !GATEENGINE_DEBUG_RENDERING
+    @_transparent
+    #endif
     private func setTextures(
-        _ textures: ContiguousArray<(any MTLTexture)?>,
-        encoder: any MTLRenderCommandEncoder
+        _ textures: ContiguousArray<(some MTLTexture)?>,
+        encoder: some MTLRenderCommandEncoder
     ) {
         for index in textures.indices {
             encoder.setFragmentTexture(textures[index], index: index)
         }
     }
 
-    @inline(__always)
+    #if !GATEENGINE_DEBUG_RENDERING
+    @_transparent
+    #endif
     private func createUniforms(_ material: Material, _ camera: Camera?, _ matricies: Matrices) -> (
         uniforms: ContiguousArray<UInt8>, materials: ContiguousArray<ShaderMaterial>,
-        textures: ContiguousArray<(any MTLTexture)?>
+        textures: ContiguousArray<(some MTLTexture)?>
     ) {
         var uniforms: ContiguousArray<UInt8> = []
         uniforms.reserveCapacity(16 * 2)
@@ -563,10 +575,12 @@ extension MetalRenderer {
         return (uniforms, materials, textures)
     }
 
-    @inline(__always)
+    #if !GATEENGINE_DEBUG_RENDERING
+    @_transparent
+    #endif
     private func setTransforms(
         _ transforms: ContiguousArray<Transform3>,
-        on encoder: any MTLRenderCommandEncoder,
+        on encoder: some MTLRenderCommandEncoder,
         at vertexIndex: inout Int
     ) {
         var instancedUniforms: ContiguousArray<InstancedUniforms> = []
@@ -601,10 +615,12 @@ extension MetalRenderer {
         vertexIndex += 1
     }
 
-    @inline(__always)
+    #if !GATEENGINE_DEBUG_RENDERING
+    @_transparent
+    #endif
     private func setMaterials(
         _ materials: ContiguousArray<ShaderMaterial>,
-        on encoder: any MTLRenderCommandEncoder,
+        on encoder: some MTLRenderCommandEncoder,
         vertexIndex: inout Int,
         fragmentIndex: inout Int
     ) {
@@ -629,10 +645,12 @@ extension MetalRenderer {
         fragmentIndex += 1
     }
 
-    @inline(__always)
+    #if !GATEENGINE_DEBUG_RENDERING
+    @_transparent
+    #endif
     private func setGeometries(
-        _ geometries: ContiguousArray<MetalGeometry>,
-        on encoder: any MTLRenderCommandEncoder,
+        _ geometries: [MetalGeometry],
+        on encoder: some MTLRenderCommandEncoder,
         at index: inout Int
     ) {
         for geometry in geometries {

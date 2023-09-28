@@ -230,17 +230,12 @@ final class AppKitWindow: WindowBacking {
 
         return displayLink!
     }()
-
+    
     func getFrameForTime(now: CVTimeStamp, outputTime: CVTimeStamp) -> CVReturn {
-        Task { @MainActor in
+        Task(priority: .high) { @MainActor in
             if let view = self.nsWindowController.window?.contentViewController?.view {
                 view.needsDisplay = true
             }
-            #if GATEENGINE_PLATFORM_EVENT_DRIVEN
-            Game.shared.eventLoop {
-
-            }
-            #endif
         }
         return kCVReturnSuccess
     }

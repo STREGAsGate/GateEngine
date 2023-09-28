@@ -55,7 +55,7 @@ final class DX12Renderer: RendererBackend {
         _ drawCommand: DrawCommand,
         camera: Camera?,
         matrices: Matrices,
-        renderTarget: any _RenderTargetProtocol
+        renderTarget: some _RenderTargetProtocol
     ) {
         let renderTarget: DX12RenderTarget = renderTarget.renderTargetBackend as! DX12RenderTarget
         let geometries: ContiguousArray<DX12Geometry> = ContiguousArray(

@@ -54,14 +54,14 @@ public class ResourceManager {
 
     let rawCacheIDGenerator = IDGenerator<UInt>()
 
-    var accumulatedSeconds: Double = 0
+    var accumulatedSeconds: Float = 0
 
     public let game: Game
     public init(game: Game) {
         self.game = game
     }
 
-    func update(withTimePassed deltaTime: Double) {
+    func update(withTimePassed deltaTime: Float) {
         accumulatedSeconds += deltaTime
         if accumulatedSeconds > 60 {
             accumulatedSeconds -= 60

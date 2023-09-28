@@ -12,13 +12,6 @@ import GameMath
     private var didSetup = false
     private(set) lazy var backgroundTask = BackgroundTask(system: self)
 
-    /// The current delta time as a Double
-    /// Use this instead of the System Float variant when keeping track of timers
-    @inlinable @inline(__always)
-    internal var highPrecisionDeltaTime: Double {
-        return Game.shared.highPrecisionDeltaTime
-    }
-
     required init() {}
 
     internal final func willUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) async {

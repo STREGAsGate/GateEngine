@@ -106,14 +106,14 @@ import GameMath
         public struct TileAnimation {
             let coordinate: TileMap.Layer.Coordinate
             let frames: [TileMap.Tile]
-            let duration: Double
-            var accumulatedTime: Double = 0
-            let timePerFrame: Double
+            let duration: Float
+            var accumulatedTime: Float = 0
+            let timePerFrame: Float
             var repeats: Bool
             
             var previousTileIndex: Int = -1
             
-            private mutating func append(deltaTime: Double) {
+            private mutating func append(deltaTime: Float) {
                 accumulatedTime += deltaTime
                 if repeats {
                     while accumulatedTime > duration {
@@ -123,7 +123,7 @@ import GameMath
                     accumulatedTime = duration
                 }
             }
-            internal mutating func getNewTile(advancingBy deltaTime: Double) -> TileMap.Tile? {
+            internal mutating func getNewTile(advancingBy deltaTime: Float) -> TileMap.Tile? {
                 self.append(deltaTime: deltaTime)
                 
                 let index = Int(accumulatedTime / timePerFrame)
@@ -134,7 +134,7 @@ import GameMath
                 return nil
             }
             
-            public init(coordinate: TileMap.Layer.Coordinate, frames: [TileMap.Tile], duration: Double, repeats: Bool = true) {
+            public init(coordinate: TileMap.Layer.Coordinate, frames: [TileMap.Tile], duration: Float, repeats: Bool = true) {
                 self.coordinate = coordinate
                 self.frames = frames
                 if duration == 0 {
@@ -142,7 +142,7 @@ import GameMath
                 }else{
                     self.duration = duration
                 }
-                self.timePerFrame = duration / Double(frames.count)
+                self.timePerFrame = duration / Float(frames.count)
                 self.repeats = repeats
             }
         }

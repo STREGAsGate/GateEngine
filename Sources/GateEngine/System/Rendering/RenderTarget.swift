@@ -291,6 +291,7 @@ extension RenderTargetProtocol {
 }
 
 extension RenderTargetProtocol {
+    @_transparent
     nonisolated public static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs === rhs
     }

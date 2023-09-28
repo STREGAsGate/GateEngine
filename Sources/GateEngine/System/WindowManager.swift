@@ -89,7 +89,6 @@ import GameMath
 
     internal var windowsThatRequestedDraw: [(window: Window, deltaTime: Float)] = []
 
-    @inline(__always)
     func drawWindows() {
         game.attributes.insert(.renderingIsPermitted)
         for pair: (window: Window, deltaTime: Float) in windowsThatRequestedDraw {
@@ -102,7 +101,6 @@ import GameMath
 }
 
 extension WindowManager {
-    @inline(__always)
     func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float) {
         window.didDrawSomething = false
         if let index = windowsThatRequestedDraw.firstIndex(where: { $0.window == window }) {
@@ -111,5 +109,10 @@ extension WindowManager {
         } else {
             self.windowsThatRequestedDraw.append((window, deltaTime))
         }
+        #if GATEENGINE_PLATFORM_EVENT_DRIVEN
+        Game.shared.eventLoop {
+
+        }
+        #endif
     }
 }

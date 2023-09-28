@@ -12,7 +12,7 @@ public final class StateMachineSystem: System {
             if stateMachineComponent.shouldApplyInitialState {
                 applyInitialStateIfNeeded(for: stateMachineComponent, of: entity, inGame: game, input: input)
             }
-            stateMachineComponent.stateMachine.updateState(for: entity, game: game, input: input, deltaTime: highPrecisionDeltaTime)
+            stateMachineComponent.stateMachine.updateState(for: entity, game: game, input: input, deltaTime: deltaTime)
         }
     }
     

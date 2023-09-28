@@ -7,17 +7,15 @@
 
 /// A Canvas is a drawing space with no depth and an orthographic camera.
 @MainActor public struct Canvas {
-    @usableFromInline let interfaceScale: Float
-    @usableFromInline internal var viewOrigin: Position2? = nil
-    @usableFromInline internal var clipRect: Rect? = nil
+    let interfaceScale: Float
+    internal var viewOrigin: Position2? = nil
+    internal var clipRect: Rect? = nil
 
-    @usableFromInline internal var size: Size2? = nil
-    @usableFromInline internal var camera: Camera? = nil
+    internal var size: Size2? = nil
+    internal var camera: Camera? = nil
 
-    @usableFromInline
     internal var drawCommands: ContiguousArray<DrawCommand> = []
 
-    @inlinable @inline(__always)
     public mutating func setCamera(_ camera: Camera, size: Size2) {
         self.camera = camera
         self.size = size
@@ -28,7 +26,6 @@
      
      - parameter viewOrigin: The top left corner location for the camera
      */
-    @inlinable @inline(__always)
     public mutating func setViewOrigin(_ viewOrigin: Position2) {
         self.viewOrigin = viewOrigin
     }
@@ -38,17 +35,14 @@
      
      - parameter clipRect: The area within this Rect will be drawn.
      */
-    @inlinable @inline(__always)
     public mutating func setClipRect(_ clipRect: Rect?) {
         self.clipRect = clipRect
     }
 
-    @inlinable @inline(__always)
     public mutating func insert(_ drawCommand: DrawCommand) {
         self.drawCommands.append(drawCommand)
     }
 
-    @inlinable @inline(__always)
     public mutating func insert(
         _ points: Points,
         pointSize: Float,
@@ -92,7 +86,6 @@
         drawCommands.append(command)
     }
 
-    @inlinable @inline(__always)
     public mutating func insert(
         _ lines: Lines,
         at position: Position2,
@@ -134,7 +127,6 @@
         drawCommands.append(command)
     }
 
-    @inlinable @inline(__always)
     public mutating func insert(
         _ rect: Rect,
         color: Color,
@@ -179,7 +171,6 @@
         drawCommands.append(command)
     }
 
-    @inlinable @inline(__always)
     public mutating func insert(
         _ sprite: Sprite,
         at position: Position2,
@@ -228,7 +219,6 @@
         drawCommands.append(command)
     }
 
-    @inlinable @inline(__always)
     public mutating func insert(
         _ text: Text,
         at position: Position2,
@@ -271,7 +261,6 @@
         drawCommands.append(command)
     }
 
-    @inlinable @inline(__always)
     public mutating func insert(
         _ geometry: Geometry,
         withMaterial material: Material,
@@ -309,7 +298,6 @@
      This function requires you to first call `setCamera(_:size:)`.
      - returns: A 2D position representing the location of a 3D object.
      */
-    @inlinable @inline(__always)
     public func convertFrom3DSpace(_ position: Position3) -> Position2 {
         guard let camera = camera else {
             preconditionFailure("Must set camera during `Canvas.init` to use \(#function).")
@@ -332,7 +320,6 @@
         return Position2(position.x, position.y)
     }
 
-    @inlinable @inline(__always)
     public func convertTo3DSpace(_ position: Position2) -> Ray3D {
         guard let camera = camera else {
             preconditionFailure("Must set camera during `Canvas.init` to use \(#function).")
@@ -401,7 +388,6 @@
         return drawCommands.isEmpty == false
     }
 
-    @inlinable @inline(__always)
     internal func matrices(withSize size: Size2) -> Matrices {
         let ortho = Matrix4x4(
             orthographicWithTop: 0,

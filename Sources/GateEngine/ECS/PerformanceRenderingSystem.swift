@@ -20,9 +20,9 @@ public final class PerformanceRenderingSystem: RenderingSystem {
             string += ", \(game.ecs.performance!.totalDroppedFrames) All Time Dropped"
         }
         string += "\n\n"
-        string += String(format: "%02dms Total Time", Int(systemsFrameTime + renderingSystemsFrameTime))
-        string += "\n\(String(format: "%02dms", Int(renderingSystemsFrameTime))) Rendering Systems"
-        string += "\n\(String(format: "%02dms", Int(systemsFrameTime))) Systems\n"
+        string += String(format: "%.1fms Total Systems Time", systemsFrameTime + renderingSystemsFrameTime)
+        string += "\n\(String(format: "%.1fms", renderingSystemsFrameTime)) Rendering Systems"
+        string += "\n\(String(format: "%.1fms", systemsFrameTime)) Systems\n"
         string += "\n\(game.entities.count) Entities,"
         string += " \(game.resourceManager.cache.geometries.count) Geometries,"
         string += " \(game.resourceManager.cache.textures.count) Textures\n"
@@ -30,7 +30,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         for statistic in game.ecs.performance!.averageSortedStatistics() {
             string += "\n"
             let duration = statistic.value
-            string += String(format: "%02dms ", Int(duration)) + statistic.key
+            string += String(format: "%.1fms ", duration) + statistic.key
         }
         text.string = string
     }

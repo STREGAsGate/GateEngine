@@ -12,7 +12,7 @@ public final class StateMachine {
         self.currentState = initialState.init()
     }
     
-    @MainActor internal func updateState(for entity: Entity, game: Game, input: HID, deltaTime: Double) {
+    @MainActor internal func updateState(for entity: Entity, game: Game, input: HID, deltaTime: Float) {
         currentState.update(for: entity, inGame: game, input: input, withTimePassed: deltaTime)
         guard currentState.canMoveToNextState(for: entity, game: game, input: input) else {return}
                 
@@ -34,7 +34,7 @@ public protocol State: AnyObject {
     init()
     
     @MainActor func apply(to entity: Entity, previousState: some State, game: Game, input: HID)
-    @MainActor func update(for entity: Entity, inGame game: Game, input: HID, withTimePassed deltaTime: Double)
+    @MainActor func update(for entity: Entity, inGame game: Game, input: HID, withTimePassed deltaTime: Float)
     
     @MainActor func canMoveToNextState(for entity: Entity, game: Game, input: HID) -> Bool
     @MainActor func possibleNextStates(for entity: Entity, game: Game, input: HID) -> [any State.Type]

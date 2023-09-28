@@ -12,7 +12,7 @@ public final class TileMapSystem: System {
                 if component.needsSetup {
                     self.setup(component)
                 }else{
-                    self.updateAnimations(component)
+                    self.updateAnimations(component, deltaTime: deltaTime)
                     self.rebuild(component)
                 }
             }
@@ -26,10 +26,10 @@ public final class TileMapSystem: System {
         component.layers = component.tileMap.layers.map({TileMapComponent.Layer(layer: $0)})
     }
     
-    func updateAnimations(_ component: TileMapComponent) {
+    func updateAnimations(_ component: TileMapComponent, deltaTime: Float) {
         for layerIndex in component.layers.indices {
             for animationIndex in component.layers[layerIndex].animations.indices {
-                if let tile = component.layers[layerIndex].animations[animationIndex].getNewTile(advancingBy: highPrecisionDeltaTime) {
+                if let tile = component.layers[layerIndex].animations[animationIndex].getNewTile(advancingBy: deltaTime) {
                     let coordinate = component.layers[layerIndex].animations[animationIndex].coordinate
                     component.layers[layerIndex].setTile(tile, at: coordinate)
                 }
