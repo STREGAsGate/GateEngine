@@ -95,7 +95,7 @@ public struct Color: Vector4 {
 
     @_transparent
     public func withAlpha(_ alpha: Float) -> Color {
-        return Self(self.red, self.green, self.blue, alpha)
+        return Self(self.red, self.green, self.blue, self.alpha * alpha)
     }
 }
 
