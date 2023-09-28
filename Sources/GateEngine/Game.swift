@@ -105,13 +105,13 @@ public final class Game {
         let now: Double = Game.shared.platform.systemTime()
         self.deltaTimeAccumulator += now - self.previousTime
         self.previousTime = now
-        guard deltaTimeAccumulator >= 0.01 else {
+        guard deltaTimeAccumulator >= 0.004166666667 else {
             completion()
             return
         }
         Task(priority: .high) { @MainActor in
-            let deltaTime = 0.01 * (deltaTimeAccumulator / 0.01)
-            deltaTimeAccumulator = deltaTimeAccumulator.truncatingRemainder(dividingBy: 0.01)
+            let deltaTime = 0.004166666667 * (deltaTimeAccumulator / 0.004166666667)
+            deltaTimeAccumulator -= deltaTime
             
             if await self.ecs.shouldRenderAfterUpdate(
                 withTimePassed: Float(deltaTime)
