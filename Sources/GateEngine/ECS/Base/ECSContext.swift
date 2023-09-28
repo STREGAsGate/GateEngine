@@ -115,31 +115,35 @@
     internal var platformSystems: [PlatformSystem] {
         if platformSystemsNeedSorting {
             platformSystemsNeedSorting = false
-            _platformSystems.sort(by: { (lhs, rhs) -> Bool in
-                let lhs = type(of: lhs)
-                let rhs = type(of: rhs)
-                return lhs.phase.rawValue <= rhs.phase.rawValue
-            })
-            _platformSystems.sort(by: { (lhs, rhs) -> Bool in
-                let lhs = type(of: lhs)
-                let rhs = type(of: rhs)
-                let lhsSO = lhs.sortOrder()?.rawValue
-                let rhsSO = rhs.sortOrder()?.rawValue
-                if lhsSO != nil || rhsSO != nil {
-                    if let lhsSO = lhsSO, let rhsSO = rhsSO {
-                        return lhsSO < rhsSO
-                    }
-                    if lhsSO != nil {
-                        return true
-                    }
-                    if rhsSO != nil {
-                        return true
-                    }
-                }
-                return false
-            })
+            self.sortPlatformSystems()
         }
         return _platformSystems
+    }
+    
+    func sortPlatformSystems() {
+        _platformSystems.sort(by: { (lhs, rhs) -> Bool in
+            let lhs = type(of: lhs)
+            let rhs = type(of: rhs)
+            return lhs.phase.rawValue <= rhs.phase.rawValue
+        })
+        _platformSystems.sort(by: { (lhs, rhs) -> Bool in
+            let lhs = type(of: lhs)
+            let rhs = type(of: rhs)
+            let lhsSO = lhs.sortOrder()?.rawValue
+            let rhsSO = rhs.sortOrder()?.rawValue
+            if lhsSO != nil || rhsSO != nil {
+                if let lhsSO = lhsSO, let rhsSO = rhsSO {
+                    return lhsSO < rhsSO
+                }
+                if lhsSO != nil {
+                    return true
+                }
+                if rhsSO != nil {
+                    return true
+                }
+            }
+            return false
+        })
     }
 
     private var systemsNeedSorting = true
@@ -147,24 +151,28 @@
     public var systems: [System] {
         if systemsNeedSorting {
             systemsNeedSorting = false
-            _systems.sort(by: { (lhs, rhs) -> Bool in
-                let lhs = type(of: lhs)
-                let rhs = type(of: rhs)
-                return lhs.phase.rawValue <= rhs.phase.rawValue
-            })
-            _systems.sort(by: { (lhs, rhs) -> Bool in
-                let lhsSO = type(of: lhs).sortOrder()?.rawValue
-                let rhsSO = type(of: rhs).sortOrder()?.rawValue
-                if let lhsSO = lhsSO, let rhsSO = rhsSO {
-                    return lhsSO < rhsSO
-                }
-                if lhsSO == nil && rhsSO != nil {
-                    return true
-                }
-                return false
-            })
+            self.sortSystems()
         }
         return _systems
+    }
+    
+    func sortSystems() {
+        _systems.sort(by: { (lhs, rhs) -> Bool in
+            let lhs = type(of: lhs)
+            let rhs = type(of: rhs)
+            return lhs.phase.rawValue <= rhs.phase.rawValue
+        })
+        _systems.sort(by: { (lhs, rhs) -> Bool in
+            let lhsSO = type(of: lhs).sortOrder()?.rawValue
+            let rhsSO = type(of: rhs).sortOrder()?.rawValue
+            if let lhsSO = lhsSO, let rhsSO = rhsSO {
+                return lhsSO < rhsSO
+            }
+            if lhsSO == nil && rhsSO != nil {
+                return true
+            }
+            return false
+        })
     }
 
     private var renderingSystemsNeedSorting = true
@@ -172,24 +180,28 @@
     public var renderingSystems: [RenderingSystem] {
         if renderingSystemsNeedSorting {
             renderingSystemsNeedSorting = false
-            _renderingSystems.sort(by: { (lhs, rhs) -> Bool in
-                let lhsSO = type(of: lhs).sortOrder()?.rawValue
-                let rhsSO = type(of: rhs).sortOrder()?.rawValue
-                if let lhsSO = lhsSO, let rhsSO = rhsSO {
-                    return lhsSO < rhsSO
-                }
-                if lhsSO == nil && rhsSO != nil {
-                    return true
-                }
-                return false
-            })
+            self.sortRenderingSystems()
         }
         return _renderingSystems
+    }
+    
+    func sortRenderingSystems() {
+        _renderingSystems.sort(by: { (lhs, rhs) -> Bool in
+            let lhsSO = type(of: lhs).sortOrder()?.rawValue
+            let rhsSO = type(of: rhs).sortOrder()?.rawValue
+            if let lhsSO = lhsSO, let rhsSO = rhsSO {
+                return lhsSO < rhsSO
+            }
+            if lhsSO == nil && rhsSO != nil {
+                return true
+            }
+            return false
+        })
     }
 
     private var entitiesDidChange: Bool = true
     @usableFromInline
-    private(set) var entities: Set<Entity> = [] {
+    private(set) var entities: Set<Entity> = .init(minimumCapacity: 16) {
         didSet {
             self.entitiesDidChange = true
         }
@@ -200,11 +212,15 @@
     func sortedEntities() -> ContiguousArray<Entity> {
         if entitiesDidChange {
             entitiesDidChange = false
-            _sortedEntities = ContiguousArray(
-                self.entities.sorted(by: { $0.priority.rawValue > $1.priority.rawValue })
-            )
+            self.sortEntities()
         }
         return _sortedEntities
+    }
+    
+    func sortEntities() {
+        _sortedEntities.removeAll(keepingCapacity: true)
+        _sortedEntities.append(contentsOf: entities)
+        _sortedEntities.sort(by: { $0.priority.rawValue > $1.priority.rawValue })
     }
 
     public private(set) var performance: Performance? = nil
