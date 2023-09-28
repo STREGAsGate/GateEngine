@@ -278,25 +278,22 @@ extension ECSContext {
             self.performance?.endCurrentStatistic()
         }
 
-        //Drop frame if less then 15fps
-        let dropFrame: Bool = deltaTime < 0.067
-        //Only drop 1 frame before requiring a frame
-        let shouldRender: Bool =
-            game.isHeadless ? false : previousFrameWasDropped ? true : dropFrame
+        // Drop frame if less then 15fps
+        let dropFrame: Bool = deltaTime > 0.0667
+        // Only drop 1 frame before requiring a frame
+        let shouldRender: Bool = game.isHeadless ? false : (previousFrameWasDropped ? true : !dropFrame)
 
         if previousFrameWasDropped {
             previousFrameWasDropped = false
-        } else if dropFrame {
+        }else if shouldRender == false {
             previousFrameWasDropped = true
         }
 
         if let performance = self.performance {
             performance.endSystems()
-            if shouldRender == false {
-                performance.finalizeSystemsFrameTime()
-                if dropFrame {
-                    performance.totalDroppedFrames += 1
-                }
+            performance.finalizeSystemsFrameTime()
+            if shouldRender == false && dropFrame {
+                performance.totalDroppedFrames += 1
             }
         }
 
@@ -306,12 +303,6 @@ extension ECSContext {
     func updateRendering(withTimePassed deltaTime: Float, window: Window) {
         if let performance = performance {
             performance.startRenderingSystems()
-        }
-        defer {
-            if let performance = performance {
-                performance.endSystems()
-                performance.finalizeSystemsFrameTime()
-            }
         }
 
         for system in self.renderingSystems {
@@ -323,7 +314,6 @@ extension ECSContext {
         if let performance = performance {
             performance.endRenderingSystems()
             performance.finalizeRenderingSystemsFrameTime()
-            performance.startSystems()
         }
     }
 }
