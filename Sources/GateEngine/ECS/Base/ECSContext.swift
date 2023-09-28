@@ -298,13 +298,12 @@ extension ECSContext {
             }
         }
 
-        let game = game
-
         for system in self.renderingSystems {
             self.performance?.beginStatForSystem(system)
             system.willRender(game: game, window: window, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
+        
         if let performance = performance {
             performance.endRenderingSystems()
             performance.finalizeRenderingSystemsFrameTime()

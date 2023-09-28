@@ -113,7 +113,7 @@ public final class Game {
 
     #if GATEENGINE_PLATFORM_EVENT_DRIVEN
     @MainActor internal func eventLoop(completion: @escaping () -> Void) {
-        Task { @MainActor in
+        Task(priority: .high) { @MainActor in
             let now: Double = Game.shared.platform.systemTime()
             self.highPrecisionDeltaTime = now - self.previousTime
             self.previousTime = now
@@ -134,7 +134,7 @@ public final class Game {
     }
     #else
     internal func gameLoop() {
-        Task { @MainActor in
+        Task(priority: .high) { @MainActor in
             let now: Double = Game.shared.platform.systemTime()
             self.highPrecisionDeltaTime = now - self.previousTime
             self.previousTime = now
