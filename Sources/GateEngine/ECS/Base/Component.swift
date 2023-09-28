@@ -11,8 +11,9 @@ public protocol Component {
 }
 
 public struct ComponentID: Equatable, Hashable {
-    static let idGenerator = IDGenerator<UInt>()
-    let value: UInt
+    static let idGenerator = IDGenerator<Int>(startValue: 0)
+    @usableFromInline
+    internal let value: Int
     public init() {
         self.value = Self.idGenerator.generateID()
     }
