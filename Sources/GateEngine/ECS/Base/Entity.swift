@@ -48,6 +48,11 @@ extension Entity {
     }
     
     @usableFromInline @_transparent
+    internal func hasComponent(at index: Int) -> Bool {
+        return componentIDs.contains(index)
+    }
+    
+    @usableFromInline @_transparent
     internal func expandComponentBankIfNeeded(forIndex index: Int) {
         if componentBank.count - 1 < index {
             componentBank.reserveCapacity(index)
@@ -60,16 +65,17 @@ extension Entity {
     /// - returns true if the entity has the component
     @_transparent
     public func hasComponent(_ type: any Component.Type) -> Bool {
-        return componentIDs.contains(type.componentID.value)
+        return hasComponent(at: type.componentID.value)
     }
 
     /// - returns The component, addind it to the entity if necessary
     public subscript<T: Component>(_ type: T.Type) -> T {
         @_transparent get {
+            let componentID = type.componentID.value
             #if DEBUG
-            Log.assert(self.hasComponent(type), "Component \"\(type)\" is not a member of this entity.")
+            Log.assert(hasComponent(at: componentID), "Component \"\(type)\" is not a member of this entity.")
             #endif
-            return getComponent(at: type.componentID.value) as! T
+            return getComponent(at: componentID) as! T
         }
         @_transparent set {
             self.insert(newValue)
@@ -80,13 +86,14 @@ extension Entity {
     /// - returns The existing component or nil if it's not present.
     @_transparent
     public func component<T: Component>(ofType type: T.Type) -> T? {
-        guard hasComponent(type) else {return nil}
-        return getComponent(at: type.componentID.value) as? T
+        let componentID = type.componentID.value
+        guard hasComponent(at: componentID) else {return nil}
+        return getComponent(at: componentID) as? T
     }
     
     @inline(__always)
     public func insert<T: Component>(_ component: T) {
-        let index = type(of: component).componentID.value
+        let index = T.self.componentID.value
         self.expandComponentBankIfNeeded(forIndex: index)
         self.componentBank[index] = component
         self.componentIDs.insert(index)
@@ -95,7 +102,8 @@ extension Entity {
     /// - returns true if an existing component was replaced
     @discardableResult
     public func insert<T: Component>(_ component: T, replacingExisting: Bool) -> Bool {
-        let exists = self.hasComponent(T.self)
+        let componentID = T.self.componentID.value
+        let exists = hasComponent(at: componentID)
         guard (replacingExisting && exists) || exists == false else { return false }
         self.insert(component)
         return true
