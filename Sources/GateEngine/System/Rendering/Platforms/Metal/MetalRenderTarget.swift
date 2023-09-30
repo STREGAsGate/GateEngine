@@ -142,6 +142,7 @@ class MetalRenderTarget: RenderTargetBackend {
 
         descriptor.depthAttachment.loadAction = .load
         descriptor.depthAttachment.storeAction = .store
+        descriptor.depthAttachment.clearDepth = 1.0
         descriptor.depthAttachment.texture = self.depthTexture
 
         return descriptor
