@@ -215,7 +215,7 @@ Click continue to ignore. Quit and launch again to ensure everything functions c
                     let keyFlags = (event.data1 & 0x0000_FFFF)
                     // Get the key state. 0xA is KeyDown, OxB is KeyUp
                     let keyIsDown = (((keyFlags & 0xFF00) >> 8)) == 0xA
-                    let keyState: KeyboardEvent = isDown ? .keyDown : .keyUp
+                    let keyState: KeyboardEvent = keyIsDown ? .keyDown : .keyUp
                     let keyRepeat: Bool = (keyFlags & 0x1) != 0
 
                     let key: KeyboardKey
