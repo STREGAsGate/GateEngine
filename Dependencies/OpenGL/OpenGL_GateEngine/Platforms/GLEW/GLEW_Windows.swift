@@ -112,7 +112,7 @@ import GLEW
 @_transparent @usableFromInline internal var GL_NEVER: Int32 {return GLEW.GL_NEVER}
 @_transparent @usableFromInline internal var GL_LESS: Int32 {return GLEW.GL_LESS}
 @_transparent @usableFromInline internal var GL_EQUAL: Int32 {return GLEW.GL_EQUAL}
-@_transparent @usableFromInline internal var GL_LEQUAL: Int32 {return GLEW.GL_EQUAL}
+@_transparent @usableFromInline internal var GL_LEQUAL: Int32 {return GLEW.GL_LEQUAL}
 @_transparent @usableFromInline internal var GL_GREATER: Int32 {return GLEW.GL_GREATER}
 @_transparent @usableFromInline internal var GL_NOTEQUAL: Int32 {return GLEW.GL_NOTEQUAL}
 @_transparent @usableFromInline internal var GL_GEQUAL: Int32 {return GLEW.GL_GEQUAL}

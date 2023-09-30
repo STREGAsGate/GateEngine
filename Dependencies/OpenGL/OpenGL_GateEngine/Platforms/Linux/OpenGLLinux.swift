@@ -115,7 +115,7 @@ import OpenGL_Linux
 @_transparent @usableFromInline internal var GL_NEVER: Int32 {return OpenGL_Linux.GL_NEVER}
 @_transparent @usableFromInline internal var GL_LESS: Int32 {return OpenGL_Linux.GL_LESS}
 @_transparent @usableFromInline internal var GL_EQUAL: Int32 {return OpenGL_Linux.GL_EQUAL}
-@_transparent @usableFromInline internal var GL_LEQUAL: Int32 {return OpenGL_Linux.GL_EQUAL}
+@_transparent @usableFromInline internal var GL_LEQUAL: Int32 {return OpenGL_Linux.GL_LEQUAL}
 @_transparent @usableFromInline internal var GL_GREATER: Int32 {return OpenGL_Linux.GL_GREATER}
 @_transparent @usableFromInline internal var GL_NOTEQUAL: Int32 {return OpenGL_Linux.GL_NOTEQUAL}
 @_transparent @usableFromInline internal var GL_GEQUAL: Int32 {return OpenGL_Linux.GL_GEQUAL}
