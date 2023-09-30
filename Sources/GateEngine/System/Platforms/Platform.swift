@@ -46,7 +46,9 @@ internal protocol InternalPlatform: AnyObject, Platform {
 #if GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 extension InternalPlatform {
     static func getStaticSearchPaths(delegate: any GameDelegate) -> [URL] {
-        let executableURL = URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent()
+        let executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+        let executableDirectoryURL = executableURL.deletingLastPathComponent()
+        
         #if canImport(Darwin)
         let bundleExtension: String = "bundle"
         #else
@@ -80,7 +82,8 @@ extension InternalPlatform {
 
         do {
             // Add resource bundels alongside the executable
-            let rootContents = try FileManager.default.contentsOfDirectory(atPath: executableURL.path).map({executableURL.appendingPathComponent($0)})
+            let rootContents = try FileManager.default.contentsOfDirectory(atPath: executableDirectoryURL.path)
+                .map({executableDirectoryURL.appendingPathComponent($0)})
             for url in rootContents {
                 if url.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame {
                     resourceFolders.append(url)
@@ -125,16 +128,16 @@ extension InternalPlatform {
         #endif
 
         // Add the executables own path
-        resourceFolders.insert(executableURL, at: 0)
+        resourceFolders.append(executableDirectoryURL)
 
         // Add GateEngine bundles resource path
-        if let gateEnigneResources: URL = Bundle.module.resourceURL {
-            resourceFolders.insert(gateEnigneResources, at: 0)
+        if let gateEngineResources: URL = Bundle.module.resourceURL {
+            resourceFolders.append(gateEngineResources)
         }
 
         // Add the main bundles resource path
         if let mainResources: URL = Bundle.main.resourceURL {
-            resourceFolders.insert(mainResources, at: 0)
+            resourceFolders.append(mainResources)
         }
 
         // Add the main bundles path
@@ -161,7 +164,7 @@ extension InternalPlatform {
         })
 
         // Remove duplicates
-        resourceFolders = Array(OrderedSet(resourceFolders))
+        resourceFolders = Array(Set(resourceFolders))
 
         // Remove unreachable
         resourceFolders = resourceFolders.compactMap({
@@ -173,6 +176,25 @@ extension InternalPlatform {
             }
             return nil
         })
+        
+        // Attempt to move the main game resource bundle to the front of the line
+        let executableName = executableURL.lastPathComponent + "." + bundleExtension
+        if let index = resourceFolders.firstIndex(where: {$0.path.contains(executableName)}) {
+            let probablyMainBundle = resourceFolders.remove(at: index)
+            resourceFolders.insert(probablyMainBundle, at: 0)
+        }
+        
+        // Move GateEngine's bundle to the end so it's searched less often
+        if let index = resourceFolders.firstIndex(where: {$0.path.contains("GateEngine_GateEngine")}) {
+            resourceFolders.append(resourceFolders.remove(at: index))
+        }
+        
+        // Move the executables directory to the end so it's searched last
+        // Most users will use the Swift Package Manager resources feature
+        let executableDirectory = executableURL.deletingLastPathComponent()
+        if let index = resourceFolders.firstIndex(where: {$0 == executableDirectory}) {
+            resourceFolders.append(resourceFolders.remove(at: index))
+        }
 
         if resourceFolders.isEmpty {
             Log.error(
