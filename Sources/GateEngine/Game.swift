@@ -95,27 +95,45 @@ public final class Game {
         self.insertSystem(CacheSystem.self)
     }
 
-    /// The current delta time as a Double
-    @usableFromInline
-    internal var deltaTimeAccumulator: Double = 0
+    private var deltaTimeAccumulator: Double = 0
     private var previousTime: Double = 0
+    
+    @inline(__always)
+    private func getNextDeltaTime() -> Double? {
+        // 240fps
+        let stepDuration: Double = /* 1/240 */ 0.004166666667
+        let now: Double = Game.shared.platform.systemTime()
+        let newDeltaTimeAccumulator: Double = self.deltaTimeAccumulator + (now - self.previousTime)
+        if newDeltaTimeAccumulator < stepDuration {
+            return nil
+        }
 
+        self.deltaTimeAccumulator = newDeltaTimeAccumulator
+        self.previousTime = now
+        let deltaTime = stepDuration * (self.deltaTimeAccumulator / stepDuration)
+        self.deltaTimeAccumulator -= deltaTime
+        // Discard times larger then 12 fps. This will cause slow down but will also reduce
+        // of the chance of the simulation from breaking
+        if deltaTime > /* 1/12 */ 0.08333333333 {
+            return nil
+        }
+        
+        return deltaTime
+    }
+    
     #if GATEENGINE_PLATFORM_EVENT_DRIVEN
     @MainActor internal func eventLoop(completion: @escaping () -> Void) {
-        let now: Double = Game.shared.platform.systemTime()
-        self.deltaTimeAccumulator += now - self.previousTime
-        self.previousTime = now
-        guard deltaTimeAccumulator >= 0.004166666667 else {
+        guard let deltaTime = getNextDeltaTime() else {
             completion()
             return
         }
+        
+        // Add a high priority Task so we can jump the line if other Tasks were started
         Task(priority: .high) { @MainActor in
-            let deltaTime = 0.004166666667 * (deltaTimeAccumulator / 0.004166666667)
-            deltaTimeAccumulator -= deltaTime
-            
             if await self.ecs.shouldRenderAfterUpdate(
                 withTimePassed: Float(deltaTime)
             ) {
+                // Add a high priority Task so we can jump the line if other Tasks were started
                 Task(priority: .high) { @MainActor in
                     self.windowManager.drawWindows()
                     completion()
@@ -130,12 +148,15 @@ public final class Game {
     }
     #else
     internal func gameLoop() {
+        guard let deltaTime = getNextDeltaTime() else {
+            Task(priority: .high) { @MainActor in
+                self.gameLoop()
+            }
+            return
+        }
         Task(priority: .high) { @MainActor in
-            let now: Double = Game.shared.platform.systemTime()
-            self.highPrecisionDeltaTime = now - self.previousTime
-            self.previousTime = now
             if await self.ecs.shouldRenderAfterUpdate(
-                withTimePassed: Float(highPrecisionDeltaTime)
+                withTimePassed: Float(deltaTime)
             ) {
                 Task(priority: .high) { @MainActor in
                     self.windowManager.drawWindows()

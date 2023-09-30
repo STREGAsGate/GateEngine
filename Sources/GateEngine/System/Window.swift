@@ -131,19 +131,19 @@ public struct WindowOptions: OptionSet {
 
     /// The current delta time as a Double
     /// Use this instead of the System Float variant when keeping track of timers
-    public var highPrecisionDeltaTime: Double = 0
+    public var deltaTime: Double = 0
 
     var frame: UInt = 0
     internal func vSyncCalled() {
         let now: Double = Game.shared.platform.systemTime()
-        self.highPrecisionDeltaTime = now - previousTime
+        self.deltaTime = now - previousTime
         self.previousTime = now
         // Positive time change and minimum of 10 fps
-        guard highPrecisionDeltaTime > 0 && highPrecisionDeltaTime < 0.1 else { return }
+        guard deltaTime > 0 && deltaTime < 0.1 else { return }
 
         Game.shared.windowManager.window(
             self,
-            wantsUpdateForTimePassed: Float(highPrecisionDeltaTime)
+            wantsUpdateForTimePassed: Float(deltaTime)
         )
         self.draw(frame)
 

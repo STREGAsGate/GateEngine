@@ -14,16 +14,11 @@
         return Game.shared
     }
 
-    /// The current delta time as a Double
-    /// Use this instead of the System Float variant when keeping track of timers
-    public internal(set) var highPrecisionDeltaTime: Double = 0
-
     required public init() {
 
     }
 
     internal final func willRender(game: Game, window: Window, withTimePassed deltaTime: Float) {
-        self.highPrecisionDeltaTime = window.highPrecisionDeltaTime
         if didSetup == false {
             didSetup = true
             setup(game: game)

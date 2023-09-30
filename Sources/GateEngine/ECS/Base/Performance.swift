@@ -54,10 +54,6 @@ extension ECSContext {
         }
 
         func prepareForReuse() {
-            let now = Game.shared.platform.systemTime()
-            frameTime = now - _frameTimeStart
-            _frameTimeStart = now
-            
             currentIndex = 0
             cumulatedStatistics[currentIndex].removeAll(keepingCapacity: true)
         }
@@ -122,6 +118,14 @@ extension ECSContext {
             mutating func end() {
                 self.endDate = Game.shared.platform.systemTime()
             }
+        }
+        
+        func startFrame() {
+            _frameTimeStart = Game.shared.platform.systemTime()
+        }
+        
+        func endFrame() {
+            frameTime = Game.shared.platform.systemTime() - _frameTimeStart
         }
         
         func startSystems() {

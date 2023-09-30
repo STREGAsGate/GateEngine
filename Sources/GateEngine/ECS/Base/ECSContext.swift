@@ -250,14 +250,10 @@ extension ECSContext {
     func shouldRenderAfterUpdate(withTimePassed deltaTime: Float) async -> Bool {
         let game = game
         let input = game.hid
-
-        // Discard spiked times
-        guard deltaTime < 1.0 else {
-            game.ecs.performance?.totalDroppedFrames += 1
-            return false
-        }
+        
         if let performance = performance {
             performance.prepareForReuse()
+            performance.startFrame()
             performance.startSystems()
         }
         for system in self.platformSystems {
@@ -278,8 +274,8 @@ extension ECSContext {
             self.performance?.endCurrentStatistic()
         }
 
-        // Drop frame if less then 15fps
-        let dropFrame: Bool = deltaTime > 0.0667
+        // Drop frame if less then 12fps
+        let dropFrame: Bool = deltaTime > /* 1/12 */ 0.08333333333
         // Only drop 1 frame before requiring a frame
         let shouldRender: Bool = game.isHeadless ? false : (previousFrameWasDropped ? true : !dropFrame)
 
