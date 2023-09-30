@@ -11,12 +11,15 @@ public final class PerformanceRenderingSystem: RenderingSystem {
     }
 
     lazy var text: Text = Text(string: "Accumulating Statistics...", pointSize: 20, color: .green)
-    func rebuildText() {
+    func rebuildText() -> Bool {
         let performance = game.ecs.performance!
         let systemsFrameTime = performance.systemsFrameTime
         let renderingSystemsFrameTime = performance.renderingSystemsFrameTime
         let totalSystemTime = systemsFrameTime + renderingSystemsFrameTime
         let frameTime = performance.frameTime * 1000
+        
+        // Prevent division by zero
+        guard totalSystemTime != 0 else {return false}
         
         var string: String = "\(performance.fps) FPS"
         if performance.totalDroppedFrames > 0 {
@@ -39,6 +42,8 @@ public final class PerformanceRenderingSystem: RenderingSystem {
             string += String(format: "%02d%% ", Int((duration / totalSystemTime) * 100)) + statistic.key
         }
         text.string = string
+        
+        return true
     }
 
     let tickDuration: Float = 3
@@ -46,8 +51,10 @@ public final class PerformanceRenderingSystem: RenderingSystem {
     public override func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
         cumulativeTime += deltaTime
         if cumulativeTime > tickDuration {
-            rebuildText()
-            cumulativeTime = 0
+            let didRebuild = rebuildText()
+            if didRebuild {
+                cumulativeTime = 0
+            }
         }
 
         guard text.isReady else { return }
