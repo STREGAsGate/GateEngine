@@ -153,7 +153,6 @@ class OpenGLRenderer: RendererBackend {
         #endif
 
         setFlags(drawCommand.flags)
-        setWinding(drawCommand.flags.winding)
         setUniforms(matrices, program: program, generator: generator)
         setMaterial(drawCommand.material, generator: generator, program: program)
 
@@ -226,7 +225,13 @@ extension OpenGLRenderer {
             glEnable(capability: .cullFace)
             glCullFace(.front)
         }
-        glFrontFacing(OpenGL.FaceWinding.clockwise)
+        
+        switch flags.winding {
+        case .clockwise:
+            glFrontFacing(.clockwise)
+        case .counterClockwise:
+            glFrontFacing(.counterClockwise)
+        }
 
         glEnable(capability: .depthTest)
         switch flags.depthTest {
@@ -263,15 +268,6 @@ extension OpenGLRenderer {
                 sourceAlpha: .one,
                 destinationAlpha: .oneMinusSourceAlpha
             )
-        }
-    }
-
-    private func setWinding(_ winding: DrawFlags.Winding) {
-        switch winding {
-        case .clockwise:
-            glFrontFacing(.clockwise)
-        case .counterClockwise:
-            glFrontFacing(.counterClockwise)
         }
     }
 
