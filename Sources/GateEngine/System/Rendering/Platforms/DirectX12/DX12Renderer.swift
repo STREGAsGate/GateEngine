@@ -58,9 +58,7 @@ final class DX12Renderer: RendererBackend {
         renderTarget: some _RenderTargetProtocol
     ) {
         let renderTarget: DX12RenderTarget = renderTarget.renderTargetBackend as! DX12RenderTarget
-        let geometries: ContiguousArray<DX12Geometry> = ContiguousArray(
-            drawCommand.geometries.map({ $0 as! DX12Geometry })
-        )
+        let geometries = drawCommand.geometries.map({ $0 as! DX12Geometry })
         let commandList: D3DGraphicsCommandList = renderTarget.commandList
         let data = createUniforms(drawCommand.material, camera, matrices)
         let shader: DX12Renderer.DXShader = getShader(
@@ -184,7 +182,7 @@ final class DX12Renderer: RendererBackend {
 extension DX12Renderer {
     @inline(__always)
     private func setGeometries(
-        _ geometries: ContiguousArray<DX12Geometry>,
+        _ geometries: [DX12Geometry],
         on commandList: D3DGraphicsCommandList,
         at index: inout UInt32
     ) {
@@ -494,7 +492,7 @@ extension DX12Renderer {
         vsh: VertexShader,
         fsh: FragmentShader,
         flags: DrawFlags,
-        geometries: ContiguousArray<DX12Geometry>,
+        geometries: [DX12Geometry],
         textureCount srvCount: UInt32
     ) -> DXShader {
         let key: DX12Renderer.ShaderKey = ShaderKey(
@@ -548,7 +546,7 @@ extension DX12Renderer {
         vsh: VertexShader,
         fsh: FragmentShader,
         flags: DrawFlags,
-        geometries: ContiguousArray<DX12Geometry>,
+        geometries: [DX12Geometry],
         rootSignature: D3DRootSignature
     ) -> D3DPipelineState {
         do {
