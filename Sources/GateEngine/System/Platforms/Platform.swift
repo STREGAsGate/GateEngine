@@ -46,6 +46,7 @@ internal protocol InternalPlatform: AnyObject, Platform {
 #if GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
 extension InternalPlatform {
     static func getStaticSearchPaths(delegate: any GameDelegate) -> [URL] {
+        let executableURL = URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent()
         #if canImport(Darwin)
         let bundleExtension: String = "bundle"
         #else
@@ -78,7 +79,16 @@ extension InternalPlatform {
         var resourceFolders: [URL] = []
 
         do {
-            for bundleURL in bundleURLs {
+            // Add resource bundels alongside the executable
+            let rootContents = try FileManager.default.contentsOfDirectory(atPath: executableURL.path).map({executableURL.appendingPathComponent($0)})
+            for url in rootContents {
+                if url.pathExtension.caseInsensitiveCompare(bundleExtension) == .orderedSame {
+                    resourceFolders.append(url)
+                }
+            }
+            
+            // Add resource bundles withing resource bundles
+            for bundleURL in bundleURLs + resourceFolders {
                 let path = bundleURL.path
                 if FileManager.default.fileExists(atPath: path) {
                     let contents = try FileManager.default.contentsOfDirectory(atPath: path)
@@ -115,10 +125,7 @@ extension InternalPlatform {
         #endif
 
         // Add the executables own path
-        resourceFolders.insert(
-            URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent(),
-            at: 0
-        )
+        resourceFolders.insert(executableURL, at: 0)
 
         // Add GateEngine bundles resource path
         if let gateEnigneResources: URL = Bundle.module.resourceURL {
