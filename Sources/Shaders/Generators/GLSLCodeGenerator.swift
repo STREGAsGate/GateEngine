@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if DEBUG || (canImport(OpenGL_GateEngine) || canImport(WebGL2))
+#if DEBUG || (canImport(OpenGL_GateEngine) || os(WASI))
 
 public final class GLSLCodeGenerator: CodeGenerator {
     public enum GLSLVersion: CustomStringConvertible {
