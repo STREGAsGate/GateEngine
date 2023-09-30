@@ -122,7 +122,7 @@ public final class Game {
                 }
             } else {
                 #if GATEENGINE_DEBUG_RENDERING
-                Log.warn("Frame Dropped", "DeltaTime:", highPrecisionDeltaTime)
+                Log.warn("Frame Dropped", "DeltaTime:", deltaTime)
                 #endif
                 completion()
             }

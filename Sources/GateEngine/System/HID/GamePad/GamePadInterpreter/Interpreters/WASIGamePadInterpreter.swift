@@ -47,7 +47,7 @@ internal class WASIGamePadInterpreter: GamePadInterpreter {
     func update() {}
 
     func endInterpreting() {
-        (globalThis as WindowEventHandlers).ongamepadconnected = nil
+        (globalThis as any WindowEventHandlers).ongamepadconnected = nil
         globalThis.ongamepaddisconnected = nil
     }
 

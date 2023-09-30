@@ -126,7 +126,7 @@ class WebGL2Renderer: RendererBackend {
         renderTarget: some _RenderTargetProtocol
     ) {
         let gl = WebGL2Renderer.context
-        let geometries = ContiguousArray(drawCommand.geometries.map({ $0 as! WebGL2Geometry }))
+        let geometries = drawCommand.geometries.map({ $0 as! WebGL2Geometry })
 
         #if GATEENGINE_DEBUG_RENDERING
         for geometry in geometries {
@@ -487,7 +487,7 @@ extension WebGL2Renderer {
 
     @inline(__always)
     private func setGeometries(
-        _ geometries: ContiguousArray<WebGL2Geometry>,
+        _ geometries: [WebGL2Geometry],
         at index: inout Int,
         in gl: WebGL2RenderingContext
     ) {
