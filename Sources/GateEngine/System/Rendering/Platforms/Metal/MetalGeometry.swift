@@ -14,7 +14,7 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
     let attributes: ContiguousArray<GeometryAttribute>
     let buffers: ContiguousArray<any MTLBuffer>
     let indicesCount: Int
-    var indexBuffer: any MTLBuffer {
+    var indexBuffer: some MTLBuffer {
         return buffers.last!
     }
     required init(geometry: RawGeometry) {

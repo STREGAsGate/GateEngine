@@ -23,7 +23,7 @@ public class MutableGeometry: Geometry {
 
     private func load() {
         guard let rawGeometry = rawGeometry else { return }
-        Task {
+        Task(priority: .high) {
             guard let cache = Game.shared.resourceManager.geometryCache(for: cacheKey) else {
                 return
             }

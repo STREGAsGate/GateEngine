@@ -34,8 +34,6 @@ public final class Sampler2D: ShaderValue {
     }
 
     public func documentIdentifierInputData() -> [Int] {
-        var values = operation?.documentIdentifierInputData() ?? []
-        
-        return values
+        return operation?.documentIdentifierInputData() ?? []
     }
 }

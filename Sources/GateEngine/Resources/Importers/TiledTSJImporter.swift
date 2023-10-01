@@ -39,7 +39,7 @@ fileprivate struct TSJFile: Decodable {
             }
             
             init(from decoder: any Decoder) throws {
-                var container = try decoder.container(keyedBy: CodingKeys.self)
+                let container = try decoder.container(keyedBy: CodingKeys.self)
                 self.name = try container.decode(String.self, forKey: .name)
                 self.type = try container.decode(String.self, forKey: .type)
             
