@@ -9,11 +9,12 @@ import LinuxSupport
 
 final class X11Window: WindowBacking {
     weak var window: Window!
-    let xWindow: LinuxSupport.Window
-    var xDisplay: OpaquePointer {
+    nonisolated let xWindow: LinuxSupport.Window
+    @inline(__always)
+    nonisolated var xDisplay: OpaquePointer {
         return Self.xDisplay
     }
-    let glxContext: GLXContext
+    nonisolated let glxContext: GLXContext
     var state: Window.State = .hidden
 
     // Stoted Metadata
@@ -211,7 +212,8 @@ final class X11Window: WindowBacking {
     }
 
     deinit {
-        self.close()
+        XDestroyWindow(xDisplay, xWindow)
+        XCloseDisplay(xDisplay)
         glXMakeCurrent(xDisplay, xWindow, nil)
         glXDestroyContext(xDisplay, glxContext)
     }
