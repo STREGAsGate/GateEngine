@@ -12,8 +12,8 @@ GateEngine includes intuitive APIs for loading resources, handling user inputs, 
 | **Android** | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Android.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Android.yml) | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
 | [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html)³ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/HTML5.yml?label=Swift%205.8)](https://github.com/STREGAsGate/GateEngine/actions/workflows/HTML5.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
 
-<sub>
 Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
+<sub>
 </br>¹Windows support for Swift is in development. Latest Swift toolchain recommended.
 </br>²Developed and tested using Ubuntu (Debian). Fedora compatibility is unknown.
 </br>³Targeting recent versions of Safari, FireFox, Edge, and Chrome.
@@ -26,7 +26,7 @@ GateEngine is designed to give game developers access to approachable and intuit
 GateEngine has a custom math library completely coded in Swift. 
 GameMath allows developers to write math functions using a spoken language style API. 
 GameMath uses context aware types like `Position3`, `Direction3`, and `Size3` instead of a catch all `vec3` type. 
-This adds an additional layer of understanding to APIs due the inherent context that each type provides.
+This adds an additional layer of understanding to APIs due to the inherent context each type provides.
 ```swift
 let position: Position3 = Position3(0, 1, 0) * Size3(1, 1, 1)
 ...
@@ -40,8 +40,9 @@ let halfway = source.interpolated(to: destination, .linear(0.5))
 ### Resources
 GateEngine has a simple and intuitive resource loading and caching API. 
 Resources can be constructed instantly and are non-blocking. 
-The reference returned is a cache handle and creating multiple instance of the same resource will return the same cache handle. 
-So you don't need to worry about managing your resources; you can simply create them wherever you need.
+The reference returned is a cache handle and creating multiple instances of the same resource will return the same cache handle. 
+So you don't need to worry about managing your resources. 
+You can simply create resources wherever you need.
 ```swift
 // Load geometry
 let geometry = Geometry(path: "model.obj")
@@ -50,20 +51,31 @@ let geometry = Geometry(path: "model.obj")
 let theSameGeometry = Geometry(path: "model.obj")
 ```
 A resource state lets you know when a resource is ready to be used. 
-In many places the resource state check is handled automatically, like when rendering. 
-The renderer will simply skip resources that aren't available. 
+In many situations the resource state is checked automatically, like when rendering. 
+The renderer will automatically skip resources that aren't ready.
 But in some situations you may need to check the resource state manually.
 ```swift
-if resource.state == .ready {
+let tileMap = TileMap(path: "tilemap.tmj")
+...
+if tileMap.state == .ready {
     // ready to be accessed
 }
 ```
 
-GateEngine tucks Error handling away because a resource failing to load is usually a development error in games; it's not typically a runtime error. 
-As such, writing do-try-catch for every resource would become tedious. 
-GateEngine places errors in the resource state which allows you to code the game as if the resource is a value type.
+GateEngine tucks error handling away. 
+A resource failing to load is usually a development error in games. 
+It's not typically a runtime error that needs to be handled.
 
-But if you would like to design fail-able resource handling, you can do so by checking for the error in the state.
+Writing do-try-catch for every resource would become tedious so GateEngine places errors in the resource state.
+This allows you to code the game as if the resource was a value type.
+
+Resource errors are logged automatically so you don't usually need to check them.
+```sh
+[GateEngine] warning: Resource "tileSet.tsj" failedToLocate
+[GateEngine] warning: Resource "tileMap.tmj" failedToLocate
+```
+
+But if you would like to design a fail-able resource handling mechanism, you can do so by checking for the error in the resource state.
 ```swift
 if case .failed(let error) = resource.state {
     // This error was already output as a warning
@@ -71,8 +83,7 @@ if case .failed(let error) = resource.state {
 ```
 
 ### Rendering
-GatEngine uses native rendering backends like DirectX, Metal, and OpenGL. 
-But you will not need to interact with them directly because GateEngine uses a high level rendering API designed to be flexible and customizable. 
+GateEngine uses a high level rendering API designed to be flexible and customizable. 
 Rendering is done in the order things are added allowing you to easily reason about the outcome.
 ```swift
 // Create a 2D draw container
@@ -160,7 +171,7 @@ It used a scene graph and only worked on Apple devices using OpenGL.
 
 ![Engine Creation 01](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation01.jpg?raw=true)
 
-I eventually created a deferred renderer, which is a technique that can reduce work for extremely complicated triple-A games. 
+I created a deferred renderer, which is a technique that can reduce work for extremely complicated triple-A games. 
 At the time I thought this was the greatest thing ever and I really enjoyed learning about.
 
 ![Engine Creation 02](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation02.jpg?raw=true)
@@ -170,29 +181,33 @@ Being able to see results on screen is very motivating and I'm sure that's why m
 
 ![Engine Creation 03](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation03.jpg?raw=true)
 
-And finally I added shadow and normal mapping.
+And then I added shadow and normal mapping.
 
 ![Engine Creation 04](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation04.jpg?raw=true)
 
-I eventually added skinning and UI. 
-I created a 3D model of myself as a test and found some old game characters online as well. 
-This is an early attempt at loading files from the collada format. Something was still a little off, but I did eventually fix it =P
+Eventually I added skinning and UI.
+And I created a 3D model of myself as a test. 
+This is an early attempt at loading files from the COLLADA format.
+Something was still a little off, but I did eventually fix it 😜
 
 ![Engine Creation 05](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation05.gif?raw=true)
 
-And I still needed to actually build the "engine" part. At this point the engine was just a graphics simulation. 
+And I still needed to actually build the "engine" part. At this point the engine was just a graphics simulation.
 Drawing stuff is actually a fairly small portion of what a game engine does.
 I eventually learned about collision and different data techniques like Entity-Component-System.
 
 And it's here where I started the re-writes...
 
-Developing an engine is a large learning process. Every time you come up with a good way to do things, you will come up with a better way before you're done implementing the previous way.
-At the begining iterations are complete rewrites and over time the iterations become more fine grained.
+Developing an engine is a large learning process. 
+Every time you come up with a good way to do things, you will come up with a better way before you're done implementing the previous way.
+At the beginning iterations are complete rewrites and over time the iterations become more fine grained.
 
 Slowly, my skill at making engines caught up to the designs I was creating and GateEngine began to stabilize. 
-It was at this point that I realized I wasn't making any games. I was just building tech demos.
+It was at this point that I realized I wasn't making any games. 
+I was just building tech demos.
 
-So I decided on my first 3D game. Espionage is a 3D stealth action game that I'm still working on today. It's inspired by the games I grew up with, and it's the kind of game I always wanted to make.
+So I decided on my first 3D game. Espionage is a 3D stealth action game that I'm still working on today. 
+It's inspired by the games I grew up with, and it's the kind of game I always wanted to make.
 
 ![Espionage Screenshot](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EspionageScreenshot.jpg?raw=true)
 
@@ -200,7 +215,7 @@ It's a very big project and it will likely take me a very long time to finish it
 I personally prefer large projects. 
 
 I haven't yet been enticed to join a game jam, but perhaps that would be fun experience to try at some point. 
-</br>
 Maybe we'll have a GateJam someday!
 
-Anyway, GateEngine was a massive undertaking, and was created to be enjoyed. So go make something awesome of your own!
+Anyway, GateEngine was a massive undertaking, and was created to be enjoyed. 
+So go make something awesome of your own!
