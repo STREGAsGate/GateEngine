@@ -23,7 +23,10 @@ Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
 GateEngine is designed to give game developers access to approachable and intuitive APIs to code a game using Swift.
 
 ### Math
-GateEngine has a custom math library completely coded in Swift. GameMath allows developers to write math functions using a spoken language style API. GameMath uses context aware types like `Position3`, `Direction3`, and `Size3` instead of a catch all `vector` type. This adds an addition layer of understanding to APIs due the inherent context that each type provides.
+GateEngine has a custom math library completely coded in Swift. 
+GameMath allows developers to write math functions using a spoken language style API. 
+GameMath uses context aware types like `Position3`, `Direction3`, and `Size3` instead of a catch all `vec3` type. 
+This adds an additional layer of understanding to APIs due the inherent context that each type provides.
 ```swift
 let position: Position3 = Position3(0, 1, 0) * Size3(1, 1, 1)
 ...
@@ -35,7 +38,10 @@ let halfway = source.interpolated(to: destination, .linear(0.5))
 ```
 
 ### Resources
-GateEngine has a simple and intuitive resource loading and caching API. Resources can be constructed instantly and are non-blocking. The reference returned is a cache handle and creating multiple instance of the same resource will return the same cache handle. So you don't need to worry about managing your resources; you can simply create them wherever you need.
+GateEngine has a simple and intuitive resource loading and caching API. 
+Resources can be constructed instantly and are non-blocking. 
+The reference returned is a cache handle and creating multiple instance of the same resource will return the same cache handle. 
+So you don't need to worry about managing your resources; you can simply create them wherever you need.
 ```swift
 // Load geometry
 let geometry = Geometry(path: "model.obj")
@@ -43,16 +49,21 @@ let geometry = Geometry(path: "model.obj")
 // Reused the same cache as above. No load required.
 let theSameGeometry = Geometry(path: "model.obj")
 ```
-A resource state lets you know when a resource is ready to be used. In many places the resource state check is handled automatically, like when rendering. The renderer will simply skip resources that aren't available. But in some situations you may need to check the resource state manually.
+A resource state lets you know when a resource is ready to be used. 
+In many places the resource state check is handled automatically, like when rendering. 
+The renderer will simply skip resources that aren't available. 
+But in some situations you may need to check the resource state manually.
 ```swift
 if resource.state == .ready {
     // ready to be accessed
 }
 ```
 
-GateEngine tucks Error handling away because, a resource failing to load is usually a development error in games; it's not typically a runtime error. As such, writing do-try-catch for every resource would become tedious. GateEngine places errors in the resource state which allows you to simply code the game as if the resource a value type.
+GateEngine tucks Error handling away because a resource failing to load is usually a development error in games; it's not typically a runtime error. 
+As such, writing do-try-catch for every resource would become tedious. 
+GateEngine places errors in the resource state which allows you to code the game as if the resource is a value type.
 
-But if you would like to design a fail-able resource handling you can do so by checking for the error.
+But if you would like to design fail-able resource handling, you can do so by checking for the error in the state.
 ```swift
 if case .failed(let error) = resource.state {
     // This error was already output as a warning
@@ -60,7 +71,9 @@ if case .failed(let error) = resource.state {
 ```
 
 ### Rendering
-GatEngine uses native rendering backends like DirectX, Metal, and OpenGL. But you will not need to interact with them directly because GateEngine uses a high level rendering API designed to be flexible and customizable. Rendering is done in the order things are added allowing you to easily reason about the outcome.
+GatEngine uses native rendering backends like DirectX, Metal, and OpenGL. 
+But you will not need to interact with them directly because GateEngine uses a high level rendering API designed to be flexible and customizable. 
+Rendering is done in the order things are added allowing you to easily reason about the outcome.
 ```swift
 // Create a 2D draw container
 var canvas = Canvas()
@@ -74,9 +87,11 @@ window.insert(canvas)
 <sub>Advanced users can also leverage the lower level DrawCommand API for even more customizability.</sub>
 
 ### Shaders
-In most cases, shaders are handled automatically and there's no need to make any. However if you do need to make a custom shader, GateEngine provides an easy and intuitive solution.
+In most cases, shaders are handled automatically. 
+However if you need to make a custom shader, GateEngine provides an easy and intuitive solution.
 
-GateEngine uses a custom designed Swift based shader API. This shader API allows you to write your shaders in Swift directly within your project. The shaders automatically work on every platform and there is no cross-compile tools or files to mess with.
+GateEngine uses a Swift based shader API that allows you to write your shaders directly within your project. 
+The shaders automatically work on every platform, and there is no cross-compile tools or files to mess with.
 ```swift
 // "Vertex Colors" vertex shader written in Swift
 let vsh = VertexShader()
@@ -105,7 +120,7 @@ Add the package to your project like any other package and you're done.
 ```
 
 ### Windows Specific Setup
-Swift 5.9.0 Only: A linker error for `dinput.lib` can be fixed with a workaround [here](https://github.com/apple/swift/issues/68887).
+Swift 5.9.0 Only: A linker error for dinput.lib can be fixed with a workaround [here](https://github.com/apple/swift/issues/68887).
 
 ### Linux Specific Setup
 For Linux you must install dev packages for OpenGL and OpenAL.
@@ -167,7 +182,7 @@ This is an early attempt at loading files from the collada format. Something was
 
 And I still needed to actually build the "engine" part. At this point the engine was just a graphics simulation. 
 Drawing stuff is actually a fairly small portion of what a game engine does.
-I eventually learned about collision and different data techniques like Entity, Component, System.
+I eventually learned about collision and different data techniques like Entity-Component-System.
 
 And it's here where I started the re-writes...
 
