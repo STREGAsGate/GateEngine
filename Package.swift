@@ -158,7 +158,9 @@ let package = Package(
                         settings.append(.define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.wasi])))
                         #endif
 
-                        // Use upcoming Swift Language Features
+                        #if false // Experimental and upcomming langauge feature.
+                        // These should be disabled for releases.
+                        // These are to get a headstart on the next Swift versions.
                         // https://www.swift.org/swift-evolution/#?upcoming=true
                         settings.append(contentsOf: [
                             .enableUpcomingFeature("DisableOutwardActorInference"),
@@ -170,6 +172,7 @@ let package = Package(
                             
                             .enableExperimentalFeature("StrictConcurrency=complete"),
                         ])
+                        #endif
                         
                         #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
