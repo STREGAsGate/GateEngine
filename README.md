@@ -159,7 +159,7 @@ And finally I added shadow and normal mapping.
 
 I eventually added skinning and UI. I created a 3D model of myself as a test and found some old game characters online as well.
 </br>
-https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation05.mp4
+![Engine Creation 05](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation05.gif?raw=true)
 
 At this point the engine was just a graphics simulation. And it's here where I started the re-writes...
 
