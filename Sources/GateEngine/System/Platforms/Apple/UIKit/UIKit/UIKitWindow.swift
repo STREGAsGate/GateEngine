@@ -77,7 +77,7 @@ final class UIKitWindow: WindowBacking {
         Game.shared.platform.applicationRequestedWindow = false
     }
 
-    lazy private(set) var displayLink: CADisplayLink = {
+    nonisolated lazy private(set) var displayLink: CADisplayLink = {
         if let displayLink = self.uiWindow.screen.displayLink(
             withTarget: self,
             selector: #selector(self.getFrame(_:))
