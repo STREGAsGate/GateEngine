@@ -36,6 +36,9 @@ sudo apt-get install freeglut3-dev
 sudo apt-get install libopenal-dev
 ```
 
+### Windows Extra Setup
+Swift 5.9.0 Only: A link error for dinput.lib can be solved by following the workaround [here](https://github.com/apple/swift/issues/68887).
+
 ## Examples
 A suite of example projects is available at [Gate Engine Demos](https://github.com/STREGAsGate/GateEngineDemos)</a>.
 
