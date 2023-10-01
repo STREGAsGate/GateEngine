@@ -25,7 +25,7 @@ GateEngine is designed to give game developers access to approachable and intuit
 ### Math
 GateEngine has a custom math library completely coded in Swift. 
 GameMath allows developers to write math functions using a spoken language style API. 
-GameMath uses context aware types like `Position3`, `Direction3`, and `Size3` instead of a catch all `vec3` type. 
+GameMath uses context aware types like `Position3`, `Direction3`, and `Size3`. 
 This adds an additional layer of understanding to APIs due to the inherent context each type provides.
 ```swift
 let position: Position3 = Position3(0, 1, 0) * Size3(1, 1, 1)
@@ -196,14 +196,14 @@ And I still needed to actually build the "engine" part. At this point the engine
 Drawing stuff is actually a fairly small portion of what a game engine does.
 I eventually learned about collision and different data techniques like Entity-Component-System.
 
-And it's here where I started the re-writes...
+And thats when I started the re-writes...
 
 Developing an engine is a large learning process. 
-Every time you come up with a good way to do things, you will come up with a better way before you're done implementing the previous way.
-At the beginning iterations are complete rewrites and over time the iterations become more fine grained.
+Every time you come up with a good way to do it, you will come up with a better way before you're done implementing the previous way.
+At the beginning, iterations are complete rewrites and over time the iterations become more fine grained.
 
 Slowly, my skill at making engines caught up to the designs I was creating and GateEngine began to stabilize. 
-It was at this point that I realized I wasn't making any games. 
+It was at this point that I realized I wasn't making any games.
 I was just building tech demos.
 
 So I decided on my first 3D game. Espionage is a 3D stealth action game that I'm still working on today. 
