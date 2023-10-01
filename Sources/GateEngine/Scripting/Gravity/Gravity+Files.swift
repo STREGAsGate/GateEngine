@@ -19,7 +19,7 @@ internal func filenameCallback(
     }
 }
 
-@MainActor @preconcurrency internal func loadFileCallback(
+internal func loadFileCallback(
     file: UnsafePointer<CChar>!,
     size: UnsafeMutablePointer<Int>!,
     fileID: UnsafeMutablePointer<UInt32>!,
