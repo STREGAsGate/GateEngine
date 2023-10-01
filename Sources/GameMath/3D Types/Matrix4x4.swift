@@ -6,7 +6,7 @@
  */
 
 #if GameMathUseSIMD
-public struct Matrix4x4 {
+public struct Matrix4x4: Sendable {
     @usableFromInline internal var storage: [SIMD4<Float>]
     @usableFromInline internal init(storage: [SIMD4<Float>]) {
         self.storage = storage
@@ -40,7 +40,7 @@ public struct Matrix4x4 {
     }
 }
 #else
-public struct Matrix4x4 {
+public struct Matrix4x4: Sendable {
     public var a: Float, b: Float, c: Float, d: Float
     public var e: Float, f: Float, g: Float, h: Float
     public var i: Float, j: Float, k: Float, l: Float

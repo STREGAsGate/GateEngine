@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct AxisAlignedBoundingBox3D: Collider3D {
+public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
     @inlinable @inline(__always)
     public var volume: Float {
         return self.radius.x * self.radius.y * self.radius.z

@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct BoundingEllipsoid2D: Collider2D {
+public struct BoundingEllipsoid2D: Collider2D, Sendable {
     internal var _radius: Size2
     internal var _offset: Position2
     

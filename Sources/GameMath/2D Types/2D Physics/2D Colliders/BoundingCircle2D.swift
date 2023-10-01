@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct BoundingCircle2D: Collider2D {
+public struct BoundingCircle2D: Collider2D, Sendable {
     @usableFromInline
     internal var _radius: Float
     @usableFromInline

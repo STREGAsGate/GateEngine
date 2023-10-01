@@ -10,7 +10,7 @@ import simd
 #endif
 
 #if GameMathUseSIMD
-public struct Quaternion: Vector4, SIMD {
+public struct Quaternion: Vector4, SIMD, Sendable {
     public typealias Scalar = Float
     public typealias MaskStorage = SIMD4<Float>.MaskStorage
     public typealias ArrayLiteralElement = Scalar
@@ -80,7 +80,7 @@ public struct Quaternion: Vector4, SIMD {
     }
 }
 #else
-public struct Quaternion: Vector4 {
+public struct Quaternion: Vector4, Sendable {
     public var x, y, z, w: Float
     
     public init(_ x: Float, _ y: Float, _ z: Float, _ w: Float) {

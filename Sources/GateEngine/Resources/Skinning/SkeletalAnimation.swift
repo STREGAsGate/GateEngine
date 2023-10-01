@@ -350,7 +350,7 @@ public protocol SkeletalAnimationImporter: AnyObject {
     static func canProcessFile(_ file: URL) -> Bool
 }
 
-public struct SkeletalAnimationImporterOptions: Equatable, Hashable {
+public struct SkeletalAnimationImporterOptions: Equatable, Hashable, Sendable {
     public var subobjectName: String? = nil
 
     public static func named(_ name: String) -> Self {

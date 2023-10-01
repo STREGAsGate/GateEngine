@@ -5,16 +5,14 @@
  * http://stregasgate.com
  */
 
-import func Foundation.floor
-
-public final class CollisionTriangle {
+public struct CollisionTriangle: Sendable {
     public let positions: [Position3]
     public let colors: [Color]
     public let normal: Direction3
     public let _attributes: UInt32
     
-    public private(set) lazy var plane: Plane3D = Plane3D(self)
-    public private(set) lazy var center: Position3 = (p1 + p2 + p3) / Position3(3.0)
+    public let plane: Plane3D
+    public let center: Position3
     
     public static var attributeParser = {(u: Float, v: Float, section: UInt32) -> UInt32 in
         let range: Float = 3
@@ -32,13 +30,17 @@ public final class CollisionTriangle {
     public init(_ p1: Position3, _ p2: Position3, _ p3: Position3, _ c1: Color = .white, _ c2: Color = .white, _ c3: Color = .white, normal: Direction3? = nil, attributes: UInt32 = 0) {
         self.positions = [p1, p2, p3]
         self.colors = [c1, c2, c3]
-        self.normal = normal ?? Direction3((p2 - p1).cross(p3 - p1)).normalized
+        let normal = normal ?? Direction3((p2 - p1).cross(p3 - p1)).normalized
+        let center = (p1 + p2 + p3) / Position3(3.0)
+        self.normal = normal
         self._attributes = attributes
+        self.plane = Plane3D(origin: center, normal: normal)
+        self.center = (p1 + p2 + p3) / Position3(3.0)
     }
 }
 
 public extension CollisionTriangle {
-    convenience init(positions: [Position3], colors: [Color], offset: Position3 = .zero, attributeUV: [Position2]) {
+    init(positions: [Position3], colors: [Color], offset: Position3 = .zero, attributeUV: [Position2]) {
         var attributes: UInt32 = 0
         for index in 0 ..< attributeUV.count {
             let uv = attributeUV[index]
@@ -324,32 +326,33 @@ extension CollisionTriangle: Collider3D {
 }
 
 extension CollisionTriangle: Hashable {
-    final public func hash(into hasher: inout Hasher) {
+    @_transparent
+    nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine(positions)
     }
     
     @_transparent
-    final public class func ==(lhs: CollisionTriangle, rhs: CollisionTriangle) -> Bool {
+    public static func ==(lhs: CollisionTriangle, rhs: CollisionTriangle) -> Bool {
         return lhs.positions == rhs.positions
     }
 }
 
 public extension CollisionTriangle {
     @_transparent
-    final class func +(lhs: CollisionTriangle, rhs: Position3) -> CollisionTriangle {
+    static func +(lhs: CollisionTriangle, rhs: Position3) -> CollisionTriangle {
         return CollisionTriangle(lhs.p1 + rhs, lhs.p2 + rhs, lhs.p3 + rhs, lhs.c1, lhs.c2, lhs.c3, normal: lhs.normal, attributes: lhs._attributes)
     }
     @_transparent
-    final class func +=(lhs: inout CollisionTriangle, rhs: Position3) {
+    static func +=(lhs: inout CollisionTriangle, rhs: Position3) {
         lhs = lhs + rhs
     }
     
     @_transparent
-    final class func *(lhs: CollisionTriangle, rhs: Matrix4x4) -> CollisionTriangle {
+    static func *(lhs: CollisionTriangle, rhs: Matrix4x4) -> CollisionTriangle {
         return CollisionTriangle(lhs.p1 * rhs, lhs.p2 * rhs, lhs.p3 * rhs, lhs.c1, lhs.c2, lhs.c3, normal: nil, attributes: lhs._attributes)
     }
     @_transparent
-    final class func *=(lhs: inout CollisionTriangle, rhs: Matrix4x4) {
+    static func *=(lhs: inout CollisionTriangle, rhs: Matrix4x4) {
         lhs = lhs * rhs
     }
 }
@@ -366,7 +369,7 @@ extension CollisionTriangle: Codable {
         try container.encode(_attributes)
     }
     
-    public convenience init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let floats: [Float] = try container.decode([Float].self)
         let attributes = try container.decode(UInt32.self)

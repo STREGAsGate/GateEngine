@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct AxisAlignedBoundingBox2D: Collider2D {
+public struct AxisAlignedBoundingBox2D: Collider2D, Sendable {
     @usableFromInline
     internal var _radius: Size2
     @usableFromInline

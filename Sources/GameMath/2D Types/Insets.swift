@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct Insets {
+public struct Insets: Sendable {
     public var top: Float
     public var leading: Float
     public var bottom: Float

@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public protocol Collider2D: Codable {
+public protocol Collider2D: Codable, Sendable {
     var center: Position2 {get}
     ///The translation difference from node centroid to geometry centroid
     var offset: Position2 {get}

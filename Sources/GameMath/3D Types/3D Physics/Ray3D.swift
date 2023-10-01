@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct Ray3D {
+public struct Ray3D: Sendable {
     public var origin: Position3
     public var direction: Direction3
     public init(from origin: Position3, toward direction: Direction3) {

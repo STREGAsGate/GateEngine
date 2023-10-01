@@ -11,7 +11,7 @@ import class Foundation.Scanner
 
 public typealias Colour = Color
 
-public struct Color: Vector4 {
+public struct Color: Vector4, Sendable {
     public var red: Float
     public var green: Float
     public var blue: Float

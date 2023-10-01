@@ -6,7 +6,7 @@
  */
 
 #if GameMathUseSIMD
-public struct Position2: Vector2 {
+public struct Position2: Vector2, Sendable {
     @usableFromInline
     var storage: SIMD2<Float>
     
@@ -36,7 +36,7 @@ public struct Position2: Vector2 {
     }
 }
 #else
-public struct Position2: Vector2 {
+public struct Position2: Vector2, Sendable {
     public var x: Float
     public var y: Float
     

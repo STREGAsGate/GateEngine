@@ -167,7 +167,7 @@ public struct WindowOptions: OptionSet {
 }
 
 @usableFromInline
-internal protocol WindowBacking: AnyObject {
+@MainActor internal protocol WindowBacking: AnyObject {
     var state: Window.State { get }
 
     var title: String? { get set }
@@ -186,7 +186,7 @@ internal protocol WindowBacking: AnyObject {
     func show()
     func close()
 
-    @MainActor func createWindowRenderTargetBackend() -> any RenderTargetBackend
+    func createWindowRenderTargetBackend() -> any RenderTargetBackend
 }
 
 extension Window {

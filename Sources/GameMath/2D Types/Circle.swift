@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct Circle {
+public struct Circle: Sendable {
     public var center: Position2
     public var radius: Float
 

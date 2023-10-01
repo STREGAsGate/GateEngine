@@ -9,7 +9,7 @@
 import simd
 #endif
 
-public struct InterpolationOptions: OptionSet {
+public struct InterpolationOptions: OptionSet, Sendable {
     public typealias RawValue = UInt
     public let rawValue: RawValue
     public init(rawValue: RawValue) {

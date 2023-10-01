@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct Line2D {
+public struct Line2D: Sendable {
     public var p1: Position2
     public var p2: Position2
     

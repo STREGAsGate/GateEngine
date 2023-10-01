@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct Rect {
+public struct Rect: Sendable {
     public var position: Position2
     public var size: Size2
     

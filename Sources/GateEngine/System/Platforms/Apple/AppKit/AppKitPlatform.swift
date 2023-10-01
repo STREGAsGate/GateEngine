@@ -49,7 +49,7 @@ public final class AppKitPlatform: InternalPlatform {
 }
 
 extension AppKitPlatform {
-    func setupStatusBarMenu() {
+    @MainActor func setupStatusBarMenu() {
         let appBundleOrCommandLineName =
             (Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String)
             ?? CommandLine.arguments[0].components(separatedBy: "/").last

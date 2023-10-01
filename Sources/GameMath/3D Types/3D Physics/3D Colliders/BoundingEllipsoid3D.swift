@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct BoundingEllipsoid3D: Collider3D {
+public struct BoundingEllipsoid3D: Collider3D, Sendable {
     public private(set) var offset: Position3
     public private(set) var center: Position3
     public private(set) var radius: Size3

@@ -14,7 +14,7 @@ import Accelerate
 #endif
 
 #if GameMathUseSIMD
-public protocol Vector4: SIMD, Equatable, ExpressibleByFloatLiteral where FloatLiteralType == Float, Scalar == Float, MaskStorage == SIMD4<Float>.MaskStorage, ArrayLiteralElement == Scalar {
+public protocol Vector4: SIMD, Equatable, Sendable, ExpressibleByFloatLiteral where FloatLiteralType == Float, Scalar == Float, MaskStorage == SIMD4<Float>.MaskStorage, ArrayLiteralElement == Scalar {
     var x: Scalar {get set}
     var y: Scalar {get set}
     var z: Scalar {get set}
@@ -24,7 +24,7 @@ public protocol Vector4: SIMD, Equatable, ExpressibleByFloatLiteral where FloatL
     static var zero: Self {get}
 }
 #else
-public protocol Vector4: Equatable, ExpressibleByFloatLiteral where FloatLiteralType == Float {
+public protocol Vector4: Equatable, Sendable, ExpressibleByFloatLiteral where FloatLiteralType == Float {
     var x: Float {get set}
     var y: Float {get set}
     var z: Float {get set}

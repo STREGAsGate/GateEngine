@@ -9,7 +9,7 @@
 import Foundation
 #endif
 
-public enum MipMapping: Hashable {
+public enum MipMapping: Hashable, Sendable {
     /// No mipmapping
     case none
     /// Automatically generates mipmaps up to provided level
@@ -144,7 +144,7 @@ extension Texture: Equatable, Hashable {
         return lhs.cacheKey == rhs.cacheKey
     }
 
-    public func hash(into hasher: inout Hasher) {
+    nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine(cacheKey)
     }
 }
@@ -174,7 +174,7 @@ extension TextureImporter {
     }
 }
 
-public struct TextureImporterOptions: Equatable, Hashable {
+public struct TextureImporterOptions: Equatable, Hashable, Sendable {
     public var subobjectName: String? = nil
     public var option1: Bool = false
 
@@ -216,7 +216,7 @@ extension ResourceManager {
 }
 
 extension ResourceManager.Cache {
-    struct TextureKey: Hashable {
+    struct TextureKey: Hashable, Sendable {
         let requestedPath: String
         let mipMapping: MipMapping
         let textureOptions: TextureImporterOptions

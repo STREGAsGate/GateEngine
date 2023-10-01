@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 #if GameMathUseSIMD
-public struct Transform2 {
+public struct Transform2: Sendable {
     public var position: Position2 {
         didSet {
             assert(position.isFinite)
@@ -40,7 +40,7 @@ public struct Transform2 {
     private lazy var _scaleMatrix: Matrix4x4 = .identity
 }
 #else
-public struct Transform2 {
+public struct Transform2: Sendable {
     public var position: Position2 {
         didSet {
             assert(position.isFinite)

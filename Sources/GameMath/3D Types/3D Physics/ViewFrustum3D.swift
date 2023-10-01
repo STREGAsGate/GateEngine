@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct ViewFrustum3D {
+public struct ViewFrustum3D: Sendable {
     public let planes: Array<Plane3D>
     
     @inlinable @inline(__always)

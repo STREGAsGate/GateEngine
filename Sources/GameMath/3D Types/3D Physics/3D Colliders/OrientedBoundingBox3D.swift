@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct OrientedBoundingBox3D: Collider3D {
+public struct OrientedBoundingBox3D: Collider3D, Sendable {
     public private(set) var offset: Position3
     public private(set) var center: Position3
     public private(set) var rotation: Quaternion

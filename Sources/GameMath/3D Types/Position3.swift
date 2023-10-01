@@ -7,7 +7,7 @@
 
 /// Represents a location in 3D space
 #if GameMathUseSIMD
-public struct Position3: Vector3, SIMD {
+public struct Position3: Vector3, SIMD, Sendable {
     public typealias Scalar = Float
     public typealias MaskStorage = SIMD3<Float>.MaskStorage
     public typealias ArrayLiteralElement = Scalar
@@ -58,7 +58,7 @@ public struct Position3: Vector3, SIMD {
     }
 }
 #else
-public struct Position3: Vector3 {
+public struct Position3: Vector3, Sendable {
     public var x: Float
     public var y: Float
     public var z: Float

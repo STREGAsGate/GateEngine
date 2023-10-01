@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct Line3D {
+public struct Line3D: Sendable {
     public let p1: Position3
     public let p2: Position3
     public let length: Float

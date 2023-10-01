@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct Direction2: Vector2 {
+public struct Direction2: Vector2, Sendable {
     public var x: Float
     public var y: Float
     

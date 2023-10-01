@@ -77,7 +77,7 @@ public protocol GeometryImporter: AnyObject {
     static func canProcessFile(_ file: URL) -> Bool
 }
 
-public struct GeometryImporterOptions: Equatable, Hashable {
+public struct GeometryImporterOptions: Equatable, Hashable, Sendable {
     public var subobjectName: String? = nil
     public var applyRootTransform: Bool = false
 
@@ -150,7 +150,7 @@ extension RawGeometry {
 
 extension ResourceManager.Cache {
     @usableFromInline
-    struct GeometryKey: Hashable {
+    struct GeometryKey: Hashable, Sendable {
         let requestedPath: String
         let geometryOptions: GeometryImporterOptions
     }

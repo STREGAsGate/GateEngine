@@ -5,21 +5,45 @@
  * http://stregasgate.com
  */
 
-public struct BitStream {
-    @usableFromInline let bytes: Any
+public struct BitStream: Sendable {
+    @usableFromInline let bytes: ContiguousArray<UInt8>
     @usableFromInline var byteOffset: Int {offset / 8}
     @usableFromInline var bitOffset: Int {offset % 8}
     @usableFromInline var offset: Int = 0
     
     /**
      Create a new BitStream
-     - parameter bytes: The data to read bits from.
+     - parameter array: The data to read bits from.
      */
     @inlinable
-    public init(_ bytes: Any) {
-        self.bytes = bytes
+    public init<T>(_ array: Array<T>) {
+        self.bytes = array.withUnsafeBytes({ bufferPointer -> ContiguousArray<UInt8> in
+            return ContiguousArray<UInt8>(bufferPointer)
+        })
     }
     
+    /**
+     Create a new BitStream
+     - parameter array: The data to read bits from.
+     */
+    @inlinable
+    public init<T>(_ array: ContiguousArray<T>) {
+        self.bytes = array.withUnsafeBytes({ bufferPointer -> ContiguousArray<UInt8> in
+            return ContiguousArray<UInt8>(bufferPointer)
+        })
+    }
+    
+    /**
+     Create a new BitStream
+     - parameter data: The data to read bits from.
+     */
+    @inlinable @_disfavoredOverload
+    public init(_ data: Any) {
+        self.bytes = withUnsafeBytes(of: data, { bufferPointer -> ContiguousArray<UInt8> in
+            return ContiguousArray<UInt8>(bufferPointer)
+        })
+    }
+
     /**
      Get a bit from an index
      - parameter index: The index of the desired bit
@@ -28,7 +52,7 @@ public struct BitStream {
     @inlinable
     @inline(__always)
     public subscript (index: Int) -> Bool {
-        return withUnsafeBytes(of: bytes) { bytes in
+        return bytes.withUnsafeBytes { bytes in
             let byte = bytes[byteOffset]
             return (byte >> index) % 2 == 1
         }
@@ -46,7 +70,7 @@ public struct BitStream {
         var result: [Bool] = []  // result accumulator
         result.reserveCapacity(numBits)
         
-        withUnsafeBytes(of: bytes) { bytes in
+        bytes.withUnsafeBytes { bytes in
             for _ in 0 ..< numBits {
                 let byte = bytes[byteOffset]
                 let v = (byte >> bitOffset) % 2 == 1

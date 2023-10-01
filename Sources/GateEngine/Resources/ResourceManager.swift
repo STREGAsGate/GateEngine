@@ -149,7 +149,7 @@ extension ResourceManager {
         var audioBuffers: [AudioBufferKey: AudioBufferCache] = [:]
         
         // Skeleton
-        struct SkeletalAnimationKey: Hashable {
+        struct SkeletalAnimationKey: Hashable, Sendable {
             let path: String
             let options: SkeletalAnimationImporterOptions
         }
@@ -158,7 +158,7 @@ extension ResourceManager {
         }
 
         // AudioBuffer
-        struct AudioBufferKey: Hashable {
+        struct AudioBufferKey: Hashable, Sendable {
             let path: String
         }
         struct AudioBufferCache {

@@ -6,7 +6,7 @@
  */
 
 /// Values as seen on a compass
-public enum CardinalDirection: String, Codable {
+public enum CardinalDirection: String, Codable, Sendable {
     case unknown        = "Unknown"
     case north          = "North"
     case northNorthEast = "NorthNorthEast"

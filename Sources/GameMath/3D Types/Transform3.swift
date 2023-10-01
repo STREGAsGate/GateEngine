@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct Transform3 {
+public struct Transform3: Sendable {
     public var position: Position3 {
         @_transparent didSet {
             assert(position.isFinite)

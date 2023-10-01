@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public protocol Angle: RawRepresentable, Numeric, Comparable, FloatingPoint where RawValue == Float {
+public protocol Angle: Sendable, RawRepresentable, Numeric, Comparable, FloatingPoint where RawValue == Float {
     var rawValue: RawValue {get set}
     
     var rawValueAsDegrees: RawValue {get}
@@ -456,7 +456,7 @@ public extension Angle {
 }
 
 /// Represents an angle in radians
-public struct Radians: Angle, Hashable, Codable {
+public struct Radians: Angle, Hashable, Codable, Sendable {
     public typealias RawValue = Float
     public typealias Magnitude = Self
     public typealias IntegerLiteralType = RawValue
@@ -500,7 +500,7 @@ public struct Radians: Angle, Hashable, Codable {
     }
 }
 
-public struct Degrees: Angle, Hashable, Codable {
+public struct Degrees: Angle, Hashable, Codable, Sendable {
     public typealias RawValue = Float
     public typealias Magnitude = Self
     public typealias IntegerLiteralType = RawValue

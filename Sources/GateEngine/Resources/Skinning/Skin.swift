@@ -45,7 +45,7 @@ public protocol SkinImporter: AnyObject {
     static func canProcessFile(_ file: URL) -> Bool
 }
 
-public struct SkinImporterOptions: Equatable, Hashable {
+public struct SkinImporterOptions: Equatable, Hashable, Sendable {
     public var subobjectName: String? = nil
 
     public static func named(_ name: String) -> Self {

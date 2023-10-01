@@ -6,7 +6,7 @@
  */
 
 #if GameMathUseSIMD
-public struct Size3: Vector3, SIMD {
+public struct Size3: Vector3, SIMD, Sendable {
     public typealias Scalar = Float
     public typealias MaskStorage = SIMD3<Float>.MaskStorage
     public typealias ArrayLiteralElement = Scalar
@@ -57,7 +57,7 @@ public struct Size3: Vector3, SIMD {
     }
 }
 #else
-public struct Size3: Vector3 {
+public struct Size3: Vector3, Sendable {
     public var x: Float
     public var y: Float
     public var z: Float

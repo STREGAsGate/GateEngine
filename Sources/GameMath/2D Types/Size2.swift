@@ -6,7 +6,7 @@
  */
 
 #if GameMathUseSIMD
-public struct Size2: Vector2 {
+public struct Size2: Vector2, Sendable {
     public var width: Float
     public var height: Float
     
@@ -17,7 +17,7 @@ public struct Size2: Vector2 {
     }
 }
 #else
-public struct Size2: Vector2 {
+public struct Size2: Vector2, Sendable {
     public var width: Float
     public var height: Float
     

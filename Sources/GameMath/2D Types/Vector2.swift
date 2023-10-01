@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public protocol Vector2: ExpressibleByFloatLiteral where FloatLiteralType == Float {
+public protocol Vector2: Sendable, ExpressibleByFloatLiteral where FloatLiteralType == Float {
     var x: Float {get set}
     var y: Float {get set}
     init(_ x: Float, _ y: Float)

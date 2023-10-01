@@ -85,7 +85,7 @@ extension SkinnedGeometry: Equatable, Hashable {
         return lhs.cacheKey == rhs.cacheKey
     }
 
-    public func hash(into hasher: inout Hasher) {
+    nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine(cacheKey)
     }
 }
@@ -95,7 +95,7 @@ extension SkinnedGeometry: Equatable, Hashable {
 
 extension ResourceManager.Cache {
     @usableFromInline
-    struct SkinnedGeometryKey: Hashable {
+    struct SkinnedGeometryKey: Hashable, Sendable {
         let requestedPath: String
         let geometryOptions: GeometryImporterOptions
         let skinOptions: SkinImporterOptions

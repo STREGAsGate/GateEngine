@@ -23,7 +23,7 @@ final class AppKitWindow: WindowBacking {
     var interfaceScaleFactor: Float = 1
 
     // Called from AppKitViewController
-    func updateStoredMetaData() {
+    @MainActor func updateStoredMetaData() {
         if let window = self.nsWindowController.window {
             self.interfaceScaleFactor = Float(window.backingScaleFactor)
             if let view = nsWindowController.window?.contentViewController?.view {
@@ -42,7 +42,7 @@ final class AppKitWindow: WindowBacking {
         }
     }
 
-    @MainActor required init(window: Window) {
+    required init(window: Window) {
         self.window = window
 
         var styleMask: NSWindow.StyleMask = [.titled, .resizable, .miniaturizable]
@@ -205,7 +205,7 @@ final class AppKitWindow: WindowBacking {
         }
     }
 
-    lazy var displayLink: CVDisplayLink = {
+    nonisolated lazy var displayLink: CVDisplayLink = {
         var displayLink: CVDisplayLink?
         // Create a display link capable of being used with all active displays
         CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
@@ -217,8 +217,13 @@ final class AppKitWindow: WindowBacking {
                                        _ flagsIn: CVOptionFlags,
                                        _ flagsOut: UnsafeMutablePointer<CVOptionFlags>,
                                        _ displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn {
-            let appKitWindow = unsafeBitCast(displayLinkContext, to: AppKitWindow.self)
-            return appKitWindow.getFrameForTime(now: inNow.pointee, outputTime: inOutputTime.pointee)
+            Task(priority: .high) { @MainActor in
+                let appKitWindow = unsafeBitCast(displayLinkContext, to: AppKitWindow.self)
+                if let view = appKitWindow.nsWindowController.window?.contentViewController?.view {
+                    view.needsDisplay = true
+                }
+            }
+            return kCVReturnSuccess
         }
 
         // Set the renderer output callback function
@@ -230,15 +235,6 @@ final class AppKitWindow: WindowBacking {
 
         return displayLink!
     }()
-    
-    func getFrameForTime(now: CVTimeStamp, outputTime: CVTimeStamp) -> CVReturn {
-        Task(priority: .high) { @MainActor in
-            if let view = self.nsWindowController.window?.contentViewController?.view {
-                view.needsDisplay = true
-            }
-        }
-        return kCVReturnSuccess
-    }
 
     @MainActor func show() {
         self.restoreSizeAndPosition(ofWindow: self.nsWindowController.window!)

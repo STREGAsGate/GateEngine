@@ -6,7 +6,7 @@
  */
 
 #if GameMathUseSIMD
-public struct Matrix3x3 {
+public struct Matrix3x3: Sendable {
     public var a, b, c: Float
     public var e, f, g: Float
     public var i, j, k: Float
@@ -21,7 +21,7 @@ public struct Matrix3x3 {
     }
 }
 #else
-public struct Matrix3x3 {
+public struct Matrix3x3: Sendable {
     public var a, b, c: Float
     public var e, f, g: Float
     public var i, j, k: Float

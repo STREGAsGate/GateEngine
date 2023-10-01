@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct Plane3D {
+public struct Plane3D: Sendable {
     public let normal: Direction3
     public let constant: Float
     
@@ -25,11 +25,6 @@ public struct Plane3D {
     @inlinable @inline(__always)
     public init(_ a: Float, _ b: Float, _ c: Float, _ d: Float) {
         self.init(normal: Direction3(a, b, c), constant: d)
-    }
-    
-    @inlinable @inline(__always)
-    public init(_ triangle: CollisionTriangle) {
-        self.init(origin: triangle.center, normal: triangle.normal)
     }
     
     @inlinable @inline(__always)
