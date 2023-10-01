@@ -124,8 +124,9 @@ A suite of example projects is available at [GateEngine Demos](https://github.co
 
 # Support GateEngine!
 GateEngine relies on community funding.
-If you appreciate this project, and want it to continue, then please consider putting some currency into it.</br>
-Every little bit helps! Support With:
+If you appreciate this project, and want it to continue, then please consider putting some currency into it.
+Every little bit helps! </br>
+Support With:
 [GitHub](https://github.com/sponsors/STREGAsGate),
 [Ko-fi](https://ko-fi.com/STREGAsGate),
 or
