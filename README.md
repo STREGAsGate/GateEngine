@@ -16,12 +16,12 @@ Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
 <sub>
 </br>All platforms require a functioning Swift toolchain. Click a platform above for setup information.
 </br>¹Windows support for Swift and Swift Package Manager is in development. Latest Swift toolchain recommended.
-</br>²Developed and tested using Ubuntu (debian). Fedora compatibility is unknown.
+</br>²Developed and tested using Ubuntu (Debian). Fedora compatibility is unknown.
 </br>³Targeting recent versions of Safari, FireFox, Edge, and Chrome.
 </sub>
 
 ## About
-GateEngine is designed to give game developers access to approachable and intitive APIs to build a game.
+GateEngine is designed to give game developers access to approachable and intuitive APIs to build a game.
 
 ### Math
 GateEngine has a custom math library completely coded in Swift. GameMath allows developers to write math functions using a spoken language style API. GameMath uses context aware types like `Position3`, `Direction3`, and `Size3` instead of a catch all `vector` type. This adds an addition layer of understanding to APIs because arguments have inherent context.
@@ -36,15 +36,15 @@ let halfway = source.interpolated(to: destination, .linear(0.5))
 ```
 
 ### Resources
-GateEngine has a simple and intuitive resource loading and caching API. Resources can be constructed instantly and are non-blocking. The reference returned is a cache handle and creating multiplke instance of the same resource will return the same cache handle. This allows you to not have to worry about managing your resources; you can simply create one whenever you need.
+GateEngine has a simple and intuitive resource loading and caching API. Resources can be constructed instantly and are non-blocking. The reference returned is a cache handle and creating multiple instance of the same resource will return the same cache handle. This allows you to not have to worry about managing your resources; you can simply create one whenever you need.
 ```swift
 // Load geometry
-let gemomtry = Geometry(path: "model.obj")
+let geometry = Geometry(path: "model.obj")
 
 // Reused the same cache as above. No load required.
 let theSameGeometry = Geometry(path: "model.obj")
 ```
-A resource state lets you know when a reosurce is ready to be accessed. In many places the resource state check is handled automatically, like when rendering. The renderer will simply skip resources that arent available.
+A resource state lets you know when a resource is ready to be accessed. In many places the resource state check is handled automatically, like when rendering. The renderer will simply skip resources that aren't available.
 ```swift
 if resource.state == .ready {
     // ready to be accessed
@@ -53,15 +53,15 @@ if resource.state == .ready {
 
 Error handling is tucked away. A resource failing to load is usually a development error in games, not a runtime error. As such writing do-try-catch for every resource becomes tedious. GateEngine places errors in the resource state which allows you to simply code the game as if the resource was simply a value type. 
 
-But if you would like to design a failable resource handling you can do so by checking for the error:
+But if you would like to design a fail-able resource handling you can do so by checking for the error:
 ```swift
-if case .failed(let error) = resoruce.state {
+if case .failed(let error) = resource.state {
     // This error was already output as a warning
 }
 ```
 
 ### Rendering
-GatEngine supports native rendering backends like DirectX, Metal, and OpenGL. But you will not need to interact with them directly becuase GateEngine uses a high level rendering API designed to be flexible and customizable. Rendering is done in the order things are added allowing you to easily reason about the outcome.
+GatEngine supports native rendering backends like DirectX, Metal, and OpenGL. But you will not need to interact with them directly because GateEngine uses a high level rendering API designed to be flexible and customizable. Rendering is done in the order things are added allowing you to easily reason about the outcome.
 
 
 ```swift
@@ -81,14 +81,14 @@ GateEngine uses a custom designed Swift based shader language. This shader langu
 
 For high level rendering, shaders are handled automatically and there's no need to make any.
 ```swift
-// "Vertex Colors" vertex shader writen in Swift
+// "Vertex Colors" vertex shader written in Swift
 let vsh = VertexShader()
 let mvp = vsh.modelViewProjectionMatrix
 let vertexPosition = vsh.input.geometry(0).position
 vsh.output.position = mvp * Vec4(vertexPosition, 1)
 vsh.output["color"] = vsh.input.geometry(0).color
 
-// "Tinted Texture" fragment shader writen in Swift
+// "Tinted Texture" fragment shader written in Swift
 let fsh = FragmentShader()
 let sample = fsh.channel(0).texture.sample(
     at: fsh.input["texCoord0"],
@@ -141,29 +141,44 @@ Discord is also a great place to ask questions or show off your creations.
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/stregasgate?style=social)](https://www.reddit.com/r/stregasgate/)
 
 # History
-GateEngine started it's life in 2016 as a "for fun" project that used the typical strategy, for hobby game engine projects, of high performance and small footprint. It used a basic scene graph and only worked on Apple devices.
+GateEngine started its life in 2016 as a "for fun" project that used the typical strategy, for hobby game engine projects, of high performance and small footprint. It used a scene graph and only worked on Apple devices.
+</br>
+![Engine Creation 01](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation01.jpg?raw=true)
 
-After years of frustration over the amount of time spent building games using "optimal" code, I decided to try making an engine that focused on making the process of building a game more intuitive. This lead to a custom math library that uses spoken language APIs instead like:
-```swift
-let newPosition = position.moved(units, toward: direction)
-```
-A high level renderer which allows loading content with a single initializer:
-```swift
-let gpuReadyMesh = Geometry(path: "model.obj")
-let gpuReadyTexture = Texture(path: "image.png")
-```
-A rendering API that uses containers that allow layering style that's easy to reason about:
-```swift
-var canvas = Canvas()
+I eventually created a deferred renderer, which is a technique that can reduce work for extremely complicated triple-A games. At the time I thought this was the greatest thing ever...
+</br>
+![Engine Creation 02](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation02.jpg?raw=true)
 
-canvas.insert(sprite, at: position)
+Then I added lighting using my new found technique.
+</br>
+![Engine Creation 03](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation03.jpg?raw=true)
 
-window.insert(canvas)
-```
-And a custom Swift shader API:
-```swift
+And finally I added shadow and normal mapping.
+</br>
+![Engine Creation 04](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation04.jpg?raw=true)
 
-```
-After several years of slowly adding and replacing more and more APIs with approachable and fun ones, GateEngine was born. This repository is a fresh project and I'm slowly moving over features from my private engine, while fixing things that are less polished along the way.
+I eventually added skinning and UI. I created a 3D model of myself as a test and found some old game characters online as well.
+</br>
+![Engine Creation 05](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EngineCreation05.mp4?raw=true)
 
-This project was a massive undertaking, and was created to be enjoyed. So go make something awesome!
+At this point the engine was just a graphics simulation. And it's here where I started the re-writes...
+
+I needed to actually build the "engine" part. Drawing stuff is actually a fairly small portion of what a game engine does.
+I eventually learned about collision and different data techniques like Entity, Component, System.
+
+Developing an engine is a large learning process. Every time you come up with a good way to do things, you will come up with a better way before you're done implementing the previous way. The process can be very demotivating, especially if you're on a schedule, such as trying to make money from it. But for me this was still just for fun.
+
+Slowly, my skill at making engines caught up to the designs I was creating and GateEngine began to stabilize. But it was at this point that I realized I wasn't making any games. I was just building tech demos.
+
+So I decided on my first 3D game. Espionage is a 3D stealth action game that I'm still working on today. It's inspired by the games I grew up with, and it's the kind of game I always wanted to make.
+</br>
+![Espionage Screenshot](https://github.com/STREGAsGate/GateEngine/blob/main/.github/resources/EspionageScreenshot.jpg?raw=true)
+</br>
+It's a very big project and it will likely take me a very long time to finish it as a solo developer.
+I personally prefer large projects. 
+
+I haven't yet been enticed to join a game jam, but perhaps that would be fun experience to try at some point. 
+</br>
+Maybe we'll have a GateJam someday!
+
+Anyway, GateEngine was a massive undertaking, and was created to be enjoyed. So go make something awesome of your own!
