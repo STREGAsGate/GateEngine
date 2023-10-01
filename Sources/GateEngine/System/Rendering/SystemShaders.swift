@@ -69,8 +69,9 @@ import Shaders
     /// Intended to be paired with `FragmentShader.vertexColors`
     public static let vertexColors: VertexShader = {
         let vsh = VertexShader()
-        vsh.output.position =
-            vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
+        let mvp = vsh.modelViewProjectionMatrix
+        let vertexPosition = vsh.input.geometry(0).position
+        vsh.output.position = mvp * Vec4(vertexPosition, 1)
         vsh.output["color"] = vsh.input.geometry(0).color
         return vsh
     }()
