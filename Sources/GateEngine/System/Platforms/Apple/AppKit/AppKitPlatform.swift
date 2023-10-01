@@ -128,36 +128,6 @@ extension AppKitPlatform {
             url.deleteLastPathComponent()
             url.appendPathComponent("Info.plist")
             try? plist.write(to: url, atomically: false, encoding: .utf8)
-
-            do {
-                if CommandLine.isDebuggingWithXcode {
-                    let alert = NSAlert()
-
-                    alert.messageText = """
-Created mock Info.plist in the build directory.
-
-This is required so macOS see's your executable as an App. Game Controllers may not function without it.
-
-Click continue to ignore. Quit and launch again to ensure everything functions correctly.
-"""
-                    alert.addButton(withTitle: "Quit")
-                    alert.addButton(withTitle: "Continue")
-                    switch alert.runModal() {
-                    case .alertFirstButtonReturn:
-                        exit(0)
-                    default:
-                        break
-                    }
-                } else {
-                    // Restart now if this is not being debugged by Xcode
-                    Log.info("Restarting...")
-                    let task = Process()
-                    task.launchPath = "/usr/bin/open"
-                    task.arguments = [CommandLine.arguments[0]]
-                    task.launch()
-                    exit(0)
-                }
-            }
         }
     }
 
