@@ -160,16 +160,16 @@ let package = Package(
 
                         // Use upcoming Swift Language Features
                         // https://www.swift.org/swift-evolution/#?upcoming=true
-                        #if compiler(>=5.8)
                         settings.append(contentsOf: [
-                            .unsafeFlags(["-enable-upcoming-feature", "DisableOutwardActorInference"]),
-                            .unsafeFlags(["-enable-upcoming-feature", "ImportObjcForwardDeclarations"]),
-                            .unsafeFlags(["-enable-upcoming-feature", "BareSlashRegexLiterals"]),
-                            .unsafeFlags(["-enable-upcoming-feature", "ExistentialAny"]),
-                            .unsafeFlags(["-enable-upcoming-feature", "ForwardTrailingClosures"]),
-                            .unsafeFlags(["-enable-upcoming-feature", "ConciseMagicFile"]),
+                            .enableUpcomingFeature("DisableOutwardActorInference"),
+                            .enableUpcomingFeature("ImportObjcForwardDeclarations"),
+                            .enableUpcomingFeature("BareSlashRegexLiterals"),
+                            .enableUpcomingFeature("ExistentialAny"),
+                            .enableUpcomingFeature("ForwardTrailingClosures"),
+                            .enableUpcomingFeature("ConciseMagicFile"),
+                            
+                            .enableExperimentalFeature("StrictConcurrency=complete"),
                         ])
-                        #endif
                         
                         #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
