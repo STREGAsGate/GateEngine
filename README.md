@@ -11,9 +11,9 @@ GateEngine includes intuitive APIs for loading resources, handling user inputs, 
 | [**iOS**/**tvOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=Swift%205.9)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎`iPad` | ✔︎`iOS` | ✔︎
 | **Android** | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Android.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Android.yml) | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
 | [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html)³ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/HTML5.yml?label=Swift%205.8)](https://github.com/STREGAsGate/GateEngine/actions/workflows/HTML5.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
+
 <sub>
 Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
-
 </br>¹Windows support for Swift is in development. Latest Swift toolchain recommended.
 </br>²Developed and tested using Ubuntu (Debian). Fedora compatibility is unknown.
 </br>³Targeting recent versions of Safari, FireFox, Edge, and Chrome.
