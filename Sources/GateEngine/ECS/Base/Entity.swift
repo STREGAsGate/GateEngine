@@ -10,9 +10,9 @@ public final class Entity: Identifiable {
     public let priority: Priority
 
     @usableFromInline
-    internal var componentIDs: Set<Int> = .init(minimumCapacity: 8)
+    internal var componentIDs: Set<Int> = []
     @usableFromInline
-    internal var componentBank: ContiguousArray<(any Component)?> = .init(repeating: nil, count: 8)
+    internal var componentBank: ContiguousArray<(any Component)?> = []
 
     public init(
         name: String? = nil,
@@ -21,6 +21,11 @@ public final class Entity: Identifiable {
     ) {
         self.name = name
         self.priority = priority
+        
+        let minimumCapacity = Swift.max(components?.count ?? 8, 8)
+        self.componentIDs.reserveCapacity(minimumCapacity)
+        self.componentBank.reserveCapacity(minimumCapacity)
+        
         if let components = components {
             for component in components {
                 self.insert(component)
@@ -44,28 +49,18 @@ extension Entity {
 extension Entity {
     @usableFromInline @_transparent
     func getComponent(at index: Int) -> (any Component)? {
-        return componentBank[index]
+        return self.componentBank[index]
     }
     
     @usableFromInline @_transparent
     internal func hasComponent(at index: Int) -> Bool {
-        return componentIDs.contains(index)
-    }
-    
-    @usableFromInline @_transparent
-    internal func expandComponentBankIfNeeded(forIndex index: Int) {
-        if componentBank.count - 1 < index {
-            componentBank.reserveCapacity(index)
-            while componentBank.count - 1 < index {
-                componentBank.append(nil)
-            }
-        }
+        return self.componentIDs.contains(index)
     }
     
     /// - returns true if the entity has the component
     @_transparent
     public func hasComponent(_ type: any Component.Type) -> Bool {
-        return hasComponent(at: type.componentID.value)
+        return self.hasComponent(at: type.componentID.value)
     }
 
     /// - returns The component, addind it to the entity if necessary
@@ -75,7 +70,7 @@ extension Entity {
             #if DEBUG
             Log.assert(hasComponent(at: componentID), "Component \"\(type)\" is not a member of this entity.")
             #endif
-            return getComponent(at: componentID) as! T
+            return self.getComponent(at: componentID) as! T
         }
         @_transparent set {
             self.insert(newValue)
@@ -87,14 +82,22 @@ extension Entity {
     @_transparent
     public func component<T: Component>(ofType type: T.Type) -> T? {
         let componentID = type.componentID.value
-        guard hasComponent(at: componentID) else {return nil}
-        return getComponent(at: componentID) as? T
+        guard self.hasComponent(at: componentID) else {return nil}
+        return self.getComponent(at: componentID) as? T
     }
     
     @inline(__always)
     public func insert<T: Component>(_ component: T) {
         let index = T.self.componentID.value
-        self.expandComponentBankIfNeeded(forIndex: index)
+        
+        // expand component bank if needed
+        if self.componentBank.count - 1 < index {
+            self.componentBank.reserveCapacity(index)
+            while componentBank.count - 1 < index {
+                componentBank.append(nil)
+            }
+        }
+        
         self.componentBank[index] = component
         self.componentIDs.insert(index)
     }
@@ -103,7 +106,7 @@ extension Entity {
     @discardableResult
     public func insert<T: Component>(_ component: T, replacingExisting: Bool) -> Bool {
         let componentID = T.self.componentID.value
-        let exists = hasComponent(at: componentID)
+        let exists = self.hasComponent(at: componentID)
         guard (replacingExisting && exists) || exists == false else { return false }
         self.insert(component)
         return true
