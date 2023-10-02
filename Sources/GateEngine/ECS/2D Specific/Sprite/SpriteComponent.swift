@@ -93,7 +93,8 @@ public final class SpriteComponent: Component {
 
             return spriteSheet?.sprite(at: coord, withSpriteSize: spriteSize)
         }
-        return nil
+        // no animations, so return the first sprite
+        return spriteSheet?.sprite(at: spriteCoordinate, withSpriteSize: spriteSize)
     }
     
     public init() { 
