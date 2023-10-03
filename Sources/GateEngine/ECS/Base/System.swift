@@ -14,8 +14,8 @@ import GameMath
     required public init() {}
 
     @inlinable @inline(__always)
-    public var entities: ContiguousArray<Entity> {
-        return Game.shared.entities
+    public var game: Game {
+        return Game.shared
     }
 
     internal final func willUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) async {

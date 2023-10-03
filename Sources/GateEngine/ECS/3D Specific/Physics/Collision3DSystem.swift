@@ -499,7 +499,7 @@ extension Collision3DSystem {
 
 extension Collision3DSystem {
     private var octrees: [OctreeComponent] {
-        return self.entities.filter({ $0.hasComponent(OctreeComponent.self) }).map({
+        return game.entities.filter({ $0.hasComponent(OctreeComponent.self) }).map({
             $0[OctreeComponent.self]
         })
     }
@@ -552,7 +552,7 @@ extension Collision3DSystem {
     public func entitiesProbablyHit(by ray: Ray3D, filter: ((Entity) -> Bool)? = nil) -> [Entity] {
         var entities: [Entity] = []
 
-        for entity in self.entities {
+        for entity in game.entities {
             guard let collisionComponent = entity.component(ofType: Collision3DComponent.self)
             else { continue }
             guard filter?(entity) ?? true else { continue }
@@ -571,7 +571,7 @@ extension Collision3DSystem {
     {
         var entities: [Entity] = []
 
-        for entity in self.entities {
+        for entity in game.entities {
             guard let collisionComponent = entity.component(ofType: Collision3DComponent.self)
             else { continue }
             guard filter?(entity) ?? true else { continue }
