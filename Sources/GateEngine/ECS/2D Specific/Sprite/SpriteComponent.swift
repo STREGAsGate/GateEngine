@@ -104,6 +104,14 @@ public final class SpriteComponent: Component {
         self.animations = []
         self.playbackState = .play
     }
+    
+    public init(spriteRect: Rect, spriteSheet: SpriteSheet, activeAnimationIndex: Int = 0, animations: [SpriteAnimation], playbackState: PlaybackState = .play) {
+        self.spriteRect = spriteRect
+        self.spriteSheet = spriteSheet
+        self.activeAnimationIndex = activeAnimationIndex
+        self.animations = animations
+        self.playbackState = playbackState
+    }
 
     public init(spriteSize: Size2, spriteSheet: SpriteSheet, activeAnimationIndex: Int = 0, animations: [SpriteAnimation], playbackState: PlaybackState = .play) {
         self.spriteRect = Rect(size: spriteSize)
