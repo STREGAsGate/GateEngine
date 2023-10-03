@@ -33,6 +33,11 @@ public struct BitStream: Sendable {
         })
     }
     
+    @inlinable
+    public init(_ data: UnsafeRawBufferPointer) {
+        self.bytes = ContiguousArray<UInt8>(data)
+    }
+    
     /**
      Create a new BitStream
      - parameter data: The data to read bits from.
