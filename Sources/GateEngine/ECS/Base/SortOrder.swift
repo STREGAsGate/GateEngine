@@ -29,6 +29,11 @@ public struct SystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral {
         guard let sortOrder = system.sortOrder() else { return nil }
         return Self(rawValue: sortOrder.rawValue - 1)
     }
+    
+    @inlinable @inline(__always)
+    public static var last: Self {
+        return Self(rawValue: .max)
+    }
 }
 
 public struct RenderingSystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral {
