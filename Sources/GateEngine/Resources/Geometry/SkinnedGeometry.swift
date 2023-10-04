@@ -26,8 +26,9 @@ internal protocol SkinnedGeometryBackend: AnyObject {
     }
 
     @usableFromInline
-    internal var skinJoints: [Skin.Joint]? {
-        return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)?.skinJoints
+    internal var skinJoints: [Skin.Joint] {
+        assert(state == .ready, "The state must be ready before accessing this property.")
+        return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!.skinJoints!
     }
 
     public var cacheHint: CacheHint {
@@ -180,6 +181,7 @@ extension ResourceManager {
                     Task { @MainActor in
                         if let cache = self.cache.skinnedGeometries[key] {
                             cache.geometryBackend = backend
+                            cache.skinJoints = skin.joints
                             cache.state = .ready
                         }
                     }
