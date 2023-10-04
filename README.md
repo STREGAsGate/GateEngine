@@ -124,10 +124,7 @@ fsh.output.color = sample * fsh.channel(0).color
 ## Getting Started
 Add the package to your project like any other package and you're done.
 ```swift
-.package(
-    url: "https://github.com/STREGAsGate/GateEngine.git",
-    .upToNextMajor(from: "0.1.0")
-)
+.package(url: "https://github.com/STREGAsGate/GateEngine.git", branch: "main")
 ```
 
 ### Windows Specific Setup
