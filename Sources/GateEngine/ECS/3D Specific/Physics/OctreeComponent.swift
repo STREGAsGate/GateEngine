@@ -72,7 +72,7 @@ public final class OctreeComponent: Component {
     }
 
     public required init() {}
-    public static var componentID: ComponentID = ComponentID()
+    public static let componentID = ComponentID()
 }
 
 // MARK: - Helpers
