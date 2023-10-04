@@ -112,6 +112,15 @@ import Shaders
         )
         return fsh
     }()
+    /// Uses material.channel(0).texture to shade objects
+    public static let textureSampleOpacity: FragmentShader = {
+        let fsh = FragmentShader()
+        fsh.output.color = fsh.channel(0).texture.sample(
+            at: fsh.input["texCoord0"],
+            filter: .nearest
+        ) * fsh.uniform(named: "opacity", as: Scalar.self)
+        return fsh
+    }()
     /// Uses material.channel(0).color to shade objects
     public static let materialColor: FragmentShader = {
         let fsh = FragmentShader()
