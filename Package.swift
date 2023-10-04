@@ -175,7 +175,7 @@ let package = Package(
                         ])
                         #endif
                         
-                        #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
+                        #if true // Options for development of GateEngine. These should be disabled for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
                         // Options for development of WASI platform
@@ -201,7 +201,7 @@ let package = Package(
                             /// Enables varius additional, additional, checks and output for input
                             .define("GATEENGINE_DEBUG_HID_VERBOSE"),
                             /// Forces Apple platforms to use OpenGL for rendering
-                            .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, /*.iOS, .tvOS*/])),
+//                            .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, /*.iOS, .tvOS*/])),
                         ])
                         #endif
                         return settings
@@ -210,7 +210,11 @@ let package = Package(
                         //.plugin(name: "SwiftLintPlugin", package: "SwiftLint"),
                     ]),
             
-            .target(name: "Shaders", dependencies: ["GameMath"]),
+                .target(name: "Shaders",
+                        dependencies: [
+                            "GameMath",
+                            .product(name: "Collections", package: "swift-collections")
+                        ]),
             
             .target(name: "GameMath", swiftSettings: {
                 var array: [SwiftSetting] = []
