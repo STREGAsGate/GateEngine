@@ -319,6 +319,16 @@ extension ECSContext {
     @usableFromInline @_transparent
     func insertEntity(_ entity: Entity) {
         self.entities.insert(entity)
+        
+        for componentID in entity.componentIDs {
+            if let component = entity.componentBank[componentID] {
+                if let system = type(of: component).systemThatProcessesThisComponent() {
+                    if game.hasSystem(ofType: system) == false {
+                        game.insertSystem(system)
+                    }
+                }
+            }
+        }
     }
     @usableFromInline @discardableResult @_transparent
     func removeEntity(_ entity: Entity) -> Entity? {

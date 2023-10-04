@@ -8,6 +8,14 @@
 public protocol Component {
     init()
     nonisolated static var componentID: ComponentID { get }
+    
+    nonisolated static func systemThatProcessesThisComponent() -> System.Type?
+}
+
+extension Component {
+    public nonisolated static func systemThatProcessesThisComponent() -> System.Type? {
+        return nil
+    }
 }
 
 public struct ComponentID: Equatable, Hashable {
