@@ -19,7 +19,9 @@ internal final class DeferredSystem: PlatformSystem {
         for closure in deferredClosures {
             closure()
         }
-        deferredClosures.removeAll(keepingCapacity: true)
+        if deferredClosures.isEmpty == false {
+            deferredClosures.removeAll(keepingCapacity: true)
+        }
     }
 
     public override class var phase: PlatformSystem.Phase { .postDeferred }

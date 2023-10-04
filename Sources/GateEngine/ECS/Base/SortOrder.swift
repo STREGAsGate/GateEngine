@@ -85,10 +85,14 @@ extension RenderingSystemSortOrder {
 // MARK: - PlatformSystem
 
 extension PlatformSystemSortOrder {
-    public static let hidSystem: Self = 1_000
-
-    public static let audioSystem: Self = 0_001
-    public static let cacheSystem: Self = 1_002
+    // Run before everything
+    public static let delaySystem: Self = 0
+    
+    public static let hidSystem: Self   = 1_001
+    public static let audioSystem: Self = 1_002
+    public static let cacheSystem: Self = 1_003
+   
+    // Run after everything
     public static let deferredSystem: Self = 100_000
 }
 
