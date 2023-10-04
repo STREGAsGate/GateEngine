@@ -87,8 +87,7 @@ let package = Package(
                         
                         dependencies.append(contentsOf: [
                             .product(name: "Atomics",
-                                     package: "swift-atomics",
-                                     condition: .when(platforms: .any(except: .windows))),
+                                     package: "swift-atomics"),
                             .product(name: "Collections",
                                      package: "swift-collections")
                         ])
