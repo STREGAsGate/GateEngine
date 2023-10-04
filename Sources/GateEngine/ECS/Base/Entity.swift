@@ -125,7 +125,7 @@ extension Entity {
     }
     
     /// Allows changing an existing component
-    @_transparent
+    @_transparent @discardableResult
     public func modify<T: Component, ResultType>(
         _ type: T.Type,
         _ config: @escaping (_ component: inout T) -> ResultType
