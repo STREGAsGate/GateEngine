@@ -23,7 +23,7 @@ let package = Package(
         // SwiftWASM
         #if os(macOS) || os(Linux)
         packageDependencies.append(contentsOf: [
-            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", revision: "bc437f1"),
+            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", .upToNextMajor(from: "0.1.0")),
             .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
         ])
         #endif
