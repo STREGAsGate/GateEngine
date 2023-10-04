@@ -70,13 +70,15 @@ public struct BitStream: Sendable {
      */
     @_transparent
     public mutating func readBits<T: FixedWidthInteger>(_ numBits: Int) -> T {
-        guard numBits > 0 else {return 0}
+        assert(numBits > 0, "Cannot read zero bits.")
         
         var result: [Bool] = []  // result accumulator
         result.reserveCapacity(numBits)
         
         bytes.withUnsafeBytes { bytes in
             for _ in 0 ..< numBits {
+                let byteOffset = self.byteOffset
+                assert(bytes.count > byteOffset, "Index out of range.")
                 let byte = bytes[byteOffset]
                 let v = (byte >> bitOffset) % 2 == 1
                 result.append(v)
