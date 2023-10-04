@@ -62,6 +62,12 @@ public enum MipMapping: Hashable, Sendable {
     public var state: ResourceState {
         return Game.shared.resourceManager.textureCache(for: cacheKey)!.state
     }
+    
+    @inline(__always)
+    public func replaceData(with data: Data, size: Size2, mipMapping: MipMapping) {
+        assert(state == .ready, "State must be ready!")
+        textureBackend?.replaceData(with: data, size: size, mipMapping: mipMapping)
+    }
 
     /**
      Create a new texture.
