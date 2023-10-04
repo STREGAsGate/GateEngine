@@ -297,7 +297,7 @@ extension WebGL2Renderer {
 
     @inline(__always)
     private func setTransforms(
-        _ transforms: ContiguousArray<Transform3>,
+        _ transforms: [Transform3],
         at index: inout Int,
         in gl: WebGL2RenderingContext
     ) {

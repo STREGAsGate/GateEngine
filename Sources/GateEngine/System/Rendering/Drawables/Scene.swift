@@ -71,7 +71,7 @@
 
         let command = DrawCommand(
             backends: [geometryBackend],
-            transforms: ContiguousArray(transforms),
+            transforms: transforms,
             material: material,
             flags: flags.drawFlags
         )
@@ -131,7 +131,7 @@
 
         let command = DrawCommand(
             backends: [geometryBackend],
-            transforms: ContiguousArray(transforms),
+            transforms: transforms,
             material: material,
             flags: flags.drawFlags
         )
@@ -163,7 +163,7 @@
 
         let command = DrawCommand(
             backends: [sourceGeometryBackend, destinationGeometryBackend],
-            transforms: ContiguousArray(transforms),
+            transforms: transforms,
             material: sourceMaterial,
             flags: flags.drawFlags
         )

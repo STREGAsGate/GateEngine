@@ -216,7 +216,7 @@ extension DX12Renderer {
 
     @inline(__always)
     private func setTransforms(
-        _ transforms: ContiguousArray<Transform3>,
+        _ transforms: [Transform3],
         on commandList: D3DGraphicsCommandList,
         at index: inout UInt32
     ) {

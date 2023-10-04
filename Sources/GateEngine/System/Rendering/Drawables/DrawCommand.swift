@@ -70,15 +70,15 @@ public struct DrawFlags: Hashable {
 }
 
 public struct DrawCommand {
-    let geometries: ContiguousArray<any GeometryBackend>
-    let transforms: ContiguousArray<Transform3>
+    let geometries: [any GeometryBackend]
+    let transforms: [Transform3]
     let material: Material
     let flags: DrawFlags
 
     @usableFromInline
     internal init(
-        backends: ContiguousArray<any GeometryBackend>,
-        transforms: ContiguousArray<Transform3>,
+        backends: [any GeometryBackend],
+        transforms: [Transform3],
         material: Material,
         flags: DrawFlags
     ) {
@@ -106,8 +106,7 @@ public struct DrawCommand {
         material: Material,
         flags: DrawFlags
     ) {
-        let backends = ContiguousArray(geometries.map({ $0.backend! }))
-        let transforms = ContiguousArray(transforms)
+        let backends = geometries.map({ $0.backend! })
         self.init(backends: backends, transforms: transforms, material: material, flags: flags)
     }
 
@@ -118,8 +117,7 @@ public struct DrawCommand {
         material: Material,
         flags: DrawFlags
     ) {
-        let backends = ContiguousArray(geometries.map({ $0.backend! }))
-        let transforms = ContiguousArray(transforms)
+        let backends = geometries.map({ $0.backend! })
         self.init(backends: backends, transforms: transforms, material: material, flags: flags)
     }
 
@@ -130,8 +128,7 @@ public struct DrawCommand {
         material: Material,
         flags: DrawFlags
     ) {
-        let backends = ContiguousArray(geometries.map({ $0.backend! }))
-        let transforms = ContiguousArray(transforms)
+        let backends = geometries.map({ $0.backend! })
         self.init(backends: backends, transforms: transforms, material: material, flags: flags)
     }
 
@@ -142,8 +139,7 @@ public struct DrawCommand {
         material: Material,
         flags: DrawFlags
     ) {
-        let backends = ContiguousArray(geometries.map({ $0.backend! }))
-        let transforms = ContiguousArray(transforms)
+        let backends = geometries.map({ $0.backend! })
         self.init(backends: backends, transforms: transforms, material: material, flags: flags)
     }
 

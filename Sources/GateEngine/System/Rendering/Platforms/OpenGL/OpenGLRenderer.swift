@@ -320,7 +320,7 @@ extension OpenGLRenderer {
     }
 
     private func setTransforms(
-        _ transforms: ContiguousArray<Transform3>,
+        _ transforms: [Transform3],
         vbo: GLuint,
         at index: inout Int
     ) {
