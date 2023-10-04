@@ -177,10 +177,10 @@ public final class MSLCodeGenerator: CodeGenerator {
                 vertexGeometryDefine += "\n    \(type(for: .float2)) uv\(geometryIndex)_0 [[attribute(\(attributeIndex))]];"
             case .vertexInTexCoord1(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float2)) uv\(geometryIndex)_1 [[attribute(\(attributeIndex))]];"
-            case .vertexInNormal(geometryIndex: let geometryIndex):
-                vertexGeometryDefine += "\n    \(type(for: .float3)) nml\(geometryIndex) [[attribute(\(attributeIndex))]];"
             case .vertexInTangent(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float3)) tan\(geometryIndex) [[attribute(\(attributeIndex))]];"
+            case .vertexInNormal(geometryIndex: let geometryIndex):
+                vertexGeometryDefine += "\n    \(type(for: .float3)) nml\(geometryIndex) [[attribute(\(attributeIndex))]];"
             case .vertexInColor(geometryIndex: let geometryIndex):
                 vertexGeometryDefine += "\n    \(type(for: .float4)) clr\(geometryIndex) [[attribute(\(attributeIndex))]];"
             case .vertexInJointIndices(geometryIndex: let geometryIndex):

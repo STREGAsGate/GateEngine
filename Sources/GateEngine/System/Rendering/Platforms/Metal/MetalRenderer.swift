@@ -88,13 +88,12 @@ class MetalRenderer: RendererBackend {
 
         let firstGeometry = geometries[0]
         let indicesCount: Int = firstGeometry.indicesCount
-        let indexBuffer: any MTLBuffer = firstGeometry.indexBuffer
         encoder.drawIndexedPrimitives(
             type: primitive(from: drawCommand.flags.primitive),
             indexCount: indicesCount,
             indexType: .uint16,
-            indexBuffer: indexBuffer,
-            indexBufferOffset: 0,
+            indexBuffer: firstGeometry.buffer,
+            indexBufferOffset: firstGeometry.bufferOffsets[firstGeometry.attributes.count],
             instanceCount: drawCommand.transforms.count
         )
     }
@@ -217,7 +216,7 @@ class MetalRenderer: RendererBackend {
                             fatalError()
                         }
                         vertexDescriptor.layouts[index].stride =
-                            MemoryLayout<Float>.stride * attribute.componentLength
+                            MemoryLayout<Float>.size * attribute.componentLength
                     case .uInt16:
                         switch attribute.componentLength {
                         case 1:
@@ -232,7 +231,7 @@ class MetalRenderer: RendererBackend {
                             fatalError()
                         }
                         vertexDescriptor.layouts[index].stride =
-                            MemoryLayout<UInt16>.stride * attribute.componentLength
+                            MemoryLayout<UInt16>.size * attribute.componentLength
                     case .uInt32:
                         switch attribute.componentLength {
                         case 1:
@@ -247,7 +246,7 @@ class MetalRenderer: RendererBackend {
                             fatalError()
                         }
                         vertexDescriptor.layouts[index].stride =
-                            MemoryLayout<UInt32>.stride * attribute.componentLength
+                            MemoryLayout<UInt32>.size * attribute.componentLength
                     }
                     index += 1
                 }
@@ -473,7 +472,7 @@ extension MetalRenderer {
         textures: ContiguousArray<(some MTLTexture)?>
     ) {
         var uniforms: ContiguousArray<UInt8> = []
-        uniforms.reserveCapacity(16 * 2)
+        uniforms.reserveCapacity(MemoryLayout<Float>.size * 16 * 2)
         withUnsafeBytes(of: matricies.projection.transposedSIMD) { pointer in
             uniforms.append(contentsOf: pointer)
         }
@@ -579,7 +578,7 @@ extension MetalRenderer {
     @_transparent
     #endif
     private func setTransforms(
-        _ transforms: ContiguousArray<Transform3>,
+        _ transforms: [Transform3],
         on encoder: some MTLRenderCommandEncoder,
         at vertexIndex: inout Int
     ) {
@@ -594,7 +593,7 @@ extension MetalRenderer {
             instancedUniforms.append(uniforms)
         }
 
-        let instanceUniformsSize = MemoryLayout<InstancedUniforms>.stride * instancedUniforms.count
+        let instanceUniformsSize = MemoryLayout<InstancedUniforms>.size * instancedUniforms.count
         instancedUniforms.withUnsafeBufferPointer { instancedUniforms in
             if instanceUniformsSize < 4096 {  // Let Metal manage our data if it's small
                 encoder.setVertexBytes(
@@ -655,7 +654,7 @@ extension MetalRenderer {
     ) {
         for geometry in geometries {
             for attributeIndex in geometry.attributes.indices {
-                encoder.setVertexBuffer(geometry.buffers[attributeIndex], offset: 0, index: index)
+                encoder.setVertexBuffer(geometry.buffer, offset: geometry.bufferOffsets[attributeIndex], index: index)
                 index += 1
             }
         }

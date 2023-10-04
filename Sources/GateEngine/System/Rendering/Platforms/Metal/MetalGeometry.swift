@@ -12,11 +12,10 @@ import Collections
 class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
     let primitive: DrawFlags.Primitive
     let attributes: ContiguousArray<GeometryAttribute>
-    let buffers: ContiguousArray<any MTLBuffer>
+    let buffer: any MTLBuffer
+    let bufferOffsets: [Int]
     let indicesCount: Int
-    var indexBuffer: some MTLBuffer {
-        return buffers.last!
-    }
+
     required init(geometry: RawGeometry) {
         self.primitive = .triangle
         let device = Game.shared.renderer.device
@@ -29,78 +28,61 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 3, shaderAttribute: .normal),
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
         ]
-
-        let sharedBuffers: ContiguousArray<any MTLBuffer> = [
-            device.makeBuffer(
-                bytes: geometry.positions,
-                length: MemoryLayout<Float>.stride * geometry.positions.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.uvSet1,
-                length: MemoryLayout<Float>.stride * geometry.uvSet1.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.uvSet2,
-                length: MemoryLayout<Float>.stride * geometry.uvSet2.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.normals,
-                length: MemoryLayout<Float>.stride * geometry.normals.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.tangents,
-                length: MemoryLayout<Float>.stride * geometry.tangents.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.colors,
-                length: MemoryLayout<Float>.stride * geometry.colors.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.indices,
-                length: MemoryLayout<UInt16>.stride * geometry.indices.count,
-                options: .storageModeShared
-            )!,
-        ]
-
-        self.buffers = [
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.positions.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.uvSet1.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.uvSet2.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.normals.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.tangents.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.colors.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<UInt16>.stride * geometry.indices.count,
-                options: .storageModePrivate
-            )!,
-        ]
+                
+        let posOffset = 0
+        let posSize = geometry.positions.count * MemoryLayout<Float>.size
+        let uv1Offset = posOffset + posSize + (posSize % 16)
+        let uv1Size = geometry.uvSet1.count * MemoryLayout<Float>.size
+        let uv2Offset = uv1Offset + uv1Size + (uv1Size % 16)
+        let uv2Size = geometry.uvSet2.count * MemoryLayout<Float>.size
+        let tanOffset = uv2Offset + uv2Size + (uv2Size % 16)
+        let tanSize = geometry.tangents.count * MemoryLayout<Float>.size
+        let nmlOffset = tanOffset + tanSize + (tanSize % 16)
+        let nmlSize = geometry.normals.count * MemoryLayout<Float>.size
+        let clrOffset = nmlOffset + nmlSize + (nmlSize % 16)
+        let clrSize = geometry.colors.count * MemoryLayout<Float>.size
+        let indOffset = clrOffset + clrSize + (clrSize % 16)
+        let indSize = geometry.indices.count * MemoryLayout<UInt16>.size
+        let totalBytes: Int = indOffset + indSize + (indSize % 16)
+        
+        self.bufferOffsets = [posOffset, uv1Offset, uv2Offset, tanOffset, nmlOffset, clrOffset, indOffset]
+        
+        let sharedBuffer = device.makeBuffer(
+            length: totalBytes,
+            options: .storageModeShared
+        )!
+        
+        let bytes = sharedBuffer.contents()
+        geometry.positions.withUnsafeBytes { pointer in
+            bytes.advanced(by: posOffset).copyMemory(from: pointer.baseAddress!, byteCount: posSize)
+        }
+        geometry.uvSet1.withUnsafeBytes { pointer in
+            bytes.advanced(by: uv1Offset).copyMemory(from: pointer.baseAddress!, byteCount: uv1Size)
+        }
+        geometry.uvSet2.withUnsafeBytes { pointer in
+            bytes.advanced(by: uv2Offset).copyMemory(from: pointer.baseAddress!, byteCount: uv2Size)
+        }
+        geometry.tangents.withUnsafeBytes { pointer in
+            bytes.advanced(by: tanOffset).copyMemory(from: pointer.baseAddress!, byteCount: tanSize)
+        }
+        geometry.normals.withUnsafeBytes { pointer in
+            bytes.advanced(by: nmlOffset).copyMemory(from: pointer.baseAddress!, byteCount: nmlSize)
+        }
+        geometry.colors.withUnsafeBytes { pointer in
+            bytes.advanced(by: clrOffset).copyMemory(from: pointer.baseAddress!, byteCount: clrSize)
+        }
+        geometry.indices.withUnsafeBytes { pointer in
+            bytes.advanced(by: indOffset).copyMemory(from: pointer.baseAddress!, byteCount: indSize)
+        }
+        
+        self.buffer = device.makeBuffer(
+            length: totalBytes,
+            options: .storageModePrivate
+        )!
+        
         self.indicesCount = geometry.indices.count
 
-        self.blit(sharedBuffers, buffers)
+        self.blit(sharedBuffer, self.buffer)
     }
 
     required init(geometry: RawGeometry, skin: Skin) {
@@ -117,95 +99,71 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .uInt32, componentLength: 4, shaderAttribute: .jointIndices),
             .init(type: .float, componentLength: 4, shaderAttribute: .jointWeights),
         ]
+        
+        let posOffset = 0
+        let posSize = geometry.positions.count * MemoryLayout<Float>.size
+        let uv1Offset = posOffset + posSize + (posSize % 16)
+        let uv1Size = geometry.uvSet1.count * MemoryLayout<Float>.size
+        let uv2Offset = uv1Offset + uv1Size + (uv1Size % 16)
+        let uv2Size = geometry.uvSet2.count * MemoryLayout<Float>.size
+        let tanOffset = uv2Offset + uv2Size + (uv2Size % 16)
+        let tanSize = geometry.tangents.count * MemoryLayout<Float>.size
+        let nmlOffset = tanOffset + tanSize + (tanSize % 16)
+        let nmlSize = geometry.normals.count * MemoryLayout<Float>.size
+        let clrOffset = nmlOffset + nmlSize + (nmlSize % 16)
+        let clrSize = geometry.colors.count * MemoryLayout<Float>.size
+        let sinOffset = clrOffset + clrSize + (clrSize % 16)
+        let sinSize = skin.jointIndices.count * MemoryLayout<UInt32>.size
+        let swtOffset = sinOffset + sinSize + (sinSize % 16)
+        let swtSize = skin.jointWeights.count * MemoryLayout<Float>.size
+        let indOffset = swtOffset + swtSize + (swtSize % 16)
+        let indSize = geometry.indices.count * MemoryLayout<UInt16>.size
+        let totalBytes: Int = indOffset + indSize + (indSize % 16)
+        
+        self.bufferOffsets = [posOffset, uv1Offset, uv2Offset, tanOffset, nmlOffset, clrOffset, sinOffset, swtOffset, indOffset]
+        
+        let sharedBuffer = device.makeBuffer(
+            length: totalBytes,
+            options: .storageModeShared
+        )!
+        
+        let bytes = sharedBuffer.contents()
+        geometry.positions.withUnsafeBytes { pointer in
+            bytes.advanced(by: posOffset).copyMemory(from: pointer.baseAddress!, byteCount: posSize)
+        }
+        geometry.uvSet1.withUnsafeBytes { pointer in
+            bytes.advanced(by: uv1Offset).copyMemory(from: pointer.baseAddress!, byteCount: uv1Size)
+        }
+        geometry.uvSet2.withUnsafeBytes { pointer in
+            bytes.advanced(by: uv2Offset).copyMemory(from: pointer.baseAddress!, byteCount: uv2Size)
+        }
+        geometry.tangents.withUnsafeBytes { pointer in
+            bytes.advanced(by: tanOffset).copyMemory(from: pointer.baseAddress!, byteCount: tanSize)
+        }
+        geometry.normals.withUnsafeBytes { pointer in
+            bytes.advanced(by: nmlOffset).copyMemory(from: pointer.baseAddress!, byteCount: nmlSize)
+        }
+        geometry.colors.withUnsafeBytes { pointer in
+            bytes.advanced(by: clrOffset).copyMemory(from: pointer.baseAddress!, byteCount: clrSize)
+        }
+        skin.jointIndices.withUnsafeBytes { pointer in
+            bytes.advanced(by: sinOffset).copyMemory(from: pointer.baseAddress!, byteCount: sinSize)
+        }
+        skin.jointWeights.withUnsafeBytes { pointer in
+            bytes.advanced(by: swtOffset).copyMemory(from: pointer.baseAddress!, byteCount: swtSize)
+        }
+        geometry.indices.withUnsafeBytes { pointer in
+            bytes.advanced(by: indOffset).copyMemory(from: pointer.baseAddress!, byteCount: indSize)
+        }
 
-        let sharedBuffers: ContiguousArray<any MTLBuffer> = [
-            device.makeBuffer(
-                bytes: geometry.positions,
-                length: MemoryLayout<Float>.stride * geometry.positions.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.uvSet1,
-                length: MemoryLayout<Float>.stride * geometry.uvSet1.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.uvSet2,
-                length: MemoryLayout<Float>.stride * geometry.uvSet2.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.normals,
-                length: MemoryLayout<Float>.stride * geometry.normals.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.tangents,
-                length: MemoryLayout<Float>.stride * geometry.tangents.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.colors,
-                length: MemoryLayout<Float>.stride * geometry.colors.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: skin.jointIndices,
-                length: MemoryLayout<UInt32>.stride * skin.jointIndices.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: skin.jointWeights,
-                length: MemoryLayout<Float>.stride * skin.jointWeights.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: geometry.indices,
-                length: MemoryLayout<UInt16>.stride * geometry.indices.count,
-                options: .storageModeShared
-            )!,
-        ]
-
-        self.buffers = [
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.positions.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.uvSet1.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.uvSet2.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.normals.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.tangents.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * geometry.colors.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<UInt32>.stride * skin.jointIndices.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * skin.jointWeights.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<UInt16>.stride * geometry.indices.count,
-                options: .storageModePrivate
-            )!,
-        ]
+        self.buffer = device.makeBuffer(
+            length: totalBytes,
+            options: .storageModePrivate
+        )!
+        
         self.indicesCount = geometry.indices.count
-        self.blit(sharedBuffers, buffers)
+
+        self.blit(sharedBuffer, self.buffer)
     }
 
     required init(lines: RawLines) {
@@ -216,41 +174,41 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 3, shaderAttribute: .position),
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
         ]
-
-        let sharedBuffers: ContiguousArray<any MTLBuffer> = [
-            device.makeBuffer(
-                bytes: lines.positions,
-                length: MemoryLayout<Float>.stride * lines.positions.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: lines.colors,
-                length: MemoryLayout<Float>.stride * lines.colors.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: lines.indices,
-                length: MemoryLayout<UInt16>.stride * lines.indices.count,
-                options: .storageModeShared
-            )!,
-        ]
-
-        self.buffers = [
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * lines.positions.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * lines.colors.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<UInt16>.stride * lines.indices.count,
-                options: .storageModePrivate
-            )!,
-        ]
+        
+        let posOffset = 0
+        let posSize = lines.positions.count * MemoryLayout<Float>.size
+        let clrOffset = posOffset + posSize + (posSize % 16)
+        let clrSize = lines.colors.count * MemoryLayout<Float>.size
+        let indOffset = clrOffset + clrSize + (clrSize % 16)
+        let indSize = lines.indices.count * MemoryLayout<UInt16>.size
+        let totalBytes: Int = indOffset + indSize + (indSize % 16)
+        
+        self.bufferOffsets = [posOffset, clrOffset, indOffset]
+        
+        let sharedBuffer = device.makeBuffer(
+            length: totalBytes,
+            options: .storageModeShared
+        )!
+        
+        let bytes = sharedBuffer.contents()
+        lines.positions.withUnsafeBytes { pointer in
+            bytes.advanced(by: posOffset).copyMemory(from: pointer.baseAddress!, byteCount: posSize)
+        }
+        lines.colors.withUnsafeBytes { pointer in
+            bytes.advanced(by: clrOffset).copyMemory(from: pointer.baseAddress!, byteCount: clrSize)
+        }
+        lines.indices.withUnsafeBytes { pointer in
+            bytes.advanced(by: indOffset).copyMemory(from: pointer.baseAddress!, byteCount: indSize)
+        }
+        
+        self.buffer = device.makeBuffer(
+            length: totalBytes,
+            options: .storageModePrivate
+        )!
+        
         self.indicesCount = lines.indices.count
-        self.blit(sharedBuffers, buffers)
+
+        self.blit(sharedBuffer, self.buffer)
     }
 
     required init(points: RawPoints) {
@@ -261,61 +219,58 @@ class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             .init(type: .float, componentLength: 3, shaderAttribute: .position),
             .init(type: .float, componentLength: 4, shaderAttribute: .color),
         ]
+        
+        let posOffset = 0
+        let posSize = points.positions.count * MemoryLayout<Float>.size
+        let clrOffset = posOffset + posSize + (posSize % 16)
+        let clrSize = points.colors.count * MemoryLayout<Float>.size
+        let indOffset = clrOffset + clrSize + (clrSize % 16)
+        let indSize = points.indices.count * MemoryLayout<UInt16>.size
+        let totalBytes: Int = indOffset + indSize + (indSize % 16)
+        
+        self.bufferOffsets = [posOffset, clrOffset, indOffset]
+        
+        let sharedBuffer = device.makeBuffer(
+            length: totalBytes,
+            options: .storageModeShared
+        )!
+        
+        let bytes = sharedBuffer.contents()
+        points.positions.withUnsafeBytes { pointer in
+            bytes.advanced(by: posOffset).copyMemory(from: pointer.baseAddress!, byteCount: posSize)
+        }
+        points.colors.withUnsafeBytes { pointer in
+            bytes.advanced(by: clrOffset).copyMemory(from: pointer.baseAddress!, byteCount: clrSize)
+        }
+        points.indices.withUnsafeBytes { pointer in
+            bytes.advanced(by: indOffset).copyMemory(from: pointer.baseAddress!, byteCount: indSize)
+        }
 
-        let sharedBuffers: ContiguousArray<any MTLBuffer> = [
-            device.makeBuffer(
-                bytes: points.positions,
-                length: MemoryLayout<Float>.stride * points.positions.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: points.colors,
-                length: MemoryLayout<Float>.stride * points.colors.count,
-                options: .storageModeShared
-            )!,
-            device.makeBuffer(
-                bytes: points.indices,
-                length: MemoryLayout<UInt16>.stride * points.indices.count,
-                options: .storageModeShared
-            )!,
-        ]
-
-        self.buffers = [
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * points.positions.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<Float>.stride * points.colors.count,
-                options: .storageModePrivate
-            )!,
-            device.makeBuffer(
-                length: MemoryLayout<UInt16>.stride * points.indices.count,
-                options: .storageModePrivate
-            )!,
-        ]
+        self.buffer = device.makeBuffer(
+            length: totalBytes,
+            options: .storageModePrivate
+        )!
+        
         self.indicesCount = points.indices.count
-        self.blit(sharedBuffers, buffers)
+
+        self.blit(sharedBuffer, self.buffer)
     }
 
     private func blit(
-        _ source: ContiguousArray<any MTLBuffer>,
-        _ destination: ContiguousArray<any MTLBuffer>
+        _ source: any MTLBuffer,
+        _ destination: any MTLBuffer
     ) {
-        assert(source.count == destination.count)
-
         let buffer = Game.shared.renderer.commandQueue.makeCommandBuffer()!
         let blit = buffer.makeBlitCommandEncoder()!
 
-        for bufferIndex in source.indices {
-            blit.copy(
-                from: source[bufferIndex],
-                sourceOffset: 0,
-                to: destination[bufferIndex],
-                destinationOffset: 0,
-                size: source[bufferIndex].length
-            )
-        }
+        blit.copy(
+            from: source,
+            sourceOffset: 0,
+            to: destination,
+            destinationOffset: 0,
+            size: source.length
+        )
+        
         blit.endEncoding()
         buffer.commit()
         buffer.waitUntilCompleted()
