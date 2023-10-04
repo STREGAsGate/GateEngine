@@ -6,6 +6,8 @@
  */
 #if DEBUG || canImport(Direct3D12)
 
+import Collections
+
 public final class HLSLCodeGenerator: CodeGenerator {
     override func type(for valueType: ValueType) -> String {
         switch valueType {
@@ -164,15 +166,35 @@ public final class HLSLCodeGenerator: CodeGenerator {
         let vertexMain = generateMain(from: vertexShader)
         let fragmentMain = generateMain(from: fragmentShader)
         
-        var customUniformDefine: String = ""
+        var customUniforms: OrderedSet<CustomUniform> = []
+        struct CustomUniform: Hashable {
+            let name: String
+            let type: String
+        }
         for value in vertexShader.sortedCustomUniforms() {
             if case let .uniformCustom(index, type: _) = value.valueRepresentation {
                 if case let .float4x4Array(capacity) = value.valueType {
-                    customUniformDefine += "\n    \(type(for: value)) u\(index)[\(capacity)];"
+                    customUniforms.append(CustomUniform(name: "u\(index)[\(capacity)]", type: "\(type(for: value))"))
                 }else{
-                    customUniformDefine += "\n    \(type(for: value)) u\(index);"
+                    customUniforms.append(CustomUniform(name: "u\(index)", type: "\(type(for: value))"))
                 }
             }
+        }
+        for value in fragmentShader.sortedCustomUniforms() {
+            if case let .uniformCustom(index, type: _) = value.valueRepresentation {
+                if case let .float4x4Array(capacity) = value.valueType {
+                    customUniforms.append(CustomUniform(name: "u\(index)[\(capacity)]", type: "\(type(for: value))"))
+                }else{
+                    customUniforms.append(CustomUniform(name: "u\(index)", type: "\(type(for: value))"))
+                }
+            }
+        }
+        
+        customUniforms.sort {$0.name.caseInsensitiveCompare($1.name) == .orderedAscending}
+        
+        var customUniformDefine: String = ""
+        for uniform in customUniforms {
+            customUniformDefine += "\n    \(uniform.type) \(uniform.name);"
         }
         
         var vertexGeometryDefine: String = ""
