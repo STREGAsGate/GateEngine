@@ -24,9 +24,11 @@ class MetalRenderer: RendererBackend {
     struct ShaderKey: Hashable {
         let vshID: VertexShader.ID
         let fshID: FragmentShader.ID
-        init(vsh: VertexShader, fsh: FragmentShader) {
+        let attributes: ContiguousArray<CodeGenerator.InputAttribute>
+        init(vsh: VertexShader, fsh: FragmentShader, attributes: ContiguousArray<CodeGenerator.InputAttribute>) {
             self.vshID = vsh.id
             self.fshID = fsh.id
+            self.attributes = attributes
         }
     }
     struct MetalShader {
@@ -332,13 +334,13 @@ extension MetalRenderer {
         geometries: [MetalGeometry],
         flags: DrawFlags
     ) -> MetalShader {
-        let key = ShaderKey(vsh: vsh, fsh: fsh)
+        let attributes = MetalGeometry.shaderAttributes(from: geometries)
+        let key = ShaderKey(vsh: vsh, fsh: fsh, attributes: attributes)
         if let existing = _shaders[key] {
             return existing
         }
         do {
             let generator = MSLCodeGenerator()
-            let attributes = MetalGeometry.shaderAttributes(from: geometries)
             let source = try generator.generateShaderCode(
                 vertexShader: vsh,
                 fragmentShader: fsh,
