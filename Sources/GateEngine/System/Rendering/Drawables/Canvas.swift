@@ -45,7 +45,7 @@
 
     public mutating func insert(
         _ points: Points,
-        pointSize: Float,
+        pointSize: Float = 1,
         at position: Position2,
         rotation: any Angle = Radians.zero,
         scale: Size2 = .one,
@@ -200,6 +200,8 @@
                 channel.scale = sprite.uvScale
                 channel.offset = sprite.uvOffset
             }
+            material.setCustomUniformValue(opacity, forUniform: "opacity")
+            material.fragmentShader = .textureSampleOpacity
         }
 
         let flags = DrawFlags(
