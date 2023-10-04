@@ -124,7 +124,7 @@
         var material = material
         material.vertexShader = .skinned
         material.setCustomUniformValue(
-            pose.shaderMatrixArray(orderedFromSkinJoints: geometry.skinJoints!),
+            pose.shaderMatrixArray(orderedFromSkinJoints: geometry.skinJoints),
             forUniform: "bones"
         )
         guard let geometryBackend = geometry.backend else { return }
