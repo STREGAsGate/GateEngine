@@ -9,7 +9,7 @@ let package = Package(
     products: [
         .library(name: "GateEngine", targets: ["GateEngine"]),
         .library(name: "GameMath", targets: ["GameMath"]),
-//        .library(name: "MiniZ", targets: ["MiniZ"]),
+        .library(name: "MiniZ", targets: ["MiniZ"]),
     ],
     dependencies: {
         var packageDependencies: [Package.Dependency] = []
@@ -174,7 +174,7 @@ let package = Package(
                         ])
                         #endif
                         
-                        #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
+                        #if true // Options for development of GateEngine. These should be disabled for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
                         // Options for development of WASI platform
@@ -200,7 +200,7 @@ let package = Package(
                             /// Enables varius additional, additional, checks and output for input
                             .define("GATEENGINE_DEBUG_HID_VERBOSE"),
                             /// Forces Apple platforms to use OpenGL for rendering
-//                            .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, /*.iOS, .tvOS*/])),
+                            .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, /*.iOS, .tvOS*/])),
                         ])
                         #endif
                         return settings
@@ -242,7 +242,7 @@ let package = Package(
                     path: "Dependencies/Vorbis",
                     publicHeadersPath: "include",
                     cSettings: [
-                        .unsafeFlags(["-Wno-everything"]),
+//                        .unsafeFlags(["-Wno-everything"]),
                         .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows]))
                     ]),
             
@@ -250,7 +250,7 @@ let package = Package(
             .target(name: "MiniZ",
                     path: "Dependencies/MiniZ",
                     cSettings: [
-                        .unsafeFlags(["-Wno-everything"]),
+//                        .unsafeFlags(["-Wno-everything"]),
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                     ]),
             
@@ -259,7 +259,7 @@ let package = Package(
                     dependencies: ["MiniZ"],
                     path: "Dependencies/LibSPNG",
                     cSettings: [
-                        .unsafeFlags(["-Wno-everything"]),
+//                        .unsafeFlags(["-Wno-everything"]),
                         .define("SPNG_STATIC"),
                         .define("SPNG_USE_MINIZ"),
                         // When public, the miniz.h header crashes Clang on Windows since Swift 5.8.0
@@ -271,7 +271,7 @@ let package = Package(
             .target(name: "TrueType",
                     path: "Dependencies/TrueType",
                     cSettings: [
-                        .unsafeFlags(["-Wno-everything"]),
+//                        .unsafeFlags(["-Wno-everything"]),
                         .define("STB_TRUETYPE_IMPLEMENTATION"), .define("STB_RECT_PACK_IMPLEMENTATION"),
                         .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows])),
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])), // Silence warnings
@@ -285,8 +285,8 @@ let package = Package(
                         // WASI doesn't have umask
                         .define("umask(x)", to: "022", .when(platforms: [.wasi])),
                         // Windows doesn't support PIC flag
-                        .unsafeFlags(["-fPIC"], .when(platforms: .any(except: .windows))),
-                        .unsafeFlags(["-Wno-everything"]),
+//                        .unsafeFlags(["-fPIC"], .when(platforms: .any(except: .windows))),
+//                        .unsafeFlags(["-Wno-everything"]),
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                     ], linkerSettings: [
                         // For math functions
@@ -299,7 +299,7 @@ let package = Package(
             .target(name: "uFBX",
                     path: "Dependencies/uFBX",
                     cSettings: [
-                        .unsafeFlags(["-Wno-everything"]),
+//                        .unsafeFlags(["-Wno-everything"]),
                     ]),
         ])
         
@@ -462,10 +462,7 @@ var openALCSettings: [CSetting] {
     array.append(.define("AL_API", to: "__declspec(dllexport)", .when(platforms: [.windows])))
     array.append(.define("_WIN32", .when(platforms: [.windows])))
     
-    // Clang crashes with intrinsics on Windows
-    array.append(.unsafeFlags(["-O0"], .when(platforms: [.windows], configuration: .release)))
-    
-    array.append(.unsafeFlags(["-Wno-everything"]))
+//    array.append(.unsafeFlags(["-Wno-everything"]))
     
     return array
 }
