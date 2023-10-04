@@ -14,8 +14,9 @@ public final class MaterialComponent: Component {
         material.setCustomUniformValue(value, forUniform: name)
     }
 
-    public func channel(_ index: UInt8, _ block: (_ channel: inout Material.Channel) -> Void) {
-        material.channel(index, block)
+    @discardableResult
+    public func channel<ResultType>(_ index: UInt8, _ block: (_ channel: inout Material.Channel) -> ResultType) -> ResultType {
+        return material.channel(index, block)
     }
 
     /// Set to `false` if this entity has transparency and then manually sort this object in your rendering system
