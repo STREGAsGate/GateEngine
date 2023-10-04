@@ -9,7 +9,7 @@ let package = Package(
     products: [
         .library(name: "GateEngine", targets: ["GateEngine"]),
         .library(name: "GameMath", targets: ["GameMath"]),
-        .library(name: "MiniZ", targets: ["MiniZ"]),
+//        .library(name: "MiniZ", targets: ["MiniZ"]),
     ],
     dependencies: {
         var packageDependencies: [Package.Dependency] = []
