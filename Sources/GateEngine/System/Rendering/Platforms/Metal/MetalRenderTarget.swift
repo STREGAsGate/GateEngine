@@ -83,16 +83,7 @@ class MetalRenderTarget: RenderTargetBackend {
     func willBeginFrame(_ frame: UInt) {
         self.isFirstPass = true
         self.commandBuffer = Game.shared.renderer.commandQueue.makeCommandBuffer()!
-    }
-
-    func didEndFrame(_ frame: UInt) {
-        if let drawable = metalView?.currentDrawable {
-            commandBuffer.present(drawable)
-        }
-        self.commandBuffer.commit()
-    }
-
-    func willBeginContent(matrices: Matrices?, viewport: GameMath.Rect?) {
+        
         if self.isFirstPass {
             self.isFirstPass = false
             self.commandEncoder = commandBuffer.makeRenderCommandEncoder(
@@ -103,6 +94,17 @@ class MetalRenderTarget: RenderTargetBackend {
                 descriptor: renderPassDescriptor
             )
         }
+    }
+
+    func didEndFrame(_ frame: UInt) {
+        self.commandEncoder.endEncoding()
+        if let drawable = metalView?.currentDrawable {
+            commandBuffer.present(drawable)
+        }
+        self.commandBuffer.commit()
+    }
+
+    func willBeginContent(matrices: Matrices?, viewport: GameMath.Rect?) {
         if let viewport {
             let mtlViewport = MTLViewport(
                 originX: Double(viewport.position.x),
@@ -117,7 +119,7 @@ class MetalRenderTarget: RenderTargetBackend {
     }
 
     func didEndContent() {
-        self.commandEncoder.endEncoding()
+        
     }
 
     @inline(__always)
