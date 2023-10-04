@@ -92,7 +92,9 @@ public final class Game {
             self.insertSystem(HIDSystem.self)
             self.insertSystem(AudioSystem.self)
         }
+        self.insertSystem(FinalizeSimulation.self)
         self.insertSystem(CacheSystem.self)
+        self.insertSystem(DeferredDelaySystem.self)
     }
 
     private var deltaTimeAccumulator: Double = 0
