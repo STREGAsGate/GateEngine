@@ -38,7 +38,8 @@ public struct Material {
     }
 
     internal var channels: [Channel] = [Channel(color: .defaultDiffuseMapColor)]
-    public mutating func channel(_ index: UInt8, _ block: (inout Channel) -> Void) {
+    @discardableResult
+    public mutating func channel<ResultType>(_ index: UInt8, _ block: (inout Channel) -> ResultType) -> ResultType {
         precondition(
             index <= channels.count,
             "index must be an existing channel or the next channel \(index)"
@@ -46,7 +47,7 @@ public struct Material {
         if index == channels.count {
             channels.append(Channel(color: .clear))
         }
-        block(&channels[Int(index)])
+        return block(&channels[Int(index)])
     }
 
     internal init() {
