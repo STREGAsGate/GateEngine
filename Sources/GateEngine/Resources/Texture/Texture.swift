@@ -65,7 +65,6 @@ public enum MipMapping: Hashable, Sendable {
     
     @inline(__always)
     public func replaceData(with data: Data, size: Size2, mipMapping: MipMapping) {
-        assert(state == .ready, "State must be ready!")
         textureBackend?.replaceData(with: data, size: size, mipMapping: mipMapping)
     }
 
@@ -127,6 +126,7 @@ public enum MipMapping: Hashable, Sendable {
     }
 
     init(renderTarget: any _RenderTargetProtocol) {
+        renderTarget.reshapeIfNeeded()
         let resourceManager = Game.shared.resourceManager
         self.renderTarget = renderTarget
         self.cacheKey = resourceManager.textureCacheKey(
