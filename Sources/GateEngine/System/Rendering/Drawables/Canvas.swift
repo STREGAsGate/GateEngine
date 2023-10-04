@@ -66,7 +66,7 @@
 
         let material = Material { material in
             material.vertexShader = .pointSizeAndColor
-            material.fragmentShader = .vertexColor
+            material.fragmentShader = .vertexColors
             material.setCustomUniformValue(pointSize, forUniform: "pointSize")
         }
         let flags = DrawFlags(
@@ -108,7 +108,7 @@
 
         let material = Material { material in
             material.vertexShader = .vertexColors
-            material.fragmentShader = .vertexColor
+            material.fragmentShader = .vertexColors
         }
         let flags = DrawFlags(
             cull: .back,

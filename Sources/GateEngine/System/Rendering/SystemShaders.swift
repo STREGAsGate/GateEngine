@@ -129,7 +129,7 @@ import Shaders
     }()
     /// Uses the colors in the vertices to shade objects
     /// Intended to be paired with `VertexShader.vertexColors`
-    public static let vertexColor: FragmentShader = {
+    public static let vertexColors: FragmentShader = {
         let fsh = FragmentShader()
         fsh.output.color = fsh.input["color"]
         return fsh
