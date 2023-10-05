@@ -35,4 +35,7 @@ public struct GeoemetryPath: ExpressibleByStringLiteral, CustomStringConvertible
     /// A 1x1x1 Plane
     @inlinable @inline(__always)
     public static var unitPlane: GeoemetryPath { "GateEngine/Primitives/Unit Plane.obj" }
+    /// A 1x1x1 Joint Shape
+    @inlinable @inline(__always)
+    public static var unitJoint: GeoemetryPath { "GateEngine/Primitives/Unit Joint.obj" }
 }
