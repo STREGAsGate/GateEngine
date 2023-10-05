@@ -172,6 +172,7 @@ class MetalRenderer: RendererBackend {
     struct RenderPipelineStateKey: Hashable {
         let vertexShader: VertexShader.ID
         let fragmentShader: FragmentShader.ID
+        let attributes: ContiguousArray<CodeGenerator.InputAttribute>
         let blendMode: DrawFlags.BlendMode
     }
     var _storedRenderPipelineStates: [RenderPipelineStateKey: any MTLRenderPipelineState] = [:]
@@ -180,11 +181,13 @@ class MetalRenderer: RendererBackend {
         fsh: FragmentShader,
         flags: DrawFlags,
         geometries: [MetalGeometry],
+        attributes: ContiguousArray<CodeGenerator.InputAttribute>,
         library: some MTLLibrary
     ) -> any MTLRenderPipelineState {
         let key = RenderPipelineStateKey(
             vertexShader: vsh.id,
             fragmentShader: fsh.id,
+            attributes: attributes,
             blendMode: flags.blendMode
         )
         if let existing = _storedRenderPipelineStates[key] {
@@ -355,6 +358,7 @@ extension MetalRenderer {
                 fsh: fsh,
                 flags: flags,
                 geometries: geometries,
+                attributes: attributes,
                 library: library
             )
             let shader = MetalShader(
