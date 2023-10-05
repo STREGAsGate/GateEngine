@@ -81,8 +81,13 @@ public class WavefrontOBJImporter: GeometryImporter {
                     let indices = comps.compactMap({ Int($0) }).map({ $0 - 1 })  //convert to base zero index
                     if indices.count >= 3 {  //Has normals and possibly other stuff
                         return Vertex(positions[indices[0]], normals[indices[2]], uvs[indices[1]])
-                    } else if indices.count == 2 {  //Just position and texture
-                        return Vertex(positions[indices[0]], .zero, uvs[indices[1]])
+                    } else if indices.count == 2 {  //Just position and texture or position and normal
+                        let index1 = indices[1]
+                        let hasUVs = uvs.indices.contains(index1)
+                        let hasNormals = normals.indices.contains(index1)
+                        return Vertex(positions[indices[0]], 
+                                      hasNormals ? normals[indices[1]] : .zero, 
+                                      hasUVs ? uvs[indices[1]] : .zero)
                     } else if indices.count == 1 {  // Just position
                         return Vertex(positions[indices[0]], .zero, .zero)
                     } else {
