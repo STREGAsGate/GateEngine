@@ -50,11 +50,11 @@ import Shaders
         let bones = vsh.uniform(named: "bones", as: Mat4Array.self, arrayCapacity: 64)
         let jointIndices = vsh.input.geometry(0).jointIndices
         let jointWeights = vsh.input.geometry(0).jointWeights
-        var position = Vec4(vsh.input.geometry(0).position, 1)
-        position += bones[jointIndices[0]] * position * jointWeights[0]
-        position += bones[jointIndices[1]] * position * jointWeights[1]
-        position += bones[jointIndices[2]] * position * jointWeights[2]
-        position += bones[jointIndices[3]] * position * jointWeights[3]
+        var vertex = Vec4(vsh.input.geometry(0).position, 1)
+        let position = bones[jointIndices[0]] * vertex * jointWeights[0]
+        + bones[jointIndices[1]] * vertex * jointWeights[1]
+        + bones[jointIndices[2]] * vertex * jointWeights[2]
+        + bones[jointIndices[3]] * vertex * jointWeights[3]
         vsh.output.position = vsh.modelViewProjectionMatrix * position
         vsh.output["texCoord0"] =
             vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
