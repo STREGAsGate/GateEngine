@@ -420,7 +420,7 @@ extension ResourceManager {
         importers.skeletonImporters.insert(type, at: 0)
     }
 
-    internal func importerForFile(_ file: URL) -> (any SkeletonImporter)? {
+    internal func skeletonImporterForFile(_ file: URL) -> (any SkeletonImporter)? {
         for type in self.importers.skeletonImporters {
             if type.canProcessFile(file) {
                 return type.init()
@@ -433,7 +433,7 @@ extension ResourceManager {
 extension Skeleton {
     public convenience init(path: String, options: SkeletonImporterOptions = .none) async throws {
         let file = URL(fileURLWithPath: path)
-        guard let importer = await Game.shared.resourceManager.importerForFile(file) else {
+        guard let importer: any SkeletonImporter = await Game.shared.resourceManager.skeletonImporterForFile(file) else {
             throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
         }
 

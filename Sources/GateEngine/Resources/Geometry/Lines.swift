@@ -33,14 +33,14 @@
 
     public init(path: String, options: GeometryImporterOptions = .none) {
         let resourceManager = Game.shared.resourceManager
-        self.cacheKey = resourceManager.geometryCacheKey(path: path, options: options)
+        self.cacheKey = resourceManager.linesCacheKey(path: path, options: options)
         self.cacheHint = .until(minutes: 5)
         resourceManager.incrementReference(self.cacheKey)
     }
 
     public init(_ rawLines: RawLines) {
         let resourceManager = Game.shared.resourceManager
-        self.cacheKey = resourceManager.geometryCacheKey(rawLines: rawLines)
+        self.cacheKey = resourceManager.linesCacheKey(rawLines: rawLines)
         self.cacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
@@ -63,11 +63,60 @@ extension Lines: Equatable, Hashable {
     }
 }
 
+extension RawLines {
+    @inlinable @inline(__always) @_disfavoredOverload
+    public init(_ path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws {
+        try await self.init(path: path.value, options: options)
+    }
+    public init(path: String, options: GeometryImporterOptions = .none) async throws {
+        let file = URL(fileURLWithPath: path)
+        guard
+            let importer: any GeometryImporter = await Game.shared.resourceManager.geometryImporterForFile(
+                file
+            )
+        else {
+            throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
+        }
+
+        do {
+            self = RawLines(wireframeFrom: try await importer.loadData(path: path, options: options).generateTriangles())
+        } catch {
+            throw GateEngineError(decodingError: error)
+        }
+    }
+}
+
 
 // MARK: - Resource Manager
 
 extension ResourceManager {
-    func geometryCacheKey(rawLines lines: RawLines?) -> Cache.GeometryKey {
+    func linesCacheKey(path: String, options: GeometryImporterOptions) -> Cache.GeometryKey {
+        let key = Cache.GeometryKey(requestedPath: path, geometryOptions: options)
+        if cache.geometries[key] == nil {
+            cache.geometries[key] = Cache.GeometryCache()
+            Task.detached(priority: .low) {
+                do {
+                    let geometry = try await RawGeometry(path: path, options: options)
+                    let lines = RawLines(wireframeFrom: geometry.generateTriangles())
+                    let backend = await self.geometryBackend(from: lines)
+                    Task { @MainActor in
+                        self.cache.geometries[key]!.geometryBackend = backend
+                        self.cache.geometries[key]!.state = .ready
+                    }
+                } catch let error as GateEngineError {
+                    Task { @MainActor in
+                        Log.warn("Resource \"\(path)\"", error)
+                        self.cache.geometries[key]!.state = .failed(error: error)
+                    }
+                } catch {
+                    Log.fatalError("error must be a GateEngineError")
+                }
+            }
+        }
+        return key
+    }
+    
+    func linesCacheKey(rawLines lines: RawLines?) -> Cache.GeometryKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
         if cache.geometries[key] == nil {

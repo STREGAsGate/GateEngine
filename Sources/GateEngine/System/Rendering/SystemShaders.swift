@@ -28,6 +28,13 @@ import Shaders
         }
         return vsh
     }()
+    
+    public static let positionOnly: VertexShader = {
+        let vsh = VertexShader()
+        vsh.output.position =
+            vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
+        return vsh
+    }()
     public static let standard: VertexShader = {
         let vsh = VertexShader()
         vsh.output.position =
@@ -129,7 +136,7 @@ import Shaders
     }()
     /// Uses the colors in the vertices to shade objects
     /// Intended to be paired with `VertexShader.vertexColors`
-    public static let vertexColors: FragmentShader = {
+    public static let vertexColor: FragmentShader = {
         let fsh = FragmentShader()
         fsh.output.color = fsh.input["color"]
         return fsh

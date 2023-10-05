@@ -115,7 +115,7 @@ extension ResourceManager {
         }
     }
 
-    fileprivate func importerForFile(_ file: URL) -> (any GeometryImporter)? {
+    func geometryImporterForFile(_ file: URL) -> (any GeometryImporter)? {
         for type in self.importers.geometryImporters {
             if type.canProcessFile(file) {
                 return type.init()
@@ -133,7 +133,7 @@ extension RawGeometry {
     public init(path: String, options: GeometryImporterOptions = .none) async throws {
         let file = URL(fileURLWithPath: path)
         guard
-            let importer: any GeometryImporter = await Game.shared.resourceManager.importerForFile(
+            let importer: any GeometryImporter = await Game.shared.resourceManager.geometryImporterForFile(
                 file
             )
         else {

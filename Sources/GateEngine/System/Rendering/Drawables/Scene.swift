@@ -73,7 +73,7 @@
             backends: [geometryBackend],
             transforms: transforms,
             material: material,
-            flags: flags.drawFlags
+            flags: flags.drawFlags(withPrimitive: .triangle)
         )
         self.drawCommands.append(command)
     }
@@ -133,7 +133,99 @@
             backends: [geometryBackend],
             transforms: transforms,
             material: material,
-            flags: flags.drawFlags
+            flags: flags.drawFlags(withPrimitive: .triangle)
+        )
+        self.drawCommands.append(command)
+    }
+    
+    /** Adds lines to the scene for rendering.
+    - parameter points: The points to draw.
+    - parameter material: The color information used to draw the geometry.
+    - parameter transform: Describes how the points instance should be positioned and scaled relative to the scene.
+    - parameter flags: Options to customize how drawing is handled.
+    - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
+    */
+    @_transparent
+    public mutating func insert(
+        _ points: Points,
+        color: Color,
+        size: Float,
+        at transform: Transform3,
+        flags: SceneElementFlags = .default
+    ) {
+        self.insert(points, color: color, size: size, at: [transform], flags: flags)
+    }
+    
+    /** Adds lines to the scene for rendering.
+    - parameter points: The lines to draw.
+    - parameter material: The color information used to draw the geometry.
+    - parameter transforms: Describes how each points instance should be positioned and scaled relative to the scene.
+    - parameter flags: Options to customize how drawing is handled.
+    - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
+    */
+    @inlinable @inline(__always)
+    public mutating func insert(
+        _ points: Points,
+        color: Color,
+        size: Float,
+        at transforms: [Transform3],
+        flags: SceneElementFlags = .default
+    ) {
+        guard points.state == .ready else { return }
+        guard let geometryBackend = points.backend else { return }
+        var material = Material(color: color)
+        material.vertexShader = .pointSizeAndColor
+        material.fragmentShader = .materialColor
+        material.setCustomUniformValue(size, forUniform: "pointSize")
+        let command = DrawCommand(
+            backends: [geometryBackend],
+            transforms: transforms,
+            material: material,
+            flags: flags.drawFlags(withPrimitive: .point)
+        )
+        self.drawCommands.append(command)
+    }
+    
+    /** Adds lines to the scene for rendering.
+    - parameter lines: The lines to draw.
+    - parameter material: The color information used to draw the geometry.
+    - parameter transform: Describes how the lines instance should be positioned and scaled relative to the scene.
+    - parameter flags: Options to customize how drawing is handled.
+    - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
+    */
+    @_transparent
+    public mutating func insert(
+        _ lines: Lines,
+        withMaterial material: Material,
+        at transform: Transform3,
+        flags: SceneElementFlags = .default
+    ) {
+        self.insert(lines, withMaterial: material, at: [transform], flags: flags)
+    }
+    
+    /** Adds lines to the scene for rendering.
+    - parameter lines: The lines to draw.
+    - parameter material: The color information used to draw the geometry.
+    - parameter transforms: Describes how each lines instance should be positioned and scaled relative to the scene.
+    - parameter flags: Options to customize how drawing is handled.
+    - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
+    */
+    @inlinable @inline(__always)
+    public mutating func insert(
+        _ lines: Lines,
+        withMaterial material: Material,
+        at transforms: [Transform3],
+        flags: SceneElementFlags = .default
+    ) {
+        guard lines.state == .ready else { return }
+        guard material.isReady else { return }
+        guard let geometryBackend = lines.backend else { return }
+
+        let command = DrawCommand(
+            backends: [geometryBackend],
+            transforms: transforms,
+            material: material,
+            flags: flags.drawFlags(withPrimitive: .line)
         )
         self.drawCommands.append(command)
     }
@@ -165,7 +257,7 @@
             backends: [sourceGeometryBackend, destinationGeometryBackend],
             transforms: transforms,
             material: sourceMaterial,
-            flags: flags.drawFlags
+            flags: flags.drawFlags(withPrimitive: .triangle)
         )
         self.drawCommands.append(command)
     }
@@ -363,7 +455,7 @@ public struct SceneElementFlags: OptionSet, Hashable {
     }
 
     @_transparent @usableFromInline
-    internal var drawFlags: DrawFlags {
+    internal func drawFlags(withPrimitive primitive: DrawFlags.Primitive) -> DrawFlags {
         let cull: DrawFlags.Cull = self.contains(.cullBackface) ? .back : .disabled
         let depthTest: DrawFlags.DepthTest = self.contains(.disableDepthCull) ? .always : .less
         let depthWrite: DrawFlags.DepthWrite =
@@ -372,6 +464,7 @@ public struct SceneElementFlags: OptionSet, Hashable {
             cull: cull,
             depthTest: depthTest,
             depthWrite: depthWrite,
+            primitive: primitive, 
             winding: .counterClockwise,
             blendMode: .normal
         )

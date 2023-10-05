@@ -66,7 +66,7 @@
 
         let material = Material { material in
             material.vertexShader = .pointSizeAndColor
-            material.fragmentShader = .vertexColors
+            material.fragmentShader = .vertexColor
             material.setCustomUniformValue(pointSize, forUniform: "pointSize")
         }
         let flags = DrawFlags(
@@ -108,7 +108,7 @@
 
         let material = Material { material in
             material.vertexShader = .vertexColors
-            material.fragmentShader = .vertexColors
+            material.fragmentShader = .vertexColor
         }
         let flags = DrawFlags(
             cull: .back,
@@ -283,7 +283,7 @@
         let scale = Size3(scale.x, scale.y, 1)
         let rotation = Quaternion(rotation, axis: .forward)
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
-        var drawFlags = flags.drawFlags
+        var drawFlags = flags.drawFlags(withPrimitive: .triangle)
         drawFlags.depthTest = .lessEqual
         let command = DrawCommand(
             backends: [geometryBackend],

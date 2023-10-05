@@ -102,6 +102,9 @@ class MetalRenderTarget: RenderTargetBackend {
             commandBuffer.present(drawable)
         }
         self.commandBuffer.commit()
+        #if GATEENGINE_DEBUG_RENDERING
+        self.commandBuffer.waitUntilCompleted()
+        #endif
     }
 
     func willBeginContent(matrices: Matrices?, viewport: GameMath.Rect?) {
