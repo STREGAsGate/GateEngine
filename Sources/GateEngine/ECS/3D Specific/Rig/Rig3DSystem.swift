@@ -5,7 +5,10 @@
  * http://stregasgate.com
  */
 
-public class RigSystem: System {
+@available(*, unavailable /* 0.1.3 */, renamed: "Rig3DSystem")
+public class RigSystem {}
+
+public class Rig3DSystem: System {
     var checkedIDs: Set<ObjectIdentifier> = []
     func getFarAway(from entities: ContiguousArray<Entity>) -> Entity? {
         func filter(_ entity: Entity) -> Bool {
