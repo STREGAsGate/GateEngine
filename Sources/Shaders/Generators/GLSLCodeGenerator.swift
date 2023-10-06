@@ -245,6 +245,18 @@ void main() {
         """
         }
         
+        let discardZeroAlpha: String = {
+            if fragmentShader.discardZeroAlpha {
+                return """
+                           if (\(variable(for: .fragmentOutColor)).a <= 0) {
+                               discard;
+                           }
+                       """
+            }else{
+                return ""
+            }
+        }()
+        
         self.prepareForReuse()
         return """
 \(version)
@@ -263,7 +275,7 @@ struct Material {
 uniform Material materials[16];
 
 void main() {
-\(generateMain(from: fragmentShader))}
+\(generateMain(from: fragmentShader))\(discardZeroAlpha)}
 """
     }
 

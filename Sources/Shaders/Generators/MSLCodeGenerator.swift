@@ -203,6 +203,18 @@ public final class MSLCodeGenerator: CodeGenerator {
             fragmentTextureList += "                                            texture2d<float> tex\(index) [[texture(\(index))]]"
         }
         
+        let discardZeroAlpha: String = {
+            if fragmentShader.discardZeroAlpha {
+                return """
+                           if (\(variable(for: .fragmentOutColor)).a <= 0) {
+                               discard_fragment();
+                           }
+                       """
+            }else{
+                return ""
+            }
+        }()
+        
         return """
 #include <metal_stdlib>
 #include <simd/simd.h>
@@ -251,6 +263,7 @@ fragment \(type(for: .float4)) fragment\(UInt(bitPattern: fragmentShader.id.hash
 \(fragmentTextureList)) {
     \(type(for: .float4)) \(variable(for: .fragmentOutColor));
 \(fragmentMain)
+\(discardZeroAlpha)
     return \(variable(for: .fragmentOutColor));
 }
 """

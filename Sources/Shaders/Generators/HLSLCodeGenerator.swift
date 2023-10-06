@@ -233,6 +233,19 @@ public final class HLSLCodeGenerator: CodeGenerator {
             fragmentTextureList += "Texture2D<float4> tex\(index) : register(t\(index));"
         }
         
+        let discardZeroAlpha: String = {
+            if fragmentShader.discardZeroAlpha {
+                return """
+                           if (\(variable(for: .fragmentOutColor)).a <= 0) {
+                               discard;
+                           }
+                       
+                       """
+            }else{
+                return ""
+            }
+        }()
+        
         let vsh = """
 cbuffer Uniforms : register(b0) {
     \(type(for: .float4x4)) pMtx;
@@ -295,6 +308,7 @@ SamplerState nearestSampler : register(s1);
 float4 PSMain(PSInput input) : SV_TARGET {
     \(type(for: .float4)) \(variable(for: .fragmentOutColor));
 \(fragmentMain)
+\(discardZeroAlpha)
     return \(variable(for: .fragmentOutColor));
 }
 """

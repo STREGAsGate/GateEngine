@@ -8,6 +8,7 @@
 import GameMath
 
 public final class FragmentShader: ShaderDocument {
+    public var discardZeroAlpha: Bool = true
     var channels: [Channel] = [Channel(channelIndex: 0)]
     public func channel(_ index: UInt8) -> Channel {
         precondition(index <= channels.count, "index must be an existing channel or the next channel \(index)")
