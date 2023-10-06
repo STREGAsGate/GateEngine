@@ -21,7 +21,7 @@ public final class Mat4Array: ShaderValue {
         self.valueMatrix4x4Array = nil
     }
     
-    internal init(_ operation: Operation) {
+    public init(_ operation: Operation) {
         self.valueRepresentation = .operation
         self.valueType = .operation
         self.operation = operation

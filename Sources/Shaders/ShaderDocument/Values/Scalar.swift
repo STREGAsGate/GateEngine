@@ -8,7 +8,7 @@
 public final class Scalar: ShaderValue {
     public let valueRepresentation: ValueRepresentation
     public let valueType: ValueType
-        
+    
     public let operation: Operation?
     
     internal init(representation: ValueRepresentation, type: ValueType) {
@@ -17,7 +17,7 @@ public final class Scalar: ShaderValue {
         self.operation = nil
     }
     
-    internal init(_ operation: Operation) {
+    public init(_ operation: Operation) {
         self.valueRepresentation = .operation
         self.valueType = .operation
         self.operation = operation
@@ -82,6 +82,95 @@ public final class Scalar: ShaderValue {
     }
     public static func /=(lhs: inout Scalar, rhs: Scalar) {
         lhs = Scalar(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+}
+
+extension Scalar {
+    public static func &&(lhs: Scalar, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.and), rhs: rhs))
+    }
+    public static func ||(lhs: Scalar, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.or), rhs: rhs))
+    }
+    
+    public static func ==(lhs: Scalar, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: rhs))
+    }
+    public static func ==(lhs: Scalar, rhs: Bool) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: Scalar(rhs)))
+    }
+    public static func ==(lhs: Scalar, rhs: Int) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: Scalar(rhs)))
+    }
+    public static func ==(lhs: Scalar, rhs: UInt) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: Scalar(rhs)))
+    }
+    public static func ==(lhs: Scalar, rhs: Float) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: Scalar(rhs)))
+    }
+    
+    public static func >(lhs: Scalar, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.greater), rhs: rhs))
+    }
+    public static func >(lhs: Scalar, rhs: Bool) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.greater), rhs: Scalar(rhs)))
+    }
+    public static func >(lhs: Scalar, rhs: Int) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.greater), rhs: Scalar(rhs)))
+    }
+    public static func >(lhs: Scalar, rhs: UInt) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.greater), rhs: Scalar(rhs)))
+    }
+    public static func >(lhs: Scalar, rhs: Float) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.greater), rhs: Scalar(rhs)))
+    }
+    
+    public static func <(lhs: Scalar, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.less), rhs: rhs))
+    }
+    public static func <(lhs: Scalar, rhs: Bool) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.less), rhs: Scalar(rhs)))
+    }
+    public static func <(lhs: Scalar, rhs: Int) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.less), rhs: Scalar(rhs)))
+    }
+    public static func <(lhs: Scalar, rhs: UInt) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.less), rhs: Scalar(rhs)))
+    }
+    public static func <(lhs: Scalar, rhs: Float) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.less), rhs: Scalar(rhs)))
+    }
+    
+    public static func >=(lhs: Scalar, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.greaterEqual), rhs: rhs))
+    }
+    public static func >=(lhs: Scalar, rhs: Bool) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.greaterEqual), rhs: Scalar(rhs)))
+    }
+    public static func >=(lhs: Scalar, rhs: Int) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.greaterEqual), rhs: Scalar(rhs)))
+    }
+    public static func >=(lhs: Scalar, rhs: UInt) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.greaterEqual), rhs: Scalar(rhs)))
+    }
+    public static func >=(lhs: Scalar, rhs: Float) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.greaterEqual), rhs: Scalar(rhs)))
+    }
+    
+    public static func <=(lhs: Scalar, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.lessEqual), rhs: rhs))
+    }
+    public static func <=(lhs: Scalar, rhs: Bool) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.lessEqual), rhs: Scalar(rhs)))
+    }
+    public static func <=(lhs: Scalar, rhs: Int) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.lessEqual), rhs: Scalar(rhs)))
+    }
+    public static func <=(lhs: Scalar, rhs: UInt) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.lessEqual), rhs: Scalar(rhs)))
+    }
+    public static func <=(lhs: Scalar, rhs: Float) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.lessEqual), rhs: Scalar(rhs)))
     }
 }
 

@@ -52,6 +52,7 @@ public final class Operation: ShaderElement {
         case compare(_ comparison: Comparison)
         
         case branch(comparing: Scalar)
+        case discard(comparing: Scalar)
         case sampler2D(filter: Sampler2D.Filter)
         case lerp(factor: Scalar)
         
@@ -77,116 +78,127 @@ public final class Operation: ShaderElement {
                 var values: [Int] = [5_108]
                 values.append(contentsOf: factor.documentIdentifierInputData())
                 return values
+            case .discard(comparing: let comparing):
+                var values: [Int] = [5_109]
+                values.append(contentsOf: comparing.documentIdentifierInputData())
+                return values
             }
         }
     }
-    let lhs: any ShaderValue
+    
     let `operator`: Operator
-    let rhs: any ShaderValue
+    let value1: any ShaderValue
+    let value2: any ShaderValue
     
     public func documentIdentifierInputData() -> [Int] {
         var values: [Int] = []
         values.append(contentsOf: self.valueRepresentation.identifier)
         values.append(contentsOf: self.valueType.identifier)
-        values.append(contentsOf: self.lhs.documentIdentifierInputData())
-        values.append(contentsOf: self.rhs.documentIdentifierInputData())
+        values.append(contentsOf: self.value1.documentIdentifierInputData())
+        values.append(contentsOf: self.value2.documentIdentifierInputData())
         values.append(contentsOf: self.operator.identifier)
         return values
     }
         
     public init(lhs: Scalar, operator: Operator, rhs: Scalar) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: Vec2, operator: Operator, rhs: Scalar) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: Vec3, operator: Operator, rhs: Scalar) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: Vec4, operator: Operator, rhs: Scalar) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: UVec4, operator: Operator, rhs: Scalar) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: Vec2, operator: Operator, rhs: Vec2) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: Vec3, operator: Operator, rhs: Vec3) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: Vec4, operator: Operator, rhs: Vec4) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: UVec4, operator: Operator, rhs: UVec4) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: Mat3, operator: Operator, rhs: Vec3) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: Mat3, operator: Operator, rhs: Mat3) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: Mat4, operator: Operator, rhs: Vec4) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     public init(lhs: Mat4, operator: Operator, rhs: Mat4) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
     internal init(lhs: Sampler2D, rhs: Vec2, operator: Operator) {
-        self.lhs = lhs
         self.operator = `operator`
-        self.rhs = rhs
+        self.value1 = lhs
+        self.value2 = rhs
     }
     
-    internal init<T: ShaderValue>(lhs: T, comparison: Operator.Comparison, rhs: T) {
-        self.lhs = lhs
+    internal init<T: ShaderValue>(comparison: Operator.Comparison, success: T,  failure: T) {
         self.operator = .compare(comparison)
-        self.rhs = rhs
+        self.value1 = success
+        self.value2 = failure
     }
     
     internal init<T: ShaderValue>(compare: Scalar, success: T, failure: T) {
-        self.lhs = success
         self.operator = .branch(comparing: compare)
-        self.rhs = failure
+        self.value1 = success
+        self.value2 = failure
+    }
+    
+    internal init<T: ShaderValue>(discardIf compare: Scalar, success: T) {
+        self.operator = .discard(comparing: compare)
+        self.value1 = success
+        self.value2 = Void()
     }
 }

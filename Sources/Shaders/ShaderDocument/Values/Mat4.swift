@@ -21,7 +21,7 @@ public final class Mat4: ShaderValue {
         self.valueMatrix4x4 = nil
     }
     
-    internal init(_ operation: Operation) {
+    public init(_ operation: Operation) {
         self.valueRepresentation = .operation
         self.valueType = .operation
         self.operation = operation
@@ -88,5 +88,9 @@ public final class Mat4: ShaderValue {
     }
     public static func /(lhs: Mat4, rhs: Matrix4x4) -> Mat4 {
         return Mat4(Operation(lhs: lhs, operator: .divide, rhs: Mat4(rhs)))
+    }
+    
+    public static func ==(lhs: Mat4, rhs: Mat4) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: rhs))
     }
 }

@@ -13,7 +13,7 @@ public final class HLSLCodeGenerator: CodeGenerator {
         switch valueType {
         case .texture2D:
             return "texture2D"
-        case .operation:
+        case .void, .operation:
             fatalError()
         case .bool:
             return "bool"
@@ -42,7 +42,7 @@ public final class HLSLCodeGenerator: CodeGenerator {
     
     override func variable(for representation: ValueRepresentation) -> String {
         switch representation {
-        case .operation, .vec2, .vec3, .vec4, .uvec4, .mat4, .mat4Array:
+        case .void, .operation, .vec2, .vec3, .vec4, .uvec4, .mat4, .mat4Array:
             fatalError("Should be declared.")
         case .vertexInstanceID:
             return "iid"
@@ -117,27 +117,27 @@ public final class HLSLCodeGenerator: CodeGenerator {
         }
     }
     
-    override func function(for operation: Operation) -> String {
+    override func function(value: some ShaderValue, operation: Operation) -> String {
         switch operation.operator {
         case .add, .subtract, .divide, .compare(_):
-            return "\(variable(for: operation.lhs)) \(symbol(for: operation.operator)) \(variable(for: operation.rhs))"
+            return "\(variable(for: operation.value1)) \(symbol(for: operation.operator)) \(variable(for: operation.value2))"
         case .multiply:
             let mul: Bool = shouldUseMul(operation: operation)
 
             func shouldUseMul(operation: Operation) -> Bool {
-                switch operation.lhs.valueType {
+                switch operation.value1.valueType {
                 case .float3x3, .float4x4:
                     return true
                 case .operation:
-                    if shouldUseMul(operation: operation.lhs.operation!) {
+                    if shouldUseMul(operation: operation.value1.operation!) {
                         return true
                     }
                 default:
-                    switch operation.rhs.valueType {
+                    switch operation.value2.valueType {
                     case .float3x3, .float4x4:
                         return true
                     case .operation:
-                        if shouldUseMul(operation: operation.rhs.operation!) {
+                        if shouldUseMul(operation: operation.value2.operation!) {
                             return true
                         }
                     default:
@@ -148,15 +148,17 @@ public final class HLSLCodeGenerator: CodeGenerator {
             }
 
             if mul {
-                return "mul(\(variable(for: operation.lhs)),\(variable(for: operation.rhs)))"
+                return "mul(\(variable(for: operation.value1)),\(variable(for: operation.value2)))"
             }
-            return "\(variable(for: operation.lhs)) \(symbol(for: .multiply)) \(variable(for: operation.rhs))"
+            return "\(variable(for: operation.value1)) \(symbol(for: .multiply)) \(variable(for: operation.value2))"
         case .branch(comparing: _):
             fatalError()
+        case .discard(comparing: _):
+            return "discard;"
         case let .sampler2D(filter: filter):
-            return "\(variable(for: operation.lhs)).Sample(\(filter == .nearest ? "nearestSampler" : "linearSampler"),\(variable(for: operation.rhs)))"
+            return "\(variable(for: operation.value1)).Sample(\(filter == .nearest ? "nearestSampler" : "linearSampler"),\(variable(for: operation.value2)))"
         case let .lerp(factor: factor):
-            return "lerp(\(variable(for: operation.lhs)), \(variable(for: operation.rhs)), \(variable(for: factor)))"
+            return "lerp(\(variable(for: operation.value1)), \(variable(for: operation.value2)), \(variable(for: factor)))"
         }
     }
     
@@ -233,19 +235,6 @@ public final class HLSLCodeGenerator: CodeGenerator {
             fragmentTextureList += "Texture2D<float4> tex\(index) : register(t\(index));"
         }
         
-        let discardZeroAlpha: String = {
-            if fragmentShader.discardZeroAlpha {
-                return """
-                           if (\(variable(for: .fragmentOutColor)).a <= 0) {
-                               discard;
-                           }
-                       
-                       """
-            }else{
-                return ""
-            }
-        }()
-        
         let vsh = """
 cbuffer Uniforms : register(b0) {
     \(type(for: .float4x4)) pMtx;
@@ -308,7 +297,6 @@ SamplerState nearestSampler : register(s1);
 float4 PSMain(PSInput input) : SV_TARGET {
     \(type(for: .float4)) \(variable(for: .fragmentOutColor));
 \(fragmentMain)
-\(discardZeroAlpha)
     return \(variable(for: .fragmentOutColor));
 }
 """

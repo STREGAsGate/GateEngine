@@ -13,7 +13,7 @@ public final class MSLCodeGenerator: CodeGenerator {
         switch valueType {
         case .texture2D:
             return "texture2D"
-        case .operation:
+        case .void, .operation:
             fatalError()
         case .bool:
             return "bool"
@@ -42,8 +42,10 @@ public final class MSLCodeGenerator: CodeGenerator {
     
     override func variable(for representation: ValueRepresentation) -> String {
         switch representation {
+        case .void:
+            fatalError("Cannot exist.")
         case .operation, .vec2, .vec3, .vec4, .uvec4, .mat4, .mat4Array:
-            fatalError("Should be declared.")
+            fatalError("Should be declared already.")
         case .vertexInstanceID:
             return "iid"
         case let .vertexInPosition(index):
@@ -117,16 +119,18 @@ public final class MSLCodeGenerator: CodeGenerator {
         }
     }
     
-    override func function(for operation: Operation) -> String {
+    override func function(value: some ShaderValue, operation: Operation) -> String {
         switch operation.operator {
         case .add, .subtract, .multiply, .divide, .compare(_):
-            return "\(variable(for: operation.lhs)) \(symbol(for: operation.operator)) \(variable(for: operation.rhs))"
+            return "\(variable(for: operation.value1)) \(symbol(for: operation.operator)) \(variable(for: operation.value2))"
         case .branch(comparing: _):
             fatalError()
         case let .sampler2D(filter: filter):
-            return "\(variable(for: operation.lhs)).sample(\(filter == .nearest ? "nearestSampler" : "linearSampler"),\(variable(for: operation.rhs)))"
+            return "\(variable(for: operation.value1)).sample(\(filter == .nearest ? "nearestSampler" : "linearSampler"),\(variable(for: operation.value2)))"
         case let .lerp(factor: factor):
-            return "mix(\(variable(for: operation.lhs)), \(variable(for: operation.rhs)), \(variable(for: factor)))"
+            return "mix(\(variable(for: operation.value1)), \(variable(for: operation.value2)), \(variable(for: factor)))"
+        case .discard(comparing: _):
+            return "discard;"
         }
     }
     
@@ -203,18 +207,6 @@ public final class MSLCodeGenerator: CodeGenerator {
             fragmentTextureList += "                                            texture2d<float> tex\(index) [[texture(\(index))]]"
         }
         
-        let discardZeroAlpha: String = {
-            if fragmentShader.discardZeroAlpha {
-                return """
-                           if (\(variable(for: .fragmentOutColor)).a <= 0) {
-                               discard_fragment();
-                           }
-                       """
-            }else{
-                return ""
-            }
-        }()
-        
         return """
 #include <metal_stdlib>
 #include <simd/simd.h>
@@ -263,7 +255,6 @@ fragment \(type(for: .float4)) fragment\(UInt(bitPattern: fragmentShader.id.hash
 \(fragmentTextureList)) {
     \(type(for: .float4)) \(variable(for: .fragmentOutColor));
 \(fragmentMain)
-\(discardZeroAlpha)
     return \(variable(for: .fragmentOutColor));
 }
 """

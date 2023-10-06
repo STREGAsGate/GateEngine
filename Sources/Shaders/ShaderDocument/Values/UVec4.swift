@@ -70,7 +70,7 @@ public final class UVec4: ShaderValue {
         self._w = nil
     }
     
-    internal init(_ operation: Operation) {
+    public init(_ operation: Operation) {
         self.valueRepresentation = .operation
         self.valueType = .operation
         self.operation = operation
@@ -78,6 +78,10 @@ public final class UVec4: ShaderValue {
         self._y = nil
         self._z = nil
         self._w = nil
+    }
+    
+    public convenience init(_ x: UInt, _ y: UInt, _ z: UInt, _ w: UInt) {
+        self.init(x: x, y: y, z: z, w: w)
     }
     
     public convenience init(r: UInt, g: UInt, b: UInt, a: UInt) {
@@ -139,5 +143,9 @@ public final class UVec4: ShaderValue {
     }
     public static func /(lhs: UVec4, rhs: UVec4) -> UVec4 {
         return UVec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    
+    public static func ==(lhs: UVec4, rhs: UVec4) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: rhs))
     }
 }

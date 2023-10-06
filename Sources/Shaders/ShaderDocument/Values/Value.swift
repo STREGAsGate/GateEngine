@@ -6,6 +6,7 @@
  */
 
 public enum ValueRepresentation {
+    case void
     case operation
     
     case vertexInPosition(_ index: UInt8)
@@ -59,6 +60,8 @@ public enum ValueRepresentation {
     
     var valueType: ValueType {
         switch self {
+        case .void:
+            return .void
         case .operation:
             return .operation
         case .vertexOutPointSize:
@@ -127,6 +130,8 @@ public enum ValueRepresentation {
     
     var identifier: [Int] {
         switch self {
+        case .void:
+            return [3_100]
         case .operation:
             return [3_101]
             
@@ -242,7 +247,7 @@ public enum ValueRepresentation {
                 .vertexInJointWeights(_), .vertexInJointIndices(_):
             return true
         #if DEBUG
-        case .operation,
+        case .void, .operation,
                 .vertexOutPosition, .vertexOutPointSize, .vertexOut(_), .vertexInstanceID,
                 .fragmentIn(_), .fragmentOutColor, .fragmentInstanceID, .uniformModelMatrix,
                 .uniformViewMatrix, .uniformProjectionMatrix, .uniformCustom(_,_),
@@ -263,6 +268,7 @@ public enum ValueRepresentation {
 }
 
 public enum ValueType {
+    case void
     case texture2D
     case operation
     case bool
@@ -279,6 +285,8 @@ public enum ValueType {
     
     var identifier: [Int] {
         switch self {
+        case .void:
+            return [1_000]
         case .texture2D:
             return [1_001]
         case .operation:
@@ -358,6 +366,8 @@ public protocol ShaderValue: AnyObject, Identifiable, CustomStringConvertible, S
     var valueRepresentation: ValueRepresentation {get}
     var valueType: ValueType {get}
     var operation: Operation? {get}
+    
+    init(_ operation: Operation)
 }
 
 public protocol ShaderElement: AnyObject {
@@ -372,13 +382,18 @@ extension ShaderValue {
     }
 }
 
-//
-//public extension Value {
-//    func branch<T: Value>(lhs: Scalar, _ comparison: Operation.Operator.Comparison, rhs: Scalar, success: T, failure: T) -> T {
-//        let compare = Scalar(Operation(lhs: lhs, comparison: comparison, rhs: rhs))
-//        return T(Operation(compare: compare, success: success, failure: failure))
-//    }
-//}
+
+public extension ShaderValue {
+    /**
+     Insert a fragment discard inline.
+     - parameter comparing: A value that when true will cause a discard.
+     - returns: A variable of the same value as the variable this function was called on.
+     - note: Cannot be called from a vertex shader.
+     */
+    func discard<T: ShaderValue>(if comparing: some Scalar) -> T {
+        return T(Operation(discardIf: comparing, success: self))
+    }
+}
 
 internal extension String {
     func documentIdentifierInputData() -> [Int] {

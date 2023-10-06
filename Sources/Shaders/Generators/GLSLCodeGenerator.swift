@@ -25,7 +25,7 @@ public final class GLSLCodeGenerator: CodeGenerator {
         switch valueType {
         case .texture2D:
             return "sampler2D"
-        case .operation:
+        case .void, .operation:
             fatalError("operation has no type.")
         case .bool:
             return "bool"
@@ -126,7 +126,7 @@ public final class GLSLCodeGenerator: CodeGenerator {
             return "materials[\(index)].color"
             
         #if DEBUG
-        case .operation, .vec2, .vec3, .vec4, .uvec4, .mat4, .mat4Array(_):
+        case .void, .operation, .vec2, .vec3, .vec4, .uvec4, .mat4, .mat4Array(_):
             fatalError("Shouldn't be asking for a name")
         #else
         default:
@@ -135,16 +135,18 @@ public final class GLSLCodeGenerator: CodeGenerator {
         }
     }
     
-    override func function(for operation: Operation) -> String {
+    override func function(value: some ShaderValue, operation: Operation) -> String {
         switch operation.operator {
         case .add, .subtract, .multiply, .divide, .compare(_):
-            return variable(for: operation.lhs) + " " + symbol(for: operation.operator) + " " + variable(for: operation.rhs)
+            return variable(for: operation.value1) + " " + symbol(for: operation.operator) + " " + variable(for: operation.value2)
         case .branch(comparing: _):
             fatalError()
+        case .discard(comparing: _):
+            return "discard;"
         case .sampler2D(filter: _):
-            return "texture(" + variable(for: operation.lhs) + "," + variable(for: operation.rhs) + ")"
+            return "texture(" + variable(for: operation.value1) + "," + variable(for: operation.value2) + ")"
         case let .lerp(factor: factor):
-            return "mix(" + variable(for: operation.lhs) + "," + variable(for: operation.rhs) + "," + variable(for: factor) + ")"
+            return "mix(" + variable(for: operation.value1) + "," + variable(for: operation.value2) + "," + variable(for: factor) + ")"
         }
     }
     
@@ -245,18 +247,6 @@ void main() {
         """
         }
         
-        let discardZeroAlpha: String = {
-            if fragmentShader.discardZeroAlpha {
-                return """
-                           if (\(variable(for: .fragmentOutColor)).a <= 0) {
-                               discard;
-                           }
-                       """
-            }else{
-                return ""
-            }
-        }()
-        
         self.prepareForReuse()
         return """
 \(version)
@@ -275,7 +265,7 @@ struct Material {
 uniform Material materials[16];
 
 void main() {
-\(generateMain(from: fragmentShader))\(discardZeroAlpha)}
+\(generateMain(from: fragmentShader))}
 """
     }
 

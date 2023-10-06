@@ -9,7 +9,10 @@ public class CodeGenerator {
     var _nextVarIndex: UInt = 1
     var _varNames: [ObjectIdentifier:String] = [:]
     var _declaredValues: Set<ObjectIdentifier> = []
-    
+    var indentationLevel: Int = 1
+    func indent() -> String {
+        return String(repeating: " ", count: indentationLevel * 4)
+    }
     final func prepareForReuse() {
         _nextVarIndex = 1
         _varNames.removeAll(keepingCapacity: true)
@@ -44,16 +47,11 @@ public class CodeGenerator {
             self.declareVariableIfNeeded(operation.lhs, declarations: &declarations)
             self.declareVariableIfNeeded(operation.rhs, declarations: &declarations)
             switch operation.operator {
-            case .add, .subtract, .multiply, .divide, .compare(_):
-                break
+            case .add, .subtract, .multiply, .divide, .compare(_), .sampler2D(filter: _), .lerp(factor: factor):
+                declarations += "\(indent())\(type(for: value)) \(variable(for: value)) = " + function(for: operation, declarations: &declarations) + ";\n"
             case .branch(comparing: _):
-                break
-            case .sampler2D(filter: _):
-                break
-            case let .lerp(factor: factor):
-                self.declareVariableIfNeeded(factor, declarations: &declarations)
+                declarations += function(for: operation, declarations: &declarations) + ";\n"
             }
-            declarations += "\t\(type(for: value)) \(variable(for: value)) = " + function(for: operation) + ";\n"
             #else
             self.declareVariable(value, declarations: &declarations)
             #endif
@@ -87,6 +85,8 @@ public class CodeGenerator {
             return
         case .channelScale(_), .channelOffset(_), .channelAttachment(_), .channelColor(_):
             return
+        case .void:
+            return
         #else
         default:
             return
@@ -94,24 +94,54 @@ public class CodeGenerator {
         }
     }
     
+    func declareFunction(value: some ShaderValue, declarations: inout String) {
+        let operation = value.operation!
+        switch operation.operator {
+        case .lerp(let factor):
+            self.declareVariableIfNeeded(factor, declarations: &declarations)
+            fallthrough
+        case .add, .subtract, .multiply, .divide, .compare(_), .sampler2D(_):
+            self.declareVariableIfNeeded(operation.value1, declarations: &declarations)
+            self.declareVariableIfNeeded(operation.value2, declarations: &declarations)
+            declarations += indent() + "\(type(for: value)) \(variable(for: value)) = " + function(value: value, operation: operation) + ";\n"
+        case .branch(let comparing):
+            self.declareVariableIfNeeded(comparing, declarations: &declarations)
+            declareVariableIfNeeded(operation.value1, declarations: &declarations)
+            declareVariableIfNeeded(operation.value2, declarations: &declarations)
+            
+            declarations += indent() + "\(type(for: value)) \(variable(for: value));\n"
+    
+            var out = indent() + "if (\(variable(for: comparing))) {\n"
+            indentationLevel += 1
+            out += indent() + "\(variable(for: value)) = \(variable(for: operation.value1));\n"
+            indentationLevel -= 1
+            out += indent() + "}else{\n"
+            indentationLevel += 1
+            out += indent() + "\(variable(for: value)) = \(variable(for: operation.value2));\n"
+            indentationLevel -= 1
+            out += indent() + "}\n"
+            declarations += out
+        case .discard(comparing: let comparing):
+            self.declareVariableIfNeeded(comparing, declarations: &declarations)
+            declareVariableIfNeeded(operation.value1, declarations: &declarations)
+            
+            declarations += indent() + "\(type(for: value)) \(variable(for: value)) = \(variable(for: operation.value1));\n"
+            
+            var out = indent() + "if (\(variable(for: comparing))) {\n"
+            indentationLevel += 1
+            out += indent() + "discard_fragment();\n"
+            indentationLevel -= 1
+            out += indent() + "}\n"
+            declarations += out
+        }
+    }
+    
     private final func declareVariable(_ value: some ShaderValue, declarations: inout String) {
-        var out = "\t\(type(for: value)) \(variable(for: value)) = "
+        lazy var out = indent() + "\(type(for: value)) \(variable(for: value)) = "
         switch value.valueType {
         case .operation:
-            let operation = value.operation!
-            self.declareVariableIfNeeded(operation.lhs, declarations: &declarations)
-            self.declareVariableIfNeeded(operation.rhs, declarations: &declarations)
-            switch operation.operator {
-            case .add, .subtract, .multiply, .divide, .compare(_):
-                break
-            case .branch(comparing: _):
-                break
-            case .sampler2D(filter: _):
-                break
-            case let .lerp(factor: factor):
-                self.declareVariableIfNeeded(factor, declarations: &declarations)
-            }
-            out += function(for: operation)
+            self.declareFunction(value: value, declarations: &declarations)
+            return
         case .bool, .int, .uint, .float:
             switch value.valueRepresentation {
             case let .scalarBool(value):
@@ -162,7 +192,7 @@ public class CodeGenerator {
             out += "\(type(for: .float4x4))(\(c0),\(c1),\(c2),\(c3))"
         case .float4x4Array:
             fatalError("Not implemented")
-        case .texture2D:
+        case .void, .texture2D:
             fatalError()
         }
         declarations += out + ";\n"
@@ -192,7 +222,7 @@ public class CodeGenerator {
         }
     }
     
-    func function(for value: Operation) -> String {
+    func function(value: some ShaderValue, operation: Operation) -> String {
         preconditionFailure("Must override")
     }
     
@@ -225,12 +255,19 @@ public class CodeGenerator {
             case .or:
                 return "||"
             }
+        #if DEBUG
         case .branch(comparing: _):
             fatalError()
         case .sampler2D(filter: _):
             fatalError()
         case .lerp(factor: _):
             fatalError()
+        case .discard(comparing: _):
+            fatalError()
+        #else
+        default:
+            fatalError()
+        #endif
         }
     }
     
@@ -286,7 +323,7 @@ public class CodeGenerator {
                     return .float4x4Array(capacity)
                 }
             case .operation:
-                return valueType(for: value.operation!.lhs)
+                return valueType(for: value.operation!.value1)
             default:
                 fatalError("Unhandled valueType \(value.valueRepresentation)")
             }
@@ -319,25 +356,25 @@ public class CodeGenerator {
         var operations = ""
         if let position = vertexShader.output.position {
             declareVariableIfNeeded(position, declarations: &declarations)
-            operations += "\t\(variable(for: .vertexOutPosition)) = \(variable(for:position));\n"
+            operations += "\(indent())\(variable(for: .vertexOutPosition)) = \(variable(for:position));\n"
         }else{
             declareVariable(vertexShader.modelViewProjectionMatrix, declarations: &declarations)
-            operations += "\t\(variable(for: .vertexOutPosition)) = \(variable(for: vertexShader.modelViewProjectionMatrix)) * \(type(for: .float4))(\(variable(for: vertexShader.input.geometry(0).position)),1.0);\n"
+            operations += "\(indent())\(variable(for: .vertexOutPosition)) = \(variable(for: vertexShader.modelViewProjectionMatrix)) * \(type(for: .float4))(\(variable(for: vertexShader.input.geometry(0).position)),1.0);\n"
         }
         if let pointSize = vertexShader.output.pointSize {
             declareVariableIfNeeded(pointSize, declarations: &declarations)
-            operations += "\t\(variable(for: .vertexOutPointSize)) = \(variable(for:pointSize));\n"
+            operations += "\(indent())\(variable(for: .vertexOutPointSize)) = \(variable(for:pointSize));\n"
         }
         for pair in vertexShader.output._values {
             let value = pair.value
             declareVariableIfNeeded(value, declarations: &declarations)
-            operations += "\t\(variable(for: .vertexOut(pair.key))) = \(variable(for: value));\n"
+            operations += "\(indent())\(variable(for: .vertexOut(pair.key))) = \(variable(for: value));\n"
         }
 //        if let texCoord = vertexShader.output.textureCoordinate {
 //            declareVariableIfNeeded(texCoord, declarations: &declarations)
-//            operations += "\t\(variable(for: .vertexOutTexCoord)) = \(variable(for:texCoord));\n"
+//            operations += "\(indent())\(variable(for: .vertexOutTexCoord)) = \(variable(for:texCoord));\n"
 //        }else{
-//            operations += "\t\(variable(for: .vertexOutTexCoord)) = \(variable(for: .vertexInTexCoord0(0)));\n"
+//            operations += "\(indent())\(variable(for: .vertexOutTexCoord)) = \(variable(for: .vertexInTexCoord0(0)));\n"
 //        }
         return declarations + "\n" + operations
     }
@@ -347,9 +384,9 @@ public class CodeGenerator {
         var operations = ""
         if let color = fragmentShader.output.color {
             declareVariableIfNeeded(color, declarations: &declarations)
-            operations += "\t\(variable(for: .fragmentOutColor)) = \(variable(for:color));\n"
+            operations += indent() + "\(variable(for: .fragmentOutColor)) = \(variable(for:color));\n"
         }else{
-            operations += "\t\(variable(for: .fragmentOutColor)) = \(type(for: .float4))(0.5,0.5,0.5,1.0);\n"
+            operations += indent() + "\(variable(for: .fragmentOutColor)) = \(type(for: .float4))(0.5,0.5,0.5,1.0);\n"
         }
         return declarations + "\n" + operations
     }

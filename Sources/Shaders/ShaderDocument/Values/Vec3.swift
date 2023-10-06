@@ -46,13 +46,17 @@ public final class Vec3: ShaderValue {
         self._z = nil
     }
     
-    internal init(_ operation: Operation) {
+    public init(_ operation: Operation) {
         self.valueRepresentation = .operation
         self.valueType = .operation
         self.operation = operation
         self._x = nil
         self._y = nil
         self._z = nil
+    }
+    
+    public convenience init(_ x: Float, _ y: Float, _ z: Float) {
+        self.init(x: x, y: y, z: z)
     }
     
     public init(x: Float, y: Float, z: Float) {
@@ -137,6 +141,10 @@ public final class Vec3: ShaderValue {
     }
     
     public static func *(lhs: Mat4, rhs: Vec3) -> Vec3 {
-        return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: Vec4(rhs, 1.0))).xyz()
+        return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: Vec4(rhs, 1.0))).xyz
+    }
+    
+    public static func ==(lhs: Vec3, rhs: Vec3) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: rhs))
     }
 }

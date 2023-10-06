@@ -47,7 +47,7 @@
         _ points: Points,
         pointSize: Float = 1,
         at position: Position2,
-        rotation: any Angle = Radians.zero,
+        rotation: some Angle = Radians.zero,
         scale: Size2 = .one,
         depth: Float = 0,
         opacity: Float = 1,
@@ -89,7 +89,7 @@
     public mutating func insert(
         _ lines: Lines,
         at position: Position2,
-        rotation: any Angle = Radians.zero,
+        rotation: some Angle = Radians.zero,
         scale: Size2 = .one,
         depth: Float = 0,
         opacity: Float = 1,
@@ -131,7 +131,7 @@
         _ rect: Rect,
         color: Color,
         at position: Position2,
-        rotation: any Angle = Radians.zero,
+        rotation: some Angle = Radians.zero,
         scale: Size2 = .one,
         depth: Float = 0,
         opacity: Float = 1,
@@ -170,11 +170,66 @@
         )
         drawCommands.append(command)
     }
+    
+    public mutating func insert(
+        _ texture: Texture,
+        subRect: Rect? = nil,
+        at position: Position2,
+        rotation: some Angle = Radians.zero,
+        scale: Size2 = .one,
+        depth: Float = 0,
+        opacity: Float = 1,
+        flags: CanvasElementSpriteFlags = .default
+    ) {
+        guard texture.state == .ready, 
+                Renderer.rectOriginTopLeft.state == .ready, 
+                let geometryBackend = Renderer.rectOriginTopLeft.backend 
+        else { return }
+
+        let position = Position3(position.x, position.y, depth * -1)
+        let scale = Size3(scale.x, scale.y, 1)
+        let rotation = Quaternion(rotation, axis: .forward)
+        let transform = Transform3(position: position, rotation: rotation, scale: scale)
+
+        let material = Material { material in
+            material.channel(0) { channel in
+                channel.texture = texture
+                if let subRect {
+                    channel.offset = Position2(
+                        (subRect.position.x + 0.001) / Float(texture.size.width),
+                        (subRect.position.y + 0.001) / Float(texture.size.height)
+                    )
+                    channel.scale = Size2(
+                        subRect.size.width / Float(texture.size.width),
+                        subRect.size.height / Float(texture.size.height)
+                    )
+                }
+            }
+            material.setCustomUniformValue(opacity, forUniform: "opacity")
+            material.fragmentShader = .textureSampleOpacity
+        }
+
+        let flags = DrawFlags(
+            cull: .disabled,
+            depthTest: .always,
+            depthWrite: .disabled,
+            primitive: .triangle,
+            winding: .clockwise,
+            blendMode: .normal
+        )
+        let command = DrawCommand(
+            backends: [geometryBackend],
+            transforms: [transform],
+            material: material,
+            flags: flags
+        )
+        drawCommands.append(command)
+    }
 
     public mutating func insert(
         _ sprite: Sprite,
         at position: Position2,
-        rotation: any Angle = Radians.zero,
+        rotation: some Angle = Radians.zero,
         scale: Size2 = .one,
         depth: Float = 0,
         opacity: Float = 1,
@@ -267,7 +322,7 @@
         _ geometry: Geometry,
         withMaterial material: Material,
         at position: Position2,
-        rotation: any Angle = Radians.zero,
+        rotation: some Angle = Radians.zero,
         scale: Size2 = .one,
         depth: Float = 0,
         flags: SceneElementFlags = .default

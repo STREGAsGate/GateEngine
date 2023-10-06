@@ -35,20 +35,25 @@ public final class Vec4: ShaderValue {
         set {self._w = newValue}
     }
     
-    public func xyz() -> Vec3 {
-        return Vec3(x: Scalar(representation: .vec4Value(self, 0), type: .float),
-                    y: Scalar(representation: .vec4Value(self, 1), type: .float),
-                    z: Scalar(representation: .vec4Value(self, 2), type: .float))
+    public var xyz: Vec3 {
+        get {
+            return Vec3(x: Scalar(representation: .vec4Value(self, 0), type: .float),
+                        y: Scalar(representation: .vec4Value(self, 1), type: .float),
+                        z: Scalar(representation: .vec4Value(self, 2), type: .float))
+        }
+        set {
+            self.x = newValue.x
+            self.y = newValue.y
+            self.z = newValue.z
+        }
     }
     
-    public var r: Scalar {return x}
-    public var g: Scalar {return y}
-    public var b: Scalar {return z}
-    public var a: Scalar {return w}
+    public var r: Scalar {get{x}set{x = newValue}}
+    public var g: Scalar {get{y}set{y = newValue}}
+    public var b: Scalar {get{z}set{z = newValue}}
+    public var a: Scalar {get{w}set{w = newValue}}
     
-    public func rgb() -> Vec3 {
-        return xyz()
-    }
+    public var rgb: Vec3 {get{xyz}set{xyz = newValue}}
     
     public subscript (index: Int) -> Scalar {
         switch index {
@@ -70,7 +75,7 @@ public final class Vec4: ShaderValue {
         self._w = nil
     }
     
-    internal init(_ operation: Operation) {
+    public init(_ operation: Operation) {
         self.valueRepresentation = .operation
         self.valueType = .operation
         self.operation = operation
@@ -78,6 +83,10 @@ public final class Vec4: ShaderValue {
         self._y = nil
         self._z = nil
         self._w = nil
+    }
+    
+    public convenience init(_ x: Float, _ y: Float, _ z: Float, _ w: Float) {
+        self.init(x: x, y: y, z: z, w: w)
     }
     
     public convenience init(r: Float, g: Float, b: Float, a: Float) {
@@ -184,5 +193,9 @@ public final class Vec4: ShaderValue {
     
     public static func *(lhs: Mat4, rhs: Vec4) -> Vec4 {
         return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    
+    public static func ==(lhs: Vec4, rhs: Vec4) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: rhs))
     }
 }

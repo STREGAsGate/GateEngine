@@ -8,7 +8,7 @@
 @dynamicMemberLookup
 public final class MaterialComponent: Component {
 
-    public var material: Material = Material()
+    public var material: Material
 
     public func setCustomUniformValue(_ value: some CustomUniformType, forUniform name: String) {
         material.setCustomUniformValue(value, forUniform: name)
@@ -26,16 +26,20 @@ public final class MaterialComponent: Component {
         return isOpaque == false  // || material.opacity < 1.0
     }
 
-    
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<Material, T>) -> T {
         get { return material[keyPath: keyPath] }
         set { material[keyPath: keyPath] = newValue }
     }
 
-    public init() {}
-    
+    public init() {
+        self.material = Material()
+    }
     public init(config: (_ material: inout Material) -> Void) {
-        config(&material)
+        self.material = Material()
+        config(&self.material)
+    }
+    public init(_ material: Material) {
+        self.material = material
     }
     
     public static let componentID: ComponentID = ComponentID()

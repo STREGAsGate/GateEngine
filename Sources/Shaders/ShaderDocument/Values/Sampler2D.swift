@@ -36,4 +36,8 @@ public final class Sampler2D: ShaderValue {
     public func documentIdentifierInputData() -> [Int] {
         return operation?.documentIdentifierInputData() ?? []
     }
+    
+    public init(_ operation: Operation) {
+        fatalError("Cannot create a sampler with an operation.")
+    }
 }

@@ -39,12 +39,16 @@ public final class Vec2: ShaderValue {
         self._y = nil
     }
     
-    internal init(_ operation: Operation) {
+    public init(_ operation: Operation) {
         self.valueRepresentation = .operation
         self.valueType = .operation
         self.operation = operation
         self._x = nil
         self._y = nil
+    }
+    
+    public convenience init(_ x: Float, _ y: Float) {
+        self.init(x: x, y: y)
     }
     
     public init(x: Float, y: Float) {
@@ -120,5 +124,9 @@ public final class Vec2: ShaderValue {
     }
     public static func /=(lhs: inout Vec2, rhs: Vec2) {
         lhs = Vec2(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    
+    public static func ==(lhs: Vec2, rhs: Vec2) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: rhs))
     }
 }
