@@ -74,23 +74,24 @@ class OpenGLRenderer: RendererBackend {
                 attributes: attributes
             )
 
-            let vsh = compileShader(sources.vertexSource, shared: "", withType: .vertex)!
             #if GATEENGINE_LOG_SHADERS
             Log.info(
                 "Generated OpenGL Vertex Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.vertexSource))\n"
             )
             #endif
+            let vsh = compileShader(sources.vertexSource, shared: "", withType: .vertex)!
             #if GATEENGINE_DEBUG_RENDERING
             if let error = try glGetShaderInfoLog(shader: vsh), error.isEmpty == false {
                 Log.error("\(self.self).\(#function):\(#line), OpenGL Error:\n\(error)")
             }
             #endif
-            let fsh = compileShader(sources.fragmentSource, shared: "", withType: .fragment)!
             #if GATEENGINE_LOG_SHADERS
             Log.info(
                 "Generated OpenGL Fragment Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.fragmentSource))\n"
             )
             #endif
+            let fsh = compileShader(sources.fragmentSource, shared: "", withType: .fragment)!
+   
             #if GATEENGINE_DEBUG_RENDERING
             if let error = try glGetShaderInfoLog(shader: fsh), error.isEmpty == false {
                 Log.error("\(self.self).\(#function):\(#line), OpenGL Error:\n\(error)")
