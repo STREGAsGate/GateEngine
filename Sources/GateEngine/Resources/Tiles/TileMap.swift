@@ -245,7 +245,7 @@ extension ResourceManager {
         let key = Cache.TileMapKey(requestedPath: path, tileMapOptions: options)
         if cache.tileMaps[key] == nil {
             cache.tileMaps[key] = Cache.TileMapCache()
-            self._reloadTileMap(for: key)
+            self._reloadTileMap(for: key, isFirstLoad: true)
         }
         return key
     }
@@ -256,10 +256,13 @@ extension ResourceManager {
             cache.tileMaps[key] = Cache.TileMapCache()
             Task.detached(priority: .low) {
                 let backend = await TileMapBackend(layers: layers)
-                
                 Task { @MainActor in
-                    self.cache.tileMaps[key]!.tileMapBackend = backend
-                    self.cache.tileMaps[key]!.state = .ready
+                    if let cache = self.cache.tileMaps[key] {
+                        cache.tileMapBackend = backend
+                        cache.state = .ready
+                    }else{
+                        Log.warn("Resource \"(Generated TileMap)\" was deallocated before being loaded.")
+                    }
                 }
             }
         }
@@ -275,7 +278,18 @@ extension ResourceManager {
         self.tileMapCache(for: key)?.referenceCount += 1
     }
     func decrementReference(_ key: Cache.TileMapKey) {
-        self.tileMapCache(for: key)?.referenceCount -= 1
+        guard let cache = self.tileMapCache(for: key) else {return}
+        cache.referenceCount -= 1
+        
+        if case .whileReferenced = cache.cacheHint {
+            if cache.referenceCount == 0 {
+                self.cache.tileMaps.removeValue(forKey: key)
+                Log.debug(
+                    "Removing cache (no longer referenced), Object:",
+                    key.requestedPath.first == "$" ? "(Generated TileMap)" : key.requestedPath
+                )
+            }
+        }
     }
     
     func reloadTileMapIfNeeded(key: Cache.TileMapKey) {
@@ -283,11 +297,11 @@ extension ResourceManager {
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
         Task.detached(priority: .low) {
             guard self.tileMapNeedsReload(key: key) else { return }
-            self._reloadTileMap(for: key)
+            self._reloadTileMap(for: key, isFirstLoad: false)
         }
     }
     
-    func _reloadTileMap(for key: Cache.TileMapKey) {
+    func _reloadTileMap(for key: Cache.TileMapKey, isFirstLoad: Bool) {
         Task.detached(priority: .low) {
             let path = key.requestedPath
             
@@ -310,13 +324,19 @@ extension ResourceManager {
                 )
 
                 Task { @MainActor in
-                    self.cache.tileMaps[key]!.tileMapBackend = backend
-                    self.cache.tileMaps[key]!.state = .ready
+                    if let cache = self.cache.tileMaps[key] {
+                        cache.tileMapBackend = backend
+                        cache.state = .ready
+                    }else{
+                        Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
+                    }
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
                     Log.warn("Resource \"\(path)\"", error)
-                    self.cache.tileMaps[key]!.state = .failed(error: error)
+                    if let cache = self.cache.tileMaps[key] {
+                        cache.state = .failed(error: error)
+                    }
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")

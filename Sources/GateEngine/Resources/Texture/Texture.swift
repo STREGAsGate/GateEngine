@@ -250,8 +250,10 @@ extension ResourceManager.Cache {
 
 extension ResourceManager {
     func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.TextureKey) {
-        cache.textures[key]?.cacheHint = cacheHint
-        cache.textures[key]?.minutesDead = 0
+        if let cache = self.cache.textures[key] {
+            cache.cacheHint = cacheHint
+            cache.minutesDead = 0
+        }
     }
 
     func textureCacheKey(path: String, mipMapping: MipMapping, options: TextureImporterOptions)
@@ -285,8 +287,12 @@ extension ResourceManager {
                     mipMapping: mipMapping
                 )
                 Task { @MainActor in
-                    self.cache.textures[key]!.textureBackend = backend
-                    self.cache.textures[key]!.state = .ready
+                    if let cache = self.cache.textures[key] {
+                        cache.textureBackend = backend
+                        cache.state = .ready
+                    }else{
+                        Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
+                    }
                 }
             }
         }
@@ -303,8 +309,12 @@ extension ResourceManager {
             Task.detached(priority: .low) {
                 let backend = await self.textureBackend(renderTargetBackend: renderTargetBackend)
                 Task { @MainActor in
-                    self.cache.textures[key]!.textureBackend = backend
-                    self.cache.textures[key]!.state = .ready
+                    if let cache = self.cache.textures[key] {
+                        cache.textureBackend = backend
+                        cache.state = .ready
+                    }else{
+                        Log.warn("Resource \"(Generated Texture)\" was deallocated before being loaded.")
+                    }
                 }
             }
         }
@@ -319,7 +329,18 @@ extension ResourceManager {
         self.textureCache(for: key)?.referenceCount += 1
     }
     func decrementReference(_ key: Cache.TextureKey) {
-        self.textureCache(for: key)?.referenceCount -= 1
+        guard let cache = self.textureCache(for: key) else {return}
+        cache.referenceCount -= 1
+        
+        if case .whileReferenced = cache.cacheHint {
+            if cache.referenceCount == 0 {
+                self.cache.textures.removeValue(forKey: key)
+                Log.debug(
+                    "Removing cache (no longer referenced), Object:",
+                    key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath
+                )
+            }
+        }
     }
 
     func reloadTextureIfNeeded(key: Cache.TextureKey) {
@@ -365,13 +386,19 @@ extension ResourceManager {
                     mipMapping: key.mipMapping
                 )
                 Task { @MainActor in
-                    self.cache.textures[key]!.textureBackend = backend
-                    self.cache.textures[key]!.state = .ready
+                    if let cache = self.cache.textures[key] {
+                        cache.textureBackend = backend
+                        cache.state = .ready
+                    }else{
+                        Log.warn("Resource \"\(path)\" was deallocated before being re-loaded.")
+                    }
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
                     Log.warn("Resource \"\(key.requestedPath)\"", error)
-                    self.cache.textures[key]!.state = .failed(error: error)
+                    if let cache = self.cache.textures[key] {
+                        cache.state = .failed(error: error)
+                    }
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")

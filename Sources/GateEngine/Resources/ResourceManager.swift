@@ -68,22 +68,14 @@ public class ResourceManager {
             incrementMinutes()
         }
     }
-
+    
     func incrementMinutes() {
         for key in cache.textures.keys {
             guard let cache = cache.textures[key] else { continue }
 
             switch cache.cacheHint {
-            case .forever:
+            case .forever, .whileReferenced:
                 continue
-            case .whileReferenced:
-                if cache.referenceCount == 0 {
-                    self.cache.textures.removeValue(forKey: key)
-                    Log.debug(
-                        "Removing cache (no longer referenced), Object:",
-                        key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath
-                    )
-                }
             case .until(let minutes):
                 if cache.referenceCount == 0 {
                     cache.minutesDead += 1
@@ -105,16 +97,8 @@ public class ResourceManager {
             guard let cache = cache.geometries[key] else { continue }
 
             switch cache.cacheHint {
-            case .forever:
+            case .forever, .whileReferenced:
                 continue
-            case .whileReferenced:
-                if cache.referenceCount == 0 {
-                    self.cache.geometries.removeValue(forKey: key)
-                    Log.debug(
-                        "Removing cache (no longer referenced), Object:",
-                        key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath
-                    )
-                }
             case .until(let minutes):
                 if cache.referenceCount == 0 {
                     cache.minutesDead += 1

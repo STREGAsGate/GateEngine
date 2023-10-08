@@ -122,8 +122,10 @@ extension ResourceManager.Cache {
 }
 extension ResourceManager {
     func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.SkinnedGeometryKey) {
-        cache.skinnedGeometries[key]?.cacheHint = cacheHint
-        cache.skinnedGeometries[key]?.minutesDead = 0
+        if let cache = self.cache.skinnedGeometries[key] {
+            cache.cacheHint = cacheHint
+            cache.minutesDead = 0
+        }
     }
 
     func skinnedGeometryCacheKey(
@@ -148,12 +150,16 @@ extension ResourceManager {
                             cache.geometryBackend = backend
                             cache.skinJoints = skin.joints
                             cache.state = .ready
+                        }else{
+                            Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
                         }
                     }
                 } catch let error as GateEngineError {
                     Task { @MainActor in
                         Log.warn("Resource \"\(path)\"", error)
-                        self.cache.skinnedGeometries[key]!.state = .failed(error: error)
+                        if let cache = self.cache.skinnedGeometries[key] {
+                            cache.state = .failed(error: error)
+                        }
                     }
                 } catch {
                     Log.fatalError("error must be a GateEngineError")
@@ -182,6 +188,8 @@ extension ResourceManager {
                             cache.geometryBackend = backend
                             cache.skinJoints = skin.joints
                             cache.state = .ready
+                        }else{
+                            Log.warn("Resource \"(Generated SkinnedGeometry)\" was deallocated before being loaded.")
                         }
                     }
                 }
@@ -198,7 +206,18 @@ extension ResourceManager {
         self.skinnedGeometryCache(for: key)?.referenceCount += 1
     }
     func decrementReference(_ key: Cache.SkinnedGeometryKey) {
-        self.skinnedGeometryCache(for: key)?.referenceCount -= 1
+        guard let cache = self.skinnedGeometryCache(for: key) else {return}
+        cache.referenceCount -= 1
+        
+        if case .whileReferenced = cache.cacheHint {
+            if cache.referenceCount == 0 {
+                self.cache.skinnedGeometries.removeValue(forKey: key)
+                Log.debug(
+                    "Removing cache (no longer referenced), Object:",
+                    key.requestedPath.first == "$" ? "(Generated SkinnedGeometry)" : key.requestedPath
+                )
+            }
+        }
     }
 
     func reloadSkinnedGeometryIfNeeded(key: Cache.SkinnedGeometryKey) {
@@ -216,6 +235,8 @@ extension ResourceManager {
                 if let cache = self.cache.skinnedGeometries[key] {
                     cache.geometryBackend = backend
                     cache.skinJoints = skin.joints
+                }else{
+                    Log.warn("Resource \"\(key.requestedPath)\" was deallocated before being re-loaded.")
                 }
             }
         }

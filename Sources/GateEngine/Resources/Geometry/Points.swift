@@ -99,13 +99,19 @@ extension ResourceManager {
                     let points = RawPoints(pointCloudFrom: geometry.generateTriangles())
                     let backend = await self.geometryBackend(from: points)
                     Task { @MainActor in
-                        self.cache.geometries[key]!.geometryBackend = backend
-                        self.cache.geometries[key]!.state = .ready
+                        if let cache = self.cache.geometries[key] {
+                            cache.geometryBackend = backend
+                            cache.state = .ready
+                        }else{
+                            Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
+                        }
                     }
                 } catch let error as GateEngineError {
                     Task { @MainActor in
                         Log.warn("Resource \"\(path)\"", error)
-                        self.cache.geometries[key]!.state = .failed(error: error)
+                        if let cache = self.cache.geometries[key] {
+                            cache.state = .failed(error: error)
+                        }
                     }
                 } catch {
                     Log.fatalError("error must be a GateEngineError")
@@ -124,8 +130,12 @@ extension ResourceManager {
                 Task.detached(priority: .low) {
                     let backend = await self.geometryBackend(from: points)
                     Task { @MainActor in
-                        self.cache.geometries[key]!.geometryBackend = backend
-                        self.cache.geometries[key]!.state = .ready
+                        if let cache = self.cache.geometries[key] {
+                            cache.geometryBackend = backend
+                            cache.state = .ready
+                        }else{
+                            Log.warn("Resource \"(Generated Points)\" was deallocated before being loaded.")
+                        }
                     }
                 }
             }

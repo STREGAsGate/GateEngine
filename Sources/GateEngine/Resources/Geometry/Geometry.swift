@@ -176,8 +176,10 @@ extension ResourceManager.Cache {
 
 extension ResourceManager {
     func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.GeometryKey) {
-        cache.geometries[key]?.cacheHint = cacheHint
-        cache.geometries[key]?.minutesDead = 0
+        if let cache = self.cache.geometries[key] {
+            cache.cacheHint = cacheHint
+            cache.minutesDead = 0
+        }
     }
 
     func geometryCacheKey(path: String, options: GeometryImporterOptions) -> Cache.GeometryKey {
@@ -189,13 +191,19 @@ extension ResourceManager {
                     let geometry = try await RawGeometry(path: path, options: options)
                     let backend = await self.geometryBackend(from: geometry)
                     Task { @MainActor in
-                        self.cache.geometries[key]!.geometryBackend = backend
-                        self.cache.geometries[key]!.state = .ready
+                        if let cache = self.cache.geometries[key] {
+                            cache.geometryBackend = backend
+                            cache.state = .ready
+                        }else{
+                            Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
+                        }
                     }
                 } catch let error as GateEngineError {
                     Task { @MainActor in
                         Log.warn("Resource \"\(path)\"", error)
-                        self.cache.geometries[key]!.state = .failed(error: error)
+                        if let cache = self.cache.geometries[key] {
+                            cache.state = .failed(error: error)
+                        }
                     }
                 } catch {
                     Log.fatalError("error must be a GateEngineError")
@@ -214,8 +222,12 @@ extension ResourceManager {
                 Task.detached(priority: .low) {
                     let backend = await self.geometryBackend(from: geometry)
                     Task { @MainActor in
-                        self.cache.geometries[key]!.geometryBackend = backend
-                        self.cache.geometries[key]!.state = .ready
+                        if let cache = self.cache.geometries[key] {
+                            cache.geometryBackend = backend
+                            cache.state = .ready
+                        }else{
+                            Log.warn("Resource \"(Generated Geometry)\" was deallocated before being loaded.")
+                        }
                     }
                 }
             }
@@ -232,7 +244,18 @@ extension ResourceManager {
         self.geometryCache(for: key)?.referenceCount += 1
     }
     func decrementReference(_ key: Cache.GeometryKey) {
-        self.geometryCache(for: key)?.referenceCount -= 1
+        guard let cache = self.geometryCache(for: key) else {return}
+        cache.referenceCount -= 1
+        
+        if case .whileReferenced = cache.cacheHint {
+            if cache.referenceCount == 0 {
+                self.cache.geometries.removeValue(forKey: key)
+                Log.debug(
+                    "Removing cache (no longer referenced), Object:",
+                    key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath
+                )
+            }
+        }
     }
 
     func reloadGeometryIfNeeded(key: Cache.GeometryKey) {
