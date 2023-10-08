@@ -255,8 +255,10 @@
                 channel.scale = sprite.uvScale
                 channel.offset = sprite.uvOffset
             }
-            material.setCustomUniformValue(opacity, forUniform: "opacity")
-            material.fragmentShader = .textureSampleOpacity
+            if opacity != 1 {
+                material.setCustomUniformValue(opacity, forUniform: "opacity")
+                material.fragmentShader = .textureSampleOpacity
+            }
         }
 
         let flags = DrawFlags(
