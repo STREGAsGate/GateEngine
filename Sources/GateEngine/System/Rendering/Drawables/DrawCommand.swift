@@ -58,7 +58,7 @@ public struct DrawFlags: Hashable {
         depthTest: DepthTest = .lessEqual,
         depthWrite: DepthWrite = .enabled,
         primitive: Primitive = .triangle,
-        winding: Winding = .clockwise,
+        winding: Winding = .counterClockwise,
         blendMode: BlendMode = .normal
     ) {
         self.cull = cull
