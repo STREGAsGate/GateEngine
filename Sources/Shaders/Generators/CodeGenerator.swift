@@ -137,6 +137,9 @@ public class CodeGenerator {
         case .not:
             self.declareVariableIfNeeded(operation.value1)
             mainOutput +=  scopeIndentation + "\(type(for: value)) \(variable(for: value)) = \(symbol(for: .not))\(variable(for: operation.value1))"
+        case .sampler2DSize:
+            mainOutput += scopeIndentation + "\(type(for: value)) \(variable(for: value));\n"
+            mainOutput += function(value: value, operation: operation)
         case .branch(let comparing):
             self.declareVariableIfNeeded(comparing)
 
@@ -304,6 +307,8 @@ public class CodeGenerator {
             fatalError()
         case .sampler2D(filter: _):
             fatalError()
+        case .sampler2DSize:
+            fatalError()
         case .lerp(factor: _):
             fatalError()
         case .discard(comparing: _):
@@ -376,6 +381,8 @@ public class CodeGenerator {
                     return valueType
                 }
                 return valueType(for: value.operation!.value1)
+            case .fragmentIn(_):
+                return value.valueType
             default:
                 fatalError("Unhandled valueType \(value.valueRepresentation)")
             }

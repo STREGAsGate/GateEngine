@@ -165,6 +165,10 @@ public final class HLSLCodeGenerator: CodeGenerator {
             return "discard"
         case let .sampler2D(filter: filter):
             return "\(variable(for: operation.value1)).Sample(\(filter == .nearest ? "nearestSampler" : "linearSampler"),\(variable(for: operation.value2)))"
+        case .sampler2DSize:
+            return """
+                   \(scopeIndentation)\(variable(for: operation.value1)).GetDimensions(\(variable(for: value)).x, \(variable(for: value)).y;\n"
+                   """
         case let .lerp(factor: factor):
             return "lerp(\(variable(for: operation.value1)), \(variable(for: operation.value2)), \(variable(for: factor)))"
         }

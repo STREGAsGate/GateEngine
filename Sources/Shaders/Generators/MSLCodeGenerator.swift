@@ -135,6 +135,11 @@ public final class MSLCodeGenerator: CodeGenerator {
             fatalError()
         case let .sampler2D(filter: filter):
             return "\(variable(for: operation.value1)).sample(\(filter == .nearest ? "nearestSampler" : "linearSampler"),\(variable(for: operation.value2)))"
+        case .sampler2DSize:
+            return """
+                   \(scopeIndentation)\(variable(for: value)).x = \(variable(for: operation.value1)).get_width();
+                   \(scopeIndentation)\(variable(for: value)).y = \(variable(for: operation.value1)).get_height();\n
+                   """
         case let .lerp(factor: factor):
             return "mix(\(variable(for: operation.value1)), \(variable(for: operation.value2)), \(variable(for: factor)))"
         case .discard(comparing: _):
@@ -201,7 +206,7 @@ public final class MSLCodeGenerator: CodeGenerator {
         
         var vertexOut: String = ""
         for pair in vertexShader.output._values {
-            vertexOut += "    \(type(for: pair.value)) \(pair.key);"
+            vertexOut += "    \(type(for: pair.value)) \(pair.key);\n"
         }
         
         var fragmentTextureList: String = ""
@@ -239,8 +244,7 @@ typedef struct {\(vertexGeometryDefine)
 typedef struct {
     \(type(for: .float4)) pos [[position]];
     \(type(for: .float)) ptSz [[point_size]];
-\(vertexOut)
-    int iid [[flat]];
+\(vertexOut)    int iid [[flat]];
 } Fragment;
 
 vertex Fragment vertex\(UInt(bitPattern: vertexShader.id.hashValue))(Vertex in [[stage_in]],

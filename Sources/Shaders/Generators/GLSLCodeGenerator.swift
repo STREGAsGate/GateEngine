@@ -153,6 +153,8 @@ public final class GLSLCodeGenerator: CodeGenerator {
             return "discard"
         case .sampler2D(filter: _):
             return "texture(" + variable(for: operation.value1) + "," + variable(for: operation.value2) + ")"
+        case .sampler2DSize:
+            return "\(scopeIndentation)\(variable(for: value)) = textureSize(\(variable(for: operation.value1)),0);\n"
         case let .lerp(factor: factor):
             return "mix(" + variable(for: operation.value1) + "," + variable(for: operation.value2) + "," + variable(for: factor) + ")"
         }

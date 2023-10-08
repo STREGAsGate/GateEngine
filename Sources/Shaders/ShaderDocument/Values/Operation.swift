@@ -57,6 +57,7 @@ public final class Operation: ShaderElement {
         case `switch`(cases: [_SwitchCase])
         case discard(comparing: Scalar)
         case sampler2D(filter: Sampler2D.Filter)
+        case sampler2DSize
         case lerp(factor: Scalar)
         
         var identifier: [Int] {
@@ -81,16 +82,18 @@ public final class Operation: ShaderElement {
                 return values
             case .sampler2D(filter: let filter):
                 return [5_107, filter.identifier]
+            case .sampler2DSize:
+                return [5_108]
             case .lerp(factor: let factor):
-                var values: [Int] = [5_108]
+                var values: [Int] = [5_109]
                 values.append(contentsOf: factor.documentIdentifierInputData())
                 return values
             case .discard(comparing: let comparing):
-                var values: [Int] = [5_109]
+                var values: [Int] = [5_110]
                 values.append(contentsOf: comparing.documentIdentifierInputData())
                 return values
             case .switch(cases: let cases):
-                var values: [Int] = [5_110]
+                var values: [Int] = [5_111]
                 for `case` in cases {
                     values.append(contentsOf: `case`.documentIdentifierInputData())
                 }
@@ -156,6 +159,30 @@ public final class Operation: ShaderElement {
         self.value2 = rhs
     }
     
+    public init(lhs: Scalar, operator: Operator, rhs: Vec2) {
+        self.operator = `operator`
+        self.value1 = lhs
+        self.value2 = rhs
+    }
+    
+    public init(lhs: Scalar, operator: Operator, rhs: Vec3) {
+        self.operator = `operator`
+        self.value1 = lhs
+        self.value2 = rhs
+    }
+    
+    public init(lhs: Scalar, operator: Operator, rhs: Vec4) {
+        self.operator = `operator`
+        self.value1 = lhs
+        self.value2 = rhs
+    }
+    
+    public init(lhs: Scalar, operator: Operator, rhs: UVec4) {
+        self.operator = `operator`
+        self.value1 = lhs
+        self.value2 = rhs
+    }
+    
     public init(lhs: Vec2, operator: Operator, rhs: Vec2) {
         self.operator = `operator`
         self.value1 = lhs
@@ -208,6 +235,12 @@ public final class Operation: ShaderElement {
         self.operator = `operator`
         self.value1 = lhs
         self.value2 = rhs
+    }
+    
+    internal init(sizeOf sampler: Sampler2D) {
+        self.operator = .sampler2DSize
+        self.value1 = sampler
+        self.value2 = ShaderVoid()
     }
     
     internal init<T: ShaderValue>(comparison: Operator.Comparison, success: T,  failure: T) {

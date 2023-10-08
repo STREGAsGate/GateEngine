@@ -32,6 +32,10 @@ public final class Sampler2D: ShaderValue {
     public func sample(at textCoord: Vec2, filter: Filter = .linear) -> Vec4 {
         return Vec4(Operation(lhs: self, rhs: textCoord, operator: .sampler2D(filter: filter)))
     }
+    
+    public var size: Vec2 {
+        return Vec2(Operation(sizeOf: self))
+    }
 
     public func documentIdentifierInputData() -> [Int] {
         var values: [Int] = [6_000]
