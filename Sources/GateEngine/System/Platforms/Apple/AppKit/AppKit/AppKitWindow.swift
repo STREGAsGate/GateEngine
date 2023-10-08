@@ -93,8 +93,13 @@ final class AppKitWindow: WindowBacking {
         // restore size and relative position
         nsWindow.setFrameUsingName(window.identifier)
 
-        if window.isMainWindow == false {
-            // Restore screen position, but not for the primary window.
+        #if DEBUG
+        let restoreMainWindow = true
+        #else
+        let restoreMainWindow = window.isMainWindow == false
+        #endif
+        if restoreMainWindow {
+            // Restore screen position, but not for the primary window unless debugging (cuz it gets annoying with multiple monitors)
             // Users expect the main window to appear on the main screen. macOS will do that for us.
             let screenID = CGDirectDisplayID(
                 UserDefaults.standard.integer(forKey: "ScreenID_\(window.identifier)")
