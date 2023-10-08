@@ -372,7 +372,7 @@ extension OpenGLRenderer {
                         try glUniform(location: location, values: GLint(index))
                     } else {
                         #if GATEENGINE_DEBUG_RENDERING
-                        Log.warnOnce("OpenGL attribute [\(textureName)] not found.")
+                        Log.warnOnce("OpenGL attribute \"\(textureName)\" not found.")
                         #endif
                     }
                 }
@@ -382,7 +382,7 @@ extension OpenGLRenderer {
                     try glUniform(location: location, values: channel.scale.x, channel.scale.y)
                 } else {
                     #if GATEENGINE_DEBUG_RENDERING
-                    Log.warnOnce("OpenGL attribute [\(scaleName)] not found.")
+                    Log.warnOnce("OpenGL attribute \"\(scaleName)\" not found.")
                     #endif
                 }
                 let offsetName = generator.variable(for: .channelOffset(UInt8(index)))
@@ -390,7 +390,7 @@ extension OpenGLRenderer {
                     try glUniform(location: location, values: channel.offset.x, channel.offset.y)
                 } else {
                     #if GATEENGINE_DEBUG_RENDERING
-                    Log.warnOnce("OpenGL attribute [\(offsetName)] not found.")
+                    Log.warnOnce("OpenGL attribute \"\(offsetName)\" not found.")
                     #endif
                 }
                 let colorName = generator.variable(for: .channelColor(UInt8(index)))
@@ -404,7 +404,7 @@ extension OpenGLRenderer {
                     )
                 } else {
                     #if GATEENGINE_DEBUG_RENDERING
-                    Log.warnOnce("OpenGL attribute [\(colorName)] not found.")
+                    Log.warnOnce("OpenGL attribute \"\(colorName)\" not found.")
                     #endif
                 }
             }
@@ -426,7 +426,7 @@ extension OpenGLRenderer {
                             try glUniform(location: location, values: value ? 1 : 0)
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
+                            Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
                             #endif
                         }
                     case let value as Int:
@@ -437,7 +437,7 @@ extension OpenGLRenderer {
                             try glUniform(location: location, values: GLint(value))
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
+                            Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
                             #endif
                         }
                     case let value as Float:
@@ -448,7 +448,7 @@ extension OpenGLRenderer {
                             try glUniform(location: location, values: value)
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
+                            Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
                             #endif
                         }
                     case let value as any Vector2:
@@ -459,7 +459,7 @@ extension OpenGLRenderer {
                             try glUniform(location: location, values: value.x, value.y)
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
+                            Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
                             #endif
                         }
                     case let value as any Vector3:
@@ -470,7 +470,7 @@ extension OpenGLRenderer {
                             try glUniform(location: location, values: value.x, value.y, value.z)
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
+                            Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
                             #endif
                         }
                     case let value as Matrix3x3:
@@ -485,7 +485,7 @@ extension OpenGLRenderer {
                             )
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
+                            Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
                             #endif
                         }
                     case let value as Matrix4x4:
@@ -500,7 +500,7 @@ extension OpenGLRenderer {
                             )
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
+                            Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
                             #endif
                         }
                     case let value as [Matrix4x4]:
@@ -520,13 +520,13 @@ extension OpenGLRenderer {
                             if floats.count > capacity * 16 {
                                 floats = Array(floats[..<capacity])
                                 Log.warnOnce(
-                                    "Custom uniform \(name) exceeded max array capacity \(capacity) and was truncated."
+                                    "Custom uniform \"\(name)\" exceeded max array capacity \(capacity) and was truncated."
                                 )
                             }
                             glUniformMatrix4fv(location: location, transpose: false, values: floats)
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
-                            Log.warnOnce("OpenGL attribute [\(variable)] not found.")
+                            Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
                             #endif
                         }
                     default:
