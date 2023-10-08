@@ -73,7 +73,7 @@
             backends: [geometryBackend],
             transforms: transforms,
             material: material,
-            flags: flags.drawFlags(withPrimitive: .triangle)
+            flags: flags.drawCommandFlags(withPrimitive: .triangle)
         )
         self.drawCommands.append(command)
     }
@@ -133,7 +133,7 @@
             backends: [geometryBackend],
             transforms: transforms,
             material: material,
-            flags: flags.drawFlags(withPrimitive: .triangle)
+            flags: flags.drawCommandFlags(withPrimitive: .triangle)
         )
         self.drawCommands.append(command)
     }
@@ -181,7 +181,7 @@
             backends: [geometryBackend],
             transforms: transforms,
             material: material,
-            flags: flags.drawFlags(withPrimitive: .point)
+            flags: flags.drawCommandFlags(withPrimitive: .point)
         )
         self.drawCommands.append(command)
     }
@@ -225,7 +225,7 @@
             backends: [geometryBackend],
             transforms: transforms,
             material: material,
-            flags: flags.drawFlags(withPrimitive: .line)
+            flags: flags.drawCommandFlags(withPrimitive: .line)
         )
         self.drawCommands.append(command)
     }
@@ -257,7 +257,7 @@
             backends: [sourceGeometryBackend, destinationGeometryBackend],
             transforms: transforms,
             material: sourceMaterial,
-            flags: flags.drawFlags(withPrimitive: .triangle)
+            flags: flags.drawCommandFlags(withPrimitive: .triangle)
         )
         self.drawCommands.append(command)
     }
@@ -321,6 +321,10 @@
             at: [transform],
             flags: flags
         )
+    }
+    
+    public mutating func insert(_ drawCommand: DrawCommand) {
+        self.drawCommands.append(drawCommand)
     }
 
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
@@ -454,8 +458,8 @@ public struct SceneElementFlags: OptionSet, Hashable {
         self.rawValue = rawValue
     }
 
-    @_transparent @usableFromInline
-    internal func drawFlags(withPrimitive primitive: DrawFlags.Primitive) -> DrawFlags {
+    @_transparent
+    public func drawCommandFlags(withPrimitive primitive: DrawFlags.Primitive) -> DrawFlags {
         let cull: DrawFlags.Cull = self.contains(.cullBackface) ? .back : .disabled
         let depthTest: DrawFlags.DepthTest = self.contains(.disableDepthCull) ? .always : .less
         let depthWrite: DrawFlags.DepthWrite =

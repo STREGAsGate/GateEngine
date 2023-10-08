@@ -6,6 +6,7 @@
  */
 
 import GameMath
+import Shaders
 
 public struct DrawFlags: Hashable {
     public enum Cull: Hashable {
@@ -98,10 +99,46 @@ public struct DrawCommand {
         }
         #endif
     }
+    
+    @inlinable @inline(__always)
+    @MainActor public init(
+        texture: Texture,
+        subRect: Rect? = nil,
+        at position: Position3,
+        rotation: some Angle = Radians.zero,
+        scale: Size2 = .one,
+        vertexShader: VertexShader = .standard,
+        fragmentShader: FragmentShader = .textureSample,
+        flags: DrawFlags = DrawFlags(winding: .clockwise)
+    ) {
+        let backends = [Renderer.rectOriginTopLeft.backend!]
+        let material = Material { material in
+            material.channel(0) { channel in
+                channel.texture = texture
+                if let subRect {
+                    channel.offset = Position2(
+                        (subRect.position.x + 0.001) / Float(texture.size.width),
+                        (subRect.position.y + 0.001) / Float(texture.size.height)
+                    )
+                    channel.scale = Size2(
+                        subRect.size.width / Float(texture.size.width),
+                        subRect.size.height / Float(texture.size.height)
+                    )
+                }
+            }
+            material.vertexShader = vertexShader
+            material.fragmentShader = fragmentShader
+        }
+        
+        let scale = Size3(scale * (subRect?.size ?? texture.size), 1)
+        let rotation = Quaternion(rotation, axis: .forward)
+        let transform = Transform3(position: position, rotation: rotation, scale: scale)
+        self.init(backends: backends, transforms: [transform], material: material, flags: flags)
+    }
 
     @inlinable @inline(__always)
     @MainActor public init(
-        lines geometries: [Lines],
+        points geometries: [Points],
         transforms: [Transform3],
         material: Material,
         flags: DrawFlags
@@ -109,10 +146,10 @@ public struct DrawCommand {
         let backends = geometries.map({ $0.backend! })
         self.init(backends: backends, transforms: transforms, material: material, flags: flags)
     }
-
+    
     @inlinable @inline(__always)
     @MainActor public init(
-        points geometries: [Points],
+        lines geometries: [Lines],
         transforms: [Transform3],
         material: Material,
         flags: DrawFlags

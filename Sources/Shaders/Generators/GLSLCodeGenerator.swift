@@ -85,6 +85,8 @@ public final class GLSLCodeGenerator: CodeGenerator {
             return "io_\(name)"
         case .fragmentOutColor:
             return "fClr"
+        case .fragmentPosition:
+            return "gl_FragCoord"
             
         case .uniformModelMatrix:
             return "mMtx"
@@ -92,8 +94,8 @@ public final class GLSLCodeGenerator: CodeGenerator {
             return "vMtx"
         case .uniformProjectionMatrix:
             return "pMtx"
-        case let .uniformCustom(index, type: _):
-            return "u\(index)"
+        case let .uniformCustom(name, type: _):
+            return "u_" + name
             
         case let .scalarBool(bool):
             return "\(bool)"
@@ -137,12 +139,18 @@ public final class GLSLCodeGenerator: CodeGenerator {
     
     override func function(value: some ShaderValue, operation: Operation) -> String {
         switch operation.operator {
+        case .cast(let valueType):
+            return "\(type(for: valueType))(\(variable(for: operation.value1)))"
         case .add, .subtract, .multiply, .divide, .compare(_):
             return variable(for: operation.value1) + " " + symbol(for: operation.operator) + " " + variable(for: operation.value2)
+        case .not:
+            return "\(symbol(for: operation.operator))\(variable(for: operation.value1))"
         case .branch(comparing: _):
             fatalError()
+        case .switch(cases: _):
+            fatalError()
         case .discard(comparing: _):
-            return "discard;"
+            return "discard"
         case .sampler2D(filter: _):
             return "texture(" + variable(for: operation.value1) + "," + variable(for: operation.value2) + ")"
         case let .lerp(factor: factor):
@@ -152,7 +160,7 @@ public final class GLSLCodeGenerator: CodeGenerator {
     
     private func generateShaderCode(from vertexShader: VertexShader, attributes: ContiguousArray<InputAttribute>) throws -> String {
         var customUniformDefine: String = ""
-        for value in vertexShader.sortedCustomUniforms() {
+        for value in vertexShader.uniforms.sortedCustomUniforms() {
             if case let .float4x4Array(capacity) = value.valueType {
                 customUniformDefine += "\nuniform \(type(for: value.valueType)) \(variable(for: value))[\(capacity)];"
             }else{
@@ -198,6 +206,8 @@ public final class GLSLCodeGenerator: CodeGenerator {
             outVariables += "\nout \(type(for: pair.value)) \(variable(for: .vertexOut(pair.key)));"
         }
         
+        generateMain(from: vertexShader)
+        let mainOutput = mainOutput
         self.prepareForReuse()
         return """
 \(version)
@@ -218,13 +228,13 @@ uniform Material materials[16];
 \(outVariables)
 
 void main() {
-\(generateMain(from: vertexShader))}
+\(mainOutput)}
 """
     }
     
     private func generateShaderCode(from fragmentShader: FragmentShader) throws -> String {
         var customUniformDefine: String = ""
-        for value in fragmentShader.sortedCustomUniforms() {
+        for value in fragmentShader.uniforms.sortedCustomUniforms() {
             if case let .float4x4Array(capacity) = value.valueType {
                 customUniformDefine += "\nuniform \(type(for: value)) \(variable(for: value))[\(capacity)];"
             }else{
@@ -247,6 +257,8 @@ void main() {
         """
         }
         
+        generateMain(from: fragmentShader)
+        let mainOutput = mainOutput
         self.prepareForReuse()
         return """
 \(version)
@@ -265,7 +277,7 @@ struct Material {
 uniform Material materials[16];
 
 void main() {
-\(generateMain(from: fragmentShader))}
+\(mainOutput)}
 """
     }
 

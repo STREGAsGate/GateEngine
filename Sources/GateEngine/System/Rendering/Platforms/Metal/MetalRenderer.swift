@@ -521,8 +521,8 @@ extension MetalRenderer {
                     }
                 case let value as [Matrix4x4]:
                     let capacity =
-                        material.vertexShader.arrayCapacityForUniform(named: name) ?? material
-                        .fragmentShader.arrayCapacityForUniform(named: name)!
+                    material.vertexShader.uniforms.arrayCapacityForUniform(named: name) ?? material
+                        .fragmentShader.uniforms.arrayCapacityForUniform(named: name)!
                     var floats: [Float] = []
                     floats.reserveCapacity(value.count * 16 * capacity)
                     for mtx in value {

@@ -85,7 +85,7 @@ public struct Material {
         }
     }
 
-    @MainActor @usableFromInline var isReady: Bool {
+    @MainActor public var isReady: Bool {
         for channel in channels {
             if let t = channel.texture, t.state != .ready {
                 return false

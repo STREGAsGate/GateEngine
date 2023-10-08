@@ -23,6 +23,10 @@ public final class Scalar: ShaderValue {
         self.operation = operation
     }
     
+    public convenience init(_ scalar: Scalar, castTo valueType: ValueType) {
+        self.init(Operation(scalar, castTo: valueType))
+    }
+    
     public init(_ bool: Bool) {
         self.valueRepresentation = .scalarBool(bool)
         self.valueType = .bool
@@ -53,6 +57,7 @@ public final class Scalar: ShaderValue {
         values.append(contentsOf: valueType.identifier)
         return values
     }
+    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: .valueScalar)
     
     public func lerp(to dst: Scalar, factor: Scalar) -> Scalar {
         return Scalar(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
@@ -107,6 +112,22 @@ extension Scalar {
     }
     public static func ==(lhs: Scalar, rhs: Float) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: Scalar(rhs)))
+    }
+    
+    public static func !=(lhs: Scalar, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.notEqual), rhs: rhs))
+    }
+    public static func !=(lhs: Scalar, rhs: Bool) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.notEqual), rhs: Scalar(rhs)))
+    }
+    public static func !=(lhs: Scalar, rhs: Int) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.notEqual), rhs: Scalar(rhs)))
+    }
+    public static func !=(lhs: Scalar, rhs: UInt) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.notEqual), rhs: Scalar(rhs)))
+    }
+    public static func !=(lhs: Scalar, rhs: Float) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.notEqual), rhs: Scalar(rhs)))
     }
     
     public static func >(lhs: Scalar, rhs: Scalar) -> Scalar {
@@ -171,6 +192,10 @@ extension Scalar {
     }
     public static func <=(lhs: Scalar, rhs: Float) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.lessEqual), rhs: Scalar(rhs)))
+    }
+    
+    public static prefix func !(lhs: Scalar) -> Scalar {
+        return Scalar(Operation(not: lhs))
     }
 }
 

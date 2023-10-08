@@ -26,11 +26,12 @@ public enum ValueRepresentation {
     case fragmentIn(_ name: String)
     case fragmentOutColor
     case fragmentInstanceID
+    case fragmentPosition
     
     case uniformModelMatrix
     case uniformViewMatrix
     case uniformProjectionMatrix
-    case uniformCustom(_ index: UInt8, type: CustomUniformValueType)
+    case uniformCustom(_ name: String, type: CustomUniformValueType)
     
     case channelScale(_ index: UInt8)
     case channelOffset(_ index: UInt8)
@@ -68,7 +69,7 @@ public enum ValueRepresentation {
             return .float
         case .vec2, .vertexInPosition, .vertexOutPosition:
             return .float3
-        case .vec3, .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_):
+        case .vec3, .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .fragmentPosition:
             return .float2
         case .vec4, .vertexInColor(_), .vertexInJointWeights(_), .fragmentOutColor:
             return .float4
@@ -171,6 +172,8 @@ public enum ValueRepresentation {
             return [3_402]
         case .fragmentInstanceID:
             return [3_403]
+        case .fragmentPosition:
+            return [3_404]
             
         case .uniformModelMatrix:
             return [3_501]
@@ -178,8 +181,9 @@ public enum ValueRepresentation {
             return [3_502]
         case .uniformProjectionMatrix:
             return [3_503]
-        case .uniformCustom(let index, type: let type):
-            var values: [Int] = [3_504, Int(index)]
+        case .uniformCustom(let name, type: let type):
+            var values: [Int] = [3_504]
+            values.append(contentsOf: name.documentIdentifierInputData())
             values.append(contentsOf: type.identifier)
             return values
             
@@ -249,8 +253,8 @@ public enum ValueRepresentation {
         #if DEBUG
         case .void, .operation,
                 .vertexOutPosition, .vertexOutPointSize, .vertexOut(_), .vertexInstanceID,
-                .fragmentIn(_), .fragmentOutColor, .fragmentInstanceID, .uniformModelMatrix,
-                .uniformViewMatrix, .uniformProjectionMatrix, .uniformCustom(_,_),
+                .fragmentIn(_), .fragmentOutColor, .fragmentInstanceID, .fragmentPosition,
+                .uniformModelMatrix, .uniformViewMatrix, .uniformProjectionMatrix, .uniformCustom(_,_),
                 .channelScale(_), .channelOffset(_), .channelColor(_), .channelAttachment(_),
                 .scalarBool(_), .scalarInt(_), .scalarUInt(_), .scalarFloat(_),
                 .vec2, .vec2Value(_, _),
@@ -267,7 +271,7 @@ public enum ValueRepresentation {
     }
 }
 
-public enum ValueType {
+public enum ValueType: Equatable {
     case void
     case texture2D
     case operation
@@ -362,7 +366,7 @@ enum Functions {
     case sampleTexture
 }
 
-public protocol ShaderValue: AnyObject, Identifiable, CustomStringConvertible, ShaderElement where ID == ObjectIdentifier {
+public protocol ShaderValue: AnyObject, Identifiable, CustomStringConvertible, ShaderElement where ID == UInt64 {
     var valueRepresentation: ValueRepresentation {get}
     var valueType: ValueType {get}
     var operation: Operation? {get}
@@ -383,7 +387,51 @@ extension ShaderValue {
 }
 
 
+public struct SwitchCase<ResultType: ShaderValue> {
+    let compare: Scalar
+    let result: ResultType
+    
+    public static func `case`(_ compare: Int, result: ResultType) -> SwitchCase {
+        return SwitchCase(compare: Scalar(compare), result: result)
+    }
+}
+public struct _SwitchCase: Equatable {
+    let compare: Scalar
+    let result: any ShaderValue
+    init<ResultType: ShaderValue>(_ switchCase: SwitchCase<ResultType>) {
+        self.compare = switchCase.compare
+        self.result = switchCase.result
+    }
+    
+    public func documentIdentifierInputData() -> [Int] {
+        var values: [Int] = []
+        values.append(contentsOf: compare.documentIdentifierInputData())
+        values.append(contentsOf: result.documentIdentifierInputData())
+        return values
+    }
+    
+    public static func ==(lhs: Self, rhs: Self) -> Bool {
+        return lhs.compare.id == rhs.compare.id
+    }
+}
 public extension ShaderValue {
+    func `switch`<ResultType: ShaderValue>(_ cases: [SwitchCase<ResultType>]) -> ResultType where Self == Scalar {
+        var compare = self
+        if compare.valueType != .int {
+            compare = Scalar(compare, castTo: .int)
+        }
+        return ResultType(Operation(switch: compare, cases: cases))
+    }
+}
+public extension ShaderValue {
+    func branch<T: ShaderValue>(success: T, failure: T) -> T where Self == Scalar {
+        var this: Scalar = self
+        if this.valueType != .bool {
+            this = Scalar(self, castTo: .bool)
+        }
+        return T(Operation(compare: this, success: success, failure: failure))
+    }
+    
     /**
      Insert a fragment discard inline.
      - parameter comparing: A value that when true will cause a discard.
@@ -391,6 +439,10 @@ public extension ShaderValue {
      - note: Cannot be called from a vertex shader.
      */
     func discard<T: ShaderValue>(if comparing: some Scalar) -> T {
+        var comparing: Scalar = comparing
+        if comparing.valueType != .bool {
+            comparing = Scalar(comparing, castTo: .bool)
+        }
         return T(Operation(discardIf: comparing, success: self))
     }
 }

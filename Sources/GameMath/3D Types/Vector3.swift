@@ -90,6 +90,11 @@ public extension Vector3 {
     init(floatLiteral value: FloatLiteralType) {
         self.init(value)
     }
+    
+    @_transparent
+    init(_ vec2: some Vector2, _ z: Float) {
+        self.init(vec2.x, vec2.y, z)
+    }
 }
 
 //Mark: Integer Casting

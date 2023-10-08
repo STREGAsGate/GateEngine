@@ -48,10 +48,11 @@ extension FragmentShader {
     /// Uses material.channel(0).texture to shade objects
     public static let textureSampleOpacity: FragmentShader = {
         let fsh = FragmentShader()
+        let opacity: Scalar = fsh.uniforms["opacity"]
         fsh.output.color = fsh.channel(0).texture.sample(
             at: fsh.input["texCoord0"],
             filter: .nearest
-        ) * fsh.uniform(named: "opacity", as: Scalar.self)
+        ) * opacity
         return fsh
     }()
     /// Uses material.channel(0).color to shade objects
@@ -106,7 +107,7 @@ internal extension VertexShader {
     @usableFromInline
     static let skinned: VertexShader = {
         let vsh = VertexShader()
-        let bones = vsh.uniform(named: "bones", as: Mat4Array.self, arrayCapacity: 64)
+        let bones = vsh.uniforms.value(named: "bones", as: Mat4Array.self, arrayCapacity: 64)
         let jointIndices = vsh.input.geometry(0).jointIndices
         let jointWeights = vsh.input.geometry(0).jointWeights
         var vertex = Vec4(vsh.input.geometry(0).position, 1)
@@ -126,7 +127,7 @@ internal extension VertexShader {
         let vsh = VertexShader()
         vsh.output.position =
             vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
-        vsh.output.pointSize = vsh.uniform(named: "pointSize", as: Scalar.self)
+        vsh.output.pointSize = vsh.uniforms["pointSize"]
         vsh.output["color"] = vsh.input.geometry(0).color
         return vsh
     }()
@@ -135,7 +136,7 @@ internal extension VertexShader {
     @usableFromInline
     static let morph: VertexShader = {
         let vsh = VertexShader()
-        let factor = vsh.uniform(named: "factor", as: Scalar.self)
+        let factor: Scalar = vsh.uniforms["factor"]
         let g1 = vsh.input.geometry(0)
         let g2 = vsh.input.geometry(1)
         let position = g1.position.lerp(to: g2.position, factor: factor)
@@ -152,7 +153,7 @@ internal extension FragmentShader {
     @usableFromInline
     static let morphTextureSample: FragmentShader = {
         let fsh = FragmentShader()
-        let factor = fsh.uniform(named: "factor", as: Scalar.self)
+        let factor: Scalar = fsh.uniforms["factor"]
         let sample1 = fsh.channel(0).texture.sample(at: fsh.input["texCoord0"])
         let sample2 = fsh.channel(1).texture.sample(at: fsh.input["texCoord1"], filter: .nearest)
         fsh.output.color = sample1.lerp(to: sample2, factor: factor)

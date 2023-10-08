@@ -77,6 +77,8 @@ public final class MSLCodeGenerator: CodeGenerator {
             return "in.\(name)"
         case .fragmentOutColor:
             return "fClr"
+        case .fragmentPosition:
+            return "in.pos"
             
         case .uniformModelMatrix:
             return "instances[iid].mMtx"
@@ -84,8 +86,8 @@ public final class MSLCodeGenerator: CodeGenerator {
             return "uniforms.vMtx"
         case .uniformProjectionMatrix:
             return "uniforms.pMtx"
-        case let .uniformCustom(index, type: _):
-            return "uniforms.u\(index)"
+        case let .uniformCustom(name, type: _):
+            return "uniforms.u_" + name
             
         case let .scalarBool(bool):
             return "\(bool)"
@@ -121,55 +123,58 @@ public final class MSLCodeGenerator: CodeGenerator {
     
     override func function(value: some ShaderValue, operation: Operation) -> String {
         switch operation.operator {
+        case .cast(let valueType):
+            return "\(type(for: valueType))(\(variable(for: operation.value1)))"
         case .add, .subtract, .multiply, .divide, .compare(_):
             return "\(variable(for: operation.value1)) \(symbol(for: operation.operator)) \(variable(for: operation.value2))"
+        case .not:
+            return "\(symbol(for: operation.operator))\(variable(for: operation.value1))"
         case .branch(comparing: _):
+            fatalError()
+        case .switch(cases: _):
             fatalError()
         case let .sampler2D(filter: filter):
             return "\(variable(for: operation.value1)).sample(\(filter == .nearest ? "nearestSampler" : "linearSampler"),\(variable(for: operation.value2)))"
         case let .lerp(factor: factor):
             return "mix(\(variable(for: operation.value1)), \(variable(for: operation.value2)), \(variable(for: factor)))"
         case .discard(comparing: _):
-            return "discard;"
+            return "discard_fragment()"
         }
     }
     
     public func generateShaderCode(vertexShader: VertexShader, fragmentShader: FragmentShader, attributes: ContiguousArray<InputAttribute>) throws -> String {
         try validate(vsh: vertexShader, fsh: fragmentShader)
                 
-        let vertexMain = generateMain(from: vertexShader)
-        let fragmentMain = generateMain(from: fragmentShader)
+        generateMain(from: vertexShader)
+        let vertexMain = mainOutput
+        prepareForReuse()
+        generateMain(from: fragmentShader)
+        let fragmentMain = mainOutput
         
-        var customUniforms: OrderedSet<CustomUniform> = []
         struct CustomUniform: Hashable {
             let name: String
             let type: String
         }
-        for value in vertexShader.sortedCustomUniforms() {
-            if case let .uniformCustom(index, type: _) = value.valueRepresentation {
-                if case let .float4x4Array(capacity) = value.valueType {
-                    customUniforms.append(CustomUniform(name: "u\(index)[\(capacity)]", type: "\(type(for: value))"))
-                }else{
-                    customUniforms.append(CustomUniform(name: "u\(index)", type: "\(type(for: value))"))
+        func customUniforms(from shader: ShaderDocument) -> String {
+            var customUniformsVsh: OrderedSet<CustomUniform> = []
+            for value in shader.uniforms.sortedCustomUniforms() {
+                if case let .uniformCustom(name, type: _) = value.valueRepresentation {
+                    if case let .float4x4Array(capacity) = value.valueType {
+                        customUniformsVsh.append(CustomUniform(name: "u_\(name)[\(capacity)]", type: "\(type(for: value))"))
+                    }else{
+                        customUniformsVsh.append(CustomUniform(name: "u_\(name)", type: "\(type(for: value))"))
+                    }
                 }
             }
-        }
-        for value in fragmentShader.sortedCustomUniforms() {
-            if case let .uniformCustom(index, type: _) = value.valueRepresentation {
-                if case let .float4x4Array(capacity) = value.valueType {
-                    customUniforms.append(CustomUniform(name: "u\(index)[\(capacity)]", type: "\(type(for: value))"))
-                }else{
-                    customUniforms.append(CustomUniform(name: "u\(index)", type: "\(type(for: value))"))
-                }
+            customUniformsVsh.sort {$0.name.caseInsensitiveCompare($1.name) == .orderedAscending}
+            var customUniformDefineVsh: String = ""
+            for uniform in customUniformsVsh {
+                customUniformDefineVsh += "\n    \(uniform.type) \(uniform.name);"
             }
+            return customUniformDefineVsh
         }
-        
-        customUniforms.sort {$0.name.caseInsensitiveCompare($1.name) == .orderedAscending}
-        
-        var customUniformDefine: String = ""
-        for uniform in customUniforms {
-            customUniformDefine += "\n    \(uniform.type) \(uniform.name);"
-        }
+        let customUniformDefineVsh: String = customUniforms(from: vertexShader)
+        let customUniformDefineFsh: String = customUniforms(from: fragmentShader)
         
         var vertexGeometryDefine: String = ""
         for attributeIndex in attributes.indices {
@@ -219,8 +224,12 @@ typedef struct {
 } Material;
 typedef struct {
     \(type(for: .float4x4)) pMtx;
-    \(type(for: .float4x4)) vMtx;\(customUniformDefine)
-} Uniforms;
+    \(type(for: .float4x4)) vMtx;\(customUniformDefineVsh)
+} UniformsVsh;
+typedef struct {
+    \(type(for: .float4x4)) pMtx;
+    \(type(for: .float4x4)) vMtx;\(customUniformDefineFsh)
+} UniformsFsh;
 typedef struct {
     \(type(for: .float4x4)) mMtx;
     \(type(for: .float4x4)) iMMtx;
@@ -235,7 +244,7 @@ typedef struct {
 } Fragment;
 
 vertex Fragment vertex\(UInt(bitPattern: vertexShader.id.hashValue))(Vertex in [[stage_in]],
-                                          constant Uniforms & uniforms [[buffer(\(attributes.count + 0))]],
+                                          constant UniformsVsh & uniforms [[buffer(\(attributes.count + 0))]],
                                           constant InstanceUniforms *instances [[buffer(\(attributes.count + 1))]],
                                           constant Material *materials [[buffer(\(attributes.count + 2))]],
                                           sampler linearSampler [[sampler(0)]],
@@ -248,7 +257,7 @@ vertex Fragment vertex\(UInt(bitPattern: vertexShader.id.hashValue))(Vertex in [
     return out;
 }
 fragment \(type(for: .float4)) fragment\(UInt(bitPattern: fragmentShader.id.hashValue))(Fragment in [[stage_in]],
-                                            constant Uniforms & uniforms [[buffer(0)]],
+                                            constant UniformsFsh & uniforms [[buffer(0)]],
                                             constant Material *materials [[buffer(1)]],
                                             sampler linearSampler [[sampler(0)]],
                                             sampler nearestSampler [[sampler(1)]],

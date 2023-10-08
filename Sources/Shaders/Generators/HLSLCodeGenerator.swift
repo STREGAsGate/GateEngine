@@ -75,6 +75,8 @@ public final class HLSLCodeGenerator: CodeGenerator {
             return "input.\(name)"
         case .fragmentOutColor:
             return "fClr"
+        case .fragmentPosition:
+            return "input.pos"
             
         case .uniformModelMatrix:
             return "mMtx"
@@ -82,8 +84,8 @@ public final class HLSLCodeGenerator: CodeGenerator {
             return "vMtx"
         case .uniformProjectionMatrix:
             return "pMtx"
-        case let .uniformCustom(index, type: _):
-            return "u\(index)"
+        case let .uniformCustom(name, type: _):
+            return "u_" + name
             
         case let .scalarBool(bool):
             return "\(bool)"
@@ -119,8 +121,12 @@ public final class HLSLCodeGenerator: CodeGenerator {
     
     override func function(value: some ShaderValue, operation: Operation) -> String {
         switch operation.operator {
+        case .cast(let valueType):
+            return "(\(type(for: valueType)))\(variable(for: operation.value1))"
         case .add, .subtract, .divide, .compare(_):
             return "\(variable(for: operation.value1)) \(symbol(for: operation.operator)) \(variable(for: operation.value2))"
+        case .not:
+            return "\(symbol(for: operation.operator))\(variable(for: operation.value1))"
         case .multiply:
             let mul: Bool = shouldUseMul(operation: operation)
 
@@ -153,8 +159,10 @@ public final class HLSLCodeGenerator: CodeGenerator {
             return "\(variable(for: operation.value1)) \(symbol(for: .multiply)) \(variable(for: operation.value2))"
         case .branch(comparing: _):
             fatalError()
+        case .switch(cases: _):
+            fatalError()
         case .discard(comparing: _):
-            return "discard;"
+            return "discard"
         case let .sampler2D(filter: filter):
             return "\(variable(for: operation.value1)).Sample(\(filter == .nearest ? "nearestSampler" : "linearSampler"),\(variable(for: operation.value2)))"
         case let .lerp(factor: factor):
@@ -164,40 +172,37 @@ public final class HLSLCodeGenerator: CodeGenerator {
     
     public func generateShaderCode(vertexShader: VertexShader, fragmentShader: FragmentShader, attributes: ContiguousArray<InputAttribute>) throws -> (vsh: String, fsh: String) {
         try validate(vsh: vertexShader, fsh: fragmentShader)
-                
-        let vertexMain = generateMain(from: vertexShader)
-        let fragmentMain = generateMain(from: fragmentShader)
         
-        var customUniforms: OrderedSet<CustomUniform> = []
+        generateMain(from: vertexShader)
+        let vertexMain = mainOutput
+        prepareForReuse()
+        generateMain(from: fragmentShader)
+        let fragmentMain = mainOutput
+        
         struct CustomUniform: Hashable {
             let name: String
             let type: String
         }
-        for value in vertexShader.sortedCustomUniforms() {
-            if case let .uniformCustom(index, type: _) = value.valueRepresentation {
-                if case let .float4x4Array(capacity) = value.valueType {
-                    customUniforms.append(CustomUniform(name: "u\(index)[\(capacity)]", type: "\(type(for: value))"))
-                }else{
-                    customUniforms.append(CustomUniform(name: "u\(index)", type: "\(type(for: value))"))
+        func customUniforms(from shader: ShaderDocument) -> String {
+            var customUniformsVsh: OrderedSet<CustomUniform> = []
+            for value in shader.uniforms.sortedCustomUniforms() {
+                if case let .uniformCustom(name, type: _) = value.valueRepresentation {
+                    if case let .float4x4Array(capacity) = value.valueType {
+                        customUniformsVsh.append(CustomUniform(name: "u_\(name)[\(capacity)]", type: "\(type(for: value))"))
+                    }else{
+                        customUniformsVsh.append(CustomUniform(name: "u_\(name)", type: "\(type(for: value))"))
+                    }
                 }
             }
-        }
-        for value in fragmentShader.sortedCustomUniforms() {
-            if case let .uniformCustom(index, type: _) = value.valueRepresentation {
-                if case let .float4x4Array(capacity) = value.valueType {
-                    customUniforms.append(CustomUniform(name: "u\(index)[\(capacity)]", type: "\(type(for: value))"))
-                }else{
-                    customUniforms.append(CustomUniform(name: "u\(index)", type: "\(type(for: value))"))
-                }
+            customUniformsVsh.sort {$0.name.caseInsensitiveCompare($1.name) == .orderedAscending}
+            var customUniformDefineVsh: String = ""
+            for uniform in customUniformsVsh {
+                customUniformDefineVsh += "\n    \(uniform.type) \(uniform.name);"
             }
+            return customUniformDefineVsh
         }
-        
-        customUniforms.sort {$0.name.caseInsensitiveCompare($1.name) == .orderedAscending}
-        
-        var customUniformDefine: String = ""
-        for uniform in customUniforms {
-            customUniformDefine += "\n    \(uniform.type) \(uniform.name);"
-        }
+        let customUniformDefineVsh: String = customUniforms(from: vertexShader)
+        let customUniformDefineFsh: String = customUniforms(from: fragmentShader)
         
         var vertexGeometryDefine: String = ""
         for attributeIndex in attributes.indices {
@@ -236,9 +241,9 @@ public final class HLSLCodeGenerator: CodeGenerator {
         }
         
         let vsh = """
-cbuffer Uniforms : register(b0) {
+cbuffer UniformsVsh : register(b0) {
     \(type(for: .float4x4)) pMtx;
-    \(type(for: .float4x4)) vMtx;\(customUniformDefine)
+    \(type(for: .float4x4)) vMtx;\(customUniformDefineVsh)
 };
 struct Material {
     \(type(for: .float2)) scale;
@@ -270,9 +275,9 @@ PSInput VSMain(VSInput input) {
 }
 """
         let fsh = """
-cbuffer Uniforms : register(b0) {
+cbuffer UniformsFsh : register(b0) {
     \(type(for: .float4x4)) pMtx;
-    \(type(for: .float4x4)) vMtx;\(customUniformDefine)
+    \(type(for: .float4x4)) vMtx;\(customUniformDefineFsh)
 };
 struct Material {
     \(type(for: .float2)) scale;

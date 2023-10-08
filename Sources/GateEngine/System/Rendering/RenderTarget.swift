@@ -170,8 +170,9 @@ extension _RenderTargetProtocol {
         self.lastDrawnFrame = frame
 
         for renderTarget in renderTargets {
-            assert(renderTarget !== self, "You created a RenderTarget infinite loop")
-            renderTarget.draw(frame)
+            if renderTarget !== self {
+                renderTarget.draw(frame)
+            }
         }
         if drawables.isEmpty == false {
             self.reshapeIfNeeded()

@@ -6,17 +6,58 @@
  */
 
 public class CodeGenerator {
-    var _nextVarIndex: UInt = 1
-    var _varNames: [ObjectIdentifier:String] = [:]
-    var _declaredValues: Set<ObjectIdentifier> = []
-    var indentationLevel: Int = 1
-    func indent() -> String {
-        return String(repeating: " ", count: indentationLevel * 4)
+    struct Scope {
+        var nextVarIndex: Int
+        var varNames: [ObjectIdentifier: String] = [:]
+        var declaredValues: Set<ObjectIdentifier> = []
     }
+    var _scopes: [Scope] = []
+    var currentScope: Scope {
+        get {
+            return _scopes[_scopes.count - 1]
+        }
+        set {
+            _scopes[_scopes.count - 1] = newValue
+        }
+    }
+    var mainOutput: String = ""
+    var scopeIndentation = ""
+    func pushScope() {
+        _scopes.append(Scope(nextVarIndex: _scopes.isEmpty ? 0 : currentScope.nextVarIndex))
+        scopeIndentation = String(repeating: " ", count: _scopes.count * 4)
+    }
+    func popScope() {
+        _scopes.removeLast()
+        scopeIndentation = String(repeating: " ", count: _scopes.count * 4)
+    }
+    
+    func currentScopeNeedsDeclaration(for value: some ShaderValue) -> Bool {
+        let objectID = ObjectIdentifier(value)// value.id
+        for scopeIndex in _scopes.indices {
+            if _scopes[scopeIndex].declaredValues.contains(objectID) {
+                return false
+            }
+        }
+        return true
+    }
+    func varName(for value: some ShaderValue) -> String {
+        let objectID = ObjectIdentifier(value)
+        for scopeIndex in _scopes.indices.reversed() {
+            let scope = _scopes[scopeIndex]
+            if let name = scope.varNames[objectID] {
+                return name
+            }
+        }
+        
+        currentScope.nextVarIndex += 1
+        let name = "v\(currentScope.nextVarIndex)"
+        currentScope.varNames[objectID] = name
+        return name
+    }
+   
     final func prepareForReuse() {
-        _nextVarIndex = 1
-        _varNames.removeAll(keepingCapacity: true)
-        _declaredValues.removeAll(keepingCapacity: true)
+        _scopes.removeAll(keepingCapacity: true)
+        mainOutput = ""
     }
     
     internal final func validate(vsh: VertexShader, fsh: FragmentShader) throws {
@@ -29,49 +70,35 @@ public class CodeGenerator {
         
         for fshKey in fshKeys {
             if vshKeys.contains(fshKey) == false {
-                throw ShaderError("Shaders can't be linked becuase the vsh doesn't have \(fshKey) required by fsh.")
+                throw ShaderError("Shaders can't be linked because \(vsh.name) doesn't have \"\(fshKey)\" required by \(fsh.name).")
             }
         }
     }
     
-    final func declareVariableIfNeeded(_ value: some ShaderValue, declarations: inout String) {
-        let objectID = value.id
-        guard _declaredValues.contains(objectID) == false else {return}
-        _declaredValues.insert(objectID)
+    final func declareVariableIfNeeded(_ value: some ShaderValue) {
+        guard currentScopeNeedsDeclaration(for: value) else {return}
+        currentScope.declaredValues.insert(ObjectIdentifier(value))
         
         switch value.valueRepresentation {
         case .operation:
-            // TODO: Change swift version to version with the fix once there's a fix
-            #if swift(<6.0) && os(WASI) // Workaround for stack overflow on WASI
-            let operation = value.operation!
-            self.declareVariableIfNeeded(operation.lhs, declarations: &declarations)
-            self.declareVariableIfNeeded(operation.rhs, declarations: &declarations)
-            switch operation.operator {
-            case .add, .subtract, .multiply, .divide, .compare(_), .sampler2D(filter: _), .lerp(factor: factor):
-                declarations += "\(indent())\(type(for: value)) \(variable(for: value)) = " + function(for: operation, declarations: &declarations) + ";\n"
-            case .branch(comparing: _):
-                declarations += function(for: operation, declarations: &declarations) + ";\n"
-            }
-            #else
-            self.declareVariable(value, declarations: &declarations)
-            #endif
+            self.declareFunction(value: value)
         case .vec2, .vec3, .vec4, .uvec4, .mat4, .mat4Array:
-            self.declareVariable(value, declarations: &declarations)
+            self.declareVariable(value)
         case let .vec2Value(vec, index):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            self.declareVariableIfNeeded(index, declarations: &declarations)
+            self.declareVariableIfNeeded(vec)
+            self.declareVariableIfNeeded(index)
         case let .vec3Value(vec, index):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            self.declareVariableIfNeeded(index, declarations: &declarations)
+            self.declareVariableIfNeeded(vec)
+            self.declareVariableIfNeeded(index)
         case let .vec4Value(vec, index):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            self.declareVariableIfNeeded(index, declarations: &declarations)
+            self.declareVariableIfNeeded(vec)
+            self.declareVariableIfNeeded(index)
         case let .uvec4Value(vec, index):
-            self.declareVariableIfNeeded(vec, declarations: &declarations)
-            self.declareVariableIfNeeded(index, declarations: &declarations)
+            self.declareVariableIfNeeded(vec)
+            self.declareVariableIfNeeded(index)
         case let .mat4ArrayValue(array, index):
-            self.declareVariableIfNeeded(array, declarations: &declarations)
-            self.declareVariableIfNeeded(index, declarations: &declarations)
+            self.declareVariableIfNeeded(array)
+            self.declareVariableIfNeeded(index)
         #if DEBUG
         case .scalarBool(_), .scalarInt(_), .scalarUInt(_), .scalarFloat(_):
             return
@@ -79,7 +106,7 @@ public class CodeGenerator {
             return
         case .vertexOutPosition, .vertexOutPointSize, .vertexOut(_), .vertexInstanceID:
             return
-        case .fragmentIn(_), .fragmentOutColor, .fragmentInstanceID:
+        case .fragmentIn(_), .fragmentOutColor, .fragmentInstanceID, .fragmentPosition:
             return
         case .uniformModelMatrix, .uniformViewMatrix, .uniformProjectionMatrix, .uniformCustom(_, type: _):
             return
@@ -94,54 +121,74 @@ public class CodeGenerator {
         }
     }
     
-    func declareFunction(value: some ShaderValue, declarations: inout String) {
+    func declareFunction(value: some ShaderValue) {
         let operation = value.operation!
         switch operation.operator {
+        case .cast(_):
+            self.declareVariableIfNeeded(operation.value1)
+            mainOutput += scopeIndentation + "\(type(for: value)) \(variable(for: value)) = " + function(value: value, operation: operation) + ";\n"
         case .lerp(let factor):
-            self.declareVariableIfNeeded(factor, declarations: &declarations)
-            fallthrough
+            self.declareVariableIfNeeded(factor)
+            mainOutput += scopeIndentation + "\(type(for: value)) \(variable(for: value)) = " + function(value: value, operation: operation) + ";\n"
         case .add, .subtract, .multiply, .divide, .compare(_), .sampler2D(_):
-            self.declareVariableIfNeeded(operation.value1, declarations: &declarations)
-            self.declareVariableIfNeeded(operation.value2, declarations: &declarations)
-            declarations += indent() + "\(type(for: value)) \(variable(for: value)) = " + function(value: value, operation: operation) + ";\n"
+            self.declareVariableIfNeeded(operation.value1)
+            self.declareVariableIfNeeded(operation.value2)
+            mainOutput += scopeIndentation + "\(type(for: value)) \(variable(for: value)) = " + function(value: value, operation: operation) + ";\n"
+        case .not:
+            self.declareVariableIfNeeded(operation.value1)
+            mainOutput +=  scopeIndentation + "\(type(for: value)) \(variable(for: value)) = \(symbol(for: .not))\(variable(for: operation.value1))"
         case .branch(let comparing):
-            self.declareVariableIfNeeded(comparing, declarations: &declarations)
-            declareVariableIfNeeded(operation.value1, declarations: &declarations)
-            declareVariableIfNeeded(operation.value2, declarations: &declarations)
-            
-            declarations += indent() + "\(type(for: value)) \(variable(for: value));\n"
+            self.declareVariableIfNeeded(comparing)
+
+            mainOutput += scopeIndentation + "\(type(for: value)) \(variable(for: value));\n"
     
-            var out = indent() + "if (\(variable(for: comparing))) {\n"
-            indentationLevel += 1
-            out += indent() + "\(variable(for: value)) = \(variable(for: operation.value1));\n"
-            indentationLevel -= 1
-            out += indent() + "}else{\n"
-            indentationLevel += 1
-            out += indent() + "\(variable(for: value)) = \(variable(for: operation.value2));\n"
-            indentationLevel -= 1
-            out += indent() + "}\n"
-            declarations += out
+            mainOutput += scopeIndentation + "if (\(variable(for: comparing))) {\n"
+            pushScope()
+            declareVariableIfNeeded(operation.value1)
+            mainOutput += scopeIndentation + "\(variable(for: value)) = \(variable(for: operation.value1));\n"
+            popScope()
+            mainOutput += scopeIndentation + "}else{\n"
+            pushScope()
+            declareVariableIfNeeded(operation.value2)
+            mainOutput += scopeIndentation + "\(variable(for: value)) = \(variable(for: operation.value2));\n"
+            popScope()
+            mainOutput += scopeIndentation + "}\n"
+        case .switch(cases: let cases):
+            declareVariableIfNeeded(operation.value1)
+    
+            mainOutput += scopeIndentation + "\(type(for: value)) \(variable(for: value));\n"
+            mainOutput += scopeIndentation + "switch (\(variable(for: operation.value1))) {\n"
+            for `case` in cases {
+                pushScope()
+                mainOutput += scopeIndentation + "case \(variable(for: `case`.compare)): {\n"
+                pushScope()
+                declareVariableIfNeeded(`case`.result)
+                mainOutput += scopeIndentation + "\(variable(for: value)) = \(variable(for: `case`.result));\n"
+                mainOutput += scopeIndentation + "break;\n"
+                popScope()
+                mainOutput += scopeIndentation + "}\n"
+                popScope()
+            }
+            mainOutput += scopeIndentation + "}\n"
         case .discard(comparing: let comparing):
-            self.declareVariableIfNeeded(comparing, declarations: &declarations)
-            declareVariableIfNeeded(operation.value1, declarations: &declarations)
+            self.declareVariableIfNeeded(comparing)
+            declareVariableIfNeeded(operation.value1)
             
-            declarations += indent() + "\(type(for: value)) \(variable(for: value)) = \(variable(for: operation.value1));\n"
+            mainOutput += scopeIndentation + "\(type(for: value)) \(variable(for: value)) = \(variable(for: operation.value1));\n"
             
-            var out = indent() + "if (\(variable(for: comparing))) {\n"
-            indentationLevel += 1
-            out += indent() + "discard_fragment();\n"
-            indentationLevel -= 1
-            out += indent() + "}\n"
-            declarations += out
+            mainOutput += scopeIndentation + "if (\(variable(for: comparing))) {\n"
+            pushScope()
+            mainOutput += scopeIndentation + function(value: value, operation: operation) + ";\n"
+            popScope()
+            mainOutput += scopeIndentation + "}\n"
         }
     }
     
-    private final func declareVariable(_ value: some ShaderValue, declarations: inout String) {
-        lazy var out = indent() + "\(type(for: value)) \(variable(for: value)) = "
+    private final func declareVariable(_ value: some ShaderValue) {
+        lazy var out = scopeIndentation + "\(type(for: value)) \(variable(for: value)) = "
         switch value.valueType {
         case .operation:
-            self.declareFunction(value: value, declarations: &declarations)
-            return
+            fatalError()
         case .bool, .int, .uint, .float:
             switch value.valueRepresentation {
             case let .scalarBool(value):
@@ -157,28 +204,28 @@ public class CodeGenerator {
             }
         case .float2:
             let vec2 = value as! Vec2
-            self.declareVariableIfNeeded(vec2._x!, declarations: &declarations)
-            self.declareVariableIfNeeded(vec2._y!, declarations: &declarations)
+            self.declareVariableIfNeeded(vec2._x!)
+            self.declareVariableIfNeeded(vec2._y!)
             out += "\(type(for: .float2))(\(variable(for: vec2._x!)),\(variable(for: vec2._y!)))"
         case .float3:
             let vec3 = value as! Vec3
-            self.declareVariableIfNeeded(vec3._x!, declarations: &declarations)
-            self.declareVariableIfNeeded(vec3._y!, declarations: &declarations)
-            self.declareVariableIfNeeded(vec3._z!, declarations: &declarations)
+            self.declareVariableIfNeeded(vec3._x!)
+            self.declareVariableIfNeeded(vec3._y!)
+            self.declareVariableIfNeeded(vec3._z!)
             out += "\(type(for: .float3))(\(variable(for: vec3._x!)),\(variable(for: vec3._y!)),\(variable(for: vec3._z!)))"
         case .float4:
             let vec4 = value as! Vec4
-            self.declareVariableIfNeeded(vec4._x!, declarations: &declarations)
-            self.declareVariableIfNeeded(vec4._y!, declarations: &declarations)
-            self.declareVariableIfNeeded(vec4._z!, declarations: &declarations)
-            self.declareVariableIfNeeded(vec4._w!, declarations: &declarations)
+            self.declareVariableIfNeeded(vec4._x!)
+            self.declareVariableIfNeeded(vec4._y!)
+            self.declareVariableIfNeeded(vec4._z!)
+            self.declareVariableIfNeeded(vec4._w!)
             out += "\(type(for: .float4))(\(variable(for: vec4._x!)),\(variable(for: vec4._y!)),\(variable(for: vec4._z!)),\(variable(for: vec4._w!)))"
         case .uint4:
             let uvec4 = value as! UVec4
-            self.declareVariableIfNeeded(uvec4._x!, declarations: &declarations)
-            self.declareVariableIfNeeded(uvec4._y!, declarations: &declarations)
-            self.declareVariableIfNeeded(uvec4._z!, declarations: &declarations)
-            self.declareVariableIfNeeded(uvec4._w!, declarations: &declarations)
+            self.declareVariableIfNeeded(uvec4._x!)
+            self.declareVariableIfNeeded(uvec4._y!)
+            self.declareVariableIfNeeded(uvec4._z!)
+            self.declareVariableIfNeeded(uvec4._w!)
             out += "\(type(for: .uint4))(\(variable(for: uvec4._x!)),\(variable(for: uvec4._y!)),\(variable(for: uvec4._z!)),\(variable(for: uvec4._w!)))"
         case .float3x3:
             fatalError("Not implemented")
@@ -195,7 +242,7 @@ public class CodeGenerator {
         case .void, .texture2D:
             fatalError()
         }
-        declarations += out + ";\n"
+        mainOutput += out + ";\n"
     }
     
     final func variable(for value: some ShaderValue) -> String {
@@ -209,14 +256,7 @@ public class CodeGenerator {
         case let .scalarFloat(float):
             return "\(float)"
         case .vec2, .vec3, .vec4, .mat4, .operation:
-            let objectID = value.id
-            if let existing = _varNames[objectID] {
-                return existing
-            }
-            let name = "v\(_nextVarIndex)"
-            _nextVarIndex += 1
-            _varNames[objectID] = name
-            return name
+            return varName(for: value)
         default:
             return variable(for: value.valueRepresentation)
         }
@@ -236,6 +276,8 @@ public class CodeGenerator {
             return "*"
         case .divide:
             return "/"
+        case .not:
+            return "!"
         case let .compare(comparison):
             switch comparison {
             case .equal:
@@ -256,6 +298,8 @@ public class CodeGenerator {
                 return "||"
             }
         #if DEBUG
+        case .cast(_):
+            fatalError()
         case .branch(comparing: _):
             fatalError()
         case .sampler2D(filter: _):
@@ -263,6 +307,8 @@ public class CodeGenerator {
         case .lerp(factor: _):
             fatalError()
         case .discard(comparing: _):
+            fatalError()
+        case .switch(cases: _):
             fatalError()
         #else
         default:
@@ -323,6 +369,12 @@ public class CodeGenerator {
                     return .float4x4Array(capacity)
                 }
             case .operation:
+                if case .compare(_) = value.operation?.operator {
+                    return .bool
+                }
+                if case .cast(let valueType) = value.operation?.operator {
+                    return valueType
+                }
                 return valueType(for: value.operation!.value1)
             default:
                 fatalError("Unhandled valueType \(value.valueRepresentation)")
@@ -351,44 +403,42 @@ public class CodeGenerator {
         preconditionFailure("Must override")
     }
     
-    final func generateMain(from vertexShader: VertexShader) -> String {
-        var declarations = ""
-        var operations = ""
+    final func generateMain(from vertexShader: VertexShader) {
+        pushScope()
         if let position = vertexShader.output.position {
-            declareVariableIfNeeded(position, declarations: &declarations)
-            operations += "\(indent())\(variable(for: .vertexOutPosition)) = \(variable(for:position));\n"
+            declareVariableIfNeeded(position)
+            mainOutput += "\(scopeIndentation)\(variable(for: .vertexOutPosition)) = \(variable(for:position));\n"
         }else{
-            declareVariable(vertexShader.modelViewProjectionMatrix, declarations: &declarations)
-            operations += "\(indent())\(variable(for: .vertexOutPosition)) = \(variable(for: vertexShader.modelViewProjectionMatrix)) * \(type(for: .float4))(\(variable(for: vertexShader.input.geometry(0).position)),1.0);\n"
+            declareVariable(vertexShader.modelViewProjectionMatrix)
+            mainOutput += "\(scopeIndentation)\(variable(for: .vertexOutPosition)) = \(variable(for: vertexShader.modelViewProjectionMatrix)) * \(type(for: .float4))(\(variable(for: vertexShader.input.geometry(0).position)),1.0);\n"
         }
         if let pointSize = vertexShader.output.pointSize {
-            declareVariableIfNeeded(pointSize, declarations: &declarations)
-            operations += "\(indent())\(variable(for: .vertexOutPointSize)) = \(variable(for:pointSize));\n"
+            declareVariableIfNeeded(pointSize)
+            mainOutput += "\(scopeIndentation)\(variable(for: .vertexOutPointSize)) = \(variable(for:pointSize));\n"
         }
         for pair in vertexShader.output._values {
             let value = pair.value
-            declareVariableIfNeeded(value, declarations: &declarations)
-            operations += "\(indent())\(variable(for: .vertexOut(pair.key))) = \(variable(for: value));\n"
+            declareVariableIfNeeded(value)
+            mainOutput += "\(scopeIndentation)\(variable(for: .vertexOut(pair.key))) = \(variable(for: value));\n"
         }
 //        if let texCoord = vertexShader.output.textureCoordinate {
 //            declareVariableIfNeeded(texCoord, declarations: &declarations)
-//            operations += "\(indent())\(variable(for: .vertexOutTexCoord)) = \(variable(for:texCoord));\n"
+//            operations += "\(scopeIndentation)\(variable(for: .vertexOutTexCoord)) = \(variable(for:texCoord));\n"
 //        }else{
-//            operations += "\(indent())\(variable(for: .vertexOutTexCoord)) = \(variable(for: .vertexInTexCoord0(0)));\n"
+//            operations += "\(scopeIndentation)\(variable(for: .vertexOutTexCoord)) = \(variable(for: .vertexInTexCoord0(0)));\n"
 //        }
-        return declarations + "\n" + operations
+        popScope()
     }
     
-    final func generateMain(from fragmentShader: FragmentShader) -> String {
-        var declarations = ""
-        var operations = ""
+    final func generateMain(from fragmentShader: FragmentShader) {
+        pushScope()
         if let color = fragmentShader.output.color {
-            declareVariableIfNeeded(color, declarations: &declarations)
-            operations += indent() + "\(variable(for: .fragmentOutColor)) = \(variable(for:color));\n"
+            declareVariableIfNeeded(color)
+            mainOutput += scopeIndentation + "\(variable(for: .fragmentOutColor)) = \(variable(for:color));\n"
         }else{
-            operations += indent() + "\(variable(for: .fragmentOutColor)) = \(type(for: .float4))(0.5,0.5,0.5,1.0);\n"
+            mainOutput += scopeIndentation + "\(variable(for: .fragmentOutColor)) = \(type(for: .float4))(0.5,0.5,0.5,1.0);\n"
         }
-        return declarations + "\n" + operations
+        popScope()
     }
     
     public enum InputAttribute: Hashable {

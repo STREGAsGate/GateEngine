@@ -28,6 +28,10 @@ public final class Vec3: ShaderValue {
         set {self._z = newValue}
     }
     
+    public var r: Scalar {get{x}set{x = newValue}}
+    public var g: Scalar {get{y}set{y = newValue}}
+    public var b: Scalar {get{z}set{z = newValue}}
+    
     public subscript (index: Int) -> Scalar {
         switch index {
         case 0: return self.x
@@ -79,7 +83,7 @@ public final class Vec3: ShaderValue {
     }
     
     public func documentIdentifierInputData() -> [Int] {
-        var values: [Int] = []
+        var values: [Int] = [3_000]
         values.append(contentsOf: valueRepresentation.identifier)
         values.append(contentsOf: valueType.identifier)
         if let operation {
@@ -96,6 +100,7 @@ public final class Vec3: ShaderValue {
         }
         return values
     }
+    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: .valueVec3)
     
     public func lerp(to dst: Vec3, factor: Scalar) -> Vec3 {
         return Vec3(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))

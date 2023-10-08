@@ -338,7 +338,7 @@
         let scale = Size3(scale.x, scale.y, 1)
         let rotation = Quaternion(rotation, axis: .forward)
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
-        var drawFlags = flags.drawFlags(withPrimitive: .triangle)
+        var drawFlags = flags.drawCommandFlags(withPrimitive: .triangle)
         drawFlags.depthTest = .lessEqual
         let command = DrawCommand(
             backends: [geometryBackend],

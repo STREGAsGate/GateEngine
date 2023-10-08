@@ -34,8 +34,15 @@ public final class Sampler2D: ShaderValue {
     }
 
     public func documentIdentifierInputData() -> [Int] {
-        return operation?.documentIdentifierInputData() ?? []
+        var values: [Int] = [6_000]
+        values.append(contentsOf: valueRepresentation.identifier)
+        values.append(contentsOf: valueType.identifier)
+        if let operation {
+            values.append(contentsOf: operation.documentIdentifierInputData())
+        }
+        return values
     }
+    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: .valueSampler)
     
     public init(_ operation: Operation) {
         fatalError("Cannot create a sampler with an operation.")

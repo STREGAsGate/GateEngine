@@ -107,7 +107,7 @@ public final class UVec4: ShaderValue {
     }
     
     public func documentIdentifierInputData() -> [Int] {
-        var values: [Int] = []
+        var values: [Int] = [5_000]
         values.append(contentsOf: valueRepresentation.identifier)
         values.append(contentsOf: valueType.identifier)
         if let operation {
@@ -127,6 +127,7 @@ public final class UVec4: ShaderValue {
         }
         return values
     }
+    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: .valueUVec4)
     
     public func lerp(to dst: UVec4, factor: Scalar) -> UVec4 {
         return UVec4(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))

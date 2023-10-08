@@ -18,6 +18,8 @@ public final class FragmentShader: ShaderDocument {
     }
     
     public struct Input {
+        public let position: Vec4 = Vec4(representation: .fragmentPosition, type: .float4)
+        
         public var _values: [String: any ShaderValue] = [:]
         public subscript<T: ShaderValue>(key: String, scalarType: CustomUniformScalarType = .float) -> T {
             mutating get {
@@ -69,8 +71,8 @@ public final class FragmentShader: ShaderDocument {
     }
     public var output: Output = Output()
     
-    public init() {
-        super.init(documentType: .fragment)
+    public convenience init(name: String? = nil, _file: StaticString = #file, _line: Int = #line) {
+        self.init(documentType: .fragment, name: name ?? "FSH(\(_file):\(_line))")
     }
     
     override func documentIdentifierInputData() -> [Int] {

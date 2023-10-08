@@ -36,7 +36,7 @@ public final class Mat4Array: ShaderValue {
     }
     
     public func documentIdentifierInputData() -> [Int] {
-        var values: [Int] = []
+        var values: [Int] = [8_000]
         values.append(contentsOf: valueRepresentation.identifier)
         values.append(contentsOf: valueType.identifier)
         if let operation {
@@ -49,6 +49,7 @@ public final class Mat4Array: ShaderValue {
         }
         return values
     }
+    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: .valueMat4Array)
     
     public func element(at index: Scalar) -> Mat4 {
         return Mat4(representation: .mat4ArrayValue(self, index), type: .float4x4)

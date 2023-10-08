@@ -17,6 +17,8 @@ public final class Operation: ShaderElement {
         case subtract
         case multiply
         case divide
+        case not
+        case cast(_ valueType: ValueType)
         
         public enum Comparison {
             case equal
@@ -52,12 +54,15 @@ public final class Operation: ShaderElement {
         case compare(_ comparison: Comparison)
         
         case branch(comparing: Scalar)
+        case `switch`(cases: [_SwitchCase])
         case discard(comparing: Scalar)
         case sampler2D(filter: Sampler2D.Filter)
         case lerp(factor: Scalar)
         
         var identifier: [Int] {
             switch self {
+            case .cast:
+                return [5_000]
             case .add:
                 return [5_101]
             case .subtract:
@@ -66,6 +71,8 @@ public final class Operation: ShaderElement {
                 return [5_103]
             case .divide:
                 return [5_104]
+            case .not:
+                return [5_105]
             case .compare(let operatorValue):
                 return [5_105, operatorValue.identifer]
             case .branch(comparing: let comparing):
@@ -82,6 +89,12 @@ public final class Operation: ShaderElement {
                 var values: [Int] = [5_109]
                 values.append(contentsOf: comparing.documentIdentifierInputData())
                 return values
+            case .switch(cases: let cases):
+                var values: [Int] = [5_110]
+                for `case` in cases {
+                    values.append(contentsOf: `case`.documentIdentifierInputData())
+                }
+                return values
             }
         }
     }
@@ -91,7 +104,7 @@ public final class Operation: ShaderElement {
     let value2: any ShaderValue
     
     public func documentIdentifierInputData() -> [Int] {
-        var values: [Int] = []
+        var values: [Int] = [7_000]
         values.append(contentsOf: self.valueRepresentation.identifier)
         values.append(contentsOf: self.valueType.identifier)
         values.append(contentsOf: self.value1.documentIdentifierInputData())
@@ -99,11 +112,24 @@ public final class Operation: ShaderElement {
         values.append(contentsOf: self.operator.identifier)
         return values
     }
+    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: .valueOperation)
         
     public init(lhs: Scalar, operator: Operator, rhs: Scalar) {
         self.operator = `operator`
         self.value1 = lhs
         self.value2 = rhs
+    }
+    
+    public init(not lhs: Scalar) {
+        self.operator = .not
+        self.value1 = lhs
+        self.value2 = ShaderVoid()
+    }
+    
+    public init(_ lhs: Scalar, castTo: ValueType) {
+        self.operator = .cast(castTo)
+        self.value1 = lhs
+        self.value2 = ShaderVoid()
     }
     
     public init(lhs: Vec2, operator: Operator, rhs: Scalar) {
@@ -199,6 +225,12 @@ public final class Operation: ShaderElement {
     internal init<T: ShaderValue>(discardIf compare: Scalar, success: T) {
         self.operator = .discard(comparing: compare)
         self.value1 = success
-        self.value2 = Void()
+        self.value2 = ShaderVoid()
+    }
+    
+    internal init<ResultType: ShaderValue>(switch compare: Scalar, cases: [SwitchCase<ResultType>]) {
+        self.operator = .switch(cases: cases.map({_SwitchCase($0)}))
+        self.value1 = compare
+        self.value2 = ShaderVoid()
     }
 }

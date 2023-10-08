@@ -25,8 +25,7 @@ internal protocol SkinnedGeometryBackend: AnyObject {
         return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)?.geometryBackend
     }
 
-    @usableFromInline
-    internal var skinJoints: [Skin.Joint] {
+    public var skinJoints: [Skin.Joint] {
         assert(state == .ready, "The state must be ready before accessing this property.")
         return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!.skinJoints!
     }

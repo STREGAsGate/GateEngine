@@ -415,7 +415,7 @@ extension OpenGLRenderer {
                     let value = pair.value
                     let name = pair.key
                     let variable = generator.variable(
-                        for: .uniformCustom(UInt8(index), type: .bool)
+                        for: .uniformCustom(name, type: .bool)
                     )
                     switch value {
                     case let value as Bool:
@@ -510,8 +510,8 @@ extension OpenGLRenderer {
                         ) {
                             var floats: [Float] = []
                             let capacity =
-                                material.vertexShader.arrayCapacityForUniform(named: name)
-                                ?? material.fragmentShader.arrayCapacityForUniform(named: name)!
+                            material.vertexShader.uniforms.arrayCapacityForUniform(named: name)
+                            ?? material.fragmentShader.uniforms.arrayCapacityForUniform(named: name)!
                             floats.reserveCapacity(value.count * 16)
                             for mtx in value {
                                 floats.append(contentsOf: mtx.transposedArray())

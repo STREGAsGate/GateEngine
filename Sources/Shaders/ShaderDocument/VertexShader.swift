@@ -88,8 +88,8 @@ public final class VertexShader: ShaderDocument {
     }
     public var output: Output = Output()
     
-    public init() {
-        super.init(documentType: .vertex)
+    public convenience init(name: String? = nil, _file: StaticString = #file, _line: Int = #line) {
+        self.init(documentType: .vertex, name: name ?? "VSH(\(_file):\(_line))")
     }
     
     override func documentIdentifierInputData() -> [Int] {

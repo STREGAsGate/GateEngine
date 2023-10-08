@@ -147,10 +147,10 @@ public extension Direction3 {
 public extension Direction3 {
     static let up = Self(x: 0, y: 1, z: 0)
     static let down = Self(x: 0, y: -1, z: 0)
-    static var left = Self(x: -1, y: 0, z: 0)
-    static var right = Self(x: 1, y: 0, z: 0)
-    static var forward = Self(x: 0, y: 0, z: -1)
-    static var backward = Self(x: 0, y: 0, z: 1)
+    static let left = Self(x: -1, y: 0, z: 0)
+    static let right = Self(x: 1, y: 0, z: 0)
+    static let forward = Self(x: 0, y: 0, z: -1)
+    static let backward = Self(x: 0, y: 0, z: 1)
 }
 
 #if !GameMathUseSIMD

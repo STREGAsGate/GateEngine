@@ -21,6 +21,7 @@ public enum RenderingAPI {
     @inline(__always)
     nonisolated public var api: RenderingAPI { _backend.renderingAPI }
 
+    @usableFromInline
     static let rectOriginCentered: Geometry = {
         let positions: [Float] = [
             -0.5, -0.5, 0.0,
@@ -50,6 +51,7 @@ public enum RenderingAPI {
         return Geometry(raw)
     }()
 
+    @usableFromInline
     static let rectOriginTopLeft: Geometry = {
         let positions: [Float] = [
             0.0, 0.0, 0.0,

@@ -35,6 +35,17 @@ public final class Vec4: ShaderValue {
         set {self._w = newValue}
     }
     
+    public var xy: Vec2 {
+        get {
+            return Vec2(x: Scalar(representation: .vec4Value(self, 0), type: .float),
+                        y: Scalar(representation: .vec4Value(self, 1), type: .float))
+        }
+        set {
+            self.x = newValue.x
+            self.y = newValue.y
+        }
+    }
+    
     public var xyz: Vec3 {
         get {
             return Vec3(x: Scalar(representation: .vec4Value(self, 0), type: .float),
@@ -111,6 +122,7 @@ public final class Vec4: ShaderValue {
         self._w = w
     }
     
+    @_disfavoredOverload
     public init(_ vec3: Vec3, _ w: Float) {
         self.valueRepresentation = .vec4
         self.valueType = .float4
@@ -121,13 +133,27 @@ public final class Vec4: ShaderValue {
         self._w = Scalar(w)
     }
     
+    public init(_ vec3: Vec3, _ w: Scalar) {
+        self.valueRepresentation = .vec4
+        self.valueType = .float4
+        self.operation = nil
+        self._x = Scalar(representation: .vec3Value(vec3, 0), type: .float)
+        self._y = Scalar(representation: .vec3Value(vec3, 1), type: .float)
+        self._z = Scalar(representation: .vec3Value(vec3, 2), type: .float)
+        if w.valueType != .float {
+            self._w = Scalar(w, castTo: .float)
+        }else{
+            self._w = w
+        }
+    }
+    
     @inlinable
     public convenience init(_ color: Color) {
         self.init(r: color.red, g: color.green, b: color.blue, a: color.alpha)
     }
     
     public func documentIdentifierInputData() -> [Int] {
-        var values: [Int] = []
+        var values: [Int] = [2_000]
         values.append(contentsOf: valueRepresentation.identifier)
         values.append(contentsOf: valueType.identifier)
         if let operation {
@@ -147,6 +173,7 @@ public final class Vec4: ShaderValue {
         }
         return values
     }
+    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: .valueVec4)
     
     public func lerp(to dst: Vec4, factor: Scalar) -> Vec4 {
         return Vec4(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))

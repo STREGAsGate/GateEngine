@@ -155,7 +155,7 @@ extension Quaternion {
      */
     @inlinable
     public init(_ angle: some Angle, axis: Direction3) {
-        // Will always be radians (becuase degrees is explicitly below), but leave ambiguous so degrees can use a literal
+        // Will always be radians (because degrees is explicitly below), but leave ambiguous so degrees can use a literal
         let radians = angle.rawValueAsRadians
         let sinHalfAngle: Float = sin(radians / 2.0)
         let cosHalfAngle: Float = cos(radians / 2.0)
