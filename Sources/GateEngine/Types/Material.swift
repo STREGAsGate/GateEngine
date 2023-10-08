@@ -42,7 +42,7 @@ public struct Material {
     public mutating func channel<ResultType>(_ index: UInt8, _ block: (_ channel: inout Channel) -> ResultType) -> ResultType {
         precondition(
             index <= channels.count,
-            "index must be an existing channel or the next channel \(index)"
+            "index must be an existing channel or the next channel."
         )
         if index == channels.count {
             channels.append(Channel(color: .clear))
