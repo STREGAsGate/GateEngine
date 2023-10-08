@@ -178,51 +178,208 @@ public final class Vec4: ShaderValue {
     public func lerp(to dst: Vec4, factor: Scalar) -> Vec4 {
         return Vec4(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
     }
-    
-    public static func +(lhs: Vec4, rhs: Scalar) -> Vec4 {
-        return Vec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
-    }
-    public static func -(lhs: Vec4, rhs: Scalar) -> Vec4 {
-        return Vec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
-    }
-    public static func *(lhs: Vec4, rhs: Scalar) -> Vec4 {
-        return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
-    }
-    public static func /(lhs: Vec4, rhs: Scalar) -> Vec4 {
-        return Vec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
-    }
-    
+}
+
+// Arithmatic
+extension Vec4 {
+    // Addition
     public static func +(lhs: Vec4, rhs: Vec4) -> Vec4 {
         return Vec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
     }
+    @_disfavoredOverload
+    public static func +(lhs: Vec4, rhs: Scalar) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    public static func +(lhs: Vec4, rhs: Int) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +(lhs: Vec4, rhs: UInt) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +(lhs: Vec4, rhs: Float) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    @_disfavoredOverload
+    public static func +(lhs: Scalar, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    public static func +(lhs: Int, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .add, rhs: rhs))
+    }
+    public static func +(lhs: UInt, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .add, rhs: rhs))
+    }
+    public static func +(lhs: Float, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .add, rhs: rhs))
+    }
+    public static func +=(lhs: inout Vec4, rhs: Vec4) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    @_disfavoredOverload
+    public static func +=(lhs: inout Vec4, rhs: Scalar) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    public static func +=(lhs: inout Vec4, rhs: Int) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +=(lhs: inout Vec4, rhs: UInt) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +=(lhs: inout Vec4, rhs: Float) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    
+    // Subtraction
     public static func -(lhs: Vec4, rhs: Vec4) -> Vec4 {
         return Vec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
     }
-    public static func *(lhs: Vec4, rhs: Vec4) -> Vec4 {
-        return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    @_disfavoredOverload
+    public static func -(lhs: Vec4, rhs: Scalar) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
     }
-    public static func /(lhs: Vec4, rhs: Vec4) -> Vec4 {
-        return Vec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    public static func -(lhs: Vec4, rhs: Int) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
     }
-    
-    public static func +=(lhs: inout Vec4, rhs: Vec4) {
-        lhs = Vec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    public static func -(lhs: Vec4, rhs: UInt) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    public static func -(lhs: Vec4, rhs: Float) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    @_disfavoredOverload
+    public static func -(lhs: Scalar, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
+    }
+    public static func -(lhs: Int, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .subtract, rhs: rhs))
+    }
+    public static func -(lhs: UInt, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .subtract, rhs: rhs))
+    }
+    public static func -(lhs: Float, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .subtract, rhs: rhs))
     }
     public static func -=(lhs: inout Vec4, rhs: Vec4) {
         lhs = Vec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
     }
+    @_disfavoredOverload
+    public static func -=(lhs: inout Vec4, rhs: Scalar) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
+    }
+    public static func -=(lhs: inout Vec4, rhs: Int) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    public static func -=(lhs: inout Vec4, rhs: UInt) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    public static func -=(lhs: inout Vec4, rhs: Float) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    
+    // Multiplication
+    public static func *(lhs: Vec4, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    @_disfavoredOverload
+    public static func *(lhs: Vec4, rhs: Scalar) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    public static func *(lhs: Vec4, rhs: Int) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *(lhs: Vec4, rhs: UInt) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *(lhs: Vec4, rhs: Float) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    @_disfavoredOverload
+    public static func *(lhs: Scalar, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    public static func *(lhs: Int, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .multiply, rhs: rhs))
+    }
+    public static func *(lhs: UInt, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .multiply, rhs: rhs))
+    }
+    public static func *(lhs: Float, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .multiply, rhs: rhs))
+    }
     public static func *=(lhs: inout Vec4, rhs: Vec4) {
         lhs = Vec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
     }
-    public static func /=(lhs: inout Vec4, rhs: Vec4) {
-        lhs = Vec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    @_disfavoredOverload
+    public static func *=(lhs: inout Vec4, rhs: Scalar) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
     }
-    
+    public static func *=(lhs: inout Vec4, rhs: Int) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *=(lhs: inout Vec4, rhs: UInt) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *=(lhs: inout Vec4, rhs: Float) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
     public static func *(lhs: Mat4, rhs: Vec4) -> Vec4 {
         return Vec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
     }
     
+    // Division
+    public static func /(lhs: Vec4, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    @_disfavoredOverload
+    public static func /(lhs: Vec4, rhs: Scalar) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    public static func /(lhs: Vec4, rhs: Int) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /(lhs: Vec4, rhs: UInt) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /(lhs: Vec4, rhs: Float) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    @_disfavoredOverload
+    public static func /(lhs: Scalar, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    public static func /(lhs: Int, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .divide, rhs: rhs))
+    }
+    public static func /(lhs: UInt, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .divide, rhs: rhs))
+    }
+    public static func /(lhs: Float, rhs: Vec4) -> Vec4 {
+        return Vec4(Operation(lhs: Scalar(lhs), operator: .divide, rhs: rhs))
+    }
+    public static func /=(lhs: inout Vec4, rhs: Vec4) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    @_disfavoredOverload
+    public static func /=(lhs: inout Vec4, rhs: Scalar) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    public static func /=(lhs: inout Vec4, rhs: Int) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /=(lhs: inout Vec4, rhs: UInt) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /=(lhs: inout Vec4, rhs: Float) {
+        lhs = Vec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+}
+
+extension Vec4 {
     public static func ==(lhs: Vec4, rhs: Vec4) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: rhs))
+    }
+    
+    public static func !=(lhs: Vec4, rhs: Vec4) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.notEqual), rhs: rhs))
     }
 }

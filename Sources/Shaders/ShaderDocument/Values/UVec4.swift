@@ -132,21 +132,205 @@ public final class UVec4: ShaderValue {
     public func lerp(to dst: UVec4, factor: Scalar) -> UVec4 {
         return UVec4(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
     }
-    
+}
+
+// Arithmatic
+extension UVec4 {
+    // Addition
     public static func +(lhs: UVec4, rhs: UVec4) -> UVec4 {
         return UVec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
     }
+    @_disfavoredOverload
+    public static func +(lhs: UVec4, rhs: Scalar) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    public static func +(lhs: UVec4, rhs: Int) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +(lhs: UVec4, rhs: UInt) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +(lhs: UVec4, rhs: Float) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    @_disfavoredOverload
+    public static func +(lhs: Scalar, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    public static func +(lhs: Int, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .add, rhs: rhs))
+    }
+    public static func +(lhs: UInt, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .add, rhs: rhs))
+    }
+    public static func +(lhs: Float, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .add, rhs: rhs))
+    }
+    public static func +=(lhs: inout UVec4, rhs: UVec4) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    @_disfavoredOverload
+    public static func +=(lhs: inout UVec4, rhs: Scalar) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    }
+    public static func +=(lhs: inout UVec4, rhs: Int) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +=(lhs: inout UVec4, rhs: UInt) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +=(lhs: inout UVec4, rhs: Float) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    
+    // Subtraction
     public static func -(lhs: UVec4, rhs: UVec4) -> UVec4 {
         return UVec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
     }
+    @_disfavoredOverload
+    public static func -(lhs: UVec4, rhs: Scalar) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
+    }
+    public static func -(lhs: UVec4, rhs: Int) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    public static func -(lhs: UVec4, rhs: UInt) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    public static func -(lhs: UVec4, rhs: Float) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    @_disfavoredOverload
+    public static func -(lhs: Scalar, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
+    }
+    public static func -(lhs: Int, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .subtract, rhs: rhs))
+    }
+    public static func -(lhs: UInt, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .subtract, rhs: rhs))
+    }
+    public static func -(lhs: Float, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .subtract, rhs: rhs))
+    }
+    public static func -=(lhs: inout UVec4, rhs: UVec4) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
+    }
+    @_disfavoredOverload
+    public static func -=(lhs: inout UVec4, rhs: Scalar) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
+    }
+    public static func -=(lhs: inout UVec4, rhs: Int) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    public static func -=(lhs: inout UVec4, rhs: UInt) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    public static func -=(lhs: inout UVec4, rhs: Float) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    
+    // Multiplication
     public static func *(lhs: UVec4, rhs: UVec4) -> UVec4 {
         return UVec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
     }
+    @_disfavoredOverload
+    public static func *(lhs: UVec4, rhs: Scalar) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    public static func *(lhs: UVec4, rhs: Int) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *(lhs: UVec4, rhs: UInt) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *(lhs: UVec4, rhs: Float) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    @_disfavoredOverload
+    public static func *(lhs: Scalar, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    public static func *(lhs: Int, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .multiply, rhs: rhs))
+    }
+    public static func *(lhs: UInt, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .multiply, rhs: rhs))
+    }
+    public static func *(lhs: Float, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .multiply, rhs: rhs))
+    }
+    public static func *=(lhs: inout UVec4, rhs: UVec4) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    @_disfavoredOverload
+    public static func *=(lhs: inout UVec4, rhs: Scalar) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    public static func *=(lhs: inout UVec4, rhs: Int) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *=(lhs: inout UVec4, rhs: UInt) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *=(lhs: inout UVec4, rhs: Float) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+
+    // Division
     public static func /(lhs: UVec4, rhs: UVec4) -> UVec4 {
         return UVec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
     }
-    
+    @_disfavoredOverload
+    public static func /(lhs: UVec4, rhs: Scalar) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    public static func /(lhs: UVec4, rhs: Int) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /(lhs: UVec4, rhs: UInt) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /(lhs: UVec4, rhs: Float) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    @_disfavoredOverload
+    public static func /(lhs: Scalar, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    public static func /(lhs: Int, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .divide, rhs: rhs))
+    }
+    public static func /(lhs: UInt, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .divide, rhs: rhs))
+    }
+    public static func /(lhs: Float, rhs: UVec4) -> UVec4 {
+        return UVec4(Operation(lhs: Scalar(lhs), operator: .divide, rhs: rhs))
+    }
+    public static func /=(lhs: inout UVec4, rhs: UVec4) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    @_disfavoredOverload
+    public static func /=(lhs: inout UVec4, rhs: Scalar) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    public static func /=(lhs: inout UVec4, rhs: Int) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /=(lhs: inout UVec4, rhs: UInt) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /=(lhs: inout UVec4, rhs: Float) {
+        lhs = UVec4(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+}
+
+extension UVec4 {
     public static func ==(lhs: UVec4, rhs: UVec4) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: rhs))
+    }
+    
+    public static func !=(lhs: UVec4, rhs: UVec4) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .compare(.notEqual), rhs: rhs))
     }
 }

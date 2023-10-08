@@ -62,31 +62,152 @@ public final class Scalar: ShaderValue {
     public func lerp(to dst: Scalar, factor: Scalar) -> Scalar {
         return Scalar(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
     }
-    
+}
+
+// Arithmatic
+extension Scalar {
+    // Addition
+    @_disfavoredOverload
     public static func +(lhs: Scalar, rhs: Scalar) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .add, rhs: rhs))
     }
+    public static func +(lhs: Scalar, rhs: Int) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +(lhs: Scalar, rhs: UInt) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +(lhs: Scalar, rhs: Float) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +(lhs: Int, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .add, rhs: rhs))
+    }
+    public static func +(lhs: UInt, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .add, rhs: rhs))
+    }
+    public static func +(lhs: Float, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .add, rhs: rhs))
+    }
+    public static func +=(lhs: inout Scalar, rhs: Int) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +=(lhs: inout Scalar, rhs: UInt) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    public static func +=(lhs: inout Scalar, rhs: Float) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .add, rhs: Scalar(rhs)))
+    }
+    
+    // Subtraction
+    @_disfavoredOverload
     public static func -(lhs: Scalar, rhs: Scalar) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
     }
-    public static func *(lhs: Scalar, rhs: Scalar) -> Scalar {
-        return Scalar(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    public static func -(lhs: Scalar, rhs: Int) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
     }
-    public static func /(lhs: Scalar, rhs: Scalar) -> Scalar {
-        return Scalar(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    public static func -(lhs: Scalar, rhs: UInt) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
     }
-    
-    public static func +=(lhs: inout Scalar, rhs: Scalar) {
-        lhs = Scalar(Operation(lhs: lhs, operator: .add, rhs: rhs))
+    public static func -(lhs: Scalar, rhs: Float) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
     }
+    public static func -(lhs: Int, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .subtract, rhs: rhs))
+    }
+    public static func -(lhs: UInt, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .subtract, rhs: rhs))
+    }
+    public static func -(lhs: Float, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .subtract, rhs: rhs))
+    }
+    @_disfavoredOverload
     public static func -=(lhs: inout Scalar, rhs: Scalar) {
         lhs = Scalar(Operation(lhs: lhs, operator: .subtract, rhs: rhs))
     }
+    public static func -=(lhs: inout Scalar, rhs: Int) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    public static func -=(lhs: inout Scalar, rhs: UInt) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    public static func -=(lhs: inout Scalar, rhs: Float) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .subtract, rhs: Scalar(rhs)))
+    }
+    
+    // Multiplication
+    @_disfavoredOverload
+    public static func *(lhs: Scalar, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
+    }
+    public static func *(lhs: Scalar, rhs: Int) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *(lhs: Scalar, rhs: UInt) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *(lhs: Scalar, rhs: Float) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *(lhs: Int, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .multiply, rhs: rhs))
+    }
+    public static func *(lhs: UInt, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .multiply, rhs: rhs))
+    }
+    public static func *(lhs: Float, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .multiply, rhs: rhs))
+    }
+    @_disfavoredOverload
     public static func *=(lhs: inout Scalar, rhs: Scalar) {
         lhs = Scalar(Operation(lhs: lhs, operator: .multiply, rhs: rhs))
     }
+    public static func *=(lhs: inout Scalar, rhs: Int) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *=(lhs: inout Scalar, rhs: UInt) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    public static func *=(lhs: inout Scalar, rhs: Float) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .multiply, rhs: Scalar(rhs)))
+    }
+    
+    // Division
+    @_disfavoredOverload
+    public static func /(lhs: Scalar, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    public static func /(lhs: Scalar, rhs: Int) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /(lhs: Scalar, rhs: UInt) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /(lhs: Scalar, rhs: Float) -> Scalar {
+        return Scalar(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /(lhs: Int, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .divide, rhs: rhs))
+    }
+    public static func /(lhs: UInt, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .divide, rhs: rhs))
+    }
+    public static func /(lhs: Float, rhs: Scalar) -> Scalar {
+        return Scalar(Operation(lhs: Scalar(lhs), operator: .divide, rhs: rhs))
+    }
+    @_disfavoredOverload
     public static func /=(lhs: inout Scalar, rhs: Scalar) {
         lhs = Scalar(Operation(lhs: lhs, operator: .divide, rhs: rhs))
+    }
+    public static func /=(lhs: inout Scalar, rhs: Int) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /=(lhs: inout Scalar, rhs: UInt) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
+    }
+    public static func /=(lhs: inout Scalar, rhs: Float) {
+        lhs = Scalar(Operation(lhs: lhs, operator: .divide, rhs: Scalar(rhs)))
     }
 }
 
@@ -98,6 +219,7 @@ extension Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.or), rhs: rhs))
     }
     
+    @_disfavoredOverload
     public static func ==(lhs: Scalar, rhs: Scalar) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: rhs))
     }
@@ -114,6 +236,7 @@ extension Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.equal), rhs: Scalar(rhs)))
     }
     
+    @_disfavoredOverload
     public static func !=(lhs: Scalar, rhs: Scalar) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.notEqual), rhs: rhs))
     }
@@ -130,6 +253,7 @@ extension Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.notEqual), rhs: Scalar(rhs)))
     }
     
+    @_disfavoredOverload
     public static func >(lhs: Scalar, rhs: Scalar) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.greater), rhs: rhs))
     }
@@ -146,6 +270,7 @@ extension Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.greater), rhs: Scalar(rhs)))
     }
     
+    @_disfavoredOverload
     public static func <(lhs: Scalar, rhs: Scalar) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.less), rhs: rhs))
     }
@@ -162,6 +287,7 @@ extension Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.less), rhs: Scalar(rhs)))
     }
     
+    @_disfavoredOverload
     public static func >=(lhs: Scalar, rhs: Scalar) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.greaterEqual), rhs: rhs))
     }
@@ -178,6 +304,7 @@ extension Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.greaterEqual), rhs: Scalar(rhs)))
     }
     
+    @_disfavoredOverload
     public static func <=(lhs: Scalar, rhs: Scalar) -> Scalar {
         return Scalar(Operation(lhs: lhs, operator: .compare(.lessEqual), rhs: rhs))
     }
