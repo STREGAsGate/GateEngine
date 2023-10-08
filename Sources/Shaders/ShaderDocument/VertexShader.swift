@@ -66,7 +66,7 @@ public final class VertexShader: ShaderDocument {
         public var pointSize: Scalar? = nil
         
         public var _values: [String: any ShaderValue] = [:]
-        public subscript<T: ShaderValue>(key: String, interpolated: Bool = true) -> T? {
+        public subscript<T: ShaderValue>(key: String) -> T? {
             get {_values[key] as? T}
             set {_values[key] = newValue}
         }
