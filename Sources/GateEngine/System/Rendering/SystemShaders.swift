@@ -149,19 +149,14 @@ internal extension VertexShader {
         let vsh = VertexShader()
         vsh.output.position =
         vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
+        let texCood = vsh.input.geometry(0).textureCoordinate0
         switch Game.shared.renderer.api {
-        case .metal, .d3d12:
-            vsh.output["texCoord0"] =
-            vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale
-            + vsh.channel(0).offset
         case .openGL, .openGLES, .webGL2:
-            let texCood = vsh.input.geometry(0).textureCoordinate0
-            let y = 1.0 - texCood.y
-            vsh.output["texCoord0"] =
-            Vec2(x: texCood.x, y: y) * vsh.channel(0).scale + vsh.channel(0).offset
-        case .headless:
+            texCood.y = 1.0 - texCood.y
+        default:
             break
         }
+        vsh.output["texCoord0"] = texCood * vsh.channel(0).scale + vsh.channel(0).offset
         return vsh
     }()
 }
