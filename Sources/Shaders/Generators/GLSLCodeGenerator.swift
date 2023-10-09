@@ -119,13 +119,13 @@ public final class GLSLCodeGenerator: CodeGenerator {
             return variable(for: array) + "[" + variable(for: index) + "]"
             
         case let .channelAttachment(index: index):
-            return "materials[\(index)].texture"
+            return "material_\(index).texture"
         case let .channelScale(index):
-            return "materials[\(index)].scale"
+            return "material_\(index).scale"
         case let .channelOffset(index):
-            return "materials[\(index)].offset"
+            return "material_\(index).offset"
         case let .channelColor(index):
-            return "materials[\(index)].color"
+            return "material_\(index).color"
             
         #if DEBUG
         case .void, .operation, .vec2, .vec3, .vec4, .uvec4, .mat4, .mat4Array(_):
@@ -164,9 +164,9 @@ public final class GLSLCodeGenerator: CodeGenerator {
         var customUniformDefine: String = ""
         for value in vertexShader.uniforms.sortedCustomUniforms() {
             if case let .float4x4Array(capacity) = value.valueType {
-                customUniformDefine += "\nuniform \(type(for: value.valueType)) \(variable(for: value))[\(capacity)];"
+                customUniformDefine += "uniform \(type(for: value.valueType)) \(variable(for: value))[\(capacity)];\n"
             }else{
-                customUniformDefine += "\nuniform \(type(for: value.valueType)) \(variable(for: value));"
+                customUniformDefine += "uniform \(type(for: value.valueType)) \(variable(for: value));\n"
             }
         }
         
@@ -175,37 +175,40 @@ public final class GLSLCodeGenerator: CodeGenerator {
             let attribute = attributes[attributeIndex]
             switch attribute {
             case .vertexInPosition(geometryIndex: let geometryIndex):
-                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float3)) \(variable(for: .vertexInPosition(geometryIndex)));"
+                vertexGeometryDefine += "layout(location = \(attributeIndex)) in \(type(for: .float3)) \(variable(for: .vertexInPosition(geometryIndex)));\n"
             case .vertexInTexCoord0(geometryIndex: let geometryIndex):
-                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float2)) \(variable(for: .vertexInTexCoord0(geometryIndex)));"
+                vertexGeometryDefine += "layout(location = \(attributeIndex)) in \(type(for: .float2)) \(variable(for: .vertexInTexCoord0(geometryIndex)));\n"
             case .vertexInTexCoord1(geometryIndex: let geometryIndex):
-                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float2)) \(variable(for: .vertexInTexCoord1(geometryIndex)));"
+                vertexGeometryDefine += "layout(location = \(attributeIndex)) in \(type(for: .float2)) \(variable(for: .vertexInTexCoord1(geometryIndex)));\n"
             case .vertexInNormal(geometryIndex: let geometryIndex):
-                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float3)) \(variable(for: .vertexInNormal(geometryIndex)));"
+                vertexGeometryDefine += "layout(location = \(attributeIndex)) in \(type(for: .float3)) \(variable(for: .vertexInNormal(geometryIndex)));\n"
             case .vertexInTangent(geometryIndex: let geometryIndex):
-                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float3)) \(variable(for: .vertexInTangent(geometryIndex)));"
+                vertexGeometryDefine += "layout(location = \(attributeIndex)) in \(type(for: .float3)) \(variable(for: .vertexInTangent(geometryIndex)));\n"
             case .vertexInColor(geometryIndex: let geometryIndex):
-                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float4)) \(variable(for: .vertexInColor(geometryIndex)));"
+                vertexGeometryDefine += "layout(location = \(attributeIndex)) in \(type(for: .float4)) \(variable(for: .vertexInColor(geometryIndex)));\n"
             case .vertexInJointIndices(geometryIndex: let geometryIndex):
-                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .uint4)) \(variable(for: .vertexInJointIndices(geometryIndex)));"
+                vertexGeometryDefine += "layout(location = \(attributeIndex)) in \(type(for: .uint4)) \(variable(for: .vertexInJointIndices(geometryIndex)));\n"
             case .vertexInJointWeights(geometryIndex: let geometryIndex):
-                vertexGeometryDefine += "\nlayout(location = \(attributeIndex)) in \(type(for: .float4)) \(variable(for: .vertexInJointWeights(geometryIndex)));"
+                vertexGeometryDefine += "layout(location = \(attributeIndex)) in \(type(for: .float4)) \(variable(for: .vertexInJointWeights(geometryIndex)));\n"
             }
         }
-        vertexGeometryDefine += "\nlayout(location = \(attributes.count)) in \(type(for: .float4x4)) \(variable(for: .uniformModelMatrix));"
+        vertexGeometryDefine += "layout(location = \(attributes.count)) in \(type(for: .float4x4)) \(variable(for: .uniformModelMatrix));\n"
         
-        var materialDefines: String = ""
-        for index in vertexShader.channels.indices {
-            materialDefines += """
-        uniform \(type(for: .float4)) \(variable(for: .channelColor(UInt8(index))));
-        uniform \(type(for: .float2)) \(variable(for: .channelScale(UInt8(index))));
-        uniform \(type(for: .float2)) \(variable(for: .channelOffset(UInt8(index))));
+        var materialDefines: String = """
+        struct Material {
+            \(type(for: .float2)) offset;
+            \(type(for: .float2)) scale;
+            \(type(for: .float4)) color;
+            \(type(for: .texture2D)) texture;
+        };\n
         """
+        for index in vertexShader.channels.indices {
+            materialDefines += "uniform Material material_\(index);\n"
         }
         
         var outVariables: String = ""
         for pair in vertexShader.output._values {
-            outVariables += "\nout \(type(for: pair.value)) \(variable(for: .vertexOut(pair.key)));"
+            outVariables += "out \(type(for: pair.value)) \(variable(for: .vertexOut(pair.key)));\n"
         }
         
         generateMain(from: vertexShader)
@@ -218,14 +221,7 @@ precision highp \(type(for: .float));
 uniform \(type(for: .float4x4)) \(variable(for: .uniformViewMatrix));
 uniform \(type(for: .float4x4)) \(variable(for: .uniformProjectionMatrix));\(customUniformDefine)
 
-struct Material {
-    \(type(for: .float2)) offset;
-    \(type(for: .float2)) scale;
-    \(type(for: .float4)) color;
-    \(type(for: .texture2D)) texture;
-};
-uniform Material materials[16];
-
+\(materialDefines)
 \(vertexGeometryDefine)
 \(outVariables)
 
@@ -238,25 +234,27 @@ void main() {
         var customUniformDefine: String = ""
         for value in fragmentShader.uniforms.sortedCustomUniforms() {
             if case let .float4x4Array(capacity) = value.valueType {
-                customUniformDefine += "\nuniform \(type(for: value)) \(variable(for: value))[\(capacity)];"
+                customUniformDefine += "uniform \(type(for: value)) \(variable(for: value))[\(capacity)];\n"
             }else{
-                customUniformDefine += "\nuniform \(type(for: value)) \(variable(for: value));"
+                customUniformDefine += "uniform \(type(for: value)) \(variable(for: value));\n"
             }
         }
         
         var inVariables: String = ""
         for pair in fragmentShader.input._values {
-            inVariables += "\nin \(type(for: pair.value)) \(variable(for: .fragmentIn(pair.key)));"
+            inVariables += "in \(type(for: pair.value)) \(variable(for: .fragmentIn(pair.key)));\n"
         }
         
-        var materialDefines: String = ""
-        for index in fragmentShader.channels.indices {
-            materialDefines += """
-        uniform \(type(for: .float4)) \(variable(for: .channelColor(UInt8(index))));
-        uniform \(type(for: .float2)) \(variable(for: .channelScale(UInt8(index))));
-        uniform \(type(for: .float2)) \(variable(for: .channelOffset(UInt8(index))));
-        uniform \(type(for: .texture2D)) \(variable(for: .channelAttachment(UInt8(index))));
+        var materialDefines: String = """
+        struct Material {
+            \(type(for: .float2)) offset;
+            \(type(for: .float2)) scale;
+            \(type(for: .float4)) color;
+            \(type(for: .texture2D)) texture;
+        };\n
         """
+        for index in fragmentShader.channels.indices {
+            materialDefines += "uniform Material material_\(index);\n"
         }
         
         generateMain(from: fragmentShader)
@@ -266,17 +264,9 @@ void main() {
 \(version)
 precision highp \(type(for: .float));
 \(customUniformDefine)
+\(materialDefines)
 \(inVariables)
-
 layout(location = 0) out \(type(for: .float4)) \(variable(for: .fragmentOutColor));
-
-struct Material {
-    \(type(for: .float2)) offset;
-    \(type(for: .float2)) scale;
-    \(type(for: .float4)) color;
-    \(type(for: .texture2D)) texture;
-};
-uniform Material materials[16];
 
 void main() {
 \(mainOutput)}
