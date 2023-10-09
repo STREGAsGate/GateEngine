@@ -29,16 +29,16 @@ class OpenGLRenderer: RendererBackend {
 
     var _shaders: [ShaderKey: OpenGLShader] = [:]
     struct ShaderKey: Hashable {
-        let vshID: ObjectIdentifier
-        let fshID: ObjectIdentifier
+        let vshID: VertexShader.ID
+        let fshID: FragmentShader.ID
         let attributes: ContiguousArray<CodeGenerator.InputAttribute>
         init(
             vsh: VertexShader,
             fsh: FragmentShader,
             attributes: ContiguousArray<CodeGenerator.InputAttribute>
         ) {
-            self.vshID = ObjectIdentifier(vsh)
-            self.fshID = ObjectIdentifier(fsh)
+            self.vshID = vsh.id
+            self.fshID = fsh.id
             self.attributes = attributes
         }
     }
@@ -76,7 +76,7 @@ class OpenGLRenderer: RendererBackend {
 
             #if GATEENGINE_LOG_SHADERS
             Log.info(
-                "Generated OpenGL Vertex Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.vertexSource))\n"
+                "Generated OpenGL Vertex Shader \(vsh):\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.vertexSource))\n"
             )
             #endif
             let vsh = compileShader(sources.vertexSource, shared: "", withType: .vertex)!
@@ -87,7 +87,7 @@ class OpenGLRenderer: RendererBackend {
             #endif
             #if GATEENGINE_LOG_SHADERS
             Log.info(
-                "Generated OpenGL Fragment Shader:\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.fragmentSource))\n"
+                "Generated OpenGL Fragment Shader \(fsh):\n\n\(GLSLCodeGenerator.addingLineNumbers(sources.fragmentSource))\n"
             )
             #endif
             let fsh = compileShader(sources.fragmentSource, shared: "", withType: .fragment)!

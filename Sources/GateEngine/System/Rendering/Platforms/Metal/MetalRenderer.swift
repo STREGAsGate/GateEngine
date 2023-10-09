@@ -350,7 +350,7 @@ extension MetalRenderer {
                 attributes: attributes
             )
             #if GATEENGINE_LOG_SHADERS
-            Log.info("Generated Metal Shaders:\n\n\(source)\n")
+            Log.info("Generated Metal Shaders vsh:\(vsh) fsh:\(fsh) \n\n\(source)\n")
             #endif
             let library = try self.device.makeLibrary(source: source, options: nil)
             let pipelineState = self.getRenderPipelineState(

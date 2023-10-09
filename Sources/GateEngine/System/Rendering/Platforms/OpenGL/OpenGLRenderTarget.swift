@@ -103,8 +103,6 @@ extension OpenGLRenderTarget {
         if let windowRenderTarget {
             glBindFramebuffer(0)
             glViewport(x: 0, y: 0, width: Int(size.width), height: Int(size.height))
-            glClearColor(0, 0, 0, 1)
-            glClear([.color])
             let renderer: Renderer = Game.shared.renderer
             let sizeOnlyRenderTarget = renderer.openGLBackend.sizeOnlyRenderTarget
             sizeOnlyRenderTarget.size = self.size

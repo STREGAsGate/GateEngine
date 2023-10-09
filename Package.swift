@@ -158,7 +158,7 @@ let package = Package(
                         settings.append(.define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.wasi])))
                         #endif
 
-                        #if false // Experimental and upcomming langauge feature.
+                        #if true // Experimental and upcomming language features.
                         // These should be disabled for releases.
                         // These are to get a headstart on the next Swift versions.
                         // https://www.swift.org/swift-evolution/#?upcoming=true
@@ -170,11 +170,11 @@ let package = Package(
                             .enableUpcomingFeature("ForwardTrailingClosures"),
                             .enableUpcomingFeature("ConciseMagicFile"),
                             
-                            .enableExperimentalFeature("StrictConcurrency=complete"),
+                            //.enableExperimentalFeature("StrictConcurrency=complete"),
                         ])
                         #endif
                         
-                        #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
+                        #if true // Options for development of GateEngine. These should be disabled for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
                         // Options for development of WASI platform
@@ -196,11 +196,11 @@ let package = Package(
                             /// Enables various additional checks and output for rendering
                             .define("GATEENGINE_DEBUG_RENDERING"),
                             /// Enables various additional checks and output for input
-                            .define("GATEENGINE_DEBUG_HID"),
+                            //.define("GATEENGINE_DEBUG_HID"),
                             /// Enables varius additional, additional, checks and output for input
-                            .define("GATEENGINE_DEBUG_HID_VERBOSE"),
+                            //.define("GATEENGINE_DEBUG_HID_VERBOSE"),
                             /// Forces Apple platforms to use OpenGL for rendering
-                            .define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, /*.iOS, .tvOS*/])),
+                            //.define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, /*.iOS, .tvOS*/])),
                         ])
                         #endif
                         return settings
@@ -213,6 +213,8 @@ let package = Package(
                         dependencies: [
                             "GameMath",
                             .product(name: "Collections", package: "swift-collections")
+                        ], swiftSettings: [
+                            .define("GATEENGINE_DEBUG_SHADERS", .when(configuration: .debug))
                         ]),
             
             .target(name: "GameMath", swiftSettings: {

@@ -702,10 +702,10 @@ extension DX12Renderer {
             )
             #if GATEENGINE_LOG_SHADERS
             Log.info(
-                "Generated DirectX Vertex Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.vsh))\n"
+                "Generated DirectX Vertex Shader \(shaders.vsh):\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.vsh))\n"
             )
             Log.info(
-                "Generated DirectX Fragment Shader:\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.fsh))\n"
+                "Generated DirectX Fragment Shader \(shaders.fsh):\n\n\(HLSLCodeGenerator.addingLineNumbers(shaders.fsh))\n"
             )
             #endif
             #if GATEENGINE_DEBUG_RENDERING
