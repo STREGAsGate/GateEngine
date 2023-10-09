@@ -46,6 +46,7 @@ public enum MipMapping: Hashable, Sendable {
         )
     }
 
+    @usableFromInline
     internal var isRenderTarget: Bool {
         return renderTarget != nil
     }

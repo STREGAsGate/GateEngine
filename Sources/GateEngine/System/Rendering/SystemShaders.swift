@@ -146,17 +146,11 @@ extension FragmentShader {
 
 internal extension VertexShader {
     @MainActor static let renderTarget: VertexShader = {
-        let vsh = VertexShader()
+        let vsh = VertexShader(name: "renderTarget")
         vsh.output.position =
         vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
-        let texCood = vsh.input.geometry(0).textureCoordinate0
-        switch Game.shared.renderer.api {
-        case .openGL, .openGLES, .webGL2:
-            texCood.y = 1.0 - texCood.y
-        default:
-            break
-        }
-        vsh.output["texCoord0"] = texCood * vsh.channel(0).scale + vsh.channel(0).offset
+        let texCoord = vsh.input.geometry(0).textureCoordinate0
+        vsh.output["texCoord0"] = texCoord * vsh.channel(0).scale + vsh.channel(0).offset
         return vsh
     }()
 }

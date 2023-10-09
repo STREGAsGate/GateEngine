@@ -24,17 +24,34 @@
 
     @usableFromInline
     internal lazy var uvOffset: Position2 = {
-        return Position2(
-            (bounds.position.x + 0.001) / Float(texture.size.width),
-            (bounds.position.y + 0.001) / Float(texture.size.height)
-        )
+        switch Game.shared.renderer.api {
+        case .openGL, .openGLES, .webGL2:
+            return Position2(
+                (bounds.position.x + 0.001) / Float(texture.size.width),
+                (bounds.position.y - 0.001) / Float(texture.size.height)
+            )
+        default:
+            return Position2(
+                (bounds.position.x + 0.001) / Float(texture.size.width),
+                (bounds.position.y + 0.001) / Float(texture.size.height)
+            )
+        }
     }()
     @usableFromInline
     internal lazy var uvScale: Size2 = {
-        return Size2(
+        var scale = Size2(
             bounds.size.width / Float(texture.size.width),
             bounds.size.height / Float(texture.size.height)
         )
+        if texture.isRenderTarget {
+            switch Game.shared.renderer.api {
+            case .openGL, .openGLES, .webGL2:
+                scale.y *= -1
+            default:
+                break
+            }
+        }
+        return scale
     }()
 
     @usableFromInline

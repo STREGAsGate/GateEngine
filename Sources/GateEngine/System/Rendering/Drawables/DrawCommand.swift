@@ -117,13 +117,23 @@ public struct DrawCommand {
                 channel.texture = texture
                 if let subRect {
                     channel.offset = Position2(
-                        (subRect.position.x + 0.001) / Float(texture.size.width),
-                        (subRect.position.y + 0.001) / Float(texture.size.height)
+                        subRect.position.x / Float(texture.size.width),
+                        subRect.position.y / Float(texture.size.height)
                     )
                     channel.scale = Size2(
                         subRect.size.width / Float(texture.size.width),
                         subRect.size.height / Float(texture.size.height)
                     )
+                }
+                if texture.isRenderTarget == true {
+                    switch Game.shared.renderer.api {
+                    case .openGL, .openGLES, .webGL2:
+                        channel.offset.x -= 0.001
+                        channel.offset.y += 0.001
+                        channel.scale.y *= -1
+                    default:
+                        break
+                    }
                 }
             }
             material.vertexShader = vertexShader

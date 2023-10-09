@@ -118,6 +118,14 @@ public enum RenderingAPI {
                 if options.contains(.flipVertical) {
                     channel.scale.y = -1
                 }
+               
+                switch Game.shared.renderer.api {
+                case .openGL, .openGLES, .webGL2:
+                    channel.scale.y *= -1
+                default:
+                    break
+                }
+
                 switch sampler {
                 case .linear:
                     channel.sampleFilter = .linear
