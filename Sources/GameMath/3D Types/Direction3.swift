@@ -86,6 +86,19 @@ public extension Direction3  {
     }
 }
 
+public extension Direction3 {
+    @inlinable
+    var xy: Direction2 {
+        get {
+            return Direction2(x, y)
+        }
+        set {
+            self.x = newValue.x
+            self.y = newValue.y
+        }
+    }
+}
+
 public extension Direction3  {
     @_transparent
     func angle(to rhs: Self) -> Radians {

@@ -80,6 +80,19 @@ public extension Position3 {
 }
 
 public extension Position3 {
+    @inlinable
+    var xy: Position2 {
+        get {
+            return Position2(x, y)
+        }
+        set {
+            self.x = newValue.x
+            self.y = newValue.y
+        }
+    }
+}
+
+public extension Position3 {
     /** The distance between `from` and `self`
     - parameter from: A value representing the source position.
      */

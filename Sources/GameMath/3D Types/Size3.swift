@@ -84,6 +84,19 @@ public extension Size3 {
 }
 
 public extension Size3 {
+    @inlinable
+    var xy: Size2 {
+        get {
+            return Size2(x, y)
+        }
+        set {
+            self.x = newValue.x
+            self.y = newValue.y
+        }
+    }
+}
+
+public extension Size3 {
     #if !GameMathUseSIMD
     static let one = Self(width: 1, height: 1, depth: 1)
     static let zero = Self(0)
