@@ -369,7 +369,7 @@ extension OpenGLRenderer {
                     ) {
                         glActiveTexture(unit: .texture(index))
                         glBindTexture(texture.textureId, as: .texture2D)
-                        try glUniform(location: location, values: GLint(index))
+                        try glUniform1i(location: location, value1: GLint(index))
                     } else {
                         #if GATEENGINE_DEBUG_RENDERING
                         Log.warnOnce("OpenGL attribute \"\(textureName)\" not found.")
@@ -379,7 +379,7 @@ extension OpenGLRenderer {
 
                 let scaleName = generator.variable(for: .channelScale(UInt8(index)))
                 if let location = try? glGetUniformLocation(inProgram: program, named: scaleName) {
-                    try glUniform(location: location, values: channel.scale.x, channel.scale.y)
+                    try glUniform2f(location: location, value1: channel.scale.x, value2: channel.scale.y)
                 } else {
                     #if GATEENGINE_DEBUG_RENDERING
                     Log.warnOnce("OpenGL attribute \"\(scaleName)\" not found.")
@@ -387,7 +387,7 @@ extension OpenGLRenderer {
                 }
                 let offsetName = generator.variable(for: .channelOffset(UInt8(index)))
                 if let location = try? glGetUniformLocation(inProgram: program, named: offsetName) {
-                    try glUniform(location: location, values: channel.offset.x, channel.offset.y)
+                    try glUniform2f(location: location, value1: channel.offset.x, value2: channel.offset.y)
                 } else {
                     #if GATEENGINE_DEBUG_RENDERING
                     Log.warnOnce("OpenGL attribute \"\(offsetName)\" not found.")
@@ -395,12 +395,12 @@ extension OpenGLRenderer {
                 }
                 let colorName = generator.variable(for: .channelColor(UInt8(index)))
                 if let location = try? glGetUniformLocation(inProgram: program, named: colorName) {
-                    try glUniform(
+                    try glUniform4f(
                         location: location,
-                        values: channel.color.red,
-                        channel.color.green,
-                        channel.color.blue,
-                        channel.color.alpha
+                        value1: channel.color.red,
+                        value2: channel.color.green,
+                        value3: channel.color.blue,
+                        value4: channel.color.alpha
                     )
                 } else {
                     #if GATEENGINE_DEBUG_RENDERING
@@ -423,7 +423,7 @@ extension OpenGLRenderer {
                             inProgram: program,
                             named: variable
                         ) {
-                            try glUniform(location: location, values: value ? 1 : 0)
+                            try glUniform1f(location: location, value1: value ? 1 : 0)
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
                             Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
@@ -434,7 +434,7 @@ extension OpenGLRenderer {
                             inProgram: program,
                             named: variable
                         ) {
-                            try glUniform(location: location, values: GLint(value))
+                            try glUniform1i(location: location, value1: Int32(value))
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
                             Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
@@ -445,7 +445,7 @@ extension OpenGLRenderer {
                             inProgram: program,
                             named: variable
                         ) {
-                            try glUniform(location: location, values: value)
+                            try glUniform1f(location: location, value1: value)
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
                             Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
@@ -456,7 +456,7 @@ extension OpenGLRenderer {
                             inProgram: program,
                             named: variable
                         ) {
-                            try glUniform(location: location, values: value.x, value.y)
+                            try glUniform2f(location: location, value1: value.x, value2: value.y)
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
                             Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")
@@ -467,7 +467,7 @@ extension OpenGLRenderer {
                             inProgram: program,
                             named: variable
                         ) {
-                            try glUniform(location: location, values: value.x, value.y, value.z)
+                            try glUniform3f(location: location, value1: value.x, value2: value.y, value3: value.z)
                         } else {
                             #if GATEENGINE_DEBUG_RENDERING
                             Log.warnOnce("OpenGL attribute \"\(variable)\" not found.")

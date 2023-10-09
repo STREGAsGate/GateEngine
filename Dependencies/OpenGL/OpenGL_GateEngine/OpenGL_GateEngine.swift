@@ -715,98 +715,67 @@ public let glBackBuffer = GL_BACK
     return T(params)
 }
 
-@inlinable @inline(__always) public func glUniform<T: SignedInteger>(location: GLint, values: [T]) throws {
-    let values = values.map({Int32($0)})
-    switch values.count {
-    case 1:
-        _glUniform1i(location, values[0])
-    case 2:
-        _glUniform2i(location, values[0], values[1])
-    case 3:
-        _glUniform3i(location, values[0], values[1], values[2])
-    case 4:
-        _glUniform4i(location, values[0], values[1], values[2], values[3])
-    default:
-        throw OpenGL.Error(.unknown, #function, "Exceeded max uniform elements (4)")
-    }
+// Int
+@_transparent
+public func glUniform1i(location: GLint, value1: Int32) throws {
+    _glUniform1i(location, value1)
 }
 
-@inlinable @inline(__always) public func glUniform<T: SignedInteger>(location: GLint, values: T...) throws {
-    let values = values.map({Int32($0)})
-    switch values.count {
-    case 1:
-        _glUniform1i(location, values[0])
-    case 2:
-        _glUniform2i(location, values[0], values[1])
-    case 3:
-        _glUniform3i(location, values[0], values[1], values[2])
-    case 4:
-        _glUniform4i(location, values[0], values[1], values[2], values[3])
-    default:
-        throw OpenGL.Error(.unknown, #function, "Exceeded max uniform elements (4)")
-    }
+@_transparent
+public func glUniform2i(location: GLint, value1: Int32, value2: Int32) throws {
+    _glUniform2i(location, value1, value2)
 }
 
-@inlinable @inline(__always) public func glUniform<T: UnsignedInteger>(location: GLint, values: [T]) throws {
-    let values = values.map({UInt32($0)})
-    switch values.count {
-    case 1:
-        _glUniform1ui(location, values[0])
-    case 2:
-        _glUniform2ui(location, values[0], values[1])
-    case 3:
-        _glUniform3ui(location, values[0], values[1], values[2])
-    case 4:
-        _glUniform4ui(location, values[0], values[1], values[2], values[3])
-    default:
-        throw OpenGL.Error(.unknown, #function, "Exceeded max uniform elements (4)")
-    }
+@_transparent
+public func glUniform3i(location: GLint, value1: Int32, value2: Int32, value3: Int32) throws {
+    _glUniform3i(location, value1, value2, value3)
 }
 
-@inlinable @inline(__always) public func glUniform<T: UnsignedInteger>(location: GLint, values: T...) throws {
-    let values = values.map({UInt32($0)})
-    switch values.count {
-    case 1:
-        _glUniform1ui(location, values[0])
-    case 2:
-        _glUniform2ui(location, values[0], values[1])
-    case 3:
-        _glUniform3ui(location, values[0], values[1], values[2])
-    case 4:
-        _glUniform4ui(location, values[0], values[1], values[2], values[3])
-    default:
-        throw OpenGL.Error(.unknown, #function, "Exceeded max uniform elements (4)")
-    }
+@_transparent
+public func glUniform4i(location: GLint, value1: Int32, value2: Int32, value3: Int32, value4: Int32) throws {
+    _glUniform4i(location, value1, value2, value3, value4)
 }
 
-@inlinable @inline(__always) public func glUniform(location: GLint, values: [Float]) throws {
-    switch values.count {
-    case 1:
-        _glUniform1f(location, values[0])
-    case 2:
-        _glUniform2f(location, values[0], values[1])
-    case 3:
-        _glUniform3f(location, values[0], values[1], values[2])
-    case 4:
-        _glUniform4f(location, values[0], values[1], values[2], values[3])
-    default:
-        throw OpenGL.Error(.unknown, #function, "Exceeded max uniform elements (4)")
-    }
+// UInt
+@_transparent
+public func glUniform1ui(location: GLint, value1: UInt32) throws {
+    _glUniform1ui(location, value1)
 }
 
-@inlinable @inline(__always) public func glUniform(location: GLint, values: Float...) throws {
-    switch values.count {
-    case 1:
-        _glUniform1f(location, values[0])
-    case 2:
-        _glUniform2f(location, values[0], values[1])
-    case 3:
-        _glUniform3f(location, values[0], values[1], values[2])
-    case 4:
-        _glUniform4f(location, values[0], values[1], values[2], values[3])
-    default:
-        throw OpenGL.Error(.unknown, #function, "Exceeded max uniform elements (4)")
-    }
+@_transparent
+public func glUniform2ui(location: GLint, value1: UInt32, value2: UInt32) throws {
+    _glUniform2ui(location, value1, value2)
+}
+
+@_transparent
+public func glUniform3ui(location: GLint, value1: UInt32, value2: UInt32, value3: UInt32) throws {
+    _glUniform3ui(location, value1, value2, value3)
+}
+
+@_transparent
+public func glUniform4ui(location: GLint, value1: UInt32, value2: UInt32, value3: UInt32, value4: UInt32) throws {
+    _glUniform4ui(location, value1, value2, value3, value4)
+}
+
+// Float
+@_transparent
+public func glUniform1f(location: GLint, value1: Float) throws {
+    _glUniform1f(location, value1)
+}
+
+@_transparent
+public func glUniform2f(location: GLint, value1: Float, value2: Float) throws {
+    _glUniform2f(location, value1, value2)
+}
+
+@_transparent
+public func glUniform3f(location: GLint, value1: Float, value2: Float, value3: Float) throws {
+    _glUniform3f(location, value1, value2, value3)
+}
+
+@_transparent
+public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: Float, value4: Float) throws {
+    _glUniform4f(location, value1, value2, value3, value4)
 }
 
 @inlinable @inline(__always) public func glUniformMatrix3fv(location: GLint, transpose: Bool, values: [[GLfloat]]) {
@@ -1126,7 +1095,9 @@ public let glBackBuffer = GL_BACK
 }
 
 @inlinable @inline(__always) public func glGetUniformBlockIndex(inProgram program: GLuint, named uniformBlockName: String) throws -> GLuint? {
+    #if DEBUG
     guard let cString = uniformBlockName.cString(using: .nonLossyASCII) else {throw OpenGL.Error(.unknown, #function, "name must be ascii encodable")}
+    #endif
     let index = _glGetUniformBlockIndex(program, cString)
     if index != GL_INVALID_INDEX {
         return index
@@ -1135,7 +1106,9 @@ public let glBackBuffer = GL_BACK
 }
 
 @inlinable @inline(__always) public func glGetUniformLocation(inProgram program: GLuint, named name: String) throws -> GLint? {
+    #if DEBUG
     guard let cString = name.cString(using: .nonLossyASCII) else {throw OpenGL.Error(.unknown, #function, "name must be ascii encodable")}
+    #endif
     let location = _glGetUniformLocation(program, cString)
     if location > -1 {
         return location
