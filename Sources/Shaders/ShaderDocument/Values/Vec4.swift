@@ -19,30 +19,22 @@ public final class Vec4: ShaderValue {
     internal var _w: Scalar?
     
     public var x: Scalar {
-        get {Scalar(representation: .vec4Value(self, 0), type: .float)}
-        set {self._x = newValue}
+        return Scalar(representation: .vec4Value(self, 0), type: .float)
     }
     public var y: Scalar {
-        get {Scalar(representation: .vec4Value(self, 1), type: .float)}
-        set {self._y = newValue}
+        return Scalar(representation: .vec4Value(self, 1), type: .float)
     }
     public var z: Scalar {
-        get {Scalar(representation: .vec4Value(self, 2), type: .float)}
-        set {self._z = newValue}
+        return Scalar(representation: .vec4Value(self, 2), type: .float)
     }
     public var w: Scalar {
-        get {Scalar(representation: .vec4Value(self, 3), type: .float)}
-        set {self._w = newValue}
+        return Scalar(representation: .vec4Value(self, 3), type: .float)
     }
     
     public var xy: Vec2 {
         get {
             return Vec2(x: Scalar(representation: .vec4Value(self, 0), type: .float),
                         y: Scalar(representation: .vec4Value(self, 1), type: .float))
-        }
-        set {
-            self.x = newValue.x
-            self.y = newValue.y
         }
     }
     
@@ -52,19 +44,14 @@ public final class Vec4: ShaderValue {
                         y: Scalar(representation: .vec4Value(self, 1), type: .float),
                         z: Scalar(representation: .vec4Value(self, 2), type: .float))
         }
-        set {
-            self.x = newValue.x
-            self.y = newValue.y
-            self.z = newValue.z
-        }
     }
     
-    public var r: Scalar {get{x}set{x = newValue}}
-    public var g: Scalar {get{y}set{y = newValue}}
-    public var b: Scalar {get{z}set{z = newValue}}
-    public var a: Scalar {get{w}set{w = newValue}}
+    public var r: Scalar { x }
+    public var g: Scalar { y }
+    public var b: Scalar { z }
+    public var a: Scalar { w }
     
-    public var rgb: Vec3 {get{xyz}set{xyz = newValue}}
+    public var rgb: Vec3 { xyz }
     
     public subscript (index: Int) -> Scalar {
         switch index {

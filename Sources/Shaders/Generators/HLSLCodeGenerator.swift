@@ -125,8 +125,6 @@ public final class HLSLCodeGenerator: CodeGenerator {
             return "(\(type(for: valueType)))\(variable(for: operation.value1))"
         case .add, .subtract, .divide, .compare(_):
             return "\(variable(for: operation.value1)) \(symbol(for: operation.operator)) \(variable(for: operation.value2))"
-        case .not:
-            return "\(symbol(for: operation.operator))\(variable(for: operation.value1))"
         case .multiply:
             let mul: Bool = shouldUseMul(operation: operation)
 
@@ -157,6 +155,8 @@ public final class HLSLCodeGenerator: CodeGenerator {
                 return "mul(\(variable(for: operation.value1)),\(variable(for: operation.value2)))"
             }
             return "\(variable(for: operation.value1)) \(symbol(for: .multiply)) \(variable(for: operation.value2))"
+        case .not:
+            return "\(symbol(for: operation.operator))\(variable(for: operation.value1))"
         case .branch(comparing: _):
             fatalError()
         case .switch(cases: _):
@@ -166,9 +166,7 @@ public final class HLSLCodeGenerator: CodeGenerator {
         case let .sampler2D(filter: filter):
             return "\(variable(for: operation.value1)).Sample(\(filter == .nearest ? "nearestSampler" : "linearSampler"),\(variable(for: operation.value2)))"
         case .sampler2DSize:
-            return """
-                   \(scopeIndentation)\(variable(for: operation.value1)).GetDimensions(\(variable(for: value)).x, \(variable(for: value)).y;\n"
-                   """
+            return "\(scopeIndentation)\(variable(for: operation.value1)).GetDimensions(\(variable(for: value)).x, \(variable(for: value)).y;\n"
         case let .lerp(factor: factor):
             return "lerp(\(variable(for: operation.value1)), \(variable(for: operation.value2)), \(variable(for: factor)))"
         }

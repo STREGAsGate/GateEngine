@@ -15,12 +15,10 @@ public final class Vec2: ShaderValue {
     internal var _y: Scalar?
     
     public var x: Scalar {
-        get {Scalar(representation: .vec2Value(self, 0), type: .float)}
-        set {self._x = newValue}
+        return Scalar(representation: .vec2Value(self, 0), type: .float)
     }
     public var y: Scalar {
-        get {Scalar(representation: .vec2Value(self, 1), type: .float)}
-        set {self._y = newValue}
+        return Scalar(representation: .vec2Value(self, 1), type: .float)
     }
     
     public subscript (index: Int) -> Scalar {
@@ -50,6 +48,10 @@ public final class Vec2: ShaderValue {
     public convenience init(_ x: Float, _ y: Float) {
         self.init(x: x, y: y)
     }
+    @_disfavoredOverload
+    public convenience init(_ x: Scalar, _ y: Scalar) {
+        self.init(x: x, y: y)
+    }
     
     public init(x: Float, y: Float) {
         self.valueRepresentation = .vec2
@@ -58,7 +60,7 @@ public final class Vec2: ShaderValue {
         self._x = Scalar(x)
         self._y = Scalar(y)
     }
-    
+    @_disfavoredOverload
     public init(x: Scalar, y: Scalar) {
         self.valueRepresentation = .vec2
         self.valueType = .float2

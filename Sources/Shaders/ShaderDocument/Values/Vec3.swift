@@ -16,21 +16,18 @@ public final class Vec3: ShaderValue {
     internal var _z: Scalar?
     
     public var x: Scalar {
-        get {Scalar(representation: .vec3Value(self, 0), type: .float)}
-        set {self._x = newValue}
+        return Scalar(representation: .vec3Value(self, 0), type: .float)
     }
     public var y: Scalar {
-        get {Scalar(representation: .vec3Value(self, 1), type: .float)}
-        set {self._y = newValue}
+        return Scalar(representation: .vec3Value(self, 1), type: .float)
     }
     public var z: Scalar {
-        get {Scalar(representation: .vec3Value(self, 2), type: .float)}
-        set {self._z = newValue}
+        return Scalar(representation: .vec3Value(self, 2), type: .float)
     }
     
-    public var r: Scalar {get{x}set{x = newValue}}
-    public var g: Scalar {get{y}set{y = newValue}}
-    public var b: Scalar {get{z}set{z = newValue}}
+    public var r: Scalar { x }
+    public var g: Scalar { y }
+    public var b: Scalar { z }
     
     public subscript (index: Int) -> Scalar {
         switch index {

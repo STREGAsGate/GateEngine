@@ -99,7 +99,7 @@ public class CodeGenerator {
         case let .mat4ArrayValue(array, index):
             self.declareVariableIfNeeded(array)
             self.declareVariableIfNeeded(index)
-        #if DEBUG
+        #if GATEENGINE_DEBUG_SHADERS
         case .scalarBool(_), .scalarInt(_), .scalarUInt(_), .scalarFloat(_):
             return
         case .vertexInPosition, .vertexInTexCoord0(_), .vertexInTexCoord1(_), .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_), .vertexInJointIndices(_), .vertexInJointWeights(_):
@@ -300,7 +300,7 @@ public class CodeGenerator {
             case .or:
                 return "||"
             }
-        #if DEBUG
+        #if GATEENGINE_DEBUG_SHADERS
         case .cast(_):
             fatalError()
         case .branch(comparing: _):

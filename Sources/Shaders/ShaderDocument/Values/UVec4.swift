@@ -19,20 +19,16 @@ public final class UVec4: ShaderValue {
     internal var _w: Scalar?
     
     public var x: Scalar {
-        get {Scalar(representation: .uvec4Value(self, 0), type: .uint)}
-        set {self._x = newValue}
+        return Scalar(representation: .uvec4Value(self, 0), type: .uint)
     }
     public var y: Scalar {
-        get {Scalar(representation: .uvec4Value(self, 1), type: .uint)}
-        set {self._y = newValue}
+        return Scalar(representation: .uvec4Value(self, 1), type: .uint)
     }
     public var z: Scalar {
-        get {Scalar(representation: .uvec4Value(self, 2), type: .uint)}
-        set {self._z = newValue}
+        return Scalar(representation: .uvec4Value(self, 2), type: .uint)
     }
     public var w: Scalar {
-        get {Scalar(representation: .uvec4Value(self, 3), type: .uint)}
-        set {self._w = newValue}
+        return Scalar(representation: .uvec4Value(self, 3), type: .uint)
     }
     
     public subscript (index: Int) -> Scalar {
@@ -51,10 +47,10 @@ public final class UVec4: ShaderValue {
                     z: Scalar(representation: .uvec4Value(self, 2), type: .uint))
     }
     
-    public var r: Scalar {return x}
-    public var g: Scalar {return y}
-    public var b: Scalar {return z}
-    public var a: Scalar {return w}
+    public var r: Scalar { x }
+    public var g: Scalar { y }
+    public var b: Scalar { z }
+    public var a: Scalar { w }
     
     public func rgb() -> Vec3 {
         return xyz()

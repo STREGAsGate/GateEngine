@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public class ShaderDocument: Identifiable {
+public class ShaderDocument: Identifiable, CustomStringConvertible {
     public enum DocumentType {
         case vertex
         case fragment
@@ -33,6 +33,10 @@ public class ShaderDocument: Identifiable {
     internal init(documentType: DocumentType, name: String) {
         self.documentType = documentType
         self.name = name
+    }
+    
+    public var description: String {
+        return name
     }
     
     public var uniforms: Uniforms = Uniforms()

@@ -243,32 +243,6 @@ public enum ValueRepresentation {
             return values
         }
     }
-    
-    var isVertexInput: Bool {
-        switch self {
-        case .vertexInPosition(_), .vertexInTexCoord0(_), .vertexInTexCoord1(_),
-                .vertexInNormal(_), .vertexInTangent(_), .vertexInColor(_),
-                .vertexInJointWeights(_), .vertexInJointIndices(_):
-            return true
-        #if DEBUG
-        case .void, .operation,
-                .vertexOutPosition, .vertexOutPointSize, .vertexOut(_), .vertexInstanceID,
-                .fragmentIn(_), .fragmentOutColor, .fragmentInstanceID, .fragmentPosition,
-                .uniformModelMatrix, .uniformViewMatrix, .uniformProjectionMatrix, .uniformCustom(_,_),
-                .channelScale(_), .channelOffset(_), .channelColor(_), .channelAttachment(_),
-                .scalarBool(_), .scalarInt(_), .scalarUInt(_), .scalarFloat(_),
-                .vec2, .vec2Value(_, _),
-                .vec3, .vec3Value(_, _),
-                .vec4, .vec4Value(_, _),
-                .uvec4, .uvec4Value(_, _),
-                .mat4, .mat4Array, .mat4ArrayValue(_, _):
-            return false
-        #else
-        default:
-            return false
-        #endif
-        }
-    }
 }
 
 public enum ValueType: Equatable {
