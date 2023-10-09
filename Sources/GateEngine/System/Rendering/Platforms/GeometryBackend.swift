@@ -9,7 +9,7 @@ import Shaders
 
 @usableFromInline
 @MainActor internal protocol GeometryBackend: AnyObject {
-    nonisolated var primitive: DrawFlags.Primitive { get }
+    nonisolated var primitive: DrawCommand.Flags.Primitive { get }
     nonisolated var attributes: ContiguousArray<GeometryAttribute> { get }
     init(geometry: RawGeometry)
     init(geometry: RawGeometry, skin: Skin)

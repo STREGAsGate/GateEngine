@@ -10,7 +10,7 @@ import MetalKit
 import Collections
 
 class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
-    let primitive: DrawFlags.Primitive
+    let primitive: DrawCommand.Flags.Primitive
     let attributes: ContiguousArray<GeometryAttribute>
     let buffer: any MTLBuffer
     let bufferOffsets: [Int]

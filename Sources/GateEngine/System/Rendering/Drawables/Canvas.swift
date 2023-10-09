@@ -14,8 +14,15 @@
     internal var size: Size2? = nil
     internal var camera: Camera? = nil
 
-    internal var drawCommands: ContiguousArray<DrawCommand> = []
-
+    @usableFromInline 
+    internal var _drawCommands: ContiguousArray<DrawCommand> = []
+    
+    @_transparent 
+    public mutating func insert(_ drawCommand: DrawCommand) {
+        guard drawCommand.isReady else {return}
+        _drawCommands.append(drawCommand)
+    }
+    
     public mutating func setCamera(_ camera: Camera, size: Size2) {
         self.camera = camera
         self.size = size
@@ -39,10 +46,6 @@
         self.clipRect = clipRect
     }
 
-    public mutating func insert(_ drawCommand: DrawCommand) {
-        self.drawCommands.append(drawCommand)
-    }
-
     public mutating func insert(
         _ points: Points,
         pointSize: Float = 1,
@@ -53,12 +56,6 @@
         opacity: Float = 1,
         flags: CanvasElementPrimitiveFlags = .default
     ) {
-        guard points.state == .ready else { return }
-        guard
-            let geometryBackend = Game.shared.resourceManager.geometryCache(for: points.cacheKey)?
-                .geometryBackend
-        else { return }
-
         let position = Position3(position.x, position.y, depth * -1)
         let scale = Size3(scale.x, scale.y, 1)
         let rotation = Quaternion(rotation, axis: .forward)
@@ -69,7 +66,7 @@
             material.fragmentShader = .vertexColor
             material.setCustomUniformValue(pointSize, forUniform: "pointSize")
         }
-        let flags = DrawFlags(
+        let flags = DrawCommand.Flags(
             cull: .back,
             depthTest: .lessEqual,
             depthWrite: .enabled,
@@ -78,12 +75,12 @@
             blendMode: .normal
         )
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .points(points),
             transforms: [transform],
             material: material,
             flags: flags
         )
-        drawCommands.append(command)
+        self.insert(command)
     }
 
     public mutating func insert(
@@ -95,12 +92,6 @@
         opacity: Float = 1,
         flags: CanvasElementPrimitiveFlags = .default
     ) {
-        guard lines.state == .ready else { return }
-        guard
-            let geometryBackend = Game.shared.resourceManager.geometryCache(for: lines.cacheKey)?
-                .geometryBackend
-        else { return }
-
         let position = Position3(position.x, position.y, depth * -1)
         let scale = Size3(scale.x, scale.y, 1)
         let rotation = Quaternion(rotation, axis: .forward)
@@ -110,7 +101,7 @@
             material.vertexShader = .vertexColors
             material.fragmentShader = .vertexColor
         }
-        let flags = DrawFlags(
+        let flags = DrawCommand.Flags(
             cull: .back,
             depthTest: .lessEqual,
             depthWrite: .enabled,
@@ -119,12 +110,12 @@
             blendMode: .normal
         )
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .lines(lines),
             transforms: [transform],
             material: material,
             flags: flags
         )
-        drawCommands.append(command)
+        self.insert(command)
     }
 
     public mutating func insert(
@@ -137,13 +128,6 @@
         opacity: Float = 1,
         flags: CanvasElementPrimitiveFlags = .default
     ) {
-        guard Renderer.rectOriginTopLeft.state == .ready else { return }
-        guard
-            let geometryBackend = Game.shared.resourceManager.geometryCache(
-                for: Renderer.rectOriginTopLeft.cacheKey
-            )?.geometryBackend
-        else { return }
-
         let position = Position3(
             position.x + rect.position.x,
             position.y + rect.position.y,
@@ -154,7 +138,7 @@
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
 
         let material = Material(color: color.withAlpha(opacity))
-        let flags = DrawFlags(
+        let flags = DrawCommand.Flags(
             cull: .disabled,
             depthTest: .always,
             depthWrite: .disabled,
@@ -163,12 +147,12 @@
             blendMode: .normal
         )
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .geometry(.rectOriginTopLeft),
             transforms: [transform],
             material: material,
             flags: flags
         )
-        drawCommands.append(command)
+        self.insert(command)
     }
     
     public mutating func insert(
@@ -181,11 +165,6 @@
         opacity: Float = 1,
         flags: CanvasElementSpriteFlags = .default
     ) {
-        guard texture.state == .ready, 
-                Renderer.rectOriginTopLeft.state == .ready, 
-                let geometryBackend = Renderer.rectOriginTopLeft.backend 
-        else { return }
-
         let position = Position3(position.x, position.y, depth * -1)
         let scale = Size3(scale.x, scale.y, 1)
         let rotation = Quaternion(rotation, axis: .forward)
@@ -209,7 +188,7 @@
             material.fragmentShader = .textureSampleOpacity
         }
 
-        let flags = DrawFlags(
+        let flags = DrawCommand.Flags(
             cull: .disabled,
             depthTest: .always,
             depthWrite: .disabled,
@@ -218,12 +197,12 @@
             blendMode: .normal
         )
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .geometry(.rectOriginTopLeft),
             transforms: [transform],
             material: material,
             flags: flags
         )
-        drawCommands.append(command)
+        self.insert(command)
     }
 
     public mutating func insert(
@@ -235,15 +214,6 @@
         opacity: Float = 1,
         flags: CanvasElementSpriteFlags = .default
     ) {
-        guard sprite.isReady && Renderer.rectOriginCentered.state == .ready else {
-            return
-        }
-        guard
-            let geometryBackend = Game.shared.resourceManager.geometryCache(
-                for: Renderer.rectOriginCentered.cacheKey
-            )?.geometryBackend
-        else { return }
-
         let position = Position3(position.x, position.y, depth * -1)
         let scale = Size3(scale.x, scale.y, 1) * sprite.geometryScale
         let rotation = Quaternion(rotation, axis: .forward)
@@ -261,7 +231,7 @@
             }
         }
 
-        let flags = DrawFlags(
+        let flags = DrawCommand.Flags(
             cull: .disabled,
             depthTest: .always,
             depthWrite: .disabled,
@@ -270,12 +240,47 @@
             blendMode: .normal
         )
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .geometry(.rectOriginCentered),
             transforms: [transform],
             material: material,
             flags: flags
         )
-        drawCommands.append(command)
+        self.insert(command)
+    }
+    
+    public mutating func insert(
+        _ sprite: Sprite,
+        at transform: Transform3,
+        opacity: Float = 1,
+        flags: CanvasElementSpriteFlags = .default
+    ) {
+        let material = Material { material in
+            material.channel(0) { channel in
+                channel.texture = sprite.texture
+                channel.scale = sprite.uvScale
+                channel.offset = sprite.uvOffset
+            }
+            if opacity != 1 {
+                material.setCustomUniformValue(opacity, forUniform: "opacity")
+                material.fragmentShader = .textureSampleOpacity
+            }
+        }
+
+        let flags = DrawCommand.Flags(
+            cull: .disabled,
+            depthTest: .always,
+            depthWrite: .disabled,
+            primitive: .triangle,
+            winding: .clockwise,
+            blendMode: .normal
+        )
+        let command = DrawCommand(
+            resource: .geometry(.rectOriginCentered),
+            transforms: [transform],
+            material: material,
+            flags: flags
+        )
+        self.insert(command)
     }
 
     public mutating func insert(
@@ -290,11 +295,6 @@
         guard text.string.isEmpty == false else { return }
         text.interfaceScale = self.interfaceScale
         guard text.isReady else { return }
-        guard
-            let geometryBackend = Game.shared.resourceManager.geometryCache(
-                for: text.geometry.cacheKey
-            )?.geometryBackend
-        else { return }
 
         let position = Position3(position.x, position.y, depth * -1)
         let scale = Size3(scale.x, scale.y, 1)
@@ -303,7 +303,7 @@
 
         let material = Material(texture: text.texture, tintColor: text.color.withAlpha(opacity))
 
-        let flags = DrawFlags(
+        let flags = DrawCommand.Flags(
             cull: .disabled,
             depthTest: .always,
             depthWrite: .disabled,
@@ -312,12 +312,12 @@
             blendMode: .normal
         )
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .geometry(text.geometry),
             transforms: [transform],
             material: material,
             flags: flags
         )
-        drawCommands.append(command)
+        self.insert(command)
     }
 
     public mutating func insert(
@@ -329,13 +329,6 @@
         depth: Float = 0,
         flags: SceneElementFlags = .default
     ) {
-        guard geometry.state == .ready else { return }
-        guard material.isReady else { return }
-        guard
-            let geometryBackend = Game.shared.resourceManager.geometryCache(for: geometry.cacheKey)?
-                .geometryBackend
-        else { return }
-
         let position = Position3(position.x, position.y, depth * -1)
         let scale = Size3(scale.x, scale.y, 1)
         let rotation = Quaternion(rotation, axis: .forward)
@@ -343,12 +336,12 @@
         var drawFlags = flags.drawCommandFlags(withPrimitive: .triangle)
         drawFlags.depthTest = .lessEqual
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .geometry(geometry),
             transforms: [transform],
             material: material,
             flags: drawFlags
         )
-        drawCommands.append(command)
+        self.insert(command)
     }
 
     /**
@@ -422,7 +415,7 @@
         self.size = size
         self.camera = camera
 
-        self.drawCommands.reserveCapacity(estimatedCommandCount)
+        self._drawCommands.reserveCapacity(estimatedCommandCount)
     }
 
     /**
@@ -444,7 +437,7 @@
 
     @_transparent
     internal var hasContent: Bool {
-        return drawCommands.isEmpty == false
+        return _drawCommands.isEmpty == false
     }
 
     internal func matrices(withSize size: Size2) -> Matrices {

@@ -125,12 +125,12 @@ class MetalRenderer: RendererBackend {
     }()
 
     struct DepthStencilStateKey: Hashable {
-        let depthTest: DrawFlags.DepthTest
-        let depthWrite: DrawFlags.DepthWrite
+        let depthTest: DrawCommand.Flags.DepthTest
+        let depthWrite: DrawCommand.Flags.DepthWrite
     }
     var _storedDepthStencilStates: [DepthStencilStateKey: any MTLDepthStencilState] = [:]
 
-    func getDepthStencilState(flags: DrawFlags) -> any MTLDepthStencilState {
+    func getDepthStencilState(flags: DrawCommand.Flags) -> any MTLDepthStencilState {
         let key = DepthStencilStateKey(depthTest: flags.depthTest, depthWrite: flags.depthWrite)
         if let existing = _storedDepthStencilStates[key] {
             return existing
@@ -173,13 +173,13 @@ class MetalRenderer: RendererBackend {
         let vertexShader: VertexShader.ID
         let fragmentShader: FragmentShader.ID
         let attributes: ContiguousArray<CodeGenerator.InputAttribute>
-        let blendMode: DrawFlags.BlendMode
+        let blendMode: DrawCommand.Flags.BlendMode
     }
     var _storedRenderPipelineStates: [RenderPipelineStateKey: any MTLRenderPipelineState] = [:]
     func getRenderPipelineState(
         vsh: VertexShader,
         fsh: FragmentShader,
-        flags: DrawFlags,
+        flags: DrawCommand.Flags,
         geometries: [MetalGeometry],
         attributes: ContiguousArray<CodeGenerator.InputAttribute>,
         library: some MTLLibrary
@@ -335,7 +335,7 @@ extension MetalRenderer {
         vsh: VertexShader,
         fsh: FragmentShader,
         geometries: [MetalGeometry],
-        flags: DrawFlags
+        flags: DrawCommand.Flags
     ) -> MetalShader {
         let attributes = MetalGeometry.shaderAttributes(from: geometries)
         let key = ShaderKey(vsh: vsh, fsh: fsh, attributes: attributes)
@@ -378,7 +378,7 @@ extension MetalRenderer {
     @_transparent
     #endif
     private func setFlags(
-        _ flags: DrawFlags,
+        _ flags: DrawCommand.Flags,
         vsh: VertexShader,
         fsh: FragmentShader,
         geometries: [MetalGeometry],
@@ -401,7 +401,7 @@ extension MetalRenderer {
     #if !GATEENGINE_DEBUG_RENDERING
     @_transparent
     #endif
-    private func setWinding(_ winding: DrawFlags.Winding, encoder: some MTLRenderCommandEncoder) {
+    private func setWinding(_ winding: DrawCommand.Flags.Winding, encoder: some MTLRenderCommandEncoder) {
         switch winding {
         case .clockwise:
             encoder.setFrontFacing(.clockwise)
@@ -443,7 +443,7 @@ extension MetalRenderer {
     #if !GATEENGINE_DEBUG_RENDERING
     @_transparent
     #endif
-    private func primitive(from primitive: DrawFlags.Primitive) -> MTLPrimitiveType {
+    private func primitive(from primitive: DrawCommand.Flags.Primitive) -> MTLPrimitiveType {
         switch primitive {
         case .point:
             return .point

@@ -9,6 +9,66 @@
 import Foundation
 #endif
 
+public extension Geometry {
+    static let rectOriginCentered: Geometry = {
+        let positions: [Float] = [
+            -0.5, -0.5, 0.0,
+            0.5, -0.5, 0.0,
+            -0.5, 0.5, 0.0,
+            -0.5, 0.5, 0.0,
+            0.5, -0.5, 0.0,
+            0.5, 0.5, 0.0,
+        ]
+        let uvs: [Float] = [
+            0.0, 0.0,
+            1.0, 0.0,
+            0.0, 1.0,
+            0.0, 1.0,
+            1.0, 0.0,
+            1.0, 1.0,
+        ]
+        let indices: [UInt16] = [0, 1, 2, 3, 4, 5]
+        let raw = RawGeometry(
+            positions: positions,
+            uvSets: [uvs],
+            normals: nil,
+            tangents: nil,
+            colors: nil,
+            indices: indices
+        )
+        return Geometry(raw)
+    }()
+
+    static let rectOriginTopLeft: Geometry = {
+        let positions: [Float] = [
+            0.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 1.0, 0.0,
+            1.0, 0.0, 0.0,
+            1.0, 1.0, 0.0,
+        ]
+        let uvs: [Float] = [
+            0.0, 0.0,
+            1.0, 0.0,
+            0.0, 1.0,
+            0.0, 1.0,
+            1.0, 0.0,
+            1.0, 1.0,
+        ]
+        let indices: [UInt16] = [0, 1, 2, 3, 4, 5]
+        let raw = RawGeometry(
+            positions: positions,
+            uvSets: [uvs],
+            normals: nil,
+            tangents: nil,
+            colors: nil,
+            indices: indices
+        )
+        return Geometry(raw)
+    }()
+}
+
 /// Geometry represents a mangaed vertex buffer object.
 /// It's contents are stored within GPU accessible memory and this object represents a reference to that memory.
 /// When this object deinitializes it's contents will also be removed from GPU memory.

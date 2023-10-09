@@ -8,7 +8,7 @@
 import OpenGL_GateEngine
 
 class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
-    let primitive: DrawFlags.Primitive
+    let primitive: DrawCommand.Flags.Primitive
     let attributes: ContiguousArray<GeometryAttribute>
     let buffers: [GLuint]
     let indicesCount: GLsizei

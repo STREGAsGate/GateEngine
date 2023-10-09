@@ -21,79 +21,12 @@ public enum RenderingAPI {
     @inline(__always)
     nonisolated public var api: RenderingAPI { _backend.renderingAPI }
 
-    @usableFromInline
-    static let rectOriginCentered: Geometry = {
-        let positions: [Float] = [
-            -0.5, -0.5, 0.0,
-            0.5, -0.5, 0.0,
-            -0.5, 0.5, 0.0,
-            -0.5, 0.5, 0.0,
-            0.5, -0.5, 0.0,
-            0.5, 0.5, 0.0,
-        ]
-        let uvs: [Float] = [
-            0.0, 0.0,
-            1.0, 0.0,
-            0.0, 1.0,
-            0.0, 1.0,
-            1.0, 0.0,
-            1.0, 1.0,
-        ]
-        let indices: [UInt16] = [0, 1, 2, 3, 4, 5]
-        let raw = RawGeometry(
-            positions: positions,
-            uvSets: [uvs],
-            normals: nil,
-            tangents: nil,
-            colors: nil,
-            indices: indices
-        )
-        return Geometry(raw)
-    }()
-
-    @usableFromInline
-    static let rectOriginTopLeft: Geometry = {
-        let positions: [Float] = [
-            0.0, 0.0, 0.0,
-            1.0, 0.0, 0.0,
-            0.0, 1.0, 0.0,
-            0.0, 1.0, 0.0,
-            1.0, 0.0, 0.0,
-            1.0, 1.0, 0.0,
-        ]
-        let uvs: [Float] = [
-            0.0, 0.0,
-            1.0, 0.0,
-            0.0, 1.0,
-            0.0, 1.0,
-            1.0, 0.0,
-            1.0, 1.0,
-        ]
-        let indices: [UInt16] = [0, 1, 2, 3, 4, 5]
-        let raw = RawGeometry(
-            positions: positions,
-            uvSets: [uvs],
-            normals: nil,
-            tangents: nil,
-            colors: nil,
-            indices: indices
-        )
-        return Geometry(raw)
-    }()
-
     func draw(
         _ renderTarget: any _RenderTargetProtocol,
         into destinationRenderTarget: any _RenderTargetProtocol,
         options: RenderTargetFillOptions,
         sampler: RenderTargetFillSampleFilter
     ) {
-        guard Renderer.rectOriginCentered.state == .ready else { return }
-        guard
-            let geometryBackend = Game.shared.resourceManager.geometryCache(
-                for: Renderer.rectOriginCentered.cacheKey
-            )?.geometryBackend
-        else { return }
-
         @_transparent
         func matrices(withSize size: Size2) -> Matrices {
             let ortho = Matrix4x4(
@@ -142,20 +75,22 @@ public enum RenderingAPI {
             scale: scale
         )
         let matrices = matrices(withSize: size)
-        let flags = DrawFlags(depthTest: .always, depthWrite: .disabled, winding: .clockwise)
+        let flags = DrawCommand.Flags(depthTest: .always, depthWrite: .disabled, winding: .clockwise)
 
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .geometry(.rectOriginCentered),
             transforms: [transform],
             material: material,
             flags: flags
         )
-        _backend.draw(
-            command,
-            camera: nil,
-            matrices: matrices,
-            renderTarget: destinationRenderTarget
-        )
+        if command.isReady {
+            _backend.draw(
+                command,
+                camera: nil,
+                matrices: matrices,
+                renderTarget: destinationRenderTarget
+            )
+        }
     }
 
     func draw(

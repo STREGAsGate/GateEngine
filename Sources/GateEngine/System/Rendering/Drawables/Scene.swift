@@ -14,7 +14,14 @@
     @usableFromInline internal var spotLights: Set<SceneSpotLight> = []
     @usableFromInline internal var directionalLight: SceneDirectionalLight? = nil
 
-    @usableFromInline internal var drawCommands: ContiguousArray<DrawCommand> = []
+    @usableFromInline 
+    internal var _drawCommands: ContiguousArray<DrawCommand> = []
+    
+    @_transparent 
+    public mutating func insert(_ drawCommand: DrawCommand) {
+        guard drawCommand.isReady else {return}
+        _drawCommands.append(drawCommand)
+    }
 
     /** Adds the camera to the scene
     Each scene can have a single camera. Only the most recent camera is kept.
@@ -65,17 +72,13 @@
         at transforms: [Transform3],
         flags: SceneElementFlags = .default
     ) {
-        guard geometry.state == .ready else { return }
-        guard material.isReady else { return }
-        guard let geometryBackend = geometry.backend else { return }
-
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .geometry(geometry),
             transforms: transforms,
             material: material,
             flags: flags.drawCommandFlags(withPrimitive: .triangle)
         )
-        self.drawCommands.append(command)
+        self.insert(command)
     }
 
     /** Adds geometry to the scene for rendering.
@@ -113,29 +116,26 @@
     */
     @inlinable @inline(__always)
     public mutating func insert(
-        _ geometry: SkinnedGeometry,
+        _ skinnedGeometry: SkinnedGeometry,
         withPose pose: Skeleton.Pose,
         material: Material,
         at transforms: [Transform3],
         flags: SceneElementFlags = .default
     ) {
-        guard geometry.state == .ready else { return }
-        guard material.isReady else { return }
         var material = material
         material.vertexShader = .skinned
         material.setCustomUniformValue(
-            pose.shaderMatrixArray(orderedFromSkinJoints: geometry.skinJoints),
+            pose.shaderMatrixArray(orderedFromSkinJoints: skinnedGeometry.skinJoints),
             forUniform: "bones"
         )
-        guard let geometryBackend = geometry.backend else { return }
 
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .skinned(skinnedGeometry),
             transforms: transforms,
             material: material,
             flags: flags.drawCommandFlags(withPrimitive: .triangle)
         )
-        self.drawCommands.append(command)
+        self.insert(command)
     }
     
     /** Adds lines to the scene for rendering.
@@ -171,19 +171,17 @@
         at transforms: [Transform3],
         flags: SceneElementFlags = .default
     ) {
-        guard points.state == .ready else { return }
-        guard let geometryBackend = points.backend else { return }
         var material = Material(color: color)
         material.vertexShader = .pointSizeAndColor
         material.fragmentShader = .materialColor
         material.setCustomUniformValue(size, forUniform: "pointSize")
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .points(points),
             transforms: transforms,
             material: material,
             flags: flags.drawCommandFlags(withPrimitive: .point)
         )
-        self.drawCommands.append(command)
+        self.insert(command)
     }
     
     /** Adds lines to the scene for rendering.
@@ -217,114 +215,52 @@
         at transforms: [Transform3],
         flags: SceneElementFlags = .default
     ) {
-        guard lines.state == .ready else { return }
-        guard material.isReady else { return }
-        guard let geometryBackend = lines.backend else { return }
-
         let command = DrawCommand(
-            backends: [geometryBackend],
+            resource: .lines(lines),
             transforms: transforms,
             material: material,
             flags: flags.drawCommandFlags(withPrimitive: .line)
         )
-        self.drawCommands.append(command)
+        self.insert(command)
     }
 
     @inlinable @inline(__always)
     public mutating func insert(
         _ source: Geometry,
-        withSourceMaterial sourceMaterial: Material,
         morphingTo destination: Geometry,
-        withDestinationMaterial destinationMaterial: Material,
-        interpolationFactors factor: Float,
+        withMaterial material: Material,
+        interpolationFactor factor: Float,
         at transforms: [Transform3],
         flags: SceneElementFlags = .default
     ) {
-        guard source.state == .ready && destination.state == .ready else { return }
-        guard sourceMaterial.isReady && destinationMaterial.isReady else { return }
-        guard
-            let sourceGeometryBackend = Game.shared.resourceManager.geometryCache(
-                for: source.cacheKey
-            )?.geometryBackend
-        else { return }
-        guard
-            let destinationGeometryBackend = Game.shared.resourceManager.geometryCache(
-                for: destination.cacheKey
-            )?.geometryBackend
-        else { return }
-
+        var material = material
+        material.setCustomUniformValue(factor, forUniform: "interpolationFactor")
         let command = DrawCommand(
-            backends: [sourceGeometryBackend, destinationGeometryBackend],
+            resource: .morph(source, destination),
             transforms: transforms,
-            material: sourceMaterial,
-            flags: flags.drawCommandFlags(withPrimitive: .triangle)
+            material: material,
+            flags: flags.drawCommandFlags(withPrimitive: .line)
         )
-        self.drawCommands.append(command)
+        self.insert(command)
     }
 
     @_transparent
     public mutating func insert(
-        _ src: Geometry,
-        withSourceMaterial srcMaterial: Material,
-        morphingTo dst: Geometry,
-        withDestinationMaterial dstMaterial: Material,
+        _ source: Geometry,
+        morphingTo destination: Geometry,
+        withMaterial material: Material,
         interpolationFactor factor: Float,
         at transform: Transform3,
         flags: SceneElementFlags = .default
     ) {
         self.insert(
-            src,
-            withSourceMaterial: srcMaterial,
-            morphingTo: dst,
-            withDestinationMaterial: dstMaterial,
-            interpolationFactors: factor,
+            source,
+            morphingTo: destination,
+            withMaterial: material,
+            interpolationFactor: factor,
             at: [transform],
             flags: flags
         )
-    }
-
-    @_transparent
-    public mutating func insert(
-        _ source: Geometry,
-        morphingTo destination: Geometry,
-        withMaterial material: Material,
-        interpolationFactors factor: Float,
-        at transforms: [Transform3],
-        withFlags flags: SceneElementFlags = .default
-    ) {
-        self.insert(
-            source,
-            withSourceMaterial: material,
-            morphingTo: destination,
-            withDestinationMaterial: material,
-            interpolationFactors: factor,
-            at: transforms,
-            flags: flags
-        )
-    }
-
-    @_transparent
-    public mutating func insert(
-        _ source: Geometry,
-        morphingTo destination: Geometry,
-        withMaterial material: Material,
-        interpolationFactor factor: Float,
-        at transform: Transform3,
-        withFlags flags: SceneElementFlags = .default
-    ) {
-        self.insert(
-            source,
-            withSourceMaterial: material,
-            morphingTo: destination,
-            withDestinationMaterial: material,
-            interpolationFactors: factor,
-            at: [transform],
-            flags: flags
-        )
-    }
-    
-    public mutating func insert(_ drawCommand: DrawCommand) {
-        self.drawCommands.append(drawCommand)
     }
 
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
@@ -348,7 +284,7 @@
 
     @_transparent
     internal var hasContent: Bool {
-        return drawCommands.isEmpty == false
+        return _drawCommands.isEmpty == false
     }
 
     @inlinable @inline(__always)
@@ -364,7 +300,7 @@
         self.camera = camera
         self.viewport = viewport
 
-        self.drawCommands.reserveCapacity(estimatedCommandCount)
+        self._drawCommands.reserveCapacity(estimatedCommandCount)
     }
 }
 
@@ -459,12 +395,12 @@ public struct SceneElementFlags: OptionSet, Hashable {
     }
 
     @_transparent
-    public func drawCommandFlags(withPrimitive primitive: DrawFlags.Primitive) -> DrawFlags {
-        let cull: DrawFlags.Cull = self.contains(.cullBackface) ? .back : .disabled
-        let depthTest: DrawFlags.DepthTest = self.contains(.disableDepthCull) ? .always : .less
-        let depthWrite: DrawFlags.DepthWrite =
+    public func drawCommandFlags(withPrimitive primitive: DrawCommand.Flags.Primitive) -> DrawCommand.Flags {
+        let cull: DrawCommand.Flags.Cull = self.contains(.cullBackface) ? .back : .disabled
+        let depthTest: DrawCommand.Flags.DepthTest = self.contains(.disableDepthCull) ? .always : .less
+        let depthWrite: DrawCommand.Flags.DepthWrite =
             self.contains(.disableDepthWrite) ? .disabled : .enabled
-        return DrawFlags(
+        return DrawCommand.Flags(
             cull: cull,
             depthTest: depthTest,
             depthWrite: depthWrite,

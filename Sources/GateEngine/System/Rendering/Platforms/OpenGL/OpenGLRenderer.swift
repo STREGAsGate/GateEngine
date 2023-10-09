@@ -215,7 +215,7 @@ class OpenGLRenderer: RendererBackend {
 }
 
 extension OpenGLRenderer {
-    private func setFlags(_ flags: DrawFlags) {
+    private func setFlags(_ flags: DrawCommand.Flags) {
         switch flags.cull {
         case .disabled:
             glDisable(capability: .cullFace)
@@ -303,7 +303,7 @@ extension OpenGLRenderer {
         }
     }
 
-    private func primitive(from primitive: DrawFlags.Primitive)
+    private func primitive(from primitive: DrawCommand.Flags.Primitive)
         -> OpenGL_GateEngine.OpenGL.Elements.Mode
     {
         switch primitive {

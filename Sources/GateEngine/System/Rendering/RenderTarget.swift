@@ -74,9 +74,9 @@ extension _RenderTargetProtocol {
         var allDrawCommands: [DrawCommand] = []
         for drawable in drawables {
             if let scene = drawable as? Scene {
-                allDrawCommands.append(contentsOf: scene.drawCommands)
+                allDrawCommands.append(contentsOf: scene._drawCommands)
             } else if let canvas = drawable as? Canvas {
-                allDrawCommands.append(contentsOf: canvas.drawCommands)
+                allDrawCommands.append(contentsOf: canvas._drawCommands)
             } else if let command = drawable as? DrawCommand {
                 allDrawCommands.append(command)
             }
@@ -204,7 +204,7 @@ extension _RenderTargetProtocol {
         let matrices = scene.camera.matricies(withAspectRatio: self.size.aspectRatio)
 
         renderTargetBackend.willBeginContent(matrices: matrices, viewport: scene.viewport)
-        for command in scene.drawCommands {
+        for command in scene._drawCommands {
             Game.shared.renderer.draw(
                 command,
                 camera: scene.camera,
@@ -220,7 +220,7 @@ extension _RenderTargetProtocol {
         let matrices = canvas.matrices(withSize: self.size)
 
         renderTargetBackend.willBeginContent(matrices: matrices, viewport: canvas.clipRect)
-        for command in canvas.drawCommands {
+        for command in canvas._drawCommands {
             Game.shared.renderer.draw(
                 command,
                 camera: canvas.camera,
