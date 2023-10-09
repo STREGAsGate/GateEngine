@@ -83,6 +83,36 @@ public struct Material {
             case linear
             case nearest
         }
+        
+        /**
+         Updates the `scale` and `offset` to match where rect should be in UV space
+            - parameter rect: The pixel coordinates of the texture 
+         */
+        @MainActor
+        public mutating func setSubRect(_ subRect: Rect) {
+            guard let texture else {
+                preconditionFailure("Assign a texture to the channel first.")
+            }
+            self.scale = Size2(
+                subRect.size.width / Float(texture.size.width),
+                subRect.size.height / Float(texture.size.height)
+            )
+            switch Game.shared.renderer.api {
+            case .openGL, .openGLES, .webGL2:
+                self.offset = Position2(
+                    (subRect.position.x + 0.001) / Float(texture.size.width),
+                    (subRect.position.y - 0.001) / Float(texture.size.height)
+                )
+                if texture.isRenderTarget {
+                    self.scale.y *= -1
+                }
+            default:
+                self.offset = Position2(
+                    (subRect.position.x + 0.001) / Float(texture.size.width),
+                    (subRect.position.y + 0.001) / Float(texture.size.height)
+                )
+            }
+        }
     }
 
     @MainActor public var isReady: Bool {
