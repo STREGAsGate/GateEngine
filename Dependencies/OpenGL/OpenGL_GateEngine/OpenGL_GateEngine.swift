@@ -1095,9 +1095,7 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
 }
 
 @inlinable @inline(__always) public func glGetUniformBlockIndex(inProgram program: GLuint, named uniformBlockName: String) throws -> GLuint? {
-    #if DEBUG
     guard let cString = uniformBlockName.cString(using: .nonLossyASCII) else {throw OpenGL.Error(.unknown, #function, "name must be ascii encodable")}
-    #endif
     let index = _glGetUniformBlockIndex(program, cString)
     if index != GL_INVALID_INDEX {
         return index
@@ -1106,9 +1104,7 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
 }
 
 @inlinable @inline(__always) public func glGetUniformLocation(inProgram program: GLuint, named name: String) throws -> GLint? {
-    #if DEBUG
     guard let cString = name.cString(using: .nonLossyASCII) else {throw OpenGL.Error(.unknown, #function, "name must be ascii encodable")}
-    #endif
     let location = _glGetUniformLocation(program, cString)
     if location > -1 {
         return location
