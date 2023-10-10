@@ -185,26 +185,25 @@ public final class HLSLCodeGenerator: CodeGenerator {
             let name: String
             let type: String
         }
-        func customUniforms(from shader: ShaderDocument) -> String {
-            var customUniformsVsh: OrderedSet<CustomUniform> = []
-            for value in shader.uniforms.sortedCustomUniforms() {
+        var customUniforms: OrderedSet<CustomUniform> = []
+        func processCustomUniforms(_ shaderDocument: ShaderDocument) {
+            for value in shaderDocument.uniforms.sortedCustomUniforms() {
                 if case let .uniformCustom(name, type: _) = value.valueRepresentation {
                     if case let .float4x4Array(capacity) = value.valueType {
-                        customUniformsVsh.append(CustomUniform(name: "u_\(name)[\(capacity)]", type: "\(type(for: value))"))
+                        customUniforms.append(CustomUniform(name: "u_\(name)[\(capacity)]", type: "\(type(for: value))"))
                     }else{
-                        customUniformsVsh.append(CustomUniform(name: "u_\(name)", type: "\(type(for: value))"))
+                        customUniforms.append(CustomUniform(name: "u_\(name)", type: "\(type(for: value))"))
                     }
                 }
             }
-            customUniformsVsh.sort {$0.name.caseInsensitiveCompare($1.name) == .orderedAscending}
-            var customUniformDefineVsh: String = ""
-            for uniform in customUniformsVsh {
-                customUniformDefineVsh += "\n    \(uniform.type) \(uniform.name);"
-            }
-            return customUniformDefineVsh
         }
-        let customUniformDefineVsh: String = customUniforms(from: vertexShader)
-        let customUniformDefineFsh: String = customUniforms(from: fragmentShader)
+        processCustomUniforms(vertexShader)
+        processCustomUniforms(fragmentShader)
+        customUniforms.sort {$0.name.compare($1.name) == .orderedAscending}
+        var customUniformDefine: String = ""
+        for uniform in customUniforms {
+            customUniformDefine += "\n    \(uniform.type) \(uniform.name);"
+        }
         
         var vertexGeometryDefine: String = ""
         for attributeIndex in attributes.indices {
@@ -243,9 +242,9 @@ public final class HLSLCodeGenerator: CodeGenerator {
         }
         
         let vsh = """
-cbuffer UniformsVsh : register(b0) {
+cbuffer Uniforms : register(b0) {
     \(type(for: .float4x4)) pMtx;
-    \(type(for: .float4x4)) vMtx;\(customUniformDefineVsh)
+    \(type(for: .float4x4)) vMtx;\(customUniformDefine)
 };
 struct Material {
     \(type(for: .float2)) scale;
@@ -277,9 +276,9 @@ PSInput VSMain(VSInput input) {
 }
 """
         let fsh = """
-cbuffer UniformsFsh : register(b0) {
+cbuffer Uniforms : register(b0) {
     \(type(for: .float4x4)) pMtx;
-    \(type(for: .float4x4)) vMtx;\(customUniformDefineFsh)
+    \(type(for: .float4x4)) vMtx;\(customUniformDefine)
 };
 struct Material {
     \(type(for: .float2)) scale;
