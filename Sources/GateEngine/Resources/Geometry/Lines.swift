@@ -38,11 +38,15 @@
         resourceManager.incrementReference(self.cacheKey)
     }
 
-    public init(_ rawLines: RawLines) {
+    internal init(optionalRawLines rawLines: RawLines?) {
         let resourceManager = Game.shared.resourceManager
         self.cacheKey = resourceManager.linesCacheKey(rawLines: rawLines)
         self.cacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
+    }
+    
+    public convenience init(_ rawLines: RawLines) {
+        self.init(optionalRawLines: rawLines)
     }
 
     deinit {

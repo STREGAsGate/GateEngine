@@ -15,10 +15,9 @@ public class MutableGeometry: Geometry {
         }
     }
 
-    @usableFromInline
-    internal init(rawGeometry: RawGeometry? = nil) {
+    public init(rawGeometry: RawGeometry? = nil) {
         self.rawGeometry = rawGeometry
-        super.init(rawGeometry)
+        super.init(optionalRawGeometry: rawGeometry)
     }
 
     private func load() {

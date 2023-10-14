@@ -102,11 +102,15 @@ public extension Geometry {
         resourceManager.incrementReference(self.cacheKey)
     }
 
-    public init(_ rawGeometry: RawGeometry?) {
+    internal init(optionalRawGeometry rawGeometry: RawGeometry?) {
         let resourceManager = Game.shared.resourceManager
         self.cacheKey = resourceManager.geometryCacheKey(rawGeometry: rawGeometry)
         self.cacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
+    }
+
+    public convenience init(_ rawGeometry: RawGeometry) {
+        self.init(optionalRawGeometry: rawGeometry)
     }
 
     deinit {

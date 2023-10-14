@@ -38,11 +38,15 @@
         resourceManager.incrementReference(self.cacheKey)
     }
 
-    public init(_ rawPoints: RawPoints) {
+    internal init(optionalRawPoints rawPoints: RawPoints?) {
         let resourceManager = Game.shared.resourceManager
         self.cacheKey = resourceManager.pointsCacheKey(rawPoints: rawPoints)
         self.cacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
+    }
+
+    public convenience init(_ rawPoints: RawPoints) {
+        self.init(optionalRawPoints: rawPoints)
     }
 
     deinit {
