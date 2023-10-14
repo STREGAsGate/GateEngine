@@ -5,20 +5,75 @@
  * http://stregasgate.com
  */
 
-public class SkeletalAnimation {
-    public let name: String
-    public let duration: Float
-    let animations: [Skeleton.Joint.ID: JointAnimation]
+#if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
+import Foundation
+#endif
 
+@MainActor public final class SkeletalAnimation {
+    internal let cacheKey: ResourceManager.Cache.SkeletalAnimationKey
+    
+    public var cacheHint: CacheHint {
+        get { Game.shared.resourceManager.skeletalAnimationCache(for: cacheKey)!.cacheHint }
+        set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
+    }
+
+    public var state: ResourceState {
+        return Game.shared.resourceManager.skeletalAnimationCache(for: cacheKey)!.state
+    }
+    
+    @usableFromInline
+    internal var backend: SkeletalAnimationBackend {
+        assert(state == .ready, "This resource is not ready to be used. Make sure it's state property is .ready before accessing!")
+        return Game.shared.resourceManager.skeletalAnimationCache(for: cacheKey)!.skeletalAnimationBackend!
+    }
+    
+    public var name: String {
+        return backend.name
+    }
+    public var duration: Float {
+        return backend.duration
+    }
+    public var animations: [Skeleton.Joint.ID: SkeletalAnimation.JointAnimation] {
+        return backend.animations
+    }
+    
+    public init(
+        path: String,
+        options: SkeletalAnimationImporterOptions = .none
+    ) {
+        let resourceManager = Game.shared.resourceManager
+        self.cacheKey = resourceManager.skeletalAnimationCacheKey(
+            path: path,
+            options: options
+        )
+        self.cacheHint = .until(minutes: 5)
+        resourceManager.incrementReference(self.cacheKey)
+    }
+    
     public init(name: String, duration: Float, animations: [Skeleton.Joint.ID: JointAnimation]) {
-        self.name = name
-        self.duration = duration
-        self.animations = animations
+        let resourceManager = Game.shared.resourceManager
+        self.cacheKey = resourceManager.skeletalAnimationCacheKey(
+            name: name,
+            duration: duration, 
+            animations: animations
+        )
+        self.cacheHint = .until(minutes: 5)
+        resourceManager.incrementReference(self.cacheKey)
+    }
+}
+
+extension SkeletalAnimation: Equatable, Hashable {
+    nonisolated public static func == (lhs: SkeletalAnimation, rhs: SkeletalAnimation) -> Bool {
+        return lhs.cacheKey == rhs.cacheKey
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(cacheKey)
     }
 }
 
 extension SkeletalAnimation {
-    public class JointAnimation {
+    public final class JointAnimation {
         public enum Interpolation {
             case step
             case linear
@@ -339,15 +394,26 @@ extension SkeletalAnimation {
     }
 }
 
+public final class SkeletalAnimationBackend {
+    let name: String
+    let duration: Float
+    let animations: [Skeleton.Joint.ID: SkeletalAnimation.JointAnimation]
+
+    init(name: String, duration: Float, animations: [Skeleton.Joint.ID: SkeletalAnimation.JointAnimation]) {
+        self.name = name
+        self.duration = duration
+        self.animations = animations
+    }
+}
 
 // MARK: - Resource Manager
 
 public protocol SkeletalAnimationImporter: AnyObject {
     init()
 
-    func loadData(path: String, options: SkeletalAnimationImporterOptions) async throws -> SkeletalAnimation
+    func process(data: Data, baseURL: URL, options: SkeletalAnimationImporterOptions) async throws -> SkeletalAnimationBackend
 
-    static func canProcessFile(_ file: URL) -> Bool
+    static func supportedFileExtensions() -> [String]
 }
 
 public struct SkeletalAnimationImporterOptions: Equatable, Hashable, Sendable {
@@ -370,9 +436,11 @@ extension ResourceManager {
         importers.skeletalAnimationImporters.insert(type, at: 0)
     }
 
-    fileprivate func importerForFile(_ file: URL) -> (any SkeletalAnimationImporter)? {
+    fileprivate func importerForFileType(_ file: String) -> (any SkeletalAnimationImporter)? {
         for type in self.importers.skeletalAnimationImporters {
-            if type.canProcessFile(file) {
+            if type.supportedFileExtensions().contains(where: {
+                $0.caseInsensitiveCompare(file) == .orderedSame
+            }) {
                 return type.init()
             }
         }
@@ -380,28 +448,177 @@ extension ResourceManager {
     }
 }
 
-extension SkeletalAnimation {
-    public convenience init(path: String, options: SkeletalAnimationImporterOptions = .none)
-        async throws
-    {
-        let file = URL(fileURLWithPath: path)
-        guard
-            let importer: any SkeletalAnimationImporter = await Game.shared.resourceManager
-                .importerForFile(file)
-        else {
-            throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
-        }
+extension ResourceManager.Cache {
+    @usableFromInline
+    struct SkeletalAnimationKey: Hashable {
+        let requestedPath: String
+        let options: SkeletalAnimationImporterOptions
+    }
 
-        do {
-            let animation = try await importer.loadData(path: path, options: options)
-            self.init(
-                name: animation.name,
-                duration: animation.duration,
-                animations: animation.animations
-            )
-        } catch {
-            throw GateEngineError(decodingError: error)
+    @usableFromInline
+    final class SkeletalAnimationCache {
+        @usableFromInline var skeletalAnimationBackend: SkeletalAnimationBackend?
+        var lastLoaded: Date
+        var state: ResourceState
+        var referenceCount: UInt
+        var minutesDead: UInt
+        var cacheHint: CacheHint
+        init() {
+            self.skeletalAnimationBackend = nil
+            self.lastLoaded = Date()
+            self.state = .pending
+            self.referenceCount = 0
+            self.minutesDead = 0
+            self.cacheHint = .until(minutes: 5)
         }
     }
 }
+extension ResourceManager {
+    func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.SkeletalAnimationKey) {
+        if let tileSetCache = cache.skeletalAnimations[key] {
+            tileSetCache.cacheHint = cacheHint
+            tileSetCache.minutesDead = 0
+        }
+    }
+    
+    func skeletalAnimationCacheKey(path: String, options: SkeletalAnimationImporterOptions) -> Cache.SkeletalAnimationKey {
+        let key = Cache.SkeletalAnimationKey(requestedPath: path, options: options)
+        if cache.skeletalAnimations[key] == nil {
+            cache.skeletalAnimations[key] = Cache.SkeletalAnimationCache()
+            self._reloadSkeletalAnimation(for: key, isFirstLoad: true)
+        }
+        return key
+    }
+    
+    func skeletalAnimationCacheKey(
+        name: String, 
+        duration: Float, 
+        animations: [Skeleton.Joint.ID: SkeletalAnimation.JointAnimation]
+    ) -> Cache.SkeletalAnimationKey {
+        let key = Cache.SkeletalAnimationKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", options: .none)
+        if cache.skeletalAnimations[key] == nil {
+            cache.skeletalAnimations[key] = Cache.SkeletalAnimationCache()
+            Task.detached(priority: .low) {
+                let backend = SkeletalAnimationBackend(
+                    name: name, 
+                    duration: duration, 
+                    animations: animations
+                )
+                Task { @MainActor in
+                    if let cache = self.cache.skeletalAnimations[key] {
+                        cache.skeletalAnimationBackend = backend
+                        cache.state = .ready
+                    }else{
+                        Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
+                    }
+                }
+            }
+        }
+        return key
+    }
+    
+    @usableFromInline
+    func skeletalAnimationCache(for key: Cache.SkeletalAnimationKey) -> Cache.SkeletalAnimationCache? {
+        return cache.skeletalAnimations[key]
+    }
+    
+    func incrementReference(_ key: Cache.SkeletalAnimationKey) {
+        self.skeletalAnimationCache(for: key)?.referenceCount += 1
+    }
+    func decrementReference(_ key: Cache.SkeletalAnimationKey) {
+        guard let cache = self.skeletalAnimationCache(for: key) else {return}
+        cache.referenceCount -= 1
+        
+        if case .whileReferenced = cache.cacheHint {
+            if cache.referenceCount == 0 {
+                self.cache.skeletalAnimations.removeValue(forKey: key)
+                Log.debug(
+                    "Removing cache (no longer referenced), Object:",
+                    key.requestedPath.first == "$" ? "(Generated TileSet)" : key.requestedPath
+                )
+            }
+        }
+    }
+    
+    func reloadSkeletalAniamtionIfNeeded(key: Cache.SkeletalAnimationKey) {
+        // Skip if made from RawGeometry
+        guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
+        Task.detached(priority: .low) {
+            guard self.skeletalAnimationNeedsReload(key: key) else { return }
+            self._reloadSkeletalAnimation(for: key, isFirstLoad: false)
+        }
+    }
+    
+    func _reloadSkeletalAnimation(for key: Cache.SkeletalAnimationKey, isFirstLoad: Bool) {
+        Task.detached(priority: .low) {
+            let path = key.requestedPath
+            
+            do {
+                guard let fileExtension = path.components(separatedBy: ".").last else {
+                    throw GateEngineError.failedToLoad("Unknown file type.")
+                }
+                guard
+                    let importer: any SkeletalAnimationImporter = await Game.shared.resourceManager
+                        .importerForFileType(fileExtension)
+                else {
+                    throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
+                }
 
+                let data = try await Game.shared.platform.loadResource(from: path)
+                let backend = try await importer.process(
+                    data: data,
+                    baseURL: URL(string: path)!.deletingLastPathComponent(),
+                    options: key.options
+                )
+
+                Task { @MainActor in
+                    if let cache = self.cache.skeletalAnimations[key] {
+                        cache.skeletalAnimationBackend = backend
+                        cache.state = .ready
+                    }else{
+                        Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
+                    }
+                }
+            } catch let error as GateEngineError {
+                Task { @MainActor in
+                    Log.warn("Resource \"\(path)\"", error)
+                    if let cache = self.cache.skeletalAnimations[key] {
+                        cache.state = .failed(error: error)
+                    }
+                }
+            } catch let error as DecodingError {
+                let error = GateEngineError(error)
+                Task { @MainActor in
+                    Log.warn("Resource \"\(path)\"", error)
+                    if let cache = self.cache.skeletalAnimations[key] {
+                        cache.state = .failed(error: error)
+                    }
+                }
+            } catch {
+                Log.fatalError("error must be a GateEngineError")
+            }
+        }
+    }
+    
+    func skeletalAnimationNeedsReload(key: Cache.SkeletalAnimationKey) -> Bool {
+        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
+        // Skip if made from RawGeometry
+        guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
+        guard let cache = cache.skeletalAnimations[key] else { return false }
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)
+            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date
+            {
+                return modified > cache.lastLoaded
+            } else {
+                return false
+            }
+        } catch {
+            Log.error(error)
+            return false
+        }
+        #else
+        return false
+        #endif
+    }
+}

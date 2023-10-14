@@ -125,6 +125,7 @@ extension ResourceManager {
         var geometries: [GeometryKey: GeometryCache] = [:]
         var skinnedGeometries: [SkinnedGeometryKey: SkinnedGeometryCache] = [:]
 
+        var skeletons: [SkeletonKey: SkeletonCache] = [:]
         var skeletalAnimations: [SkeletalAnimationKey: SkeletalAnimationCache] = [:]
 
         var tileSets: [TileSetKey: TileSetCache] = [:]
@@ -132,15 +133,6 @@ extension ResourceManager {
         
         var audioBuffers: [AudioBufferKey: AudioBufferCache] = [:]
         
-        // Skeleton
-        struct SkeletalAnimationKey: Hashable, Sendable {
-            let path: String
-            let options: SkeletalAnimationImporterOptions
-        }
-        struct SkeletalAnimationCache {
-            weak var skeletalAnimation: SkeletalAnimation? = nil
-        }
-
         // AudioBuffer
         struct AudioBufferKey: Hashable, Sendable {
             let path: String

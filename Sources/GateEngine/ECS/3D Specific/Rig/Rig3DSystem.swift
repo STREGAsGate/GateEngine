@@ -50,7 +50,7 @@ public final class Rig3DSystem: System {
             if let component = entity.component(ofType: Rig3DComponent.self),
                 component.disabled == false
             {
-                if let animation = component.activeAnimation {
+                if let animation = component.activeAnimation, animation.isReady {
                     if let scale = entity.component(ofType: Transform3Component.self)?.scale {
                         component.update(
                             deltaTime: deltaTime + component.deltaAccumulator,
@@ -66,7 +66,7 @@ public final class Rig3DSystem: System {
                         for animation in animation.subAnimations {
                             component.skeleton.applyAnimation(
                                 animation.skeletalAnimation,
-                                withTime: animation.accumulatedTime,
+                                atTime: animation.accumulatedTime,
                                 duration: animation.duration,
                                 repeating: animation.repeats,
                                 skipJoints: animation.skipJoints,

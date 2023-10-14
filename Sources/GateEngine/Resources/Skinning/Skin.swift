@@ -85,7 +85,7 @@ extension Skin {
         do {
             self = try await importer.loadData(path: path, options: options)
         } catch {
-            throw GateEngineError(decodingError: error)
+            throw GateEngineError(error)
         }
     }
 }

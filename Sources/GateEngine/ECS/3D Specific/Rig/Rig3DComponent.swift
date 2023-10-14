@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public class Rig3DComponent: Component {
+@MainActor public final class Rig3DComponent: Component {
     public var disabled: Bool = false
     internal var deltaAccumulator: Float = 0
     public var slowAnimationsPastDistance: Float = 20
@@ -37,15 +37,26 @@ public class Rig3DComponent: Component {
     public var updateColliderFromBoneNamed: String? = nil
 
     func update(deltaTime: Float, objectScale: Size3) {
-        activeAnimation?.update(deltaTime: deltaTime, objectScale: objectScale)
-        deltaAccumulator += deltaTime
-        blendingAccumulator += deltaTime
+        if let activeAnimation, activeAnimation.isReady {
+            activeAnimation.update(deltaTime: deltaTime, objectScale: objectScale)
+            deltaAccumulator += deltaTime
+            blendingAccumulator += deltaTime
+        }
     }
 
-    public class Animation {
+    @MainActor public final class Animation {
         public var subAnimations: [SubAnimation]
         var primaryIndex: Int = 0
 
+        public var isReady: Bool {
+            for animation in subAnimations {
+                if animation.skeletalAnimation.state != .ready {
+                    return false
+                }
+            }
+            return true
+        }
+        
         @inline(__always)
         public var progress: Float {
             get {
@@ -146,7 +157,7 @@ public class Rig3DComponent: Component {
             self.subAnimations.append(a)
         }
 
-        public struct SubAnimation {
+        @MainActor public struct SubAnimation {
             public var skeletalAnimation: SkeletalAnimation
             public var skipJoints: [Skeleton.SkipJoint]
 

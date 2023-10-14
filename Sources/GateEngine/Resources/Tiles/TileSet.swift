@@ -336,7 +336,7 @@ extension ResourceManager {
                     }
                 }
             } catch let error as DecodingError {
-                let error = GateEngineError(decodingError: error)
+                let error = GateEngineError(error)
                 Task { @MainActor in
                     Log.warn("Resource \"\(path)\"", error)
                     if let cache = self.cache.tileSets[key] {

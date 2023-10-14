@@ -5,22 +5,100 @@
  * http://stregasgate.com
  */
 
-public final class Skeleton: OldResource {
-    internal let path: String?
-    internal let options: SkeletonImporterOptions?
+#if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
+import Foundation
+#endif
 
-    @RequiresState(.ready)
-    internal var rootJoint: Skeleton.Joint! = nil
-    @RequiresState(.ready)
-    internal var bindPose: Pose! = nil
-
-    public func getPose() -> Pose {
-        self.updateIfNeeded()
-        return Pose(self.rootJoint)
+@MainActor public final class Skeleton: Resource {
+    internal let cacheKey: ResourceManager.Cache.SkeletonKey
+    
+    public var cacheHint: CacheHint {
+        get { Game.shared.resourceManager.skeletonCache(for: cacheKey)!.cacheHint }
+        set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
     }
 
-    private var jointIDCache: [Int: Joint] = [:]
+    public var state: ResourceState {
+        return Game.shared.resourceManager.skeletonCache(for: cacheKey)!.state
+    }
+    
+    @usableFromInline
+    internal var backend: SkeletonBackend {
+        assert(state == .ready, "This resource is not ready to be used. Make sure it's state property is .ready before accessing!")
+        return Game.shared.resourceManager.skeletonCache(for: cacheKey)!.skeletonBackend!
+    }
+
+    public func getPose() -> Pose? {
+        guard self.isReady else {return nil}
+        return backend.getPose()
+    }
+
     public func jointWithID(_ id: Skeleton.Joint.ID) -> Joint? {
+        return backend.jointWithID(id)
+    }
+
+    public func jointNamed(_ name: String) -> Joint? {
+        return backend.jointNamed(name)
+    }
+
+    @usableFromInline
+    internal func updateIfNeeded() {
+        self.backend.updateIfNeeded()
+    }
+    
+    public init(
+        path: String,
+        options: SkeletonImporterOptions = .none
+    ) {
+        let resourceManager = Game.shared.resourceManager
+        self.cacheKey = resourceManager.skeletonCacheKey(
+            path: path,
+            options: options
+        )
+        self.cacheHint = .until(minutes: 5)
+        resourceManager.incrementReference(self.cacheKey)
+    }
+    
+    public init(rootjoint: Skeleton.Joint) {
+        let resourceManager = Game.shared.resourceManager
+        self.cacheKey = resourceManager.skeletonCacheKey(rootJoint: rootjoint)
+        self.cacheHint = .until(minutes: 5)
+        resourceManager.incrementReference(self.cacheKey)
+    }
+    
+    deinit {
+        let cacheKey = self.cacheKey
+        Task.detached(priority: .low) { @MainActor in
+            Game.shared.resourceManager.decrementReference(cacheKey)
+        }
+    }
+}
+
+extension Skeleton: Equatable, Hashable {
+    nonisolated public static func == (lhs: Skeleton, rhs: Skeleton) -> Bool {
+        return lhs.cacheKey == rhs.cacheKey
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(cacheKey)
+    }
+}
+
+@usableFromInline
+final class SkeletonBackend {
+    @usableFromInline
+    let rootJoint: Skeleton.Joint
+    @usableFromInline
+    let bindPose: Skeleton.Pose
+
+    @usableFromInline
+    func getPose() -> Skeleton.Pose {
+        self.updateIfNeeded()
+        return Skeleton.Pose(self.rootJoint)
+    }
+
+    private var jointIDCache: [Int: Skeleton.Joint] = [:]
+    @usableFromInline
+    func jointWithID(_ id: Skeleton.Joint.ID) -> Skeleton.Joint? {
         if let cached = jointIDCache[id] {
             return cached
         }
@@ -31,8 +109,9 @@ public final class Skeleton: OldResource {
         return nil
     }
 
-    private var jointNameCache: [String: Joint] = [:]
-    public func jointNamed(_ name: String) -> Joint? {
+    private var jointNameCache: [String: Skeleton.Joint] = [:]
+    @usableFromInline
+    func jointNamed(_ name: String) -> Skeleton.Joint? {
         if let cached = jointNameCache[name] {
             return cached
         }
@@ -43,23 +122,10 @@ public final class Skeleton: OldResource {
         return nil
     }
 
-    public init(rootJoint joint: Skeleton.Joint) {
-        self.path = nil
-        self.options = nil
-        self.rootJoint = joint
-        self.bindPose = Pose(joint)
-        super.init()
-        self.state = .ready
-
-        #if DEBUG
-        self._bindPose.configure(withOwner: self)
-        self._rootJoint.configure(withOwner: self)
-        #endif
-    }
-
+ 
     @usableFromInline
-    internal func updateIfNeeded() {
-        func update(joint: Joint) {
+    func updateIfNeeded() {
+        func update(joint: Skeleton.Joint) {
             joint.updateIfNeeded()
             for child in joint.children {
                 update(joint: child)
@@ -67,40 +133,9 @@ public final class Skeleton: OldResource {
         }
         update(joint: rootJoint)
     }
-}
-
-extension Skeleton {
-    public struct SkipJoint: ExpressibleByStringLiteral {
-        public typealias StringLiteralType = String
-        public var name: StringLiteralType
-        public var method: Method
-        public enum Method {
-            case justThis
-            case includingChildren
-        }
-
-        public init(stringLiteral: StringLiteralType) {
-            self.name = stringLiteral
-            self.method = .includingChildren
-        }
-
-        public init(name: StringLiteralType, method: Method) {
-            self.name = name
-            self.method = method
-        }
-
-        public static func named(_ name: String, _ method: Method) -> Self {
-            return Self(name: name, method: method)
-        }
-    }
-}
-
-extension Skeleton {
-    public func applyBindPose() {
-        self.applyPose(bindPose)
-    }
-
-    public func applyPose(_ pose: Pose) {
+    
+    @usableFromInline
+    func applyPose(_ pose: Skeleton.Pose) {
         func applyToJoint(_ joint: Skeleton.Joint) {
             if let poseJoint = pose.jointWithID(joint.id) {
                 joint.localTransform.position = poseJoint.localTransform.position
@@ -113,13 +148,14 @@ extension Skeleton {
         }
         applyToJoint(rootJoint)
     }
-
-    public func applyAnimation(
+    
+    @usableFromInline
+    @MainActor func applyAnimation(
         _ skeletalAnimation: SkeletalAnimation,
-        withTime time: Float,
+        atTime time: Float,
         duration: Float,
         repeating: Bool,
-        skipJoints: [SkipJoint],
+        skipJoints: [Skeleton.SkipJoint],
         interpolateProgress: Float
     ) {
 
@@ -177,10 +213,73 @@ extension Skeleton {
         }
         applyToJoint(rootJoint)
     }
+    
+    init(rootJoint joint: Skeleton.Joint) {
+        self.rootJoint = joint
+        self.bindPose = Skeleton.Pose(joint)
+    }
+
 }
 
 extension Skeleton {
-    public final class Joint {
+    public struct SkipJoint: ExpressibleByStringLiteral {
+        public typealias StringLiteralType = String
+        public var name: StringLiteralType
+        public var method: Method
+        public enum Method {
+            case justThis
+            case includingChildren
+        }
+
+        public init(stringLiteral: StringLiteralType) {
+            self.name = stringLiteral
+            self.method = .includingChildren
+        }
+
+        public init(name: StringLiteralType, method: Method) {
+            self.name = name
+            self.method = method
+        }
+
+        public static func named(_ name: String, _ method: Method) -> Self {
+            return Self(name: name, method: method)
+        }
+    }
+}
+
+extension Skeleton {
+    @inlinable
+    public func applyBindPose() {
+        self.applyPose(backend.bindPose)
+    }
+
+    @inlinable
+    public func applyPose(_ pose: Pose) {
+        self.backend.applyPose(pose)
+    }
+
+    @inlinable
+    public func applyAnimation(
+        _ skeletalAnimation: SkeletalAnimation,
+        atTime time: Float,
+        duration: Float,
+        repeating: Bool,
+        skipJoints: [Skeleton.SkipJoint],
+        interpolateProgress: Float
+    ) {
+        self.backend.applyAnimation(
+            skeletalAnimation, 
+            atTime: time,
+            duration: duration, 
+            repeating: repeating, 
+            skipJoints: skipJoints, 
+            interpolateProgress: interpolateProgress
+        )
+    }
+}
+
+extension Skeleton {
+    public final class Joint: Identifiable {
         public typealias ID = Int
         public let id: ID
         public let name: String?
@@ -397,9 +496,9 @@ extension Skeleton.Pose.Joint: Hashable {
 public protocol SkeletonImporter: AnyObject {
     init()
 
-    func loadData(path: String, options: SkeletonImporterOptions) async throws -> Skeleton.Joint
+    func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) async throws -> Skeleton.Joint
 
-    static func canProcessFile(_ file: URL) -> Bool
+    static func supportedFileExtensions() -> [String]
 }
 
 public struct SkeletonImporterOptions: Equatable, Hashable {
@@ -420,9 +519,11 @@ extension ResourceManager {
         importers.skeletonImporters.insert(type, at: 0)
     }
 
-    internal func skeletonImporterForFile(_ file: URL) -> (any SkeletonImporter)? {
+    fileprivate func importerForFileType(_ file: String) -> (any SkeletonImporter)? {
         for type in self.importers.skeletonImporters {
-            if type.canProcessFile(file) {
+            if type.supportedFileExtensions().contains(where: {
+                $0.caseInsensitiveCompare(file) == .orderedSame
+            }) {
                 return type.init()
             }
         }
@@ -430,18 +531,169 @@ extension ResourceManager {
     }
 }
 
-extension Skeleton {
-    public convenience init(path: String, options: SkeletonImporterOptions = .none) async throws {
-        let file = URL(fileURLWithPath: path)
-        guard let importer: any SkeletonImporter = await Game.shared.resourceManager.skeletonImporterForFile(file) else {
-            throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
-        }
+extension ResourceManager.Cache {
+    @usableFromInline
+    struct SkeletonKey: Hashable {
+        let requestedPath: String
+        let options: SkeletonImporterOptions
+    }
 
-        do {
-            let rootJoint = try await importer.loadData(path: path, options: options)
-            self.init(rootJoint: rootJoint)
-        } catch {
-            throw GateEngineError(decodingError: error)
+    @usableFromInline
+    class SkeletonCache {
+        @usableFromInline var skeletonBackend: SkeletonBackend?
+        var lastLoaded: Date
+        var state: ResourceState
+        var referenceCount: UInt
+        var minutesDead: UInt
+        var cacheHint: CacheHint
+        init() {
+            self.skeletonBackend = nil
+            self.lastLoaded = Date()
+            self.state = .pending
+            self.referenceCount = 0
+            self.minutesDead = 0
+            self.cacheHint = .until(minutes: 5)
         }
+    }
+}
+extension ResourceManager {
+    func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.SkeletonKey) {
+        if let tileSetCache = cache.skeletons[key] {
+            tileSetCache.cacheHint = cacheHint
+            tileSetCache.minutesDead = 0
+        }
+    }
+    
+    func skeletonCacheKey(path: String, options: SkeletonImporterOptions) -> Cache.SkeletonKey {
+        let key = Cache.SkeletonKey(requestedPath: path, options: options)
+        if cache.skeletons[key] == nil {
+            cache.skeletons[key] = Cache.SkeletonCache()
+            self._reloadSkeleton(for: key, isFirstLoad: true)
+        }
+        return key
+    }
+    
+    func skeletonCacheKey(rootJoint: Skeleton.Joint) -> Cache.SkeletonKey {
+        let key = Cache.SkeletonKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", options: .none)
+        if cache.skeletons[key] == nil {
+            cache.skeletons[key] = Cache.SkeletonCache()
+            Task.detached(priority: .low) {
+                let backend = SkeletonBackend(rootJoint: rootJoint)
+                Task { @MainActor in
+                    if let cache = self.cache.skeletons[key] {
+                        cache.skeletonBackend = backend
+                        cache.state = .ready
+                    }else{
+                        Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
+                    }
+                }
+            }
+        }
+        return key
+    }
+    
+    @usableFromInline
+    func skeletonCache(for key: Cache.SkeletonKey) -> Cache.SkeletonCache? {
+        return cache.skeletons[key]
+    }
+    
+    func incrementReference(_ key: Cache.SkeletonKey) {
+        self.skeletonCache(for: key)?.referenceCount += 1
+    }
+    func decrementReference(_ key: Cache.SkeletonKey) {
+        guard let cache = self.skeletonCache(for: key) else {return}
+        cache.referenceCount -= 1
+        
+        if case .whileReferenced = cache.cacheHint {
+            if cache.referenceCount == 0 {
+                self.cache.skeletons.removeValue(forKey: key)
+                Log.debug(
+                    "Removing cache (no longer referenced), Object:",
+                    key.requestedPath.first == "$" ? "(Generated TileSet)" : key.requestedPath
+                )
+            }
+        }
+    }
+    
+    func reloadSkeletonIfNeeded(key: Cache.SkeletonKey) {
+        // Skip if made from RawGeometry
+        guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
+        Task.detached(priority: .low) {
+            guard self.skeletonNeedsReload(key: key) else { return }
+            self._reloadSkeleton(for: key, isFirstLoad: false)
+        }
+    }
+    
+    func _reloadSkeleton(for key: Cache.SkeletonKey, isFirstLoad: Bool) {
+        Task.detached(priority: .low) {
+            let path = key.requestedPath
+            
+            do {
+                guard let fileExtension = path.components(separatedBy: ".").last else {
+                    throw GateEngineError.failedToLoad("Unknown file type.")
+                }
+                guard
+                    let importer: any SkeletonImporter = await Game.shared.resourceManager
+                        .importerForFileType(fileExtension)
+                else {
+                    throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
+                }
+
+                let data = try await Game.shared.platform.loadResource(from: path)
+                let rootJoint: Skeleton.Joint = try await importer.process(
+                    data: data,
+                    baseURL: URL(string: path)!.deletingLastPathComponent(),
+                    options: key.options
+                )
+
+                Task { @MainActor in
+                    if let cache = self.cache.skeletons[key] {
+                        cache.skeletonBackend = SkeletonBackend(rootJoint: rootJoint)
+                        cache.state = .ready
+                    }else{
+                        Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
+                    }
+                }
+            } catch let error as GateEngineError {
+                Task { @MainActor in
+                    Log.warn("Resource \"\(path)\"", error)
+                    if let cache = self.cache.skeletons[key] {
+                        cache.state = .failed(error: error)
+                    }
+                }
+            } catch let error as DecodingError {
+                let error = GateEngineError(error)
+                Task { @MainActor in
+                    Log.warn("Resource \"\(path)\"", error)
+                    if let cache = self.cache.skeletons[key] {
+                        cache.state = .failed(error: error)
+                    }
+                }
+            } catch {
+                Log.fatalError("error must be a GateEngineError")
+            }
+        }
+    }
+    
+    func skeletonNeedsReload(key: Cache.SkeletonKey) -> Bool {
+        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
+        // Skip if made from RawGeometry
+        guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
+        guard let cache = cache.skeletons[key] else { return false }
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)
+            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date
+            {
+                return modified > cache.lastLoaded
+            } else {
+                return false
+            }
+        } catch {
+            Log.error(error)
+            return false
+        }
+        #else
+        return false
+        #endif
     }
 }

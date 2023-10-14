@@ -122,6 +122,7 @@
         at transforms: [Transform3],
         flags: SceneElementFlags = .default
     ) {
+        guard skinnedGeometry.isReady else {return}
         var material = material
         material.vertexShader = .skinned
         material.setCustomUniformValue(

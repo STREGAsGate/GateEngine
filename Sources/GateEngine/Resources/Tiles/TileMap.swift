@@ -10,7 +10,7 @@ import Foundation
 #endif
 import GameMath
 
-@MainActor public class TileMap: Resource {
+@MainActor public final class TileMap: Resource {
     internal let cacheKey: ResourceManager.Cache.TileMapKey
     
     public var cacheHint: CacheHint {

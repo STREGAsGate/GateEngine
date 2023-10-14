@@ -435,6 +435,10 @@ public class GLTransmissionFormat {
         }
         return false
     }
+    
+    public static func supportedFileExtensions() -> [String] {
+        return ["gltf", "glb"]
+    }
 }
 
 extension GLTransmissionFormat: GeometryImporter {
@@ -657,7 +661,7 @@ extension GLTransmissionFormat: SkinImporter {
     }
 }
 
-extension GLTransmissionFormat: SkeletonImporter {
+extension GLTransmissionFormat: SkeletonImporter {    
     private func skeletonNode(named name: String?, in gltf: GLTF) -> Int? {
         func findIn(_ parent: Int) -> Int? {
             let node = gltf.nodes[parent]
@@ -687,9 +691,7 @@ extension GLTransmissionFormat: SkeletonImporter {
         return gltf.scenes[gltf.scene].nodes.first
     }
     
-    public func loadData(path: String, options: SkeletonImporterOptions) async throws -> Skeleton.Joint {
-        let baseURL = URL(string: path)!.deletingLastPathComponent()
-        let data = try await Game.shared.platform.loadResource(from: path)
+    public func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) async throws -> Skeleton.Joint {
         let gltf = try gltf(from: data, baseURL: baseURL)
         guard let rootNode = skeletonNode(named: options.subobjectName, in: gltf) else {
             throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
@@ -721,9 +723,7 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
         return gltf.animations?.first
     }
     
-    public func loadData(path: String, options: SkeletalAnimationImporterOptions) async throws -> SkeletalAnimation {
-        let data = try await Game.shared.platform.loadResource(from: path)
-        let baseURL = URL(string: path)!.deletingLastPathComponent()
+    public func process(data: Data, baseURL: URL, options: SkeletalAnimationImporterOptions) async throws -> SkeletalAnimationBackend {
         let gltf = try gltf(from: data, baseURL: baseURL)
 
         guard let animation = animation(named: options.subobjectName, from: gltf) else {
@@ -835,6 +835,6 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
             timeMax = .maximum(times.max()!, timeMax)
         }
 
-        return SkeletalAnimation(name: animation.name, duration: timeMax, animations: animations)
+        return SkeletalAnimationBackend(name: animation.name, duration: timeMax, animations: animations)
     }
 }
