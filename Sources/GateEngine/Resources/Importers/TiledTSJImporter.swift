@@ -92,7 +92,7 @@ public class TiledTSJImporter: TileSetImporter {
                 tiles: tiles
             )
         }catch{
-            throw GateEngineError(decodingError: error)
+            throw GateEngineError(error)
         }
     }
     

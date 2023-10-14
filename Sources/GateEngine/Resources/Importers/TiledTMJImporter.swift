@@ -78,7 +78,7 @@ public class TiledTMJImporter: TileMapImporter {
             
             return await TileMapBackend(layers: layers)
         }catch{
-            throw GateEngineError(decodingError: error)
+            throw GateEngineError(error)
         }
     }
     

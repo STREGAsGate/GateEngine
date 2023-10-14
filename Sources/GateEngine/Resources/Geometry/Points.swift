@@ -81,7 +81,7 @@ extension RawPoints {
         do {
             self = RawPoints(pointCloudFrom: try await importer.loadData(path: path, options: options).generateTriangles())
         } catch {
-            throw GateEngineError(decodingError: error)
+            throw GateEngineError(error)
         }
     }
 }

@@ -81,7 +81,7 @@ extension RawLines {
         do {
             self = RawLines(wireframeFrom: try await importer.loadData(path: path, options: options).generateTriangles())
         } catch {
-            throw GateEngineError(decodingError: error)
+            throw GateEngineError(error)
         }
     }
 }
