@@ -86,6 +86,28 @@ extension Entity {
         return self.getComponent(at: componentID) as? T
     }
     
+    /// Obtain an existing component by it's ID.
+    /// - returns The existing component or nil if it's not present.
+    @MainActor
+    public func component<T: ResourceConstrainedComponent>(ofType type: T.Type) -> T? {
+        let componentID = type.componentID.value
+        guard self.hasComponent(at: componentID) else {return nil}
+        guard let component = self.getComponent(at: componentID) as? T else {return nil}
+        switch component.resourcesState {
+        case .pending:
+            if let notReady = component.resources.first(where: {$0.state != .ready}) {
+                self[T.self].resourcesState = notReady.state
+                return nil
+            }
+            self[T.self].resourcesState = .ready
+            return component
+        case .ready:
+            return component
+        case .failed(error: _):
+            return nil
+        }
+    }
+    
     @inline(__always)
     public func insert<T: Component>(_ component: T) {
         let index = T.self.componentID.value

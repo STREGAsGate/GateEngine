@@ -6,8 +6,7 @@
  */
 
 @dynamicMemberLookup
-public final class MaterialComponent: Component {
-
+public final class MaterialComponent: ResourceConstrainedComponent {
     public var material: Material
 
     public func setCustomUniformValue(_ value: some CustomUniformType, forUniform name: String) {
@@ -40,6 +39,18 @@ public final class MaterialComponent: Component {
     }
     public init(_ material: Material) {
         self.material = material
+    }
+    
+    // TODO: Textures swaping out aren't updating this
+    public var resourcesState: ResourceState = .pending
+    public var resources: [any Resource] {
+        var resources: [any Resource] = []
+        for channel in material.channels {
+            if let texture = channel.texture {
+                resources.append(texture)
+            }
+        }
+        return resources
     }
     
     public static let componentID: ComponentID = ComponentID()

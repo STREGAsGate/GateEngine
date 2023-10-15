@@ -12,6 +12,11 @@ public protocol Component {
     nonisolated static func systemThatProcessesThisComponent() -> System.Type?
 }
 
+public protocol ResourceConstrainedComponent: Component {
+    @MainActor var resourcesState: ResourceState {get set}
+    @MainActor var resources: [any Resource] {get}
+}
+
 extension Component {
     public nonisolated static func systemThatProcessesThisComponent() -> System.Type? {
         return nil
