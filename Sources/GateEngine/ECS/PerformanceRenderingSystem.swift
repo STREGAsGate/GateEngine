@@ -10,7 +10,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         game.ecs.recordPerformance()
     }
 
-    lazy var text: Text = Text(string: "Accumulating Statistics...", pointSize: 20, color: .green)
+    lazy var text: Text = Text(string: "Accumulating Statistics...\nLoading Resources: \(game.resourceManager.currentlyLoading)", pointSize: 20, color: .green)
     func rebuildText() -> Bool {
         let performance = game.ecs.performance!
         let systemsFrameTime = performance.systemsFrameTime
@@ -32,10 +32,53 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         string += String(format: "%.1fms Total Systems Time", totalSystemTime * 1000)
         string += "\n\(String(format: "%02d%%", Int((renderingSystemsFrameTime / totalSystemTime) * 100))) Rendering Systems"
         string += "\n\(String(format: "%02d%%", Int((systemsFrameTime / totalSystemTime) * 100))) Systems\n"
-        string += "\n\(game.entities.count) Entities,"
-        string += " \(game.resourceManager.cache.geometries.count) Geometries,"
-        string += " \(game.resourceManager.cache.textures.count) Textures\n"
-
+        string += "\nLoading: \(game.resourceManager.currentlyLoading)"
+        string += "\nLoaded: "
+        var loadedThingsCount = 0
+        func loadedThingsLine() {
+            if loadedThingsCount > 3 {
+                loadedThingsCount = 0
+                string += ",\n"
+            }else{
+                string += ", "
+            }
+        }
+        if game.entities.isEmpty == false {
+            string += "\(game.entities.count) Entities"
+            loadedThingsCount += 1
+        }
+        loadedThingsLine()
+        if game.resourceManager.cache.geometries.isEmpty == false || game.resourceManager.cache.skinnedGeometries.isEmpty == false {
+            string += "\(game.resourceManager.cache.geometries.count + game.resourceManager.cache.skinnedGeometries.count) Geometry"
+            loadedThingsCount += 1
+        }
+        loadedThingsLine()
+        if game.resourceManager.cache.textures.isEmpty == false {
+            string += "\(game.resourceManager.cache.textures.count) Texture"
+            loadedThingsCount += 1
+        }
+        loadedThingsLine()
+        if game.resourceManager.cache.skeletons.isEmpty == false {
+            string += "\(game.resourceManager.cache.skeletons.count) Skeleton"
+            loadedThingsCount += 1
+        }
+        loadedThingsLine()
+        if game.resourceManager.cache.skeletalAnimations.isEmpty == false {
+            string += "\(game.resourceManager.cache.skeletalAnimations.count) SkeleltalAnimation"
+            loadedThingsCount += 1
+        }
+        loadedThingsLine()
+        if game.resourceManager.cache.tileSets.isEmpty == false {
+            string += "\(game.resourceManager.cache.tileSets.count) TileSet"
+            loadedThingsCount += 1
+        }
+        loadedThingsLine()
+        if game.resourceManager.cache.tileMaps.isEmpty == false {
+            string += "\(game.resourceManager.cache.tileMaps.count) TileMap"
+            loadedThingsCount += 1
+        }
+        string += "\n"
+        
         for statistic in performance.averageSortedStatistics() {
             string += "\n"
             let duration = statistic.value

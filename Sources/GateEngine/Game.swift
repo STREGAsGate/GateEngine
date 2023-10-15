@@ -47,7 +47,7 @@ public final class Game {
     @MainActor public private(set) lazy var windowManager: WindowManager = WindowManager(self)
     @MainActor @usableFromInline private(set) lazy var ecs: ECSContext = ECSContext(game: self)
     @MainActor @usableFromInline private(set) lazy var hid: HID = HID()
-    @MainActor @usableFromInline private(set) lazy var resourceManager: ResourceManager = {
+    public private(set) lazy var resourceManager: ResourceManager = {
         return ResourceManager(game: self)
     }()
 

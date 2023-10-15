@@ -93,10 +93,11 @@ extension RawPoints {
 // MARK: - Resource Manager
 
 extension ResourceManager {
-    func pointsCacheKey(path: String, options: GeometryImporterOptions) -> Cache.GeometryKey {
+    @MainActor func pointsCacheKey(path: String, options: GeometryImporterOptions) -> Cache.GeometryKey {
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: options)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
+            Game.shared.resourceManager.incrementLoading()
             Task.detached(priority: .low) {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
@@ -109,6 +110,7 @@ extension ResourceManager {
                         }else{
                             Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
                         }
+                        Game.shared.resourceManager.decrementLoading()
                     }
                 } catch let error as GateEngineError {
                     Task { @MainActor in
@@ -116,6 +118,7 @@ extension ResourceManager {
                         if let cache = self.cache.geometries[key] {
                             cache.state = .failed(error: error)
                         }
+                        Game.shared.resourceManager.decrementLoading()
                     }
                 } catch {
                     Log.fatalError("error must be a GateEngineError")

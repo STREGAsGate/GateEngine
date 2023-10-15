@@ -55,6 +55,14 @@ public class ResourceManager {
     let rawCacheIDGenerator = IDGenerator<UInt>()
 
     var accumulatedSeconds: Float = 0
+    
+    @MainActor public private(set) var currentlyLoading: Int = 0
+    @MainActor internal func incrementLoading() {
+        self.currentlyLoading += 1
+    }
+    @MainActor internal func decrementLoading() {
+        self.currentlyLoading -= 1
+    }
 
     public let game: Game
     public init(game: Game) {

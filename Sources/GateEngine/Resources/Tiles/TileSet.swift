@@ -229,7 +229,7 @@ extension ResourceManager {
         }
     }
     
-    func tileSetCacheKey(path: String, options: TileSetImporterOptions) -> Cache.TileSetKey {
+    @MainActor func tileSetCacheKey(path: String, options: TileSetImporterOptions) -> Cache.TileSetKey {
         let key = Cache.TileSetKey(requestedPath: path, tileSetOptions: options)
         if cache.tileSets[key] == nil {
             cache.tileSets[key] = Cache.TileSetCache()
@@ -238,7 +238,7 @@ extension ResourceManager {
         return key
     }
     
-    func tileSetCacheKey(texture: Texture,
+    @MainActor func tileSetCacheKey(texture: Texture,
                          count: Int,
                          columns: Int,
                          tileSize: Size2,
@@ -246,6 +246,7 @@ extension ResourceManager {
         let key = Cache.TileSetKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", tileSetOptions: .none)
         if cache.tileSets[key] == nil {
             cache.tileSets[key] = Cache.TileSetCache()
+            Game.shared.resourceManager.incrementLoading()
             Task.detached(priority: .low) {
                 let backend = TileSetBackend(texture: texture,
                                              count: count,
@@ -260,6 +261,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             }
         }
@@ -294,11 +296,12 @@ extension ResourceManager {
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
         Task.detached(priority: .low) {
             guard self.tileSetNeedsReload(key: key) else { return }
-            self._reloadTileSet(for: key, isFirstLoad: false)
+            await self._reloadTileSet(for: key, isFirstLoad: false)
         }
     }
     
-    func _reloadTileSet(for key: Cache.TileSetKey, isFirstLoad: Bool) {
+    @MainActor func _reloadTileSet(for key: Cache.TileSetKey, isFirstLoad: Bool) {
+        Game.shared.resourceManager.incrementLoading()
         Task.detached(priority: .low) {
             let path = key.requestedPath
             
@@ -327,6 +330,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
@@ -334,6 +338,7 @@ extension ResourceManager {
                     if let cache = self.cache.tileSets[key] {
                         cache.state = .failed(error: error)
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch let error as DecodingError {
                 let error = GateEngineError(error)
@@ -342,6 +347,7 @@ extension ResourceManager {
                     if let cache = self.cache.tileSets[key] {
                         cache.state = .failed(error: error)
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")

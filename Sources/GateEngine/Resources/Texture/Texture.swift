@@ -257,7 +257,7 @@ extension ResourceManager {
         }
     }
 
-    func textureCacheKey(path: String, mipMapping: MipMapping, options: TextureImporterOptions)
+    @MainActor func textureCacheKey(path: String, mipMapping: MipMapping, options: TextureImporterOptions)
         -> Cache.TextureKey
     {
         let key = Cache.TextureKey(
@@ -349,14 +349,16 @@ extension ResourceManager {
         if key.requestedPath[key.requestedPath.startIndex] != "$" {
             Task.detached(priority: .low) {
                 if self.textureNeedsReload(key: key) {
-                    self._reloadTexture(key: key)
+                    await self._reloadTexture(key: key)
                 }
             }
         }
     }
 
+    @MainActor 
     @inline(__always)
     private func _reloadTexture(key: Cache.TextureKey) {
+        Game.shared.resourceManager.incrementLoading()
         Task.detached(priority: .low) {
             do {
                 let path = key.requestedPath
@@ -393,6 +395,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being re-loaded.")
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
@@ -400,6 +403,7 @@ extension ResourceManager {
                     if let cache = self.cache.textures[key] {
                         cache.state = .failed(error: error)
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")

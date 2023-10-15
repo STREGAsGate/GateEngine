@@ -17,7 +17,7 @@ import Foundation
         set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
     }
 
-    public var state: ResourceState {
+    public nonisolated var state: ResourceState {
         return Game.shared.resourceManager.skeletonCache(for: cacheKey)!.state
     }
     
@@ -27,8 +27,7 @@ import Foundation
         return Game.shared.resourceManager.skeletonCache(for: cacheKey)!.skeletonBackend!
     }
 
-    public func getPose() -> Pose? {
-        guard self.isReady else {return nil}
+    public func getPose() -> Pose {
         return backend.getPose()
     }
 
@@ -542,14 +541,22 @@ extension ResourceManager.Cache {
     class SkeletonCache {
         @usableFromInline var skeletonBackend: SkeletonBackend?
         var lastLoaded: Date
-        var state: ResourceState
+        var _state: ResourceState
+        var state: ResourceState {
+            @inline(__always) get {
+                return _state
+            }
+            @MainActor set {
+                _state = newValue
+            }
+        }
         var referenceCount: UInt
         var minutesDead: UInt
         var cacheHint: CacheHint
         init() {
             self.skeletonBackend = nil
             self.lastLoaded = Date()
-            self.state = .pending
+            self._state = .pending
             self.referenceCount = 0
             self.minutesDead = 0
             self.cacheHint = .until(minutes: 5)
@@ -564,7 +571,7 @@ extension ResourceManager {
         }
     }
     
-    func skeletonCacheKey(path: String, options: SkeletonImporterOptions) -> Cache.SkeletonKey {
+    @MainActor func skeletonCacheKey(path: String, options: SkeletonImporterOptions) -> Cache.SkeletonKey {
         let key = Cache.SkeletonKey(requestedPath: path, options: options)
         if cache.skeletons[key] == nil {
             cache.skeletons[key] = Cache.SkeletonCache()
@@ -573,10 +580,11 @@ extension ResourceManager {
         return key
     }
     
-    func skeletonCacheKey(rootJoint: Skeleton.Joint) -> Cache.SkeletonKey {
+    @MainActor func skeletonCacheKey(rootJoint: Skeleton.Joint) -> Cache.SkeletonKey {
         let key = Cache.SkeletonKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", options: .none)
         if cache.skeletons[key] == nil {
             cache.skeletons[key] = Cache.SkeletonCache()
+            Game.shared.resourceManager.incrementLoading()
             Task.detached(priority: .low) {
                 let backend = SkeletonBackend(rootJoint: rootJoint)
                 Task { @MainActor in
@@ -586,6 +594,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             }
         }
@@ -620,11 +629,12 @@ extension ResourceManager {
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
         Task.detached(priority: .low) {
             guard self.skeletonNeedsReload(key: key) else { return }
-            self._reloadSkeleton(for: key, isFirstLoad: false)
+            await self._reloadSkeleton(for: key, isFirstLoad: false)
         }
     }
     
-    func _reloadSkeleton(for key: Cache.SkeletonKey, isFirstLoad: Bool) {
+    @MainActor func _reloadSkeleton(for key: Cache.SkeletonKey, isFirstLoad: Bool) {
+        Game.shared.resourceManager.incrementLoading()
         Task.detached(priority: .low) {
             let path = key.requestedPath
             
@@ -660,6 +670,7 @@ extension ResourceManager {
                     if let cache = self.cache.skeletons[key] {
                         cache.state = .failed(error: error)
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch let error as DecodingError {
                 let error = GateEngineError(error)
@@ -668,6 +679,7 @@ extension ResourceManager {
                     if let cache = self.cache.skeletons[key] {
                         cache.state = .failed(error: error)
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")

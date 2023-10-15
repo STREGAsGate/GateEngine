@@ -246,11 +246,12 @@ extension ResourceManager {
         }
     }
 
-    func geometryCacheKey(path: String, options: GeometryImporterOptions) -> Cache.GeometryKey {
+    @MainActor func geometryCacheKey(path: String, options: GeometryImporterOptions) -> Cache.GeometryKey {
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: options)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
-            Task.detached(priority: .low) {
+            Game.shared.resourceManager.incrementLoading()
+            Task.detached {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
                     let backend = await self.geometryBackend(from: geometry)
@@ -261,6 +262,7 @@ extension ResourceManager {
                         }else{
                             Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
                         }
+                        Game.shared.resourceManager.decrementLoading()
                     }
                 } catch let error as GateEngineError {
                     Task { @MainActor in
@@ -268,6 +270,7 @@ extension ResourceManager {
                         if let cache = self.cache.geometries[key] {
                             cache.state = .failed(error: error)
                         }
+                        Game.shared.resourceManager.decrementLoading()
                     }
                 } catch {
                     Log.fatalError("error must be a GateEngineError")
@@ -277,13 +280,14 @@ extension ResourceManager {
         return key
     }
 
-    func geometryCacheKey(rawGeometry geometry: RawGeometry?) -> Cache.GeometryKey {
+    @MainActor func geometryCacheKey(rawGeometry geometry: RawGeometry?) -> Cache.GeometryKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
+            Game.shared.resourceManager.incrementLoading()
             if let geometry = geometry {
-                Task.detached(priority: .low) {
+                Task.detached {
                     let backend = await self.geometryBackend(from: geometry)
                     Task { @MainActor in
                         if let cache = self.cache.geometries[key] {
@@ -292,6 +296,7 @@ extension ResourceManager {
                         }else{
                             Log.warn("Resource \"(Generated Geometry)\" was deallocated before being loaded.")
                         }
+                        Game.shared.resourceManager.decrementLoading()
                     }
                 }
             }
@@ -325,7 +330,7 @@ extension ResourceManager {
     func reloadGeometryIfNeeded(key: Cache.GeometryKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task.detached(priority: .low) {
+        Task.detached {
             guard self.geometryNeedsReload(key: key) else { return }
             guard let cache = self.geometryCache(for: key) else { return }
             let geometry = try await RawGeometry(

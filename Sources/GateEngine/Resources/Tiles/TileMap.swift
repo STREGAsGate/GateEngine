@@ -241,7 +241,7 @@ extension ResourceManager {
         }
     }
     
-    func tileMapCacheKey(path: String, options: TileMapImporterOptions) -> Cache.TileMapKey {
+    @MainActor func tileMapCacheKey(path: String, options: TileMapImporterOptions) -> Cache.TileMapKey {
         let key = Cache.TileMapKey(requestedPath: path, tileMapOptions: options)
         if cache.tileMaps[key] == nil {
             cache.tileMaps[key] = Cache.TileMapCache()
@@ -250,10 +250,11 @@ extension ResourceManager {
         return key
     }
     
-    func tileMapCacheKey(layers: [TileMap.Layer]) -> Cache.TileMapKey {
+    @MainActor func tileMapCacheKey(layers: [TileMap.Layer]) -> Cache.TileMapKey {
         let key = Cache.TileMapKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", tileMapOptions: .none)
         if cache.tileMaps[key] == nil {
             cache.tileMaps[key] = Cache.TileMapCache()
+            Game.shared.resourceManager.incrementLoading()
             Task.detached(priority: .low) {
                 let backend = await TileMapBackend(layers: layers)
                 Task { @MainActor in
@@ -263,6 +264,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"(Generated TileMap)\" was deallocated before being loaded.")
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             }
         }
@@ -297,11 +299,12 @@ extension ResourceManager {
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
         Task.detached(priority: .low) {
             guard self.tileMapNeedsReload(key: key) else { return }
-            self._reloadTileMap(for: key, isFirstLoad: false)
+            await self._reloadTileMap(for: key, isFirstLoad: false)
         }
     }
     
-    func _reloadTileMap(for key: Cache.TileMapKey, isFirstLoad: Bool) {
+    @MainActor func _reloadTileMap(for key: Cache.TileMapKey, isFirstLoad: Bool) {
+        Game.shared.resourceManager.incrementLoading()
         Task.detached(priority: .low) {
             let path = key.requestedPath
             
@@ -330,6 +333,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
@@ -337,6 +341,7 @@ extension ResourceManager {
                     if let cache = self.cache.tileMaps[key] {
                         cache.state = .failed(error: error)
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")

@@ -9,7 +9,7 @@
 import Foundation
 #endif
 
-@MainActor public final class SkeletalAnimation {
+@MainActor public final class SkeletalAnimation: Resource {
     internal let cacheKey: ResourceManager.Cache.SkeletalAnimationKey
     
     public var cacheHint: CacheHint {
@@ -17,7 +17,7 @@ import Foundation
         set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
     }
 
-    public var state: ResourceState {
+    public nonisolated var state: ResourceState {
         return Game.shared.resourceManager.skeletalAnimationCache(for: cacheKey)!.state
     }
     
@@ -485,12 +485,14 @@ extension ResourceManager {
         let key = Cache.SkeletalAnimationKey(requestedPath: path, options: options)
         if cache.skeletalAnimations[key] == nil {
             cache.skeletalAnimations[key] = Cache.SkeletalAnimationCache()
-            self._reloadSkeletalAnimation(for: key, isFirstLoad: true)
+            Task { @MainActor in
+                self._reloadSkeletalAnimation(for: key, isFirstLoad: true)
+            }
         }
         return key
     }
     
-    func skeletalAnimationCacheKey(
+    @MainActor func skeletalAnimationCacheKey(
         name: String, 
         duration: Float, 
         animations: [Skeleton.Joint.ID: SkeletalAnimation.JointAnimation]
@@ -498,6 +500,7 @@ extension ResourceManager {
         let key = Cache.SkeletalAnimationKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", options: .none)
         if cache.skeletalAnimations[key] == nil {
             cache.skeletalAnimations[key] = Cache.SkeletalAnimationCache()
+            Game.shared.resourceManager.incrementLoading()
             Task.detached(priority: .low) {
                 let backend = SkeletalAnimationBackend(
                     name: name, 
@@ -511,6 +514,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             }
         }
@@ -545,12 +549,13 @@ extension ResourceManager {
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
         Task.detached(priority: .low) {
             guard self.skeletalAnimationNeedsReload(key: key) else { return }
-            self._reloadSkeletalAnimation(for: key, isFirstLoad: false)
+            await self._reloadSkeletalAnimation(for: key, isFirstLoad: false)
         }
     }
     
-    func _reloadSkeletalAnimation(for key: Cache.SkeletalAnimationKey, isFirstLoad: Bool) {
-        Task.detached(priority: .low) {
+    @MainActor func _reloadSkeletalAnimation(for key: Cache.SkeletalAnimationKey, isFirstLoad: Bool) {
+        Game.shared.resourceManager.incrementLoading()
+        Task.detached {
             let path = key.requestedPath
             
             do {
@@ -578,6 +583,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
@@ -585,6 +591,7 @@ extension ResourceManager {
                     if let cache = self.cache.skeletalAnimations[key] {
                         cache.state = .failed(error: error)
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch let error as DecodingError {
                 let error = GateEngineError(error)
@@ -593,6 +600,7 @@ extension ResourceManager {
                     if let cache = self.cache.skeletalAnimations[key] {
                         cache.state = .failed(error: error)
                     }
+                    Game.shared.resourceManager.decrementLoading()
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")
