@@ -257,14 +257,14 @@ extension Vector4 {
 
 extension Vector4 {
     @_transparent
-    public func interpolated<V: Vector4>(to: V, _ method: InterpolationMethod) -> Self {
+    public func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
         return Self(self.x.interpolated(to: to.x, method),
                     self.y.interpolated(to: to.x, method),
                     self.z.interpolated(to: to.x, method),
                     self.w.interpolated(to: to.x, method))
     }
     @_transparent
-    public mutating func interpolate<V: Vector4>(to: V, _ method: InterpolationMethod) {
+    public mutating func interpolate(to: Self, _ method: InterpolationMethod) {
         self.x.interpolate(to: to.x, method)
         self.y.interpolate(to: to.y, method)
         self.z.interpolate(to: to.z, method)
