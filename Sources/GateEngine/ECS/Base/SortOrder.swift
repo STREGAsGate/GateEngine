@@ -60,6 +60,11 @@ public struct RenderingSystemSortOrder: RawRepresentable, ExpressibleByIntegerLi
         guard let sortOrder = system.sortOrder() else { return nil }
         return Self(rawValue: sortOrder.rawValue - 1)
     }
+    
+    @inlinable @inline(__always)
+    public static var last: Self {
+        return Self(rawValue: .max)
+    }
 }
 
 // MARK: - GateEngine Provided System Orders
@@ -119,5 +124,10 @@ public struct PlatformSystemSortOrder: RawRepresentable, ExpressibleByIntegerLit
     public static func before(_ system: System.Type) -> Self? {
         guard let sortOrder = system.sortOrder() else { return nil }
         return Self(rawValue: sortOrder.rawValue - 1)
+    }
+    
+    @inlinable @inline(__always)
+    public static var last: Self {
+        return Self(rawValue: .max)
     }
 }
