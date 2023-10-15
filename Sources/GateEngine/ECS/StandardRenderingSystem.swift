@@ -68,15 +68,13 @@ public final class StandardRenderingSystem: RenderingSystem {
 
                         if let rigComponent = entity.component(ofType: Rig3DComponent.self) {
                             for skinnedGeometry in renderingGeometry.skinnedGeometries {
-                                if let pose = rigComponent.skeleton.getPose() {
-                                    scene.insert(
-                                        skinnedGeometry,
-                                        withPose: pose,
-                                        material: material,
-                                        at: transform,
-                                        flags: renderingGeometry.flags
-                                    )
-                                }
+                                scene.insert(
+                                    skinnedGeometry,
+                                    withPose: rigComponent.skeleton.getPose(),
+                                    material: material,
+                                    at: transform,
+                                    flags: renderingGeometry.flags
+                                )
                             }
                         }
                     }
