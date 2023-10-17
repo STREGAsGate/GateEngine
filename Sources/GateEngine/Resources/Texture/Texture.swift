@@ -281,7 +281,7 @@ extension ResourceManager {
         )
         if cache.textures[key] == nil {
             cache.textures[key] = Cache.TextureCache()
-            Task.detached(priority: .low) {
+            Task.detached(priority: .high) {
                 let backend = await self.textureBackend(
                     data: data,
                     size: size,
@@ -307,7 +307,7 @@ extension ResourceManager {
             let newCache = Cache.TextureCache()
             newCache.isRenderTarget = true
             cache.textures[key] = newCache
-            Task.detached(priority: .low) {
+            Task.detached(priority: .high) {
                 let backend = await self.textureBackend(renderTargetBackend: renderTargetBackend)
                 Task { @MainActor in
                     if let cache = self.cache.textures[key] {
@@ -347,7 +347,7 @@ extension ResourceManager {
     func reloadTextureIfNeeded(key: Cache.TextureKey) {
         // Skip if made from rawCacheID
         if key.requestedPath[key.requestedPath.startIndex] != "$" {
-            Task.detached(priority: .low) {
+            Task {
                 if self.textureNeedsReload(key: key) {
                     await self._reloadTexture(key: key)
                 }
@@ -359,7 +359,7 @@ extension ResourceManager {
     @inline(__always)
     private func _reloadTexture(key: Cache.TextureKey) {
         Game.shared.resourceManager.incrementLoading()
-        Task.detached(priority: .low) {
+        Task.detached(priority: .high) {
             do {
                 let path = key.requestedPath
                 guard let fileExtension = path.components(separatedBy: ".").last else {

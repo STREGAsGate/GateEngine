@@ -98,7 +98,7 @@ extension ResourceManager {
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             Game.shared.resourceManager.incrementLoading()
-            Task.detached(priority: .low) {
+            Task.detached(priority: .high) {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
                     let points = RawPoints(pointCloudFrom: geometry.generateTriangles())
@@ -134,7 +134,7 @@ extension ResourceManager {
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             if let points {
-                Task.detached(priority: .low) {
+                Task.detached(priority: .high) {
                     let backend = await self.geometryBackend(from: points)
                     Task { @MainActor in
                         if let cache = self.cache.geometries[key] {

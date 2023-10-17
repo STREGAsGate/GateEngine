@@ -501,7 +501,7 @@ extension ResourceManager {
         if cache.skeletalAnimations[key] == nil {
             cache.skeletalAnimations[key] = Cache.SkeletalAnimationCache()
             Game.shared.resourceManager.incrementLoading()
-            Task.detached(priority: .low) {
+            Task.detached(priority: .high) {
                 let backend = SkeletalAnimationBackend(
                     name: name, 
                     duration: duration, 
@@ -547,7 +547,7 @@ extension ResourceManager {
     func reloadSkeletalAniamtionIfNeeded(key: Cache.SkeletalAnimationKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task.detached(priority: .low) {
+        Task.detached(priority: .high) {
             guard self.skeletalAnimationNeedsReload(key: key) else { return }
             await self._reloadSkeletalAnimation(for: key, isFirstLoad: false)
         }
@@ -555,7 +555,7 @@ extension ResourceManager {
     
     @MainActor func _reloadSkeletalAnimation(for key: Cache.SkeletalAnimationKey, isFirstLoad: Bool) {
         Game.shared.resourceManager.incrementLoading()
-        Task.detached {
+        Task.detached(priority: .high) {
             let path = key.requestedPath
             
             do {

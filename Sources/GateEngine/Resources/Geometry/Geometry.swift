@@ -251,7 +251,7 @@ extension ResourceManager {
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             Game.shared.resourceManager.incrementLoading()
-            Task.detached {
+            Task.detached(priority: .high) {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
                     let backend = await self.geometryBackend(from: geometry)
@@ -287,7 +287,7 @@ extension ResourceManager {
             cache.geometries[key] = Cache.GeometryCache()
             Game.shared.resourceManager.incrementLoading()
             if let geometry = geometry {
-                Task.detached {
+                Task.detached(priority: .high) {
                     let backend = await self.geometryBackend(from: geometry)
                     Task { @MainActor in
                         if let cache = self.cache.geometries[key] {
@@ -330,7 +330,7 @@ extension ResourceManager {
     func reloadGeometryIfNeeded(key: Cache.GeometryKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task.detached {
+        Task.detached(priority: .high) {
             guard self.geometryNeedsReload(key: key) else { return }
             guard let cache = self.geometryCache(for: key) else { return }
             let geometry = try await RawGeometry(

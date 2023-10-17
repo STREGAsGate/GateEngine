@@ -255,7 +255,7 @@ extension ResourceManager {
         if cache.tileMaps[key] == nil {
             cache.tileMaps[key] = Cache.TileMapCache()
             Game.shared.resourceManager.incrementLoading()
-            Task.detached(priority: .low) {
+            Task.detached(priority: .high) {
                 let backend = await TileMapBackend(layers: layers)
                 Task { @MainActor in
                     if let cache = self.cache.tileMaps[key] {
@@ -297,7 +297,7 @@ extension ResourceManager {
     func reloadTileMapIfNeeded(key: Cache.TileMapKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task.detached(priority: .low) {
+        Task {
             guard self.tileMapNeedsReload(key: key) else { return }
             await self._reloadTileMap(for: key, isFirstLoad: false)
         }
@@ -305,7 +305,7 @@ extension ResourceManager {
     
     @MainActor func _reloadTileMap(for key: Cache.TileMapKey, isFirstLoad: Bool) {
         Game.shared.resourceManager.incrementLoading()
-        Task.detached(priority: .low) {
+        Task.detached(priority: .high) {
             let path = key.requestedPath
             
             do {

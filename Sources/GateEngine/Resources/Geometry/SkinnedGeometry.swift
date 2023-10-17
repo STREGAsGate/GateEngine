@@ -141,7 +141,7 @@ extension ResourceManager {
         if cache.skinnedGeometries[key] == nil {
             cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
             Game.shared.resourceManager.incrementLoading()
-            Task.detached(priority: .low) {
+            Task.detached(priority: .high) {
                 do {
                     let geometry = try await RawGeometry(path: path, options: geometryOptions)
                     let skin = try await Skin(path: key.requestedPath, options: skinOptions)
@@ -185,7 +185,7 @@ extension ResourceManager {
             cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
             Game.shared.resourceManager.incrementLoading()
             if let geometry = geometry {
-                Task.detached(priority: .low) {
+                Task.detached(priority: .high) {
                     let backend = await self.geometryBackend(from: geometry, skin: skin)
                     Task { @MainActor in
                         if let cache = self.cache.skinnedGeometries[key] {
@@ -228,7 +228,7 @@ extension ResourceManager {
     func reloadSkinnedGeometryIfNeeded(key: Cache.SkinnedGeometryKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task.detached(priority: .low) {
+        Task.detached(priority: .high) {
             guard self.skinnedGeometryNeedsReload(key: key) else { return }
             let geometry = try await RawGeometry(
                 path: key.requestedPath,

@@ -247,7 +247,7 @@ extension ResourceManager {
         if cache.tileSets[key] == nil {
             cache.tileSets[key] = Cache.TileSetCache()
             Game.shared.resourceManager.incrementLoading()
-            Task.detached(priority: .low) {
+            Task.detached(priority: .high) {
                 let backend = TileSetBackend(texture: texture,
                                              count: count,
                                              columns: columns,
@@ -294,7 +294,7 @@ extension ResourceManager {
     func reloadTileSetIfNeeded(key: Cache.TileSetKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task.detached(priority: .low) {
+        Task {
             guard self.tileSetNeedsReload(key: key) else { return }
             await self._reloadTileSet(for: key, isFirstLoad: false)
         }
@@ -302,7 +302,7 @@ extension ResourceManager {
     
     @MainActor func _reloadTileSet(for key: Cache.TileSetKey, isFirstLoad: Bool) {
         Game.shared.resourceManager.incrementLoading()
-        Task.detached(priority: .low) {
+        Task.detached(priority: .high) {
             let path = key.requestedPath
             
             do {
