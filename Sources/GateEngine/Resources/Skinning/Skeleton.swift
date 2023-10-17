@@ -26,22 +26,57 @@ import Foundation
         assert(state == .ready, "This resource is not ready to be used. Make sure it's state property is .ready before accessing!")
         return Game.shared.resourceManager.skeletonCache(for: cacheKey)!.skeletonBackend!
     }
-
-    public func getPose() -> Pose {
-        return backend.getPose()
+    
+    var _rootJoint: Skeleton.Joint! = nil
+    var rootJoint: Skeleton.Joint {
+        if _rootJoint == nil {
+            _rootJoint = Skeleton.Joint(copying: backend.rootJoint)
+        }
+        return _rootJoint
+    }
+    
+    var bindPose: Skeleton.Pose {
+        return backend.bindPose
     }
 
-    public func jointWithID(_ id: Skeleton.Joint.ID) -> Joint? {
-        return backend.jointWithID(id)
+    public func getPose() -> Skeleton.Pose {
+        self.updateIfNeeded()
+        return Skeleton.Pose(self.rootJoint)
+    }
+    
+    private var jointIDCache: [Int: Skeleton.Joint] = [:]
+    public func jointWithID(_ id: Skeleton.Joint.ID) -> Skeleton.Joint? {
+        if let cached = jointIDCache[id] {
+            return cached
+        }
+        if let joint = rootJoint.firstDescendant(withID: id) {
+            jointIDCache[id] = joint
+            return joint
+        }
+        return nil
     }
 
-    public func jointNamed(_ name: String) -> Joint? {
-        return backend.jointNamed(name)
+    private var jointNameCache: [String: Skeleton.Joint] = [:]
+    public func jointNamed(_ name: String) -> Skeleton.Joint? {
+        if let cached = jointNameCache[name] {
+            return cached
+        }
+        if let joint = rootJoint.firstDescendant(named: name) {
+            jointNameCache[name] = joint
+            return joint
+        }
+        return nil
     }
 
     @usableFromInline
-    internal func updateIfNeeded() {
-        self.backend.updateIfNeeded()
+    func updateIfNeeded() {
+        func update(joint: Skeleton.Joint) {
+            joint.updateIfNeeded()
+            for child in joint.children {
+                update(joint: child)
+            }
+        }
+        update(joint: rootJoint)
     }
     
     public init(
@@ -89,52 +124,45 @@ final class SkeletonBackend {
     @usableFromInline
     let bindPose: Skeleton.Pose
 
-    @usableFromInline
-    func getPose() -> Skeleton.Pose {
-        self.updateIfNeeded()
-        return Skeleton.Pose(self.rootJoint)
+    init(rootJoint joint: Skeleton.Joint) {
+        self.rootJoint = joint
+        self.bindPose = Skeleton.Pose(joint)
+    }
+}
+
+extension Skeleton {
+    public struct SkipJoint: ExpressibleByStringLiteral {
+        public typealias StringLiteralType = String
+        public var name: StringLiteralType
+        public var method: Method
+        public enum Method {
+            case justThis
+            case includingChildren
+        }
+
+        public init(stringLiteral: StringLiteralType) {
+            self.name = stringLiteral
+            self.method = .includingChildren
+        }
+
+        public init(name: StringLiteralType, method: Method) {
+            self.name = name
+            self.method = method
+        }
+
+        public static func named(_ name: String, _ method: Method) -> Self {
+            return Self(name: name, method: method)
+        }
+    }
+}
+
+extension Skeleton {
+    @inlinable
+    public func applyBindPose() {
+        self.applyPose(backend.bindPose)
     }
 
-    private var jointIDCache: [Int: Skeleton.Joint] = [:]
-    @usableFromInline
-    func jointWithID(_ id: Skeleton.Joint.ID) -> Skeleton.Joint? {
-        if let cached = jointIDCache[id] {
-            return cached
-        }
-        if let joint = rootJoint.firstDescendant(withID: id) {
-            jointIDCache[id] = joint
-            return joint
-        }
-        return nil
-    }
-
-    private var jointNameCache: [String: Skeleton.Joint] = [:]
-    @usableFromInline
-    func jointNamed(_ name: String) -> Skeleton.Joint? {
-        if let cached = jointNameCache[name] {
-            return cached
-        }
-        if let joint = rootJoint.firstDescendant(named: name) {
-            jointNameCache[name] = joint
-            return joint
-        }
-        return nil
-    }
-
- 
-    @usableFromInline
-    func updateIfNeeded() {
-        func update(joint: Skeleton.Joint) {
-            joint.updateIfNeeded()
-            for child in joint.children {
-                update(joint: child)
-            }
-        }
-        update(joint: rootJoint)
-    }
-    
-    @usableFromInline
-    func applyPose(_ pose: Skeleton.Pose) {
+    public func applyPose(_ pose: Skeleton.Pose) {
         func applyToJoint(_ joint: Skeleton.Joint) {
             if let poseJoint = pose.jointWithID(joint.id) {
                 joint.localTransform.position = poseJoint.localTransform.position
@@ -147,9 +175,10 @@ final class SkeletonBackend {
         }
         applyToJoint(rootJoint)
     }
-    
-    @usableFromInline
-    @MainActor func applyAnimation(
+
+
+    @MainActor 
+    public func applyAnimation(
         _ skeletalAnimation: SkeletalAnimation,
         atTime time: Float,
         duration: Float,
@@ -157,7 +186,6 @@ final class SkeletonBackend {
         skipJoints: [Skeleton.SkipJoint],
         interpolateProgress: Float
     ) {
-
         let interpolate = interpolateProgress < 1
 
         func applyToJoint(_ joint: Skeleton.Joint) {
@@ -211,69 +239,6 @@ final class SkeletonBackend {
             }
         }
         applyToJoint(rootJoint)
-    }
-    
-    init(rootJoint joint: Skeleton.Joint) {
-        self.rootJoint = joint
-        self.bindPose = Skeleton.Pose(joint)
-    }
-
-}
-
-extension Skeleton {
-    public struct SkipJoint: ExpressibleByStringLiteral {
-        public typealias StringLiteralType = String
-        public var name: StringLiteralType
-        public var method: Method
-        public enum Method {
-            case justThis
-            case includingChildren
-        }
-
-        public init(stringLiteral: StringLiteralType) {
-            self.name = stringLiteral
-            self.method = .includingChildren
-        }
-
-        public init(name: StringLiteralType, method: Method) {
-            self.name = name
-            self.method = method
-        }
-
-        public static func named(_ name: String, _ method: Method) -> Self {
-            return Self(name: name, method: method)
-        }
-    }
-}
-
-extension Skeleton {
-    @inlinable
-    public func applyBindPose() {
-        self.applyPose(backend.bindPose)
-    }
-
-    @inlinable
-    public func applyPose(_ pose: Pose) {
-        self.backend.applyPose(pose)
-    }
-
-    @inlinable
-    public func applyAnimation(
-        _ skeletalAnimation: SkeletalAnimation,
-        atTime time: Float,
-        duration: Float,
-        repeating: Bool,
-        skipJoints: [Skeleton.SkipJoint],
-        interpolateProgress: Float
-    ) {
-        self.backend.applyAnimation(
-            skeletalAnimation, 
-            atTime: time,
-            duration: duration, 
-            repeating: repeating, 
-            skipJoints: skipJoints, 
-            interpolateProgress: interpolateProgress
-        )
     }
 }
 
@@ -388,6 +353,20 @@ extension Skeleton.Joint {
             return nil
         }
         return firstNode(named: name, within: self)
+    }
+}
+
+extension Skeleton.Joint {
+    convenience init(copying: Skeleton.Joint) {
+        self.init(id: copying.id, name: copying.name)
+        self.localTransform = copying.localTransform
+        self._modelSpace = copying._modelSpace
+        self.needsUpdate = copying.needsUpdate
+        self.children = Set(copying.children.map({
+            let child = Self(copying: $0)
+            child.parent = self
+            return child
+        }))
     }
 }
 
