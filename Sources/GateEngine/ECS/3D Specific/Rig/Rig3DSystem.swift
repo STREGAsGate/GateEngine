@@ -51,17 +51,10 @@ public final class Rig3DSystem: System {
                 component.disabled == false
             {
                 if let animation = component.activeAnimation, animation.isReady {
-                    if let scale = entity.component(ofType: Transform3Component.self)?.scale {
-                        component.update(
-                            deltaTime: deltaTime + component.deltaAccumulator,
-                            objectScale: scale
-                        )
-                    } else {
-                        component.update(
-                            deltaTime: deltaTime + component.deltaAccumulator,
-                            objectScale: .one
-                        )
-                    }
+                    component.update(
+                        deltaTime: deltaTime + component.deltaAccumulator,
+                        objectScale: entity.component(ofType: Transform3Component.self)?.scale ?? .one
+                    )
                     if component.playbackState != .pause {
                         for animation in animation.subAnimations {
                             component.skeleton.applyAnimation(
