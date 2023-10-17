@@ -14,7 +14,7 @@
 #include <assert.h>
 #include <sys/stat.h>
 
-#if defined(__linux)
+#if defined(__linux) || defined(__wasi__)
 #include <sys/time.h>
 #endif
 #if defined(__MACH__)
@@ -62,7 +62,7 @@ nanotime_t nanotime (void) {
     value = (t / info.denom) * info.numer;
     value += (t % info.denom) * info.numer / info.denom;
     
-    #elif defined(__linux)
+    #elif defined(__linux) || defined(__wasi__)
     struct timespec ts;
     int                r;
     
