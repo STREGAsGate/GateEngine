@@ -173,7 +173,7 @@ let package = Package(
                         ])
                         #endif
                         
-                        #if true // Options for development of GateEngine. These should be disabled for tagged version releases.
+                        #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
                         // Options for development of WASI platform
@@ -247,15 +247,15 @@ let package = Package(
                     ]),
             
             // miniz
-            .target(name: "MiniZ",
-                    path: "Dependencies/MiniZ",
+            .target(name: "miniz",
+                    path: "Dependencies/miniz",
                     cSettings: [
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                     ]),
             
             // libspng
             .target(name: "LibSPNG",
-                    dependencies: ["MiniZ"],
+                    dependencies: ["miniz"],
                     path: "Dependencies/LibSPNG",
                     cSettings: [
                         .define("SPNG_STATIC"),
