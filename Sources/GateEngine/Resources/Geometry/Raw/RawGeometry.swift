@@ -47,8 +47,8 @@ public struct RawGeometry: Codable, Equatable, Hashable {
 
     /// Creates an array of `Position3`s, representing Vertex positions, from the element array storage.
     public func generatePositions(transformedBy matrix: Matrix4x4? = nil) -> [Position3] {
-        return stride(from: 0, to: indices.count, by: 3).map { index in
-            let start3 = index * 3
+        return stride(from: 0, to: positions.count, by: 3).map { index in
+            let start3 = index
             var p = Position3(positions[start3], positions[start3 + 1], positions[start3 + 2])
             if let matrix = matrix {
                 p = p * matrix
