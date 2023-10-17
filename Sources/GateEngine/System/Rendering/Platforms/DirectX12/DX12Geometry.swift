@@ -10,7 +10,7 @@ import WinSDK
 import Direct3D12
 
 class DX12Geometry: GeometryBackend, SkinnedGeometryBackend {
-    let primitive: DrawFlags.Primitive
+    let primitive: DrawCommand.Flags.Primitive
     let attributes: ContiguousArray<GeometryAttribute>
     let buffers: ContiguousArray<D3DResource>
     let indicesCount: Int

@@ -13,7 +13,7 @@ import class WebGL1.WebGLBuffer
 import WebGL2
 
 class WebGL2Geometry: GeometryBackend, SkinnedGeometryBackend {
-    let primitive: DrawFlags.Primitive
+    let primitive: DrawCommand.Flags.Primitive
     let attributes: ContiguousArray<GeometryAttribute>
     let buffers: ContiguousArray<WebGLBuffer>
     let indicesCount: GLsizei

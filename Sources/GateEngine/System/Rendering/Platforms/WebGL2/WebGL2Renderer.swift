@@ -189,7 +189,7 @@ class WebGL2Renderer: RendererBackend {
 
 extension WebGL2Renderer {
     @inline(__always)
-    private func setFlags(_ flags: DrawFlags, in gl: WebGL2RenderingContext) {
+    private func setFlags(_ flags: DrawCommand.Flags, in gl: WebGL2RenderingContext) {
         switch flags.cull {
         case .disabled:
             gl.disable(cap: GL.CULL_FACE)
@@ -240,7 +240,7 @@ extension WebGL2Renderer {
     }
 
     @inline(__always)
-    private func setWinding(_ winding: DrawFlags.Winding, in gl: WebGL2RenderingContext) {
+    private func setWinding(_ winding: DrawCommand.Flags.Winding, in gl: WebGL2RenderingContext) {
         switch winding {
         case .clockwise:
             gl.frontFace(mode: GL.CW)
@@ -280,7 +280,7 @@ extension WebGL2Renderer {
     }
 
     @inline(__always)
-    private func primitive(from primitive: DrawFlags.Primitive) -> GLenum {
+    private func primitive(from primitive: DrawCommand.Flags.Primitive) -> GLenum {
         switch primitive {
         case .point:
             return GL.POINTS
@@ -391,7 +391,7 @@ extension WebGL2Renderer {
                 let pair = customValues[index]
                 let value = pair.value
                 let name = pair.key
-                let variable = generator.variable(for: .uniformCustom(UInt8(index), type: .bool))
+                let variable = generator.variable(for: .uniformCustom(name, type: .bool))
                 switch value {
                 case let value as Bool:
                     if let location = gl.getUniformLocation(program: program, name: variable) {
@@ -454,8 +454,8 @@ extension WebGL2Renderer {
                 case let value as [Matrix4x4]:
                     if let location = gl.getUniformLocation(program: program, name: variable) {
                         let capacity =
-                            material.vertexShader.arrayCapacityForUniform(named: name) ?? material
-                            .fragmentShader.arrayCapacityForUniform(named: name)!
+                        material.vertexShader.uniforms.arrayCapacityForUniform(named: name) ?? material
+                            .fragmentShader.uniforms.arrayCapacityForUniform(named: name)!
                         var floats: [Float] = []
                         floats.reserveCapacity(value.count * 16)
                         for mtx in value {

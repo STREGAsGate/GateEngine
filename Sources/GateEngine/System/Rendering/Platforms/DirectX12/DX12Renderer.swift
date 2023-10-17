@@ -29,12 +29,12 @@ final class DX12Renderer: RendererBackend {
     struct ShaderKey: Hashable {
         let vshID: VertexShader.ID
         let fshID: FragmentShader.ID
-        let flags: DrawFlags
+        let flags: DrawCommand.Flags
         let attributes: ContiguousArray<CodeGenerator.InputAttribute>
         init(
             vsh: VertexShader,
             fsh: FragmentShader,
-            flags: DrawFlags,
+            flags: DrawCommand.Flags,
             attributes: ContiguousArray<CodeGenerator.InputAttribute>
         ) {
             self.vshID = vsh.id
@@ -427,8 +427,8 @@ extension DX12Renderer {
                     }
                 case let value as [Matrix4x4]:
                     let capacity =
-                        material.vertexShader.arrayCapacityForUniform(named: name) ?? material
-                        .fragmentShader.arrayCapacityForUniform(named: name)!
+                    material.vertexShader.uniforms.arrayCapacityForUniform(named: name) ?? 
+                    material.fragmentShader.uniforms.arrayCapacityForUniform(named: name)!
                     var floats: [Float] = []
                     floats.reserveCapacity(value.count * 16 * capacity)
                     for mtx in value {
@@ -491,7 +491,7 @@ extension DX12Renderer {
     func getShader(
         vsh: VertexShader,
         fsh: FragmentShader,
-        flags: DrawFlags,
+        flags: DrawCommand.Flags,
         geometries: [DX12Geometry],
         textureCount srvCount: UInt32
     ) -> DXShader {
@@ -545,7 +545,7 @@ extension DX12Renderer {
     private func createPipelineState(
         vsh: VertexShader,
         fsh: FragmentShader,
-        flags: DrawFlags,
+        flags: DrawCommand.Flags,
         geometries: [DX12Geometry],
         rootSignature: D3DRootSignature
     ) -> D3DPipelineState {
