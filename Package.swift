@@ -281,6 +281,7 @@ let package = Package(
                         .define("BUILD_GRAVITY_API"),
                         // WASI doesn't have umask
                         .define("umask(x)", to: "022", .when(platforms: [.wasi])),
+                        .unsafeFlags(["-fPIC"], .when(platforms: .any(except: .windows))),
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
                     ], linkerSettings: [
                         // For math functions
