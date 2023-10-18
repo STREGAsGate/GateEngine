@@ -163,8 +163,8 @@ public final class HLSLCodeGenerator: CodeGenerator {
             fatalError()
         case .discard(comparing: _):
             return "discard"
-        case let .sampler2D(filter: filter):
-            return "\(variable(for: operation.value1)).Sample(\(filter == .nearest ? "nearestSampler" : "linearSampler"),\(variable(for: operation.value2)))"
+        case .sampler2D:
+            return "\(variable(for: operation.value1)).Sample(materials[\(materialIndex(for: operation.value1))].sampleFilter == 2 ? nearestSampler : linearSampler),\(variable(for: operation.value2)))"
         case .sampler2DSize:
             return "\(scopeIndentation)\(variable(for: operation.value1)).GetDimensions(\(variable(for: value)).x, \(variable(for: value)).y;\n"
         case let .lerp(factor: factor):

@@ -29,8 +29,8 @@ public final class Sampler2D: ShaderValue {
         }
     }
     
-    public func sample(at textCoord: Vec2, filter: Filter = .linear) -> Vec4 {
-        return Vec4(Operation(lhs: self, rhs: textCoord, operator: .sampler2D(filter: filter)))
+    public func sample(at textCoord: Vec2) -> Vec4 {
+        return Vec4(Operation(lhs: self, rhs: textCoord, operator: .sampler2D))
     }
     
     public var size: Vec2 {

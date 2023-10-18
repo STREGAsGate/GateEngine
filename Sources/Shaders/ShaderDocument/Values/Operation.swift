@@ -56,7 +56,7 @@ public final class Operation: ShaderElement {
         case branch(comparing: Scalar)
         case `switch`(cases: [_SwitchCase])
         case discard(comparing: Scalar)
-        case sampler2D(filter: Sampler2D.Filter)
+        case sampler2D
         case sampler2DSize
         case lerp(factor: Scalar)
         
@@ -80,8 +80,8 @@ public final class Operation: ShaderElement {
                 var values: [Int] = [5_106]
                 values.append(contentsOf: comparing.documentIdentifierInputData())
                 return values
-            case .sampler2D(filter: let filter):
-                return [5_107, filter.identifier]
+            case .sampler2D:
+                return [5_107]
             case .sampler2DSize:
                 return [5_108]
             case .lerp(factor: let factor):

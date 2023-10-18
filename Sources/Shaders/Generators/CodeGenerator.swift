@@ -130,7 +130,7 @@ public class CodeGenerator {
         case .lerp(let factor):
             self.declareVariableIfNeeded(factor)
             mainOutput += scopeIndentation + "\(type(for: value)) \(variable(for: value)) = " + function(value: value, operation: operation) + ";\n"
-        case .add, .subtract, .multiply, .divide, .compare(_), .sampler2D(_):
+        case .add, .subtract, .multiply, .divide, .compare(_), .sampler2D:
             self.declareVariableIfNeeded(operation.value1)
             self.declareVariableIfNeeded(operation.value2)
             mainOutput += scopeIndentation + "\(type(for: value)) \(variable(for: value)) = " + function(value: value, operation: operation) + ";\n"
@@ -305,7 +305,7 @@ public class CodeGenerator {
             fatalError()
         case .branch(comparing: _):
             fatalError()
-        case .sampler2D(filter: _):
+        case .sampler2D:
             fatalError()
         case .sampler2DSize:
             fatalError()
@@ -408,6 +408,21 @@ public class CodeGenerator {
     
     func variable(for representation: ValueRepresentation) -> String {
         preconditionFailure("Must override")
+    }
+    
+    func materialIndex(for variable: some ShaderValue) -> UInt8 {
+        switch variable.valueRepresentation {
+        case let .channelAttachment(index: index):
+            return index
+        case let .channelScale(index):
+            return index
+        case let .channelOffset(index):
+            return index
+        case let .channelColor(index):
+            return index
+        default:
+            fatalError()
+        }
     }
     
     final func generateMain(from vertexShader: VertexShader) {

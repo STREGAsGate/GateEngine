@@ -133,8 +133,8 @@ public final class MSLCodeGenerator: CodeGenerator {
             fatalError()
         case .switch(cases: _):
             fatalError()
-        case let .sampler2D(filter: filter):
-            return "\(variable(for: operation.value1)).sample(\(filter == .nearest ? "nearestSampler" : "linearSampler"),\(variable(for: operation.value2)))"
+        case .sampler2D:
+            return "\(variable(for: operation.value1)).sample(materials[\(materialIndex(for: operation.value1))].sampleFilter == 2 ? nearestSampler : linearSampler,\(variable(for: operation.value2)))"
         case .sampler2DSize:
             return """
                    \(scopeIndentation)\(variable(for: value)).x = \(variable(for: operation.value1)).get_width();
@@ -210,10 +210,7 @@ public final class MSLCodeGenerator: CodeGenerator {
         
         var fragmentTextureList: String = ""
         for index in fragmentShader.channels.indices {
-            if fragmentTextureList.isEmpty == false {
-                fragmentTextureList += ",\n"
-            }
-            fragmentTextureList += "                                            texture2d<float> tex\(index) [[texture(\(index))]]"
+            fragmentTextureList += ",\n                                            texture2d<float> tex\(index) [[texture(\(index))]]"
         }
         
         return """
@@ -259,8 +256,7 @@ fragment \(type(for: .float4)) fragment\(UInt(bitPattern: fragmentShader.id.hash
                                             constant Uniforms & uniforms [[buffer(0)]],
                                             constant Material *materials [[buffer(1)]],
                                             sampler linearSampler [[sampler(0)]],
-                                            sampler nearestSampler [[sampler(1)]],
-\(fragmentTextureList)) {
+                                            sampler nearestSampler [[sampler(1)]]\(fragmentTextureList)) {
     \(type(for: .float4)) \(variable(for: .fragmentOutColor));
 \(fragmentMain)
     return \(variable(for: .fragmentOutColor));

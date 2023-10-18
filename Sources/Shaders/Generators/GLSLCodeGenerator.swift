@@ -151,7 +151,7 @@ public final class GLSLCodeGenerator: CodeGenerator {
             fatalError()
         case .discard(comparing: _):
             return "discard"
-        case .sampler2D(filter: _):
+        case .sampler2D:
             return "texture(" + variable(for: operation.value1) + "," + variable(for: operation.value2) + ")"
         case .sampler2DSize:
             return "\(scopeIndentation)\(variable(for: value)) = textureSize(\(variable(for: operation.value1)),0);\n"

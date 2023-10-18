@@ -79,8 +79,7 @@ extension FragmentShader {
     public static let textureSample: FragmentShader = {
         let fsh = FragmentShader()
         fsh.output.color = fsh.channel(0).texture.sample(
-            at: fsh.input["texCoord0"],
-            filter: .nearest
+            at: fsh.input["texCoord0"]
         )
         return fsh
     }()
@@ -88,8 +87,7 @@ extension FragmentShader {
     public static let textureSampleDiscardZeroAlpha: FragmentShader = {
         let fsh = FragmentShader()
         let sample = fsh.channel(0).texture.sample(
-            at: fsh.input["texCoord0"],
-            filter: .nearest
+            at: fsh.input["texCoord0"]
         )
         fsh.output.color = sample.discard(if: sample.a <= 0)
         return fsh
@@ -99,8 +97,7 @@ extension FragmentShader {
         let fsh = FragmentShader()
         let opacity: Scalar = fsh.uniforms["opacity"]
         fsh.output.color = fsh.channel(0).texture.sample(
-            at: fsh.input["texCoord0"],
-            filter: .nearest
+            at: fsh.input["texCoord0"]
         ) * opacity
         return fsh
     }()
@@ -121,8 +118,7 @@ extension FragmentShader {
     public static let textureSampleTintColor: FragmentShader = {
         let fsh = FragmentShader()
         let sample = fsh.channel(0).texture.sample(
-            at: fsh.input["texCoord0"],
-            filter: .nearest
+            at: fsh.input["texCoord0"]
         )
         fsh.output.color = sample * fsh.channel(0).color
         return fsh
@@ -135,7 +131,7 @@ extension FragmentShader {
         let fsh = FragmentShader()
         let factor: Scalar = fsh.uniforms["factor"]
         let sample1 = fsh.channel(0).texture.sample(at: fsh.input["texCoord0"])
-        let sample2 = fsh.channel(1).texture.sample(at: fsh.input["texCoord1"], filter: .nearest)
+        let sample2 = fsh.channel(1).texture.sample(at: fsh.input["texCoord1"])
         fsh.output.color = sample1.lerp(to: sample2, factor: factor)
         return fsh
     }()
