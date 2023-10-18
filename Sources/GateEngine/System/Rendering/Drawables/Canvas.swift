@@ -224,6 +224,7 @@
                 channel.texture = sprite.texture
                 channel.scale = sprite.uvScale
                 channel.offset = sprite.uvOffset
+                channel.sampleFilter = sprite.sampleFilter
             }
             if opacity != 1 {
                 material.setCustomUniformValue(opacity, forUniform: "opacity")
@@ -301,8 +302,8 @@
         let rotation = Quaternion(rotation, axis: .forward)
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
 
-        let material = Material(texture: text.texture, tintColor: text.color.withAlpha(opacity))
-
+        let material = Material(texture: text.texture, sampleFilter: text.sampleFilter, tintColor: text.color.withAlpha(opacity))
+        
         let flags = DrawCommand.Flags(
             cull: .disabled,
             depthTest: .always,

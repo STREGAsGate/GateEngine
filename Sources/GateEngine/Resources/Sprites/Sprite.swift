@@ -6,15 +6,11 @@
  */
 
 @MainActor public final class Sprite {
+    public typealias SampleFilter = Material.Channel.SampleFilter
+    
     public let texture: Texture
     public var bounds: Rect
-
-    public enum SampleFilter {
-        case nearest
-        case linear
-    }
     public var sampleFilter: SampleFilter
-
     public var tintColor: Color
 
     @usableFromInline

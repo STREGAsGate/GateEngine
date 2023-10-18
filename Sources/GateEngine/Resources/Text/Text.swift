@@ -6,11 +6,8 @@
  */
 
 public final class Text {
-    public enum SampleFilter {
-        case nearest
-        case linear
-    }
-
+    public typealias SampleFilter = Material.Channel.SampleFilter
+    
     public var color: Color
     private var _sampleFilter: SampleFilter? = nil
     public var sampleFilter: SampleFilter {

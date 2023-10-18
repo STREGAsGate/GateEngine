@@ -59,8 +59,8 @@ public struct Material {
         self.fragmentShader = .materialColor
     }
 
-    public init(texture: Texture, tintColor: Color = .white) {
-        self.channels[0] = Channel(color: tintColor, texture: texture)
+    public init(texture: Texture, sampleFilter: Channel.SampleFilter = .linear, tintColor: Color = .white) {
+        self.channels[0] = Channel(color: tintColor, texture: texture, sampleFilter: sampleFilter)
         self.fragmentShader = .textureSampleTintColor
     }
     
