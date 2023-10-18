@@ -15,7 +15,7 @@ let package = Package(
 
         // Official
         packageDependencies.append(contentsOf: [
-            .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.1.0")),
+            .package(url: "https://github.com/apple/swift-atomics.git", exact: "1.1.0"),
             .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0")),
         ])
 
