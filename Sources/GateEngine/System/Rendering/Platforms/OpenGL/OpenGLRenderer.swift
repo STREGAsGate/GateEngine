@@ -369,6 +369,15 @@ extension OpenGLRenderer {
                     ) {
                         glActiveTexture(unit: .texture(index))
                         glBindTexture(texture.textureId, as: .texture2D)
+                        switch channel.sampleFilter {
+                        case .linear:
+                            glTexParameter(filtering: .minimize, by: .linear)
+                            glTexParameter(filtering: .magnify, by: .linear)
+                        case .nearest:
+                            glTexParameter(filtering: .minimize, by: .nearest)
+                            glTexParameter(filtering: .magnify, by: .nearest)
+                        }
+                        
                         try glUniform1i(location: location, value1: GLint(index))
                     } else {
                         #if GATEENGINE_DEBUG_RENDERING

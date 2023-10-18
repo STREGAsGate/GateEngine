@@ -346,6 +346,16 @@ extension WebGL2Renderer {
                 if let location = gl.getUniformLocation(program: program, name: textureName) {
                     gl.activeTexture(texture: GL.TEXTURE0 + UInt32(index))
                     gl.bindTexture(target: GL.TEXTURE_2D, texture: texture.textureId)
+                    
+                    switch channel.sampleFilter {
+                    case .linear:
+                        gl.texParameteri(target: GL.TEXTURE_2D, pname: GL.TEXTURE_MIN_FILTER, param: GLint(GL.LINEAR))
+                        gl.texParameteri(target: GL.TEXTURE_2D, pname: GL.TEXTURE_MAG_FILTER, param: GLint(GL.LINEAR))
+                    case .nearest:
+                        gl.texParameteri(target: GL.TEXTURE_2D, pname: GL.TEXTURE_MIN_FILTER, param: GLint(GL.NEAREST))
+                        gl.texParameteri(target: GL.TEXTURE_2D, pname: GL.TEXTURE_MAG_FILTER, param: GLint(GL.NEAREST))
+                    }
+                    
                     gl.uniform1i(location: location, x: GLint(index))
                 } else {
                     #if GATEENGINE_DEBUG_RENDERING
