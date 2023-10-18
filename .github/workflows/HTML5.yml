@@ -20,7 +20,12 @@ jobs:
     
     - name: Test Insecure Context
       run: carton test --environment defaultBrowser --host 127.0.0.1
-     
+    
+    - name: Archive
+      uses: actions/upload-artifact@v3
+      with:
+        name: Wasm Binary
+        path: .build/wasm32-unknown-wasi/**/*.wasm
     #TODO: Figure out how to make chrome default without a confirmation
     #- name: Make Chrome Default
     #  run: open -a "Google Chrome" --args --make-default-browser
