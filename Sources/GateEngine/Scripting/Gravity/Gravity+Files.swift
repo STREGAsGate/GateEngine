@@ -54,7 +54,7 @@ internal func loadFileCallback(
     gravity.loadedFilesByID[newFileID] = url
     size.pointee = sourceCode.count
     return sourceCode.withCString { sourceCode in
-        return UnsafePointer(strdup(sourceCode))
+        return UnsafePointer(_strdup(sourceCode))
     }
 }
 
