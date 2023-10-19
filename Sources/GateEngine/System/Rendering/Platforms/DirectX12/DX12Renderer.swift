@@ -731,7 +731,18 @@ extension DX12Renderer {
                             forDebug: debug
                         )
                     ),
-                    blendState: .additive,
+                    blendState: {
+                        switch flags.blendMode {
+                        case .none:
+                            return .none
+                        case .normal:
+                            return .normal
+                        case .add:
+                            return .add
+                        case .subtract:
+                            return .subtract
+                        }
+                    }(),
                     inputLayout: inputLayoutDescription,
                     primitiveTopologyType: primitive,
                     renderTargetFormats: [.r8g8b8a8Unorm],

@@ -164,7 +164,7 @@ public final class HLSLCodeGenerator: CodeGenerator {
         case .discard(comparing: _):
             return "discard"
         case .sampler2D:
-            return "\(variable(for: operation.value1)).Sample(materials[\(materialIndex(for: operation.value1))].sampleFilter == 2 ? nearestSampler : linearSampler),\(variable(for: operation.value2)))"
+            return "Sample(\(variable(for: operation.value1)),materials[\(materialIndex(for: operation.value1))].sampleFilter,\(variable(for: operation.value2)))"
         case .sampler2DSize:
             return "\(scopeIndentation)\(variable(for: operation.value1)).GetDimensions(\(variable(for: value)).x, \(variable(for: value)).y;\n"
         case let .lerp(factor: factor):
@@ -299,6 +299,14 @@ struct PSInput {
 \(fragmentTextureList)
 SamplerState linearSampler : register(s0);
 SamplerState nearestSampler : register(s1);
+
+float4 Sample(Texture2D<float4> tex : Color, int sampleState, float2 uv : TEXCOORD) {
+    if (sampleState == 2) {
+        return tex.Sample(nearestSampler,uv);
+    }else{
+        return tex.Sample(linearSampler,uv);   
+    }
+}
 
 float4 PSMain(PSInput input) : SV_TARGET {
     \(type(for: .float4)) \(variable(for: .fragmentOutColor));

@@ -101,7 +101,7 @@ public struct D3DGraphicsPipelineStateDescription {
                 hullShader: D3DShaderBytecode = D3DShaderBytecode(byteCodeBlob: nil),
                 geometryShader: D3DShaderBytecode = D3DShaderBytecode(byteCodeBlob: nil),
                 streamOutput: D3DStreamOutputDescription = D3DStreamOutputDescription(),
-                blendState: D3DBlendDescription = .default,
+                blendState: D3DBlendDescription = .normal,
                 sampleMask: UInt32 = .max,
                 rasterizerState: D3DRasterizerDescription = D3DRasterizerDescription(),
                 depthStencilState: D3DDepthStencilDescription = D3DDepthStencilDescription(),
