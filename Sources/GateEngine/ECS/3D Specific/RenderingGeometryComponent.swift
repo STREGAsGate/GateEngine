@@ -5,19 +5,27 @@
  * http://stregasgate.com
  */
 
-public struct RenderingGeometryComponent: Component {
+public struct RenderingGeometryComponent: ResourceConstrainedComponent {
     /// Rendering options applied to all `geometries`
     public var flags: SceneElementFlags = .default
 
     /// Geometry references to draw
-    public var geometries: Set<Geometry> = []
-    public var skinnedGeometries: Set<SkinnedGeometry> = []
+    @MainActor public var geometries: Set<Geometry> = [] {
+        didSet {
+            resourcesState = .pending
+        }
+    }
+    @MainActor public var skinnedGeometries: Set<SkinnedGeometry> = [] {
+        didSet {
+            resourcesState = .pending
+        }
+    }
 
-    public mutating func insert(_ geomerty: Geometry) {
+    @MainActor public mutating func insert(_ geomerty: Geometry) {
         self.geometries.insert(geomerty)
     }
 
-    public mutating func insert(_ geomerty: SkinnedGeometry) {
+    @MainActor public mutating func insert(_ geomerty: SkinnedGeometry) {
         self.skinnedGeometries.insert(geomerty)
     }
 
@@ -31,6 +39,19 @@ public struct RenderingGeometryComponent: Component {
     public init(skinnedGeometries: Set<SkinnedGeometry>, flags: SceneElementFlags = .default) {
         self.skinnedGeometries = skinnedGeometries
         self.flags = flags
+    }
+    
+    public var resourcesState: ResourceState = .pending
+    public var resources: [any Resource] {
+        var resources: [any Resource] = []
+        resources.reserveCapacity(geometries.count + skinnedGeometries.count)
+        for geometry in geometries {
+            resources.append(geometry)
+        }
+        for geometry in skinnedGeometries {
+            resources.append(geometry)
+        }
+        return resources
     }
     
     public static let componentID: ComponentID = ComponentID()
