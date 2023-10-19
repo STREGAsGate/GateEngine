@@ -15,6 +15,7 @@ let package = Package(
 
         // Official
         packageDependencies.append(contentsOf: [
+            // swift-atomics must use extact 1.1.0 pending https://github.com/apple/swift/issues/69264
             .package(url: "https://github.com/apple/swift-atomics.git", exact: "1.1.0"),
             .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0")),
         ])
@@ -173,7 +174,7 @@ let package = Package(
                         ])
                         #endif
                         
-                        #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
+                        #if true // Options for development of GateEngine. These should be disabled for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         
                         // Options for development of WASI platform
@@ -191,7 +192,7 @@ let package = Package(
                         
                         settings.append(contentsOf: [
                             /// Prints the output of generated shaders
-                            .define("GATEENGINE_LOG_SHADERS"),
+                            //.define("GATEENGINE_LOG_SHADERS"),
                             /// Enables various additional checks and output for rendering
                             .define("GATEENGINE_DEBUG_RENDERING"),
                             /// Enables various additional checks and output for input
