@@ -64,8 +64,8 @@ public class ResourceManager {
         self.currentlyLoading -= 1
     }
 
-    public let game: Game
-    public init(game: Game) {
+    let game: Game
+    init(game: Game) {
         self.game = game
     }
 
