@@ -142,6 +142,18 @@ public extension DrawCommand {
         public enum BlendMode: Hashable {
             case none
             case normal
+            /**
+             Adds the source to the target
+             
+             - note: For best results use a black background with no alpha channel.
+             */
+            case add
+            /**
+             Subtracts the source from the target. White becomes black.
+             
+             - note: For best results use a black background with no alpha channel.
+             */
+            case subtract
         }
         public var blendMode: BlendMode
         

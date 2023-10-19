@@ -269,6 +269,24 @@ extension OpenGLRenderer {
                 sourceAlpha: .one,
                 destinationAlpha: .oneMinusSourceAlpha
             )
+        case .add:
+            glEnable(capability: .blend)
+            glBlendEquation(.add)
+            glBlendFuncSeparate(
+                sourceRGB: .sourceAlpha,
+                destinationRGB: .one,
+                sourceAlpha: .one,
+                destinationAlpha: .one
+            )
+        case .subtract:
+            glEnable(capability: .blend)
+            glBlendEquation(.add)
+            glBlendFuncSeparate(
+                sourceRGB: .zero,
+                destinationRGB: .oneMinusSourceColor,
+                sourceAlpha: .zero,
+                destinationAlpha: .one
+            )
         }
     }
 

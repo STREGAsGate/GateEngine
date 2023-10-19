@@ -236,6 +236,24 @@ extension WebGL2Renderer {
                 srcAlpha: GL.ONE,
                 dstAlpha: GL.ONE_MINUS_SRC_ALPHA
             )
+        case .add:
+            gl.enable(capability: .blend)
+            gl.blendEquation(.add)
+            gl.blendFuncSeparate(
+                srcRGB: GL.SRC_ALPHA,
+                dstRGB: GL.ONE,
+                srcAlpha: GL.ONE,
+                dstAlpha: GL.ONE
+            )
+        case .subtract:
+            gl.enable(capability: .blend)
+            gl.blendEquation(.add)
+            gl.blendFuncSeparate(
+                srcRGB: GL.ZERO,
+                dstRGB: GL.ONE_MINUS_SRC_COLOR,
+                srcAlpha: GL.ZERO,
+                dstAlpha: GL.ONE
+            )
         }
     }
 

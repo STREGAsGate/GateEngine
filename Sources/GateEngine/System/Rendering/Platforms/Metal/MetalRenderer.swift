@@ -275,6 +275,22 @@ class MetalRenderer: RendererBackend {
                     descriptor.sourceAlphaBlendFactor = .one
                     descriptor.destinationRGBBlendFactor = .oneMinusSourceAlpha
                     descriptor.destinationAlphaBlendFactor = .oneMinusSourceAlpha
+                case .add:
+                    descriptor.isBlendingEnabled = true
+                    descriptor.rgbBlendOperation = .add
+                    descriptor.alphaBlendOperation = .add
+                    descriptor.sourceRGBBlendFactor = .sourceAlpha
+                    descriptor.sourceAlphaBlendFactor = .one
+                    descriptor.destinationRGBBlendFactor = .one
+                    descriptor.destinationAlphaBlendFactor = .one
+                case .subtract:
+                    descriptor.isBlendingEnabled = true
+                    descriptor.rgbBlendOperation = .add
+                    descriptor.alphaBlendOperation = .add
+                    descriptor.sourceRGBBlendFactor = .zero
+                    descriptor.sourceAlphaBlendFactor = .zero
+                    descriptor.destinationRGBBlendFactor = .oneMinusSourceColor
+                    descriptor.destinationAlphaBlendFactor = .one
                 }
 
                 return descriptor
