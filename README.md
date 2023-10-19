@@ -5,7 +5,7 @@ GateEngine includes intuitive APIs for loading resources, handling user inputs, 
 ## Platform Support:
 | Platform | CI | Graphics | Audio | Keyboard | Mouse | Touch | Gamepad |
 |---------:|:---|:---------|:------|:---------|:------|:------|:--------|
-| [**Windows**](https://www.swift.org/getting-started/#on-windows)¹ | [![5.8](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Windows.yml?label=Swift%205.8)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) | ✔︎ | ◑ | ✔︎ | ✔︎ | ⛌ | ✔︎ |
+| [**Windows**](https://www.swift.org/getting-started/#on-windows)¹ | [![5.8](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Windows.yml?label=Swift%205.8)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) | ✔︎ | ⛌ | ✔︎ | ✔︎ | ⛌ | ✔︎ |
 | [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=Swift%205.9)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
 | [**Linux**](https://www.swift.org/getting-started/#on-linux)² | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Linux.yml?label=Swift%205.9)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ⛌ | ✔︎
 | [**iOS**/**tvOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=Swift%205.9)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎`iPad` | ✔︎`iOS` | ✔︎
