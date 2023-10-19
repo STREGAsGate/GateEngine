@@ -23,9 +23,6 @@ extension Matrix4x4: CustomUniformType {}
 extension Array: CustomUniformType where Element == Matrix4x4 {}
 
 public struct Material {
-    public var vertexShader: VertexShader = .standard
-    public var fragmentShader: FragmentShader = .textureSample
-
     private var customUniformValues: [String: any CustomUniformType] = [:]
     internal func sortedCustomUniforms() -> [Dictionary<String, any CustomUniformType>.Element] {
         return customUniformValues.sorted(by: { $0.key.compare($1.key) == .orderedAscending })
@@ -37,6 +34,7 @@ public struct Material {
         customUniformValues[name] = value
     }
 
+    @usableFromInline
     internal var channels: [Channel] = [Channel(color: .defaultDiffuseMapColor)]
     @discardableResult
     public mutating func channel<ResultType>(_ index: UInt8, _ block: (_ channel: inout Channel) -> ResultType) -> ResultType {
@@ -56,17 +54,14 @@ public struct Material {
 
     public init(color: Color) {
         self.channels[0] = Channel(color: color)
-        self.fragmentShader = .materialColor
     }
 
     public init(texture: Texture, sampleFilter: Channel.SampleFilter = .linear, tintColor: Color = .white) {
         self.channels[0] = Channel(color: tintColor, texture: texture, sampleFilter: sampleFilter)
-        self.fragmentShader = .textureSampleTintColor
     }
     
     public init(texture: Texture) {
         self.channels[0] = Channel(color: .defaultDiffuseMapColor, texture: texture)
-        self.fragmentShader = .textureSample
     }
 
     public init(_ config: (_ material: inout Self) -> Void) {

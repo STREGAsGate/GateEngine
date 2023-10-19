@@ -136,8 +136,8 @@ class WebGL2Renderer: RendererBackend {
 
         let attributes = WebGL2Geometry.shaderAttributes(from: geometries)
         let program = webGLShader(
-            vsh: drawCommand.material.vertexShader,
-            fsh: drawCommand.material.fragmentShader,
+            vsh: drawCommand.vsh,
+            fsh: drawCommand.fsh,
             attributes: attributes
         ).program
 
@@ -150,7 +150,7 @@ class WebGL2Renderer: RendererBackend {
         setFlags(drawCommand.flags, in: gl)
         setWinding(drawCommand.flags.winding, in: gl)
         setUniforms(matrices, program: program, generator: generator, in: gl)
-        setMaterial(drawCommand.material, generator: generator, program: program, in: gl)
+        setMaterial(drawCommand, generator: generator, program: program, in: gl)
 
         #if GATEENGINE_DEBUG_RENDERING
         checkError()
@@ -334,13 +334,13 @@ extension WebGL2Renderer {
 
     @inline(__always)
     private func setMaterial(
-        _ material: Material,
+        _ drawCommand: DrawCommand,
         generator: GLSLCodeGenerator,
         program: WebGLProgram,
         in gl: WebGL2RenderingContext
     ) {
-        for index in material.channels.indices {
-            let channel = material.channels[index]
+        for index in drawCommand.material.channels.indices {
+            let channel = drawCommand.material.channels[index]
             if let texture = channel.texture?.textureBackend as? WebGL2Texture {
                 let textureName = generator.variable(for: .channelAttachment(UInt8(index)))
                 if let location = gl.getUniformLocation(program: program, name: textureName) {
@@ -395,7 +395,7 @@ extension WebGL2Renderer {
                 #endif
             }
         }
-        let customValues = material.sortedCustomUniforms()
+        let customValues = drawCommand.material.sortedCustomUniforms()
         if customValues.isEmpty == false {
             for index in customValues.indices {
                 let pair = customValues[index]
@@ -463,9 +463,7 @@ extension WebGL2Renderer {
                     }
                 case let value as [Matrix4x4]:
                     if let location = gl.getUniformLocation(program: program, name: variable) {
-                        let capacity =
-                        material.vertexShader.uniforms.arrayCapacityForUniform(named: name) ?? material
-                            .fragmentShader.uniforms.arrayCapacityForUniform(named: name)!
+                        let capacity = drawCommand.vsh.uniforms.arrayCapacityForUniform(named: name) ?? drawCommand.fsh.uniforms.arrayCapacityForUniform(named: name)!
                         var floats: [Float] = []
                         floats.reserveCapacity(value.count * 16)
                         for mtx in value {

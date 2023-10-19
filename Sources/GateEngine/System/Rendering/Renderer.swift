@@ -42,7 +42,6 @@ public enum RenderingAPI {
         }
 
         let material: Material = Material { material in
-            material.vertexShader = .renderTarget
             material.channel(0) { channel in
                 channel.texture = renderTarget.texture
                 if options.contains(.flipHorizontal) {
@@ -81,6 +80,8 @@ public enum RenderingAPI {
             resource: .geometry(.rectOriginCentered),
             transforms: [transform],
             material: material,
+            vsh: .renderTarget,
+            fsh: .textureSample,
             flags: flags
         )
         if command.isReady {

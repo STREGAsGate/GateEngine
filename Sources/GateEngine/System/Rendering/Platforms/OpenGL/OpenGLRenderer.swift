@@ -142,8 +142,8 @@ class OpenGLRenderer: RendererBackend {
 
         let attributes = OpenGLGeometry.shaderAttributes(from: geometries)
         let program = openGLShader(
-            vsh: drawCommand.material.vertexShader,
-            fsh: drawCommand.material.fragmentShader,
+            vsh: drawCommand.vsh,
+            fsh: drawCommand.fsh,
             attributes: attributes
         ).program
 
@@ -155,7 +155,7 @@ class OpenGLRenderer: RendererBackend {
 
         setFlags(drawCommand.flags)
         setUniforms(matrices, program: program, generator: generator)
-        setMaterial(drawCommand.material, generator: generator, program: program)
+        setMaterial(drawCommand.material, vsh: drawCommand.vsh, fsh: drawCommand.fsh, generator: generator, program: program)
 
         #if GATEENGINE_DEBUG_RENDERING
         checkError()
@@ -357,7 +357,7 @@ extension OpenGLRenderer {
         #endif
     }
 
-    private func setMaterial(_ material: Material, generator: GLSLCodeGenerator, program: GLuint) {
+    private func setMaterial(_ material: Material, vsh: VertexShader, fsh: FragmentShader, generator: GLSLCodeGenerator, program: GLuint) {
         do {
             for index in material.channels.indices {
                 let channel = material.channels[index]
@@ -519,8 +519,8 @@ extension OpenGLRenderer {
                         ) {
                             var floats: [Float] = []
                             let capacity =
-                            material.vertexShader.uniforms.arrayCapacityForUniform(named: name)
-                            ?? material.fragmentShader.uniforms.arrayCapacityForUniform(named: name)!
+                            vsh.uniforms.arrayCapacityForUniform(named: name)
+                            ?? fsh.uniforms.arrayCapacityForUniform(named: name)!
                             floats.reserveCapacity(value.count * 16)
                             for mtx in value {
                                 floats.append(contentsOf: mtx.transposedArray())

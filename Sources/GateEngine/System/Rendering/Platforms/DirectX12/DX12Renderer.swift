@@ -60,10 +60,10 @@ final class DX12Renderer: RendererBackend {
         let renderTarget: DX12RenderTarget = renderTarget.renderTargetBackend as! DX12RenderTarget
         let geometries = drawCommand.geometries.map({ $0 as! DX12Geometry })
         let commandList: D3DGraphicsCommandList = renderTarget.commandList
-        let data = createUniforms(drawCommand.material, camera, matrices)
+        let data = createUniforms(drawCommand, camera, matrices)
         let shader: DX12Renderer.DXShader = getShader(
-            vsh: drawCommand.material.vertexShader,
-            fsh: drawCommand.material.fragmentShader,
+            vsh: drawCommand.vsh,
+            fsh: drawCommand.fsh,
             flags: drawCommand.flags,
             geometries: geometries,
             textureCount: UInt32(data.textures.count)
@@ -379,7 +379,7 @@ extension DX12Renderer {
     }
 
     @inline(__always)
-    private func createUniforms(_ material: Material, _ camera: Camera?, _ matricies: Matrices) -> (
+    private func createUniforms(_ drawCommand: DrawCommand, _ camera: Camera?, _ matricies: Matrices) -> (
         uniforms: ContiguousArray<UInt8>, materials: ContiguousArray<ShaderMaterial>,
         textures: ContiguousArray<D3DResource?>
     ) {
@@ -391,7 +391,7 @@ extension DX12Renderer {
         withUnsafeBytes(of: matricies.view.transposedSIMD) { pointer in
             uniforms.append(contentsOf: pointer)
         }
-        let customValues = material.sortedCustomUniforms()
+        let customValues = drawCommand.material.sortedCustomUniforms()
         if customValues.isEmpty == false {
             for pair in customValues {
                 let value = pair.value
@@ -426,9 +426,7 @@ extension DX12Renderer {
                         uniforms.append(contentsOf: pointer)
                     }
                 case let value as [Matrix4x4]:
-                    let capacity =
-                    material.vertexShader.uniforms.arrayCapacityForUniform(named: name) ?? 
-                    material.fragmentShader.uniforms.arrayCapacityForUniform(named: name)!
+                    let capacity = drawCommand.vsh.uniforms.arrayCapacityForUniform(named: name) ?? drawCommand.fsh.uniforms.arrayCapacityForUniform(named: name)!
                     var floats: [Float] = []
                     floats.reserveCapacity(value.count * 16 * capacity)
                     for mtx in value {
@@ -460,8 +458,8 @@ extension DX12Renderer {
 
         var materials: ContiguousArray<ShaderMaterial> = []
         var textures: ContiguousArray<D3DResource?> = []
-        for index in material.channels.indices {
-            let channel = material.channels[index]
+        for index in drawCommand.material.channels.indices {
+            let channel = drawCommand.material.channels[index]
 
             let sampleFilter: ShaderMaterial.SampleFilter
             switch channel.sampleFilter {

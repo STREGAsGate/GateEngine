@@ -70,13 +70,16 @@
         _ geometry: Geometry,
         withMaterial material: Material,
         at transforms: [Transform3],
+        blendMode: DrawCommand.Flags.BlendMode = .normal,
         flags: SceneElementFlags = .default
     ) {
         let command = DrawCommand(
             resource: .geometry(geometry),
             transforms: transforms,
             material: material,
-            flags: flags.drawCommandFlags(withPrimitive: .triangle)
+            vsh: .standard,
+            fsh: (material.channels.first?.texture != nil) ? .textureSample : .materialColor,
+            flags: flags.drawCommandFlags(withPrimitive: .triangle, blendMode: blendMode)
         )
         self.insert(command)
     }
@@ -124,7 +127,6 @@
     ) {
         guard skinnedGeometry.isReady else {return}
         var material = material
-        material.vertexShader = .skinned
         material.setCustomUniformValue(
             pose.shaderMatrixArray(orderedFromSkinJoints: skinnedGeometry.skinJoints),
             forUniform: "bones"
@@ -134,6 +136,8 @@
             resource: .skinned(skinnedGeometry),
             transforms: transforms,
             material: material,
+            vsh: .skinned,
+            fsh: (material.channels.first?.texture != nil) ? .textureSample : .materialColor,
             flags: flags.drawCommandFlags(withPrimitive: .triangle)
         )
         self.insert(command)
@@ -173,13 +177,13 @@
         flags: SceneElementFlags = .default
     ) {
         var material = Material(color: color)
-        material.vertexShader = .pointSizeAndColor
-        material.fragmentShader = .materialColor
         material.setCustomUniformValue(size, forUniform: "pointSize")
         let command = DrawCommand(
             resource: .points(points),
             transforms: transforms,
             material: material,
+            vsh: .pointSizeAndColor,
+            fsh: .vertexColor,
             flags: flags.drawCommandFlags(withPrimitive: .point)
         )
         self.insert(command)
@@ -220,6 +224,8 @@
             resource: .lines(lines),
             transforms: transforms,
             material: material,
+            vsh: .standard,
+            fsh: .vertexColor,
             flags: flags.drawCommandFlags(withPrimitive: .line)
         )
         self.insert(command)
@@ -240,6 +246,8 @@
             resource: .morph(source, destination),
             transforms: transforms,
             material: material,
+            vsh: .morph,
+            fsh: (material.channels.first?.texture != nil) ? .morphTextureSample : .materialColor,
             flags: flags.drawCommandFlags(withPrimitive: .line)
         )
         self.insert(command)
@@ -396,7 +404,7 @@ public struct SceneElementFlags: OptionSet, Hashable {
     }
 
     @_transparent
-    public func drawCommandFlags(withPrimitive primitive: DrawCommand.Flags.Primitive) -> DrawCommand.Flags {
+    public func drawCommandFlags(withPrimitive primitive: DrawCommand.Flags.Primitive, blendMode: DrawCommand.Flags.BlendMode = .normal) -> DrawCommand.Flags {
         let cull: DrawCommand.Flags.Cull = self.contains(.cullBackface) ? .back : .disabled
         let depthTest: DrawCommand.Flags.DepthTest = self.contains(.disableDepthCull) ? .always : .less
         let depthWrite: DrawCommand.Flags.DepthWrite =
@@ -407,7 +415,7 @@ public struct SceneElementFlags: OptionSet, Hashable {
             depthWrite: depthWrite,
             primitive: primitive, 
             winding: .counterClockwise,
-            blendMode: .normal
+            blendMode: blendMode
         )
     }
 }

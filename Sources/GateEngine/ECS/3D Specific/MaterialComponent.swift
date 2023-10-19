@@ -5,8 +5,14 @@
  * http://stregasgate.com
  */
 
+import Shaders
+
 @dynamicMemberLookup
 public final class MaterialComponent: Component {
+    public var vertexShader: VertexShader? = nil
+    public var fragmentShader: FragmentShader? = nil
+    public var blendMode: DrawCommand.Flags.BlendMode = .normal
+    
     public var material: Material {
         didSet {
             self.resourcesState = .pending

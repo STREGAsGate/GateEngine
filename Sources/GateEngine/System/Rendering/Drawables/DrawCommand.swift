@@ -19,17 +19,23 @@ public struct DrawCommand {
     public var resource: Resource
     public var transforms: [Transform3]
     public var material: Material
+    public var vsh: VertexShader
+    public var fsh: FragmentShader
     public var flags: Flags
     
     public init(
         resource: Resource,
         transforms: [Transform3],
         material: Material,
+        vsh: VertexShader,
+        fsh: FragmentShader,
         flags: Flags
     ) {
         self.resource = resource
         self.transforms = transforms
         self.material = material
+        self.vsh = vsh
+        self.fsh = fsh
         self.flags = flags
     }
     

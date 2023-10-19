@@ -25,10 +25,12 @@ class MetalRenderer: RendererBackend {
         let vshID: VertexShader.ID
         let fshID: FragmentShader.ID
         let attributes: ContiguousArray<CodeGenerator.InputAttribute>
-        init(vsh: VertexShader, fsh: FragmentShader, attributes: ContiguousArray<CodeGenerator.InputAttribute>) {
+        let blendMode: DrawCommand.Flags.BlendMode
+        init(vsh: VertexShader, fsh: FragmentShader, attributes: ContiguousArray<CodeGenerator.InputAttribute>, blendMode: DrawCommand.Flags.BlendMode) {
             self.vshID = vsh.id
             self.fshID = fsh.id
             self.attributes = attributes
+            self.blendMode = blendMode
         }
     }
     struct MetalShader {
@@ -47,7 +49,7 @@ class MetalRenderer: RendererBackend {
         let renderTarget = renderTarget.renderTargetBackend as! MetalRenderTarget
         let encoder = renderTarget.commandEncoder!
         let geometries = drawCommand.geometries.map({ $0 as! MetalGeometry })
-        let data = createUniforms(drawCommand.material, camera, matrices)
+        let data = createUniforms(drawCommand, camera, matrices)
 
         #if GATEENGINE_DEBUG_RENDERING
         for geometry in geometries {
@@ -56,13 +58,7 @@ class MetalRenderer: RendererBackend {
         #endif
 
         self.setWinding(drawCommand.flags.winding, encoder: encoder)
-        self.setFlags(
-            drawCommand.flags,
-            vsh: drawCommand.material.vertexShader,
-            fsh: drawCommand.material.fragmentShader,
-            geometries: geometries,
-            encoder: encoder
-        )
+        self.setFlags(drawCommand, geometries: geometries, encoder: encoder)
 
         var vertexIndex: Int = 0
         var fragmentIndex: Int = 0
@@ -177,18 +173,16 @@ class MetalRenderer: RendererBackend {
     }
     var _storedRenderPipelineStates: [RenderPipelineStateKey: any MTLRenderPipelineState] = [:]
     func getRenderPipelineState(
-        vsh: VertexShader,
-        fsh: FragmentShader,
-        flags: DrawCommand.Flags,
+        _ drawCommand: DrawCommand,
         geometries: [MetalGeometry],
         attributes: ContiguousArray<CodeGenerator.InputAttribute>,
         library: some MTLLibrary
     ) -> any MTLRenderPipelineState {
         let key = RenderPipelineStateKey(
-            vertexShader: vsh.id,
-            fragmentShader: fsh.id,
+            vertexShader: drawCommand.vsh.id,
+            fragmentShader: drawCommand.fsh.id,
             attributes: attributes,
-            blendMode: flags.blendMode
+            blendMode: drawCommand.flags.blendMode
         )
         if let existing = _storedRenderPipelineStates[key] {
             return existing
@@ -260,17 +254,17 @@ class MetalRenderer: RendererBackend {
             pipelineDescriptor.vertexDescriptor = vertexDescriptor
 
             pipelineDescriptor.vertexFunction = library.makeFunction(
-                name: "vertex\(UInt(bitPattern: vsh.id.hashValue))"
+                name: "vertex\(UInt(bitPattern: drawCommand.vsh.id.hashValue))"
             )
             pipelineDescriptor.fragmentFunction = library.makeFunction(
-                name: "fragment\(UInt(bitPattern: fsh.id.hashValue))"
+                name: "fragment\(UInt(bitPattern: drawCommand.fsh.id.hashValue))"
             )
 
             pipelineDescriptor.colorAttachments[0] = {
                 let descriptor = MTLRenderPipelineColorAttachmentDescriptor()
                 descriptor.pixelFormat = .bgra8Unorm
 
-                switch flags.blendMode {
+                switch drawCommand.flags.blendMode {
                 case .none:
                     break
                 case .normal:
@@ -331,32 +325,28 @@ extension MetalRenderer {
     #if !GATEENGINE_DEBUG_RENDERING
     @_transparent
     #endif
-    func metalShader(
-        vsh: VertexShader,
-        fsh: FragmentShader,
+    func metalShader(_ drawCommand: DrawCommand,
         geometries: [MetalGeometry],
         flags: DrawCommand.Flags
     ) -> MetalShader {
         let attributes = MetalGeometry.shaderAttributes(from: geometries)
-        let key = ShaderKey(vsh: vsh, fsh: fsh, attributes: attributes)
+        let key = ShaderKey(vsh: drawCommand.vsh, fsh: drawCommand.fsh, attributes: attributes, blendMode: flags.blendMode)
         if let existing = _shaders[key] {
             return existing
         }
         do {
             let generator = MSLCodeGenerator()
             let source = try generator.generateShaderCode(
-                vertexShader: vsh,
-                fragmentShader: fsh,
+                vertexShader: drawCommand.vsh,
+                fragmentShader: drawCommand.fsh,
                 attributes: attributes
             )
             #if GATEENGINE_LOG_SHADERS
-            Log.info("Generated Metal Shaders vsh:\(vsh) fsh:\(fsh) \n\n\(source)\n")
+            Log.info("Generated Metal Shaders vsh:\(drawCommand.vsh) fsh:\(drawCommand.fsh) \n\n\(source)\n")
             #endif
             let library = try self.device.makeLibrary(source: source, options: nil)
             let pipelineState = self.getRenderPipelineState(
-                vsh: vsh,
-                fsh: fsh,
-                flags: flags,
+                drawCommand,
                 geometries: geometries,
                 attributes: attributes,
                 library: library
@@ -364,8 +354,8 @@ extension MetalRenderer {
             let shader = MetalShader(
                 library: library,
                 renderPipelineState: pipelineState,
-                vertexShader: vsh,
-                fragmentShader: fsh
+                vertexShader: drawCommand.vsh,
+                fragmentShader: drawCommand.fsh
             )
             _shaders[key] = shader
             return shader
@@ -377,14 +367,11 @@ extension MetalRenderer {
     #if !GATEENGINE_DEBUG_RENDERING
     @_transparent
     #endif
-    private func setFlags(
-        _ flags: DrawCommand.Flags,
-        vsh: VertexShader,
-        fsh: FragmentShader,
+    private func setFlags(_ drawCommand: DrawCommand,
         geometries: [MetalGeometry],
         encoder: some MTLRenderCommandEncoder
     ) {
-        switch flags.cull {
+        switch drawCommand.flags.cull {
         case .disabled:
             encoder.setCullMode(.none)
         case .back:
@@ -393,8 +380,8 @@ extension MetalRenderer {
             encoder.setCullMode(.front)
         }
 
-        let shader = metalShader(vsh: vsh, fsh: fsh, geometries: geometries, flags: flags)
-        encoder.setDepthStencilState(getDepthStencilState(flags: flags))
+        let shader = metalShader(drawCommand, geometries: geometries, flags: drawCommand.flags)
+        encoder.setDepthStencilState(getDepthStencilState(flags: drawCommand.flags))
         encoder.setRenderPipelineState(shader.renderPipelineState)
     }
 
@@ -473,7 +460,7 @@ extension MetalRenderer {
     #if !GATEENGINE_DEBUG_RENDERING
     @_transparent
     #endif
-    private func createUniforms(_ material: Material, _ camera: Camera?, _ matricies: Matrices) -> (
+    private func createUniforms(_ drawCommand: DrawCommand, _ camera: Camera?, _ matricies: Matrices) -> (
         uniforms: ContiguousArray<UInt8>, materials: ContiguousArray<ShaderMaterial>,
         textures: ContiguousArray<(some MTLTexture)?>
     ) {
@@ -485,7 +472,7 @@ extension MetalRenderer {
         withUnsafeBytes(of: matricies.view.transposedSIMD) { pointer in
             uniforms.append(contentsOf: pointer)
         }
-        let customValues = material.sortedCustomUniforms()
+        let customValues = drawCommand.material.sortedCustomUniforms()
         if customValues.isEmpty == false {
             for pair in customValues {
                 let value = pair.value
@@ -520,9 +507,7 @@ extension MetalRenderer {
                         uniforms.append(contentsOf: pointer)
                     }
                 case let value as [Matrix4x4]:
-                    let capacity =
-                    material.vertexShader.uniforms.arrayCapacityForUniform(named: name) ?? material
-                        .fragmentShader.uniforms.arrayCapacityForUniform(named: name)!
+                    let capacity = drawCommand.vsh.uniforms.arrayCapacityForUniform(named: name) ?? drawCommand.fsh.uniforms.arrayCapacityForUniform(named: name)!
                     var floats: [Float] = []
                     floats.reserveCapacity(value.count * 16 * capacity)
                     for mtx in value {
@@ -554,8 +539,8 @@ extension MetalRenderer {
 
         var materials: ContiguousArray<ShaderMaterial> = []
         var textures: ContiguousArray<(any MTLTexture)?> = []
-        for index in material.channels.indices {
-            let channel = material.channels[index]
+        for index in drawCommand.material.channels.indices {
+            let channel = drawCommand.material.channels[index]
 
             let sampleFilter: ShaderMaterial.SampleFilter
             switch channel.sampleFilter {

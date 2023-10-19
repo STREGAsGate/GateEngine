@@ -62,8 +62,6 @@
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
 
         let material = Material { material in
-            material.vertexShader = .pointSizeAndColor
-            material.fragmentShader = .vertexColor
             material.setCustomUniformValue(pointSize, forUniform: "pointSize")
         }
         let flags = DrawCommand.Flags(
@@ -78,6 +76,8 @@
             resource: .points(points),
             transforms: [transform],
             material: material,
+            vsh: .pointSizeAndColor,
+            fsh: .vertexColor,
             flags: flags
         )
         self.insert(command)
@@ -97,10 +97,6 @@
         let rotation = Quaternion(rotation, axis: .forward)
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
 
-        let material = Material { material in
-            material.vertexShader = .vertexColors
-            material.fragmentShader = .vertexColor
-        }
         let flags = DrawCommand.Flags(
             cull: .back,
             depthTest: .lessEqual,
@@ -112,7 +108,9 @@
         let command = DrawCommand(
             resource: .lines(lines),
             transforms: [transform],
-            material: material,
+            material: Material(),
+            vsh: .vertexColors,
+            fsh: .vertexColor,
             flags: flags
         )
         self.insert(command)
@@ -150,6 +148,8 @@
             resource: .geometry(.rectOriginTopLeft),
             transforms: [transform],
             material: material,
+            vsh: .standard,
+            fsh: .materialColor,
             flags: flags
         )
         self.insert(command)
@@ -185,7 +185,6 @@
                 }
             }
             material.setCustomUniformValue(opacity, forUniform: "opacity")
-            material.fragmentShader = .textureSampleOpacity
         }
 
         let flags = DrawCommand.Flags(
@@ -200,6 +199,8 @@
             resource: .geometry(.rectOriginTopLeft),
             transforms: [transform],
             material: material,
+            vsh: .standard,
+            fsh: .textureSampleOpacity,
             flags: flags
         )
         self.insert(command)
@@ -226,10 +227,7 @@
                 channel.offset = sprite.uvOffset
                 channel.sampleFilter = sprite.sampleFilter
             }
-            if opacity != 1 {
-                material.setCustomUniformValue(opacity, forUniform: "opacity")
-                material.fragmentShader = .textureSampleOpacity
-            }
+            material.setCustomUniformValue(opacity, forUniform: "opacity")
         }
 
         let flags = DrawCommand.Flags(
@@ -244,6 +242,8 @@
             resource: .geometry(.rectOriginCentered),
             transforms: [transform],
             material: material,
+            vsh: .standard,
+            fsh: .textureSampleOpacity,
             flags: flags
         )
         self.insert(command)
@@ -261,10 +261,7 @@
                 channel.scale = sprite.uvScale
                 channel.offset = sprite.uvOffset
             }
-            if opacity != 1 {
-                material.setCustomUniformValue(opacity, forUniform: "opacity")
-                material.fragmentShader = .textureSampleOpacity
-            }
+            material.setCustomUniformValue(opacity, forUniform: "opacity")
         }
 
         let flags = DrawCommand.Flags(
@@ -279,6 +276,8 @@
             resource: .geometry(.rectOriginCentered),
             transforms: [transform],
             material: material,
+            vsh: .standard,
+            fsh: .textureSampleOpacity,
             flags: flags
         )
         self.insert(command)
@@ -316,6 +315,8 @@
             resource: .geometry(text.geometry),
             transforms: [transform],
             material: material,
+            vsh: .standard,
+            fsh: .textureSample,
             flags: flags
         )
         self.insert(command)
@@ -340,6 +341,8 @@
             resource: .geometry(geometry),
             transforms: [transform],
             material: material,
+            vsh: .standard,
+            fsh: (material.channels.first?.texture != nil) ? .textureSampleTintColor : .materialColor,
             flags: drawFlags
         )
         self.insert(command)
