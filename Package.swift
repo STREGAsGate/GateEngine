@@ -14,11 +14,20 @@ let package = Package(
         var packageDependencies: [Package.Dependency] = []
 
         // Official
-        packageDependencies.append(contentsOf: [
+        #if os(Windows)
+        packageDependencies.append(
+            // Windows requires 1.2.0+
+            .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.2.0"))
+        )
+        #else
+        packageDependencies.append(
             // swift-atomics must use extact 1.1.0 pending https://github.com/apple/swift/issues/69264
-            .package(url: "https://github.com/apple/swift-atomics.git", exact: "1.1.0"),
-            .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0")),
-        ])
+            .package(url: "https://github.com/apple/swift-atomics.git", exact: "1.1.0")
+        )
+        #endif
+        packageDependencies.append(
+            .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0"))
+        )
 
         // SwiftWASM
         #if os(macOS) || os(Linux)
@@ -192,7 +201,7 @@ let package = Package(
                         
                         settings.append(contentsOf: [
                             /// Prints the output of generated shaders
-                            //.define("GATEENGINE_LOG_SHADERS"),
+                            .define("GATEENGINE_LOG_SHADERS"),
                             /// Enables various additional checks and output for rendering
                             .define("GATEENGINE_DEBUG_RENDERING"),
                             /// Enables various additional checks and output for input

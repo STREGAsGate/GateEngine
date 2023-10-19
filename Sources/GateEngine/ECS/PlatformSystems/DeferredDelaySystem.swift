@@ -59,7 +59,7 @@ extension System {
     }
     
     @inline(__always)
-    func delay(_ duration: Float, completion: @escaping ()->()) {
+    public func delay(_ duration: Float, completion: @escaping ()->()) {
         let system = Game.shared.system(ofType: DeferredDelaySystem.self)
         system.append(delayDuration: duration, closure: completion)
     }
