@@ -12,6 +12,7 @@ internal class CAContextReference: AudioContextBackend {
 
     @objc func engineChanged(_ notification: Notification?) {
         do {
+            engine.pause()
             try engine.start()
         } catch {
             Log.fatalError("AVAudioEngine Error: \(error)")
