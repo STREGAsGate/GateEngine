@@ -537,8 +537,8 @@ extension ResourceManager {
             if cache.referenceCount == 0 {
                 self.cache.skeletalAnimations.removeValue(forKey: key)
                 Log.debug(
-                    "Removing cache (no longer referenced), Object:",
-                    key.requestedPath.first == "$" ? "(Generated TileSet)" : key.requestedPath
+                    "Removing cache (no longer referenced), SkeletalAnimation:",
+                    key.requestedPath.first == "$" ? "(Generated)" : key.requestedPath
                 )
             }
         }

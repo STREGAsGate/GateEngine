@@ -320,8 +320,8 @@ extension ResourceManager {
             if cache.referenceCount == 0 {
                 self.cache.geometries.removeValue(forKey: key)
                 Log.debug(
-                    "Removing cache (no longer referenced), Object:",
-                    key.requestedPath.first == "$" ? "(Generated Geometry)" : key.requestedPath
+                    "Removing cache (no longer referenced), Geometry:",
+                    key.requestedPath.first == "$" ? "(Generated)" : key.requestedPath
                 )
             }
         }

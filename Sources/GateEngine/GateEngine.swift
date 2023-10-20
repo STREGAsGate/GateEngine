@@ -58,7 +58,7 @@ extension Color {
     internal static let stregasgateBackground: Color = #colorLiteral(red: 0.094117634,green: 0.0941176638,blue: 0.094117634,alpha: 1)
 }
 
-public enum GateEngineError: Error, Equatable, Hashable {
+public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible {
     case failedToLocate
     case failedToLoad(_ reason: String)
     case failedToDecode(_ reason: String)
@@ -70,6 +70,25 @@ public enum GateEngineError: Error, Equatable, Hashable {
 
     case failedToCreateWindow(_ reason: String)
 
+    public var description: String {
+        switch self {
+        case .failedToLocate:
+            return String(describing: self)
+        case .failedToLoad(let reason):
+            return "failedToLoad:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+        case .failedToDecode(let reason):
+            return "failedToDecode:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+        case .scriptCompileError(let reason):
+            return "scriptCompileError:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+        case .scriptExecutionError(let reason):
+            return "scriptExecutionError:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+        case .generic(let reason):
+            return reason 
+        case .failedToCreateWindow(let reason):
+            return "failedToCreateWindow:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+        }
+    }
+    
     public init(_ error: some Swift.Error) {
         switch error {
         case let error as GateEngineError:

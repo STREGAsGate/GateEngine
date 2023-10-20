@@ -287,8 +287,8 @@ extension ResourceManager {
             if cache.referenceCount == 0 {
                 self.cache.tileMaps.removeValue(forKey: key)
                 Log.debug(
-                    "Removing cache (no longer referenced), Object:",
-                    key.requestedPath.first == "$" ? "(Generated TileMap)" : key.requestedPath
+                    "Removing cache (no longer referenced), TileMap:",
+                    key.requestedPath.first == "$" ? "(Generated)" : key.requestedPath
                 )
             }
         }

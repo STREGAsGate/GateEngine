@@ -80,7 +80,6 @@ public class ResourceManager {
     func incrementMinutes() {
         for key in cache.textures.keys {
             guard let cache = cache.textures[key] else { continue }
-
             switch cache.cacheHint {
             case .forever, .whileReferenced:
                 continue
@@ -90,9 +89,9 @@ public class ResourceManager {
                     if cache.minutesDead == minutes {
                         self.cache.textures.removeValue(forKey: key)
                         Log.debug(
-                            "Removing cache (unused for \(cache.minutesDead) min), Object:",
+                            "Removing cache (unused for \(cache.minutesDead) min), Texture:",
                             key.requestedPath.first == "$"
-                                ? "(Generated Texture)" : key.requestedPath
+                                ? "(Generated)" : key.requestedPath
                         )
                     }
                 } else {
@@ -103,7 +102,6 @@ public class ResourceManager {
 
         for key in cache.geometries.keys {
             guard let cache = cache.geometries[key] else { continue }
-
             switch cache.cacheHint {
             case .forever, .whileReferenced:
                 continue
@@ -113,9 +111,119 @@ public class ResourceManager {
                     if cache.minutesDead == minutes {
                         self.cache.geometries.removeValue(forKey: key)
                         Log.debug(
-                            "Removing cache (unused for \(cache.minutesDead) min), Object:",
+                            "Removing cache (unused for \(cache.minutesDead) min), Geometry:",
                             key.requestedPath.first == "$"
-                                ? "(Generated Geometry)" : key.requestedPath
+                                ? "(Generated)" : key.requestedPath
+                        )
+                    }
+                } else {
+                    cache.minutesDead = 0
+                }
+            }
+        }
+        
+        for key in cache.skinnedGeometries.keys {
+            guard let cache = cache.skinnedGeometries[key] else { continue }
+            switch cache.cacheHint {
+            case .forever, .whileReferenced:
+                continue
+            case .until(let minutes):
+                if cache.referenceCount == 0 {
+                    cache.minutesDead += 1
+                    if cache.minutesDead == minutes {
+                        self.cache.skinnedGeometries.removeValue(forKey: key)
+                        Log.debug(
+                            "Removing cache (unused for \(cache.minutesDead) min), SkinnedGeometry:",
+                            key.requestedPath.first == "$"
+                                ? "(Generated)" : key.requestedPath
+                        )
+                    }
+                } else {
+                    cache.minutesDead = 0
+                }
+            }
+        }
+        
+        for key in cache.skeletons.keys {
+            guard let cache = cache.skeletons[key] else { continue }
+            switch cache.cacheHint {
+            case .forever, .whileReferenced:
+                continue
+            case .until(let minutes):
+                if cache.referenceCount == 0 {
+                    cache.minutesDead += 1
+                    if cache.minutesDead == minutes {
+                        self.cache.skeletons.removeValue(forKey: key)
+                        Log.debug(
+                            "Removing cache (unused for \(cache.minutesDead) min), Skeleton:",
+                            key.requestedPath.first == "$"
+                                ? "(Generated)" : key.requestedPath
+                        )
+                    }
+                } else {
+                    cache.minutesDead = 0
+                }
+            }
+        }
+        
+        for key in cache.skeletalAnimations.keys {
+            guard let cache = cache.skeletalAnimations[key] else { continue }
+            switch cache.cacheHint {
+            case .forever, .whileReferenced:
+                continue
+            case .until(let minutes):
+                if cache.referenceCount == 0 {
+                    cache.minutesDead += 1
+                    if cache.minutesDead == minutes {
+                        self.cache.skeletalAnimations.removeValue(forKey: key)
+                        Log.debug(
+                            "Removing cache (unused for \(cache.minutesDead) min), SkeletalAnimation:",
+                            key.requestedPath.first == "$"
+                                ? "(Generated)" : key.requestedPath
+                        )
+                    }
+                } else {
+                    cache.minutesDead = 0
+                }
+            }
+        }
+        
+        for key in cache.tileSets.keys {
+            guard let cache = cache.tileSets[key] else { continue }
+            switch cache.cacheHint {
+            case .forever, .whileReferenced:
+                continue
+            case .until(let minutes):
+                if cache.referenceCount == 0 {
+                    cache.minutesDead += 1
+                    if cache.minutesDead == minutes {
+                        self.cache.tileSets.removeValue(forKey: key)
+                        Log.debug(
+                            "Removing cache (unused for \(cache.minutesDead) min), TileSet:",
+                            key.requestedPath.first == "$"
+                                ? "(Generated)" : key.requestedPath
+                        )
+                    }
+                } else {
+                    cache.minutesDead = 0
+                }
+            }
+        }
+        
+        for key in cache.tileMaps.keys {
+            guard let cache = cache.tileMaps[key] else { continue }
+            switch cache.cacheHint {
+            case .forever, .whileReferenced:
+                continue
+            case .until(let minutes):
+                if cache.referenceCount == 0 {
+                    cache.minutesDead += 1
+                    if cache.minutesDead == minutes {
+                        self.cache.tileMaps.removeValue(forKey: key)
+                        Log.debug(
+                            "Removing cache (unused for \(cache.minutesDead) min), TileMap:",
+                            key.requestedPath.first == "$"
+                                ? "(Generated)" : key.requestedPath
                         )
                     }
                 } else {

@@ -337,8 +337,8 @@ extension ResourceManager {
             if cache.referenceCount == 0 {
                 self.cache.textures.removeValue(forKey: key)
                 Log.debug(
-                    "Removing cache (no longer referenced), Object:",
-                    key.requestedPath.first == "$" ? "(Generated Texture)" : key.requestedPath
+                    "Removing cache (no longer referenced), Texture:",
+                    key.requestedPath.first == "$" ? "(Generated)" : key.requestedPath
                 )
             }
         }
