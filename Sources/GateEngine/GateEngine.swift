@@ -73,7 +73,7 @@ public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible
     public var description: String {
         switch self {
         case .failedToLocate:
-            return String(describing: self)
+            return "failedToLocate"
         case .failedToLoad(let reason):
             return "failedToLoad:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .failedToDecode(let reason):
