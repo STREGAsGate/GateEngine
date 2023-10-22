@@ -29,18 +29,18 @@ public final class StateMachine {
     }
 }
 
-public protocol State: AnyObject {
-    init()
+@MainActor public protocol State: AnyObject {
+    nonisolated init()
     
-    @MainActor func apply(to entity: Entity, previousState: some State, game: Game, input: HID)
-    @MainActor func update(for entity: Entity, inGame game: Game, input: HID, withTimePassed deltaTime: Float)
+    func apply(to entity: Entity, previousState: some State, game: Game, input: HID)
+    func update(for entity: Entity, inGame game: Game, input: HID, withTimePassed deltaTime: Float)
     
-    @MainActor func canMoveToNextState(for entity: Entity, game: Game, input: HID) -> Bool
-    @MainActor func possibleNextStates(for entity: Entity, game: Game, input: HID) -> [any State.Type]
+    func canMoveToNextState(for entity: Entity, game: Game, input: HID) -> Bool
+    func possibleNextStates(for entity: Entity, game: Game, input: HID) -> [any State.Type]
     
-    @MainActor func willMoveToNextState(for entity: Entity, nextState: any State.Type, game: Game, input: HID)
+    func willMoveToNextState(for entity: Entity, nextState: any State.Type, game: Game, input: HID)
     
-    @MainActor static func canBecomeCurrentState(for entity: Entity, from currentState: some State, game: Game, input: HID) -> Bool
+    static func canBecomeCurrentState(for entity: Entity, from currentState: some State, game: Game, input: HID) -> Bool
 }
 
 public extension State {
