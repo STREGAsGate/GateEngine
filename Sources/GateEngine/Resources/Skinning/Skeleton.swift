@@ -563,7 +563,7 @@ extension ResourceManager {
         let key = Cache.SkeletonKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", options: .none)
         if cache.skeletons[key] == nil {
             cache.skeletons[key] = Cache.SkeletonCache()
-            Game.shared.resourceManager.incrementLoading()
+            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
             Task.detached(priority: .high) {
                 let backend = SkeletonBackend(rootJoint: rootJoint)
                 Task { @MainActor in
@@ -573,7 +573,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
                     }
-                    Game.shared.resourceManager.decrementLoading()
+                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             }
         }
@@ -613,7 +613,7 @@ extension ResourceManager {
     }
     
     @MainActor func _reloadSkeleton(for key: Cache.SkeletonKey, isFirstLoad: Bool) {
-        Game.shared.resourceManager.incrementLoading()
+        Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
         Task.detached(priority: .high) {
             let path = key.requestedPath
             
@@ -642,6 +642,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
                     }
+                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
@@ -649,7 +650,7 @@ extension ResourceManager {
                     if let cache = self.cache.skeletons[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading()
+                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as DecodingError {
                 let error = GateEngineError(error)
@@ -658,7 +659,7 @@ extension ResourceManager {
                     if let cache = self.cache.skeletons[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading()
+                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")

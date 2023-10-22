@@ -8,6 +8,7 @@
 #if GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
 import class Foundation.FileManager
 #endif
+import Atomics
 
 extension ResourceManager {
     struct Importers {
@@ -56,12 +57,23 @@ public class ResourceManager {
 
     var accumulatedSeconds: Float = 0
     
-    @MainActor public private(set) var currentlyLoading: Int = 0
-    @MainActor internal func incrementLoading() {
-        self.currentlyLoading += 1
+    public var currentlyLoading: Int {
+        return _currentlyLoading.load(ordering: .relaxed)
     }
-    @MainActor internal func decrementLoading() {
-        self.currentlyLoading -= 1
+    @MainActor public var currentlyLoadingPaths: [String] {
+        return paths.compactMap({$0})
+    }
+    private var _currentlyLoading = ManagedAtomic<Int>(0)
+    @MainActor var paths: Array<String?> = []
+    @MainActor internal func incrementLoading(path: String?) {
+        paths.append(path)
+        _currentlyLoading.wrappingIncrement(by: 1, ordering: .relaxed)
+    }
+    @MainActor internal func decrementLoading(path: String?) {
+        if let index = paths.firstIndex(where: {$0 == path}) {
+            paths.remove(at: index)
+        }
+        _currentlyLoading.wrappingDecrement(by: 1, ordering: .relaxed)
     }
 
     let game: Game

@@ -250,7 +250,7 @@ extension ResourceManager {
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: options)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
-            Game.shared.resourceManager.incrementLoading()
+            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
             Task.detached(priority: .high) {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
@@ -262,7 +262,7 @@ extension ResourceManager {
                         }else{
                             Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
                         }
-                        Game.shared.resourceManager.decrementLoading()
+                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 } catch let error as GateEngineError {
                     Task { @MainActor in
@@ -270,7 +270,7 @@ extension ResourceManager {
                         if let cache = self.cache.geometries[key] {
                             cache.state = .failed(error: error)
                         }
-                        Game.shared.resourceManager.decrementLoading()
+                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 } catch {
                     Log.fatalError("error must be a GateEngineError")
@@ -285,8 +285,8 @@ extension ResourceManager {
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
-            Game.shared.resourceManager.incrementLoading()
             if let geometry = geometry {
+                Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
                 Task.detached(priority: .high) {
                     let backend = await self.geometryBackend(from: geometry)
                     Task { @MainActor in
@@ -296,7 +296,7 @@ extension ResourceManager {
                         }else{
                             Log.warn("Resource \"(Generated Geometry)\" was deallocated before being loaded.")
                         }
-                        Game.shared.resourceManager.decrementLoading()
+                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 }
             }

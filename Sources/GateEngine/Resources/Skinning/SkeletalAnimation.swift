@@ -500,7 +500,7 @@ extension ResourceManager {
         let key = Cache.SkeletalAnimationKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", options: .none)
         if cache.skeletalAnimations[key] == nil {
             cache.skeletalAnimations[key] = Cache.SkeletalAnimationCache()
-            Game.shared.resourceManager.incrementLoading()
+            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
             Task.detached(priority: .high) {
                 let backend = SkeletalAnimationBackend(
                     name: name, 
@@ -514,7 +514,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
                     }
-                    Game.shared.resourceManager.decrementLoading()
+                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             }
         }
@@ -554,7 +554,7 @@ extension ResourceManager {
     }
     
     @MainActor func _reloadSkeletalAnimation(for key: Cache.SkeletalAnimationKey, isFirstLoad: Bool) {
-        Game.shared.resourceManager.incrementLoading()
+        Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
         Task.detached(priority: .high) {
             let path = key.requestedPath
             
@@ -563,7 +563,7 @@ extension ResourceManager {
                     throw GateEngineError.failedToLoad("Unknown file type.")
                 }
                 guard
-                    let importer: any SkeletalAnimationImporter = await Game.shared.resourceManager
+                    let importer: any SkeletalAnimationImporter = Game.shared.resourceManager
                         .importerForFileType(fileExtension)
                 else {
                     throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
@@ -583,7 +583,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
                     }
-                    Game.shared.resourceManager.decrementLoading()
+                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
@@ -591,7 +591,7 @@ extension ResourceManager {
                     if let cache = self.cache.skeletalAnimations[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading()
+                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as DecodingError {
                 let error = GateEngineError(error)
@@ -600,7 +600,7 @@ extension ResourceManager {
                     if let cache = self.cache.skeletalAnimations[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading()
+                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")

@@ -140,7 +140,7 @@ extension ResourceManager {
         )
         if cache.skinnedGeometries[key] == nil {
             cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
-            Game.shared.resourceManager.incrementLoading()
+            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
             Task.detached(priority: .high) {
                 do {
                     let geometry = try await RawGeometry(path: path, options: geometryOptions)
@@ -154,7 +154,7 @@ extension ResourceManager {
                         }else{
                             Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
                         }
-                        Game.shared.resourceManager.decrementLoading()
+                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 } catch let error as GateEngineError {
                     Task { @MainActor in
@@ -162,7 +162,7 @@ extension ResourceManager {
                         if let cache = self.cache.skinnedGeometries[key] {
                             cache.state = .failed(error: error)
                         }
-                        Game.shared.resourceManager.decrementLoading()
+                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 } catch {
                     Log.fatalError("error must be a GateEngineError")
@@ -183,7 +183,7 @@ extension ResourceManager {
         )
         if cache.skinnedGeometries[key] == nil {
             cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
-            Game.shared.resourceManager.incrementLoading()
+            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
             if let geometry = geometry {
                 Task.detached(priority: .high) {
                     let backend = await self.geometryBackend(from: geometry, skin: skin)
@@ -195,7 +195,7 @@ extension ResourceManager {
                         }else{
                             Log.warn("Resource \"(Generated SkinnedGeometry)\" was deallocated before being loaded.")
                         }
-                        Game.shared.resourceManager.decrementLoading()
+                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 }
             }

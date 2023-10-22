@@ -254,7 +254,7 @@ extension ResourceManager {
         let key = Cache.TileMapKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", tileMapOptions: .none)
         if cache.tileMaps[key] == nil {
             cache.tileMaps[key] = Cache.TileMapCache()
-            Game.shared.resourceManager.incrementLoading()
+            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
             Task.detached(priority: .high) {
                 let backend = await TileMapBackend(layers: layers)
                 Task { @MainActor in
@@ -264,7 +264,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"(Generated TileMap)\" was deallocated before being loaded.")
                     }
-                    Game.shared.resourceManager.decrementLoading()
+                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             }
         }
@@ -304,7 +304,7 @@ extension ResourceManager {
     }
     
     @MainActor func _reloadTileMap(for key: Cache.TileMapKey, isFirstLoad: Bool) {
-        Game.shared.resourceManager.incrementLoading()
+        Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
         Task.detached(priority: .high) {
             let path = key.requestedPath
             
@@ -333,7 +333,7 @@ extension ResourceManager {
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
                     }
-                    Game.shared.resourceManager.decrementLoading()
+                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
@@ -341,7 +341,7 @@ extension ResourceManager {
                     if let cache = self.cache.tileMaps[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading()
+                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")
