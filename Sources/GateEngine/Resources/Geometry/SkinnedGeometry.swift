@@ -35,7 +35,7 @@ internal protocol SkinnedGeometryBackend: AnyObject {
         set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
     }
 
-    public var state: ResourceState {
+    public nonisolated var state: ResourceState {
         return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!.state
     }
 

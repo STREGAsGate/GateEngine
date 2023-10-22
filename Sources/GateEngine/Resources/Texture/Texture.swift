@@ -60,7 +60,7 @@ public enum MipMapping: Hashable, Sendable {
         set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
     }
 
-    public var state: ResourceState {
+    public nonisolated  var state: ResourceState {
         return Game.shared.resourceManager.textureCache(for: cacheKey)!.state
     }
     

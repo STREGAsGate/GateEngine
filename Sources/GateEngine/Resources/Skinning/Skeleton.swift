@@ -622,7 +622,7 @@ extension ResourceManager {
                     throw GateEngineError.failedToLoad("Unknown file type.")
                 }
                 guard
-                    let importer: any SkeletonImporter = await Game.shared.resourceManager
+                    let importer: any SkeletonImporter = Game.shared.resourceManager
                         .importerForFileType(fileExtension)
                 else {
                     throw GateEngineError.failedToLoad("No importer for \(fileExtension).")

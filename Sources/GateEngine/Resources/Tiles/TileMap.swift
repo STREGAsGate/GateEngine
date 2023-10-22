@@ -18,7 +18,7 @@ import GameMath
         set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
     }
 
-    public var state: ResourceState {
+    public nonisolated var state: ResourceState {
         return Game.shared.resourceManager.tileMapCache(for: cacheKey)!.state
     }
     
@@ -313,7 +313,7 @@ extension ResourceManager {
                     throw GateEngineError.failedToLoad("Unknown file type.")
                 }
                 guard
-                    let importer: any TileMapImporter = await Game.shared.resourceManager
+                    let importer: any TileMapImporter = Game.shared.resourceManager
                         .importerForFileType(fileExtension)
                 else {
                     throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
