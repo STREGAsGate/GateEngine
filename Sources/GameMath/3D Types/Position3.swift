@@ -90,6 +90,17 @@ public extension Position3 {
             self.y = newValue.y
         }
     }
+    
+    @inlinable
+    var xz: Position2 {
+        get {
+            return Position2(x, z)
+        }
+        set {
+            self.x = newValue.x
+            self.z = newValue.y
+        }
+    }
 }
 
 public extension Position3 {
