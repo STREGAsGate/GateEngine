@@ -32,7 +32,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         string += String(format: "%.1fms Total Systems Time", totalSystemTime * 1000)
         string += "\n\(String(format: "%02d%%", Int((renderingSystemsFrameTime / totalSystemTime) * 100))) Rendering Systems"
         string += "\n\(String(format: "%02d%%", Int((systemsFrameTime / totalSystemTime) * 100))) Systems\n"
-        string += "\nLoading: \(game.resourceManager.currentlyLoading)"
+        string += "\nLoading: \(game.resourceManager.currentlyLoading.count)"
         string += "\nLoaded: "
         var loadedThingsCount = 0
         func loadedThingsLine() {
