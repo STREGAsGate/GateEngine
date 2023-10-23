@@ -81,7 +81,7 @@ private class GLTF: Decodable {
         }
     }
 
-    let meshes: [Mesh]
+    let meshes: [Mesh]?
     struct Mesh: Decodable {
         let name: String
 
@@ -447,21 +447,23 @@ extension GLTransmissionFormat: GeometryImporter {
         let data = try await Game.shared.platform.loadResource(from: path)
         let gltf = try gltf(from: data, baseURL: baseURL)
 
+        guard gltf.meshes != nil else {throw GateEngineError.failedToDecode("File contains no geometry.")}
+        
         var mesh: GLTF.Mesh? = nil
         if let name = options.subobjectName {
             if let meshID = gltf.nodes.first(where: { $0.name == name })?.mesh {
-                mesh = gltf.meshes[meshID]
-            } else if let _mesh = gltf.meshes.first(where: { $0.name == name }) {
+                mesh = gltf.meshes![meshID]
+            } else if let _mesh = gltf.meshes!.first(where: { $0.name == name }) {
                 mesh = _mesh
             } else {
-                let meshNames = gltf.meshes.map({ $0.name })
+                let meshNames = gltf.meshes!.map({ $0.name })
                 let nodeNames = gltf.nodes.filter({ $0.mesh != nil }).map({ $0.name })
                 throw GateEngineError.failedToDecode(
                     "Couldn't find geometry named \(name).\nAvailable mesh names: \(meshNames)\nAvaliable node names: \(nodeNames)"
                 )
             }
         } else {
-            mesh = gltf.meshes.first
+            mesh = gltf.meshes!.first
         }
         guard let mesh = mesh else {
             throw GateEngineError.failedToDecode("No geometry.")
@@ -608,15 +610,17 @@ extension GLTransmissionFormat: SkinImporter {
         guard let skins = gltf.skins, skins.isEmpty == false else {
             throw GateEngineError.failedToDecode("File contains no skins.")
         }
+        
+        guard gltf.meshes != nil else {throw GateEngineError.failedToDecode("File contains no geometry.")}
 
         var skinIndex = 0
-        if let desired = options.subobjectName {
+        if let name = options.subobjectName {
             if let direct = gltf.skins?.firstIndex(where: {
-                $0.name.caseInsensitiveCompare(options.subobjectName ?? "") == .orderedSame
+                $0.name.caseInsensitiveCompare(name) == .orderedSame
             }) {
                 skinIndex = direct
             } else if let nodeSkinIndex = gltf.nodes.first(where: {
-                $0.skin != nil && $0.name == desired
+                $0.skin != nil && $0.name == name
             })?.skin {
                 skinIndex = nodeSkinIndex
             }
@@ -636,7 +640,7 @@ extension GLTransmissionFormat: SkinImporter {
         guard let meshID = meshForSkin(skinID: skinIndex, in: gltf) else {
             throw GateEngineError.failedToDecode("Couldn't locate skin geometry.")
         }
-        let mesh = gltf.meshes[meshID]
+        let mesh = gltf.meshes![meshID]
 
         guard
             let meshJoints: [UInt32] = await gltf.values(forAccessor: mesh.primitives[0][.joints]!)
