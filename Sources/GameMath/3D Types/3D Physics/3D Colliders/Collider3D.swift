@@ -54,7 +54,7 @@ public struct Interpenetration3D {
     /// - returns true if the two compared colliders have penetration
     @inlinable @inline(__always)
     public var isColiding: Bool {
-        return depth < -0.0001 && direction.isFinite && depth.isFinite
+        return depth < 0 && direction.isFinite && depth.isFinite
     }
     
     /// - returns true if the comparison can safely be used to determine penetration

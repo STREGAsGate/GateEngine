@@ -8,14 +8,29 @@
 public final class Collision3DSystem: System {
     public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
         let staticEntities = game.entities.filter({
-            $0.component(ofType: Collision3DComponent.self)?.kind == .static
+            guard let collisionComponenet = $0.component(ofType: Collision3DComponent.self) else {return false}
+            if case .static = collisionComponenet.kind {
+                return true
+            }
+            return false
         })
         for entity in staticEntities {
             entity.collision3DComponent.updateColliders(entity.transform3)
         }
         let dynamicEntities = game.entities.filter({
-            $0.component(ofType: Collision3DComponent.self)?.kind == .dynamic
-        })
+            guard let collisionComponenet = $0.component(ofType: Collision3DComponent.self) else {return false}
+            if case .dynamic(_) = collisionComponenet.kind {
+                return true
+            }
+            return false
+        }).sorted { entity1, entity2 in
+            if case .dynamic(let priority1) = entity1[Collision3DComponent.self].kind {
+                if case .dynamic(let priority2) = entity2[Collision3DComponent.self].kind {
+                    return priority1 > priority2
+                }
+            }
+            return false
+        }
         for entity in dynamicEntities {
             entity.collision3DComponent.updateColliders(entity.transform3)
         }
@@ -152,8 +167,8 @@ public final class Collision3DSystem: System {
                 for entity in dynamicEntities {
                     guard entity != dynamicEntity else { continue }
                     guard collisionComponent.entityFilter?(entity) ?? true else { continue }
-                    guard let dynamicComponent = entity.component(ofType: Collision3DComponent.self)
-                    else { continue }
+                    guard let dynamicComponent = entity.component(ofType: Collision3DComponent.self) else { continue }
+                    guard dynamicComponent.entityFilter?(dynamicEntity) ?? true else { continue }
                     guard dynamicComponent.isEnabled else { continue }
                     guard dynamicComponent.collider is MeshCollider == false else { continue }
                     guard dynamicComponent.options.contains(.skipEntities) == false else {
@@ -163,10 +178,15 @@ public final class Collision3DSystem: System {
                     let pair: Set = [dynamicEntity.id, entity.id]
                     guard finishedPairs.contains(pair) == false else { continue }
                     finishedPairs.insert(pair)
-
-                    guard dynamicComponent.options.contains(.skipEntities) == false else {
-                        continue
+                    
+                    if case .dynamic(let priority1) = collisionComponent.kind {
+                        if case .dynamic(let priority2) = dynamicComponent.kind {
+                            if priority1 < priority2 {
+                                continue
+                            }
+                        }
                     }
+
                     guard
                         collisionComponent.collider.boundingBox.isColiding(
                             with: dynamicComponent.collider.boundingBox
@@ -176,13 +196,13 @@ public final class Collision3DSystem: System {
                     let dynamicCollider1 = collisionComponent.collider
                     let dynamicCollider2 = dynamicComponent.collider
 
-                    let interpenetration = dynamicCollider2.interpenetration(
-                        comparing: dynamicCollider1
+                    let interpenetration = dynamicCollider1.interpenetration(
+                        comparing: dynamicCollider2
                     )
 
-                    if let interpenetration = interpenetration, interpenetration.isColiding == true
-                    {
+                    if let interpenetration = interpenetration, interpenetration.isColiding == true {
                         collisionComponent.intersecting.append((entity, interpenetration))
+                        dynamicComponent.intersecting.append((dynamicEntity, interpenetration))
                         respondToCollision(
                             sourceEntity: dynamicEntity,
                             dynamicEntity: entity,

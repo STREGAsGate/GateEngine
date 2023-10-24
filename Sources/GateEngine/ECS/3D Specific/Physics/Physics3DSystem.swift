@@ -16,11 +16,14 @@ public final class Physics3DSystem: System {
             guard let physicsComponent = entity.component(ofType: Physics3DComponent.self) else {
                 continue
             }
+                        
             if let transformComponent = entity.component(ofType: Transform3Component.self) {
                 var deltaTime = deltaTime
                 if let scale = entity.component(ofType: TimeScaleComponent.self)?.scale {
                     deltaTime *= scale
                 }
+                
+                transformComponent.previousTransform = transformComponent.transform
 
                 if physicsComponent.shouldApplyGravity {
                     let velocity = physicsComponent.velocity
@@ -41,12 +44,10 @@ public final class Physics3DSystem: System {
                         .linear(Float(deltaTime * 10))
                     )
                     physicsComponent.velocity = newVelocity
+                    transformComponent.position.y += physicsComponent.velocity.y * deltaTime
                 }
 
                 physicsComponent.update(deltaTime)
-
-                transformComponent.previousTransform = transformComponent.transform
-                transformComponent.position.y += physicsComponent.velocity.y * deltaTime
             }
         }
     }

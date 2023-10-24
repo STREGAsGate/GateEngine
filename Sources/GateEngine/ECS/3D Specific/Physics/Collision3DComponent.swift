@@ -8,7 +8,7 @@
 extension Collision3DComponent {
     public enum Kind {
         case `static`
-        case dynamic
+        case dynamic(_ priority: Int)
     }
     public struct Options: OptionSet {
         public let rawValue: UInt32
@@ -40,9 +40,9 @@ public final class Collision3DComponent: Component {
         radius: .one
     )
 
-    var touching: [(triangle: CollisionTriangle, interpenetration: Interpenetration3D)] = []
+    public internal(set) var touching: [(triangle: CollisionTriangle, interpenetration: Interpenetration3D)] = []
 
-    var intersecting: [(entity: Entity, interpenetration: Interpenetration3D)] = []
+    public internal(set) var intersecting: [(entity: Entity, interpenetration: Interpenetration3D)] = []
 
     public var offset: Transform3 = .default
 
@@ -54,24 +54,24 @@ public final class Collision3DComponent: Component {
     public var entityFilter: ((Entity) -> (Bool))? = nil
 
     @inlinable @inline(__always)
-    func interpenetration(comparing: some Collider3D) -> Interpenetration3D? {
+    public func interpenetration(comparing: some Collider3D) -> Interpenetration3D? {
         return collider.interpenetration(comparing: comparing)
     }
 
     @inlinable @inline(__always)
-    func interpenetration(comparing: Collision3DComponent) -> Interpenetration3D? {
+    public func interpenetration(comparing: Collision3DComponent) -> Interpenetration3D? {
         let lhs = collider
         let rhs = comparing.collider
         return lhs.interpenetration(comparing: rhs)
     }
 
     @inlinable @inline(__always)
-    func updateColliders(_ transform: Transform3) {
+    public func updateColliders(_ transform: Transform3) {
         self.collider.update(transform: transform)
     }
 
     @inlinable @inline(__always)
-    func update(sizeAndOffsetUsingTransform transform: Transform3) {
+    public func update(sizeAndOffsetUsingTransform transform: Transform3) {
         self.collider.update(sizeAndOffsetUsingTransform: transform)
     }
 
@@ -81,7 +81,7 @@ public final class Collision3DComponent: Component {
 
 extension Entity {
     @inlinable @inline(__always)
-    var collision3DComponent: Collision3DComponent {
+    public var collision3DComponent: Collision3DComponent {
         return self[Collision3DComponent.self]
     }
 }

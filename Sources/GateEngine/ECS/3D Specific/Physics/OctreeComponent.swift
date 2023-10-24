@@ -62,7 +62,7 @@ public final class OctreeComponent: Component {
     }()
 
     @inline(__always)
-    var boundingBox: AxisAlignedBoundingBox3D {
+    public var boundingBox: AxisAlignedBoundingBox3D {
         return rootNode.boundingBox
     }
 
@@ -138,7 +138,7 @@ extension OctreeComponent {
     }
 
     @inline(__always)
-    func load(withCenter center: Position3, triangles: [CollisionTriangle]) {
+    public func load(withCenter center: Position3, triangles: [CollisionTriangle]) {
         struct Primer {
             let center: Position3
             private(set) var triangles: [CollisionTriangle] = []

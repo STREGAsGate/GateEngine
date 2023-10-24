@@ -271,6 +271,7 @@
 
         public func currentFrame(assumingFrameRate fps: UInt) -> UInt {
             let totalFrames = Float(fps) * duration
+            guard accumulatedTime <= duration else {return UInt(totalFrames)}            
             return UInt(accumulatedTime * totalFrames)
         }
 

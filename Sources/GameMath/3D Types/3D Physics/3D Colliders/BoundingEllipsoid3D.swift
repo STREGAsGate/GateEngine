@@ -6,9 +6,21 @@
  */
 
 public struct BoundingEllipsoid3D: Collider3D, Sendable {
-    public private(set) var offset: Position3
-    public private(set) var center: Position3
-    public private(set) var radius: Size3
+    public private(set) var offset: Position3 {
+        didSet {
+            self.boundingBox.offset = offset
+        }
+    }
+    public private(set) var center: Position3 {
+        didSet {
+            self.boundingBox.center = center
+        }
+    }
+    public private(set) var radius: Size3 {
+        didSet {
+            self.boundingBox.radius = radius
+        }
+    }
     internal var _radius: Size3
     internal var _offset: Position3
     
@@ -59,6 +71,7 @@ public struct BoundingEllipsoid3D: Collider3D, Sendable {
 
     @inline(__always)
     public func interpenetration(comparing collider: BoundingEllipsoid3D) -> Interpenetration3D? {
+        return self.boundingBox.interpenetration(comparing: collider)
         if self.position == collider.position {
             // When the centers are the same a collision is always happening no matter the radius
             return Interpenetration3D(depth: -.ulpOfOne, direction: .up, points: [self.center])
