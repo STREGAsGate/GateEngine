@@ -60,6 +60,28 @@ extension Vector2 {
     }
 }
 
+public extension Vector2 {
+    /**
+     Returns a new instance with `x` incremented by `value`.
+     - parameter value: The amount to add to `x`. To subtract use a negative value.
+     - returns: A new Self with `x` incremented by `value`.
+    */
+    @_transparent
+    func addingTo(x: Float) -> Self {
+        return Self(self.x + x, y)
+    }
+    
+    /**
+     Returns a new instance with `y` incremented by `value`.
+     - parameter value: The amount to add to `y`. To subtract use a negative value.
+     - returns: A new Self with `y` incremented by `value`.
+    */
+    @_transparent
+    func addingTo(y value: Float) -> Self {
+        return Self(x, y + value)
+    }
+}
+
 extension Vector2 {
     @inlinable
     public subscript (_ index: Int) -> Float {
