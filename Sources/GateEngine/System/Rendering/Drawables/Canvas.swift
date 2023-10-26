@@ -213,6 +213,7 @@
         scale: Size2 = .one,
         depth: Float = 0,
         opacity: Float = 1,
+        blendingMode: DrawCommand.Flags.BlendMode = .normal,
         flags: CanvasElementSpriteFlags = .default
     ) {
         let position = Position3(position.x, position.y, depth * -1)
@@ -236,7 +237,7 @@
             depthWrite: .disabled,
             primitive: .triangle,
             winding: .clockwise,
-            blendMode: .normal
+            blendMode: blendingMode
         )
         let command = DrawCommand(
             resource: .geometry(.rectOriginCentered),
