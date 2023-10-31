@@ -200,39 +200,11 @@ public struct RawGeometry: Codable, Equatable, Hashable {
 
     /// Creates a new `Geometry` by merging multiple geometry. This is usful for loading files that store geometry speretly base don material if you intend to only use a single material for them all.
     public init(geometries: [RawGeometry]) {
-        @_transparent
-        func sum(_ array: [Int]) -> Int {
-            var val = 0
-            for i in array { val += i }
-            return val
-        }
-        self.positions = []
-        self.positions.reserveCapacity(sum(geometries.map({ $0.positions.count })))
-        self.uvSets = []
-        self.normals = []
-        self.normals.reserveCapacity(sum(geometries.map({ $0.normals.count })))
-        self.tangents = []
-        self.tangents.reserveCapacity(sum(geometries.map({ $0.tangents.count })))
-        self.colors = []
-        self.colors.reserveCapacity(sum(geometries.map({ $0.colors.count })))
-        self.indices = []
-        self.indices.reserveCapacity(sum(geometries.map({ $0.indices.count })))
-
+        var triangles: [Triangle] = []
         for geometry in geometries {
-            self.positions.append(contentsOf: geometry.positions)
-            for uvSetIndex in 0 ..< geometry.uvSets.count {
-                if self.uvSets.indices.contains(uvSetIndex) == false {
-                    self.uvSets.append(geometry.uvSets[uvSetIndex])
-                } else {
-                    self.uvSets[uvSetIndex].append(contentsOf: geometry.uvSets[uvSetIndex])
-                }
-            }
-            self.normals.append(contentsOf: geometry.normals)
-            self.tangents.append(contentsOf: geometry.tangents)
-            self.colors.append(contentsOf: geometry.colors)
-            let max = self.indices.max() ?? 0
-            self.indices.append(contentsOf: geometry.indices.map({ $0 + max }))
+            triangles.append(contentsOf: geometry.generateTriangles())
         }
+        self.init(triangles: triangles, optimizeDistance: nil)
     }
 
     public func hash(into hasher: inout Hasher) {

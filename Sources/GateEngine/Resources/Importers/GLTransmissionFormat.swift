@@ -543,14 +543,22 @@ extension GLTransmissionFormat: GeometryImporter {
         guard geometries.isEmpty == false else {
             throw GateEngineError.failedToDecode("Failed to decode geometry.")
         }
-
-        var geometry = RawGeometry(geometries: geometries)
-        if options.applyRootTransform {
-            let transform = gltf.nodes[gltf.scenes[gltf.scene].nodes[0]].transform.createMatrix()
-            geometry = geometry * transform
+        
+        if geometries.count == 1 {
+            if options.applyRootTransform {
+                let transform = gltf.nodes[gltf.scenes[gltf.scene].nodes[0]].transform.createMatrix()
+                return geometries[0] * transform
+            }else{
+                return geometries[0]
+            }
+        }else{
+            var geometry = RawGeometry(geometries: geometries)
+            if options.applyRootTransform {
+                let transform = gltf.nodes[gltf.scenes[gltf.scene].nodes[0]].transform.createMatrix()
+                geometry = geometry * transform
+            }
+            return geometry
         }
-
-        return geometry
     }
 }
 
