@@ -31,6 +31,16 @@ public final class FinalizeSimulation: System {
                             if relationshipComponent.options.contains(.relativeScale) {
                                 entity.transform3.scale = parent.transform3.scale + transform.scale
                             }
+                        }else{
+                            if relationshipComponent.options.contains(.relativePosition) {
+                                entity.transform3.position = parent.transform3.position
+                            }
+                            if relationshipComponent.options.contains(.relativeRotation) {
+                                entity.transform3.rotation = parent.transform3.rotation
+                            }
+                            if relationshipComponent.options.contains(.relativeScale) {
+                                entity.transform3.scale = parent.transform3.scale
+                            }
                         }
                     }else{
                         game.removeEntity(entity)
