@@ -270,6 +270,42 @@ extension Angle {
 
 extension Angle {
     @_transparent
+    public static func <=(lhs: Self, rhs: Self) -> Bool {
+        return lhs.rawValue <= rhs.rawValue
+    }
+    @_transparent
+    public static func <=(lhs: Self, rhs: some Angle) -> Bool {
+        return lhs.rawValueAsRadians <= rhs.rawValueAsRadians
+    }
+    @_transparent
+    public static func <=(lhs: Self, rhs: RawValue) -> Bool {
+        return lhs.rawValue <= rhs
+    }
+    @_transparent
+    public static func <=(lhs: RawValue, rhs: Self) -> Bool {
+        return lhs <= rhs.rawValue
+    }
+    
+    @_transparent
+    public static func >=(lhs: Self, rhs: Self) -> Bool {
+        return lhs.rawValue >= rhs.rawValue
+    }
+    @_transparent
+    public static func >=(lhs: Self, rhs: some Angle) -> Bool {
+        return lhs.rawValueAsRadians >= rhs.rawValueAsRadians
+    }
+    @_transparent
+    public static func >=(lhs: Self, rhs: RawValue) -> Bool {
+        return lhs.rawValue >= rhs
+    }
+    @_transparent
+    public static func >=(lhs: RawValue, rhs: Self) -> Bool {
+        return lhs >= rhs.rawValue
+    }
+}
+
+extension Angle {
+    @_transparent
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         assert(type(of: lhs) == type(of: rhs))
         return lhs.rawValue == rhs.rawValue
