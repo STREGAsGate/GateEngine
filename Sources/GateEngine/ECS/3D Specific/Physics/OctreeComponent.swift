@@ -51,6 +51,7 @@ extension OctreeComponent {
 }
 
 public final class OctreeComponent: Component {
+    public private(set) var didLoad: Bool = false
     @inline(__always)
     var center: Position3 { return rootNode.boundingBox.center }
     @inline(__always)
@@ -185,6 +186,10 @@ extension OctreeComponent {
         self.rootNode.insertTriangles(primer.triangles, primer.triangleBoxes)
 
         self.cleanEmptyNodes()
+        
+        Task {@MainActor in
+            self.didLoad = true
+        }
     }
 
     @inline(__always)
