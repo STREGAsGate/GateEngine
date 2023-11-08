@@ -114,7 +114,7 @@ public final class Collision3DSystem: System {
                 }
 
                 triangles = sortedTrianglesProbablyHitting(
-                    dynamic: dynamicEntity,
+                    entity: dynamicEntity,
                     triangles: triangles
                 )
                 if let filter = collisionComponent.triangleFilter {
@@ -449,10 +449,10 @@ extension Collision3DSystem {
     }
 
     @inline(__always)
-    func sortedTrianglesProbablyHitting(dynamic: Entity, triangles: [CollisionTriangle])
+    func sortedTrianglesProbablyHitting(entity: Entity, triangles: [CollisionTriangle])
         -> [CollisionTriangle]
     {
-        let collider = dynamic.collision3DComponent.collider.boundingBox
+        let collider = entity.collision3DComponent.collider.boundingBox
 
         var values: [CollisionTriangle] = []
         values.reserveCapacity(triangles.count)
