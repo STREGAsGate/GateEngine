@@ -41,7 +41,7 @@ public extension Collider3D {
 }
 
 public struct Interpenetration3D {
-    /// How far much the collider is penetrating.
+    /// How far the collider is penetrating.
     public var depth: Float
     
     /// The direction to move in ourder to resolve the penetration.

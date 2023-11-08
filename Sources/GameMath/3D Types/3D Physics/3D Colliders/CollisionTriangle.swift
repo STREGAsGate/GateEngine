@@ -136,11 +136,14 @@ extension CollisionTriangle: Collider3D {
     
     @inline(__always)
     public func isProbablyColliding(with collider: Collider3D) -> Bool {
-        if let collider = collider as? AxisAlignedBoundingBox3D {
-            let p = closestSurfacePoint(from: collider.position)
-            return collider.contains(p)
-        }
-        return self.plane.classifyPoint(collider.position) == .front
+        var collider = collider.boundingBox
+        // We grab all possible triangles to respond to in one phase.
+        // To ensure we can respond to triangles after a position change from a response,
+        // we make the box larger. This will grab additional nearby triangles.
+        // TODO: This will not work with super fast moving dynamic entites
+        collider.radius *= 1.5
+        let p = closestSurfacePoint(from: collider.position)
+        return collider.contains(p)
     }
     
     @inline(__always)
