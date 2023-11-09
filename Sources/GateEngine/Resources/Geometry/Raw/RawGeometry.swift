@@ -132,7 +132,15 @@ public struct RawGeometry: Codable, Equatable, Hashable {
         }
         self.normals = normals ?? Array(repeating: 0, count: indices.count * 3)
         self.tangents = tangents ?? Array(repeating: 0, count: indices.count * 3)
-        self.colors = colors ?? Array(repeating: 0.5, count: indices.count * 4)
+        
+        var colors: [Float]! = colors
+        if colors == nil {
+            colors = Array(repeating: 0.5, count: indices.count * 4)
+            for index in stride(from: 3, to: colors.count, by: 4) {
+                colors[index] = 1
+            }
+        }
+        self.colors = colors
         self.indices = indices
     }
 

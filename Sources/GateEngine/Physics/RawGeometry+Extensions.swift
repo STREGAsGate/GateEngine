@@ -10,12 +10,8 @@ extension RawGeometry {
         var positions: [Position3] = []
         var uvs: [[Position2]] = Array(repeating: [], count: uvSets.count)
         var colors: [Color] = []
-        var colorComponents: Int = 0
-        if self.colors.count / 3 == indices.count {
-            colorComponents = 3
-        } else if self.colors.count / 4 == indices.count {
-            colorComponents = 4
-        }
+        let colorComponents: Int = self.colors.count / (self.positions.count / 3)
+
         for vertexIndex in indices.indices {
             let index = Int(indices[vertexIndex])
             let start3 = index * 3
@@ -35,7 +31,7 @@ extension RawGeometry {
                         self.colors[start3 + 2]
                     )
                 )
-            } else if colorComponents == 4 {
+            } else {
                 colors.append(
                     Color(
                         self.colors[start4],
@@ -44,8 +40,6 @@ extension RawGeometry {
                         self.colors[start4 + 3]
                     )
                 )
-            } else {
-                colors.append(.gray)
             }
 
             positions.append(
