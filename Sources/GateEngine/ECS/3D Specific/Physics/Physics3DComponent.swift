@@ -55,7 +55,7 @@ public final class Physics3DComponent: Component {
 
 extension Entity {
     @inlinable @inline(__always)
-    var physics3DComponent: Physics3DComponent {
+    public var physics3DComponent: Physics3DComponent {
         return self[Physics3DComponent.self]
     }
 }

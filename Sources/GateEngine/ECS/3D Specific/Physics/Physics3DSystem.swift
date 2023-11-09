@@ -13,16 +13,16 @@ public final class Physics3DSystem: System {
         guard deltaTime < 1 / 20 else { return }
 
         for entity in game.entities {
+            var deltaTime = deltaTime
+            if let scale = entity.component(ofType: TimeScaleComponent.self)?.scale {
+                deltaTime *= scale
+            }
+            
             guard let physicsComponent = entity.component(ofType: Physics3DComponent.self) else {
                 continue
             }
-                        
+            
             if let transformComponent = entity.component(ofType: Transform3Component.self) {
-                var deltaTime = deltaTime
-                if let scale = entity.component(ofType: TimeScaleComponent.self)?.scale {
-                    deltaTime *= scale
-                }
-                
                 transformComponent.previousTransform = transformComponent.transform
 
                 if physicsComponent.shouldApplyGravity {
