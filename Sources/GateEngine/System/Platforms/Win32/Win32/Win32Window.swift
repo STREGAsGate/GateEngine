@@ -1066,7 +1066,6 @@ extension Win32Window {
 
 private typealias WindowProc = @MainActor @convention(c) (HWND?, UINT, WPARAM, LPARAM) -> LRESULT
 
-@MainActor
 @preconcurrency
 private func WindowProcedure(
     _ hWnd: HWND?,

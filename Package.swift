@@ -182,7 +182,7 @@ let package = Package(
                             .enableUpcomingFeature("ConciseMagicFile"),
                             
                             .enableExperimentalFeature("AccessLevelOnImport"),
-                            .enableExperimentalFeature("StrictConcurrency"),
+//                            .enableExperimentalFeature("StrictConcurrency"),
 //                            .enableExperimentalFeature("StrictConcurrency=complete"),
                         ])
                         #endif

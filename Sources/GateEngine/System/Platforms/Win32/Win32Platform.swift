@@ -22,7 +22,7 @@ public final class Win32Platform: InternalPlatform {
 
     public func locateResource(from path: String) async -> String? {
         let searchPaths =
-            Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
+            await Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             if await fileSystem.itemExists(at: file.path) {
