@@ -167,7 +167,7 @@ public extension Position3 {
 
 #if !GameMathUseSIMD
 public extension Position3 {
-    static var zero = Self(0)
+    static let zero = Self(0)
 }
 #endif
 
