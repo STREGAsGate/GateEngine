@@ -100,6 +100,7 @@ public final class Game {
     private var deltaTimeAccumulator: Double = 0
     private var previousTime: Double = 0
     
+    @MainActor
     @inline(__always)
     private func getNextDeltaTime() -> Double? {
         // 240fps
@@ -175,6 +176,7 @@ public final class Game {
 }
 
 extension Game {
+    @MainActor
     @usableFromInline
     static var shared: Game! = nil
 }

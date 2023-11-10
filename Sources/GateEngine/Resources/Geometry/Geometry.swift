@@ -86,7 +86,7 @@ public extension Geometry {
         set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
     }
 
-    public nonisolated var state: ResourceState {
+    public var state: ResourceState {
         return Game.shared.resourceManager.geometryCache(for: cacheKey)!.state
     }
 
@@ -197,7 +197,7 @@ extension RawGeometry {
     public init(path: String, options: GeometryImporterOptions = .none) async throws {
         let file = URL(fileURLWithPath: path)
         guard
-            let importer: any GeometryImporter = Game.shared.resourceManager.geometryImporterForFile(
+            let importer: any GeometryImporter = await Game.shared.resourceManager.geometryImporterForFile(
                 file
             )
         else {

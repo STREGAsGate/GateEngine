@@ -8,6 +8,9 @@
 import Foundation
 
 public struct AppleFileSystem: FileSystem {
+    #if hasFeature(StrictConcurrency)
+    @MainActor
+    #endif
     public func pathForSearchPath(_ searchPath: FileSystemSearchPath,
                                   in domain: FileSystemSearchPathDomain = .currentUser) throws -> String {
         let foundationSearchPath: FileManager.SearchPathDirectory

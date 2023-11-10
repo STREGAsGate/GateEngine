@@ -44,13 +44,14 @@ public protocol Resource: Equatable, Hashable {
     /** The current state of the resource.
     It is a programming error to use a resource or access it's properties while it's state is anything other then `ready`.
     */
-    var state: ResourceState { get }
-    var isReady: Bool {get}
+    @MainActor var state: ResourceState { get }
+    @MainActor var isReady: Bool {get}
     
     @MainActor var cacheHint: CacheHint {get}
 }
 
 public extension Resource {
+    @MainActor
     @_transparent
     var isReady: Bool {self.state == .ready}
 }

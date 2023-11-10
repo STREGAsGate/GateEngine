@@ -60,7 +60,7 @@ public enum MipMapping: Hashable, Sendable {
         set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
     }
 
-    public nonisolated  var state: ResourceState {
+    public var state: ResourceState {
         return Game.shared.resourceManager.textureCache(for: cacheKey)!.state
     }
     
@@ -368,7 +368,7 @@ extension ResourceManager {
                     throw GateEngineError.failedToLoad("Unknown file type.")
                 }
                 guard
-                    let importer = Game.shared.resourceManager.textureImporterForFile(
+                    let importer = await Game.shared.resourceManager.textureImporterForFile(
                         URL(fileURLWithPath: key.requestedPath)
                     )
                 else {

@@ -31,7 +31,7 @@ internal protocol InternalPlatform: AnyObject, Platform {
     var staticResourceLocations: [URL] { get }
 
     func systemTime() -> Double
-    func main()
+    @MainActor func main()
 
     func saveState(_ state: Game.State, as name: String) async throws
     func loadState(named name: String) async -> Game.State

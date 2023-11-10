@@ -17,7 +17,7 @@ import Foundation
         set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
     }
 
-    public nonisolated var state: ResourceState {
+    public var state: ResourceState {
         return Game.shared.resourceManager.skeletonCache(for: cacheKey)!.state
     }
     
@@ -479,7 +479,7 @@ public protocol SkeletonImporter: AnyObject {
     static func supportedFileExtensions() -> [String]
 }
 
-public struct SkeletonImporterOptions: Equatable, Hashable {
+public struct SkeletonImporterOptions: Equatable, Hashable, Sendable {
     public var subobjectName: String? = nil
 
     public static func named(_ name: String) -> Self {
@@ -511,7 +511,7 @@ extension ResourceManager {
 
 extension ResourceManager.Cache {
     @usableFromInline
-    struct SkeletonKey: Hashable {
+    struct SkeletonKey: Hashable, Sendable {
         let requestedPath: String
         let options: SkeletonImporterOptions
     }
@@ -622,7 +622,7 @@ extension ResourceManager {
                     throw GateEngineError.failedToLoad("Unknown file type.")
                 }
                 guard
-                    let importer: any SkeletonImporter = Game.shared.resourceManager
+                    let importer: any SkeletonImporter = await Game.shared.resourceManager
                         .importerForFileType(fileExtension)
                 else {
                     throw GateEngineError.failedToLoad("No importer for \(fileExtension).")

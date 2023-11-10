@@ -172,6 +172,8 @@ let package = Package(
                         // These are to get a headstart on the next Swift versions.
                         // https://www.swift.org/swift-evolution/#?upcoming=true
                         settings.append(contentsOf: [
+                            .enableUpcomingFeature("IsolatedDefaultValues"),
+                            .enableUpcomingFeature("InternalImportsByDefault"),
                             .enableUpcomingFeature("DisableOutwardActorInference"),
                             .enableUpcomingFeature("ImportObjcForwardDeclarations"),
                             .enableUpcomingFeature("BareSlashRegexLiterals"),
@@ -179,7 +181,9 @@ let package = Package(
                             .enableUpcomingFeature("ForwardTrailingClosures"),
                             .enableUpcomingFeature("ConciseMagicFile"),
                             
-                            //.enableExperimentalFeature("StrictConcurrency=complete"),
+                            .enableExperimentalFeature("AccessLevelOnImport"),
+                            .enableExperimentalFeature("StrictConcurrency"),
+//                            .enableExperimentalFeature("StrictConcurrency=complete"),
                         ])
                         #endif
                         

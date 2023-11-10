@@ -36,13 +36,15 @@ internal class MFIGamePadInterpreter: GamePadInterpreter {
         }
     }
 
-    @objc func controllerConnected(_ notification: Notification) {
+    @objc
+    fileprivate func controllerConnected(_ notification: Notification) {
         guard let identifier = notification.object as? GCController else { return }
         let controller = GamePad(interpreter: self, identifier: identifier as AnyObject)
         self.hid.gamePads.addNewlyConnectedGamePad(controller)
     }
 
-    @objc func controllerDisconnected(_ notification: Notification) {
+    @objc 
+    fileprivate func controllerDisconnected(_ notification: Notification) {
         guard let identifier = notification.object as? GCController else { return }
         if let controller = self.hid.gamePads.all.first(where: {
             $0.identifier as? GCController == identifier
