@@ -21,6 +21,7 @@ public final class UIKitPlatform: Platform, InternalPlatform {
     weak internal var windowPreparingForSceneConnection: UIKitWindow? = nil
 
     internal var overrideSupportsMultipleWindows: Bool? = nil
+    @MainActor
     public var supportsMultipleWindows: Bool {
         if let overrideSupportsMultipleWindows {
             return overrideSupportsMultipleWindows
@@ -28,6 +29,7 @@ public final class UIKitPlatform: Platform, InternalPlatform {
         return UIApplication.shared.supportsMultipleScenes
     }
 
+    @MainActor
     public func locateResource(from path: String) async -> String? {
         let searchPaths =
             Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations

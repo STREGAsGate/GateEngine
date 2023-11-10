@@ -9,6 +9,9 @@ import Foundation
 import WinSDK
 
 public struct Win32FileSystem: FileSystem {
+    #if hasFeature(StrictConcurrency)
+    @MainActor
+    #endif
     func urlForFolderID(_ folderID: KNOWNFOLDERID) -> URL {
         var folderID: KNOWNFOLDERID = folderID
         var pwString: PWSTR! = nil
@@ -18,6 +21,9 @@ public struct Win32FileSystem: FileSystem {
         return URL(fileURLWithPath: string).appendingPathComponent(Game.shared.identifier)
     }
 
+    #if hasFeature(StrictConcurrency)
+    @MainActor
+    #endif
     public func pathForSearchPath(
         _ searchPath: FileSystemSearchPath,
         in domain: FileSystemSearchPathDomain

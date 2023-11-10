@@ -77,7 +77,8 @@ final class UIKitWindow: WindowBacking {
         Game.shared.platform.applicationRequestedWindow = false
     }
 
-    nonisolated lazy private(set) var displayLink: CADisplayLink = {
+    @MainActor
+    lazy private(set) var displayLink: CADisplayLink = {
         if let displayLink = self.uiWindow.screen.displayLink(
             withTarget: self,
             selector: #selector(self.getFrame(_:))
@@ -129,8 +130,10 @@ final class UIKitWindow: WindowBacking {
     }
 
     deinit {
-        if Game.shared.renderingAPI == .openGL {
-            displayLink.invalidate()
+        Task { @MainActor in
+            if Game.shared.renderingAPI == .openGL {
+                self.displayLink.invalidate()
+            }
         }
     }
 

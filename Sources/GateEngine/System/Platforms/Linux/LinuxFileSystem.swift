@@ -10,6 +10,9 @@ import Foundation
 public struct LinuxFileSystem: FileSystem {
     let homeDir: String = String(cString: getenv("HOME") ?? getpwuid(getuid()).pointee.pw_dir)
 
+    #if hasFeature(StrictConcurrency)
+    @MainActor
+    #endif
     public func pathForSearchPath(
         _ searchPath: FileSystemSearchPath,
         in domain: FileSystemSearchPathDomain
