@@ -23,7 +23,7 @@ extension OctreeComponent {
     {
         self.load(
             withCenter: center,
-            triangles: try await RawGeometry(path: path).generateCollisionTrianges()
+            triangles: try await RawGeometry(path: path).generateCollisionTriangles()
         )
     }
 }
@@ -144,11 +144,7 @@ extension OctreeComponent {
             let center: Position3
             private(set) var triangles: [CollisionTriangle] = []
             private(set) var triangleBoxes: [AxisAlignedBoundingBox3D] = []
-            lazy private(set) var boundingBox: AxisAlignedBoundingBox3D = AxisAlignedBoundingBox3D(
-                center: center,
-                offset: .zero,
-                radius: .one
-            )
+            var boundingBox: AxisAlignedBoundingBox3D! = nil
 
             init(center: Position3) {
                 self.center = center
@@ -166,7 +162,7 @@ extension OctreeComponent {
                     let convertedTriangle = triangle + center
                     let triangleBox = AxisAlignedBoundingBox3D(convertedTriangle.positions)
                     boundingBoxes.append(triangleBox)
-                    self.boundingBox = self.boundingBox.expandedToEnclose(triangleBox)
+                    self.boundingBox = self.boundingBox?.expandedToEnclose(triangleBox) ?? triangleBox
                     convertedTriangles.append(convertedTriangle)
                 }
                 self.triangles.append(contentsOf: convertedTriangles)
@@ -178,7 +174,7 @@ extension OctreeComponent {
         primer.insertTriangles(triangles)
 
         self.setup(
-            size: primer.boundingBox.size + Size3(0.1),
+            size: primer.boundingBox.size + Size3(0.01),
             offset: primer.boundingBox.offset,
             position: primer.boundingBox.center
         )

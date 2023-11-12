@@ -6,7 +6,7 @@
  */
 
 extension RawGeometry {
-    public func generateCollisionTrianges() -> [CollisionTriangle] {
+    public func generateCollisionTriangles() -> [CollisionTriangle] {
         var positions: [Position3] = []
         var uvs: [[Position2]] = Array(repeating: [], count: uvSets.count)
         var colors: [Color] = []
