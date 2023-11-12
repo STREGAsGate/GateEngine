@@ -206,6 +206,8 @@
             self.entitiesDidChange = true
         }
     }
+    
+    internal var _removedEntities: ContiguousArray<Entity> = []
 
     private var _sortedEntities: ContiguousArray<Entity> = []
     @usableFromInline
@@ -256,22 +258,33 @@ extension ECSContext {
             performance.startFrame()
             performance.startSystems()
         }
-        for system in self.platformSystems {
-            guard type(of: system).phase == .preUpdating else { continue }
-            self.performance?.beginStatForSystem(system)
-            await system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
-            self.performance?.endCurrentStatistic()
-        }
+//        for system in self.platformSystems {
+//            guard type(of: system).phase == .preUpdating else { continue }
+//            self.performance?.beginStatForSystem(system)
+//            await system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
+//            self.performance?.endCurrentStatistic()
+//        }
         for system in self.systems {
             self.performance?.beginStatForSystem(system)
             await system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         for system in self.platformSystems {
-            guard type(of: system).phase == .postDeferred else { continue }
+//            guard type(of: system).phase == .postDeferred else { continue }
             self.performance?.beginStatForSystem(system)
             await system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
+        }
+        
+        let removed = self._removedEntities
+        _removedEntities.removeAll(keepingCapacity: true)
+        for entity in removed {
+            for system in self.systems {
+                await system.gameDidRemove(entity: entity, game: game, input: input)
+            }
+            for system in self.platformSystems {
+                await system.gameDidRemove(entity: entity, game: game, input: input)
+            }
         }
 
         // Drop frame if less then 12fps
@@ -316,7 +329,7 @@ extension ECSContext {
 
 //MARK: Entity Management
 extension ECSContext {
-    @usableFromInline @_transparent
+    @usableFromInline
     func insertEntity(_ entity: Entity) {
         self.entities.insert(entity)
         
@@ -330,17 +343,26 @@ extension ECSContext {
             }
         }
     }
-    @usableFromInline @discardableResult @_transparent
+    @usableFromInline
     func removeEntity(_ entity: Entity) -> Entity? {
-        return self.entities.remove(entity)
+        if let entity = self.entities.remove(entity) {
+            self._removedEntities.append(entity)
+            return entity
+        }
+        return nil
     }
-    @usableFromInline @discardableResult @_transparent
+    @usableFromInline
     func removeEntity(named name: String) -> Entity? {
-        self.removeEntity(where: { $0.name == name })
+        if let entity = self.removeEntity(where: { $0.name == name }) {
+            self._removedEntities.append(entity)
+            return entity
+        }
+        return nil
     }
-    @usableFromInline @discardableResult
+    @usableFromInline
     func removeEntity(where block: (Entity) -> (Bool)) -> Entity? {
         if let removed = self.entities.first(where: block) {
+            self._removedEntities.append(removed)
             self.entities.remove(removed)
             return removed
         }

@@ -14,20 +14,22 @@ public final class StateMachineComponent: Component {
         return stateMachine.currentState
     }
     
-    public init() {
-        final class NoState: State {
-            init() { }
-            func apply(to entity: Entity, previousState: some State, game: Game, input: HID) { }
-            func update(for entity: Entity, inGame game: Game, input: HID, withTimePassed deltaTime: Float) { }
-            func possibleNextStates(for entity: Entity, game: Game, input: HID) -> [any State.Type] {
-                return []
-            }
+    final class NoState: State {
+        init() { }
+        func apply(to entity: Entity, previousState: some State, game: Game, input: HID) { }
+        func update(for entity: Entity, inGame game: Game, input: HID, withTimePassed deltaTime: Float) { }
+        func possibleNextStates(for entity: Entity, game: Game, input: HID) -> [any State.Type] {
+            return []
         }
+    }
+    
+    public init() {
         self.stateMachine = StateMachine(initialState: NoState.self)
     }
     
     public init(initialState: any State.Type) {
         self.stateMachine = StateMachine(initialState: initialState)
     }
+    
     public static let componentID: ComponentID = ComponentID()
 }

@@ -23,6 +23,15 @@ import GameMath
             await update(game: game, input: input, withTimePassed: deltaTime)
         }
     }
+    
+    /**
+     Called once when the entity is removed from the game.
+     
+     Use `gameDidRemove()` to cleanup an Entity that will be destoryed.
+     */
+    open func gameDidRemove(entity: Entity, game: Game, input: HID) async {
+        
+    }
 
     /**
      Called once when the system is first inserted into the game.

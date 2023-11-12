@@ -7,8 +7,10 @@
 
 public final class StateMachineSystem: System {
     public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
-        for entity in game.entities.filter({$0.hasComponent(StateMachineComponent.self)}) {
-            let stateMachineComponent = entity[StateMachineComponent.self]
+        for entity in game.entities {
+            guard let stateMachineComponent = entity.component(ofType: StateMachineComponent.self) else {
+                continue
+            }
             if stateMachineComponent.shouldApplyInitialState {
                 applyInitialStateIfNeeded(for: stateMachineComponent, of: entity, inGame: game, input: input)
             }
@@ -19,6 +21,18 @@ public final class StateMachineSystem: System {
     func applyInitialStateIfNeeded(for component: StateMachineComponent, of entity: Entity, inGame game: Game, input: HID) {
         component.stateMachine.currentState.apply(to: entity, previousState: component.stateMachine.currentState, game: game, input: input)
         component.shouldApplyInitialState = false
+    }
+    
+    public override func gameDidRemove(entity: Entity, game: Game, input: HID) async {
+        guard let stateMachineComponent = entity.component(ofType: StateMachineComponent.self) else {
+            return
+        }
+        stateMachineComponent.stateMachine.currentState.willMoveToNextState(
+            for: entity,
+            nextState: StateMachineComponent.NoState.self,
+            game: game,
+            input: input
+        )
     }
     
     public override class var phase: System.Phase {return .updating}
