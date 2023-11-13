@@ -18,7 +18,7 @@ public final class Transform3Component: Component {
         }
     }
 
-    public var previousTransform: Transform3 = .default {
+    public lazy var previousTransform: Transform3 = transform {
         didSet {
             needsUpdate = true
         }
