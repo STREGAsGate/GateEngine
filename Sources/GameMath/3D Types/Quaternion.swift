@@ -431,14 +431,31 @@ public extension Quaternion {
                 return self.lerped(to: to, factor: factor)
             }
         case let .easeIn(factor, options):
-            #warning("Quaternion needs easeIn implimented.")
+            let easeInFactor = 1 - cos((factor * .pi) / 2)
             if options.contains(.shortest) {
-                return self.slerped(to: to, factor: factor)
+                return self.slerped(to: to, factor: easeInFactor)
             }else{
-                return self.lerped(to: to, factor: factor)
+                return self.lerped(to: to, factor: easeInFactor)
+            }
+        case let .easeOut(factor, options):
+            let easeOutFactor = sin((factor * .pi) / 2)
+            if options.contains(.shortest) {
+                return self.slerped(to: to, factor: easeOutFactor)
+            }else{
+                return self.lerped(to: to, factor: easeOutFactor)
+            }
+        case let .easeInOut(factor, options):
+            let easeInOutFactor = -(cos(.pi * factor) - 1) / 2
+            if options.contains(.shortest) {
+                return self.slerped(to: to, factor: easeInOutFactor)
+            }else{
+                return self.lerped(to: to, factor: easeInOutFactor)
             }
         }
     }
+    
+    
+    //let easeInOutFactor = -(cos(.pi * factor) - 1) / 2
     
     @_transparent
     mutating func interpolate(to: Self, _ method: InterpolationMethod) {

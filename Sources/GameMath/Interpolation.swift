@@ -24,7 +24,7 @@ public enum InterpolationMethod {
     /**
      Interpolates at a constant rate
      
-     - parameter factor: is progress of interpolation. 0 being the source and 1 being destination.
+     - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
      - parameter options: Options for processing the interpolation.
      */
     case linear(_ factor: Float, options: InterpolationOptions = [.shortest])
@@ -32,10 +32,26 @@ public enum InterpolationMethod {
     /**
      Interpolates with acceleration increasing near the destinartion
 
-     - parameter factor: is progress of interpolation. 0 being the source and 1 being destination.
+     - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
      - parameter options: Options for processing the interpolation.
      */
     case easeIn(_ factor: Float, options: InterpolationOptions = [.shortest])
+    
+    /**
+     Interpolates with acceleration increasing near the beginning
+
+     - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
+     - parameter options: Options for processing the interpolation.
+     */
+    case easeOut(_ factor: Float, options: InterpolationOptions = [.shortest])
+    
+    /**
+     Interpolates with acceleration increasing near the beginning, and then again at the end
+
+     - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
+     - parameter options: Options for processing the interpolation.
+     */
+    case easeInOut(_ factor: Float, options: InterpolationOptions = [.shortest])
 }
 
 public extension Float {
@@ -47,6 +63,10 @@ public extension Float {
             return self.lerped(to: to, factor: factor)
         case let .easeIn(factor, _):
             return self.easedIn(to: to, factor: factor)
+        case let .easeOut(factor, _):
+            return self.easedOut(to: to, factor: factor)
+        case let .easeInOut(factor, _):
+            return self.easedInOut(to: to, factor: factor)
         }
     }
     
@@ -58,6 +78,10 @@ public extension Float {
             return self.lerp(to: to, factor: factor)
         case let .easeIn(factor, _):
             return self.easeIn(to: to, factor: factor)
+        case let .easeOut(factor, _):
+            return self.easeOut(to: to, factor: factor)
+        case let .easeInOut(factor, _):
+            return self.easeInOut(to: to, factor: factor)
         }
     }
 }
@@ -81,12 +105,38 @@ internal extension Float {
 internal extension Float {
     @usableFromInline @_transparent
     func easedIn(to: Float, factor: Float) -> Float {
-        #warning("Variable 'to' unused")
-        return 1 - cos((factor * .pi) / 2)
+        let easeInFactor = 1 - cos((factor * .pi) / 2)
+        return self.lerped(to: to, factor: easeInFactor)
     }
     
     @usableFromInline @_transparent
     mutating func easeIn(to: Float, factor: Float) {
         self = self.easedIn(to: to, factor: factor)
+    }
+}
+
+internal extension Float {
+    @usableFromInline @_transparent
+    func easedOut(to: Float, factor: Float) -> Float {
+        let easeOutFactor = sin((factor * .pi) / 2)
+        return self.lerped(to: to, factor: easeOutFactor)
+    }
+    
+    @usableFromInline @_transparent
+    mutating func easeOut(to: Float, factor: Float) {
+        self = self.easedOut(to: to, factor: factor)
+    }
+}
+
+internal extension Float {
+    @usableFromInline @_transparent
+    func easedInOut(to: Float, factor: Float) -> Float {
+        let easeInOutFactor = -(cos(.pi * factor) - 1) / 2
+        return self.lerped(to: to, factor: easeInOutFactor)
+    }
+    
+    @usableFromInline @_transparent
+    mutating func easeInOut(to: Float, factor: Float) {
+        self = self.easedInOut(to: to, factor: factor)
     }
 }
