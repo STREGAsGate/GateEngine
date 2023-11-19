@@ -546,9 +546,11 @@ public extension Vector4 {
         z += lhs.y * rhs.j
         z += lhs.z * rhs.k
         z += rhs.l
-        
-        #warning("Not multiplying W")
-        var w: Float = 0
+
+        var w: Float = lhs.x * rhs.m
+        w += lhs.y * rhs.n
+        w += lhs.z * rhs.o
+        w += rhs.p
         
         return Self(x, y, z, w)
     }
@@ -571,8 +573,10 @@ public extension Vector4 {
         z += rhs.z * lhs.k
         z += lhs.o
         
-        #warning("Not multiplying W")
-        var w: Float = 0
+        var w: Float = rhs.x * lhs.m
+        w += rhs.y * lhs.n
+        w += rhs.z * lhs.o
+        w += lhs.p
         
         return Self(x, y, z, w)
     }
