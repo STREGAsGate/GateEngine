@@ -128,7 +128,7 @@ Add the package to your project like any other package and you're done.
 ```
 
 ### Windows Specific Setup
-Swift 5.9.0 Only: A linker error for dinput.lib can be fixed with a workaround [here](https://github.com/apple/swift/issues/68887).
+Swift 5.9.0-5.9.1 Only: A linker error for dinput.lib can be fixed with a workaround [here](https://github.com/apple/swift/issues/68887).
 
 ### Linux Specific Setup
 For Linux you must install dev packages for OpenGL and OpenAL.
