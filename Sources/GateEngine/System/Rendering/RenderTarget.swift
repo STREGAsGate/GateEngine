@@ -124,13 +124,13 @@ extension _RenderTargetProtocol {
         }
     }
 
-    public init() {
+    public init(clearColor: Color = .black) {
         precondition(
             Game.shared.attributes.contains(.renderingIsPermitted),
             "RenderTarget can only be created from a RenderingSystem."
         )
         self.renderTargetBackend = getRenderTargetBackend()
-        self.clearColor = .black
+        self.clearColor = clearColor
     }
 
     internal init(backend: some RenderTargetBackend) {
