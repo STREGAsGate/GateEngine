@@ -80,14 +80,14 @@ extension PlatformSystem {
 }
 
 @MainActor extension Game {
-    @usableFromInline @inline(__always)
-    func `defer`(_ closure: @escaping DeferredClosure) {
+    @inline(__always)
+    public func `defer`(_ closure: @escaping DeferredClosure) {
         let system = self.system(ofType: DeferredDelaySystem.self)
         system.append(deferredClosure: closure)
     }
     
-    @usableFromInline @inline(__always)
-    func delay(_ duration: Float, _ closure: @escaping DeferredClosure) {
+    @inline(__always)
+    public func delay(_ duration: Float, _ closure: @escaping DeferredClosure) {
         let system = self.system(ofType: DeferredDelaySystem.self)
         system.append(delayDuration: duration, closure: closure)
     }
