@@ -344,12 +344,10 @@ extension ECSContext {
         }
     }
     @usableFromInline
-    func removeEntity(_ entity: Entity) -> Entity? {
+    func removeEntity(_ entity: Entity) {
         if let entity = self.entities.remove(entity) {
             self._removedEntities.append(entity)
-            return entity
         }
-        return nil
     }
     @usableFromInline
     func removeEntity(named name: String) -> Entity? {
