@@ -80,6 +80,7 @@ extension SystemSortOrder {
     public static let collision3DSystem: Self = 3_200
 
     public static let rigSystem: Self = 4_100
+    public static let objectAnimation3DSystem: Self = 4_100
 }
 
 extension RenderingSystemSortOrder {

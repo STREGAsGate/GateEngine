@@ -850,3 +850,83 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
         return SkeletalAnimationBackend(name: animation.name, duration: timeMax, animations: animations)
     }
 }
+
+extension GLTransmissionFormat: ObjectAnimation3DImporter {   
+    public func process(data: Data, baseURL: URL, options: ObjectAnimation3DImporterOptions) async throws -> ObjectAnimation3DBackend {
+        let gltf = try gltf(from: data, baseURL: baseURL)
+        
+        guard let animation = animation(named: options.subobjectName, from: gltf) else {
+            throw GateEngineError.failedToDecode(
+                "Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))"
+            )
+        }
+        
+        let objectAnimation = ObjectAnimation3D.Animation()
+        
+        var timeMax: Float = -1_000_000_000
+
+        for channel in animation.channels {
+            let sampler = animation.samplers[channel.sampler]
+
+            guard let times: [Float] = await gltf.values(forAccessor: sampler.input) else {
+                continue
+            }
+            guard let values: [Float] = await gltf.values(forAccessor: sampler.output) else {
+                continue
+            }
+
+            switch channel.target.path {
+            case .translation:
+                objectAnimation.positionOutput.times = times
+                objectAnimation.positionOutput.positions = stride(from: 0, to: values.count, by: 3)
+                    .map({
+                        return Position3(x: values[$0 + 0], y: values[$0 + 1], z: values[$0 + 2])
+                    })
+                switch sampler.interpolation {
+                case .step:
+                    objectAnimation.positionOutput.interpolation = .step
+                default:
+                    objectAnimation.positionOutput.interpolation = .linear
+                }
+            case .rotation:
+                objectAnimation.rotationOutput.times = times
+                objectAnimation.rotationOutput.rotations = stride(from: 0, to: values.count, by: 4)
+                    .map({
+                        return Quaternion(
+                            x: values[$0 + 0],
+                            y: values[$0 + 1],
+                            z: values[$0 + 2],
+                            w: values[$0 + 3]
+                        )
+                    })
+                switch sampler.interpolation {
+                case .step:
+                    objectAnimation.rotationOutput.interpolation = .step
+                default:
+                    objectAnimation.rotationOutput.interpolation = .linear
+                }
+            case .scale:
+                objectAnimation.scaleOutput.times = times
+                objectAnimation.scaleOutput.scales = stride(from: 0, to: values.count, by: 3).map({
+                    return Size3(
+                        width: values[$0 + 0],
+                        height: values[$0 + 1],
+                        depth: values[$0 + 2]
+                    )
+                })
+                switch sampler.interpolation {
+                case .step:
+                    objectAnimation.scaleOutput.interpolation = .step
+                default:
+                    objectAnimation.scaleOutput.interpolation = .linear
+                }
+            case .weight:
+                break
+            }
+
+            timeMax = .maximum(times.max()!, timeMax)
+        }
+
+        return ObjectAnimation3DBackend(name: animation.name, duration: timeMax, animation: objectAnimation)
+    }
+}

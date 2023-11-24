@@ -30,6 +30,10 @@ extension ResourceManager {
         internal var skeletalAnimationImporters: [any SkeletalAnimationImporter.Type] = [
             GLTransmissionFormat.self,
         ]
+        
+        internal var objectAnimation3DImporters: [any ObjectAnimation3DImporter.Type] = [
+            GLTransmissionFormat.self,
+        ]
 
         internal var tileSetImporters: [any TileSetImporter.Type] = [
             TiledTSJImporter.self,
@@ -257,6 +261,8 @@ extension ResourceManager {
 
         var tileSets: [TileSetKey: TileSetCache] = [:]
         var tileMaps: [TileMapKey: TileMapCache] = [:]
+        
+        var objectAnimation3Ds: [ObjectAnimation3DKey: ObjectAnimation3DCache] = [:]
         
         var audioBuffers: [AudioBufferKey: AudioBufferCache] = [:]
         
