@@ -59,11 +59,6 @@ public final class ObjectAnimation3DSystem: System {
                             to: &entity.transform3
                         )
                         component.deltaAccumulator = 0
-                        
-                        if animation.isFinished {
-                            component.completion?()
-                            component.completion = nil
-                        }
                     }
                 }
             }

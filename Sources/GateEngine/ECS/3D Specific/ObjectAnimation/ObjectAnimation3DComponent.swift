@@ -9,9 +9,6 @@
     public var disabled: Bool = false
     internal var deltaAccumulator: Float = 0
     public var slowAnimationsPastDistance: Float = 20
-
-    public var completion: (()->())? = nil
-    public var removeWhenFinished: Bool = false
     
     public var animationSet: [ObjectAnimation3D]? = nil {
         didSet {
