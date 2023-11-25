@@ -38,11 +38,11 @@ internal class CABufferReference: AudioBufferBackend {
         self.audioBuffer = audioBuffer
         Task(priority: .utility) {
             do {
-                guard let path = await Game.shared.platform.locateResource(from: path) else {
+                guard let located = await Game.shared.platform.locateResource(from: path) else {
                     throw GateEngineError.failedToLocate
                 }
                 do {  // Allow CoreAudio an chance to load files the way it prefers
-                    let file = try AVAudioFile(forReading: URL(fileURLWithPath: path))
+                    let file = try AVAudioFile(forReading: URL(fileURLWithPath: located))
                     if let buffer = AVAudioPCMBuffer(
                         pcmFormat: file.processingFormat,
                         frameCapacity: AVAudioFrameCount(file.length)
@@ -59,7 +59,9 @@ internal class CABufferReference: AudioBufferBackend {
 
                 let data = try await Game.shared.platform.loadResource(from: path)
                 #if canImport(Vorbis)
-                if let ogg = VorbisFile(data, context: context) {
+                let lowercasePath = path.lowercased()
+                if lowercasePath.hasSuffix("ogg") || lowercasePath.hasSuffix("oga") {
+                    let ogg = try VorbisFile(data, context: context)
                     self.load(data: ogg.audio, format: ogg.format())
                     self.audioBuffer.state = .ready
                     return
