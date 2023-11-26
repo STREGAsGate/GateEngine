@@ -765,17 +765,9 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
                     let node = gltf.nodes[index]
 
                     let jointAnimation = jointAnimation(forTarget: index)
-                    jointAnimation.positionOutput.times.append(0)
-                    jointAnimation.positionOutput.positions.append(node.transform.position)
-                    jointAnimation.positionOutput.interpolation = .step
-
-                    jointAnimation.rotationOutput.times.append(0)
-                    jointAnimation.rotationOutput.rotations.append(node.transform.rotation)
-                    jointAnimation.rotationOutput.interpolation = .step
-
-                    jointAnimation.scaleOutput.times.append(0)
-                    jointAnimation.scaleOutput.scales.append(node.transform.scale)
-                    jointAnimation.scaleOutput.interpolation = .step
+                    jointAnimation.positionOutput.bind = node.transform.position
+                    jointAnimation.rotationOutput.bind = node.transform.rotation
+                    jointAnimation.scaleOutput.bind = node.transform.scale
                 }
             }
             addChildren(gltfNode: rootNode, parentJoint: rootJoint)

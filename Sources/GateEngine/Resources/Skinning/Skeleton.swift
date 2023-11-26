@@ -180,7 +180,7 @@ extension Skeleton {
     @MainActor 
     public func applyAnimation(
         _ skeletalAnimation: SkeletalAnimation,
-        atTime time: Float,
+        atTime _time: Float,
         duration: Float,
         repeating: Bool,
         skipJoints: [Skeleton.SkipJoint],
@@ -188,6 +188,15 @@ extension Skeleton {
     ) {
         let interpolate = interpolateProgress < 1
 
+        let time: Float
+        if repeating {
+            time = _time.truncatingRemainder(dividingBy: duration)
+        }else if _time > duration {
+            time = duration
+        }else{
+            time = _time
+        }
+        
         func applyToJoint(_ joint: Skeleton.Joint) {
             var keyedComponents: SkeletalAnimation.KeyedComponents = []
             var transform: Transform3 = .default

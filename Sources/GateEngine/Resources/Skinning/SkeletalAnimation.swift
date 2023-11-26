@@ -119,73 +119,32 @@ extension SkeletalAnimation {
             var times: [Float]
             var interpolation: Interpolation
             var positions: [Position3]
+            var bind: Position3 = .zero
 
             func position(forTime time: Float, duration: Float, repeating: Bool) -> Position3? {
                 guard positions.isEmpty == false else { return nil }
-                if let index = times.firstIndex(where: { $0 == time }) {
-                    // perfect frame time
-                    return positions[index]
+                guard let currentIndex: Int = times.lastIndex(where: { $0 < time }) else {return positions.first}
+
+                switch interpolation {
+                case .linear:
+                    let plus1 = currentIndex + 1
+                    let nextIndex: Int = times.indices.contains(plus1) ? plus1 : times.endIndex - 1
+                    
+                    let time1 = times[currentIndex]
+                    let time2 = times[nextIndex]
+                    
+                    let position1 = positions[currentIndex]
+                    let position2 = positions[nextIndex]
+
+                    let currentTime: Float = time - time1
+                    let currentDuration: Float = time2 - time1
+                    let factor: Float = currentTime / currentDuration
+                    
+                    guard factor.isFinite else { return position1 }
+                    return position1.interpolated(to: position2, .linear(factor))
+                case .step:
+                    return positions[currentIndex]
                 }
-                if times.count == 1, times[0] < time {
-                    return positions[0]
-                }
-
-                if let firstIndex = times.lastIndex(where: { $0 < time }) {
-                    if let lastIndex = times.firstIndex(where: { $0 > time }) {
-                        let time1 = times[firstIndex]
-                        let time2 = times[lastIndex]
-
-                        let position1 = positions[firstIndex]
-                        let position2 = positions[lastIndex]
-
-                        let currentTime = Float(time2 - time)
-                        let currentDuration = Float(time2 - time1)
-
-                        let factor: Float = 1 - (currentTime / currentDuration)
-                        guard factor.isFinite else { return position2 }
-
-                        switch interpolation {
-                        case .linear:
-                            return position1.interpolated(
-                                to: position2,
-                                .linear(factor, options: [.shortest])
-                            )
-                        case .step:
-                            if factor < 0.5 {
-                                return position1
-                            }
-                            return position2
-                        }
-                    }
-                    return positions[firstIndex]
-                }
-                if repeating {
-                    let time1: Float = 0
-                    let time2: Float = times[0]
-
-                    let position1 = positions.last!
-                    let position2 = positions[0]
-
-                    let currentTime = Float(time2 - time)
-                    let currentDuration = Float(time2 - time1)
-
-                    let factor: Float = 1 - (currentTime / currentDuration)
-                    guard factor.isFinite else { return position2 }
-
-                    switch interpolation {
-                    case .linear:
-                        return position1.interpolated(
-                            to: position2,
-                            .linear(factor, options: [.shortest])
-                        )
-                    case .step:
-                        if factor < 0.5 {
-                            return position1
-                        }
-                        return position2
-                    }
-                }
-                return positions.first
             }
         }
         var rotationOutput: RotationOutput = RotationOutput(
@@ -197,73 +156,32 @@ extension SkeletalAnimation {
             var times: [Float]
             var interpolation: Interpolation
             var rotations: [Quaternion]
-
+            var bind: Quaternion = .zero
+            
             func rotation(forTime time: Float, duration: Float, repeating: Bool) -> Quaternion? {
                 guard rotations.isEmpty == false else { return nil }
-                if let index = times.firstIndex(where: { $0 == time }) {
-                    // perfect frame time
-                    return rotations[index]
+                guard let currentIndex: Int = times.lastIndex(where: { $0 < time }) else {return rotations.first}
+
+                switch interpolation {
+                case .linear:
+                    let plus1 = currentIndex + 1
+                    let nextIndex: Int = times.indices.contains(plus1) ? plus1 : times.endIndex - 1
+                    
+                    let time1 = times[currentIndex]
+                    let time2 = times[nextIndex]
+                    
+                    let rotation1 = rotations[currentIndex]
+                    let rotation2 = rotations[nextIndex]
+
+                    let currentTime: Float = time - time1
+                    let currentDuration: Float = time2 - time1
+                    let factor: Float = currentTime / currentDuration
+                    
+                    guard factor.isFinite else { return rotation1 }
+                    return rotation1.interpolated(to: rotation2, .linear(factor))
+                case .step:
+                    return rotations[currentIndex]
                 }
-                if times.count == 1, times[0] < time {
-                    return rotations[0]
-                }
-
-                if let firstIndex = times.lastIndex(where: { $0 < time }) {
-                    if let lastIndex = times.firstIndex(where: { $0 > time }) {
-                        let time1 = times[firstIndex]
-                        let time2 = times[lastIndex]
-
-                        let rotation1 = rotations[firstIndex]
-                        let rotation2 = rotations[lastIndex]
-
-                        let currentTime = Float(time2 - time)
-                        let currentDuration = Float(time2 - time1)
-
-                        let factor: Float = 1 - (currentTime / currentDuration)
-                        guard factor.isFinite else { return rotation2 }
-
-                        switch interpolation {
-                        case .linear:
-                            return rotation1.interpolated(
-                                to: rotation2,
-                                .linear(factor, options: [.shortest])
-                            )
-                        case .step:
-                            if factor < 0.5 {
-                                return rotation1
-                            }
-                            return rotation2
-                        }
-                    }
-                    return rotations[firstIndex]
-                }
-                if repeating {
-                    let time1: Float = 0
-                    let time2: Float = times[0]
-
-                    let rotation1 = rotations.last!
-                    let rotation2 = rotations[0]
-
-                    let currentTime = Float(time2 - time)
-                    let currentDuration = Float(time2 - time1)
-
-                    let factor: Float = 1 - (currentTime / currentDuration)
-                    guard factor.isFinite else { return rotation2 }
-
-                    switch interpolation {
-                    case .linear:
-                        return rotation1.interpolated(
-                            to: rotation2,
-                            .linear(factor, options: [.shortest])
-                        )
-                    case .step:
-                        if factor < 0.5 {
-                            return rotation1
-                        }
-                        return rotation2
-                    }
-                }
-                return rotations.first
             }
         }
 
@@ -272,73 +190,32 @@ extension SkeletalAnimation {
             var times: [Float]
             var interpolation: Interpolation
             var scales: [Size3]
-
+            var bind: Size3 = .one
+            
             func scale(forTime time: Float, duration: Float, repeating: Bool) -> Size3? {
                 guard scales.isEmpty == false else { return nil }
-                if let index = times.firstIndex(where: { $0 == time }) {
-                    // perfect frame time
-                    return scales[index]
+                guard let currentIndex: Int = times.lastIndex(where: { $0 < time }) else {return scales.first}
+
+                switch interpolation {
+                case .linear:
+                    let plus1 = currentIndex + 1
+                    let nextIndex: Int = times.indices.contains(plus1) ? plus1 : times.endIndex - 1
+                    
+                    let time1 = times[currentIndex]
+                    let time2 = times[nextIndex]
+                    
+                    let scale1 = scales[currentIndex]
+                    let scale2 = scales[nextIndex]
+
+                    let currentTime: Float = time - time1
+                    let currentDuration: Float = time2 - time1
+                    let factor: Float = currentTime / currentDuration
+                    
+                    guard factor.isFinite else { return scale1 }
+                    return scale1.interpolated(to: scale2, .linear(factor))
+                case .step:
+                    return scales[currentIndex]
                 }
-                if times.count == 1, times[0] < time {
-                    return scales[0]
-                }
-
-                if let firstIndex = times.lastIndex(where: { $0 < time }) {
-                    if let lastIndex = times.firstIndex(where: { $0 > time }) {
-                        let time1 = times[firstIndex]
-                        let time2 = times[lastIndex]
-
-                        let scale1 = scales[firstIndex]
-                        let scale2 = scales[lastIndex]
-
-                        let currentTime = Float(time2 - time)
-                        let currentDuration = Float(time2 - time1)
-
-                        let factor: Float = 1 - (currentTime / currentDuration)
-                        guard factor.isFinite else { return scale2 }
-
-                        switch interpolation {
-                        case .linear:
-                            return scale1.interpolated(
-                                to: scale2,
-                                .linear(factor, options: [.shortest])
-                            )
-                        case .step:
-                            if factor < 0.5 {
-                                return scale1
-                            }
-                            return scale2
-                        }
-                    }
-                    return scales[firstIndex]
-                }
-                if repeating {
-                    let time1: Float = 0
-                    let time2: Float = times[0]
-
-                    let scale1 = scales.last!
-                    let scale2 = scales[0]
-
-                    let currentTime = Float(time2 - time)
-                    let currentDuration = Float(time2 - time1)
-
-                    let factor: Float = 1 - (currentTime / currentDuration)
-                    guard factor.isFinite else { return scale2 }
-
-                    switch interpolation {
-                    case .linear:
-                        return scale1.interpolated(
-                            to: scale2,
-                            .linear(factor, options: [.shortest])
-                        )
-                    case .step:
-                        if factor < 0.5 {
-                            return scale1
-                        }
-                        return scale2
-                    }
-                }
-                return scales.first
             }
         }
 
