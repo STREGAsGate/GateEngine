@@ -15,7 +15,7 @@ internal protocol SpacialAudioMixerReference: AnyObject {
 /*!
  A mixer for 3D audio
  */
-public class SpatialAudioMixer {
+public final class SpatialAudioMixer {
     internal unowned let context: AudioContext
     internal var reference: any SpacialAudioMixerReference
 
