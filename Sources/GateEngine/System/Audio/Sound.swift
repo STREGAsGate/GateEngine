@@ -99,7 +99,8 @@ extension Sound {
         _ sound: Sound,
         as kind: Sound.Kind = .soundEffect,
         from entity: Entity? = nil,
-        config: ((_ sound: ActiveSound) -> Void)? = nil
+        volume: Float = 1,
+        config: ((_ activeSound: ActiveSound) -> Void)? = nil
     ) -> ActiveSound {
         let active = ActiveSound()
         Task { @MainActor in
@@ -107,10 +108,16 @@ extension Sound {
                 sound,
                 as: kind,
                 entity: entity,
+                volume: volume,
                 handle: active
             )
         }
         config?(active)
         return active
+    }
+    
+    @MainActor 
+    public static func setVolume(_ volume: Float, for kind: Kind) {
+        Game.shared.audio.spatialMixer(for: kind).volume = volume
     }
 }

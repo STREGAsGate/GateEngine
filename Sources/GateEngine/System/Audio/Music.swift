@@ -10,7 +10,7 @@ import GameMath
 extension Music {
     public enum Kind: Hashable {
         /// A foreground track
-        case music
+        case soundTrack
         /// A background track not requiring user attention.
         case ambiance
     }
@@ -24,8 +24,8 @@ public struct Music {
     @discardableResult
     public static func play(
         _ music: Music,
-        as kind: Kind = .music,
-        config: ((_ music: ActiveMusic) -> Void)? = nil
+        as kind: Kind = .soundTrack,
+        config: ((_ activeMusic: ActiveMusic) -> Void)? = nil
     ) -> ActiveMusic {
         let handle = ActiveMusic()
         config?(handle)
@@ -33,6 +33,11 @@ public struct Music {
             Game.shared.system(ofType: AudioSystem.self).queueMusic(music, as: kind, handle: handle)
         }
         return handle
+    }
+    
+    @MainActor 
+    public static func setVolume(_ volume: Float, for kind: Kind) {
+        Game.shared.audio.musicMixer(for: kind).volume = volume
     }
 }
 
