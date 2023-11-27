@@ -31,6 +31,7 @@ internal final class AudioSystem: PlatformSystem {
         cache[path] = new
         return new
     }
+    
     override func setup(game: Game, input: HID) async {
 
     }
@@ -256,6 +257,7 @@ extension AudioSystem {
                         mixerID: ObjectIdentifier(mixer),
                         source: source,
                         entity: waitingToPlay.entity,
+                        volume: waitingToPlay.volume,
                         buffer: buffer(for: waitingToPlay.sound.path),
                         accumulatedTime: 0
                     )
@@ -313,7 +315,14 @@ extension AudioSystem {
         var currentActionAccumulator: Float = 0
         var actionStartVolume: Float = 0
         var actionEndVolume: Float = 1
-
+        var volume: Float {
+            get {
+                return source.volume
+            }
+            set {
+                self.source.volume = newValue
+            }
+        }
         @inline(__always)
         func processAction(deltaTime: Float) {
             if let pendingAction {
@@ -383,15 +392,19 @@ extension AudioSystem {
             mixerID: ObjectIdentifier,
             source: SpatialAudioSource,
             entity: Entity?,
+            volume: Float,
             buffer: AudioBuffer,
             accumulatedTime: Double
         ) {
             self.sound = sound
             self.mixerID = mixerID
             self.source = source
+            self.source.volume = volume
             self.entity = entity
             self.buffer = buffer
             self.accumulatedTime = accumulatedTime
+            
+            self.volume = volume
         }
 
         @inline(__always)
@@ -419,12 +432,13 @@ extension AudioSystem {
         let sound: Sound
         let kind: Sound.Kind
         weak var entity: Entity?
+        let volume: Float
         let handle: ActiveSound
     }
     
     @inline(__always)
-    func queueSound(_ sound: Sound, as kind: Sound.Kind, entity: Entity?, handle: ActiveSound) {
-        let waiting = WaitingSound(sound: sound, kind: kind, entity: entity, handle: handle)
+    func queueSound(_ sound: Sound, as kind: Sound.Kind, entity: Entity?, volume: Float, handle: ActiveSound) {
+        let waiting = WaitingSound(sound: sound, kind: kind, entity: entity, volume: volume, handle: handle)
         soundsWaitingToPlay.append(waiting)
     }
 
@@ -477,5 +491,13 @@ extension Entity {
     @_transparent
     var audio: AudioSystem {
         return system(ofType: AudioSystem.self)
+    }
+    
+    public func setMusicVolume(_ volume: Float, for kind: Music.Kind) {
+        audio.musicMixers[kind]?.volume = volume
+    }
+    
+    public func setSoundVolume(_ volume: Float, for kind: Sound.Kind) {
+        audio.spatialMixers[kind]?.volume = volume
     }
 }
