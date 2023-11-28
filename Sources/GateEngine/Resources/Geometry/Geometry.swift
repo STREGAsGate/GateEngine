@@ -72,22 +72,17 @@ public extension Geometry {
 /// Geometry represents a mangaed vertex buffer object.
 /// It's contents are stored within GPU accessible memory and this object represents a reference to that memory.
 /// When this object deinitializes it's contents will also be removed from GPU memory.
-@MainActor public class Geometry: Resource {
+@MainActor public class Geometry: Resource, _Resource {
     @usableFromInline
     internal let cacheKey: ResourceManager.Cache.GeometryKey
+    
+    var cache: any ResourceCache {
+        return Game.shared.resourceManager.geometryCache(for: cacheKey)!
+    }
 
     @usableFromInline
     internal var backend: (any GeometryBackend)? {
         return Game.shared.resourceManager.geometryCache(for: cacheKey)?.geometryBackend
-    }
-
-    public var cacheHint: CacheHint {
-        get { Game.shared.resourceManager.geometryCache(for: cacheKey)!.cacheHint }
-        set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
-    }
-
-    public var state: ResourceState {
-        return Game.shared.resourceManager.geometryCache(for: cacheKey)!.state
     }
 
     @inlinable @inline(__always) @_disfavoredOverload
@@ -98,14 +93,14 @@ public extension Geometry {
     public init(path: String, options: GeometryImporterOptions = .none) {
         let resourceManager = Game.shared.resourceManager
         self.cacheKey = resourceManager.geometryCacheKey(path: path, options: options)
-        self.cacheHint = .until(minutes: 5)
+        self.defaultCacheHint = .until(minutes: 5)
         resourceManager.incrementReference(self.cacheKey)
     }
 
     internal init(optionalRawGeometry rawGeometry: RawGeometry?) {
         let resourceManager = Game.shared.resourceManager
         self.cacheKey = resourceManager.geometryCacheKey(rawGeometry: rawGeometry)
-        self.cacheHint = .whileReferenced
+        self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
 
@@ -214,26 +209,37 @@ extension RawGeometry {
 
 extension ResourceManager.Cache {
     @usableFromInline
-    struct GeometryKey: Hashable, Sendable {
+    struct GeometryKey: Hashable, Sendable, CustomStringConvertible {
         let requestedPath: String
         let geometryOptions: GeometryImporterOptions
+        
+        @usableFromInline
+        var description: String {
+            var string = requestedPath.first == "$" ? "(Generated)" : requestedPath
+            if let name = geometryOptions.subobjectName {
+                string += ", Named: \(name)"
+            }
+            return string
+        }
     }
 
     @usableFromInline
-    class GeometryCache {
+    final class GeometryCache: ResourceCache {
         @usableFromInline var geometryBackend: (any GeometryBackend)?
         var lastLoaded: Date
         var state: ResourceState
         var referenceCount: UInt
         var minutesDead: UInt
-        var cacheHint: CacheHint
+        var cacheHint: CacheHint?
+        var defaultCacheHint: CacheHint
         init() {
             self.geometryBackend = nil
             self.lastLoaded = Date()
             self.state = .pending
             self.referenceCount = 0
             self.minutesDead = 0
-            self.cacheHint = .until(minutes: 5)
+            self.cacheHint = nil
+            self.defaultCacheHint = .until(minutes: 5)
         }
     }
 }
@@ -319,10 +325,7 @@ extension ResourceManager {
         if case .whileReferenced = cache.cacheHint {
             if cache.referenceCount == 0 {
                 self.cache.geometries.removeValue(forKey: key)
-                Log.debug(
-                    "Removing cache (no longer referenced), Geometry:",
-                    key.requestedPath.first == "$" ? "(Generated)" : key.requestedPath
-                )
+                Log.debug("Removing cache (no longer referenced), Geometry: \(key)")
             }
         }
     }

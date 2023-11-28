@@ -44,6 +44,22 @@ extension ResourceManager {
     }
 }
 
+internal protocol ResourceCache: AnyObject {
+    var lastLoaded: Date {get set}
+    var state: ResourceState {get set}
+    var referenceCount: UInt {get set}
+    var minutesDead: UInt {get set}
+    var cacheHint: CacheHint? {get set}
+    var defaultCacheHint: CacheHint {get set}
+}
+
+extension ResourceCache {
+    @_transparent
+    var effectiveCacheHint: CacheHint {
+        return cacheHint ?? defaultCacheHint
+    }
+}
+
 public enum CacheHint {
     /// The resource will stay in memory until the CachedHint is manually changed to something else
     case forever
@@ -53,7 +69,7 @@ public enum CacheHint {
     case until(minutes: UInt)
 }
 
-public class ResourceManager {
+public final class ResourceManager {
     internal var importers: Importers = Importers()
     internal let cache: Cache = Cache()
 
@@ -88,14 +104,21 @@ public class ResourceManager {
         accumulatedSeconds += deltaTime
         if accumulatedSeconds > 60 {
             accumulatedSeconds -= 60
-            incrementMinutes()
+        
+                incrementMinutes()
+        
         }
     }
-    
+    enum Phase {
+        case texture
+        case geometry
+        case skinnedGeometry
+        case skeleton
+    }
     func incrementMinutes() {
         for key in cache.textures.keys {
             guard let cache = cache.textures[key] else { continue }
-            switch cache.cacheHint {
+            switch cache.effectiveCacheHint {
             case .forever, .whileReferenced:
                 continue
             case .until(let minutes):
@@ -103,11 +126,7 @@ public class ResourceManager {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.textures.removeValue(forKey: key)
-                        Log.debug(
-                            "Removing cache (unused for \(cache.minutesDead) min), Texture:",
-                            key.requestedPath.first == "$"
-                                ? "(Generated)" : key.requestedPath
-                        )
+                        Log.debug("Removing cache (unused for \(cache.minutesDead) min), Texture: \(key)")
                     }
                 } else {
                     cache.minutesDead = 0
@@ -117,7 +136,7 @@ public class ResourceManager {
 
         for key in cache.geometries.keys {
             guard let cache = cache.geometries[key] else { continue }
-            switch cache.cacheHint {
+            switch cache.effectiveCacheHint {
             case .forever, .whileReferenced:
                 continue
             case .until(let minutes):
@@ -125,11 +144,7 @@ public class ResourceManager {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.geometries.removeValue(forKey: key)
-                        Log.debug(
-                            "Removing cache (unused for \(cache.minutesDead) min), Geometry:",
-                            key.requestedPath.first == "$"
-                                ? "(Generated)" : key.requestedPath
-                        )
+                        Log.debug("Removing cache (unused for \(cache.minutesDead) min), Geometry: \(key)")
                     }
                 } else {
                     cache.minutesDead = 0
@@ -139,7 +154,7 @@ public class ResourceManager {
         
         for key in cache.skinnedGeometries.keys {
             guard let cache = cache.skinnedGeometries[key] else { continue }
-            switch cache.cacheHint {
+            switch cache.effectiveCacheHint {
             case .forever, .whileReferenced:
                 continue
             case .until(let minutes):
@@ -147,11 +162,7 @@ public class ResourceManager {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.skinnedGeometries.removeValue(forKey: key)
-                        Log.debug(
-                            "Removing cache (unused for \(cache.minutesDead) min), SkinnedGeometry:",
-                            key.requestedPath.first == "$"
-                                ? "(Generated)" : key.requestedPath
-                        )
+                        Log.debug("Removing cache (unused for \(cache.minutesDead) min), SkinnedGeometry: \(key)")
                     }
                 } else {
                     cache.minutesDead = 0
@@ -161,7 +172,7 @@ public class ResourceManager {
         
         for key in cache.skeletons.keys {
             guard let cache = cache.skeletons[key] else { continue }
-            switch cache.cacheHint {
+            switch cache.effectiveCacheHint {
             case .forever, .whileReferenced:
                 continue
             case .until(let minutes):
@@ -169,11 +180,7 @@ public class ResourceManager {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.skeletons.removeValue(forKey: key)
-                        Log.debug(
-                            "Removing cache (unused for \(cache.minutesDead) min), Skeleton:",
-                            key.requestedPath.first == "$"
-                                ? "(Generated)" : key.requestedPath
-                        )
+                        Log.debug("Removing cache (unused for \(cache.minutesDead) min), Skeleton: \(key)")
                     }
                 } else {
                     cache.minutesDead = 0
@@ -183,7 +190,7 @@ public class ResourceManager {
         
         for key in cache.skeletalAnimations.keys {
             guard let cache = cache.skeletalAnimations[key] else { continue }
-            switch cache.cacheHint {
+            switch cache.effectiveCacheHint {
             case .forever, .whileReferenced:
                 continue
             case .until(let minutes):
@@ -191,11 +198,7 @@ public class ResourceManager {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.skeletalAnimations.removeValue(forKey: key)
-                        Log.debug(
-                            "Removing cache (unused for \(cache.minutesDead) min), SkeletalAnimation:",
-                            key.requestedPath.first == "$"
-                                ? "(Generated)" : key.requestedPath
-                        )
+                        Log.debug("Removing cache (unused for \(cache.minutesDead) min), SkeletalAnimation: \(key)")
                     }
                 } else {
                     cache.minutesDead = 0
@@ -205,7 +208,7 @@ public class ResourceManager {
         
         for key in cache.tileSets.keys {
             guard let cache = cache.tileSets[key] else { continue }
-            switch cache.cacheHint {
+            switch cache.effectiveCacheHint {
             case .forever, .whileReferenced:
                 continue
             case .until(let minutes):
@@ -213,11 +216,7 @@ public class ResourceManager {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.tileSets.removeValue(forKey: key)
-                        Log.debug(
-                            "Removing cache (unused for \(cache.minutesDead) min), TileSet:",
-                            key.requestedPath.first == "$"
-                                ? "(Generated)" : key.requestedPath
-                        )
+                        Log.debug("Removing cache (unused for \(cache.minutesDead) min), TileMap: \(key)")
                     }
                 } else {
                     cache.minutesDead = 0
@@ -227,7 +226,7 @@ public class ResourceManager {
         
         for key in cache.tileMaps.keys {
             guard let cache = cache.tileMaps[key] else { continue }
-            switch cache.cacheHint {
+            switch cache.effectiveCacheHint {
             case .forever, .whileReferenced:
                 continue
             case .until(let minutes):
@@ -235,11 +234,7 @@ public class ResourceManager {
                     cache.minutesDead += 1
                     if cache.minutesDead == minutes {
                         self.cache.tileMaps.removeValue(forKey: key)
-                        Log.debug(
-                            "Removing cache (unused for \(cache.minutesDead) min), TileMap:",
-                            key.requestedPath.first == "$"
-                                ? "(Generated)" : key.requestedPath
-                        )
+                        Log.debug("Removing cache (unused for \(cache.minutesDead) min), TileMap: \(key)")
                     }
                 } else {
                     cache.minutesDead = 0

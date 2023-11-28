@@ -40,20 +40,63 @@
     #endif
 }
 
-public protocol Resource: Equatable, Hashable {
+public protocol Resource: AnyObject, Equatable, Hashable {
     /** The current state of the resource.
     It is a programming error to use a resource or access it's properties while it's state is anything other then `ready`.
     */
     @MainActor var state: ResourceState { get }
     @MainActor var isReady: Bool {get}
     
-    @MainActor var cacheHint: CacheHint {get}
+    @MainActor var cacheHint: CacheHint {get set}
 }
 
-public extension Resource {
+extension Resource {
     @MainActor
     @_transparent
-    var isReady: Bool {self.state == .ready}
+    public var isReady: Bool { self.state == .ready }
+}
+
+internal protocol _Resource: Resource {
+    @MainActor var cache: any ResourceCache {get}
+        
+    @MainActor var defaultCacheHint: CacheHint {get set}
+    @MainActor var cachHintIsDefault: Bool {get}
+}
+
+extension _Resource {
+    @MainActor
+    public var state: ResourceState {
+        @_transparent get { self.cache.state }
+        set { self.cache.state = newValue }
+    }
+    
+    @MainActor
+    public var cacheHint: CacheHint {
+        get {
+            let cache = self.cache
+            return cache.cacheHint ?? cache.defaultCacheHint
+        }
+        set {
+            self.cache.cacheHint = newValue
+        }
+    }
+    
+    @MainActor
+    var defaultCacheHint: CacheHint {
+        get {
+            let cache = self.cache
+            return cache.defaultCacheHint
+        }
+        set {
+            self.cache.defaultCacheHint = newValue
+        }
+    }
+    
+    @MainActor
+    @_transparent
+    var cachHintIsDefault: Bool {
+        return cache.cacheHint == nil
+    }
 }
 
 public enum ResourceState: Equatable {

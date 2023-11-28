@@ -8,22 +8,17 @@
 /// Geometry represents a mangaed vertex buffer object.
 /// It's contents are stored within GPU accessible memory and this object represents a reference to that memory.
 /// When this object deinitializes it's contents will also be removed from GPU memory.
-@MainActor public class Points: Resource {
+@MainActor public class Points: Resource, _Resource {
     @usableFromInline
     internal let cacheKey: ResourceManager.Cache.GeometryKey
 
+    var cache: any ResourceCache {
+        return Game.shared.resourceManager.geometryCache(for: cacheKey)!
+    }
+    
     @usableFromInline
     internal var backend: (any GeometryBackend)? {
         return Game.shared.resourceManager.geometryCache(for: cacheKey)?.geometryBackend
-    }
-
-    public var cacheHint: CacheHint {
-        get { Game.shared.resourceManager.geometryCache(for: cacheKey)!.cacheHint }
-        set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
-    }
-
-    public var state: ResourceState {
-        return Game.shared.resourceManager.geometryCache(for: cacheKey)!.state
     }
 
     @inlinable @inline(__always) @_disfavoredOverload
@@ -34,14 +29,14 @@
     public init(path: String, options: GeometryImporterOptions = .none) {
         let resourceManager = Game.shared.resourceManager
         self.cacheKey = resourceManager.pointsCacheKey(path: path, options: options)
-        self.cacheHint = .whileReferenced
+        self.defaultCacheHint = .until(minutes: 5)
         resourceManager.incrementReference(self.cacheKey)
     }
 
     internal init(optionalRawPoints rawPoints: RawPoints?) {
         let resourceManager = Game.shared.resourceManager
         self.cacheKey = resourceManager.pointsCacheKey(rawPoints: rawPoints)
-        self.cacheHint = .whileReferenced
+        self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
 

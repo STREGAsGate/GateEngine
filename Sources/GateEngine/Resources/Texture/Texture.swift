@@ -26,8 +26,11 @@ public enum MipMapping: Hashable, Sendable {
 /// Texture represents a managed bitmap buffer object.
 /// It's contents are stored within GPU accessible memory and this object represents a reference to that memory.
 /// When this object deinitializes it's contents will also be removed from GPU memory.
-@MainActor public class Texture: Resource {
+@MainActor public class Texture: Resource, _Resource {
     internal let cacheKey: ResourceManager.Cache.TextureKey
+    var cache: any ResourceCache { 
+        return Game.shared.resourceManager.textureCache(for: cacheKey)!
+    }
     internal var renderTarget: (any _RenderTargetProtocol)?
     private let sizeHint: Size2?
 
@@ -53,15 +56,6 @@ public enum MipMapping: Hashable, Sendable {
 
     internal var textureBackend: (any TextureBackend)? {
         return Game.shared.resourceManager.textureCache(for: cacheKey)?.textureBackend
-    }
-
-    public var cacheHint: CacheHint {
-        get { Game.shared.resourceManager.textureCache(for: cacheKey)!.cacheHint }
-        set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
-    }
-
-    public var state: ResourceState {
-        return Game.shared.resourceManager.textureCache(for: cacheKey)!.state
     }
     
     @inline(__always)
@@ -109,7 +103,7 @@ public enum MipMapping: Hashable, Sendable {
             options: options
         )
         self.sizeHint = sizeHint
-        self.cacheHint = .until(minutes: 5)
+        self.defaultCacheHint = .until(minutes: 5)
         resourceManager.incrementReference(self.cacheKey)
     }
 
@@ -122,7 +116,7 @@ public enum MipMapping: Hashable, Sendable {
             mipMapping: mipMapping
         )
         self.sizeHint = size
-        self.cacheHint = .whileReferenced
+        self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
 
@@ -134,7 +128,7 @@ public enum MipMapping: Hashable, Sendable {
             renderTargetBackend: renderTarget.renderTargetBackend
         )
         self.sizeHint = renderTarget.size
-        self.cacheHint = .whileReferenced
+        self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
 
@@ -223,20 +217,31 @@ extension ResourceManager {
 }
 
 extension ResourceManager.Cache {
-    struct TextureKey: Hashable, Sendable {
+    struct TextureKey: Hashable, Sendable, CustomStringConvertible {
         let requestedPath: String
         let mipMapping: MipMapping
         let textureOptions: TextureImporterOptions
+        
+        @usableFromInline
+        var description: String {
+            var string = requestedPath.first == "$" ? "(Generated)" : requestedPath
+            if let name = textureOptions.subobjectName {
+                string += ", Named: \(name)"
+            }
+            string += ", MipMapping: \(mipMapping)"
+            return string
+        }
     }
 
-    class TextureCache {
+    final class TextureCache: ResourceCache {
         var isRenderTarget: Bool
         var textureBackend: (any TextureBackend)?
         var lastLoaded: Date
         var state: ResourceState
         var referenceCount: UInt
         var minutesDead: UInt
-        var cacheHint: CacheHint
+        var cacheHint: CacheHint?
+        var defaultCacheHint: CacheHint
         init() {
             self.isRenderTarget = false
             self.textureBackend = nil
@@ -244,7 +249,8 @@ extension ResourceManager.Cache {
             self.state = .pending
             self.referenceCount = 0
             self.minutesDead = 0
-            self.cacheHint = .until(minutes: 5)
+            self.cacheHint = nil
+            self.defaultCacheHint = .until(minutes: 5)
         }
     }
 }
@@ -338,10 +344,7 @@ extension ResourceManager {
         if case .whileReferenced = cache.cacheHint {
             if cache.referenceCount == 0 {
                 self.cache.textures.removeValue(forKey: key)
-                Log.debug(
-                    "Removing cache (no longer referenced), Texture:",
-                    key.requestedPath.first == "$" ? "(Generated)" : key.requestedPath
-                )
+                Log.debug("Removing cache (no longer referenced), Texture: \(key)")
             }
         }
     }

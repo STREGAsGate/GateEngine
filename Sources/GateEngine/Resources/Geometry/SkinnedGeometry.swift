@@ -16,10 +16,14 @@ internal protocol SkinnedGeometryBackend: AnyObject {
 /// Geometry represents a managed vertex buffer object.
 /// It's contents are stored within GPU accessible memory and this object represents a reference to that memory.
 /// When this object deinitializes it's contents will also be removed from GPU memory.
-@MainActor public class SkinnedGeometry: Resource {
+@MainActor public class SkinnedGeometry: Resource, _Resource {
     @usableFromInline
     internal let cacheKey: ResourceManager.Cache.SkinnedGeometryKey
 
+    var cache: any ResourceCache {
+        return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!
+    }
+    
     @usableFromInline
     internal var backend: (any GeometryBackend)? {
         return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)?.geometryBackend
@@ -28,15 +32,6 @@ internal protocol SkinnedGeometryBackend: AnyObject {
     public var skinJoints: [Skin.Joint] {
         assert(state == .ready, "The state must be ready before accessing this property.")
         return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!.skinJoints!
-    }
-
-    public var cacheHint: CacheHint {
-        get { Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!.cacheHint }
-        set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
-    }
-
-    public var state: ResourceState {
-        return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!.state
     }
 
     @inlinable @inline(__always) @_disfavoredOverload
@@ -59,7 +54,7 @@ internal protocol SkinnedGeometryBackend: AnyObject {
             geometryOptions: geometryOptions,
             skinOptions: skinOptions
         )
-        self.cacheHint = .until(minutes: 5)
+        self.defaultCacheHint = .until(minutes: 5)
         resourceManager.incrementReference(self.cacheKey)
     }
 
@@ -69,7 +64,7 @@ internal protocol SkinnedGeometryBackend: AnyObject {
             rawGeometry: rawGeometry,
             skin: skin
         )
-        self.cacheHint = .whileReferenced
+        self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
 
@@ -95,20 +90,30 @@ extension SkinnedGeometry: Equatable, Hashable {
 
 extension ResourceManager.Cache {
     @usableFromInline
-    struct SkinnedGeometryKey: Hashable, Sendable {
+    struct SkinnedGeometryKey: Hashable, Sendable, CustomStringConvertible {
         let requestedPath: String
         let geometryOptions: GeometryImporterOptions
         let skinOptions: SkinImporterOptions
+        
+        @usableFromInline
+        var description: String {
+            var string = requestedPath.first == "$" ? "(Generated)" : requestedPath
+            if let name = geometryOptions.subobjectName {
+                string += ", Named: \(name)"
+            }
+            return string
+        }
     }
 
-    class SkinnedGeometryCache {
+    final class SkinnedGeometryCache: ResourceCache {
         var geometryBackend: (any GeometryBackend)?
         var skinJoints: [Skin.Joint]?
         var lastLoaded: Date
         var state: ResourceState
         var referenceCount: UInt
         var minutesDead: UInt
-        var cacheHint: CacheHint
+        var cacheHint: CacheHint?
+        var defaultCacheHint: CacheHint
         init() {
             self.geometryBackend = nil
             self.skinJoints = nil
@@ -116,7 +121,7 @@ extension ResourceManager.Cache {
             self.state = .pending
             self.referenceCount = 0
             self.minutesDead = 0
-            self.cacheHint = .until(minutes: 5)
+            self.defaultCacheHint = .until(minutes: 5)
         }
     }
 }
@@ -217,10 +222,7 @@ extension ResourceManager {
         if case .whileReferenced = cache.cacheHint {
             if cache.referenceCount == 0 {
                 self.cache.skinnedGeometries.removeValue(forKey: key)
-                Log.debug(
-                    "Removing cache (no longer referenced), SkinnedGeometry:",
-                    key.requestedPath.first == "$" ? "(Generated)" : key.requestedPath
-                )
+                Log.debug("Removing cache (no longer referenced), SkinnedGeometry: \(key)")
             }
         }
     }

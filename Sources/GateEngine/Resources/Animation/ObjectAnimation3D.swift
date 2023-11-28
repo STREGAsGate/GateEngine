@@ -9,16 +9,11 @@
 import Foundation
 #endif
 
-@MainActor public final class ObjectAnimation3D: Resource {
+@MainActor public final class ObjectAnimation3D: Resource, _Resource {
     internal let cacheKey: ResourceManager.Cache.ObjectAnimation3DKey
     
-    public var cacheHint: CacheHint {
-        get { Game.shared.resourceManager.objectAnimation3DCache(for: cacheKey)!.cacheHint }
-        set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
-    }
-
-    public var state: ResourceState {
-        return Game.shared.resourceManager.objectAnimation3DCache(for: cacheKey)!.state
+    var cache: any ResourceCache {
+        return Game.shared.resourceManager.objectAnimation3DCache(for: cacheKey)!
     }
     
     @usableFromInline
@@ -92,7 +87,9 @@ import Foundation
             path: path,
             options: options
         )
-        self.cacheHint = .until(minutes: 5)
+        if cachHintIsDefault {
+            self.cacheHint = .until(minutes: 5)
+        }
         resourceManager.incrementReference(self.cacheKey)
     }
     
@@ -103,7 +100,9 @@ import Foundation
             duration: duration, 
             animation: animation
         )
-        self.cacheHint = .until(minutes: 5)
+        if cachHintIsDefault {
+            self.cacheHint = .until(minutes: 5)
+        }
         resourceManager.incrementReference(self.cacheKey)
     }
     
@@ -521,26 +520,37 @@ extension ResourceManager {
 
 extension ResourceManager.Cache {
     @usableFromInline
-    struct ObjectAnimation3DKey: Hashable {
+    struct ObjectAnimation3DKey: Hashable, CustomStringConvertible {
         let requestedPath: String
         let options: ObjectAnimation3DImporterOptions
+        
+        @usableFromInline
+        var description: String {
+            var string = requestedPath.first == "$" ? "(Generated)" : requestedPath
+            if let name = options.subobjectName {
+                string += "named: \(name)"
+            }
+            return string
+        }
     }
 
     @usableFromInline
-    final class ObjectAnimation3DCache {
+    final class ObjectAnimation3DCache: ResourceCache {
         @usableFromInline var objectAnimation3DBackend: ObjectAnimation3DBackend?
         var lastLoaded: Date
         var state: ResourceState
         var referenceCount: UInt
         var minutesDead: UInt
-        var cacheHint: CacheHint
+        var cacheHint: CacheHint?
+        var defaultCacheHint: CacheHint
         init() {
             self.objectAnimation3DBackend = nil
             self.lastLoaded = Date()
             self.state = .pending
             self.referenceCount = 0
             self.minutesDead = 0
-            self.cacheHint = .until(minutes: 5)
+            self.cacheHint = nil
+            self.defaultCacheHint = .until(minutes: 5)
         }
     }
 }
@@ -607,10 +617,7 @@ extension ResourceManager {
         if case .whileReferenced = cache.cacheHint {
             if cache.referenceCount == 0 {
                 self.cache.objectAnimation3Ds.removeValue(forKey: key)
-                Log.debug(
-                    "Removing cache (no longer referenced), ObjectAnimation3D:",
-                    key.requestedPath.first == "$" ? "(Generated)" : key.requestedPath
-                )
+                Log.debug("Removing cache (no longer referenced), ObjectAnimation3D: \(key)")
             }
         }
     }

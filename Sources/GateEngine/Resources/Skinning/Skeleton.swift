@@ -9,16 +9,11 @@
 import Foundation
 #endif
 
-@MainActor public final class Skeleton: Resource {
+@MainActor public final class Skeleton: Resource, _Resource {
     internal let cacheKey: ResourceManager.Cache.SkeletonKey
     
-    public var cacheHint: CacheHint {
-        get { Game.shared.resourceManager.skeletonCache(for: cacheKey)!.cacheHint }
-        set { Game.shared.resourceManager.changeCacheHint(newValue, for: cacheKey) }
-    }
-
-    public var state: ResourceState {
-        return Game.shared.resourceManager.skeletonCache(for: cacheKey)!.state
+    var cache: any ResourceCache {
+        return Game.shared.resourceManager.skeletonCache(for: cacheKey)!
     }
     
     @usableFromInline
@@ -88,14 +83,14 @@ import Foundation
             path: path,
             options: options
         )
-        self.cacheHint = .until(minutes: 5)
+        self.defaultCacheHint = .until(minutes: 5)
         resourceManager.incrementReference(self.cacheKey)
     }
     
     public init(rootjoint: Skeleton.Joint) {
         let resourceManager = Game.shared.resourceManager
         self.cacheKey = resourceManager.skeletonCacheKey(rootJoint: rootjoint)
-        self.cacheHint = .until(minutes: 5)
+        self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
     
@@ -520,13 +515,22 @@ extension ResourceManager {
 
 extension ResourceManager.Cache {
     @usableFromInline
-    struct SkeletonKey: Hashable, Sendable {
+    struct SkeletonKey: Hashable, Sendable, CustomStringConvertible {
         let requestedPath: String
         let options: SkeletonImporterOptions
+        
+        @usableFromInline
+        var description: String {
+            var string = requestedPath.first == "$" ? "(Generated)" : requestedPath
+            if let name = options.subobjectName {
+                string += ", Named: \(name)"
+            }
+            return string
+        }
     }
 
     @usableFromInline
-    class SkeletonCache {
+    final class SkeletonCache: ResourceCache {
         @usableFromInline var skeletonBackend: SkeletonBackend?
         var lastLoaded: Date
         var _state: ResourceState
@@ -540,14 +544,16 @@ extension ResourceManager.Cache {
         }
         var referenceCount: UInt
         var minutesDead: UInt
-        var cacheHint: CacheHint
+        var cacheHint: CacheHint?
+        var defaultCacheHint: CacheHint
         init() {
             self.skeletonBackend = nil
             self.lastLoaded = Date()
             self._state = .pending
             self.referenceCount = 0
             self.minutesDead = 0
-            self.cacheHint = .until(minutes: 5)
+            self.cacheHint = nil
+            self.defaultCacheHint = .until(minutes: 5)
         }
     }
 }
@@ -604,10 +610,7 @@ extension ResourceManager {
         if case .whileReferenced = cache.cacheHint {
             if cache.referenceCount == 0 {
                 self.cache.skeletons.removeValue(forKey: key)
-                Log.debug(
-                    "Removing cache (no longer referenced), Skeleton:",
-                    key.requestedPath.first == "$" ? "(Generated)" : key.requestedPath
-                )
+                Log.debug("Removing cache (no longer referenced), Skeleton: \(key)")
             }
         }
     }
