@@ -17,11 +17,13 @@ internal class XABufferReference: AudioBufferBackend {
     required init(path: String, context: AudioContext, audioBuffer: AudioBuffer) {
         // let data = try await Game.shared.internalPlatform.loadResource(from: path)
         // #if canImport(Vorbis)
-        // if let ogg = VorbisFile(data, context: context) {
-        //     self.load(data: ogg.audio, format: ogg.format())
-        //     self.audioBuffer.state = .ready
-        //     return
-        // }
+//        let lowercasePath = path.lowercased()
+//        if lowercasePath.hasSuffix("ogg") || lowercasePath.hasSuffix("oga") {
+//            let ogg = try VorbisFile(data, context: context)
+//            self.load(data: ogg.audio, format: ogg.format())
+//            self.audioBuffer.state = .ready
+//            return
+//        }
         // #endif
         // if let wav = WaveFile(data, context: context) {
         //     self.load(data: wav.audio, format: wav.format())

@@ -28,7 +28,9 @@ internal class OABufferReference: AudioBufferBackend {
 
                 let data = try await Game.shared.platform.loadResource(from: path)
                 #if canImport(Vorbis)
-                if let ogg = VorbisFile(data, context: context) {
+                let lowercasePath = path.lowercased()
+                if lowercasePath.hasSuffix("ogg") || lowercasePath.hasSuffix("oga") {
+                    let ogg = try VorbisFile(data, context: context)
                     self.load(data: ogg.audio, format: ogg.format())
                     self.audioBuffer.state = .ready
                     return
