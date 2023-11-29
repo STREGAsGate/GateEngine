@@ -7,7 +7,7 @@
 #if canImport(AVFoundation)
 import AVFoundation
 
-internal class CAAudioMixerReference: AudioMixerReference {
+internal final class CAAudioMixerReference: AudioMixerReference {
     unowned let contextReference: CAContextReference
     let mixerNode: AVAudioMixerNode
 

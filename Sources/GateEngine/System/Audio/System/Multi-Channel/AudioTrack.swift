@@ -15,7 +15,7 @@ internal protocol AudioTrackReference: AnyObject {
     func setBuffer(_ buffer: AudioBuffer)
 }
 
-public class AudioTrack {
+public final class AudioTrack {
     internal unowned let mixer: AudioMixer
     internal let reference: any AudioTrackReference
 

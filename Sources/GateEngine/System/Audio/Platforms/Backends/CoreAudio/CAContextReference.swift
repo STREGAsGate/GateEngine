@@ -7,7 +7,7 @@
 #if canImport(AVFoundation)
 import AVFoundation
 
-internal class CAContextReference: AudioContextBackend {
+internal final class CAContextReference: AudioContextBackend {
     let engine: AVAudioEngine
 
     @objc func engineChanged(_ notification: Notification?) {

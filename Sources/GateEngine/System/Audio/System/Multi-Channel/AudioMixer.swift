@@ -13,7 +13,7 @@ internal protocol AudioMixerReference: AnyObject {
 /*!
  A mixer for multi-channel audio
  */
-public class AudioMixer {
+public final class AudioMixer {
     internal unowned let context: AudioContext
     internal var reference: any AudioMixerReference
 

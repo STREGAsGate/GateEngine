@@ -25,7 +25,7 @@ extension AudioBuffer.Format {
     }
 }
 
-internal class CABufferReference: AudioBufferBackend {
+internal final class CABufferReference: AudioBufferBackend {
     unowned let audioBuffer: AudioBuffer
     var pcmBuffer: AVAudioPCMBuffer! = nil
     var format: AVAudioFormat! = nil

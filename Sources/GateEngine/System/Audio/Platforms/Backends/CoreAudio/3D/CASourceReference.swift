@@ -7,7 +7,7 @@
 #if canImport(AVFoundation)
 import AVFoundation
 
-internal class CASourceReference: SpatialAudioSourceReference {
+internal final class CASourceReference: SpatialAudioSourceReference {
     unowned let mixerReference: CASpacialMixerReference
     let playerNode: AVAudioPlayerNode
 

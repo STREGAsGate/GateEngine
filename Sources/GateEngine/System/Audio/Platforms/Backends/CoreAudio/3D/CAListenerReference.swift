@@ -7,7 +7,7 @@
 #if canImport(AVFoundation)
 import AVFoundation
 
-internal class CAListenerReference: SpatialAudioListenerBackend {
+internal final class CAListenerReference: SpatialAudioListenerBackend {
     unowned let environmentNode: AVAudioEnvironmentNode
 
     @usableFromInline
