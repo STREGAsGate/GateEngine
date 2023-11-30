@@ -10,12 +10,11 @@ import AVFoundation
 internal final class CAListenerReference: SpatialAudioListenerBackend {
     unowned let environmentNode: AVAudioEnvironmentNode
 
-    @usableFromInline
     init(environmentNode: AVAudioEnvironmentNode) {
         self.environmentNode = environmentNode
     }
 
-    @inlinable
+    @inline(__always)
     func setPosition(_ position: Position3) {
         environmentNode.listenerPosition = AVAudio3DPoint(
             x: position.x,
@@ -24,7 +23,7 @@ internal final class CAListenerReference: SpatialAudioListenerBackend {
         )
     }
 
-    @inlinable
+    @inline(__always)
     func setOrientation(forward: Direction3, up: Direction3) {
         let forward = AVAudio3DVector(x: forward.x, y: forward.y, z: forward.z)
         let up = AVAudio3DVector(x: up.x, y: up.y, z: up.z)

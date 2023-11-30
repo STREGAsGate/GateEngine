@@ -14,7 +14,6 @@ internal final class AudioSystem: PlatformSystem {
     var musicMixers: [Music.Kind: AudioMixer] = [:]
     var musicPlaying: ContiguousArray<PlayingMusic> = []
     var musicWaitingToPlay: ContiguousArray<WaitingMusic> = []
-    var unusedMusicMixers: ContiguousArray<AudioMixer> = []
     var unusedMusicTracks: [ObjectIdentifier: [AudioTrack]] = [:]
 
     var spatialMixers: [Sound.Kind: SpatialAudioMixer] = [:]
@@ -462,29 +461,6 @@ extension AudioSystem {
             }
         }
     }
-}
-
-extension Entity {
-    /**
-     Makes the entity a tracked object representing the "ears" or thing listening to Sounds.
-
-     This will default to the active camera and will automatically reset to the active camera if the Entity being tracked disappears.
-     */
-    public func becomeListener() {
-        Task(priority: .medium) { @MainActor in
-            Game.shared.system(ofType: AudioSystem.self).listenerID = self.id
-        }
-    }
-
-    //    @discardableResult
-    //    func playSound(_ sound: Sound, as kind: Sound.Kind = .soundEffect, config: ((_ sound: ActiveSound)->())? = nil) -> ActiveSound {
-    //        let active = ActiveSound()
-    //        Task {@MainActor in
-    //            Game.shared.system(ofType: AudioSystem.self).queueSound(sound, as: kind, entity: self, handle: active)
-    //        }
-    //        config?(active)
-    //        return active
-    //    }
 }
 
 @MainActor extension Game {

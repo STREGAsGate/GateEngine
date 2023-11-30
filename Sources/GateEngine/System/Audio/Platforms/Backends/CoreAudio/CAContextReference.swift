@@ -33,21 +33,21 @@ internal final class CAContextReference: AudioContextBackend {
         )
     }
 
-    @inlinable
+    @inline(__always)
     func createSpacialMixerReference() -> any SpacialAudioMixerReference {
         return CASpacialMixerReference(self)
     }
-    @inlinable
+    @inline(__always)
     func createAudioMixerReference() -> any AudioMixerReference {
         return CAAudioMixerReference(self)
     }
 
-    @inlinable
+    @inline(__always)
     var endianness: Endianness {
         return .native
     }
 
-    @inlinable
+    @inline(__always)
     func supportsBitRate(_ bitRate: AudioBuffer.Format.BitRate) -> Bool {
         switch bitRate {
         case .int16, .int32, .float32:

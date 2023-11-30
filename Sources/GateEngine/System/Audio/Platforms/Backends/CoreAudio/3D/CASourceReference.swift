@@ -11,7 +11,6 @@ internal final class CASourceReference: SpatialAudioSourceReference {
     unowned let mixerReference: CASpacialMixerReference
     let playerNode: AVAudioPlayerNode
 
-    @usableFromInline
     init(_ mixerReference: CASpacialMixerReference) {
         self.mixerReference = mixerReference
 
@@ -21,7 +20,6 @@ internal final class CASourceReference: SpatialAudioSourceReference {
             playerNode.sourceMode = .pointSource
         }
         engine.attach(playerNode)
-        //        engine.connect(playerNode, to: mixerReference.environmentNode, format: nil)
         self.playerNode = playerNode
     }
 
@@ -44,7 +42,7 @@ internal final class CASourceReference: SpatialAudioSourceReference {
             }
         }
     }
-    @inlinable
+    @inline(__always)
     var volume: Float {
         get {
             return playerNode.volume
@@ -53,7 +51,7 @@ internal final class CASourceReference: SpatialAudioSourceReference {
             playerNode.volume = newValue
         }
     }
-    @inlinable
+    @inline(__always)
     var pitch: Float {
         get {
             return playerNode.rate
@@ -63,32 +61,36 @@ internal final class CASourceReference: SpatialAudioSourceReference {
         }
     }
 
-    @inlinable
+    @inline(__always)
     func play() {
         playerNode.play()
     }
-    @inlinable
+    @inline(__always)
     func pause() {
         playerNode.pause()
     }
-    @inlinable
+    @inline(__always)
     func stop() {
         playerNode.stop()
     }
 
-    @inlinable
+    @inline(__always)
     func setPosition(_ position: Position3) {
         playerNode.position = AVAudio3DPoint(x: position.x, y: position.y, z: position.z)
     }
 
     private weak var buffer: CABufferReference? = nil
-
-    @inlinable
     func setBuffer(_ buffer: AudioBuffer) {
         let buffer = buffer.reference as! CABufferReference
         let engine = mixerReference.contextReference.engine
         let environmentNode = mixerReference.environmentNode
-        engine.connect(playerNode, to: environmentNode, format: buffer.format)
+        let bufferFormatDifferrent = playerNode.outputFormat(forBus: 0) != buffer.format
+        if bufferFormatDifferrent || engine.outputConnectionPoints(for: playerNode, outputBus: 0).isEmpty {
+            engine.connect(playerNode, to: environmentNode, format: buffer.format)
+        }
+        if engine.outputConnectionPoints(for: environmentNode, outputBus: 0).isEmpty {
+            engine.connect(environmentNode, to: engine.mainMixerNode, format: nil)
+        }
         playerNode.scheduleBuffer(
             buffer.pcmBuffer,
             at: nil,

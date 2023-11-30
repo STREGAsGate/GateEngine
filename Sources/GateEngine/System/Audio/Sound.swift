@@ -121,3 +121,33 @@ extension Sound {
         Game.shared.audio.spatialMixer(for: kind).volume = volume
     }
 }
+
+extension Entity {
+    /**
+     Makes the entity a tracked object representing the "ears" or thing listening to Sounds.
+
+     This will default to the active camera and will automatically reset to the active camera if the Entity being tracked disappears.
+     */
+    public func becomeListener() {
+        Task(priority: .medium) { @MainActor in
+            Game.shared.system(ofType: AudioSystem.self).listenerID = self.id
+        }
+    }
+
+    @MainActor
+    @discardableResult
+    func playSound(_ sound: Sound, as kind: Sound.Kind = .soundEffect, volume: Float = 1, config: ((_ sound: ActiveSound)->())? = nil) -> ActiveSound {
+        let active = ActiveSound()
+        Task { @MainActor in
+            Game.shared.system(ofType: AudioSystem.self).queueSound(
+                sound,
+                as: kind,
+                entity: self,
+                volume: volume,
+                handle: active
+            )
+        }
+        config?(active)
+        return active
+    }
+}

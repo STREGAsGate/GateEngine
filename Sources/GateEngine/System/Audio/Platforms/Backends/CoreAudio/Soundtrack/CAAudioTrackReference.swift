@@ -11,7 +11,6 @@ internal final class CAAudioTrackReference: AudioTrackReference {
     unowned let mixerReference: CAAudioMixerReference
     let playerNode: AVAudioPlayerNode
 
-    @usableFromInline
     init(_ mixerReference: CAAudioMixerReference) {
         self.mixerReference = mixerReference
 
@@ -45,7 +44,7 @@ internal final class CAAudioTrackReference: AudioTrackReference {
             }
         }
     }
-    @inlinable
+    @inline(__always)
     var volume: Float {
         get {
             return playerNode.volume
@@ -54,7 +53,7 @@ internal final class CAAudioTrackReference: AudioTrackReference {
             playerNode.volume = newValue
         }
     }
-    @inlinable
+    @inline(__always)
     var pitch: Float {
         get {
             return playerNode.rate
@@ -64,28 +63,31 @@ internal final class CAAudioTrackReference: AudioTrackReference {
         }
     }
 
-    @inlinable
+    @inline(__always)
     func play() {
         playerNode.play()
     }
-    @inlinable
+    @inline(__always)
     func pause() {
         playerNode.pause()
     }
-    @inlinable
+    @inline(__always)
     func stop() {
         playerNode.stop()
     }
 
     private weak var buffer: CABufferReference?
-
-    @inlinable
     func setBuffer(_ alBuffer: AudioBuffer) {
         let buffer = alBuffer.reference as! CABufferReference // swiftlint:disable:this force_cast
         let engine = mixerReference.contextReference.engine
         let mixerNode = mixerReference.mixerNode
-        engine.disconnectNodeOutput(playerNode)
-        engine.connect(playerNode, to: mixerNode, format: buffer.format)
+        let bufferFormatDifferrent = playerNode.outputFormat(forBus: 0) != buffer.format
+        if bufferFormatDifferrent ||  engine.outputConnectionPoints(for: playerNode, outputBus: 0).isEmpty {
+            engine.connect(playerNode, to: mixerNode, format: buffer.format)
+        }
+        if engine.outputConnectionPoints(for: mixerNode, outputBus: 0).isEmpty {
+            engine.connect(mixerNode, to: engine.mainMixerNode, format: nil)
+        }
         playerNode.scheduleBuffer(
             buffer.pcmBuffer,
             at: nil,

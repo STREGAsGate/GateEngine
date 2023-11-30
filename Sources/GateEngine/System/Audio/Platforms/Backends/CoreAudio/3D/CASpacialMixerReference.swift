@@ -11,7 +11,6 @@ internal final class CASpacialMixerReference: SpacialAudioMixerReference {
     unowned let contextReference: CAContextReference
     let environmentNode: AVAudioEnvironmentNode
 
-    @usableFromInline
     init(_ contextReference: CAContextReference) {
         self.contextReference = contextReference
 
@@ -35,7 +34,7 @@ internal final class CASpacialMixerReference: SpacialAudioMixerReference {
         self.environmentNode = environmentNode
     }
 
-    @inlinable
+    @inline(__always)
     public var minimumAttenuationDistance: Float {
         get {
             return environmentNode.distanceAttenuationParameters.referenceDistance
@@ -45,7 +44,7 @@ internal final class CASpacialMixerReference: SpacialAudioMixerReference {
         }
     }
 
-    @inlinable
+    @inline(__always)
     public var volume: Float {
         get {
             return environmentNode.volume
@@ -55,12 +54,12 @@ internal final class CASpacialMixerReference: SpacialAudioMixerReference {
         }
     }
 
-    @inlinable
+    @inline(__always)
     func createListenerReference() -> any SpatialAudioListenerBackend {
         return CAListenerReference(environmentNode: environmentNode)
     }
 
-    @inlinable
+    @inline(__always)
     func createSourceReference() -> any SpatialAudioSourceReference {
         return CASourceReference(self)
     }
