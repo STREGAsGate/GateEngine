@@ -74,11 +74,11 @@ internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
             }
 
             if session.secondaryAudioShouldBeSilencedHint {
-                if let mixer = Game.shared.audio.musicMixers[.music] {
+                if let mixer = Game.shared.audio.musicMixers[.soundTrack] {
                     mixer.volume = 0
                 }
             } else {
-                if let mixer = Game.shared.audio.musicMixers[.music] {
+                if let mixer = Game.shared.audio.musicMixers[.soundTrack] {
                     mixer.volume = 1
                 }
             }
@@ -88,14 +88,14 @@ internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
                 object: nil,
                 queue: nil
             ) { notification in
-                if notification.userInfo?[AVAudioSessionSilenceSecondaryAudioHintTypeKey] as? Int
-                    == 1
-                {
-                    if let mixer = Game.shared.audio.musicMixers[.music] {
+                let userInfo = notification.userInfo
+                let silenceSecondary = userInfo?[AVAudioSessionSilenceSecondaryAudioHintTypeKey] as? Int
+                if silenceSecondary == 1 {
+                    if let mixer = Game.shared.audio.musicMixers[.soundTrack] {
                         mixer.volume = 0
                     }
                 } else {
-                    if let mixer = Game.shared.audio.musicMixers[.music] {
+                    if let mixer = Game.shared.audio.musicMixers[.soundTrack] {
                         mixer.volume = 1
                     }
                 }
