@@ -97,13 +97,12 @@
         }
     }
 
-    public func isActiveAnimation(at index: Int) -> Bool {
+    public func isActiveAnimation(at index: Int, subAnimationIndex: Int = 0) -> Bool {
         guard let activeAnimation = activeAnimation else { return false }
         guard let sa = animationSet?[index] else { return false }
-        for animation in activeAnimation.subAnimations {
-            if animation.skeletalAnimation === sa {
-                return true
-            }
+        guard activeAnimation.subAnimations.indices.contains(subAnimationIndex) else {return false}
+        if activeAnimation.subAnimations[subAnimationIndex].skeletalAnimation === sa {
+            return true
         }
         return false
     }
