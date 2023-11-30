@@ -27,9 +27,13 @@ public struct Music {
         as kind: Kind = .soundTrack,
         config: ((_ activeMusic: ActiveMusic) -> Void)? = nil
     ) -> ActiveMusic {
+        
         let handle = ActiveMusic()
         config?(handle)
         Task { @MainActor in
+            #if os(Windows) 
+                return
+            #endif
             Game.shared.system(ofType: AudioSystem.self).queueMusic(music, as: kind, handle: handle)
         }
         return handle

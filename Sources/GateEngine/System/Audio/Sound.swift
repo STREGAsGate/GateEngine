@@ -104,6 +104,9 @@ extension Sound {
     ) -> ActiveSound {
         let active = ActiveSound()
         Task { @MainActor in
+            #if os(Windows) 
+                return
+            #endif
             Game.shared.system(ofType: AudioSystem.self).queueSound(
                 sound,
                 as: kind,
@@ -139,6 +142,9 @@ extension Entity {
     func playSound(_ sound: Sound, as kind: Sound.Kind = .soundEffect, volume: Float = 1, config: ((_ sound: ActiveSound)->())? = nil) -> ActiveSound {
         let active = ActiveSound()
         Task { @MainActor in
+            #if os(Windows) 
+                return
+            #endif
             Game.shared.system(ofType: AudioSystem.self).queueSound(
                 sound,
                 as: kind,
