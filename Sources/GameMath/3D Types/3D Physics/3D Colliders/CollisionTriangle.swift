@@ -135,12 +135,11 @@ extension CollisionTriangle: Collider3D {
     }
     
     @inline(__always)
-    public func isProbablyColliding(with collider: Collider3D) -> Bool {
+    public func isPotentiallyColliding(with collider: Collider3D) -> Bool {
         var collider = collider.boundingBox
         // We grab all possible triangles to respond to in one phase.
         // To ensure we can respond to triangles after a position change from a response,
         // we make the box larger. This will grab additional nearby triangles.
-        // TODO: This will not work with super fast moving dynamic entites
         collider.radius *= 1.5
         let p = closestSurfacePoint(from: collider.position)
         return collider.contains(p)
@@ -148,7 +147,7 @@ extension CollisionTriangle: Collider3D {
     
     @inline(__always)
     public func interpenetration(comparing collider: Collider3D) -> Interpenetration3D? {
-        guard self.isProbablyColliding(with: collider) else {return nil}
+        guard self.isPotentiallyColliding(with: collider) else {return nil}
 
         switch collider {
         case let sphere as BoundingSphere3D:
@@ -165,8 +164,10 @@ extension CollisionTriangle: Collider3D {
             
             return interpenetration
         case let ellipsoid as BoundingEllipsoid3D:
+            // TODO: Size less than 0.6 cause the collider to incorrectly pass through the triangle
+            // Can probably fix this by scaling both up for the check then scale the result back down
             let position = ellipsoid.position / ellipsoid.radius
-            @inline(__always)
+            @_transparent
             func closestUnitSphereSurfacePoint(from point: Position3) -> Position3 {
                 let scale: Float = 1
                 return ((point - position).normalized * scale) + position

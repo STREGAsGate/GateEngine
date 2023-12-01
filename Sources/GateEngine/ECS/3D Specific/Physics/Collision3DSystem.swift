@@ -228,36 +228,39 @@ extension Collision3DSystem {
         transformComponent: Transform3Component,
         collisionComponent: Collision3DComponent
     ) {
-        @inline(__always)
-        func revert() {
-            transformComponent.transform.position = transformComponent.previousTransform.position
-        }
         guard collisionComponent.options.contains(.robustProtection) else { return }
-        guard
-            transformComponent.distanceTraveled().isFinite
-                && transformComponent.directionTraveled().isFinite
-        else {
-            revert()
+        
+        let distanceTraveled = transformComponent.distanceTraveled()
+        let directionTraveled = transformComponent.directionTraveled()
+        var previousPosition = transformComponent.previousTransform.position
+        
+        guard distanceTraveled.isFinite && directionTraveled.isFinite else {
+            transformComponent.transform.position = previousPosition
             return
         }
 
         let collider = collisionComponent.collider
-
-        let previousPosition = transformComponent.previousTransform.position + collider.offset
+        
+        previousPosition += collider.offset
+        
         let point = previousPosition.moved(
-            -collisionComponent.collider.boundingBox.size.max,
-            toward: transformComponent.directionTraveled()
+            -collider.boundingBox.size.max,
+            toward: directionTraveled
         )
-        let ray = Ray3D(from: point, toward: transformComponent.directionTraveled())
-        guard let hit = self.trianglesHit(by: ray, filter: collisionComponent.triangleFilter).first
-        else { return }
-        guard hit.position.distance(from: previousPosition) < transformComponent.distanceTraveled()
-        else { return }
+        
+        let ray = Ray3D(from: point, toward: directionTraveled)
+        let filter = collisionComponent.triangleFilter
+        guard let hit = trianglesHit(by: ray, filter: filter).first else { 
+            return 
+        }
+        guard hit.position.distance(from: previousPosition) < distanceTraveled else {
+            return
+        }
 
         //Move the collider back in front of the triangle. Collision response will act on it later
         transformComponent.position = hit.position.moved(
-            -0.001,
-            toward: transformComponent.directionTraveled()
+            -0.01,
+            toward: directionTraveled
         )
     }
 
@@ -449,22 +452,18 @@ extension Collision3DSystem {
     }
 
     @inline(__always)
-    func sortedTrianglesProbablyHitting(entity: Entity, triangles: [CollisionTriangle])
-        -> [CollisionTriangle]
-    {
+    func sortedTrianglesProbablyHitting(
+        entity: Entity, 
+        triangles: [CollisionTriangle]
+    ) -> [CollisionTriangle] {
         let collider = entity.collision3DComponent.collider.boundingBox
-
-        var values: [CollisionTriangle] = []
-        values.reserveCapacity(triangles.count)
-
-        for triangle in triangles {
-            if triangle.isProbablyColliding(with: collider) {
-                values.append(triangle)
-            }
-        }
-
+        
+        var values: [CollisionTriangle] = triangles.filter({
+            return $0.isPotentiallyColliding(with: collider)
+        })
+        
         values.sort(by: { $0.surfaceType.rawValue < $1.surfaceType.rawValue })
-
+        
         return values
     }
 
