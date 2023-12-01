@@ -25,6 +25,10 @@ public final class Physics3DComponent: Component {
 
     public var xzAcceleration: Float? = nil
     public var xzDeceleration: Float? = nil
+    
+    public func applyForce(_ force: Float, inDirection direction: Direction3) {
+        self.velocity += direction.normalized * force
+    }
 
     func update(_ deltaTime: Float) {
         if let xzAcceleration = xzAcceleration, velocityXZMagnitude >= xzSpeed {
