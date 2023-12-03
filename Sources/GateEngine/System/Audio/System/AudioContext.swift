@@ -23,10 +23,10 @@ public class AudioContext {
         self.reference = WAContextReference()
         #elseif os(Linux)
         self.reference = OAContextReference()
-        #elseif os(Windows) && swift(>=5.10)
+        #elseif os(Windows) && canImport(XAudio2)
         #warning("XAudio2 Not Implemented.")
         self.reference = XAContextReference()
-        #elseif os(Windows)
+        #elseif GATEENGINE_USE_OPENAL
         self.reference = OAContextReference()
         #else
         #error("Not Implemented.")

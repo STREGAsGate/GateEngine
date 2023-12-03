@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if (canImport(OpenALSoft) || canImport(LinuxSupport)) && !os(WASI)
+#if GATEENGINE_USE_OPENAL
 #if canImport(OpenALSoft)
 import OpenALSoft
 #elseif canImport(LinuxSupport)

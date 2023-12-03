@@ -75,14 +75,9 @@ let package = Package(
                         dependencies.append(contentsOf: [
                             .target(name: "Direct3D12",
                                     condition: .when(platforms: [.windows])),
-                            // XAudio is C++ and won't be available on all Swift versions
-                            // so we'll use OpenAL as a fallback
-                            .target(name: "OpenALSoft",
+                            .target(name: "XAudio2",
                                     condition: .when(platforms: [.windows])),
                         ])
-                        #if swift(>=5.9)
-                        #warning("Reminder: Check XAudio2 C++ build support.")
-                        #endif
                         #endif
                         
                         #if os(Linux)
@@ -137,6 +132,10 @@ let package = Package(
                     ],
                     swiftSettings: {
                         var settings: [SwiftSetting] = []
+
+                        settings.append(
+                            .define("GATEENGINE_USE_OPENAL", .when(platforms: [.linux]))
+                        )
                         
                         // MARK: Gate Engine options.
                         settings.append(contentsOf: [
@@ -309,14 +308,20 @@ let package = Package(
         ])
         
         #if os(Windows)
-        targets.append(
+        targets.append(contentsOf: [
             // Direct3D12
             .target(name: "Direct3D12",
                     path: "Dependencies/Direct3D12",
                     swiftSettings: [
                         .define("Direct3D12ExcludeOriginalStyleAPI", .when(configuration: .release)),
-                    ])
-        )
+                    ]),
+            // XAudio2
+            .target(name: "XAudio2",
+                    dependencies: ["XAudio2C"],
+                    path: "Dependencies/XAudio/XAudio2"),
+            .systemLibrary(name: "XAudio2C",
+                           path: "Dependencies/XAudio/XAudio2C"),
+        ])
         #endif
         
         #if os(macOS)
@@ -355,7 +360,7 @@ let package = Package(
         ])
         #endif
         
-        #if os(Linux) || os(Android) || os(Windows)
+        #if os(Linux) || os(Android)
         targets.append(contentsOf: [
         // OpenALSoft
         .target(name: "OpenALSoft",
@@ -410,7 +415,7 @@ let package = Package(
     cxxLanguageStandard: .gnucxx14
 )
 
-#if os(Linux) || os(Android) || os(Windows)
+#if os(Linux) || os(Android)
 var openALLinkerSettings: [LinkerSetting] {
     var array: [LinkerSetting] = []
     

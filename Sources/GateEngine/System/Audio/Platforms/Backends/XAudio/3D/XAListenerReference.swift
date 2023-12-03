@@ -5,9 +5,9 @@
  * http://stregasgate.com
  */
 
-#if canImport(WinSDK) && canImport(XAudio29)
+#if canImport(WinSDK) && canImport(XAudio2)
 import WinSDK
-import XAudio29
+import XAudio2
 
 internal class XAListenerReference: SpatialAudioListenerBackend {
     init() {}

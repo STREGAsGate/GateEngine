@@ -110,9 +110,9 @@ private func getBackend(path: String, context: AudioContext, audioBuffer: AudioB
     return CABufferReference(path: path, context: context, audioBuffer: audioBuffer)
     #elseif os(WASI)
     return WABufferReference(path: path, context: context, audioBuffer: audioBuffer)
-    #elseif os(Windows) && canImport(XAudio29)
+    #elseif os(Windows) && canImport(XAudio2)
     return XABufferReference(path: path, context: context, audioBuffer: audioBuffer)
-    #elseif os(Windows) || os(Linux)
+    #elseif GATEENGINE_USE_OPENAL
     return OABufferReference(path: path, context: context, audioBuffer: audioBuffer)
     #else
     #error("Not implemented")
