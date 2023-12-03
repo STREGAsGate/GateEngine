@@ -257,9 +257,10 @@ extension Collision3DSystem {
             return
         }
 
-        //Move the collider back in front of the triangle. Collision response will act on it later
+        // Move the collider back in front of the triangle. 
+        // Collision response will act on it later.
         transformComponent.position = hit.position.moved(
-            -0.01,
+            -0.1,
             toward: directionTraveled
         )
     }
