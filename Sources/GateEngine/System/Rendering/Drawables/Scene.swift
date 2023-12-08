@@ -271,6 +271,45 @@
             flags: flags
         )
     }
+    
+    public mutating func insert(
+        _ sprite: Sprite,
+        at transform: Transform3,
+        opacity: Float = 1,
+        blendMode: DrawCommand.Flags.BlendMode = .normal,
+        flags: CanvasElementSpriteFlags = .default
+    ) {
+        let material = Material { material in
+            material.channel(0) { channel in
+                channel.texture = sprite.texture
+                channel.scale = sprite.uvScale
+                channel.offset = sprite.uvOffset
+                channel.sampleFilter = sprite.sampleFilter
+            }
+            material.setCustomUniformValue(opacity, forUniform: "opacity")
+        }
+        
+        var transform = transform
+        transform.scale.y *= -1
+
+        let flags = DrawCommand.Flags(
+            cull: .back,
+            depthTest: .lessEqual,
+            depthWrite: .enabled,
+            primitive: .triangle,
+            winding: .clockwise,
+            blendMode: blendMode
+        )
+        let command = DrawCommand(
+            resource: .geometry(.rectOriginCentered),
+            transforms: [transform],
+            material: material,
+            vsh: .standard,
+            fsh: .textureSampleOpacity_DiscardZeroAlpha,
+            flags: flags
+        )
+        self.insert(command)
+    }
 
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
     @inline(__always)
