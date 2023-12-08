@@ -36,18 +36,48 @@ public final class SpriteComponent: Component {
     }
 
     public var animations: [SpriteAnimation]
-    public var activeAnimationIndex: Int
+    public var activeAnimationIndex: Int? {
+        return animationQueue.first
+    }
+    internal var activeAnimationIndexDidChange: Bool = true
+    public var animationQueue: [Int] {
+        didSet {
+            self.moveToNextAnimationIfNeeded = false
+            self.activeAnimationIndexDidChange = true
+        }
+    }
+    internal var moveToNextAnimationIfNeeded: Bool = false
     public var activeAnimation: SpriteAnimation? {
         get {
-            if animations.indices.contains(activeAnimationIndex) {
-                return animations[activeAnimationIndex]
+            if let index = self.animationQueue.first {
+                return self.animations[index]
             }
             return nil
         }
         set {
-            guard let newValue else { return }
-            animations[activeAnimationIndex] = newValue
+            if let newValue {
+                if let index = self.animationQueue.first {
+                    self.animations[index] = newValue
+                }
+            }
         }
+    }
+
+    /// Appends the given animation index to the end of the animation queue.
+    public func queueAnimation(_ animationIndex: Int) {
+        assert(animations.indices.contains(animationIndex), "Animations does not have an index \(animationIndex).")
+        animationQueue.append(animationIndex)
+    }
+    
+    /// Replaces the entire animation queue with the given animation index.
+    public func setAnimation(_ animationIndex: Int) {
+        assert(animations.indices.contains(animationIndex), "Animations does not have an index \(animationIndex).")
+        animationQueue = [animationIndex]
+    }
+    
+    /// Removes all animations form the animation queue.
+    public func clearAnimationQueue() {
+        animationQueue.removeAll(keepingCapacity: true)
     }
 
     public enum PlaybackState {
@@ -61,6 +91,8 @@ public final class SpriteComponent: Component {
         case stop
         /// Locks the active animation at the first frame next time it's encountered
         case stopAtLoop
+        /// If the animation queue has another animation it will begin on the next last frame of the current animation
+        case playNextAnimationAtLoop
     }
     public var playbackState: PlaybackState
 
@@ -78,7 +110,7 @@ public final class SpriteComponent: Component {
             let startFrame = (animation.spriteSheetStart.y * columns) + animation.spriteSheetStart.x
             let endFrame = {
                 if let frameCount = animation.frameCount {
-                    return startFrame + frameCount
+                    return startFrame + (frameCount - 1)
                 }
                 let framesInAnimation = (columns * rows) - startFrame
                 return framesInAnimation
@@ -100,7 +132,7 @@ public final class SpriteComponent: Component {
     public init() { 
         self.spriteRect = .zero
         self.spriteSheet = nil
-        self.activeAnimationIndex = 0
+        self.animationQueue = [0]
         self.animations = []
         self.playbackState = .play
     }
@@ -108,7 +140,7 @@ public final class SpriteComponent: Component {
     public init(spriteRect: Rect, spriteSheet: SpriteSheet, activeAnimationIndex: Int = 0, animations: [SpriteAnimation], playbackState: PlaybackState = .play) {
         self.spriteRect = spriteRect
         self.spriteSheet = spriteSheet
-        self.activeAnimationIndex = activeAnimationIndex
+        self.animationQueue = [activeAnimationIndex]
         self.animations = animations
         self.playbackState = playbackState
     }
@@ -116,7 +148,7 @@ public final class SpriteComponent: Component {
     public init(spriteSize: Size2, spriteSheet: SpriteSheet, activeAnimationIndex: Int = 0, animations: [SpriteAnimation], playbackState: PlaybackState = .play) {
         self.spriteRect = Rect(size: spriteSize)
         self.spriteSheet = spriteSheet
-        self.activeAnimationIndex = activeAnimationIndex
+        self.animationQueue = [activeAnimationIndex]
         self.animations = animations
         self.playbackState = playbackState
     }
