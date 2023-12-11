@@ -36,7 +36,7 @@ public extension Collider3D {
     func surfaceImpact(comparing ray: Ray3D) -> SurfaceImpact3D? {
         guard let point = self.surfacePoint(for: ray) else {return nil}
         let normal = self.surfaceNormal(facing: point)
-        return SurfaceImpact3D(normal: normal, position: point)
+        return SurfaceImpact3D(normal: normal, position: point, triangle: nil)
     }
 }
 
@@ -76,10 +76,12 @@ public struct Interpenetration3D {
 public struct SurfaceImpact3D: Surface3D {
     public internal(set) var normal: Direction3
     public internal(set) var position: Position3
+    public internal(set) var triangle: CollisionTriangle?
     
-    public init(normal: Direction3, position: Position3) {
+    public init(normal: Direction3, position: Position3, triangle: CollisionTriangle?) {
         self.normal = normal
         self.position = position
+        self.triangle = triangle
     }
 }
 
