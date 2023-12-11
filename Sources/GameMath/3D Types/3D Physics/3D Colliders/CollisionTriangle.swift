@@ -6,13 +6,13 @@
  */
 
 public struct CollisionTriangle: Sendable {
-    public let positions: [Position3]
-    public let colors: [Color]
-    public let normal: Direction3
-    public let _attributes: UInt32
+    public var positions: [Position3]
+    public var colors: [Color]
+    public var normal: Direction3
+    public var _attributes: UInt32
     
-    public let plane: Plane3D
-    public let center: Position3
+    public var plane: Plane3D
+    public var center: Position3
     
     public static var attributeParser = {(u: Float, v: Float, section: UInt32) -> UInt32 in
         let range: Float = 3
@@ -25,6 +25,24 @@ public struct CollisionTriangle: Sendable {
         let row = UInt32(vidx) * UInt32(range)
         let shift = (UInt32(range * range) * section) + (row + UInt32(uidx) + 1)
         return 1 << shift
+    }
+    
+    public mutating func recomputeCenter() {
+        self.center = (p1 + p2 + p3) / Position3(3.0)
+    }
+    
+    public mutating func recomputeNormal() {
+        self.normal = Direction3((p2 - p1).cross(p3 - p1)).normalized
+    }
+    
+    public mutating func recomputePlane() {
+        self.plane = Plane3D(origin: center, normal: normal)
+    }
+    
+    public mutating func recomputeAll() {
+        self.recomputeCenter()
+        self.recomputeNormal()
+        self.recomputePlane()
     }
     
     public init(_ p1: Position3, _ p2: Position3, _ p3: Position3, _ c1: Color = .white, _ c2: Color = .white, _ c3: Color = .white, normal: Direction3? = nil, attributes: UInt32 = 0) {
