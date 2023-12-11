@@ -453,8 +453,6 @@ extension Skeleton.Pose.Joint {
 extension Skeleton.Pose {
     @inlinable
     public func shaderMatrixArray(orderedFromSkinJoints joints: [Skin.Joint]) -> [Matrix4x4] {
-        //        return joints.map({$0.inverseBindMatrix.inverse})
-
         return joints.map({
             (rootJoint.firstDescendant(withID: $0.id)?.modelSpace ?? .identity)
                 * $0.inverseBindMatrix
