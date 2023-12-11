@@ -281,6 +281,7 @@
     ) {
         let material = Material { material in
             material.channel(0) { channel in
+                channel.color = sprite.tintColor
                 channel.texture = sprite.texture
                 channel.scale = sprite.uvScale
                 channel.offset = sprite.uvOffset
@@ -305,7 +306,7 @@
             transforms: [transform],
             material: material,
             vsh: .standard,
-            fsh: .textureSampleOpacity_DiscardZeroAlpha,
+            fsh: .textureSampleTintColorOpacity_DiscardZeroAlpha,
             flags: flags
         )
         self.insert(command)
