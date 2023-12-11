@@ -331,6 +331,16 @@ extension AxisAlignedBoundingBox3D {
 
 public extension AxisAlignedBoundingBox3D {
     @inline(__always)
+    func isIntersected(by ray: Ray3D) -> Bool {
+        for plane in self.planes() {
+            if self.contains(plane.intersectionOfRay(ray)) {
+                return true
+            }
+        }
+        return false
+    }
+    
+    @inline(__always)
     func surfacePoint(for ray: Ray3D) -> Position3? {
         let minPosition = self.minPosition
         let maxPosition = self.maxPosition
