@@ -545,17 +545,17 @@ extension Collision3DSystem {
     }
 
     @inline(__always)
-    public func trianglesHit(by ray: Ray3D, useRayCastCollider: Bool = false, filter: ((CollisionTriangle) -> Bool)? = nil) -> [(
-        position: Position3, triangle: CollisionTriangle
-    )] {
+    public func trianglesHit(
+        by ray: Ray3D, 
+        useRayCastCollider: Bool = false, 
+        filter: ((CollisionTriangle) -> Bool)? = nil
+    ) -> [(position: Position3, triangle: CollisionTriangle)] {
         var hits: [(position: Position3, triangle: CollisionTriangle)] = []
 
         for entity in entitiesProbablyHit(by: ray) {
             let component = entity[Collision3DComponent.self]
-            let collider = useRayCastCollider ? component.rayCastCollider ?? component.collider : component.collider
+            let collider = useRayCastCollider ? (component.rayCastCollider ?? component.collider) : component.collider
             switch collider {
-            case let skinCollider as SkinCollider:
-                hits.append(contentsOf: skinCollider.trianglesHit(by: ray))
             case let meshCollider as MeshCollider:
                 hits.append(contentsOf: meshCollider.trianglesHit(by: ray))
             default:
@@ -578,16 +578,41 @@ extension Collision3DSystem {
     }
 
     @inline(__always)
-    public func entitiesProbablyHit(by ray: Ray3D, useRayCastCollider: Bool = false, filter: ((Entity) -> Bool)? = nil) -> [Entity] {
+    public func entitiesProbablyHit(
+        by ray: Ray3D, 
+        useRayCastCollider: Bool = false, 
+        filter: ((Entity) -> Bool)? = nil
+    ) -> [Entity] {
         var entities: [Entity] = []
 
         for entity in game.entities {
-            guard let collisionComponent = entity.component(ofType: Collision3DComponent.self)
-            else { continue }
-            guard filter?(entity) ?? true else { continue }
-            let collider = useRayCastCollider ? collisionComponent.rayCastCollider ?? collisionComponent.collider : collisionComponent.collider
-            let boundingBox = collider.boundingBox
-            if boundingBox.surfacePoint(for: ray) != nil {
+            if 
+                let collisionComponent = entity.component(ofType: Collision3DComponent.self),
+                filter?(entity) ?? true
+            {
+                let collider = useRayCastCollider ? (collisionComponent.rayCastCollider ?? collisionComponent.collider) : collisionComponent.collider
+                if collider.boundingBox.isIntersected(by: ray) {
+                    entities.append(entity)
+                }
+            }
+        }
+
+        return entities
+    }
+
+    @inline(__always)
+    public func entitiesProbablyHit(
+        by collider: some Collider3D, 
+        filter: ((Entity) -> Bool)? = nil
+    ) -> [Entity] {
+        var entities: [Entity] = []
+
+        for entity in game.entities {
+            if 
+                let collisionComponent = entity.component(ofType: Collision3DComponent.self),
+                filter?(entity) ?? true,
+                collisionComponent.collider.boundingBox.interpenetration(comparing: collider)?.isColiding == true
+            {
                 entities.append(entity)
             }
         }
@@ -596,44 +621,25 @@ extension Collision3DSystem {
     }
 
     @inline(__always)
-    public func entitiesProbablyHit(by collider: some Collider3D, filter: ((Entity) -> Bool)? = nil)
-        -> [Entity]
-    {
-        var entities: [Entity] = []
-
-        for entity in game.entities {
-            guard let collisionComponent = entity.component(ofType: Collision3DComponent.self)
-            else { continue }
-            guard filter?(entity) ?? true else { continue }
-            guard
-                collisionComponent.collider.boundingBox.interpenetration(comparing: collider)?
-                    .isColiding == true
-            else { continue }
-            entities.append(entity)
-        }
-
-        return entities
-    }
-
-    @inline(__always)
-    public func entitiesHit(by ray: Ray3D, useRayCastCollider: Bool = false, filter: ((Entity) -> Bool)? = nil) -> [(
-        position: Position3, surfaceDirection: Direction3, entity: Entity
-    )] {
+    public func entitiesHit(
+        by ray: Ray3D, useRayCastCollider: Bool = false, 
+        filter: ((Entity) -> Bool)? = nil
+    ) -> [(surfaceImpact: SurfaceImpact3D, entity: Entity)] {
         let entities = entitiesProbablyHit(by: ray, useRayCastCollider: useRayCastCollider, filter: filter)
 
-        var hits: [(position: Position3, surfaceDirection: Direction3, entity: Entity)] = []
+        var hits: [(surfaceImpact: SurfaceImpact3D, entity: Entity)] = []
         for entity in entities {
-            guard let collisionComponent = entity.component(ofType: Collision3DComponent.self)
-            else { continue }
-            let collider = useRayCastCollider ? collisionComponent.rayCastCollider ?? collisionComponent.collider : collisionComponent.collider
-            guard collider is MeshCollider == false else { continue }
-            if let impact = collider.surfaceImpact(comparing: ray) {
-                hits.append((impact.position, impact.normal, entity))
+            if let collisionComponent = entity.component(ofType: Collision3DComponent.self) {
+                let collider = useRayCastCollider ? (collisionComponent.rayCastCollider ?? collisionComponent.collider) : collisionComponent.collider
+                guard collider is MeshCollider == false else { continue }
+                if let impact = collider.surfaceImpact(comparing: ray) {
+                    hits.append((impact, entity))
+                }
             }
         }
 
         return hits.sorted(by: {
-            $0.position.distance(from: ray.origin) < $1.position.distance(from: ray.origin)
+            $0.surfaceImpact.position.distance(from: ray.origin) < $1.surfaceImpact.position.distance(from: ray.origin)
         })
     }
 
@@ -649,23 +655,33 @@ extension Collision3DSystem {
         triangle: CollisionTriangle?,
         entity: Entity?
     )? {
-        let entity = entitiesHit(by: ray, useRayCastCollider: useRaycastCollider, filter: entityFilter).first
-        guard let triangle = trianglesHit(by: ray, useRayCastCollider: useRaycastCollider, filter: triangleFilter).first else {
-            if let entity {
-                return (entity.position, entity.surfaceDirection, nil, entity.entity)
+        let entityHit = entitiesHit(by: ray, useRayCastCollider: useRaycastCollider, filter: entityFilter).first
+        guard let triangleHit = trianglesHit(by: ray, useRayCastCollider: useRaycastCollider, filter: triangleFilter).first else {
+            if let entityHit {
+                return (
+                    entityHit.surfaceImpact.position,
+                    entityHit.surfaceImpact.normal,
+                    entityHit.surfaceImpact.triangle,
+                    entityHit.entity
+                )
             } else {
                 return nil
             }
         }
-        guard let entity else {
-            return (triangle.position, triangle.triangle.normal, triangle.triangle, nil)
+        guard let entityHit else {
+            return (triangleHit.position, triangleHit.triangle.normal, triangleHit.triangle, nil)
         }
-        let triangleDistance = triangle.position.distance(from: ray.origin)
-        let entityDistance = entity.position.distance(from: ray.origin)
+        let triangleDistance = triangleHit.position.distance(from: ray.origin)
+        let entityDistance = entityHit.surfaceImpact.position.distance(from: ray.origin)
         if triangleDistance < entityDistance {
-            return (triangle.position, triangle.triangle.normal, triangle.triangle, nil)
+            return (triangleHit.position, triangleHit.triangle.normal, triangleHit.triangle, nil)
         } else {
-            return (entity.position, entity.surfaceDirection, nil, entity.entity)
+            return (
+                entityHit.surfaceImpact.position, 
+                entityHit.surfaceImpact.normal, 
+                entityHit.surfaceImpact.triangle,
+                entityHit.entity
+            )
         }
     }
 }
