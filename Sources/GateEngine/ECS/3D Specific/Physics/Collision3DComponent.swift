@@ -39,6 +39,8 @@ public final class Collision3DComponent: Component {
         offset: .zero,
         radius: .one
     )
+    
+    public var rayCastCollider: (any Collider3D)? = nil
 
     public internal(set) var touching: [(triangle: CollisionTriangle, interpenetration: Interpenetration3D)] = []
 
@@ -68,11 +70,13 @@ public final class Collision3DComponent: Component {
     @inlinable @inline(__always)
     public func updateColliders(_ transform: Transform3) {
         self.collider.update(transform: transform)
+        self.rayCastCollider?.update(transform: transform)
     }
 
     @inlinable @inline(__always)
     public func update(sizeAndOffsetUsingTransform transform: Transform3) {
         self.collider.update(sizeAndOffsetUsingTransform: transform)
+        self.rayCastCollider?.update(sizeAndOffsetUsingTransform: transform)
     }
 
     public required init() {}
