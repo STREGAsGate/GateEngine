@@ -30,7 +30,12 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
     
     @inlinable @inline(__always)
     public var size: Size3 {
-        return radius * 2
+        get {
+            return radius * 2
+        }
+        set {
+            radius = newValue * 0.5
+        }
     }
     
     @inlinable @inline(__always)
