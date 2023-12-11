@@ -76,6 +76,11 @@ public struct Interpenetration3D {
 public struct SurfaceImpact3D: Surface3D {
     public internal(set) var normal: Direction3
     public internal(set) var position: Position3
+    
+    public init(normal: Direction3, position: Position3) {
+        self.normal = normal
+        self.position = position
+    }
 }
 
 public enum SurfaceType: Int {
