@@ -9,7 +9,7 @@
 import MetalKit
 import GameMath
 
-class MetalRenderTarget: RenderTargetBackend {
+final class MetalRenderTarget: RenderTargetBackend {
     var size: Size2 = Size2(2)
     var isFirstPass = true
 

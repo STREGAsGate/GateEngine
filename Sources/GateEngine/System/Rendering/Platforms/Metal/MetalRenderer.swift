@@ -13,7 +13,7 @@ import MetalKit
 import GameMath
 import Shaders
 
-class MetalRenderer: RendererBackend {
+final class MetalRenderer: RendererBackend {
     @inline(__always)
     var renderingAPI: RenderingAPI { .metal }
     static var isSupported: Bool = MTLCreateSystemDefaultDevice() != nil

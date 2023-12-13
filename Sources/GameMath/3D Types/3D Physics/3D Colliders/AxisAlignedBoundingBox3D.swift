@@ -296,13 +296,15 @@ extension AxisAlignedBoundingBox3D {
 extension AxisAlignedBoundingBox3D {
     @inline(__always)
     public func planes() -> [Plane3D] {
-        return [Plane3D(origin: position + radius, normal: .right),
-                Plane3D(origin: position + radius, normal: .up),
-                Plane3D(origin: position + radius, normal: .forward),
-                
-                Plane3D(origin: position - radius, normal: .left),
-                Plane3D(origin: position - radius, normal: .down),
-                Plane3D(origin: position - radius, normal: .backward)]
+        return [
+            Plane3D(origin: position + radius, normal: .right),
+            Plane3D(origin: position + radius, normal: .up),
+            Plane3D(origin: position + radius, normal: .backward),
+            
+            Plane3D(origin: position - radius, normal: .left),
+            Plane3D(origin: position - radius, normal: .down),
+            Plane3D(origin: position - radius, normal: .forward)
+        ]
     }
     
     @inline(__always)
@@ -330,15 +332,19 @@ extension AxisAlignedBoundingBox3D {
 }
 
 public extension AxisAlignedBoundingBox3D {
-    @inline(__always)
-    func isIntersected(by ray: Ray3D) -> Bool {
-        for plane in self.planes() {
-            if self.contains(plane.intersectionOfRay(ray)) {
-                return true
-            }
-        }
-        return false
-    }
+    // Not working as expected
+//    @inline(__always)
+//    func isIntersected(by ray: Ray3D) -> Bool {
+//        if self.contains(ray.origin) {
+//            return true
+//        }
+//        for plane in self.planes() {
+//            if self.contains(plane.intersectionOfRay(ray)) {
+//                return true
+//            }
+//        }
+//        return false
+//    }
     
     @inline(__always)
     func surfacePoint(for ray: Ray3D) -> Position3? {

@@ -273,7 +273,9 @@ extension Collision3DSystem {
     ) {
         guard
             let collider: BoundingEllipsoid3D = collisionComponent.collider as? BoundingEllipsoid3D
-        else { return }
+        else { 
+            return 
+        }
 
         @inline(__always)
         func wall(_ position: Position3, _ direction: Direction3) -> (
@@ -347,7 +349,6 @@ extension Collision3DSystem {
                 r.right.interpolated(to: forward, .linear(0.5)),
                 r.left.interpolated(to: forward, .linear(0.5)),
             ]
-
         }()
         var doSides = false
         for direction in directions1 {
@@ -358,7 +359,7 @@ extension Collision3DSystem {
         }
 
         if doSides {
-            @inline(__always)
+            @_transparent
             var directions2: [Direction3] {
                 let r = transformComponent.rotation
                 return [
@@ -394,14 +395,18 @@ extension Collision3DSystem {
             offset: .zero,
             radius: collider.radius.x
         )
-        let triangles = trianglesNear(collisionComponent.collider.boundingBox, filter: filter)
-            .filter({ $0.interpenetration(comparing: sphere)?.isColiding == true })
+        let triangles = trianglesNear(
+            collisionComponent.collider.boundingBox, 
+            filter: filter
+        ).filter({ $0.interpenetration(comparing: sphere)?.isColiding == true })
 
-        var match:
-            [(
-                edge: Line3D, point: Position3, angle: Degrees, distance: Float,
-                triangle: CollisionTriangle
-            )] = []
+        var match: [(
+            edge: Line3D, 
+            point: Position3, 
+            angle: Degrees, 
+            distance: Float,
+            triangle: CollisionTriangle
+        )] = []
         for triangle in triangles {
             let edge = triangle.edgeNear(transformComponent.position)
             let point = edge.pointNear(transformComponent.position)
@@ -470,16 +475,19 @@ extension Collision3DSystem {
 
     @inline(__always)
     func respondToCollision(dynamicEntity: Entity, triangle: CollisionTriangle) -> Bool {
-        guard let collisionComponent = dynamicEntity.component(ofType: Collision3DComponent.self)
-        else { return false }
-        guard
-            let interpenetration = triangle.interpenetration(
-                comparing: collisionComponent.collider
-            ), interpenetration.isColiding
-        else { return false }
+        guard 
+            let collisionComponent = dynamicEntity.component(ofType: Collision3DComponent.self),
+            let interpenetration = triangle.interpenetration(comparing: collisionComponent.collider), 
+                interpenetration.isColiding
+        else { 
+            return false 
+        }
         collisionComponent.touching.append((triangle, interpenetration))
-        guard let transformComponent = dynamicEntity.component(ofType: Transform3Component.self)
-        else { return false }
+        guard 
+            let transformComponent = dynamicEntity.component(ofType: Transform3Component.self)
+        else { 
+            return false 
+        }
         let depth = interpenetration.depth + 0.001  //Keep the objects touching a little
         switch triangle.surfaceType {
         case .floor, .ramp:
@@ -498,10 +506,10 @@ extension Collision3DSystem {
         staticEntity: Entity,
         interpenetration: Interpenetration3D
     ) {
-        guard let transformComponent = dynamicEntity.component(ofType: Transform3Component.self)
-        else { return }
-        let depth = interpenetration.depth + 0.001  //Keep the objects touching a little
-        transformComponent.position -= Position3(interpenetration.direction * depth)
+        if let transformComponent = dynamicEntity.component(ofType: Transform3Component.self) {
+            let depth = interpenetration.depth + 0.001  //Keep the objects touching a little
+            transformComponent.position -= Position3(interpenetration.direction * depth)
+        }
     }
 
     @inline(__always)
@@ -510,18 +518,17 @@ extension Collision3DSystem {
         dynamicEntity: Entity,
         interpenetration: Interpenetration3D
     ) {
-        guard let transformComponent = dynamicEntity.component(ofType: Transform3Component.self)
-        else { return }
-        let depth = interpenetration.depth + 0.001  //Keep the objects touching a little
-        transformComponent.position -= Position3(interpenetration.direction * depth)
+        if let transformComponent = dynamicEntity.component(ofType: Transform3Component.self) {
+            let depth = interpenetration.depth + 0.001  //Keep the objects touching a little
+            transformComponent.position -= Position3(interpenetration.direction * depth)
+        }
     }
 }
 
 extension Collision3DSystem {
+    @_transparent
     private var octrees: [OctreeComponent] {
-        return game.entities.filter({ $0.hasComponent(OctreeComponent.self) }).map({
-            $0[OctreeComponent.self]
-        })
+        return game.entities.compactMap({ $0.component(ofType: OctreeComponent.self) })
     }
 
     @inline(__always)
@@ -558,6 +565,8 @@ extension Collision3DSystem {
             switch collider {
             case let meshCollider as MeshCollider:
                 hits.append(contentsOf: meshCollider.trianglesHit(by: ray))
+            case let skinCollider as SkinCollider:
+                hits.append(contentsOf: skinCollider.trianglesHit(by: ray))
             default:
                 break
             }
@@ -591,7 +600,7 @@ extension Collision3DSystem {
                 filter?(entity) ?? true
             {
                 let collider = useRayCastCollider ? (collisionComponent.rayCastCollider ?? collisionComponent.collider) : collisionComponent.collider
-                if collider.boundingBox.isIntersected(by: ray) {
+                if collider.boundingBox.surfacePoint(for: ray) != nil {
                     entities.append(entity)
                 }
             }
@@ -608,7 +617,7 @@ extension Collision3DSystem {
         var entities: [Entity] = []
 
         for entity in game.entities {
-            if 
+            if
                 let collisionComponent = entity.component(ofType: Collision3DComponent.self),
                 filter?(entity) ?? true,
                 collisionComponent.collider.boundingBox.interpenetration(comparing: collider)?.isColiding == true
@@ -631,7 +640,6 @@ extension Collision3DSystem {
         for entity in entities {
             if let collisionComponent = entity.component(ofType: Collision3DComponent.self) {
                 let collider = useRayCastCollider ? (collisionComponent.rayCastCollider ?? collisionComponent.collider) : collisionComponent.collider
-                guard collider is MeshCollider == false else { continue }
                 if let impact = collider.surfaceImpact(comparing: ray) {
                     hits.append((impact, entity))
                 }
@@ -677,8 +685,8 @@ extension Collision3DSystem {
             return (triangleHit.position, triangleHit.triangle.normal, triangleHit.triangle, nil)
         } else {
             return (
-                entityHit.surfaceImpact.position, 
-                entityHit.surfaceImpact.normal, 
+                entityHit.surfaceImpact.position,
+                entityHit.surfaceImpact.normal,
                 entityHit.surfaceImpact.triangle,
                 entityHit.entity
             )
