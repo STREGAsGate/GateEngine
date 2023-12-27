@@ -348,6 +348,48 @@
         )
         self.insert(command)
     }
+    
+    /** Adds geometry to the canvas for rendering.
+    - parameter geometry: The geometry to draw.
+    - parameter material: The color information used to draw the geometry.
+    - parameter transforms: Describes how each geometry instance should be positioned and scaled relative to the canvas.
+    - parameter flags: Options to customize how drawing is handled.
+    - Geometry is automatically instanced for performance. There are two types of instancing that happen automatically under the hood.
+      1. Simple instancing. This happens when all instances of the same `Geometry` reference have the same `material` and `flags` and differ only by `transform`. This is the most efficient and suitible for things like particles, foliage, and tiles.
+      2. Complex instancing. Complex instancing occurs if any instance of the same `Geometry` reference has a different material or flags. Complex instancing allows using the same `Geometry` with different materials while still having some.
+    - The  instancing is best effort and does not guarantee the same performance across platforms or package version. You should test each platform if you use many instances.
+    - You may not explicitly choose the instancing, however you could create a new `Geometry` from the same URL which would have a different id and have separate instancing. This would allow both instancing types at the expense of an additional GPU resource for each `Geometry` reference.
+    */
+    @inlinable @inline(__always)
+    public mutating func insert(
+        _ skinnedGeometry: SkinnedGeometry,
+        withPose pose: Skeleton.Pose,
+        material: Material,
+        at transforms: [Transform3],
+        opacity: Float = 1,
+        flags: SceneElementFlags = .default
+    ) {
+        guard skinnedGeometry.isReady else {return}
+        var material = material
+        material.setCustomUniformValue(
+            pose.shaderMatrixArray(orderedFromSkinJoints: skinnedGeometry.skinJoints),
+            forUniform: "bones"
+        )
+        material.setCustomUniformValue(
+            opacity, 
+            forUniform: "opacity"
+        )
+
+        let command = DrawCommand(
+            resource: .skinned(skinnedGeometry),
+            transforms: transforms,
+            material: material,
+            vsh: .skinned,
+            fsh: (material.channels.first?.texture != nil) ? .textureSampleOpacity : .materialColor,
+            flags: flags.drawCommandFlags(withPrimitive: .triangle)
+        )
+        self.insert(command)
+    }
 
     /**
      Get a canvas position for a scene position.
