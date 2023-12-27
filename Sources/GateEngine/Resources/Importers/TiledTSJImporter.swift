@@ -59,7 +59,7 @@ fileprivate struct TSJFile: Decodable {
     }
 }
 
-public class TiledTSJImporter: TileSetImporter {
+public final class TiledTSJImporter: TileSetImporter {
     public required init() {}
 
     public func process(data: Data, baseURL: URL, options: TileSetImporterOptions) async throws -> TileSetBackend {

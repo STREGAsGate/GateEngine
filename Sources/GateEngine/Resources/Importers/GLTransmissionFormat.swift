@@ -406,7 +406,7 @@ private class GLTF: Decodable {
     }
 }
 
-public class GLTransmissionFormat {
+public final class GLTransmissionFormat {
     required public init() {}
 
     fileprivate func gltf(from data: Data, baseURL: URL) throws -> GLTF {

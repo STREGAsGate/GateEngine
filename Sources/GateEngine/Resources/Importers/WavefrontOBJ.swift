@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class WavefrontOBJImporter: GeometryImporter {
+public final class WavefrontOBJImporter: GeometryImporter {
     public required init() {}
 
     public func loadData(path: String, options: GeometryImporterOptions) async throws -> RawGeometry {

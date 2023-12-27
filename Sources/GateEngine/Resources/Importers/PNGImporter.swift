@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public class PNGImporter: TextureImporter {
+public final class PNGImporter: TextureImporter {
     public required init() {}
 
     public func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (

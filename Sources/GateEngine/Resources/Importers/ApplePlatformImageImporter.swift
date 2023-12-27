@@ -10,7 +10,7 @@ import ImageIO
 import CoreImage
 import CoreServices
 
-public class ApplePlatformImageImporter: TextureImporter {
+public final class ApplePlatformImageImporter: TextureImporter {
     public required init() {}
 
     public func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (

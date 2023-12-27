@@ -36,7 +36,7 @@ fileprivate struct TMJFile: Decodable {
     let tiledversion: String
 }
 
-public class TiledTMJImporter: TileMapImporter {
+public final class TiledTMJImporter: TileMapImporter {
     public required init() {}
 
     public func process(data: Data, baseURL: URL, options: TileMapImporterOptions) async throws -> TileMapBackend {

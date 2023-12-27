@@ -9,7 +9,7 @@
 import Foundation
 import ModelIO
 
-public class ApplePlatformModelImporter: GeometryImporter {
+public final class ApplePlatformModelImporter: GeometryImporter {
     public required init() {}
 
     private func positions(from mesh: MDLMesh) throws -> [Float] {
