@@ -317,7 +317,7 @@
             transforms: [transform],
             material: material,
             vsh: .standard,
-            fsh: .textureSample,
+            fsh: .textureSampleTintColor,
             flags: flags
         )
         self.insert(command)
