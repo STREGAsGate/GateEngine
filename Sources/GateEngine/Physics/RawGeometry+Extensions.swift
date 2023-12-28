@@ -8,8 +8,13 @@
 extension RawGeometry {
     public func generateCollisionTriangles() -> [CollisionTriangle] {
         var positions: [Position3] = []
+        positions.reserveCapacity(indices.count * 3)
         var uvs: [[Position2]] = Array(repeating: [], count: uvSets.count)
+        for uvSet in uvs.indices {
+            uvs[uvSet].reserveCapacity(positions.capacity)
+        }
         var colors: [Color] = []
+        colors.reserveCapacity(positions.capacity)
         let colorComponents: Int = self.colors.count / (self.positions.count / 3)
 
         for vertexIndex in indices.indices {
