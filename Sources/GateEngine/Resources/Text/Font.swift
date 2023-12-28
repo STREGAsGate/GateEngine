@@ -32,7 +32,7 @@ protocol FontBackend {
     ) -> AlignedCharacter
 }
 
-public class Font: OldResource {
+public final class Font: OldResource {
     @RequiresState(.ready)
     var backend: (any FontBackend)! = nil
 
@@ -140,6 +140,7 @@ public class Font: OldResource {
     public static let `default`: Font = tuffy
 
     public nonisolated static let tuffy: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy.ttf")
+    public nonisolated static let tuffyBold: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy_Bold.ttf")
     public nonisolated static let micro: Font = Font(pngRegular: "GateEngine/Fonts/Micro/Micro.png")
     public nonisolated static let babel: Font = Font(pngRegular: "GateEngine/Fonts/Babel/Babel.png")
 }
