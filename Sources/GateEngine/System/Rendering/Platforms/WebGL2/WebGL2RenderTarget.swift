@@ -10,7 +10,7 @@ import WebGL1
 import WebGL2
 import GameMath
 
-class WebGL2RenderTarget: RenderTargetBackend {
+final class WebGL2RenderTarget: RenderTargetBackend {
     let context: WebGL2RenderingContext
     let framebuffer: WebGLFramebuffer?
 
@@ -215,9 +215,30 @@ extension WebGL2RenderTarget {
         }
     }
 
-    func willBeginContent(matrices: Matrices?, viewport: Rect?) {
+    func willBeginContent(matrices: Matrices?, viewport: Rect?, scissorRect: Rect?) {
         context.bindFramebuffer(target: GL.FRAMEBUFFER, framebuffer: framebuffer)
-        context.viewport(x: 0, y: 0, width: GLsizei(size.width), height: GLsizei(size.height))
+        
+        if let viewport {
+            context.viewport(
+                x: GLint(viewport.x), 
+                y: GLint(viewport.y), 
+                width: GLsizei(viewport.width), 
+                height: GLsizei(viewport.height)
+            )
+        }else{
+            context.viewport(x: 0, y: 0, width: GLsizei(size.width), height: GLsizei(size.height))
+        }
+        
+        if let scissorRect {
+            context.scissor(
+                x: GLint(scissorRect.x), 
+                y: GLint(scissorRect.y), 
+                width: GLsizei(scissorRect.width), 
+                height: GLsizei(scissorRect.height)
+            )
+        }else{
+            context.viewport(x: 0, y: 0, width: GLsizei(size.width), height: GLsizei(size.height))
+        }
     }
     func didEndContent() {
         context.flush()

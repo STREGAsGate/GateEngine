@@ -456,6 +456,10 @@ public typealias GLdouble = GLKit.GLdouble
     GLKit.glViewport(x, y, width, height)
 }
 
+@_transparent @usableFromInline internal func _glScissor(_ x: GLint, _ y: GLint, _ width: GLsizei, _ height: GLsizei) {
+    GLKit.glScissor(x, y, width, height)
+}
+
 @_transparent @usableFromInline internal func _glGetString(_ name: GLenum) -> UnsafePointer<GLubyte>? {
     return GLKit.glGetString(name)
 }

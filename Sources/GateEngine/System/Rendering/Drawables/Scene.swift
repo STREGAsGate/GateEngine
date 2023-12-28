@@ -9,6 +9,7 @@
 @MainActor public struct Scene {
     @usableFromInline internal var camera: Camera
     @usableFromInline internal var viewport: Rect?
+    @usableFromInline internal var scissorRect: Rect?
 
     @usableFromInline internal var pointLights: Set<ScenePointLight> = []
     @usableFromInline internal var spotLights: Set<SceneSpotLight> = []
@@ -35,6 +36,11 @@
     @inlinable @inline(__always)
     public mutating func setViewport(_ viewport: Rect?) {
         self.viewport = viewport
+    }
+    
+    @inlinable @inline(__always)
+    public mutating func setScissorRect(_ scissorRect: Rect?) {
+        self.scissorRect = scissorRect
     }
 
     /** Adds geometry to the scene for rendering.
@@ -345,7 +351,7 @@
         return false
     }
 
-    public init(camera: Camera, viewport: Rect? = nil, estimatedCommandCount: Int = 10) {
+    public init(camera: Camera, viewport: Rect? = nil, clipRect: Rect? = nil, estimatedCommandCount: Int = 10) {
         self.camera = camera
         self.viewport = viewport
 

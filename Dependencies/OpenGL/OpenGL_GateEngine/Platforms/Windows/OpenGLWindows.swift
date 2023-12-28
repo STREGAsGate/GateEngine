@@ -453,6 +453,10 @@ public typealias GLdouble = OpenGL_Windows.GLdouble
     OpenGL_Windows.glViewport(x, y, width, height)
 }
 
+@_transparent @usableFromInline internal func _glScissor(_ x: GLint, _ y: GLint, _ width: GLsizei, _ height: GLsizei) {
+    OpenGL_Windows.glScissor(x, y, width, height)
+}
+
 @_transparent @usableFromInline internal func _glGetString(_ name: GLenum) -> UnsafePointer<GLubyte>? {
     return OpenGL_Windows.glGetString(name)
 }

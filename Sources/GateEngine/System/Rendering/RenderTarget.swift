@@ -203,7 +203,7 @@ extension _RenderTargetProtocol {
     private func drawScene(_ scene: Scene) {
         let matrices = scene.camera.matricies(withAspectRatio: self.size.aspectRatio)
 
-        renderTargetBackend.willBeginContent(matrices: matrices, viewport: scene.viewport)
+        renderTargetBackend.willBeginContent(matrices: matrices, viewport: scene.viewport, scissorRect: scene.scissorRect)
         for command in scene._drawCommands {
             Game.shared.renderer.draw(
                 command,
@@ -219,7 +219,7 @@ extension _RenderTargetProtocol {
     private func drawCanvas(_ canvas: Canvas) {
         let matrices = canvas.matrices(withSize: self.size)
 
-        renderTargetBackend.willBeginContent(matrices: matrices, viewport: canvas.clipRect)
+        renderTargetBackend.willBeginContent(matrices: matrices, viewport: canvas.viewport, scissorRect: canvas.scissorRect)
         for command in canvas._drawCommands {
             Game.shared.renderer.draw(
                 command,
@@ -234,7 +234,7 @@ extension _RenderTargetProtocol {
     @inline(__always)
     private func drawRenderTarget(_ container: RenderTargetFillContainer, frame: UInt) {
         container.renderTarget.draw(frame)
-        renderTargetBackend.willBeginContent(matrices: nil, viewport: nil)
+        renderTargetBackend.willBeginContent(matrices: nil, viewport: nil, scissorRect: nil)
         Game.shared.renderer.draw(
             container.renderTarget,
             into: self,
@@ -311,7 +311,7 @@ extension RenderTargetProtocol {
     func willBeginFrame(_ frame: UInt)
     func didEndFrame(_ frame: UInt)
 
-    func willBeginContent(matrices: Matrices?, viewport: Rect?)
+    func willBeginContent(matrices: Matrices?, viewport: GameMath.Rect?, scissorRect: GameMath.Rect?)
     func didEndContent()
 }
 

@@ -1041,8 +1041,12 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     _glDeleteVertexArrays(GLsizei(arrays.count), arrays)
 }
 
-@inlinable @inline(__always) public func glViewport<T: BinaryInteger>(x: T, y: T, width: T, height: T) {
-    _glViewport(GLint(x), GLint(y), GLsizei(width), GLsizei(height))
+@inlinable @inline(__always) public func glViewport(x: GLint, y: GLint, width: GLsizei, height: GLsizei) {
+    _glViewport(x, y, width, height)
+}
+
+@inlinable @inline(__always) public func glScissor(x: GLint, y: GLint, width: GLsizei, height: GLsizei) {
+    _glScissor(x, y, width, height)
 }
 
 @inlinable @inline(__always) public func glGetString(describing name: OpenGL.Description) throws -> String  {

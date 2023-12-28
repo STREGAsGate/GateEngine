@@ -448,6 +448,10 @@ public func glewInit() {
     GLEW.glViewport(x, y, width, height)
 }
 
+@_transparent @usableFromInline internal func _glScissor(_ x: GLint, _ y: GLint, _ width: GLsizei, _ height: GLsizei) {
+    GLEW.glScissor(x, y, width, height)
+}
+
 @_transparent @usableFromInline internal func _glGetString(_ name: GLenum) -> UnsafePointer<GLubyte>? {
     return GLEW.glGetString(name)
 }

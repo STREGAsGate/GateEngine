@@ -107,7 +107,7 @@ final class MetalRenderTarget: RenderTargetBackend {
         #endif
     }
 
-    func willBeginContent(matrices: Matrices?, viewport: GameMath.Rect?) {
+    func willBeginContent(matrices: Matrices?, viewport: GameMath.Rect?, scissorRect: GameMath.Rect?) {
         if let viewport {
             let mtlViewport = MTLViewport(
                 originX: Double(viewport.position.x),
@@ -118,6 +118,15 @@ final class MetalRenderTarget: RenderTargetBackend {
                 zfar: 1
             )
             self.commandEncoder.setViewport(mtlViewport)
+        }
+        if let scissorRect {
+            let mtlScissorRect = MTLScissorRect(
+                x: Int(Double(scissorRect.position.x)),
+                y: Int(Double(scissorRect.position.y)),
+                width: Int(Double(scissorRect.size.width)),
+                height: Int(Double(scissorRect.size.height))
+            )
+            self.commandEncoder.setScissorRect(mtlScissorRect)
         }
     }
 

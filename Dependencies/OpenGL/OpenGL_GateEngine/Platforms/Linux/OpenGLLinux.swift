@@ -454,6 +454,10 @@ public typealias GLdouble = OpenGL_Linux.GLdouble
     OpenGL_Linux.glViewport(x, y, width, height)
 }
 
+@_transparent @usableFromInline internal func _glScissor(_ x: GLint, _ y: GLint, _ width: GLsizei, _ height: GLsizei) {
+    OpenGL_Linux.glScissor(x, y, width, height)
+}
+
 @_transparent @usableFromInline internal func _glGetString(_ name: GLenum) -> UnsafePointer<GLubyte>? {
     return OpenGL_Linux.glGetString(name)
 }

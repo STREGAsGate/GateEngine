@@ -9,7 +9,14 @@
 @MainActor public struct Canvas {
     let interfaceScale: Float
     internal var viewOrigin: Position2? = nil
-    internal var clipRect: Rect? = nil
+    internal var viewport: Rect? = nil
+    private var _scissorRect: Rect? = nil
+    internal var scissorRect: Rect? {
+        if let _scissorRect {
+            return _scissorRect * interfaceScale
+        }
+        return nil
+    }
 
     internal var size: Size2? = nil
     internal var camera: Camera? = nil
@@ -37,13 +44,17 @@
         self.viewOrigin = viewOrigin
     }
     
+    public mutating func setViewport(_ viewport: Rect?) {
+        self.viewport = viewport
+    }
+    
     /**
      Applys a clip rectangle to all content in this Canvas.
      
      - parameter clipRect: The area within this Rect will be drawn.
      */
-    public mutating func setClipRect(_ clipRect: Rect?) {
-        self.clipRect = clipRect
+    public mutating func setScissorRect(_ scissorRect: Rect?) {
+        self._scissorRect = scissorRect
     }
 
     public mutating func insert(
@@ -163,6 +174,7 @@
         scale: Size2 = .one,
         depth: Float = 0,
         opacity: Float = 1,
+        sampleFilter: Material.Channel.SampleFilter = .linear,
         flags: CanvasElementSpriteFlags = .default
     ) {
         let position = Position3(position.x, position.y, depth * -1)
@@ -173,6 +185,7 @@
         let material = Material { material in
             material.channel(0) { channel in
                 channel.texture = texture
+                channel.sampleFilter = sampleFilter
                 if let subRect {
                     channel.offset = Position2(
                         (subRect.position.x + 0.001) / Float(texture.size.width),

@@ -7,7 +7,7 @@
 #if canImport(OpenGL_GateEngine)
 import OpenGL_GateEngine
 
-class OpenGLRenderTarget: RenderTargetBackend {
+final class OpenGLRenderTarget: RenderTargetBackend {
     let framebuffer: GLuint
 
     let colorTexture: GLuint
@@ -102,7 +102,8 @@ extension OpenGLRenderTarget {
     func didEndFrame(_ frame: UInt) {
         if let windowRenderTarget {
             glBindFramebuffer(0)
-            glViewport(x: 0, y: 0, width: Int(size.width), height: Int(size.height))
+            glViewport(x: 0, y: 0, width: GLsizei(size.width), height: GLsizei(size.height))
+            glScissor(x: 0, y: 0, width: GLsizei(size.width), height: GLsizei(size.height))
             let renderer: Renderer = Game.shared.renderer
             let sizeOnlyRenderTarget = renderer.openGLBackend.sizeOnlyRenderTarget
             sizeOnlyRenderTarget.size = self.size
@@ -116,17 +117,28 @@ extension OpenGLRenderTarget {
         glFlush()
     }
 
-    func willBeginContent(matrices: Matrices?, viewport: Rect?) {
+    func willBeginContent(matrices: Matrices?, viewport: Rect?, scissorRect: Rect?) {
         glBindFramebuffer(framebuffer)
-        if let viewport = viewport {
+        if let viewport {
             glViewport(
-                x: Int(viewport.position.x),
-                y: Int(viewport.position.y),
-                width: Int(viewport.size.width),
-                height: Int(viewport.size.height)
+                x: GLint(viewport.position.x),
+                y: GLint(viewport.position.y),
+                width: GLsizei(viewport.size.width),
+                height: GLsizei(viewport.size.height)
             )
         } else {
-            glViewport(x: 0, y: 0, width: Int(size.width), height: Int(size.height))
+            glViewport(x: 0, y: 0, width: GLsizei(size.width), height: GLsizei(size.height))
+        }
+        
+        if let scissorRect {
+            glScissor(
+                x: GLint(scissorRect.x), 
+                y: GLint(scissorRect.y), 
+                width: GLsizei(scissorRect.width), 
+                height: GLsizei(scissorRect.height)
+            )
+        }else{
+            glScissor(x: 0, y: 0, width: GLsizei(size.width), height: GLsizei(size.height))
         }
     }
 
