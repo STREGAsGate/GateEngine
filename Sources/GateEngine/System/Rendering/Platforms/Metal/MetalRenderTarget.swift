@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
@@ -83,21 +83,9 @@ final class MetalRenderTarget: RenderTargetBackend {
     func willBeginFrame(_ frame: UInt) {
         self.isFirstPass = true
         self.commandBuffer = Game.shared.renderer.commandQueue.makeCommandBuffer()!
-        
-        if self.isFirstPass {
-            self.isFirstPass = false
-            self.commandEncoder = commandBuffer.makeRenderCommandEncoder(
-                descriptor: firstPassRenderPassDescriptor
-            )
-        } else {
-            self.commandEncoder = commandBuffer.makeRenderCommandEncoder(
-                descriptor: renderPassDescriptor
-            )
-        }
     }
 
     func didEndFrame(_ frame: UInt) {
-        self.commandEncoder.endEncoding()
         if let drawable = metalView?.currentDrawable {
             commandBuffer.present(drawable)
         }
@@ -108,6 +96,17 @@ final class MetalRenderTarget: RenderTargetBackend {
     }
 
     func willBeginContent(matrices: Matrices?, viewport: GameMath.Rect?, scissorRect: GameMath.Rect?) {
+        if self.isFirstPass {
+            self.isFirstPass = false
+            self.commandEncoder = commandBuffer.makeRenderCommandEncoder(
+                descriptor: firstPassRenderPassDescriptor
+            )
+        } else {
+            self.commandEncoder = commandBuffer.makeRenderCommandEncoder(
+                descriptor: renderPassDescriptor
+            )
+        }
+        
         if let viewport {
             let mtlViewport = MTLViewport(
                 originX: Double(viewport.position.x),
@@ -119,6 +118,7 @@ final class MetalRenderTarget: RenderTargetBackend {
             )
             self.commandEncoder.setViewport(mtlViewport)
         }
+        
         if let scissorRect {
             let mtlScissorRect = MTLScissorRect(
                 x: Int(Double(scissorRect.position.x)),
@@ -131,7 +131,7 @@ final class MetalRenderTarget: RenderTargetBackend {
     }
 
     func didEndContent() {
-        
+        self.commandEncoder.endEncoding()
     }
 
     @inline(__always)

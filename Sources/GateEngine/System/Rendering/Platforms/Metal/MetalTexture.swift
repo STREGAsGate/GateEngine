@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
@@ -53,7 +53,7 @@ final class MetalTexture: TextureBackend {
         self.renderTarget = nil
         self._mtlTexture = device.makeTexture(descriptor: descriptor)!
 
-        replaceData(with: data, size: size, mipMapping: mipMapping)
+        self.replaceData(with: data, size: size, mipMapping: mipMapping)
     }
 
     func replaceData(with data: Data, size: Size2, mipMapping: MipMapping) {
@@ -67,19 +67,20 @@ final class MetalTexture: TextureBackend {
             )
         }
         
-        generateMipMaps(mipMapping: mipMapping)
+        self.generateMipMaps()
     }
     
-    func generateMipMaps(mipMapping: MipMapping) {
-        let buffer = Game.shared.renderer.commandQueue.makeCommandBuffer()!
-        let blit = buffer.makeBlitCommandEncoder()!
-        let mipmapLevelCount = self._mtlTexture?.mipmapLevelCount ?? 1
-        if case .auto(_) = mipMapping, mipmapLevelCount > 1 {
-            blit.generateMipmaps(for: mtlTexture)
+    func generateMipMaps() {
+        if let mipmapLevelCount = self._mtlTexture?.mipmapLevelCount {
+            if mipmapLevelCount > 1 {
+                let buffer = Game.shared.renderer.commandQueue.makeCommandBuffer()!
+                let blit = buffer.makeBlitCommandEncoder()!
+                blit.generateMipmaps(for: mtlTexture)
+                blit.endEncoding()
+                buffer.commit()
+//                buffer.waitUntilCompleted()
+            }
         }
-        blit.endEncoding()
-        buffer.commit()
-//        buffer.waitUntilCompleted()
     }
 }
 #endif

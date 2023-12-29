@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
@@ -7,7 +7,7 @@
 #if canImport(WinSDK)
 import WinSDK.DirectX.XInput14
 
-internal class XInputGamePadInterpreter: GamePadInterpreter {
+internal final class XInputGamePadInterpreter: GamePadInterpreter {
     let hid: HID = Game.shared.hid
     init() {}
 

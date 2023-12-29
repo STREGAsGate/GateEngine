@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
@@ -8,7 +8,7 @@
 import Foundation
 import LinuxSupport
 
-private class HIDController {
+private final class HIDController {
     var guid: SDL2ControllerGUID {
         return map.id
     }
@@ -37,7 +37,7 @@ private func test_bit(_ bit: Int, _ array: [UInt32]) -> Bool {
     ((array[EVDEV_LONG(bit)] >> EVDEV_OFF(bit)) & 1) != 0
 }
 
-internal class LinuxHIDGamePadInterpreter: GamePadInterpreter {
+internal final class LinuxHIDGamePadInterpreter: GamePadInterpreter {
     let hid: HID = Game.shared.hid
     let sdl2Database: SDL2Database
     required init() {

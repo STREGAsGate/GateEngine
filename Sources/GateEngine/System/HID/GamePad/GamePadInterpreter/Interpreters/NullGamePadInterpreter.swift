@@ -1,11 +1,11 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
  */
 
-internal class NullGamePadInterpreter: GamePadInterpreter {
+internal final class NullGamePadInterpreter: GamePadInterpreter {
     let hid: HID = Game.shared.hid
     init() {}
     func beginInterpreting() {}

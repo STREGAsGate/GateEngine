@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
@@ -51,7 +51,7 @@
     /**
      Applys a clip rectangle to all content in this Canvas.
      
-     - parameter clipRect: The area within this Rect will be drawn.
+     - parameter scissorRect: The area within this Rect will be drawn.
      */
     public mutating func setScissorRect(_ scissorRect: Rect?) {
         self._scissorRect = scissorRect

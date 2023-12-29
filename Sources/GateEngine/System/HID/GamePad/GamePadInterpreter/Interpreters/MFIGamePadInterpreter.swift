@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
@@ -7,7 +7,7 @@
 #if os(macOS) || os(iOS) || os(tvOS)
 import GameController
 
-internal class MFIGamePadInterpreter: GamePadInterpreter {
+internal final class MFIGamePadInterpreter: GamePadInterpreter {
     let hid: HID = Game.shared.hid
     init?() {
         guard Self.isSupported else { return nil }

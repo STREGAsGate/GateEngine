@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
@@ -28,11 +28,11 @@ private class HIDController {
         self.device = device
     }
 }
-internal class IOKitGamePadInterpreter: GamePadInterpreter {
+internal final class IOKitGamePadInterpreter: GamePadInterpreter {
     let hid: HID = Game.shared.hid
     init?() {}
 
-    static let sdlDatabase = try! SDL2Database()
+    nonisolated static let sdlDatabase = try! SDL2Database()
     var sdlDatabase: SDL2Database {
         return Self.sdlDatabase
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
@@ -199,8 +199,7 @@ extension ResourceManager.Cache {
         
         @usableFromInline
         var description: String {
-            var string = requestedPath.first == "$" ? "(Generated)" : requestedPath
-            return string
+            return requestedPath.first == "$" ? "(Generated)" : requestedPath
         }
     }
 

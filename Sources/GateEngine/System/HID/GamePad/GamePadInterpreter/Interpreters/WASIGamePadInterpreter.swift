@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
@@ -10,7 +10,7 @@ import JavaScriptKit
 import DOM
 import Gamepad
 
-internal class WASIGamePadInterpreter: GamePadInterpreter {
+internal final class WASIGamePadInterpreter: GamePadInterpreter {
     let hid: HID = Game.shared.hid
     var wGamepads: [Gamepad] = []
     init() {}

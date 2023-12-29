@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
@@ -137,7 +137,8 @@ public final class Font: OldResource {
         let pointSize: UInt
     }
 
-    public static let `default`: Font = tuffy
+    @_transparent
+    public nonisolated static var `default`: Font { .tuffy }
 
     public nonisolated static let tuffy: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy.ttf")
     public nonisolated static let tuffyBold: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy_Bold.ttf")

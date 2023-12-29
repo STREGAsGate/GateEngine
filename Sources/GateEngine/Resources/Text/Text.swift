@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Dustin Collins (Strega's Gate)
+ * Copyright © 2023-2024 Dustin Collins (Strega's Gate)
  * All Rights Reserved.
  *
  * http://stregasgate.com
@@ -337,8 +337,9 @@ public final class Text {
 }
 
 extension Text {
+    @MainActor
     @usableFromInline
-    @MainActor var isReady: Bool {
+    var isReady: Bool {
         return font.state == .ready && texture.state == .ready && geometry.state == .ready
     }
 }
