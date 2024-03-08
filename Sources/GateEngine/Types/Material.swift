@@ -88,23 +88,28 @@ public struct Material {
             guard let texture else {
                 preconditionFailure("Assign a texture to the channel first.")
             }
+            precondition(
+                texture.sizeIsAvailable, 
+                "The texture must have an available size. Provide a sizeHint when creating the texture."
+            )
+            let xRoundingOffset: Float = (1 / texture.size.width) * 0.5
+            let yRoundingOffset: Float = (1 / texture.size.height) * 0.5
             self.scale = Size2(
                 subRect.size.width / Float(texture.size.width),
                 subRect.size.height / Float(texture.size.height)
             )
-            switch Game.shared.renderer.api {
-            case .openGL, .openGLES, .webGL2:
+            if Game.shared.renderer.api.origin == .bottomLeft {
                 self.offset = Position2(
-                    (subRect.position.x + 0.001) / Float(texture.size.width),
-                    (subRect.position.y - 0.001) / Float(texture.size.height)
+                    (subRect.position.x + xRoundingOffset) / Float(texture.size.width),
+                    (subRect.position.y - yRoundingOffset) / Float(texture.size.height)
                 )
                 if texture.isRenderTarget {
                     self.scale.y *= -1
                 }
-            default:
+            } else {
                 self.offset = Position2(
-                    (subRect.position.x + 0.001) / Float(texture.size.width),
-                    (subRect.position.y + 0.001) / Float(texture.size.height)
+                    (subRect.position.x + xRoundingOffset) / Float(texture.size.width),
+                    (subRect.position.y + yRoundingOffset) / Float(texture.size.height)
                 )
             }
         }
