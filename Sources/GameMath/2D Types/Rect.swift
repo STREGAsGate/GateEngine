@@ -149,6 +149,20 @@ public extension Rect {
         copy.height -= insets.top + insets.bottom
         return copy
     }
+    
+    @_transparent
+    func clamped(within rect: Rect) -> Rect {
+        var copy = self
+        copy.x = max(rect.x, self.x)
+        copy.y = max(rect.y, self.y)
+        if copy.maxX > rect.maxX {
+            copy.width = rect.maxX - copy.x
+        }
+        if copy.maxY > rect.maxY {
+            copy.height = rect.maxY - copy.y
+        }
+        return copy
+    }
 }
 
 extension Rect {
