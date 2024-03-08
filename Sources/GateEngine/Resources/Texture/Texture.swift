@@ -48,6 +48,17 @@ public enum MipMapping: Hashable, Sendable {
             "The state must be \(ResourceState.ready), or a sizeHint must be provided during init, before accessing this property."
         )
     }
+    
+    /** Check if accessing the size property will be valid
+     If the texture is not yet loaded the true size is unavailable.
+     If a sizeHint was provided, the size will be available even when the texture is not yet loaded.
+     */
+    public var sizeIsAvailable: Bool {
+        if state == .ready {
+            return true
+        }
+        return sizeHint != nil
+    }
 
     @usableFromInline
     internal var isRenderTarget: Bool {
