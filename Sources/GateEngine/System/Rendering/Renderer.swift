@@ -10,10 +10,24 @@ import GameMath
 public enum RenderingAPI {
     case headless
     case metal
+    case d3d12
     case openGL
     case openGLES
     case webGL2
-    case d3d12
+    
+    public enum Origin {
+        case topLeft
+        case bottomLeft
+    }
+    @_transparent
+    public var origin: Origin {
+        switch self {
+        case .openGL, .openGLES, .webGL2:
+            return .bottomLeft
+        default:
+            return .topLeft
+        }
+    }
 }
 
 @MainActor public final class Renderer {
@@ -51,11 +65,8 @@ public enum RenderingAPI {
                     channel.scale.y = -1
                 }
                
-                switch Game.shared.renderer.api {
-                case .openGL, .openGLES, .webGL2:
+                if Game.shared.renderer.api.origin == .bottomLeft {
                     channel.scale.y *= -1
-                default:
-                    break
                 }
 
                 switch sampler {

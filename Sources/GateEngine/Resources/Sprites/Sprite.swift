@@ -20,13 +20,12 @@
 
     @usableFromInline
     internal lazy var uvOffset: Position2 = {
-        switch Game.shared.renderer.api {
-        case .openGL, .openGLES, .webGL2:
+        if Game.shared.renderer.api.origin == .bottomLeft {
             return Position2(
                 (bounds.position.x + 0.001) / Float(texture.size.width),
                 (bounds.position.y - 0.001) / Float(texture.size.height)
             )
-        default:
+        } else {
             return Position2(
                 (bounds.position.x + 0.001) / Float(texture.size.width),
                 (bounds.position.y + 0.001) / Float(texture.size.height)
@@ -39,14 +38,13 @@
             bounds.size.width / Float(texture.size.width),
             bounds.size.height / Float(texture.size.height)
         )
-        if texture.isRenderTarget {
-            switch Game.shared.renderer.api {
-            case .openGL, .openGLES, .webGL2:
+        
+        if Game.shared.renderer.api.origin == .bottomLeft {
+            if texture.isRenderTarget {
                 scale.y *= -1
-            default:
-                break
             }
         }
+    
         return scale
     }()
 
