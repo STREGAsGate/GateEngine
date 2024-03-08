@@ -21,6 +21,13 @@ public final class Vec2: ShaderValue {
         return Scalar(representation: .vec2Value(self, 1), type: .float)
     }
     
+    public var width: Scalar {
+        return x
+    }
+    public var height: Scalar {
+        return y
+    }
+    
     public subscript (index: Int) -> Scalar {
         switch index {
         case 0: return self.x
@@ -88,6 +95,10 @@ public final class Vec2: ShaderValue {
     
     public func lerp(to dst: Vec2, factor: Scalar) -> Vec2 {
         return Vec2(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
+    }
+    
+    public func distance(from dst: Vec2) -> Scalar {
+        return Scalar(Operation(lhs: self, operator: .distance, rhs: dst))
     }
 }
 

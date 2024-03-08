@@ -144,6 +144,8 @@ public final class MSLCodeGenerator: CodeGenerator {
             return "mix(\(variable(for: operation.value1)), \(variable(for: operation.value2)), \(variable(for: factor)))"
         case .discard(comparing: _):
             return "discard_fragment()"
+        case .distance:
+            return "distance(" + variable(for: operation.value1) + "," + variable(for: operation.value2) + ")"
         }
     }
     

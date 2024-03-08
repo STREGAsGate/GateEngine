@@ -169,6 +169,8 @@ public final class HLSLCodeGenerator: CodeGenerator {
             return "\(scopeIndentation)\(variable(for: operation.value1)).GetDimensions(\(variable(for: value)).x, \(variable(for: value)).y;\n"
         case let .lerp(factor: factor):
             return "lerp(\(variable(for: operation.value1)), \(variable(for: operation.value2)), \(variable(for: factor)))"
+        case .distance:
+            return "distance(" + variable(for: operation.value1) + "," + variable(for: operation.value2) + ")"
         }
     }
     

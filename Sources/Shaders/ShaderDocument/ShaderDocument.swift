@@ -40,9 +40,9 @@ public class ShaderDocument: Identifiable, CustomStringConvertible {
     }
     
     public var uniforms: Uniforms = Uniforms()
-    public struct Uniforms {        
-        internal var customUniforms: [String: any ShaderValue] = [:]
-       
+    public struct Uniforms {
+        public internal(set) var customUniforms: [String: any ShaderValue] = [:]
+        
         internal var arrayCapacities: [String:Int] = [:]
         public func arrayCapacityForUniform(named name: String) -> Int? {
             return arrayCapacities[name]

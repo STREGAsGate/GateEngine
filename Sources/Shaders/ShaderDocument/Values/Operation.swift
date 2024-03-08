@@ -59,6 +59,7 @@ public final class Operation: ShaderElement {
         case sampler2D
         case sampler2DSize
         case lerp(factor: Scalar)
+        case distance
         
         var identifier: [Int] {
             switch self {
@@ -98,6 +99,8 @@ public final class Operation: ShaderElement {
                     values.append(contentsOf: `case`.documentIdentifierInputData())
                 }
                 return values
+            case .distance:
+                return [5_112]
             }
         }
     }

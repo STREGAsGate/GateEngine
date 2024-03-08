@@ -130,6 +130,10 @@ public class CodeGenerator {
         case .lerp(let factor):
             self.declareVariableIfNeeded(factor)
             mainOutput += scopeIndentation + "\(type(for: value)) \(variable(for: value)) = " + function(value: value, operation: operation) + ";\n"
+        case .distance:
+            self.declareVariableIfNeeded(operation.value1)
+            self.declareVariableIfNeeded(operation.value2)
+            mainOutput += scopeIndentation + "\(type(for: .float)) \(variable(for: value)) = " + function(value: value, operation: operation) + ";\n"
         case .add, .subtract, .multiply, .divide, .compare(_), .sampler2D:
             self.declareVariableIfNeeded(operation.value1)
             self.declareVariableIfNeeded(operation.value2)
@@ -314,6 +318,8 @@ public class CodeGenerator {
         case .discard(comparing: _):
             fatalError()
         case .switch(cases: _):
+            fatalError()
+        case .distance:
             fatalError()
         #else
         default:
