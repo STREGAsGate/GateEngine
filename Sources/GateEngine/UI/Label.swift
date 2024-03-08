@@ -5,10 +5,10 @@
  * http://stregasgate.com
  */
 
-public final class Text {
+public final class Label: View {
     public typealias SampleFilter = Material.Channel.SampleFilter
     
-    public var color: Color
+    public var textColor: Color
     private var _sampleFilter: SampleFilter? = nil
     public var sampleFilter: SampleFilter {
         get {
@@ -20,15 +20,25 @@ public final class Text {
     }
 
     private var _texture: Texture! = nil
-    @MainActor @usableFromInline internal var texture: Texture {
+    @MainActor
+    @usableFromInline
+    internal var texture: Texture {
         if needsUpdateTexture {
             needsUpdateTexture = false
             _texture = font.texture(forPointSize: UInt(actualPointSize.rounded()), style: style)
         }
         return _texture
     }
-    @MainActor private var _geometry: MutableGeometry = MutableGeometry()
-    @MainActor @usableFromInline internal var geometry: Geometry {
+    
+    public override func didChangeSuperview() {
+        needsUpdateTexture = true
+    }
+    
+    @MainActor
+    private var _geometry: MutableGeometry = MutableGeometry()
+    @MainActor 
+    @usableFromInline
+    internal var geometry: Geometry {
         if needsUpdateGeometry {
             needsUpdateGeometry = false
             updateGeometry()
@@ -39,33 +49,36 @@ public final class Text {
     public var size: Size2 {
         if needsUpdateGeometry, font.state == .ready {
             needsUpdateGeometry = false
-            Task(priority: .high) { @MainActor in
-                self.updateGeometry()
-            }
+            self.updateGeometry()
         }
-        return _size / Float(interfaceScale)
+        return _size
+    }
+    
+    public override func contentSize() -> Size2 {
+        return size
     }
 
-    @MainActor private func updateGeometry() {
-        guard string.isEmpty == false else { return }
+    @MainActor 
+    private func updateGeometry() {
+        self.setNeedsLayout()
+        guard text.isEmpty == false else { return }
         let values = Self.rawGeometry(
-            fromString: string,
+            fromString: text,
             font: font,
             pointSize: actualPointSize,
             style: style,
-            paragraphWidth: paragraphWidth,
-            interfaceScale: interfaceScale
+            paragraphWidth: paragraphWidth
         )
         _geometry.rawGeometry = values.0
-        _size = values.1
+        _size = values.1 / interfaceScale
     }
 
     private var needsUpdateGeometry: Bool = true
     private var needsUpdateTexture: Bool = true
 
-    public var string: String {
+    public var text: String {
         didSet {
-            if oldValue != string {
+            if oldValue != text {
                 self.needsUpdateGeometry = true
             }
         }
@@ -78,25 +91,17 @@ public final class Text {
             }
         }
     }
-    @usableFromInline
-    internal var interfaceScale: Float {
+    
+    public var fontSize: UInt {
         didSet {
-            if oldValue != interfaceScale {
-                self.needsUpdateTexture = true
-                self.needsUpdateGeometry = true
-            }
-        }
-    }
-    public var pointSize: UInt {
-        didSet {
-            if oldValue != pointSize {
+            if oldValue != fontSize {
                 self.needsUpdateGeometry = true
                 self.needsUpdateTexture = true
             }
         }
     }
     internal var actualPointSize: Float {
-        return Float(pointSize) * interfaceScale
+        return Float(fontSize) * interfaceScale
     }
     public var style: Font.Style {
         didSet {
@@ -114,41 +119,50 @@ public final class Text {
         }
     }
 
-    @MainActor
     public init(
-        string: String,
+        text: String,
         font: Font = .default,
-        pointSize: UInt,
+        fontSize: UInt,
         style: Font.Style = .regular,
-        color: Color,
-        paragraphWidth: Float? = nil,
-        sampleFilter: SampleFilter? = nil
+        textColor: Color = .white
     ) {
         self.needsUpdateGeometry = true
         self.needsUpdateTexture = true
-        self.color = color
-        self.string = string
+        self.text = text
         self.font = font
-        self.pointSize = pointSize
+        self.fontSize = fontSize
         self.style = style
-        self.color = color
-        self.paragraphWidth = paragraphWidth
-        self._sampleFilter = sampleFilter
-        #if RELEASE && (os(macOS) || os(iOS) || os(tvOS) || os(watchOS) || os(visionOS))
-        // Odds are good it's a retina display. Save some calls for rebuilding texture and geometry.
-        self.interfaceScale = 2
-        #else
-        self.interfaceScale = 1
-        #endif
+        self.textColor = textColor
+        super.init()
+    }
+    
+    override func shouldDraw() -> Bool {
+        guard super.shouldDraw() else {return false}
+        return font.state == .ready && texture.isReady && geometry.isReady
+    }
+    
+    override func draw(into canvas: inout UICanvas, at frame: Rect) {
+        super.draw(into: &canvas, at: frame)
+        
+        canvas.insert(
+            DrawCommand(
+                resource: .geometry(geometry),
+                transforms: [Transform3(position: Position3(frame.x, frame.y, 0))],
+                material: Material(texture: texture, sampleFilter: sampleFilter, tintColor: textColor),
+                vsh: .standard,
+                fsh: .textureSampleTintColor,
+                flags: .userInterface
+            )
+        )
     }
 
-    @MainActor private static func rawGeometry(
+    @MainActor 
+    private static func rawGeometry(
         fromString string: String,
         font: Font,
         pointSize: Float,
         style: Font.Style,
-        paragraphWidth: Float?,
-        interfaceScale: Float
+        paragraphWidth: Float?
     ) -> (RawGeometry, Size2) {
         enum CharType {
             case space
@@ -268,7 +282,7 @@ public final class Text {
                     pz: 0,
                     tu1: quad.texturePosition.min.x,
                     tv1: quad.texturePosition.min.y
-                ) / interfaceScale
+                )
             let v2 =
                 Vertex(
                     px: quad.position.max.x,
@@ -276,7 +290,7 @@ public final class Text {
                     pz: 0,
                     tu1: quad.texturePosition.max.x,
                     tv1: quad.texturePosition.min.y
-                ) / interfaceScale
+                )
             let v3 =
                 Vertex(
                     px: quad.position.max.x,
@@ -284,7 +298,7 @@ public final class Text {
                     pz: 0,
                     tu1: quad.texturePosition.max.x,
                     tv1: quad.texturePosition.max.y
-                ) / interfaceScale
+                )
             let v4 =
                 Vertex(
                     px: quad.position.min.x,
@@ -292,7 +306,7 @@ public final class Text {
                     pz: 0,
                     tu1: quad.texturePosition.min.x,
                     tv1: quad.texturePosition.max.y
-                ) / interfaceScale
+                )
 
             currentWord.append(Triangle(v1: v1, v2: v2, v3: v3, repairIfNeeded: false))
             currentWord.append(Triangle(v1: v3, v2: v4, v3: v1, repairIfNeeded: false))
@@ -337,30 +351,3 @@ public final class Text {
     }
 }
 
-extension Text {
-    @MainActor
-    @usableFromInline
-    var isReady: Bool {
-        return font.state == .ready && texture.state == .ready && geometry.state == .ready
-    }
-}
-
-extension Text: Equatable {
-    public static func == (lhs: Text, rhs: Text) -> Bool {
-        return lhs.actualPointSize == rhs.actualPointSize
-            && lhs.font == rhs.font
-            && lhs.style == rhs.style
-            && lhs.color == rhs.color
-            && lhs.string == rhs.string
-    }
-}
-
-extension Text: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(string)
-        hasher.combine(actualPointSize)
-        hasher.combine(style)
-        hasher.combine(color)
-        hasher.combine(font)
-    }
-}
