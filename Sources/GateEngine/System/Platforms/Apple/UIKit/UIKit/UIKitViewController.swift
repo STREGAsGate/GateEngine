@@ -86,17 +86,16 @@ internal class UIKitViewController: GCEventViewController {
     }
 
     @inline(__always)
-    func locationOfTouch(_ touch: UITouch, from event: UIEvent?) -> Position2? {
-        switch touch.type {
-        case .direct, .pencil, .indirectPointer:
-            let p = touch.preciseLocation(in: nil)
-            return Position2(Float(p.x), Float(p.y))
-        case .indirect:
-            let p = touch.preciseLocation(in: nil)
-            return Position2(Float(p.x), Float(p.y))
-        default:
-            return nil
-        }
+    func locationOfTouch(_ touch: UITouch, from event: UIEvent?) -> (position: Position2, precision: Position2?) {
+        let l = touch.location(in: nil)
+        let p = touch.preciseLocation(in: nil)
+        return (Position2(Float(p.x), Float(p.y)), p != l ? Position2(Float(p.x), Float(p.y)) : nil)
+    }
+    
+    @inline(__always)
+    func precisionLocationOfTouch(_ touch: UITouch, from event: UIEvent?) -> Position2? {
+        let p = touch.preciseLocation(in: nil)
+        return Position2(Float(p.x), Float(p.y))
     }
 
     #if !os(tvOS)
@@ -133,14 +132,14 @@ internal class UIKitViewController: GCEventViewController {
         super.touchesBegan(touches, with: event)
 
         for touch in touches {
-            guard let position = locationOfTouch(touch, from: event) else { continue }
+            let location = locationOfTouch(touch, from: event)
             #if !os(tvOS)
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
                 if let event = event {
                     Game.shared.hid.mouseClick(
                         event: .buttonDown,
                         button: mouseButtonFromEvent(event),
-                        position: position,
+                        position: location.position,
                         delta: self.deltaLocationOfTouch(touch, from: event),
                         window: self.window.window
                     )
@@ -155,14 +154,17 @@ internal class UIKitViewController: GCEventViewController {
                     id: id,
                     kind: type(for: touch),
                     event: .began,
-                    position: position
+                    position: location.position,
+                    precisionPosition: location.precision,
+                    pressure: Float(touch.force / touch.maximumPossibleForce),
+                    window: self.window.window
                 )
             case .indirect:
                 Game.shared.hid.surfaceTouchChange(
                     id: id,
                     event: .began,
                     surfaceID: ObjectIdentifier(UIDevice.current),
-                    normalizedPosition: position
+                    normalizedPosition: location.position
                 )
             default:
                 break
@@ -173,13 +175,13 @@ internal class UIKitViewController: GCEventViewController {
         super.touchesMoved(touches, with: event)
 
         for touch in touches {
-            guard let position = locationOfTouch(touch, from: event) else { continue }
+            let location = locationOfTouch(touch, from: event)
             #if !os(tvOS)
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
                 let deltaPosition = deltaLocationOfTouch(touch, from: event)
                 Game.shared.hid.mouseChange(
                     event: .moved,
-                    position: position,
+                    position: location.position,
                     delta: deltaPosition,
                     window: self.window.window
                 )
@@ -193,14 +195,17 @@ internal class UIKitViewController: GCEventViewController {
                     id: id,
                     kind: type(for: touch),
                     event: .moved,
-                    position: position
+                    position: location.position,
+                    precisionPosition: location.precision,
+                    pressure: Float(touch.force / touch.maximumPossibleForce),
+                    window: self.window.window
                 )
             case .indirect:
                 Game.shared.hid.surfaceTouchChange(
                     id: id,
                     event: .moved,
                     surfaceID: ObjectIdentifier(UIDevice.current),
-                    normalizedPosition: position
+                    normalizedPosition: location.position
                 )
             default:
                 break
@@ -211,13 +216,13 @@ internal class UIKitViewController: GCEventViewController {
         super.touchesEnded(touches, with: event)
 
         for touch in touches {
-            guard let position = locationOfTouch(touch, from: event) else { continue }
+            let location = locationOfTouch(touch, from: event)
             #if !os(tvOS)
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
                 Game.shared.hid.mouseClick(
                     event: .buttonUp,
                     button: mouseButtonFromEvent(event),
-                    position: position,
+                    position: location.position,
                     delta: self.deltaLocationOfTouch(touch, from: event),
                     window: self.window.window
                 )
@@ -231,14 +236,17 @@ internal class UIKitViewController: GCEventViewController {
                     id: id,
                     kind: type(for: touch),
                     event: .ended,
-                    position: position
+                    position: location.position,
+                    precisionPosition: location.precision,
+                    pressure: Float(touch.force / touch.maximumPossibleForce),
+                    window: self.window.window
                 )
             case .indirect:
                 Game.shared.hid.surfaceTouchChange(
                     id: id,
                     event: .ended,
                     surfaceID: ObjectIdentifier(UIDevice.current),
-                    normalizedPosition: position
+                    normalizedPosition: location.position
                 )
             default:
                 break
@@ -249,13 +257,13 @@ internal class UIKitViewController: GCEventViewController {
         super.touchesCancelled(touches, with: event)
 
         for touch in touches {
-            guard let position = locationOfTouch(touch, from: event) else { continue }
+            let location = locationOfTouch(touch, from: event)
             #if !os(tvOS)
             if #available(iOS 13.4, *), touch.type == .indirectPointer {
                 Game.shared.hid.mouseClick(
                     event: .buttonUp,
                     button: mouseButtonFromEvent(event),
-                    position: position,
+                    position: location.position,
                     delta: self.deltaLocationOfTouch(touch, from: event),
                     window: self.window.window
                 )
@@ -269,14 +277,17 @@ internal class UIKitViewController: GCEventViewController {
                     id: id,
                     kind: type(for: touch),
                     event: .canceled,
-                    position: position
+                    position: location.position,
+                    precisionPosition: location.precision,
+                    pressure: Float(touch.force / touch.maximumPossibleForce),
+                    window: self.window.window
                 )
             case .indirect:
                 Game.shared.hid.surfaceTouchChange(
                     id: id,
                     event: .canceled,
                     surfaceID: ObjectIdentifier(UIDevice.current),
-                    normalizedPosition: position
+                    normalizedPosition: location.position
                 )
             default:
                 break

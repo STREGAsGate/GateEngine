@@ -29,7 +29,7 @@ internal final class DeferredDelaySystem: PlatformSystem {
         delays.append(Delay(duration: duration, closure: closure))
     }
 
-    override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
+    override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         for closure in deferredClosures {
             closure()
         }

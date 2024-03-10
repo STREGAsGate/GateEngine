@@ -14,13 +14,13 @@ import GameMath
 
     required init() {}
 
-    internal final func willUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) async {
+    internal final func willUpdate(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         if didSetup == false {
             didSetup = true
-            await setup(game: game, input: input)
+            await setup(context: context, input: input)
         }
-        if await shouldUpdate(game: game, input: input, withTimePassed: deltaTime) {
-            await update(game: game, input: input, withTimePassed: deltaTime)
+        if await shouldUpdate(context: context, input: input, withTimePassed: deltaTime) {
+            await update(context: context, input: input, withTimePassed: deltaTime)
         }
     }
     
@@ -29,7 +29,7 @@ import GameMath
      
      Use `gameDidRemove()` to cleanup an Entity that will be destoryed.
      */
-    open func gameDidRemove(entity: Entity, game: Game, input: HID) async {
+    open func didRemove(entity: Entity, from context: ECSContext, input: HID) async {
         
     }
 
@@ -39,7 +39,7 @@ import GameMath
      Use `setup()` to create any system specific data and add it to the game.
      - note: The call to `setup()` is deferred until the next update frame after the system has been inserted and will be called immediatled before `update(withTimePassed:)`.
      */
-    open func setup(game: Game, input: HID) async {
+    open func setup(context: ECSContext, input: HID) async {
 
     }
 
@@ -47,7 +47,7 @@ import GameMath
      Called before `update(withTimePassed:)`. Return `true` if you would like `update(withTimePassed:)` to be called, otherwise return `false`.
      - parameter deltaTime: The duration of time since the last update frame.
      */
-    open func shouldUpdate(game: Game, input: HID, withTimePassed deltaTime: Float) async -> Bool {
+    open func shouldUpdate(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async -> Bool {
         return true
     }
 
@@ -55,7 +55,7 @@ import GameMath
      Called every update frame.
      - parameter deltaTime: The duration of time since the last update frame.
      */
-    open func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
+    open func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         preconditionFailure("Must Override \"\(#function)\" in \(type(of: Self.self))")
     }
 
@@ -65,7 +65,7 @@ import GameMath
      Use teardown to cleanup any system specific data within the game.
      - note: The call to `teardown()` happens immediately updon removal from the game.
      */
-    open func teardown(game: Game) {
+    open func teardown(context: ECSContext) {
 
     }
 

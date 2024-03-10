@@ -6,7 +6,7 @@
  */
 
 public final class Collision2DSystem: System {
-    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
+    public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         for entity in game.entities {
             guard entity.hasComponent(Collision2DComponent.self) else { continue }
             guard entity.hasComponent(Transform2Component.self) else { continue }

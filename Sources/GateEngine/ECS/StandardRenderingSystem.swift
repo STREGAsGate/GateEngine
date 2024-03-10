@@ -18,10 +18,10 @@ public final class StandardRenderingSystem: RenderingSystem {
     required public init() {
 
     }
-
-    public override func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
+    
+    public override func render(context: ECSContext, into view: GameView, withTimePassed deltaTime: Float) {
         if let verticalResolution = verticalResolution {
-            var width = verticalResolution * window.size.aspectRatio
+            var width = verticalResolution * view.frame.size.aspectRatio
             width -= width.truncatingRemainder(dividingBy: 2)
             renderTarget.size = Size2(width: width, height: verticalResolution)
         }
@@ -83,14 +83,14 @@ public final class StandardRenderingSystem: RenderingSystem {
                 if verticalResolution != nil {
                     renderTarget.insert(scene)
                 } else {
-                    window.insert(scene)
+                    view.insert(scene)
                 }
             }
         }
 
         do {  // 2D
             var canvas = Canvas(
-                interfaceScale: verticalResolution == nil ? window.interfaceScale : 1
+                interfaceScale: verticalResolution == nil ? view.interfaceScale : 1
             )
 
             for entity in game.entities {
@@ -115,12 +115,12 @@ public final class StandardRenderingSystem: RenderingSystem {
             if verticalResolution != nil {
                 renderTarget.insert(canvas)
             } else {
-                window.insert(canvas)
+                view.insert(canvas)
             }
         }
 
         if verticalResolution != nil {
-            window.insert(renderTarget)
+//            view.insert(renderTarget)
         }
     }
 

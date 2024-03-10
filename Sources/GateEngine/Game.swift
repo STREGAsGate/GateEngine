@@ -45,7 +45,7 @@ public final class Game {
     @MainActor @usableFromInline let renderer: Renderer!
 
     @MainActor public private(set) lazy var windowManager: WindowManager = WindowManager(self)
-    @MainActor @usableFromInline private(set) lazy var ecs: ECSContext = ECSContext(game: self)
+    @MainActor @usableFromInline private(set) lazy var ecs: ECSContext = ECSContext()
     @MainActor public private(set) lazy var hid: HID = HID()
     public private(set) lazy var resourceManager: ResourceManager = {
         return ResourceManager(game: self)
@@ -60,8 +60,8 @@ public final class Game {
                 // Allow the main window to be created even though we're not rendering
                 self.attributes.insert(.renderingIsPermitted)
                 _ = try delegate.createMainWindow(
-                    game: self,
-                    identifier: WindowManager.mainWindowIdentifier
+                    using: windowManager, 
+                    with: WindowManager.mainWindowIdentifier
                 )
                 assert(
                     windowManager.mainWindow?.identifier == WindowManager.mainWindowIdentifier,
@@ -133,6 +133,13 @@ public final class Game {
         
         // Add a high priority Task so we can jump the line if other Tasks were started
         Task(priority: .high) { @MainActor in
+            let deltaTime = Float(deltaTime)
+            self.resourceManager.update(withTimePassed: deltaTime)
+            await windowManager.updateWindows(deltaTime: deltaTime)
+            Task(priority: .high) { @MainActor in
+                self.windowManager.drawWindows()
+                completion()
+            }
             if await self.ecs.shouldRenderAfterUpdate(
                 withTimePassed: Float(deltaTime)
             ) {

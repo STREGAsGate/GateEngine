@@ -204,7 +204,9 @@ let package = Package(
                         
                         settings.append(contentsOf: [
                             /// Prints the output of generated shaders
-                            .define("GATEENGINE_LOG_SHADERS"),
+                            .define("GATEENGINE_DEBUG_LAYOUT"),
+                            /// Prints the output of generated shaders
+                            //.define("GATEENGINE_LOG_SHADERS"),
                             /// Enables various additional checks and output for rendering
                             .define("GATEENGINE_DEBUG_RENDERING"),
                             /// Enables various additional checks and output for input

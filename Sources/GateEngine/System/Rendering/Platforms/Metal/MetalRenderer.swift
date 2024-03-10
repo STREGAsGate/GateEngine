@@ -135,13 +135,15 @@ final class MetalRenderer: RendererBackend {
         _storedDepthStencilStates[key] = new
         return new
 
-        @_transparent
+//        @_transparent
         func build() -> some MTLDepthStencilState {
             let depthStencilDescriptor = MTLDepthStencilDescriptor()
 
             switch flags.depthTest {
             case .always:
                 depthStencilDescriptor.depthCompareFunction = .always
+            case .equal:
+                depthStencilDescriptor.depthCompareFunction = .equal
             case .greater:
                 depthStencilDescriptor.depthCompareFunction = .greater
             case .greaterEqual:
@@ -160,7 +162,41 @@ final class MetalRenderer: RendererBackend {
             case .disabled:
                 depthStencilDescriptor.isDepthWriteEnabled = false
             }
-
+            
+            let stencil = MTLStencilDescriptor()
+//            stencil.writeMask = 0xFFFFFFFF
+//            stencil.readMask = 0xFFFFFFFF
+            
+            switch flags.stencilTest {
+            case .always:
+                stencil.stencilCompareFunction = .always
+            case .equal:
+                stencil.stencilCompareFunction = .equal
+            case .greater:
+                stencil.stencilCompareFunction = .greater
+            case .greaterEqual:
+                stencil.stencilCompareFunction = .greaterEqual
+            case .less:
+                stencil.stencilCompareFunction = .less
+            case .lessEqual:
+                stencil.stencilCompareFunction = .lessEqual
+            case .never:
+                stencil.stencilCompareFunction = .never
+            }
+            
+            stencil.stencilFailureOperation = .keep
+            stencil.depthFailureOperation = .keep
+            
+            switch flags.stencilWrite {
+            case .enabled:
+                stencil.depthStencilPassOperation = .replace
+            case .disabled:
+                stencil.depthStencilPassOperation = .keep
+            }
+            
+            depthStencilDescriptor.frontFaceStencil = stencil
+            depthStencilDescriptor.backFaceStencil = stencil
+            
             return device.makeDepthStencilState(descriptor: depthStencilDescriptor)!
         }
     }
@@ -296,7 +332,8 @@ final class MetalRenderer: RendererBackend {
                 return descriptor
             }()
 
-            pipelineDescriptor.depthAttachmentPixelFormat = .depth32Float
+            pipelineDescriptor.depthAttachmentPixelFormat = .depth32Float_stencil8
+            pipelineDescriptor.stencilAttachmentPixelFormat = .depth32Float_stencil8
 
             do {
                 return try device.makeRenderPipelineState(descriptor: pipelineDescriptor)
@@ -481,13 +518,24 @@ extension MetalRenderer {
         textures: ContiguousArray<(some MTLTexture)?>
     ) {
         var uniforms: ContiguousArray<UInt8> = []
-        uniforms.reserveCapacity(MemoryLayout<Float>.size * 16 * 2)
+        uniforms.reserveCapacity(MemoryLayout<SIMD16<CFloat>>.size * 2)
         withUnsafeBytes(of: matricies.projection.transposedSIMD) { pointer in
             uniforms.append(contentsOf: pointer)
         }
         withUnsafeBytes(of: matricies.view.transposedSIMD) { pointer in
             uniforms.append(contentsOf: pointer)
         }
+        
+        var largestAlignment: Int = MemoryLayout<SIMD16<CFloat>>.alignment
+        func padIfNeeded(alignment: Int) {
+            if alignment > largestAlignment {
+                largestAlignment = alignment
+            }
+            while uniforms.count % alignment != 0 {
+                uniforms.append(0)
+            }
+        }
+        
         let customValues = drawCommand.material.sortedCustomUniforms()
         if customValues.isEmpty == false {
             for pair in customValues {
@@ -495,34 +543,42 @@ extension MetalRenderer {
                 let name = pair.key
                 switch value {
                 case let value as Bool:
-                    withUnsafeBytes(of: value) { pointer in
+                    padIfNeeded(alignment: MemoryLayout<CBool>.alignment)
+                    withUnsafeBytes(of: CBool(value)) { pointer in
                         uniforms.append(contentsOf: pointer)
                     }
                 case let value as Int:
-                    withUnsafeBytes(of: value) { pointer in
+                    padIfNeeded(alignment: MemoryLayout<CInt>.alignment)
+                    withUnsafeBytes(of: CInt(value)) { pointer in
                         uniforms.append(contentsOf: pointer)
                     }
                 case let value as Float:
-                    withUnsafeBytes(of: value) { pointer in
+                    padIfNeeded(alignment: MemoryLayout<CFloat>.alignment)
+                    withUnsafeBytes(of: CFloat(value)) { pointer in
                         uniforms.append(contentsOf: pointer)
                     }
                 case let value as any Vector2:
-                    withUnsafeBytes(of: value) { pointer in
+                    padIfNeeded(alignment: MemoryLayout<SIMD2<CFloat>>.alignment)
+                    withUnsafeBytes(of: value.simd) { pointer in
                         uniforms.append(contentsOf: pointer)
                     }
                 case let value as any Vector3:
-                    withUnsafeBytes(of: value) { pointer in
+                    padIfNeeded(alignment: MemoryLayout<SIMD3<CFloat>>.alignment)
+                    withUnsafeBytes(of: value.simd) { pointer in
                         uniforms.append(contentsOf: pointer)
                     }
                 case let value as Matrix3x3:
+                    padIfNeeded(alignment: MemoryLayout<simd_float3x3>.alignment)
                     value.transposedArray().withUnsafeBytes { pointer in
                         uniforms.append(contentsOf: pointer)
                     }
                 case let value as Matrix4x4:
-                    value.transposedArray().withUnsafeBytes { pointer in
+                    padIfNeeded(alignment: MemoryLayout<SIMD16<CFloat>>.alignment)
+                    withUnsafeBytes(of: value.transposedSIMD) { pointer in
                         uniforms.append(contentsOf: pointer)
                     }
                 case let value as [Matrix4x4]:
+                    padIfNeeded(alignment: MemoryLayout<SIMD16<CFloat>>.alignment)
                     let capacity = drawCommand.vsh.uniforms.arrayCapacityForUniform(named: name) ?? drawCommand.fsh.uniforms.arrayCapacityForUniform(named: name)!
                     var floats: [Float] = []
                     floats.reserveCapacity(value.count * 16 * capacity)
@@ -546,12 +602,8 @@ extension MetalRenderer {
                 }
             }
         }
-        //Add padding
-        for _ in 0 ..< MemoryLayout<SIMD16<Float>>.alignment
-            - (uniforms.count % MemoryLayout<SIMD16<Float>>.alignment)
-        {
-            uniforms.append(0)
-        }
+        
+        padIfNeeded(alignment: largestAlignment)// Align the shaders struct
 
         var materials: ContiguousArray<ShaderMaterial> = []
         var textures: ContiguousArray<(any MTLTexture)?> = []

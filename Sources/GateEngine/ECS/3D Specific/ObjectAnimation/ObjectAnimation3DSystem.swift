@@ -27,7 +27,7 @@ public final class ObjectAnimation3DSystem: System {
         return nil
     }
 
-    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
+    public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         func shouldAccumulate(entity: Entity) -> Bool {
             guard
                 let cameraTransform = game.cameraEntity?.component(ofType: Transform3Component.self)

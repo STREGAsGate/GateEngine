@@ -97,15 +97,18 @@ public extension Geometry {
         resourceManager.incrementReference(self.cacheKey)
     }
 
-    internal init(optionalRawGeometry rawGeometry: RawGeometry?) {
+    internal init(optionalRawGeometry rawGeometry: RawGeometry?, immediate: Bool = false) {
         let resourceManager = Game.shared.resourceManager
-        self.cacheKey = resourceManager.geometryCacheKey(rawGeometry: rawGeometry)
+        self.cacheKey = resourceManager.geometryCacheKey(rawGeometry: rawGeometry, immediate: immediate)
         self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
 
-    public convenience init(_ rawGeometry: RawGeometry) {
-        self.init(optionalRawGeometry: rawGeometry)
+    /**
+    - parameter immediate: true will block the thread while uploading to the GPU. For smaller geometry this may be faster.
+     */
+    public convenience init(_ rawGeometry: RawGeometry, immediate: Bool = false) {
+        self.init(optionalRawGeometry: rawGeometry, immediate: immediate)
     }
 
     deinit {
@@ -286,23 +289,33 @@ extension ResourceManager {
         return key
     }
 
-    @MainActor func geometryCacheKey(rawGeometry geometry: RawGeometry?) -> Cache.GeometryKey {
+    @MainActor func geometryCacheKey(rawGeometry geometry: RawGeometry?, immediate: Bool) -> Cache.GeometryKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             if let geometry = geometry {
-                Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-                Task.detached(priority: .high) {
-                    let backend = await self.geometryBackend(from: geometry)
-                    Task { @MainActor in
-                        if let cache = self.cache.geometries[key] {
-                            cache.geometryBackend = backend
-                            cache.state = .ready
-                        }else{
-                            Log.warn("Resource \"(Generated Geometry)\" was deallocated before being loaded.")
+                if immediate {
+                    let backend = self.geometryBackendImmadiate(from: geometry)
+                    if let cache = self.cache.geometries[key] {
+                        cache.geometryBackend = backend
+                        cache.state = .ready
+                    }else{
+                        Log.warn("Resource \"(Generated Geometry)\" was deallocated before being loaded.")
+                    }
+                }else{
+                    Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
+                    Task.detached(priority: .high) {
+                        let backend = await self.geometryBackend(from: geometry)
+                        Task { @MainActor in
+                            if let cache = self.cache.geometries[key] {
+                                cache.geometryBackend = backend
+                                cache.state = .ready
+                            }else{
+                                Log.warn("Resource \"(Generated Geometry)\" was deallocated before being loaded.")
+                            }
+                            Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                         }
-                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 }
             }
@@ -385,6 +398,28 @@ extension ResourceManager {
         return await DX12Geometry(geometry: raw)
         #elseif canImport(OpenGL_GateEngine)
         return await OpenGLGeometry(geometry: raw)
+        #else
+        #error("Not implemented")
+        #endif
+    }
+    
+    @MainActor
+    func geometryBackendImmadiate(from raw: RawGeometry) -> any GeometryBackend {
+        #if GATEENGINE_FORCE_OPNEGL_APPLE
+        return OpenGLGeometry(geometry: raw)
+        #elseif canImport(MetalKit)
+        #if canImport(OpenGL_GateEngine)
+        if MetalRenderer.isSupported == false {
+            return OpenGLGeometry(geometry: raw)
+        }
+        #endif
+        return MetalGeometry(geometry: raw)
+        #elseif canImport(WebGL2)
+        return WebGL2Geometry(geometry: raw)
+        #elseif canImport(WinSDK)
+        return DX12Geometry(geometry: raw)
+        #elseif canImport(OpenGL_GateEngine)
+        return OpenGLGeometry(geometry: raw)
         #else
         #error("Not implemented")
         #endif

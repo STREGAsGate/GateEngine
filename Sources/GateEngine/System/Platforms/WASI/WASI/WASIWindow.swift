@@ -160,10 +160,10 @@ final class WASIWindow: WindowBacking {
     ) {
         let backingScale = Float(globalThis.document.defaultView?.devicePixelRatio ?? 1)
         let position: Position2 =
-            Position2(x: Float(event.pageX), y: Float(event.pageY)) * backingScale
+            Position2(x: Float(event.pageX), y: Float(event.pageY))
         let deltaX = Float(event.jsObject["movementX"].jsValue.number ?? 0)
         let deltaY = Float(event.jsObject["movementY"].jsValue.number ?? 0)
-        let delta: Position2 = Position2(x: deltaX, y: deltaY) * backingScale
+        let delta: Position2 = Position2(x: deltaX, y: deltaY)
         return (position, delta)
     }
 

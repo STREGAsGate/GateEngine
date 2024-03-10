@@ -86,11 +86,6 @@ extension Mouse {
             return mouse.position
         }
 
-        /// The location of the mouse in the window
-        public var interfacePosition: Position2? {
-            return mouse.interfacePosition
-        }
-
         /**
          Returns a receipt for the current press or nil if not pressed.
          - parameter receipt: An existing receipt from a previous call to compare to the current pressed state.

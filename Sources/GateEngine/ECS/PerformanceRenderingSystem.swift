@@ -6,8 +6,8 @@
  */
 
 public final class PerformanceRenderingSystem: RenderingSystem {
-    public override func setup(game: Game) {
-        game.ecs.recordPerformance()
+    public override func setup(context: ECSContext) {
+        context.recordPerformance()
     }
 
     lazy var text: Text = Text(string: "Accumulating Statistics...\nLoading Resources: \(game.resourceManager.currentlyLoading)", pointSize: 20, color: .green)
@@ -91,7 +91,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
 
     let tickDuration: Float = 3
     var cumulativeTime: Float = 0
-    public override func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
+    public override func render(context: ECSContext, into view: View, withTimePassed deltaTime: Float) {
         cumulativeTime += deltaTime
         if cumulativeTime > tickDuration {
             let didRebuild = rebuildText()
@@ -100,20 +100,20 @@ public final class PerformanceRenderingSystem: RenderingSystem {
             }
         }
 
-        guard text.isReady else { return }
-
-        let x: Float = .maximum(10, window.safeAreaInsets.leading)
-        let y: Float = .maximum(10, window.safeAreaInsets.top)
-        let position = Position2(x, y)
-
-        var canvas: Canvas = Canvas(window: window)
-        canvas.insert(
-            Rect(size: text.size).inset(by: Insets(-4)),
-            color: Color(0, 0, 0, 0.6),
-            at: position
-        )
-        canvas.insert(text, at: position)
-        window.insert(canvas)
+//        guard text.isReady else { return }
+//
+//        let x: Float = .maximum(10, view.safeAreaInsets.leading)
+//        let y: Float = .maximum(10, view.safeAreaInsets.top)
+//        let position = Position2(x, y)
+//
+//        var canvas: Canvas = Canvas(window: window)
+//        canvas.insert(
+//            Rect(size: text.size).inset(by: Insets(-4)),
+//            color: Color(0, 0, 0, 0.6),
+//            at: position
+//        )
+//        canvas.insert(text, at: position)
+//        renderTarget.insert(canvas)
     }
 
     required public init() {}

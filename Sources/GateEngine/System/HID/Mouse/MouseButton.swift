@@ -39,11 +39,6 @@ extension Mouse {
             return mouse.position
         }
 
-        /// The location of the mouse in the window
-        public var interfacePosition: Position2? {
-            return mouse.interfacePosition
-        }
-
         /// The current platform's preference for "Double Click" gesture
         public var pressCount: Int { multiClick.count }
 

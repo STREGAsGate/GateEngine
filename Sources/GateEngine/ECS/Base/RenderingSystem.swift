@@ -18,13 +18,13 @@
 
     }
 
-    internal final func willRender(game: Game, window: Window, withTimePassed deltaTime: Float) {
+    internal final func willRender(context: ECSContext, into view: GameView, withTimePassed deltaTime: Float) {
         if didSetup == false {
             didSetup = true
-            setup(game: game)
+            setup(context: context)
         }
-        if shouldRender(game: game, window: window, withTimePassed: deltaTime) {
-            render(game: game, window: window, withTimePassed: deltaTime)
+        if shouldRender(context: context, into: view, withTimePassed: deltaTime) {
+            render(context: context, into: view, withTimePassed: deltaTime)
         }
     }
 
@@ -35,8 +35,8 @@
 
      - parameter game: The game instance.
      **/
-    open func setup(game: Game) {
-
+    open func setup(context: ECSContext) {
+        
     }
 
     /**
@@ -46,7 +46,7 @@
      - parameter deltaTime: The duration since the last time this window was rendered.
      - returns: `true` if you want to render, otherwise `false`.
      **/
-    open func shouldRender(game: Game, window: Window, withTimePassed deltaTime: Float) -> Bool {
+    open func shouldRender(context: ECSContext, into view: View, withTimePassed deltaTime: Float) -> Bool {
         return true
     }
 
@@ -57,7 +57,7 @@
      - parameter deltaTime: The duration since the last time this window was rendered.
      - returns: `true` if you want to render, otherwise `false`.
      **/
-    open func render(game: Game, window: Window, withTimePassed deltaTime: Float) {
+    open func render(context: ECSContext, into view: GameView, withTimePassed deltaTime: Float) {
         preconditionFailure("Must Override \"\(#function)\" in \(type(of: Self.self))")
     }
 
@@ -68,7 +68,7 @@
 
      - parameter game: The game instance.
      **/
-    open func teardown(game: Game) {
+    open func teardown(context: ECSContext) {
 
     }
 

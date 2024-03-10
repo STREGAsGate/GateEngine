@@ -6,7 +6,7 @@
  */
 
 /// A Scene is a drawing space with 3 dimensions and a perspective camera.
-@MainActor public struct Scene {
+@MainActor public struct Scene: Drawable {
     @usableFromInline internal var camera: Camera
     @usableFromInline internal var viewport: Rect?
     @usableFromInline internal var scissorRect: Rect?
@@ -17,11 +17,17 @@
 
     @usableFromInline 
     internal var _drawCommands: ContiguousArray<DrawCommand> = []
+    @_transparent
+    public var drawCommands: ContiguousArray<DrawCommand> {
+        return _drawCommands
+    }
     
     @_transparent 
     public mutating func insert(_ drawCommand: DrawCommand) {
-        guard drawCommand.isReady else {return}
-        _drawCommands.append(drawCommand)
+        if drawCommand.isReady {
+            assert(drawCommand.validate())
+            _drawCommands.append(drawCommand)
+        }
     }
 
     /** Adds the camera to the scene
@@ -337,11 +343,6 @@
         self.directionalLight = SceneDirectionalLight(light)
     }
 
-    @_transparent
-    internal var hasContent: Bool {
-        return _drawCommands.isEmpty == false
-    }
-
     @inlinable @inline(__always)
     internal var hasLights: Bool {
         guard directionalLight != nil else { return true }
@@ -356,6 +357,11 @@
         self.viewport = viewport
 
         self._drawCommands.reserveCapacity(estimatedCommandCount)
+    }
+    
+    @_transparent
+    public func matrices(withSize size: GameMath.Size2) -> Matrices {
+        self.camera.matricies(withAspectRatio: size.aspectRatio)
     }
 }
 

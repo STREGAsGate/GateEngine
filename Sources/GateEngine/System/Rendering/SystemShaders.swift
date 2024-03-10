@@ -105,11 +105,11 @@ extension FragmentShader {
     public static let textureSampleTintColorOpacity_DiscardZeroAlpha: FragmentShader = {
         let fsh = FragmentShader()
         let opacity: Scalar = fsh.uniforms["opacity"]
-        let color = fsh.channel(0).texture.sample(
+        let sample = fsh.channel(0).texture.sample(
             at: fsh.input["texCoord0"]
-        ) * opacity
-        
-        fsh.output.color = fsh.channel(0).color * color.discard(if: color.a <= 0)
+        )
+        let color = Vec4(fsh.channel(0).color.rgb, sample.a * opacity)
+        fsh.output.color = color.discard(if: color.a <= 0)
         return fsh
     }()
     /// Uses material.channel(0).color to shade objects
@@ -131,7 +131,7 @@ extension FragmentShader {
         let sample = fsh.channel(0).texture.sample(
             at: fsh.input["texCoord0"]
         )
-        fsh.output.color = sample * fsh.channel(0).color
+        fsh.output.color = Vec4(fsh.channel(0).color.rgb, sample.a)
         return fsh
     }()
     

@@ -6,7 +6,7 @@
  */
 
 public final class StateMachineSystem: System {
-    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
+    public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         for entity in game.entities {
             guard let stateMachineComponent = entity.component(ofType: StateMachineComponent.self) else {
                 continue
@@ -23,7 +23,8 @@ public final class StateMachineSystem: System {
         component.shouldApplyInitialState = false
     }
     
-    public override func gameDidRemove(entity: Entity, game: Game, input: HID) async {
+    
+    public override func didRemove(entity: Entity, from context: ECSContext, input: HID) async {
         guard let stateMachineComponent = entity.component(ofType: StateMachineComponent.self) else {
             return
         }

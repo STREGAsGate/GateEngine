@@ -31,12 +31,12 @@ internal final class AudioSystem: PlatformSystem {
         return new
     }
     
-    override func setup(game: Game, input: HID) async {
-
+    override func setup(context: ECSContext, input: HID) async {
+        
     }
 
-    override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
-        updateSounds(game: game, withTimePassed: deltaTime)
+    override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
+        updateSounds(game: Game.shared, withTimePassed: deltaTime)
         updateMusic(withTimePassed: deltaTime)
     }
 

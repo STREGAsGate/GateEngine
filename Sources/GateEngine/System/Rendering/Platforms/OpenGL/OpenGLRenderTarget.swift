@@ -117,12 +117,12 @@ extension OpenGLRenderTarget {
         glFlush()
     }
 
-    func willBeginContent(matrices: Matrices?, viewport: Rect?, scissorRect: Rect?) {
+    func willBeginContent(matrices: Matrices?, viewport: Rect?, scissorRect: Rect?, stencil: UInt8?) {
         glBindFramebuffer(framebuffer)
         if let viewport {
             glViewport(
                 x: GLint(viewport.position.x),
-                y: GLint(viewport.position.y),
+                y: GLint(self.size.height - viewport.size.height - viewport.position.y), // flipped
                 width: GLsizei(viewport.size.width),
                 height: GLsizei(viewport.size.height)
             )
@@ -133,8 +133,8 @@ extension OpenGLRenderTarget {
         if let scissorRect {
             glScissor(
                 x: GLint(scissorRect.x), 
-                y: GLint(scissorRect.y), 
-                width: GLsizei(scissorRect.width), 
+                y: GLint(self.size.height - scissorRect.height - scissorRect.y), // flipped
+                width: GLsizei(scissorRect.width),
                 height: GLsizei(scissorRect.height)
             )
         }else{

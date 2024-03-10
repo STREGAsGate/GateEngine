@@ -375,7 +375,7 @@ extension UGNSWindow {
     func positionFromEvent(_ event: NSEvent) -> Position2? {
         if let contentView = self.contentView ?? self.contentViewController?.view {
             let cgPoint = contentView.convert(event.locationInWindow, from: nil)
-            let position = Position2(cgPoint) * Size2(Float(self.backingScaleFactor))
+            let position = Position2(cgPoint)
             return position
         }
         return nil
@@ -385,7 +385,6 @@ extension UGNSWindow {
         guard event.type == .mouseMoved || event.type == .mouseEntered || event.type == .mouseExited
         else { return .zero }
         return Position2(Float(event.deltaX), Float(event.deltaY))
-        * Size2(Float(self.backingScaleFactor))
     }
 
     func mouseButtonFromEvent(_ event: NSEvent) -> MouseButton {
@@ -599,7 +598,10 @@ extension UGNSWindow {
                         id: id,
                         kind: type,
                         event: .began,
-                        position: position
+                        position: position,
+                        precisionPosition: nil,
+                        pressure: 0,
+                        window: window
                     )
                 case .indirect:
                     if let device = touch.device as? AnyObject {
@@ -630,7 +632,10 @@ extension UGNSWindow {
                         id: id,
                         kind: type,
                         event: .moved,
-                        position: position
+                        position: position,
+                        precisionPosition: nil,
+                        pressure: 0,
+                        window: window
                     )
                 case .indirect:
                     if let device = touch.device as? AnyObject {
@@ -661,7 +666,10 @@ extension UGNSWindow {
                         id: id,
                         kind: type,
                         event: .ended,
-                        position: position
+                        position: position,
+                        precisionPosition: nil,
+                        pressure: 0,
+                        window: window
                     )
                 case .indirect:
                     if let device = touch.device as? AnyObject {
@@ -693,7 +701,10 @@ extension UGNSWindow {
                         id: id,
                         kind: type,
                         event: .canceled,
-                        position: position
+                        position: position,
+                        precisionPosition: nil,
+                        pressure: 0,
+                        window: window
                     )
                 case .indirect:
                     if let device = touch.device as? AnyObject {

@@ -132,7 +132,7 @@ final class X11Window: WindowBacking {
             guard event.same_screen != 0 else { return }
             Game.shared.hid.mouseChange(
                 event: .entered,
-                position: Position2(Float(event.x), Float(event.y)),
+                position: Position2(Float(event.x), Float(event.y)) / interfaceScaleFactor,
                 delta: .zero,
                 window: self.window
             )
@@ -141,7 +141,7 @@ final class X11Window: WindowBacking {
             guard event.same_screen != 0 else { return }
             Game.shared.hid.mouseChange(
                 event: .moved,
-                position: Position2(Float(event.x), Float(event.y)),
+                position: Position2(Float(event.x), Float(event.y)) / interfaceScaleFactor,
                 delta: .zero,
                 window: self.window
             )
@@ -150,7 +150,7 @@ final class X11Window: WindowBacking {
             guard event.same_screen != 0 else { return }
             Game.shared.hid.mouseChange(
                 event: .exited,
-                position: Position2(Float(event.x), Float(event.y)),
+                position: Position2(Float(event.x), Float(event.y)) / interfaceScaleFactor,
                 delta: .zero,
                 window: self.window
             )
@@ -170,7 +170,7 @@ final class X11Window: WindowBacking {
                 Game.shared.hid.mouseClick(
                     event: .buttonDown,
                     button: mouseButtonFromEvent(event),
-                    position: Position2(Float(event.x), Float(event.y)),
+                    position: Position2(Float(event.x), Float(event.y)) / interfaceScaleFactor,
                     delta: .zero,
                     window: self.window
                 )
@@ -181,7 +181,7 @@ final class X11Window: WindowBacking {
             Game.shared.hid.mouseClick(
                 event: .buttonUp,
                 button: mouseButtonFromEvent(event),
-                position: Position2(Float(event.x), Float(event.y)),
+                position: Position2(Float(event.x), Float(event.y)) / interfaceScaleFactor,
                 delta: .zero,
                 window: self.window
             )

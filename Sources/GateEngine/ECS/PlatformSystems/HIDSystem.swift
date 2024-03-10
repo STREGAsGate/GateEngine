@@ -6,7 +6,7 @@
  */
 
 internal class HIDSystem: PlatformSystem {
-    override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
+    override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         input.update(deltaTime)
     }
 

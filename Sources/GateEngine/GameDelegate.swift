@@ -17,7 +17,8 @@ public struct LaunchOptions: OptionSet {
 
 public protocol GameDelegate: AnyObject {
     /// Called when the app finishes loading.
-    @MainActor func didFinishLaunching(game: Game, options: LaunchOptions) async
+    @MainActor 
+    func didFinishLaunching(game: Game, options: LaunchOptions) async
 
     /**
      Create a customized mainWindow
@@ -26,19 +27,23 @@ public protocol GameDelegate: AnyObject {
      - parameter game: The game to create the window from
      - parameter identifier: The identifier to give the window. You must use this identifier.
      */
-    @MainActor func createMainWindow(game: Game, identifier: String) throws -> Window
+    @MainActor 
+    func createMainWindow(using manager: WindowManager, with identifier: String) throws -> Window
 
     /// The end user has tried to open a window using the platforms mechanisms
-    @MainActor func createUserRequestedWindow(game: Game) throws -> Window?
+    @MainActor 
+    func createUserRequestedWindow(using manager: WindowManager) throws -> Window?
 
     /**
      A display has been attached.
      - returns: A new window instance to put on the screen. Passing an existing window is undefined behaviour.
     */
-    @MainActor func createWindowForExternalScreen(game: Game) throws -> Window?
+    @MainActor 
+    func createWindowForExternalScreen(using manager: WindowManager) throws -> Window?
 
     /// Might be called immediately before the app closes.
-    @MainActor func willTerminate(game: Game)
+    @MainActor 
+    func willTerminate(game: Game)
 
     /**
      Start the game with no window and skip updating RenderingSystem(s).
@@ -51,7 +56,8 @@ public protocol GameDelegate: AnyObject {
      - returns: true if the game doesn't draw anything.
      - note: RenderingSystem(s) do not receive updates in headless mode.
      */
-    @MainActor func isHeadless() -> Bool
+    @MainActor 
+    func isHeadless() -> Bool
 
     /**
      Add additional search locations for resources.
@@ -70,19 +76,13 @@ public protocol GameDelegate: AnyObject {
     */
     nonisolated func gameIdentifier() -> StaticString?
 
-    @MainActor init()
+    @MainActor 
+    init()
 }
 
 extension GameDelegate {
-    @MainActor public func createMainWindow(game: Game, identifier: String) throws -> Window {
-        return try game.windowManager.createWindow(
-            identifier: identifier,
-            style: .system,
-            options: .defaultForMainWindow
-        )
-    }
-    public func createUserRequestedWindow(game: Game) throws -> Window? { return nil }
-    public func createWindowForExternalScreen(game: Game) throws -> Window? { return nil }
+    public func createUserRequestedWindow(using manager: WindowManager) throws -> Window? { return nil }
+    public func createWindowForExternalScreen(using manager: WindowManager) throws -> Window? { return nil }
 
     public func willTerminate(game: Game) {}
     public func isHeadless() -> Bool { return false }

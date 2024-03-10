@@ -8,7 +8,7 @@
 import GameMath
 
 public final class Physics3DSystem: System {
-    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
+    public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         // Skip Physics if we don't have at least 20 fps
         guard deltaTime < 1 / 20 else { return }
 

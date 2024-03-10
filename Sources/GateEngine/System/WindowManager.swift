@@ -31,7 +31,8 @@ import GameMath
     public func createWindow(
         identifier: String,
         style: WindowStyle = .system,
-        options: WindowOptions = .default
+        options: WindowOptions = .default,
+        rootViewController: ViewController
     ) throws -> Window {
         guard game.isHeadless == false else {
             throw GateEngineError.failedToCreateWindow(
@@ -53,7 +54,12 @@ import GameMath
             )
             return existing
         }
-        let window: Window = Window(identifier: identifier, style: style, options: options)
+        let window: Window = Window(
+            identifier: identifier,
+            rootViewController: rootViewController, 
+            style: style,
+            options: options
+        )
         self.windows.append(window)
         if identifier == Self.mainWindowIdentifier {
             self.mainWindow = window
@@ -89,11 +95,16 @@ import GameMath
 
     internal var windowsThatRequestedDraw: [(window: Window, deltaTime: Float)] = []
 
+    func updateWindows(deltaTime: Float) async {
+        for window in windows {
+            await window._update(deltaTime: deltaTime)
+        }
+    }
+    
     func drawWindows() {
         game.attributes.insert(.renderingIsPermitted)
         for pair: (window: Window, deltaTime: Float) in windowsThatRequestedDraw {
-            game.ecs.updateRendering(withTimePassed: pair.deltaTime, window: pair.window)
-            pair.window.didDrawSomething = true
+            pair.window._draw(deltaTime: pair.deltaTime)
         }
         game.attributes.remove(.renderingIsPermitted)
         self.windowsThatRequestedDraw.removeAll(keepingCapacity: true)

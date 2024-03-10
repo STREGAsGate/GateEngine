@@ -6,7 +6,7 @@
  */
 
 /// A Canvas is a drawing space with no depth and an orthographic camera.
-@MainActor public struct Canvas {
+@MainActor public struct Canvas: Drawable {
     let interfaceScale: Float
     internal var viewOrigin: Position2? = nil
     internal var viewport: Rect? = nil
@@ -23,11 +23,17 @@
 
     @usableFromInline 
     internal var _drawCommands: ContiguousArray<DrawCommand> = []
+    @_transparent
+    public var drawCommands: ContiguousArray<DrawCommand> {
+        return _drawCommands
+    }
     
     @_transparent 
     public mutating func insert(_ drawCommand: DrawCommand) {
-        guard drawCommand.isReady else {return}
-        _drawCommands.append(drawCommand)
+        if drawCommand.isReady {
+            assert(drawCommand.validate())
+            _drawCommands.append(drawCommand)
+        }
     }
     
     public mutating func setCamera(_ camera: Camera, size: Size2) {
@@ -489,18 +495,13 @@
     public init(window: Window, camera: Camera? = nil, estimatedCommandCount: Int = 10) {
         self.init(
             camera: camera,
-            size: window.size,
+            size: window.bounds.size,
             interfaceScale: window.interfaceScale,
             estimatedCommandCount: estimatedCommandCount
         )
     }
 
-    @_transparent
-    internal var hasContent: Bool {
-        return _drawCommands.isEmpty == false
-    }
-
-    internal func matrices(withSize size: Size2) -> Matrices {
+    public func matrices(withSize size: Size2) -> Matrices {
         let ortho = Matrix4x4(
             orthographicWithTop: 0,
             left: 0,

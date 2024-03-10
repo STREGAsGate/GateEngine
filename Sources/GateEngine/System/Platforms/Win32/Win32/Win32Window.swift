@@ -128,7 +128,7 @@ final class Win32Window: WindowBacking {
         if WinSDK.SetCursorPos(p.x, p.y) == false {
             Log.error("Failed to set mouse position.")
         } else {
-            mouseState.setMousePosition(to: position)
+            mouseState.setMousePosition(to: position / interfaceScaleFactor)
             #if GATEENGINE_DEBUG_HID
             let oldP: POINT = p
             WinSDK.GetCursorPos(&p)
@@ -413,7 +413,7 @@ extension Win32Window {
         let uiDelta: Position3 = Position3(0, yUIDelta, 0)
         Game.shared.hid.mouseScrolled(
             delta: delta,
-            uiDelta: uiDelta,
+            uiDelta: uiDelta / interfaceScaleFactor,
             device: 1,
             isMomentum: false,
             window: self.window
@@ -442,7 +442,7 @@ extension Win32Window {
         let uiDelta: Position3 = Position3(xUIDelta, 0, 0)
         Game.shared.hid.mouseScrolled(
             delta: delta,
-            uiDelta: uiDelta,
+            uiDelta: uiDelta / interfaceScaleFactor,
             device: 1,
             isMomentum: false,
             window: self.window

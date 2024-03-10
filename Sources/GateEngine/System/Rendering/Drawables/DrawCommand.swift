@@ -92,11 +92,61 @@ public struct DrawCommand {
             return [skinnedGeometry.backend!]
         }
     }
+    
+    @usableFromInline
+    func validate() -> Bool {
+        var shaderUniforms: [String: any ShaderValue] = self.vsh.uniforms.customUniforms
+        for pair in self.fsh.uniforms.customUniforms {
+            if let value = shaderUniforms[pair.key] {
+                if pair.value.valueType != value.valueType {
+                    Log.error("Shader custom uniform type missmatch. vsh(\(self.vsh)) \(pair.key):\(value.valueType) != fsh(\(self.fsh)) \(pair.key):\(pair.value.valueType)")
+                    return false
+                }
+            }else{
+                shaderUniforms[pair.key] = pair.value
+            }
+        }
+        let shaderUniformNames = shaderUniforms.sorted(by: {$0.key.compare($1.key) == .orderedAscending }).map({$0.key})
+        let materialUniformNames = material.sortedCustomUniforms().map({$0.key})
+        if shaderUniformNames != materialUniformNames {
+            Log.error("Shader and Material custom uniform names do not match:\n    Shaders:  \(shaderUniformNames)\n    Material: \(materialUniformNames)")
+            return false
+        }
+        return true
+    }
 }
 
-public extension DrawCommand.Flags {
+extension DrawCommand.Flags {
     @_transparent
-    static var `default`: Self {Self()}
+    public static var `default`: Self { Self() }
+    
+    @_transparent
+    internal static var userInterface: Self {
+        return DrawCommand.Flags(
+            cull: .disabled,
+            depthTest: .always, 
+            depthWrite: .disabled,
+            stencilTest: .equal,
+            stencilWrite: .disabled,
+            primitive: .triangle,
+            winding: .clockwise,
+            blendMode: .normal
+        )
+    }
+    
+    @_transparent
+    internal static var userInterfaceMask: Self {
+        return DrawCommand.Flags(
+            cull: .disabled,
+            depthTest: .always, 
+            depthWrite: .enabled,
+            stencilTest: .always,
+            stencilWrite: .enabled,
+            primitive: .triangle,
+            winding: .clockwise,
+            blendMode: .normal
+        )
+    }
 }
 
 public extension DrawCommand {
@@ -110,6 +160,7 @@ public extension DrawCommand {
         
         public enum DepthTest: Hashable {
             case always
+            case equal
             case greater
             case greaterEqual
             case less
@@ -123,6 +174,23 @@ public extension DrawCommand {
             case disabled
         }
         public var depthWrite: DepthWrite
+        
+        public enum StencilTest: Hashable {
+            case always
+            case equal
+            case greater
+            case greaterEqual
+            case less
+            case lessEqual
+            case never
+        }
+        public var stencilTest: StencilTest
+        
+        public enum StencilWrite: Hashable {
+            case enabled
+            case disabled
+        }
+        public var stencilWrite: StencilWrite
         
         public enum Primitive: Hashable {
             case point
@@ -161,6 +229,8 @@ public extension DrawCommand {
             cull: Cull = .back,
             depthTest: DepthTest = .lessEqual,
             depthWrite: DepthWrite = .enabled,
+            stencilTest: StencilTest = .equal,
+            stencilWrite: StencilWrite = .disabled,
             primitive: Primitive = .triangle,
             winding: Winding = .counterClockwise,
             blendMode: BlendMode = .normal
@@ -168,6 +238,8 @@ public extension DrawCommand {
             self.cull = cull
             self.depthTest = depthTest
             self.depthWrite = depthWrite
+            self.stencilTest = stencilTest
+            self.stencilWrite = stencilWrite
             self.primitive = primitive
             self.winding = winding
             self.blendMode = blendMode

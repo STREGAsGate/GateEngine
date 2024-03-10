@@ -193,7 +193,8 @@ class OpenGLRenderer: RendererBackend {
         #endif
     }
 
-    final class OpenGLSizeOnlyRenderTarget: _RenderTargetProtocol {
+    final class OpenGLSizeOnlyRenderTarget: _RenderTargetProtocol {        
+        var rootViewController: ViewController? = nil
         var lastDrawnFrame: UInt = .max
         var texture: Texture {
             get { fatalError() }
@@ -203,7 +204,7 @@ class OpenGLRenderer: RendererBackend {
             get { fatalError() }
             set {}
         }
-        var drawables: [Any] {
+        var drawables: [any Drawable] {
             get { fatalError() }
             set {}
         }
@@ -238,6 +239,8 @@ extension OpenGLRenderer {
         switch flags.depthTest {
         case .always:
             glDepthFunc(.alwaysSucceed)
+        case .equal:
+            glDepthFunc(.equalTo)
         case .greater:
             glDepthFunc(.greaterThan)
         case .greaterEqual:

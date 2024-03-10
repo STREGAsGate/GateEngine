@@ -36,14 +36,23 @@ extension HID {
             id: AnyHashable,
             kind: TouchKind,
             event: TouchChangeEvent,
-            position: Position2
+            position: Position2,
+            precisionPosition: Position2?,
+            pressure: Float
         ) {
             let touch: Touch
             if let existing = self.existingTouch(id) {
                 touch = existing
                 touch.position = position
             } else {
-                touch = Touch(id: id, position: position, phase: .down, kind: kind)
+                touch = Touch(
+                    id: id, 
+                    position: position, 
+                    precisionPosition: precisionPosition, 
+                    pressure: pressure, 
+                    phase: .down, 
+                    kind: kind
+                )
             }
             switch event {
             case .began:

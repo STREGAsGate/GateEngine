@@ -67,6 +67,8 @@ public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible
     case scriptExecutionError(_ reason: String)
 
     case generic(_ description: String)
+    
+    case layoutFailed(_ description: String)
 
     case failedToCreateWindow(_ reason: String)
 
@@ -84,6 +86,8 @@ public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible
             return "scriptExecutionError:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .generic(let reason):
             return reason 
+        case .layoutFailed(let reason):
+            return "layoutFailed:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .failedToCreateWindow(let reason):
             return "failedToCreateWindow:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         }

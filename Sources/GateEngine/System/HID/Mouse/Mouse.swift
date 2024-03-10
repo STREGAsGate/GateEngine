@@ -91,43 +91,24 @@ import GameMath
     /// The distance the cursor moved since it's last update
     public internal(set) var deltaPosition: Position2 = .zero
 
-    internal var _position: Position2? = nil
     /**
      The user interface scaled position of the mouse cursor
 
      Setting this value will "warp" the mouse to that position.
      - SeeAlso ``interfacePosition``
     */
-    public internal(set) var position: Position2? {
-        get { return _position }
-        set {
-            if let window, let newValue {
-                window.setMousePosition(newValue)
-            }
-            self._position = newValue
+    public internal(set) var position: Position2? = nil
+    
+    public func loactionInView(_ view: View) -> Position2? {
+        if let position, let window {
+            return view.convert(position, from: window)
         }
+        return nil
     }
-
-    /**
-     The user interface scaled position of the mouse cursor
-
-     Setting this value will "warp" the mouse to that position.
-     - SeeAlso ``position``
-     */
-    public internal(set) var interfacePosition: Position2? {
-        get {
-            if let position, let window {
-                return position / window.interfaceScale
-            }
-            return position
-        }
-        set {
-            if let newValue, let window {
-                self._position = newValue * window.interfaceScale
-            } else {
-                self._position = nil
-            }
-        }
+    
+    public func isInsideView(_ view: View) -> Bool {
+        guard let position, let window else { return false }
+        return view.bounds.contains(view.convert(position, from: window))
     }
 
     func update() {
@@ -150,10 +131,10 @@ extension Mouse {
         switch event {
         case .entered, .moved:
             self._nextDeltaPosition += delta
-            self._position = position
+            self.position = position
             self._window = window
         case .exited:
-            self._position = nil
+            self.position = nil
             self._window = nil
         }
     }
@@ -170,9 +151,7 @@ extension Mouse {
         delta: Position2?,
         window: Window?
     ) {
-        if let position {
-            self._position = position
-        }
+        self.position = position
         if let delta {
             self._nextDeltaPosition = delta
         }

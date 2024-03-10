@@ -51,8 +51,8 @@ public enum InputMethod {
 }
 
 extension HID {
-    @_transparent
-    func mouseChange(
+//    @_transparent
+    internal func mouseChange(
         event: Mouse.ChangeEvent,
         position: Position2,
         delta: Position2,
@@ -60,9 +60,10 @@ extension HID {
     ) {
         recentInputMethod = .mouseKeyboard
         mouse.mouseChange(event: event, position: position, delta: delta, window: window)
+        window?.mouseChange(event: event, position: position, delta: delta)
     }
     @_transparent
-    func mouseClick(
+    internal func mouseClick(
         event: Mouse.ClickEvent,
         button: MouseButton,
         multiClickTime: Double = 0.5,
@@ -79,9 +80,16 @@ extension HID {
             delta: delta,
             window: window
         )
+        window?.mouseClick(
+            event: event, 
+            button: button, 
+            multiClickTime: multiClickTime, 
+            position: position, 
+            delta: delta
+        )
     }
     @_transparent
-    func mouseScrolled(
+    internal func mouseScrolled(
         delta: Position3,
         uiDelta: Position3,
         device: Int,
@@ -96,20 +104,31 @@ extension HID {
             isMomentum: isMomentum,
             window: window
         )
+        window?.mouseScrolled(
+            delta: delta, 
+            uiDelta: uiDelta, 
+            device: device, 
+            isMomentum: isMomentum
+        )
     }
 
     @_transparent
-    func screenTouchChange(
+    internal func screenTouchChange(
         id: AnyHashable,
         kind: TouchKind,
         event: TouchChangeEvent,
-        position: Position2
+        position: Position2,
+        precisionPosition: Position2?,
+        pressure: Float,
+        window: Window
     ) {
         recentInputMethod = .touchScreen
-        screen.touchChange(id: id, kind: kind, event: event, position: position)
+        screen.touchChange(id: id, kind: kind, event: event, position: position, precisionPosition: precisionPosition, pressure: pressure)
+        window.touchChange(id: id, kind: kind, event: event, position: position, precisionPosition: precisionPosition, pressure: pressure)
     }
+    
     @_transparent
-    func surfaceTouchChange(
+    internal func surfaceTouchChange(
         id: AnyHashable,
         event: TouchChangeEvent,
         surfaceID: AnyHashable,
@@ -125,7 +144,7 @@ extension HID {
     }
 
     @_transparent
-    func keyboardDidHandle(
+    internal func keyboardDidHandle(
         key: KeyboardKey,
         character: Character?,
         modifiers: KeyboardModifierMask,

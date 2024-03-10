@@ -6,7 +6,7 @@
  */
 
 public final class Collision3DSystem: System {
-    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
+    public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         let staticEntities = game.entities.filter({
             guard let collisionComponenet = $0.component(ofType: Collision3DComponent.self) else {return false}
             if case .static = collisionComponenet.kind {

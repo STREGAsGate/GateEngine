@@ -76,7 +76,7 @@ final class MetalRenderTarget: RenderTargetBackend {
             )!
         }
 
-        reshapeDescriptor.pixelFormat = .depth32Float
+        reshapeDescriptor.pixelFormat = .depth32Float_stencil8
         self.depthTexture = Game.shared.renderer.device.makeTexture(descriptor: reshapeDescriptor)!
     }
 
@@ -95,7 +95,7 @@ final class MetalRenderTarget: RenderTargetBackend {
         #endif
     }
 
-    func willBeginContent(matrices: Matrices?, viewport: GameMath.Rect?, scissorRect: GameMath.Rect?) {
+    func willBeginContent(matrices: Matrices?, viewport: GameMath.Rect?, scissorRect: GameMath.Rect?, stencil: UInt8?) {
         if self.isFirstPass {
             self.isFirstPass = false
             self.commandEncoder = commandBuffer.makeRenderCommandEncoder(
@@ -117,16 +117,30 @@ final class MetalRenderTarget: RenderTargetBackend {
                 zfar: 1
             )
             self.commandEncoder.setViewport(mtlViewport)
+        }else{
+            let mtlViewport = MTLViewport(
+                originX: 0,
+                originY: 0,
+                width: Double(self.size.width),
+                height: Double(self.size.height),
+                znear: 0,
+                zfar: 1
+            )
+            self.commandEncoder.setViewport(mtlViewport)
         }
         
         if let scissorRect {
             let mtlScissorRect = MTLScissorRect(
-                x: Int(Double(scissorRect.position.x)),
-                y: Int(Double(scissorRect.position.y)),
-                width: Int(Double(scissorRect.size.width)),
-                height: Int(Double(scissorRect.size.height))
+                x: Int(scissorRect.position.x),
+                y: Int(scissorRect.position.y),
+                width: Int(scissorRect.size.width),
+                height: Int(scissorRect.size.height)
             )
             self.commandEncoder.setScissorRect(mtlScissorRect)
+        }
+        
+        if let stencil {
+            self.commandEncoder.setStencilReferenceValue(UInt32(stencil))
         }
     }
 
@@ -158,6 +172,11 @@ final class MetalRenderTarget: RenderTargetBackend {
         descriptor.depthAttachment.storeAction = .store
         descriptor.depthAttachment.clearDepth = 1.0
         descriptor.depthAttachment.texture = self.depthTexture
+        
+        descriptor.stencilAttachment.loadAction = .load
+        descriptor.stencilAttachment.storeAction = .store
+        descriptor.stencilAttachment.clearStencil = 0
+        descriptor.stencilAttachment.texture = self.depthTexture
 
         return descriptor
     }
@@ -166,11 +185,17 @@ final class MetalRenderTarget: RenderTargetBackend {
     private var firstPassRenderPassDescriptor: MTLRenderPassDescriptor {
         let descriptor: MTLRenderPassDescriptor = renderPassDescriptor
 
+        descriptor.colorAttachments[0].clearColor = mtlClearColor
         descriptor.colorAttachments[0].loadAction = .clear
         descriptor.colorAttachments[0].storeAction = .store
 
+        descriptor.depthAttachment.clearDepth = 1.0
         descriptor.depthAttachment.loadAction = .clear
         descriptor.depthAttachment.storeAction = .store
+        
+        descriptor.stencilAttachment.clearStencil = 0
+        descriptor.stencilAttachment.loadAction = .clear
+        descriptor.stencilAttachment.storeAction = .store
 
         return descriptor
     }

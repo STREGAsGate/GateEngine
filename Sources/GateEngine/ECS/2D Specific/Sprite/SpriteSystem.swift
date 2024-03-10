@@ -6,7 +6,7 @@
  */
 
 public final class SpriteSystem: System {
-    public override func update(game: Game, input: HID, withTimePassed deltaTime: Float) async {
+    public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         for entity in game.entities {
             if let spriteComponent = entity.component(ofType: SpriteComponent.self) {
                 if spriteComponent.moveToNextAnimationIfNeeded {
