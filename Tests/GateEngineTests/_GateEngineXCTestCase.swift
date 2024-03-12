@@ -12,6 +12,10 @@ import XCTest
 
 open class GateEngineXCTestCase: XCTestCase {
     final class TestGameDelegate: GameDelegate {
+        func createMainWindow(using manager: GateEngine.WindowManager, with identifier: String) throws -> GateEngine.Window {
+            return try manager.createWindow(identifier: identifier, rootViewController: ViewController())
+        }
+        
         func didFinishLaunching(game: Game, options: LaunchOptions) {
 
         }
