@@ -102,19 +102,19 @@ public final class Game {
     
     @MainActor
     @inline(__always)
-    private func getNextDeltaTime() -> Double? {
+    internal static func getNextDeltaTime(accumulator: inout Double, previous: inout Double) -> Double? {
         // 240fps
         let stepDuration: Double = /* 1/240 */ 0.004166666667
         let now: Double = Game.shared.platform.systemTime()
-        let newDeltaTimeAccumulator: Double = self.deltaTimeAccumulator + (now - self.previousTime)
+        let newDeltaTimeAccumulator: Double = accumulator + (now - previous)
         if newDeltaTimeAccumulator < stepDuration {
             return nil
         }
 
-        self.deltaTimeAccumulator = newDeltaTimeAccumulator
-        self.previousTime = now
-        let deltaTime = stepDuration * (self.deltaTimeAccumulator / stepDuration)
-        self.deltaTimeAccumulator -= deltaTime
+        accumulator = newDeltaTimeAccumulator
+        previous = now
+        let deltaTime = stepDuration * (accumulator / stepDuration)
+        accumulator -= deltaTime
         // Discard times larger then 12 fps. This will cause slow down but will also reduce
         // of the chance of the simulation from breaking
         if deltaTime > /* 1/12 */ 0.08333333333 {
@@ -126,7 +126,7 @@ public final class Game {
     
     #if GATEENGINE_PLATFORM_EVENT_DRIVEN
     @MainActor internal func eventLoop(completion: @escaping () -> Void) {
-        guard let deltaTime = getNextDeltaTime() else {
+        guard let deltaTime = Game.getNextDeltaTime(accumulator: &deltaTimeAccumulator, previous: &previousTime) else {
             completion()
             return
         }
