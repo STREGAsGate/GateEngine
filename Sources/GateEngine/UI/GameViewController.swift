@@ -49,6 +49,9 @@ public final class GameView: View {
     }
     var mode: Mode = .screen
     
+    private var deltaTimeAccumulator: Double = 0
+    private var previousTime: Double = 0
+    
     override final func draw(into canvas: inout UICanvas, at frame: Rect) {
         if mode == .offScreen {
             super.draw(into: &canvas, at: frame)
@@ -56,9 +59,14 @@ public final class GameView: View {
         }
         
         if let gameViewController {
-            #warning("TODO: Add view specific deltaTime calculation")
-            let deltaTime: Float = 1/60
+            guard let _deltaTime = Game.getNextDeltaTime(
+                accumulator: &deltaTimeAccumulator, 
+                previous: &previousTime
+            ) else {
+                return
+            }
             
+            let deltaTime = Float(_deltaTime)
             gameViewController.render(context: gameViewController.context, into: self, withTimePassed: deltaTime)
             gameViewController.context.updateRendering(into: self, deltaTime: deltaTime)
             
