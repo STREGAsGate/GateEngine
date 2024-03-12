@@ -80,7 +80,7 @@ public struct WindowOptions: OptionSet {
         }
     }
     
-    override func draw(into canvas: inout UICanvas, at frame: Rect) {
+    override func draw(_ rect: Rect, into canvas: inout UICanvas) {
         // Don't forward to super as the clear color will fill the background
     }
     

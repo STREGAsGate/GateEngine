@@ -52,9 +52,9 @@ public final class GameView: View {
     private var deltaTimeAccumulator: Double = 0
     private var previousTime: Double = 0
     
-    override final func draw(into canvas: inout UICanvas, at frame: Rect) {
+    override final func draw(_ rect: Rect, into canvas: inout UICanvas) {
         if mode == .offScreen {
-            super.draw(into: &canvas, at: frame)
+            super.draw(rect, into: &canvas)
             self._renderTarget?.size = frame.size
         }
         

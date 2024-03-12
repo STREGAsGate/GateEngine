@@ -397,7 +397,7 @@ open class View {
         )
     }
         
-    internal func draw(into canvas: inout UICanvas, at frame: Rect) {
+    internal func draw(_ rect: Rect, into canvas: inout UICanvas) {
         guard let backgroundColor, backgroundColor.alpha > 0 else {return}
         canvas.insert(
             DrawCommand(
@@ -405,13 +405,13 @@ open class View {
                 transforms: [
                     Transform3(
                         position: Position3(
-                            x: frame.x,
-                            y: frame.y,
+                            x: rect.x,
+                            y: rect.y,
                             z: 0
                         ),
                         scale: Size3(
-                            frame.width,
-                            frame.height,
+                            rect.width,
+                            rect.height,
                             1
                         )
                     )

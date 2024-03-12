@@ -255,7 +255,7 @@ extension _RenderTargetProtocol {
         case .screen:
             let frame = view.representationFrame()
             let clip = frame.clamped(within: superClip)
-            view.draw(into: &canvas, at: frame)
+            view.draw(frame, into: &canvas)
             for subview in view.subviews {
                 self.drawView(subview, into: &canvas, forOffScreen: forOffScreen, frameNumber: frameNumber, superClip: clip)
             }
@@ -269,7 +269,7 @@ extension _RenderTargetProtocol {
         let offScreenFrame = view.offScreenFrame()
         
         var offScreenCanvas: UICanvas = UICanvas(estimatedCommandCount: 10)
-        view.draw(into: &offScreenCanvas, at: offScreenFrame)
+        view.draw(offScreenFrame, into: &offScreenCanvas)
         
         for subview in view.subviews {
             self.drawView(subview, into: &offScreenCanvas, forOffScreen: true, frameNumber: frameNumber, superClip: offScreenFrame)

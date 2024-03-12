@@ -55,16 +55,16 @@ open class ImageView: View {
         return super.contentSize()
     }
     
-    override func draw(into canvas: inout UICanvas, at frame: Rect) {
-        super.draw(into: &canvas, at: frame)
+    override func draw(_ rect: Rect, into canvas: inout UICanvas) {
+        super.draw(rect, into: &canvas)
         
         canvas.insert(
             DrawCommand(
                 resource: .geometry(.rectOriginTopLeft),
                 transforms: [
                     Transform3(
-                        position: Position3(frame.x, frame.y, 0),
-                        scale: Size3(frame.width, frame.height, 1)
+                        position: Position3(rect.x, rect.y, 0),
+                        scale: Size3(rect.width, rect.height, 1)
                     )
                 ],
                 material: material,

@@ -141,13 +141,13 @@ public final class Label: View {
         return font.state == .ready && texture.isReady && geometry.isReady
     }
     
-    override func draw(into canvas: inout UICanvas, at frame: Rect) {
-        super.draw(into: &canvas, at: frame)
+    override func draw(_ rect: Rect, into canvas: inout UICanvas) {
+        super.draw(rect, into: &canvas)
         
         canvas.insert(
             DrawCommand(
                 resource: .geometry(geometry),
-                transforms: [Transform3(position: Position3(frame.x, frame.y, 0))],
+                transforms: [Transform3(position: Position3(rect.x, rect.y, 0))],
                 material: Material(texture: texture, sampleFilter: sampleFilter, tintColor: textColor),
                 vsh: .standard,
                 fsh: .textureSampleTintColor,
