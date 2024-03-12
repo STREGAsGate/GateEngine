@@ -469,6 +469,7 @@ public struct Layout {
             case horizontalSize
             case verticalSize
         }
+        @inline(__always)
         func resolve(_ view: View) -> (failure: FailedResolutions, view: View)? {
             for subview in view.subviews {
                 if let failed = resolve(subview) {
@@ -533,6 +534,7 @@ public struct Layout {
         var viewsLayedOut: Int = 0
         var hadError: Bool = false
         #endif
+        @inline(__always)
         func finishLayout(for view: View) {
             guard view.needsLayout else {return}
             
