@@ -14,8 +14,8 @@ jobs:
     steps:
       - uses: compnerd/gha-setup-swift@main
         with:
-          branch: swift-5.8.1-release
-          tag: 5.8.1-RELEASE
+          branch: swift-5.10-release
+          tag: 5.10-RELEASE
       - uses: actions/checkout@v3
       
       - name: Swift Version
