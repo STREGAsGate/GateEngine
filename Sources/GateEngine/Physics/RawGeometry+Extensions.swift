@@ -6,6 +6,7 @@
  */
 
 extension RawGeometry {
+    @MainActor
     public func generateCollisionTriangles() -> [CollisionTriangle] {
         var positions: [Position3] = []
         positions.reserveCapacity(indices.count * 3)

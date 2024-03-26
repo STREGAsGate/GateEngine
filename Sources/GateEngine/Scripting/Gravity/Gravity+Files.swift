@@ -8,7 +8,6 @@
 import Foundation
 import Gravity
 
-@MainActor
 internal func filenameCallback(
     fileID: UInt32,
     xData: UnsafeMutableRawPointer?
@@ -20,7 +19,6 @@ internal func filenameCallback(
     }
 }
 
-@MainActor
 internal func loadFileCallback(
     file: UnsafePointer<CChar>!,
     size: UnsafeMutablePointer<Int>!,
