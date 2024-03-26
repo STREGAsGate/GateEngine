@@ -179,10 +179,15 @@ let package = Package(
                             .enableUpcomingFeature("ExistentialAny"),
                             .enableUpcomingFeature("ForwardTrailingClosures"),
                             .enableUpcomingFeature("ConciseMagicFile"),
+                            .enableUpcomingFeature("DynamicActorIsolation"),
+                            .enableUpcomingFeature("FullTypedThrows"),
+                            .enableUpcomingFeature("InferSendableFromCaptures"),
+                            .enableUpcomingFeature("DeprecateApplicationMain"),
                             
                             .enableExperimentalFeature("AccessLevelOnImport"),
 //                            .enableExperimentalFeature("StrictConcurrency"),
-//                            .enableExperimentalFeature("StrictConcurrency=complete"),
+//                            .enableExperimentalFeature("StrictConcurrency=minimal"),
+                            .enableExperimentalFeature("StrictConcurrency=complete"),
                         ])
                         #endif
                         
@@ -223,13 +228,13 @@ let package = Package(
                         //.plugin(name: "SwiftLintPlugin", package: "SwiftLint"),
                     ]),
             
-                .target(name: "Shaders",
-                        dependencies: [
-                            "GameMath",
-                            .product(name: "Collections", package: "swift-collections")
-                        ], swiftSettings: [
-                            .define("GATEENGINE_DEBUG_SHADERS", .when(configuration: .debug))
-                        ]),
+            .target(name: "Shaders",
+                    dependencies: [
+                        "GameMath",
+                        .product(name: "Collections", package: "swift-collections")
+                    ], swiftSettings: [
+                        .define("GATEENGINE_DEBUG_SHADERS", .when(configuration: .debug))
+                    ]),
             
             .target(name: "GameMath", swiftSettings: {
                 var array: [SwiftSetting] = []
