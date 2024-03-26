@@ -568,7 +568,7 @@ public enum OpenGL {
         }
     }
     
-    public struct ClearMask: OptionSet {
+    public struct ClearMask: OptionSet, Sendable {
         public typealias RawValue = UInt32
         public var rawValue: RawValue
         

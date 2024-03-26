@@ -12,7 +12,7 @@ import class Foundation.NSLock
 #endif
 
 #if canImport(Atomics)
-public final class IDGenerator<T: AtomicInteger> {
+public final class IDGenerator<T: AtomicInteger & Sendable> {
     var value: ManagedAtomic<T>
 
     public init(startValue: T = 0) {

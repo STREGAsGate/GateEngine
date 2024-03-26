@@ -14,6 +14,7 @@ public struct CollisionTriangle: Sendable {
     public var plane: Plane3D
     public var center: Position3
     
+    @MainActor
     public static var attributeParser = {(u: Float, v: Float, section: UInt32) -> UInt32 in
         let range: Float = 3
         let uidx: Float = floor(u * range)
@@ -58,6 +59,7 @@ public struct CollisionTriangle: Sendable {
 }
 
 public extension CollisionTriangle {
+    @MainActor
     init(positions: [Position3], colors: [Color], offset: Position3 = .zero, attributeUV: [Position2]) {
         var attributes: UInt32 = 0
         for index in 0 ..< attributeUV.count {

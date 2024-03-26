@@ -8,6 +8,7 @@
 #if DEBUG
 import Gravity
 
+@MainActor
 internal func unittestCallback(
     vm: OpaquePointer!,
     errorType: error_type_t,
@@ -25,7 +26,6 @@ internal func unittestCallback(
         column: column,
         value: value
     )
-    return
 }
 extension Gravity {
     struct Testing {

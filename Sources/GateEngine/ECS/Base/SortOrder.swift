@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct SystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral {
+public struct SystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral, Sendable {
     public typealias RawValue = Int
     public let rawValue: RawValue
     public init(rawValue: RawValue) {
@@ -36,7 +36,7 @@ public struct SystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral {
     }
 }
 
-public struct RenderingSystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral {
+public struct RenderingSystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral, Sendable {
     public typealias RawValue = Int
     public let rawValue: RawValue
     public init(rawValue: RawValue) {
@@ -102,7 +102,7 @@ extension PlatformSystemSortOrder {
     public static let deferredSystem: Self = 100_000
 }
 
-public struct PlatformSystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral {
+public struct PlatformSystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral, Sendable {
     public typealias RawValue = Int
     public let rawValue: RawValue
     public init(rawValue: RawValue) {

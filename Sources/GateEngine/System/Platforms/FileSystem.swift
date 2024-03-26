@@ -45,7 +45,7 @@ public enum FileSystemItemType {
     case file
 }
 
-public struct FileSystemWriteOptions: OptionSet {
+public struct FileSystemWriteOptions: OptionSet, Sendable {
     public typealias RawValue = UInt
     public var rawValue: RawValue
     public init(rawValue: RawValue) {

@@ -68,16 +68,13 @@ public final class CharacterStream {
         string.removeAll(keepingCapacity: true)
         cursor = string.startIndex
     }
-    public func startCapture() async {
-        await Game.shared.hid.keyboard.insertStream(self)
+    @MainActor
+    public func startCapture() {
+        Game.shared.hid.keyboard.insertStream(self)
     }
-    public func stopCapture() async {
-        await Game.shared.hid.keyboard.removeStream(self)
-    }
-    deinit {
-        Task { @MainActor in
-            await self.stopCapture()
-        }
+    @MainActor
+    public func stopCapture() {
+        Game.shared.hid.keyboard.removeStream(self)
     }
 }
 

@@ -10,7 +10,7 @@ extension Collision3DComponent {
         case `static`
         case dynamic(_ priority: Int)
     }
-    public struct Options: OptionSet {
+    public struct Options: OptionSet, Sendable {
         public let rawValue: UInt32
 
         public static let skipEntities = Options(rawValue: 1 << 1)

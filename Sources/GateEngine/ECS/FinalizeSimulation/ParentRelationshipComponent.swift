@@ -12,7 +12,7 @@ public final class ParentRelationshipComponent: Component {
     public var relativeTransform: Transform3? = nil
     public var options: Options = [.relativePosition, .relativeRotation, .relativeScale]
     
-    public struct Options: OptionSet {
+    public struct Options: OptionSet, Sendable {
         public typealias RawValue = UInt
         public let rawValue: RawValue
         

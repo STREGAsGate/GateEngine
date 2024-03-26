@@ -12,6 +12,7 @@ public final class Game {
     @MainActor public private(set) var state: State! = nil
     @MainActor internal private(set) var internalState: State! = nil
 
+    @MainActor
     lazy private(set) var identifier: String = delegate.resolvedGameIdentifier()
 
     nonisolated public let isHeadless: Bool
