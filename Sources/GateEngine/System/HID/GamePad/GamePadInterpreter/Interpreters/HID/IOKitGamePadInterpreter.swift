@@ -7,7 +7,7 @@
 #if canImport(IOKit)
 import Foundation
 import CoreFoundation
-fileprivate import IOKit.hid
+import IOKit.hid
 
 private class HIDController {
     let guid: SDL2ControllerGUID
