@@ -85,9 +85,10 @@ public class GravityClass: GravityValueEmitting, GravityClassEmitting {
             gravity_class_bind(gClass, key, gValue)
         }
 
-        var funcDatabase = Gravity.storage[gravity.vm]?.cBridgedFunctionMap ?? [:]
+        let vmID = Int(bitPattern: gravity.vm)
+        var funcDatabase = Gravity.storage[vmID]?.cBridgedFunctionMap ?? [:]
         funcDatabase[key] = function
-        Gravity.storage[gravity.vm]?.cBridgedFunctionMap = funcDatabase
+        Gravity.storage[vmID]?.cBridgedFunctionMap = funcDatabase
     }
 
     /**
@@ -132,6 +133,7 @@ internal class GravityCFuncBridgedUserData {
     }
 }
 
+@MainActor
 internal func gravityCFuncBridged(
     vm: OpaquePointer!,
     xdata: UnsafeMutableRawPointer?,
@@ -140,12 +142,14 @@ internal func gravityCFuncBridged(
     nargs: Int16,
     rindex: UInt32
 ) -> Bool {
+    let vmID = Int(bitPattern: vm)
+    
     // We use userData to store the Swift functions retrieval key
     guard let userData = unsafeBitCast(xdata, to: Optional<GravityCFuncBridgedUserData>.self) else {
         return true
     }
     // This should never fail
-    guard let swiftFunction = Gravity.storage[vm]?.cBridgedFunctionMap[userData.functionName] else {
+    guard let swiftFunction = Gravity.storage[vmID]?.cBridgedFunctionMap[userData.functionName] else {
         fatalError()
     }
 

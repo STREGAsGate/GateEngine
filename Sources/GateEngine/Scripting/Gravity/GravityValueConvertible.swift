@@ -7,6 +7,7 @@
 
 import Gravity
 
+@MainActor
 public protocol GravityValueConvertible {
     var gravityValue: GravityValue { get }
 }
