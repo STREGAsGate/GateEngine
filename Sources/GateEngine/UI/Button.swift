@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-open class Button: View {
+open class Button: Control {
     open override func canBeHit() -> Bool {
         return true
     }

@@ -166,7 +166,7 @@ let package = Package(
                         settings.append(.define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.wasi])))
                         #endif
 
-                        #if true // Experimental and upcomming language features.
+                        #if false // Experimental and upcomming language features.
                         // These should be disabled for releases.
                         // These are to get a headstart on the next Swift versions.
                         // https://www.swift.org/swift-evolution/#?upcoming=true
