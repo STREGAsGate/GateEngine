@@ -29,6 +29,7 @@ public final class MeshCollider: Collider3D {
             for triangle in transformedTriangles {
                 positions.append(contentsOf: triangle.positions)
             }
+            
             boundingBox = AxisAlignedBoundingBox3D(positions)
         }
         return transformedTriangles
@@ -38,6 +39,10 @@ public final class MeshCollider: Collider3D {
         didSet {
             if transform != oldValue {
                 needsUpdate = true
+                
+                //TODO: This update should account for rotation changes
+                //      When triangles are updated a new perfect box is created
+                self.boundingBox.update(transform: transform)
             }
         }
     }

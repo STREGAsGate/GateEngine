@@ -140,6 +140,7 @@ public final class Text {
         #else
         self.interfaceScale = 1
         #endif
+        self._geometry = MutableGeometry(rawGeometry: nil)
     }
 
     @MainActor private static func rawGeometry(
