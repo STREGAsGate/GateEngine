@@ -22,7 +22,8 @@ public struct OrientedBoundingBox3D: Collider3D, Sendable {
         self._offset = offset
         self._radius = radius
         self.radius = _radius
-        self.boundingBox = AxisAlignedBoundingBox3D(center: center, offset: offset, radius: radius)
+        // TODO: radius * 2 is probably overkill. Figure out the exact max radius.
+        self.boundingBox = AxisAlignedBoundingBox3D(center: center, offset: offset, radius: radius * 2)
     }
     
     @inline(__always)
