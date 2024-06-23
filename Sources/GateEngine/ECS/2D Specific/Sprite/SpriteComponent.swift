@@ -116,7 +116,7 @@ public final class SpriteComponent: Component {
             let startFrame = (animation.spriteSheetStart.y * columns) + animation.spriteSheetStart.x
             let endFrame = {
                 if let frameCount = animation.frameCount {
-                    return startFrame + (frameCount - 1)
+                    return startFrame + frameCount
                 }
                 let framesInAnimation = (columns * rows) - startFrame
                 return framesInAnimation
