@@ -59,6 +59,8 @@ public final class SpriteComponent: Component {
                 if let index = self.activeAnimationIndex {
                     self.animations[index] = newValue
                 }
+            }else{
+                self.clearAnimationQueue()
             }
         }
     }
