@@ -19,6 +19,10 @@ jobs:
     
     - name: Install Linux Dependencies
       run: sudo apt-get update --fix-missing; sudo apt-get install freeglut3-dev; sudo apt-get install libopenal-dev
+      
+    - name: Install Swift
+      curl -L https://swiftlang.github.io/swiftly/swiftly-install.sh | bash
+      swiftly install 5.10.1
     
     - name: Swift Version
       run: swift --version
