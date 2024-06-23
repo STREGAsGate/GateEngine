@@ -126,10 +126,12 @@ let package = Package(
                     ],
                     cSettings: [
                         .define("GL_SILENCE_DEPRECATION",
-                            .when(platforms: [.macOS])),
+                                .when(platforms: [.macOS])
+                        ),
                         .define("GLES_SILENCE_DEPRECATION",
-                            .when(platforms: [.iOS, .tvOS])),
-                    ],
+                                .when(platforms: [.iOS, .tvOS])
+                        ),
+                    ], 
                     swiftSettings: {
                         var settings: [SwiftSetting] = []
 
@@ -141,32 +143,39 @@ let package = Package(
                         settings.append(contentsOf: [
                             /// Closes all open windows when the main window is closed
                             .define("GATEENGINE_CLOSES_ALLWINDOWS_WITH_MAINWINDOW",
-                                .when(platforms: .desktop)),
+                                .when(platforms: .desktop)
+                            ),
                             /// Checks for reloadable resources and reloads them if they have changed
                             .define("GATEENGINE_ENABLE_HOTRELOADING",
-                                .when(platforms: .desktop, configuration: .debug)),
+                                .when(platforms: .desktop, configuration: .debug)
+                            ),
                             /// The host platform requests the main window, so GateEngine won't create one until it's requested
                             .define("GATEENGINE_PLATFORM_CREATES_MAINWINDOW",
-                                .when(platforms: [.iOS, .tvOS])),
+                                .when(platforms: [.iOS, .tvOS])
+                            ),
                             /// The host platform updates and draws from an event callback, so GateEngine won't create a game loop.
                             .define("GATEENGINE_PLATFORM_EVENT_DRIVEN",
-                                    .when(platforms: .any)),
+                                    .when(platforms: .any)
+                            ),
                             /// The host platform requires an intermediate task, so GateEngine won't load default systems.
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH",
-                                .when(platforms: [.wasi])),
+                                .when(platforms: [.wasi])
+                            ),
                             /// The host platform supports file system read/write
                             .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM",
-                                .when(platforms: .any)),
+                                .when(platforms: .any)
+                            ),
                             /// The host platform supports Foundation.FileManager
                             .define("GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER",
-                                .when(platforms: .any(except: .wasi))),
+                                .when(platforms: .any(except: .wasi))
+                            ),
                         ])
                         #if !(os(macOS) || os(Linux))
                         /// The host platform can't be used to compile HTML5 products
                         settings.append(.define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.wasi])))
                         #endif
 
-                        #if true // Experimental and upcomming language features.
+                        #if false // Experimental and upcomming language features.
                         // These should be disabled for releases.
                         // These are to get a headstart on the next Swift versions.
                         // https://www.swift.org/swift-evolution/#?upcoming=true
