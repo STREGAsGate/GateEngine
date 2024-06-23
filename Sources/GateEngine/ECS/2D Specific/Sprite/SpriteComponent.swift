@@ -28,7 +28,7 @@ public final class SpriteComponent: Component {
             return Position2(x, y)
         }
         set {
-            precondition(spriteSize != .zero, "spriteSize must be set first!")
+            precondition(spriteSize != .zero, "spriteSize must be set first, and cannot be zero!")
             let x = self.spriteSize.width * newValue.x
             let y = self.spriteSize.height * newValue.y
             self.spriteRect.position = Position2(x, y)
@@ -49,14 +49,14 @@ public final class SpriteComponent: Component {
     internal var moveToNextAnimationIfNeeded: Bool = false
     public var activeAnimation: SpriteAnimation? {
         get {
-            if let index = self.animationQueue.first {
+            if let index = self.activeAnimationIndex {
                 return self.animations[index]
             }
             return nil
         }
         set {
             if let newValue {
-                if let index = self.animationQueue.first {
+                if let index = self.activeAnimationIndex {
                     self.animations[index] = newValue
                 }
             }
@@ -64,18 +64,22 @@ public final class SpriteComponent: Component {
     }
 
     /// Appends the given animation index to the end of the animation queue.
+    @inline(__always)
     public func queueAnimation(_ animationIndex: Int) {
-        assert(animations.indices.contains(animationIndex), "Animations does not have an index \(animationIndex).")
+        assert(animations.indices.contains(animationIndex), "Animations does not have index \(animationIndex).")
         animationQueue.append(animationIndex)
     }
     
     /// Replaces the entire animation queue with the given animation index.
     public func setAnimation(_ animationIndex: Int) {
-        assert(animations.indices.contains(animationIndex), "Animations does not have an index \(animationIndex).")
-        animationQueue = [animationIndex]
+        guard self.activeAnimationIndex != animationIndex else {return}
+        assert(animations.indices.contains(animationIndex), "Animations does not have index \(animationIndex).")
+        self.clearAnimationQueue()
+        self.queueAnimation(animationIndex)
     }
     
     /// Removes all animations form the animation queue.
+    @inline(__always)
     public func clearAnimationQueue() {
         animationQueue.removeAll(keepingCapacity: true)
     }
