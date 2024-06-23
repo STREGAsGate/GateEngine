@@ -34,6 +34,7 @@ let package = Package(
         packageDependencies.append(contentsOf: [
             .package(url: "https://github.com/swiftwasm/WebAPIKit.git", .upToNextMajor(from: "0.1.0")),
             .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
+            .package(url: "https://github.com/swiftwasm/carton", from: "1.0.0"),
         ])
         #endif
         
