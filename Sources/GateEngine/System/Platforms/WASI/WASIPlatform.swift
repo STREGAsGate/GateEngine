@@ -336,7 +336,9 @@ extension WASIPlatform {
 
 extension WASIPlatform {
     @MainActor func main() {
-        JavaScriptEventLoop.installGlobalExecutor()
+        if #available(macOS 14.0, *) {
+            JavaScriptEventLoop.installGlobalExecutor()
+        }
         setupDocument()
         Log.info(
             "Notice: Browser resource errors are expected and normal. Ignore them. Only rely on the logs starting with \"[GateEngine]\"."
