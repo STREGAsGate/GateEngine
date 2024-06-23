@@ -72,10 +72,19 @@ public final class WASIPlatform: Platform, InternalPlatform {
         for searchPath in searchPaths {
             let newPath = searchPath.appendingPathComponent(path).path
             if let object = try? await fetch(newPath, ["method": "HEAD"]).object {
-                if Response(from: object)?.ok == true {
+                let response = Response(from: object)
+                if response?.ok == true {
                     pathCache[path] = newPath
                     Log.debug("Located Resource: \"\(path)\" at \"\(newPath)\"")
                     return newPath
+                }else if response?.status == 405 {
+                    if let object = try? await fetch(newPath, ["method": "GET"]).object {
+                        if Response(from: object)?.ok == true {
+                            pathCache[path] = newPath
+                            Log.debug("Located Resource: \"\(path)\" at \"\(newPath)\"")
+                            return newPath
+                        }
+                    }
                 }
             }
         }
