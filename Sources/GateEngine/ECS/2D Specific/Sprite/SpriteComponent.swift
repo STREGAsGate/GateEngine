@@ -49,7 +49,7 @@ public final class SpriteComponent: Component {
     internal var moveToNextAnimationIfNeeded: Bool = false
     public var activeAnimation: SpriteAnimation? {
         get {
-            if let index = self.activeAnimationIndex {
+            if let index = self.activeAnimationIndex, self.animations.count > index {
                 return self.animations[index]
             }
             return nil
