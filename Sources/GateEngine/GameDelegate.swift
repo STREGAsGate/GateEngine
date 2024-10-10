@@ -75,6 +75,11 @@ public protocol GameDelegate: AnyObject {
     By default the executablke name is used.
     */
     nonisolated func gameIdentifier() -> StaticString?
+    
+    /**
+     This is called when the platform host wants you to open something. This can be a user selected file or something else.
+     */
+    func openURLs(_ urls: [URL])
 
     @MainActor 
     init()
@@ -143,6 +148,10 @@ extension GameDelegate {
             identifier.append("_")
         }
         return identifier
+    }
+    
+    public func openURLs(_ urls: [URL]) {
+        
     }
 }
 

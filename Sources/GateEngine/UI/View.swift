@@ -260,6 +260,10 @@ open class View {
         
     }
     
+    open func scrolled(_ delta: Position2, isPlatformGeneratedMomentum isMomentum: Bool) {
+        
+    }
+    
     open func canBeHit() -> Bool {
         return false
     }
@@ -468,10 +472,11 @@ extension View {
     }
     
     public final func setNeedsUpdateConstraints() {
+        self.window?.setNeedsLayout()
         self.needsUpdateConstraints = true
     }
     
-    internal func setNeedsLayout() {
+    public func setNeedsLayout() {
         // Prevent recursion explosion
         guard needsLayout == false else {return}
         
@@ -561,12 +566,6 @@ extension View {
             }
         }
         return nil
-    }
-}
-
-extension View: Equatable {
-    public static func ==(lhs: View, rhs: View) -> Bool {
-        return lhs === rhs
     }
 }
 

@@ -48,7 +48,7 @@ final class AppKitWindow: WindowBacking {
         var styleMask: NSWindow.StyleMask = [.titled, .resizable, .miniaturizable]
 
         switch window.style {
-        case .bestForGames:
+        case .minimalSystemDecorations:
             styleMask.insert(.fullSizeContentView)
         case .system:
             break
@@ -69,7 +69,7 @@ final class AppKitWindow: WindowBacking {
         )
         self.nsWindowController = NSWindowController(window: nsWindow)
         nsWindow.isReleasedWhenClosed = false
-        if window.style == .bestForGames {
+        if window.style == .minimalSystemDecorations {
             nsWindow.titlebarAppearsTransparent = true
             nsWindow.titleVisibility = .hidden
         }

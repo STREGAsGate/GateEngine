@@ -11,7 +11,7 @@ public enum WindowStyle {
     ///The window will appear the way most windows do on the platform.
     case system
     ///The window will attempt to maximize the content size within the window by reducing window decorations.
-    case bestForGames
+    case minimalSystemDecorations
 }
 
 public struct WindowOptions: OptionSet {
@@ -158,7 +158,7 @@ public struct WindowOptions: OptionSet {
                 }
             }
             for view in viewToAdd {
-                if self.elements.firstIndex(where: {$0.view == view}) == nil {
+                if self.elements.firstIndex(where: {$0.view === view}) == nil {
                     let size = view.frame.size * view.interfaceScale
                     self.elements.append(Element(view: view, size: size))
                 }
@@ -510,7 +510,9 @@ public struct WindowOptions: OptionSet {
         device: Int,
         isMomentum: Bool
     ) {
-        
+        if let view = currentlyHitMouseView {
+            view.scrolled(Position2(uiDelta.x, uiDelta.y), isPlatformGeneratedMomentum: isMomentum)
+        }
     }
     
     var currentlyHitTouchViews: [Touch:View] = [:]

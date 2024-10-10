@@ -430,7 +430,7 @@ public struct Layout {
             window.frame.size = windowPointSize
             window.setNeedsLayout()
         }
-        guard window.needsLayout else {return}
+        guard window.needsLayout || window.needsUpdateConstraints else {return}
         
         let layoutStart = Game.shared.platform.systemTime()
         

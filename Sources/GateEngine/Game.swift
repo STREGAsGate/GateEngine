@@ -94,6 +94,10 @@ public final class Game {
     @MainActor func willTerminate() {
         self.delegate.willTerminate(game: self)
     }
+    
+    @MainActor internal func openURLs(_ urls: [URL]) {
+        self.delegate.openURLs(urls)
+    }
 
     @MainActor internal func addPlatformSystems() {
         if isHeadless == false {

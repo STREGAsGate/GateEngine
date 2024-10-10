@@ -59,10 +59,10 @@ let package = Package(
                             "Gravity",
                             "uFBX",
                         ])
-                        dependencies.append(
-                            .target(name: "Vorbis",
-                                    condition: .when(platforms: .any(except: .macOS, .wasi)))
-                        )
+//                        dependencies.append(
+//                            .target(name: "Vorbis",
+//                                    condition: .when(platforms: .any(except: .wasi)))
+//                        )
                         
                         #if os(macOS) || os(Linux)
                         dependencies.append(
@@ -166,13 +166,13 @@ let package = Package(
                         settings.append(.define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.wasi])))
                         #endif
 
-                        #if false // Experimental and upcomming language features.
+                        #if true // Experimental and upcomming language features.
                         // These should be disabled for releases.
                         // These are to get a headstart on the next Swift versions.
                         // https://www.swift.org/swift-evolution/#?upcoming=true
                         settings.append(contentsOf: [
                             .enableUpcomingFeature("IsolatedDefaultValues"),
-                            .enableUpcomingFeature("InternalImportsByDefault"),
+//                            .enableUpcomingFeature("InternalImportsByDefault"),
                             .enableUpcomingFeature("DisableOutwardActorInference"),
                             .enableUpcomingFeature("ImportObjcForwardDeclarations"),
                             .enableUpcomingFeature("BareSlashRegexLiterals"),
@@ -186,8 +186,8 @@ let package = Package(
                             
                             .enableExperimentalFeature("AccessLevelOnImport"),
 //                            .enableExperimentalFeature("StrictConcurrency"),
-//                            .enableExperimentalFeature("StrictConcurrency=minimal"),
-                            .enableExperimentalFeature("StrictConcurrency=complete"),
+                            .enableExperimentalFeature("StrictConcurrency=minimal"),
+//                            .enableExperimentalFeature("StrictConcurrency=complete"),
                         ])
                         #endif
                         
@@ -259,12 +259,12 @@ let package = Package(
         
         targets.append(contentsOf: [
             // Vorbis
-            .target(name: "Vorbis",
-                    path: "Dependencies/Vorbis",
-                    publicHeadersPath: "include",
-                    cSettings: [
-                        .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows]))
-                    ]),
+//            .target(name: "Vorbis",
+//                    path: "Dependencies/Vorbis",
+//                    publicHeadersPath: "include",
+//                    cSettings: [
+//                        .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows]))
+//                    ]),
             
             // miniz
             .target(name: "miniz",

@@ -6,6 +6,8 @@
  */
 #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
 
+import Foundation
+
 public enum FileSystemSearchPathDomain {
     case currentUser
     case shared

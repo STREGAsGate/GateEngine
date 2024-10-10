@@ -97,6 +97,10 @@ private class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         Game.shared.willTerminate()
     }
+    
+    func application(_ application: NSApplication, open urls: [URL]) {
+        Game.shared.openURLs(urls)
+    }
 }
 
 extension AppKitPlatform {
