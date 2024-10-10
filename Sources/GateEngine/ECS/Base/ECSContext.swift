@@ -108,6 +108,12 @@
 }
 
 @MainActor public final class ECSContext {
+    /**
+     An immutable copy of the View this ECSContext will be drawn into. 
+     Use this copy for size and color information from witin your simulation
+     */
+    public internal(set) var gameView: GameViewSnapshot = .empty
+    
     private var previousFrameWasDropped: Bool = false
     private var platformSystemsNeedSorting = true
     private var _platformSystems: [PlatformSystem] = []
@@ -378,8 +384,7 @@ extension ECSContext {
 }
 
 //MARK: System Management
-extension ECSContext {
-    @usableFromInline
+public extension ECSContext {
     func system(ofType systemType: System.Type) -> System {
         for system in _systems {
             if type(of: system) == systemType {
@@ -388,7 +393,6 @@ extension ECSContext {
         }
         return insertSystem(systemType)
     }
-    @usableFromInline
     func hasSystem(ofType systemType: System.Type) -> Bool {
         for system in _systems {
             if type(of: system) == systemType {
@@ -397,7 +401,6 @@ extension ECSContext {
         }
         return false
     }
-    @usableFromInline
     func system(ofType systemType: RenderingSystem.Type) -> RenderingSystem {
         for system in _renderingSystems {
             if type(of: system) == systemType {
@@ -406,7 +409,7 @@ extension ECSContext {
         }
         return insertSystem(systemType)
     }
-    func system(ofType systemType: PlatformSystem.Type) -> PlatformSystem {
+    internal func system(ofType systemType: PlatformSystem.Type) -> PlatformSystem {
         for system in _platformSystems {
             if type(of: system) == systemType {
                 return system
@@ -414,7 +417,6 @@ extension ECSContext {
         }
         return insertSystem(systemType)
     }
-    @usableFromInline
     func insertSystem(_ newSystem: System) {
         let systemType = type(of: newSystem)
         guard _systems.contains(where: { type(of: $0) == systemType }) == false else { return }
@@ -423,7 +425,6 @@ extension ECSContext {
         _systems = systems
         systemsNeedSorting = true
     }
-    @usableFromInline
     func insertSystem(_ newSystem: RenderingSystem) {
         let systemType = type(of: newSystem)
         guard _renderingSystems.contains(where: { type(of: $0) == systemType }) == false else {
@@ -434,7 +435,7 @@ extension ECSContext {
         _renderingSystems = renderingSystems
         renderingSystemsNeedSorting = true
     }
-    func insertSystem(_ newSystem: PlatformSystem) {
+    internal func insertSystem(_ newSystem: PlatformSystem) {
         let systemType = type(of: newSystem)
         guard _platformSystems.contains(where: { type(of: $0) == systemType }) == false else {
             return
@@ -444,42 +445,40 @@ extension ECSContext {
         _platformSystems = platformSystems
         platformSystemsNeedSorting = true
     }
-    @usableFromInline @discardableResult
+    @discardableResult
     func insertSystem(_ system: System.Type) -> System {
         let system = system.init()
         self.insertSystem(system)
         return system
     }
-    @usableFromInline @discardableResult
+    @discardableResult
     func insertSystem(_ system: RenderingSystem.Type) -> RenderingSystem {
         let system = system.init()
         self.insertSystem(system)
         return system
     }
     @inline(__always) @discardableResult
-    func insertSystem(_ system: PlatformSystem.Type) -> PlatformSystem {
+    internal func insertSystem(_ system: PlatformSystem.Type) -> PlatformSystem {
         let system = system.init()
         self.insertSystem(system)
         return system
     }
-    @usableFromInline
     func removeSystem(_ system: System) {
         if let index = self._systems.firstIndex(where: { $0 === system }) {
             self._systems.remove(at: index).teardown(context: self)
         }
     }
-    @usableFromInline
     func removeSystem(_ system: RenderingSystem) {
         if let index = self._renderingSystems.firstIndex(where: { $0 === system }) {
             self._renderingSystems.remove(at: index).teardown(context: self)
         }
     }
-    func removeSystem(_ system: PlatformSystem) {
+    internal func removeSystem(_ system: PlatformSystem) {
         if let index = self._platformSystems.firstIndex(where: { $0 === system }) {
             self._platformSystems.remove(at: index).teardown(context: self)
         }
     }
-    @usableFromInline @discardableResult
+    @discardableResult
     func removeSystem<T: System>(_ system: T.Type) -> System? {
         if let index = self._systems.firstIndex(where: { type(of: $0) == system }) {
             let system = self._systems.remove(at: index)
@@ -488,7 +487,7 @@ extension ECSContext {
         }
         return nil
     }
-    @usableFromInline @discardableResult
+    @discardableResult
     func removeSystem<T: RenderingSystem>(_ system: T.Type) -> RenderingSystem? {
         if let index = self._renderingSystems.firstIndex(where: { type(of: $0) == system }) {
             let system = self._renderingSystems.remove(at: index)
@@ -498,7 +497,7 @@ extension ECSContext {
         return nil
     }
     @discardableResult
-    func removeSystem<T: PlatformSystem>(_ system: T.Type) -> PlatformSystem? {
+    internal func removeSystem<T: PlatformSystem>(_ system: T.Type) -> PlatformSystem? {
         if let index = self._platformSystems.firstIndex(where: { type(of: $0) == system }) {
             let system = self._platformSystems.remove(at: index)
             system.teardown(context: self)

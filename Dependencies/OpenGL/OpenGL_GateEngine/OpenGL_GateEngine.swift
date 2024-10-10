@@ -652,7 +652,7 @@ public enum OpenGL {
             self.possibleReasons = possibleReasons
         }
         
-        public enum Kind: Int {
+        public enum Kind: Int, Sendable {
             case none
             case invalidEnum
             case invalidValue

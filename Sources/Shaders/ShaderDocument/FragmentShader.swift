@@ -46,39 +46,15 @@ public final class FragmentShader: ShaderDocument {
             }
             set {_values[key] = newValue}
         }
-        
-        internal func documentIdentifierInputData() -> [Int] {
-            var values: [Int] = []
-            for pair in _values {
-                values.append(contentsOf: pair.key.documentIdentifierInputData())
-                values.append(contentsOf: pair.value.documentIdentifierInputData())
-            }
-            return values
-        }
     }
     public var input: Input = Input()
     
     public struct Output {
         public var color: Vec4? = nil
-        
-        internal func documentIdentifierInputData() -> [Int] {
-            var values: [Int] = []
-            if let color {
-                values.append(contentsOf: color.documentIdentifierInputData())
-            }
-            return values
-        }
     }
     public var output: Output = Output()
     
     public convenience init(name: String? = nil, _file: StaticString = #file, _line: Int = #line) {
         self.init(documentType: .fragment, name: name ?? "FSH(\(_file):\(_line))")
-    }
-    
-    override func documentIdentifierInputData() -> [Int] {
-        var values: [Int] = []
-        values.append(contentsOf: input.documentIdentifierInputData())
-        values.append(contentsOf: output.documentIdentifierInputData())
-        return values
     }
 }

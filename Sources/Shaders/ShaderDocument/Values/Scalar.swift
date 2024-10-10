@@ -51,14 +51,6 @@ public final class Scalar: ShaderValue {
         self.operation = nil
     }
     
-    public func documentIdentifierInputData() -> [Int] {
-        var values: [Int] = []
-        values.append(contentsOf: valueRepresentation.identifier)
-        values.append(contentsOf: valueType.identifier)
-        return values
-    }
-    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: .valueScalar)
-    
     public func lerp(to dst: Scalar, factor: Scalar) -> Scalar {
         return Scalar(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
     }

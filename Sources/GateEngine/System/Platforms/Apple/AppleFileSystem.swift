@@ -8,7 +8,6 @@
 import Foundation
 
 public struct AppleFileSystem: FileSystem {
-    @MainActor
     public func pathForSearchPath(_ searchPath: FileSystemSearchPath,
                                   in domain: FileSystemSearchPathDomain = .currentUser) throws -> String {
         let foundationSearchPath: FileManager.SearchPathDirectory
@@ -19,7 +18,7 @@ public struct AppleFileSystem: FileSystem {
             foundationSearchPath = .cachesDirectory
         case .temporary:
             let tmpDir = FileManager.default.temporaryDirectory
-            return tmpDir.appendingPathComponent(Game.shared.identifier).path
+            return tmpDir.appendingPathComponent(Game.identifier).path
         }
         let foundationDomainMask: FileManager.SearchPathDomainMask
         switch domain {
@@ -32,7 +31,7 @@ public struct AppleFileSystem: FileSystem {
                                                    in: foundationDomainMask,
                                                    appropriateFor: nil,
                                                    create: false)
-        url = url.appendingPathComponent(Game.shared.identifier)
+        url = url.appendingPathComponent(Game.identifier)
         return url.path
     }
 }

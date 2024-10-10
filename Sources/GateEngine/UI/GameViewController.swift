@@ -7,6 +7,25 @@
 
 import Foundation
 
+public struct GameViewSnapshot: Sendable {
+    let frame: Rect
+    let bounds: Rect
+    let backgroundColor: Color?
+    
+    static var empty: GameViewSnapshot {
+        return .init(frame: .zero, bounds: .zero, backgroundColor: nil)
+    }
+}
+internal extension GameView {
+    func snapshot() -> GameViewSnapshot {
+        return GameViewSnapshot(
+            frame: self.frame, 
+            bounds: self.bounds, 
+            backgroundColor: self.backgroundColor
+        )
+    }
+}
+
 public final class GameView: View {
     @usableFromInline
     var _drawables: [any Drawable] = []
@@ -154,6 +173,7 @@ open class GameViewController: ViewController {
 
     final public override func loadView() {
         self.view = GameView()
+        self.setup(context: self.context)    
     }
     
     internal var shouldSkipRendering: Bool = false
@@ -161,6 +181,10 @@ open class GameViewController: ViewController {
     internal override func _update(withTimePassed deltaTime: Float) async {
         await super._update(withTimePassed: deltaTime)
         self.shouldSkipRendering = (await context.shouldRenderAfterUpdate(withTimePassed: deltaTime) == false)
+    }
+    
+    open func setup(context: ECSContext) {
+        
     }
     
     open func render(context: ECSContext, into view: GameView, withTimePassed deltaTime: Float) {

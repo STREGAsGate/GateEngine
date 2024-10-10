@@ -15,7 +15,7 @@
 /// input.keyboard.button(.azerty("z")).isPressed
 /// ```
 /// The underlying key is still the qwerty representation.
-public enum KeyboardKey: Hashable {
+public enum KeyboardKey: Hashable, Sendable {
     /// The Esc key
     case escape
 
@@ -51,7 +51,7 @@ public enum KeyboardKey: Hashable {
      */
     case function(_ number: Int)
 
-    public enum KeyOrigin {
+    public enum KeyOrigin: Sendable {
         // Any part of the keyboard
         case anyVariation
         // The main keyboard area
@@ -96,7 +96,7 @@ public enum KeyboardKey: Hashable {
      */
     case unhandledPlatformKeyCode(_ int: Int?, _ string: Character?)
 
-    public enum Alignment {
+    public enum Alignment: Sendable {
         // Any key
         case anyVariation
         // On the left of the space bar

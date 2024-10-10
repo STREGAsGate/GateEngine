@@ -7,7 +7,7 @@
 
 import GameMath
 
-@MainActor public final class Keyboard {
+public final class Keyboard {
     internal var modifiers: KeyboardModifierMask = []
     internal var buttons: [KeyboardKey: ButtonState] = [:]
 
@@ -90,7 +90,7 @@ import GameMath
 }
 
 extension Keyboard {
-    @MainActor public final class ButtonState: CustomStringConvertible {
+    public final class ButtonState: CustomStringConvertible {
         internal unowned let keyboard: Keyboard
         let key: KeyboardKey
         // true if the key is a representation instead of a physical key

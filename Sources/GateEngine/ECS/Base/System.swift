@@ -122,7 +122,7 @@ extension System {
             return state == .running
         }
 
-        @MainActor public func run(_ block: @escaping () async -> Void) {
+        public func run(_ block: @escaping () async -> Void) {
             assert(self.isRunning == false, "A Task cannot be run when it's running.")
             self.state = .running
             Task.detached(priority: .low) {
@@ -137,10 +137,10 @@ extension System {
 }
 
 extension System: Hashable {
-    public static func == (lhs: System, rhs: System) -> Bool {
+    public nonisolated static func == (lhs: System, rhs: System) -> Bool {
         return type(of: lhs) == type(of: rhs)
     }
-    public func hash(into hasher: inout Hasher) {
+    public nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine("\(type(of: self))")
     }
 }

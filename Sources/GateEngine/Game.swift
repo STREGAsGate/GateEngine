@@ -5,6 +5,10 @@
  * http://stregasgate.com
  */
 
+extension Game {
+    static public fileprivate(set) var identifier: String = ""
+}
+
 public final class Game {
     public let platform: CurrentPlatform
     public let delegate: any GameDelegate
@@ -12,9 +16,11 @@ public final class Game {
     @MainActor public private(set) var state: State! = nil
     @MainActor internal private(set) var internalState: State! = nil
 
-    @MainActor
-    lazy private(set) var identifier: String = delegate.resolvedGameIdentifier()
-
+    @inlinable @inline(__always)
+    nonisolated var identifier: String {
+        return Self.identifier
+    }
+    
     nonisolated public let isHeadless: Bool
     @MainActor internal init(delegate: any GameDelegate, currentPlatform: CurrentPlatform) {
         self.platform = currentPlatform
@@ -29,9 +35,10 @@ public final class Game {
             self.renderingAPI = renderer._backend.renderingAPI
             self.isHeadless = false
         }
+        Self.identifier = delegate.resolvedGameIdentifier()
     }
 
-    public struct Attributes: OptionSet {
+    public struct Attributes: OptionSet, Sendable {
         public let rawValue: UInt
         public init(rawValue: UInt) {
             self.rawValue = rawValue

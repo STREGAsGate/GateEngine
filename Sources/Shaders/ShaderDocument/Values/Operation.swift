@@ -60,66 +60,12 @@ public final class Operation: ShaderElement {
         case sampler2DSize
         case lerp(factor: Scalar)
         case distance
-        
-        var identifier: [Int] {
-            switch self {
-            case .cast:
-                return [5_000]
-            case .add:
-                return [5_101]
-            case .subtract:
-                return [5_102]
-            case .multiply:
-                return [5_103]
-            case .divide:
-                return [5_104]
-            case .not:
-                return [5_105]
-            case .compare(let operatorValue):
-                return [5_105, operatorValue.identifer]
-            case .branch(comparing: let comparing):
-                var values: [Int] = [5_106]
-                values.append(contentsOf: comparing.documentIdentifierInputData())
-                return values
-            case .sampler2D:
-                return [5_107]
-            case .sampler2DSize:
-                return [5_108]
-            case .lerp(factor: let factor):
-                var values: [Int] = [5_109]
-                values.append(contentsOf: factor.documentIdentifierInputData())
-                return values
-            case .discard(comparing: let comparing):
-                var values: [Int] = [5_110]
-                values.append(contentsOf: comparing.documentIdentifierInputData())
-                return values
-            case .switch(cases: let cases):
-                var values: [Int] = [5_111]
-                for `case` in cases {
-                    values.append(contentsOf: `case`.documentIdentifierInputData())
-                }
-                return values
-            case .distance:
-                return [5_112]
-            }
-        }
     }
     
     let `operator`: Operator
     let value1: any ShaderValue
     let value2: any ShaderValue
-    
-    public func documentIdentifierInputData() -> [Int] {
-        var values: [Int] = [7_000]
-        values.append(contentsOf: self.valueRepresentation.identifier)
-        values.append(contentsOf: self.valueType.identifier)
-        values.append(contentsOf: self.value1.documentIdentifierInputData())
-        values.append(contentsOf: self.value2.documentIdentifierInputData())
-        values.append(contentsOf: self.operator.identifier)
-        return values
-    }
-    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: .valueOperation)
-        
+ 
     public init(lhs: Scalar, operator: Operator, rhs: Scalar) {
         self.operator = `operator`
         self.value1 = lhs

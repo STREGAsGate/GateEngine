@@ -101,30 +101,7 @@ public final class UVec4: ShaderValue {
         self._z = z
         self._w = w
     }
-    
-    public func documentIdentifierInputData() -> [Int] {
-        var values: [Int] = [5_000]
-        values.append(contentsOf: valueRepresentation.identifier)
-        values.append(contentsOf: valueType.identifier)
-        if let operation {
-            values.append(contentsOf: operation.documentIdentifierInputData())
-        }
-        if let _w {
-            values.append(contentsOf: _w.documentIdentifierInputData())
-        }
-        if let _x {
-            values.append(contentsOf: _x.documentIdentifierInputData())
-        }
-        if let _y {
-            values.append(contentsOf: _y.documentIdentifierInputData())
-        }
-        if let _z {
-            values.append(contentsOf: _z.documentIdentifierInputData())
-        }
-        return values
-    }
-    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: .valueUVec4)
-    
+
     public func lerp(to dst: UVec4, factor: Scalar) -> UVec4 {
         return UVec4(Operation(lhs: self, operator: .lerp(factor: factor), rhs: dst))
     }

@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 struct HashGenerator {
     enum Seed: UInt64 {
         case fragmentDocument   = 1

@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct KeyboardModifierMask: OptionSet {
+public struct KeyboardModifierMask: OptionSet, Sendable {
     public typealias RawValue = UInt32
     public let rawValue: RawValue
 

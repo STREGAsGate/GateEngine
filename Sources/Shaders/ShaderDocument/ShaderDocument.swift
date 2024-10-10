@@ -35,7 +35,7 @@ public class ShaderDocument: Identifiable, CustomStringConvertible {
         self.name = name
     }
     
-    public var description: String {
+    public nonisolated var description: String {
         return name
     }
     
@@ -99,14 +99,6 @@ public class ShaderDocument: Identifiable, CustomStringConvertible {
                 return false
             }
         }
-        
-        internal func documentIdentifierInputData() -> [Int] {
-            var values: [Int] = []
-            for uniform in sortedCustomUniforms() {
-                values.append(contentsOf: uniform.documentIdentifierInputData())
-            }
-            return values
-        }
     }
     
     public enum CustomUniformScalarType {
@@ -143,18 +135,4 @@ public class ShaderDocument: Identifiable, CustomStringConvertible {
         }
         return T(Operation(compare: comparing, success: success, failure: failure))
     }
-    
-    static let cacheVersion: UInt32 = 1
-    internal func documentIdentifierInputData() -> [Int] {
-        fatalError("Must override")
-    }
-//    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: {
-//        if self is VertexShader {
-//            return .vertexDocuemnt
-//        }
-//        if self is FragmentShader {
-//            return .fragmentDocument
-//        }
-//        fatalError()
-//    }())
 }

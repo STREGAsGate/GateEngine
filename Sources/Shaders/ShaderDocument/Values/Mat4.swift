@@ -34,21 +34,7 @@ public final class Mat4: ShaderValue {
         self.operation = nil
         self.valueMatrix4x4 = matrix
     }
-    
-    public func documentIdentifierInputData() -> [Int] {
-        var values: [Int] = [9_000]
-        values.append(contentsOf: valueRepresentation.identifier)
-        values.append(contentsOf: valueType.identifier)
-        if let operation {
-            values.append(contentsOf: operation.documentIdentifierInputData())
-        }
-        if let valueMatrix4x4 {
-            values.append(contentsOf: valueMatrix4x4.array().map({Int($0)}))
-        }
-        return values
-    }
-    lazy public private(set) var id: UInt64 = HashGenerator.generateID(self.documentIdentifierInputData(), seed: .valueMat4)
-    
+
     public static func +(lhs: Mat4, rhs: Mat4) -> Mat4 {
         return Mat4(Operation(lhs: lhs, operator: .add, rhs: rhs))
     }
