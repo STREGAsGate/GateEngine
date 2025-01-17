@@ -5,86 +5,84 @@
  * http://stregasgate.com
  */
 
-@MainActor extension Game {
+@MainActor internal extension Game {
     @_transparent
-    public var entities: ContiguousArray<Entity> {
+    var entities: ContiguousArray<Entity> {
         return ecs.sortedEntities()
     }
     @_transparent
-    public func insertEntity(_ entity: Entity) {
+    func insertEntity(_ entity: Entity) {
         ecs.insertEntity(entity)
     }
     @_transparent
-    public func removeEntity(_ entity: Entity) {
+    func removeEntity(_ entity: Entity) {
         ecs.removeEntity(entity)
     }
     @_transparent @discardableResult
-    public func removeEntity(named name: String) -> Entity? {
+    func removeEntity(named name: String) -> Entity? {
         return ecs.removeEntity(named: name)
     }
     @_transparent @discardableResult
-    public func removeEntity(where block: (Entity) -> (Bool)) -> Entity? {
+    func removeEntity(where block: (Entity) -> (Bool)) -> Entity? {
         return ecs.removeEntity(where: block)
     }
     @_transparent
-    public func entity(named name: String) -> Entity? {
+    func entity(named name: String) -> Entity? {
         return ecs.entity(named: name)
     }
     @_transparent
-    public func entity(withID id: ObjectIdentifier) -> Entity? {
+    func entity(withID id: ObjectIdentifier) -> Entity? {
         return ecs.entity(withID: id)
     }
     @_transparent
-    public func firstEntity(withComponent component: any Component.Type) -> Entity? {
+    func firstEntity(withComponent component: any Component.Type) -> Entity? {
         return ecs.firstEntity(withComponent: component)
     }
     @_transparent
-    public func system<T: System>(ofType systemType: T.Type) -> T {
+    func system<T: System>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType) as! T
     }
     @_transparent
-    public func hasSystem<T: System>(ofType systemType: T.Type) -> Bool {
+    func hasSystem<T: System>(ofType systemType: T.Type) -> Bool {
         return ecs.hasSystem(ofType: systemType)
     }
     @_transparent
-    public func system<T: RenderingSystem>(ofType systemType: T.Type) -> T {
+    func system<T: RenderingSystem>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType) as! T
     }
     @_transparent
-    public func insertSystem(_ newSystem: System) {
+    func insertSystem(_ newSystem: System) {
         ecs.insertSystem(newSystem)
     }
     @_transparent
-    public func insertSystem(_ newSystem: RenderingSystem) {
+    func insertSystem(_ newSystem: RenderingSystem) {
         ecs.insertSystem(newSystem)
     }
     @_transparent @discardableResult
-    public func insertSystem<T: System>(_ system: T.Type) -> T {
+    func insertSystem<T: System>(_ system: T.Type) -> T {
         return ecs.insertSystem(system) as! T
     }
     @_transparent @discardableResult
-    public func insertSystem<T: RenderingSystem>(_ system: T.Type) -> T {
+    func insertSystem<T: RenderingSystem>(_ system: T.Type) -> T {
         return ecs.insertSystem(system) as! T
     }
     @_transparent
-    public func removeSystem(_ system: System) {
+    func removeSystem(_ system: System) {
         ecs.removeSystem(system)
     }
     @_transparent
-    public func removeSystem(_ system: RenderingSystem) {
+    func removeSystem(_ system: RenderingSystem) {
         ecs.removeSystem(system)
     }
     @_transparent @discardableResult
-    public func removeSystem<T: System>(_ system: T.Type) -> T? {
+    func removeSystem<T: System>(_ system: T.Type) -> T? {
         return ecs.removeSystem(system) as? T
     }
     @_transparent @discardableResult
-    public func removeSystem<T: RenderingSystem>(_ system: T.Type) -> T? {
+    func removeSystem<T: RenderingSystem>(_ system: T.Type) -> T? {
         return ecs.removeSystem(system) as? T
     }
-}
 
-@MainActor extension Game {
     @_transparent
     func system<T: PlatformSystem>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType) as! T
@@ -268,13 +266,13 @@ extension ECSContext {
 //        }
         for system in self.systems {
             self.performance?.beginStatForSystem(system)
-            await system.willUpdate(context: self, input: input, withTimePassed: deltaTime)
+            await system.willUpdate(input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         for system in self.platformSystems {
 //            guard type(of: system).phase == .postDeferred else { continue }
             self.performance?.beginStatForSystem(system)
-            await system.willUpdate(context: self, input: input, withTimePassed: deltaTime)
+            await system.willUpdate(input: input, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         
@@ -318,7 +316,7 @@ extension ECSContext {
 
         for system in self.renderingSystems {
             self.performance?.beginStatForSystem(system)
-            system.willRender(context: self, into: view, withTimePassed: deltaTime)
+            system.willRender(into: view, withTimePassed: deltaTime)
             self.performance?.endCurrentStatistic()
         }
         
@@ -330,8 +328,7 @@ extension ECSContext {
 }
 
 //MARK: Entity Management
-extension ECSContext {
-    @usableFromInline
+public extension ECSContext {
     func insertEntity(_ entity: Entity) {
         self.entities.insert(entity)
         
@@ -345,13 +342,11 @@ extension ECSContext {
             }
         }
     }
-    @usableFromInline
     func removeEntity(_ entity: Entity) {
         if let entity = self.entities.remove(entity) {
             self._removedEntities.append(entity)
         }
     }
-    @usableFromInline
     func removeEntity(named name: String) -> Entity? {
         if let entity = self.removeEntity(where: { $0.name == name }) {
             self._removedEntities.append(entity)
@@ -359,7 +354,6 @@ extension ECSContext {
         }
         return nil
     }
-    @usableFromInline
     func removeEntity(where block: (Entity) -> (Bool)) -> Entity? {
         if let removed = self.entities.first(where: block) {
             self._removedEntities.append(removed)
@@ -368,15 +362,15 @@ extension ECSContext {
         }
         return nil
     }
-    @usableFromInline @_transparent
+    @_transparent
     func entity(named name: String) -> Entity? {
         return entities.first(where: { $0.name == name })
     }
-    @usableFromInline @_transparent
+    @_transparent
     func entity(withID id: ObjectIdentifier) -> Entity? {
         return entities.first(where: { $0.id == id })
     }
-    @usableFromInline @_transparent
+    @_transparent
     func firstEntity(withComponent type: any Component.Type) -> Entity? {
         return entities.first(where: { $0.hasComponent(type) })
     }
@@ -384,10 +378,10 @@ extension ECSContext {
 
 //MARK: System Management
 public extension ECSContext {
-    func system(ofType systemType: System.Type) -> System {
+    func system<T: System>(ofType systemType: T.Type) -> T {
         for system in _systems {
-            if type(of: system) == systemType {
-                return system
+            if system is T {
+                return unsafeDowncast(system, to: systemType)
             }
         }
         return insertSystem(systemType)
@@ -400,18 +394,18 @@ public extension ECSContext {
         }
         return false
     }
-    func system(ofType systemType: RenderingSystem.Type) -> RenderingSystem {
+    func system<T: RenderingSystem>(ofType systemType: T.Type) -> T {
         for system in _renderingSystems {
-            if type(of: system) == systemType {
-                return system
+            if system is T {
+                return unsafeDowncast(system, to: systemType)
             }
         }
         return insertSystem(systemType)
     }
-    internal func system(ofType systemType: PlatformSystem.Type) -> PlatformSystem {
+    internal func system<T: PlatformSystem>(ofType systemType: T.Type) -> T {
         for system in _platformSystems {
-            if type(of: system) == systemType {
-                return system
+            if system is T {
+                return unsafeDowncast(system, to: systemType)
             }
         }
         return insertSystem(systemType)
@@ -445,36 +439,39 @@ public extension ECSContext {
         platformSystemsNeedSorting = true
     }
     @discardableResult
-    func insertSystem(_ system: System.Type) -> System {
-        let system = system.init()
+    func insertSystem<T: System>(_ system: T.Type) -> T {
+        let system = system.init(context: self)
         self.insertSystem(system)
         return system
     }
     @discardableResult
-    func insertSystem(_ system: RenderingSystem.Type) -> RenderingSystem {
-        let system = system.init()
+    func insertSystem<T: RenderingSystem>(_ system: T.Type) -> T {
+        let system = system.init(context: self)
         self.insertSystem(system)
         return system
     }
     @inline(__always) @discardableResult
-    internal func insertSystem(_ system: PlatformSystem.Type) -> PlatformSystem {
-        let system = system.init()
+    internal func insertSystem<T: PlatformSystem>(_ system: T.Type) -> T {
+        let system = system.init(context: self)
         self.insertSystem(system)
         return system
     }
     func removeSystem(_ system: System) {
         if let index = self._systems.firstIndex(where: { $0 === system }) {
-            self._systems.remove(at: index).teardown(context: self)
+            let system = self._systems.remove(at: index)
+            system.teardown(context: self)
         }
     }
     func removeSystem(_ system: RenderingSystem) {
         if let index = self._renderingSystems.firstIndex(where: { $0 === system }) {
-            self._renderingSystems.remove(at: index).teardown(context: self)
+            let system = self._renderingSystems.remove(at: index)
+            system.teardown(context: self)
         }
     }
     internal func removeSystem(_ system: PlatformSystem) {
         if let index = self._platformSystems.firstIndex(where: { $0 === system }) {
-            self._platformSystems.remove(at: index).teardown(context: self)
+            let system = self._platformSystems.remove(at: index)
+            system.teardown(context: self)
         }
     }
     @discardableResult

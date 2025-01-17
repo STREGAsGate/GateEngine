@@ -7,14 +7,14 @@
 
 public final class Collision2DSystem: System {
     public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
-        for entity in game.entities {
+        for entity in context.entities {
             guard entity.hasComponent(Collision2DComponent.self) else { continue }
             guard entity.hasComponent(Transform2Component.self) else { continue }
             entity[Collision2DComponent.self].updateColliders(entity.transform2)
         }
         
         guard
-            let quadtreeEntity = game.entities.first(where: {
+            let quadtreeEntity = context.entities.first(where: {
                 $0.hasComponent(QuadtreeComponent.self)
             })
         else {
@@ -22,7 +22,7 @@ public final class Collision2DSystem: System {
         }
         let quadtree = quadtreeEntity[QuadtreeComponent.self].quadtree!
 
-        for entity in game.entities {
+        for entity in context.entities {
             guard entity.hasComponent(Collision2DComponent.self) else { continue }
             if let transformComponent = entity.component(ofType: Transform2Component.self) {
                 let object = entity[Collision2DComponent.self]
@@ -68,10 +68,4 @@ public final class Collision2DSystem: System {
 
     public override class var phase: System.Phase { .simulation }
     public override class func sortOrder() -> SystemSortOrder? { .collision2DSystem }
-}
-
-@MainActor extension Game {
-    public var collision2DSystem: Collision2DSystem {
-        return self.system(ofType: Collision2DSystem.self)
-    }
 }

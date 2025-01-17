@@ -16,6 +16,35 @@ public final class AppKitPlatform: InternalPlatform {
     init(delegate: any GameDelegate) {
         self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
     }
+    
+    func setCursorStyle(_ style: Mouse.Style) {
+        switch style {
+        case .arrow:
+            NSCursor.arrow.set()
+        case .resizeHorizontal:
+            if #available(macOS 15.0, *) {
+                NSCursor.columnResize.set()
+            } else {
+                NSCursor.resizeLeftRight.set()
+            }
+        case .resizeVertical:
+            if #available(macOS 15.0, *) {
+                NSCursor.rowResize.set()
+            } else {
+                NSCursor.resizeUpDown.set()
+            }
+        case .iBeam:
+            NSCursor.iBeam.set()
+        case .handPointing:
+            NSCursor.pointingHand.set()
+        case .handOpen:
+            NSCursor.openHand.set()
+        case .handClosed:
+            NSCursor.closedHand.set()
+        case .crosshair:
+            NSCursor.crosshair.set()
+        }
+    }
 
     public var supportsMultipleWindows: Bool {
         return true

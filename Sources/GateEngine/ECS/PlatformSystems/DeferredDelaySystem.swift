@@ -51,16 +51,34 @@ internal final class DeferredDelaySystem: PlatformSystem {
     override class func sortOrder() -> PlatformSystemSortOrder? { .deferredSystem }
 }
 
-extension System {
+extension ECSContext {
     @inline(__always)
     public func `defer`(_ closure: @escaping DeferredClosure) {
-        let system = Game.shared.system(ofType: DeferredDelaySystem.self)
+        let _system = self.system(ofType: DeferredDelaySystem.self)
+        let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
         system.append(deferredClosure: closure)
     }
     
     @inline(__always)
     public func delay(_ duration: Float, completion: @escaping ()->()) {
-        let system = Game.shared.system(ofType: DeferredDelaySystem.self)
+        let _system = self.system(ofType: DeferredDelaySystem.self)
+        let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
+        system.append(delayDuration: duration, closure: completion)
+    }
+}
+
+extension System {
+    @inline(__always)
+    public func `defer`(_ closure: @escaping DeferredClosure) {
+        let _system = context.system(ofType: DeferredDelaySystem.self)
+        let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
+        system.append(deferredClosure: closure)
+    }
+    
+    @inline(__always)
+    public func delay(_ duration: Float, completion: @escaping ()->()) {
+        let _system = context.system(ofType: DeferredDelaySystem.self)
+        let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
         system.append(delayDuration: duration, closure: completion)
     }
 }
@@ -68,13 +86,15 @@ extension System {
 extension PlatformSystem {
     @_transparent
     func `defer`(_ closure: @escaping DeferredClosure) {
-        let system = Game.shared.system(ofType: DeferredDelaySystem.self)
+        let _system = context.system(ofType: DeferredDelaySystem.self)
+        let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
         system.append(deferredClosure: closure)
     }
     
     @_transparent
     func delay(_ duration: Float, completion: @escaping ()->()) {
-        let system = Game.shared.system(ofType: DeferredDelaySystem.self)
+        let _system = context.system(ofType: DeferredDelaySystem.self)
+        let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
         system.append(delayDuration: duration, closure: completion)
     }
 }
@@ -82,13 +102,15 @@ extension PlatformSystem {
 @MainActor extension Game {
     @inline(__always)
     public func `defer`(_ closure: @escaping DeferredClosure) {
-        let system = self.system(ofType: DeferredDelaySystem.self)
+        let _system = self.system(ofType: DeferredDelaySystem.self)
+        let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
         system.append(deferredClosure: closure)
     }
     
     @inline(__always)
     public func delay(_ duration: Float, _ closure: @escaping DeferredClosure) {
-        let system = self.system(ofType: DeferredDelaySystem.self)
+        let _system = self.system(ofType: DeferredDelaySystem.self)
+        let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
         system.append(delayDuration: duration, closure: closure)
     }
 }

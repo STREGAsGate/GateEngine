@@ -12,6 +12,23 @@ import GameMath
     public var window: Window? {
         return _window
     }
+    
+    public enum Style {
+        case arrow
+        case resizeHorizontal
+        case resizeVertical
+        case iBeam
+        case handPointing
+        case handOpen
+        case handClosed
+        case crosshair
+    }
+    
+    public var style: Style = .arrow {
+        didSet {
+            Game.shared.platform.setCursorStyle(style)
+        }
+    }
 
     public enum Mode {
         /// Regular cursor behavior

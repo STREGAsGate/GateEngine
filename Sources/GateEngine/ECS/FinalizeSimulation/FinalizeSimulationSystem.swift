@@ -9,18 +9,18 @@ import Foundation
 
 public final class FinalizeSimulation: System {
     public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
-        for entity in game.entities {
+        for entity in context.entities {
             if let timedDeathComponent = entity.component(ofType: TimedDeathComponent.self) {
                 timedDeathComponent.timeRemaining -= deltaTime
                 if timedDeathComponent.timeRemaining < 0 {
-                    game.removeEntity(entity)
+                    context.removeEntity(entity)
                     continue
                 }
             }
             
             if let relationshipComponent = entity.component(ofType: ParentRelationshipComponent.self) {
                 if let parentID = relationshipComponent.parent {
-                    if let parent = game.entity(withID: parentID) {
+                    if let parent = context.entity(withID: parentID) {
                         if let transform = relationshipComponent.relativeTransform {
                             if relationshipComponent.options.contains(.relativePosition) {
                                 entity.transform3.position = parent.transform3.position + transform.position
@@ -43,7 +43,7 @@ public final class FinalizeSimulation: System {
                             }
                         }
                     }else{
-                        game.removeEntity(entity)
+                        context.removeEntity(entity)
                         continue
                     }
                 }
@@ -57,7 +57,7 @@ public final class FinalizeSimulation: System {
         var maxQuantities: [Int:Int] = [:]
         var quantities: [Int:Int] = [:]
         var quantityEntities: [Int:[Entity]] = [:]
-        for entity in game.entities {
+        for entity in context.entities {
             guard let maxQuantityComponent = entity.component(ofType: MaxQuantityComponent.self) else {continue}
             maxQuantities[maxQuantityComponent.quantityMatchID] = min(maxQuantityComponent.maxQuantity, maxQuantities[maxQuantityComponent.quantityMatchID] ?? .max)
             
@@ -77,7 +77,7 @@ public final class FinalizeSimulation: System {
                 entities.sort(by: {$0[MaxQuantityComponent.self] < $1[MaxQuantityComponent.self]})
                 
                 for entity in entities[max...] {
-                    game.removeEntity(entity)
+                    context.removeEntity(entity)
                 }
             }
         }

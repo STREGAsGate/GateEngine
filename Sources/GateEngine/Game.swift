@@ -53,7 +53,7 @@ public final class Game {
     @MainActor @usableFromInline let renderer: Renderer!
 
     @MainActor public private(set) lazy var windowManager: WindowManager = WindowManager(self)
-    @MainActor @usableFromInline private(set) lazy var ecs: ECSContext = ECSContext()
+    @MainActor internal private(set) lazy var ecs: ECSContext = ECSContext()
     @MainActor public private(set) lazy var hid: HID = HID()
     public private(set) lazy var resourceManager: ResourceManager = {
         return ResourceManager(game: self)
@@ -150,20 +150,6 @@ public final class Game {
             await windowManager.updateWindows(deltaTime: deltaTime)
             Task(priority: .high) { @MainActor in
                 self.windowManager.drawWindows()
-                completion()
-            }
-            if await self.ecs.shouldRenderAfterUpdate(
-                withTimePassed: Float(deltaTime)
-            ) {
-                // Add a high priority Task so we can jump the line if other Tasks were started
-                Task(priority: .high) { @MainActor in
-                    self.windowManager.drawWindows()
-                    completion()
-                }
-            } else {
-                #if GATEENGINE_DEBUG_RENDERING
-                Log.warn("Frame Dropped", "DeltaTime:", deltaTime)
-                #endif
                 completion()
             }
         }

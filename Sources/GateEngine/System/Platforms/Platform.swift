@@ -29,6 +29,8 @@ extension Platform {
 
 internal protocol InternalPlatform: AnyObject, Platform {
     var staticResourceLocations: [URL] { get }
+    
+    func setCursorStyle(_ style: Mouse.Style)
 
     func systemTime() -> Double
     @MainActor func main()

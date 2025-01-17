@@ -10,7 +10,7 @@ public final class RigSystem {}
 
 public final class Rig3DSystem: System {
     var checkedIDs: Set<ObjectIdentifier> = []
-    func getFarAway(from entities: ContiguousArray<Entity>) -> Entity? {
+    func getFarAway(from entities: Set<Entity>) -> Entity? {
         func filter(_ entity: Entity) -> Bool {
             if let rig = entity.component(ofType: Rig3DComponent.self) {
                 return rig.disabled == false && rig.deltaAccumulator > 0
@@ -33,7 +33,7 @@ public final class Rig3DSystem: System {
     public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         func shouldAccumulate(entity: Entity) -> Bool {
             guard
-                let cameraTransform = game.cameraEntity?.component(ofType: Transform3Component.self)
+                let cameraTransform = context.cameraEntity?.component(ofType: Transform3Component.self)
             else {
                 return false
             }
@@ -81,11 +81,11 @@ public final class Rig3DSystem: System {
             }
         }
 
-        let slowEntity = getFarAway(from: game.entities)
+        let slowEntity = getFarAway(from: context.entities)
         if let entity = slowEntity {
             updateAnimation(for: entity)
         }
-        for entity in game.entities {
+        for entity in context.entities {
             guard entity != slowEntity else { continue }
             if let component = entity.component(ofType: Rig3DComponent.self),
                 component.disabled == false
@@ -98,7 +98,7 @@ public final class Rig3DSystem: System {
             }
         }
 
-        for entity in game.entities {
+        for entity in context.entities {
             if let rigAttachmentComponent = entity.component(ofType: RigAttachmentComponent.self) {
                 updateRigAttachmentTransform(
                     game,
@@ -127,12 +127,12 @@ public final class Rig3DSystem: System {
         rigAttachmentComponent: RigAttachmentComponent
     ) {
         guard
-            let parent = game.entities.first(where: {
+            let parent = context.entities.first(where: {
                 $0.id == rigAttachmentComponent.parentEntityID
             })
         else {
             //If the parent is gone trash the attachment
-            game.removeEntity(entity)
+            context.removeEntity(entity)
             return
         }
         guard let parentTransform = parent.component(ofType: Transform3Component.self) else {

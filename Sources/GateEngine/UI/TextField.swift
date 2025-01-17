@@ -132,6 +132,11 @@ public final class TextField: View {
             }
         }
     }
+    
+    public override func didLayout() {
+        super.didLayout()
+        self.paragraphWidth = self.frame.size.width * (self.window?.interfaceScale ?? 1)
+    }
 
     public init(
         text: String,
@@ -144,7 +149,7 @@ public final class TextField: View {
         self.needsUpdateTexture = true
         self.text = text
         self.font = font
-        self.fontSize = fontSize
+        self.fontSize = fontSize * 2
         self.style = style
         self.material = Material(color: textColor)
         super.init()

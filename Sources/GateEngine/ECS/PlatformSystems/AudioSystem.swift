@@ -36,7 +36,7 @@ internal final class AudioSystem: PlatformSystem {
     }
 
     override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
-        updateSounds(game: Game.shared, withTimePassed: deltaTime)
+        updateSounds(context: context, withTimePassed: deltaTime)
         updateMusic(withTimePassed: deltaTime)
     }
 
@@ -227,12 +227,12 @@ extension AudioSystem {
 // MARK: - Sounds
 extension AudioSystem {
     @inline(__always)
-    func updateSounds(game: Game, withTimePassed deltaTime: Float) {
-        updateListener(game: game)
+    func updateSounds(context: ECSContext, withTimePassed deltaTime: Float) {
+        updateListener(context: context)
         for index in soundsPlaying.indices.reversed() {
             let sound = soundsPlaying[index]
 
-            sound.update(deltaTime)
+            sound.update(deltaTime, context: context)
 
             var remove = sound.isDone
             if case .failed(_) = sound.buffer.state {
@@ -407,7 +407,7 @@ extension AudioSystem {
         }
 
         @inline(__always)
-        @MainActor func update(_ deltaTime: Float) {
+        @MainActor func update(_ deltaTime: Float, context: ECSContext) {
             guard buffer.state == .ready else { return }
             if accumulatedTime == 0 {
                 Task(priority: .medium) {
@@ -417,7 +417,7 @@ extension AudioSystem {
             }
             if let position = entity?.position3 {
                 source.setPosition(position)
-            } else if let camera = Game.shared.cameraEntity {
+            } else if let camera = context.cameraEntity {
                 source.setPosition(camera.position3.moved(0.001, toward: camera.rotation.forward))
             } else {
                 source.setPosition(Position3(0, 0, -0.001))
@@ -442,14 +442,14 @@ extension AudioSystem {
     }
 
     @inline(__always)
-    func updateListener(game: Game) {
+    func updateListener(context: ECSContext) {
         var entity: Entity? = nil
         if let listenerID {
-            entity = game.entity(withID: listenerID)
+            entity = context.entity(withID: listenerID)
         }
         if entity == nil {
             listenerID = nil
-            entity = game.cameraEntity
+            entity = context.cameraEntity
         }
         if let entity {
             let position = entity.position3

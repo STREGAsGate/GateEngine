@@ -5,7 +5,24 @@
  * http://stregasgate.com
  */
 
+import GameMath
+
+public extension ScrollView {
+    struct ScrollDirection: OptionSet, Sendable {
+        public let rawValue: UInt8
+        
+        public static let horizontal: Self = Self(rawValue: 1 << 1)
+        public static let vertical: Self = Self(rawValue: 1 << 2)
+        
+        public init(rawValue: UInt8) {
+            self.rawValue = rawValue
+        }
+    }
+}
+
 open class ScrollView: View {
+    public var scrollDirection: ScrollDirection = [.vertical]
+    
     public var offset: Position2 = .zero {
         didSet {
             if offset != oldValue {
@@ -13,7 +30,7 @@ open class ScrollView: View {
             }
         }
     }
-    var animationDuration: Float = 0.01
+    var animationDuration: Float = 0.25
     var animationAccumulator: Float = 0
     var destinationOffset: Position2 = .zero
     
@@ -48,9 +65,12 @@ open class ScrollView: View {
     open override func scrolled(_ delta: Position2, isPlatformGeneratedMomentum isMomentum: Bool) {
         super.scrolled(delta, isPlatformGeneratedMomentum: isMomentum)
         if isMomentum == false {
-            destinationOffset += delta
-            destinationOffset.x = .maximum(0, destinationOffset.x)
-            destinationOffset.y = .maximum(0, destinationOffset.y)
+            if scrollDirection.contains(.horizontal) {
+                destinationOffset.x = delta.x
+            }
+            if scrollDirection.contains(.vertical) {
+                destinationOffset.y = delta.y
+            }
         }
     }
     

@@ -7,10 +7,10 @@
 
 public final class BillboardSystem: System {
     public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
-        guard let camera = game.cameraEntity else {return}
+        guard let camera = context.cameraEntity else {return}
         let cameraTransform = camera.transform3
         
-        for entity in game.entities {
+        for entity in context.entities {
             guard let billboardComponent = entity.component(ofType: BillboardComponent.self) else {continue}
             guard let transformComponent = entity.component(ofType: Transform3Component.self) else {continue}
             

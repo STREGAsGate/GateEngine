@@ -7,7 +7,7 @@
 
 public final class ObjectAnimation3DSystem: System {
     var checkedIDs: Set<ObjectIdentifier> = []
-    func getFarAway(from entities: ContiguousArray<Entity>) -> Entity? {
+    func getFarAway(from entities: Set<Entity>) -> Entity? {
         func filter(_ entity: Entity) -> Bool {
             if let objectAnimation = entity.component(ofType: ObjectAnimation3DComponent.self) {
                 return objectAnimation.disabled == false && objectAnimation.deltaAccumulator > 0
@@ -30,7 +30,7 @@ public final class ObjectAnimation3DSystem: System {
     public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         func shouldAccumulate(entity: Entity) -> Bool {
             guard
-                let cameraTransform = game.cameraEntity?.component(ofType: Transform3Component.self)
+                let cameraTransform = context.cameraEntity?.component(ofType: Transform3Component.self)
             else {
                 return false
             }
@@ -64,11 +64,11 @@ public final class ObjectAnimation3DSystem: System {
             }
         }
 
-        let slowEntity = getFarAway(from: game.entities)
+        let slowEntity = getFarAway(from: context.entities)
         if let entity = slowEntity {
             updateAnimation(for: entity)
         }
-        for entity in game.entities {
+        for entity in context.entities {
             guard entity != slowEntity else { continue }
             if let component = entity.component(ofType: ObjectAnimation3DComponent.self),
                 component.disabled == false

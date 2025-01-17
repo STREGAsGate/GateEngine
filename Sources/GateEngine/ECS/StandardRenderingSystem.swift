@@ -11,12 +11,9 @@ public final class StandardRenderingSystem: RenderingSystem {
     internal var verticalResolution: Float? = nil
     internal lazy var renderTarget: RenderTarget = RenderTarget()
 
-    public init(verticalResolution: UInt) {
+    public convenience init(verticalResolution: UInt, context: ECSContext) {
+        self.init(context: context)
         self.verticalResolution = Float(verticalResolution)
-    }
-
-    required public init() {
-
     }
     
     public override func render(context: ECSContext, into view: GameView, withTimePassed deltaTime: Float) {
@@ -27,8 +24,8 @@ public final class StandardRenderingSystem: RenderingSystem {
         }
 
         do {  // 3D
-            if let camera = Camera(game.cameraEntity) {
-                let sorted3DEntities = game.entities.filter({
+            if let camera = Camera(context.cameraEntity) {
+                let sorted3DEntities = context.entities.filter({
                     return $0.hasComponent(Transform3Component.self)
                         && $0.hasComponent(MaterialComponent.self)
                 }).sorted { entity1, entity2 in
@@ -93,7 +90,7 @@ public final class StandardRenderingSystem: RenderingSystem {
                 interfaceScale: verticalResolution == nil ? view.interfaceScale : 1
             )
 
-            for entity in game.entities {
+            for entity in context.entities {
                 if let transform = entity.component(ofType: Transform3Component.self) {
                     if let spriteComponent = entity.component(ofType: SpriteComponent.self) {
                         if let sprite = spriteComponent.sprite() {

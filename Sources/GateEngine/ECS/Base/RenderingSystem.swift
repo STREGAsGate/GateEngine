@@ -13,12 +13,14 @@
     public final var game: Game {
         return Game.shared
     }
+    
+    public let context: ECSContext
 
-    required public init() {
-
+    required public init(context: ECSContext) {
+        self.context = context
     }
 
-    internal final func willRender(context: ECSContext, into view: GameView, withTimePassed deltaTime: Float) {
+    internal final func willRender(into view: GameView, withTimePassed deltaTime: Float) {
         if didSetup == false {
             didSetup = true
             setup(context: context)
@@ -87,10 +89,10 @@
 }
 
 extension RenderingSystem: Hashable {
-    public static func == (lhs: RenderingSystem, rhs: RenderingSystem) -> Bool {
+    nonisolated public static func ==(lhs: RenderingSystem, rhs: RenderingSystem) -> Bool {
         return type(of: lhs) == type(of: rhs)
     }
-    public func hash(into hasher: inout Hasher) {
+    nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine("\(type(of: self))")
     }
 }

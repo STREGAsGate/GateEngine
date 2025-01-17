@@ -7,7 +7,7 @@
 
 public final class Collision3DSystem: System {
     public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
-        let staticEntities = game.entities.filter({
+        let staticEntities = context.entities.filter({
             guard let collisionComponenet = $0.component(ofType: Collision3DComponent.self) else {return false}
             if case .static = collisionComponenet.kind {
                 return true
@@ -17,7 +17,7 @@ public final class Collision3DSystem: System {
         for entity in staticEntities {
             entity.collision3DComponent.updateColliders(entity.transform3)
         }
-        let dynamicEntities = game.entities.filter({
+        let dynamicEntities = context.entities.filter({
             guard let collisionComponenet = $0.component(ofType: Collision3DComponent.self) else {return false}
             if case .dynamic(_) = collisionComponenet.kind {
                 return true
@@ -526,9 +526,8 @@ extension Collision3DSystem {
 }
 
 extension Collision3DSystem {
-    @_transparent
     private var octrees: [OctreeComponent] {
-        return game.entities.compactMap({ $0.component(ofType: OctreeComponent.self) })
+        return context.entities.compactMap({ $0.component(ofType: OctreeComponent.self) })
     }
 
     @inline(__always)
@@ -594,7 +593,7 @@ extension Collision3DSystem {
     ) -> [Entity] {
         var entities: [Entity] = []
 
-        for entity in game.entities {
+        for entity in context.entities {
             if 
                 let collisionComponent = entity.component(ofType: Collision3DComponent.self),
                 filter?(entity) ?? true
@@ -616,7 +615,7 @@ extension Collision3DSystem {
     ) -> [Entity] {
         var entities: [Entity] = []
 
-        for entity in game.entities {
+        for entity in context.entities {
             if
                 let collisionComponent = entity.component(ofType: Collision3DComponent.self),
                 filter?(entity) ?? true,
@@ -694,7 +693,7 @@ extension Collision3DSystem {
     }
 }
 
-@MainActor extension Game {
+@MainActor extension ECSContext {
     @_transparent
     public var collision3DSystem: Collision3DSystem {
         return self.system(ofType: Collision3DSystem.self)

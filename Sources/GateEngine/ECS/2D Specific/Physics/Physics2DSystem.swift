@@ -12,7 +12,7 @@ public final class Physics2DSystem: System {
         // Skip Physics if we don't have at least 20 fps
         guard deltaTime < 1 / 20 else { return }
 
-        for entity in game.entities {
+        for entity in context.entities {
             guard let physicsComponent = entity.component(ofType: Physics2DComponent.self) else {
                 continue
             }

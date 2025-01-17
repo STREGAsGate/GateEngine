@@ -7,7 +7,7 @@
 
 public final class TileMapSystem: System {
     public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
-        for entity in game.entities {
+        for entity in context.entities {
             if let component = entity.component(ofType: TileMapComponent.self) {
                 if component.needsSetup {
                     self.setup(component)

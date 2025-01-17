@@ -12,7 +12,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
 
     lazy var text: Text = Text(string: "Accumulating Statistics...\nLoading Resources: \(game.resourceManager.currentlyLoading)", pointSize: 20, color: .green)
     func rebuildText() -> Bool {
-        let performance = game.ecs.performance!
+        let performance = context.performance!
         let systemsFrameTime = performance.systemsFrameTime
         let renderingSystemsFrameTime = performance.renderingSystemsFrameTime
         let totalSystemTime = systemsFrameTime + renderingSystemsFrameTime
@@ -43,8 +43,8 @@ public final class PerformanceRenderingSystem: RenderingSystem {
                 string += ", "
             }
         }
-        if game.entities.isEmpty == false {
-            string += "\(game.entities.count) Entities"
+        if context.entities.isEmpty == false {
+            string += "\(context.entities.count) Entities"
             loadedThingsCount += 1
         }
         loadedThingsLine()
@@ -116,6 +116,5 @@ public final class PerformanceRenderingSystem: RenderingSystem {
 //        renderTarget.insert(canvas)
     }
 
-    required public init() {}
     public override class func sortOrder() -> RenderingSystemSortOrder? { .performance }
 }

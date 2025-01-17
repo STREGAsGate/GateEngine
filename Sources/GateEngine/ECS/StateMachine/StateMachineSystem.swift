@@ -7,19 +7,19 @@
 
 public final class StateMachineSystem: System {
     public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
-        for entity in game.entities {
+        for entity in context.entities {
             guard let stateMachineComponent = entity.component(ofType: StateMachineComponent.self) else {
                 continue
             }
             if stateMachineComponent.shouldApplyInitialState {
-                applyInitialStateIfNeeded(for: stateMachineComponent, of: entity, inGame: game, input: input)
+                applyInitialStateIfNeeded(for: stateMachineComponent, of: entity, inContext: context, input: input)
             }
-            stateMachineComponent.stateMachine.updateState(for: entity, game: game, input: input, deltaTime: deltaTime)
+            stateMachineComponent.stateMachine.updateState(for: entity, context: context, input: input, deltaTime: deltaTime)
         }
     }
     
-    func applyInitialStateIfNeeded(for component: StateMachineComponent, of entity: Entity, inGame game: Game, input: HID) {
-        component.stateMachine.currentState.apply(to: entity, previousState: component.stateMachine.currentState, game: game, input: input)
+    func applyInitialStateIfNeeded(for component: StateMachineComponent, of entity: Entity, inContext context: ECSContext, input: HID) {
+        component.stateMachine.currentState.apply(to: entity, previousState: component.stateMachine.currentState, context: context, input: input)
         component.shouldApplyInitialState = false
     }
     
@@ -31,7 +31,7 @@ public final class StateMachineSystem: System {
         stateMachineComponent.stateMachine.currentState.willMoveToNextState(
             for: entity,
             nextState: StateMachineComponent.NoState.self,
-            game: game,
+            context: context,
             input: input
         )
     }

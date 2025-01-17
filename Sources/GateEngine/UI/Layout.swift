@@ -246,8 +246,8 @@ public struct Layout {
         // Determine the local trailing offset between the view and the target coordinate spaces
         func relativeResolvedTrailing(forTarget targetView: View) -> Float? {
             if view.superView === targetView {// Target is the supreview
-                if let targetHeight = resolveWidth(for: targetView) {
-                    return targetHeight.value
+                if let targetWidth = resolveWidth(for: targetView) {
+                    return targetWidth.value
                 }
             }else if targetView.superView === view {// Target is a subview
                 if let targetX = resolveX(for: targetView) {
@@ -260,6 +260,27 @@ public struct Layout {
                     if let targetWidth = resolveWidth(for: targetView) {
                         return targetX.value + targetWidth.value
                     }
+                }
+            }else{
+                //TODO: The view is in another coordinate space
+                fatalError("Layout cannot yet constrain views between coordinate spaces.")
+            }
+            return nil
+        }
+        
+        // Determine the local trailing offset between the view and the target coordinate spaces
+        func relativeResolvedLeading(forTarget targetView: View) -> Float? {
+            if view.superView === targetView {// Target is the supreview
+                if let targetWidth = resolveWidth(for: targetView) {
+                    return targetWidth.value
+                }
+            }else if targetView.superView === view {// Target is a subview
+                if let targetX = resolveX(for: targetView) {
+                    return targetX.value
+                }
+            }else if view.superView === targetView.superView {// Target is a sibling
+                if let targetX = resolveX(for: targetView) {
+                    return targetX.value
                 }
             }else{
                 //TODO: The view is in another coordinate space
@@ -295,6 +316,10 @@ public struct Layout {
                         if trailing.target === targetView.trailingAnchor {
                             if let targetTrailing = relativeResolvedTrailing(forTarget: targetView) {
                                 computed = Value.Computed(value: targetTrailing - sourceX.value + trailing.constant)
+                            }
+                        }else if trailing.target === targetView.leadingAnchor {
+                            if let targetLeading = relativeResolvedLeading(forTarget: targetView) {
+                                computed = Value.Computed(value: targetLeading - sourceX.value + trailing.constant)
                             }
                         }
                     }

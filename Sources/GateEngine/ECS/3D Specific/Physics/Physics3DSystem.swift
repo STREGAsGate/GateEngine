@@ -12,7 +12,7 @@ public final class Physics3DSystem: System {
         // Skip Physics if we don't have at least 20 fps
         guard deltaTime < 1 / 20 else { return }
 
-        for entity in game.entities {
+        for entity in context.entities {
             var deltaTime = deltaTime
             if let scale = entity.component(ofType: TimeScaleComponent.self)?.scale {
                 deltaTime *= scale

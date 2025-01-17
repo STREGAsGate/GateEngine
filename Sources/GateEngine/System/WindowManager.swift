@@ -108,7 +108,7 @@ import GameMath
         }
         game.attributes.remove(.renderingIsPermitted)
         self.windowsThatRequestedDraw.removeAll(keepingCapacity: true)
-        Game.shared.ecs.performance?.endFrame()
+//        Game.shared.ecs.performance?.endFrame()
     }
 }
 

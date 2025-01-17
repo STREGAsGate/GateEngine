@@ -12,9 +12,13 @@ import GameMath
     private var didSetup = false
     private(set) lazy var backgroundTask = BackgroundTask(system: self)
 
-    required init() {}
+    required init(context: ECSContext) {
+        self.context = context
+    }
+    
+    public let context: ECSContext
 
-    internal final func willUpdate(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
+    internal final func willUpdate(input: HID, withTimePassed deltaTime: Float) async {
         if didSetup == false {
             didSetup = true
             await setup(context: context, input: input)
