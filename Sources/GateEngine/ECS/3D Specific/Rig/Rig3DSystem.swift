@@ -101,7 +101,7 @@ public final class Rig3DSystem: System {
         for entity in context.entities {
             if let rigAttachmentComponent = entity.component(ofType: RigAttachmentComponent.self) {
                 updateRigAttachmentTransform(
-                    game,
+                    context,
                     entity: entity,
                     rigAttachmentComponent: rigAttachmentComponent
                 )
@@ -122,7 +122,7 @@ public final class Rig3DSystem: System {
     }
 
     private func updateRigAttachmentTransform(
-        _ game: Game,
+        _ context: ECSContext,
         entity: Entity,
         rigAttachmentComponent: RigAttachmentComponent
     ) {
