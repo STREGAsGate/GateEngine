@@ -14,7 +14,7 @@ public final class PNGImporter: TextureImporter {
         return try decode(data: data, size: size, options: options)
     }
 
-    public class func canProcessFile(_ file: URL) -> Bool {
+    public static func canProcessFile(_ file: URL) -> Bool {
         return file.pathExtension.caseInsensitiveCompare("png") == .orderedSame
     }
 }

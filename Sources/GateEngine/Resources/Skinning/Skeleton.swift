@@ -375,7 +375,7 @@ extension Skeleton.Joint {
 }
 
 extension Skeleton.Joint: Hashable {
-    final public class func == (lhs: Skeleton.Joint, rhs: Skeleton.Joint) -> Bool {
+    public static func == (lhs: Skeleton.Joint, rhs: Skeleton.Joint) -> Bool {
         return lhs.id == rhs.id
     }
 

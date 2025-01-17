@@ -29,7 +29,7 @@ public final class ApplePlatformImageImporter: TextureImporter {
         return (data, size)
     }
 
-    public class func canProcessFile(_ file: URL) -> Bool {
+    public static func canProcessFile(_ file: URL) -> Bool {
         guard let identifiers = (CGImageSourceCopyTypeIdentifiers() as? [CFString]) else {
             return false
         }

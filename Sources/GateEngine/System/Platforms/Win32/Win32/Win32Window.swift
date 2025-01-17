@@ -156,7 +156,7 @@ final class Win32Window: WindowBacking {
 }
 
 extension Win32Window {
-    fileprivate class func makeHWND(withSize size: Size2, style: Win32WindowStyle) -> HWND {
+    fileprivate static func makeHWND(withSize size: Size2, style: Win32WindowStyle) -> HWND {
         let dwExStyle: DWORD = 0
         let lpClassName: [WCHAR] = "\(type(of: Win32Window.self))".windowsUTF16
         let lpWindowName: [WCHAR] = ProcessInfo.processInfo.processName.windowsUTF16
