@@ -15,7 +15,7 @@ GateEngine includes intuitive APIs for loading resources, handling user inputs, 
 Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
 <sub>
 </br>¹Pending a community made cross compile SDK.
-</br>⚠️ Development if this platform is paused while the core is finalized.
+</br>⚠️ Development of this platform is paused while the core is finalized.
 
 </sub>
 
