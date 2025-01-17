@@ -148,8 +148,16 @@ public final class Game {
             let deltaTime = Float(deltaTime)
             self.resourceManager.update(withTimePassed: deltaTime)
             await windowManager.updateWindows(deltaTime: deltaTime)
-            Task(priority: .high) { @MainActor in
+            self.windowManager.drawWindows()
+            if await self.ecs.shouldRenderAfterUpdate(
+                withTimePassed: Float(deltaTime)
+            ) {
                 self.windowManager.drawWindows()
+                completion()
+            } else {
+                #if GATEENGINE_DEBUG_RENDERING
+                Log.warn("Frame Dropped", "DeltaTime:", deltaTime)
+                #endif
                 completion()
             }
         }
