@@ -205,8 +205,7 @@
     }
 
     private var entitiesDidChange: Bool = true
-    @usableFromInline
-    private(set) var entities: Set<Entity> = .init(minimumCapacity: 16) {
+    public private(set) var entities: Set<Entity> = .init(minimumCapacity: 16) {
         didSet {
             self.entitiesDidChange = true
         }
