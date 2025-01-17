@@ -5,19 +5,17 @@ GateEngine includes intuitive APIs for loading resources, handling user inputs, 
 ## Platform Support:
 | Platform | CI | Graphics | Audio | Keyboard | Mouse | Touch | Gamepad |
 |---------:|:---|:---------|:------|:---------|:------|:------|:--------|
-| [**Windows**](https://www.swift.org/getting-started/#on-windows)¹ | [![5.8](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Windows.yml?label=Swift%205.10)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Windows.yml) | ✔︎ | ⛌ | ✔︎ | ✔︎ | ⛌ | ✔︎ |
-| [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=Swift%205.9)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
-| [**Linux**](https://www.swift.org/getting-started/#on-linux)² | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Linux.yml?label=Swift%205.9)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Linux.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ⛌ | ✔︎
-| [**iOS**/**tvOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=Swift%205.9)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎`iPad` ⛌`tvOS/iPhone` | ✔︎`iOS` ⛌`tvOS` | ✔︎
-| **Android**³ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/Android.yml?label=)](https://github.com/STREGAsGate/GateEngine/actions/workflows/Android.yml) | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
-| [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html)⁴ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/HTML5.yml?label=Swift%205.9)](https://github.com/STREGAsGate/GateEngine/actions/workflows/HTML5.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
+| [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=Swift%206.0)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
+| [**Windows**](https://www.swift.org/getting-started/#on-windows) | ⚠️ | ✔︎ | ⛌ | ✔︎ | ✔︎ | ⛌ | ✔︎ |
+| [**Linux**](https://www.swift.org/getting-started/#on-linux) | ⚠️ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ⛌ | ✔︎
+| [**iOS**/**tvOS**](https://apps.apple.com/us/app/xcode/id497799835) | ⚠️ | ✔︎ | ✔︎ | ✔︎ | ✔︎`iPad` ⛌`tvOS/iPhone` | ✔︎`iOS` ⛌`tvOS` | ✔︎
+| **Android**¹ | ⚠️ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
+| [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html) | ⚠️ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
 
 Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
 <sub>
-</br>¹Windows support for Swift is in development. Latest Swift toolchain recommended.
-</br>²Developed and tested using Ubuntu (Debian). Fedora compatibility is unknown.
-</br>³Pending a community made cross compile SDK.
-</br>⁴Targeting recent versions of Safari, FireFox, Edge, and Chrome.
+</br>¹Pending a community made cross compile SDK.
+</br>⚠️ Development if this platform is paused while the core is finalized.
 
 </sub>
 
@@ -128,9 +126,6 @@ Add the package to your project like any other package.
 .package(url: "https://github.com/STREGAsGate/GateEngine.git", .upToNextMinor(from: "0.1.0"))
 ```
 <sub>*iOS/tvOS require an Xcode project. You cannot use a Swift Package Manager executable for iOS or tvOS.*</sub>
-
-### Windows Specific Setup
-Swift 5.9.0-5.9.1 Only: A linker error for dinput.lib can be fixed with a workaround [here](https://github.com/apple/swift/issues/68887).
 
 ### Linux Specific Setup
 For Linux you must install dev packages for OpenGL and OpenAL.
