@@ -492,11 +492,11 @@
      - parameter estimatedCommandCount: A performance hint of how many commands will be added.
      */
     @_transparent
-    public init(window: Window, camera: Camera? = nil, estimatedCommandCount: Int = 10) {
+    public init(view: View, camera: Camera? = nil, estimatedCommandCount: Int = 10) {
         self.init(
             camera: camera,
-            size: window.bounds.size,
-            interfaceScale: window.interfaceScale,
+            size: view.bounds.size,
+            interfaceScale: view.interfaceScale,
             estimatedCommandCount: estimatedCommandCount
         )
     }
