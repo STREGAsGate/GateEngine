@@ -22,6 +22,10 @@ public final class MaterialComponent: Component {
     public func setCustomUniformValue(_ value: some CustomUniformType, forUniform name: String) {
         material.setCustomUniformValue(value, forUniform: name)
     }
+    @_disfavoredOverload
+    public func setCustomUniformValue(_ value: Float, forUniform name: String) {
+        material.setCustomUniformValue(value, forUniform: name)
+    }
 
     @discardableResult
     public func channel<ResultType>(_ index: UInt8, _ block: (_ channel: inout Material.Channel) -> ResultType) -> ResultType {
