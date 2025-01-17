@@ -182,6 +182,9 @@ public final class Game {
 
 extension Game {
     @MainActor
-    @usableFromInline
-    static var shared: Game! = nil
+    internal static var _shared: Game! = nil
+    @MainActor
+    public static var shared: Game {
+        return _shared.unsafelyUnwrapped
+    }
 }

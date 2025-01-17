@@ -159,7 +159,7 @@ extension GameDelegate {
     @MainActor public static func main() {
         let delegate = Self()
         let platform = CurrentPlatform(delegate: delegate)
-        Game.shared = Game(delegate: delegate, currentPlatform: platform)
+        Game._shared = Game(delegate: delegate, currentPlatform: platform)
         Game.shared.platform.main()
     }
 }
