@@ -318,7 +318,7 @@
             transforms: [transform],
             material: material,
             vsh: .standard,
-            fsh: .textureSampleDiscardZeroAlpha,
+            fsh: .textureSampleOpacity,
             flags: flags
         )
         self.insert(command)
