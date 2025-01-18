@@ -5,10 +5,10 @@ GateEngine includes intuitive APIs for loading resources, handling user inputs, 
 ## Platform Support:
 | Platform | CI | Graphics | Audio | Keyboard | Mouse | Touch | Gamepad |
 |---------:|:---|:---------|:------|:---------|:------|:------|:--------|
-| [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=Swift%206.0)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
-| [**Windows** 10+](https://www.swift.org/getting-started/#on-windows) | ⚠️ | ✔︎ | ⛌ | ✔︎ | ✔︎ | ⛌ | ✔︎ |
+| [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) 10.15+ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=Swift%206.0)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
+| [**Windows**](https://www.swift.org/getting-started/#on-windows) 10,11 | ⚠️ | ✔︎ | ⛌ | ✔︎ | ✔︎ | ⛌ | ✔︎ |
 | [**Linux**](https://www.swift.org/getting-started/#on-linux) | ⚠️ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ⛌ | ✔︎
-| [**iOS** 13.0+</br>**iPadOS** 13.0+</br>**tvOS** 13.0+](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=Swift%206.0)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | ✔︎</br>✔︎</br>✔︎ | ✔︎</br>✔︎</br>✔︎ | ✔︎</br>✔︎</br>✔︎ | ⛌</br>✔︎</br>⛌ | ✔︎</br>✔︎</br>⛌ | ✔︎</br>✔︎</br>✔︎
+| [**iOS**](https://apps.apple.com/us/app/xcode/id497799835) 13.0+</br>[**iPadOS**](https://apps.apple.com/us/app/xcode/id497799835) 13.0+</br>[**tvOS**](https://apps.apple.com/us/app/xcode/id497799835) 13.0+ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=Swift%206.0)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | ✔︎</br>✔︎</br>✔︎ | ✔︎</br>✔︎</br>✔︎ | ✔︎</br>✔︎</br>✔︎ | ⛌</br>✔︎</br>⛌ | ✔︎</br>✔︎</br>⛌ | ✔︎</br>✔︎</br>✔︎
 | **Android**¹ | ⚠️ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
 | [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html) | ⚠️ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
 
