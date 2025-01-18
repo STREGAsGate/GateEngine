@@ -28,6 +28,10 @@ public final class UIKitPlatform: Platform, InternalPlatform {
         }
         return UIApplication.shared.supportsMultipleScenes
     }
+    
+    func setCursorStyle(_ style: Mouse.Style) {
+        // iOS Doesn't Support Cursor Styles
+    }
 
     @MainActor
     public func locateResource(from path: String) async -> String? {

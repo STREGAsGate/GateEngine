@@ -6,17 +6,16 @@ GateEngine includes intuitive APIs for loading resources, handling user inputs, 
 | Platform | CI | Graphics | Audio | Keyboard | Mouse | Touch | Gamepad |
 |---------:|:---|:---------|:------|:---------|:------|:------|:--------|
 | [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=Swift%206.0)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
-| [**Windows**](https://www.swift.org/getting-started/#on-windows) | ⚠️ | ✔︎ | ⛌ | ✔︎ | ✔︎ | ⛌ | ✔︎ |
+| [**Windows** 10+](https://www.swift.org/getting-started/#on-windows) | ⚠️ | ✔︎ | ⛌ | ✔︎ | ✔︎ | ⛌ | ✔︎ |
 | [**Linux**](https://www.swift.org/getting-started/#on-linux) | ⚠️ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ⛌ | ✔︎
-| [**iOS**/**tvOS**](https://apps.apple.com/us/app/xcode/id497799835) | ⚠️ | ✔︎ | ✔︎ | ✔︎ | ✔︎`iPad` ⛌`tvOS/iPhone` | ✔︎`iOS` ⛌`tvOS` | ✔︎
+| [**iOS** 13.0+</br>**iPadOS** 13.0+</br>**tvOS** 13.0+](https://apps.apple.com/us/app/xcode/id497799835) | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=Swift%206.0)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | ✔︎</br>✔︎</br>✔︎ | ✔︎</br>✔︎</br>✔︎ | ✔︎</br>✔︎</br>✔︎ | ⛌</br>✔︎</br>⛌ | ✔︎</br>✔︎</br>⛌ | ✔︎</br>✔︎</br>✔︎
 | **Android**¹ | ⚠️ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
 | [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html) | ⚠️ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
 
 Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
 <sub>
 </br>¹Pending a community made cross compile SDK.
-</br>⚠️ Development of this platform is paused while the core is finalized.
-
+</br>⚠️ Development of this platform is slowed while the core engine is completed.
 </sub>
 
 ## About

@@ -54,7 +54,7 @@ internal class UIKitViewController: GCEventViewController {
         switch window.window.style {
         case .system:
             return false
-        case .bestForGames:
+        case .minimalSystemDecorations:
             return true
         }
     }
@@ -63,7 +63,7 @@ internal class UIKitViewController: GCEventViewController {
         switch window.window.style {
         case .system:
             return []
-        case .bestForGames:
+        case .minimalSystemDecorations:
             return .all
         }
     }
