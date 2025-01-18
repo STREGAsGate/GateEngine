@@ -1,0 +1,45 @@
+{
+  "configurations" : [
+    {
+      "id" : "7576A219-2196-4307-9247-27D208EA98E1",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "GameMathTests",
+        "name" : "GameMathTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "GameMathSIMDTests",
+        "name" : "GameMathSIMDTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "GateEngineTests",
+        "name" : "GateEngineTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "GravityTests",
+        "name" : "GravityTests"
+      }
+    }
+  ],
+  "version" : 1
+}
