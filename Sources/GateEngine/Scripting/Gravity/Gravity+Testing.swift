@@ -9,6 +9,7 @@
 import Gravity
 
 @MainActor
+@preconcurrency
 internal func unittestCallback(
     vm: OpaquePointer!,
     errorType: error_type_t,

@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import Gravity
+@preconcurrency import Gravity
 import struct Foundation.URL
 
 extension Gravity {
@@ -374,36 +374,9 @@ public class Gravity {
     }
 }
 
-// This is only called for global closures. Instance methods use the seperate bridge delegate callback.
-@MainActor 
-internal func gravityCFuncInternal(
-    vm: OpaquePointer!,
-    args: UnsafeMutablePointer<gravity_value_t>!,
-    nargs: UInt16,
-    rindex: UInt32
-) -> Bool {
-    let functionName: String = {
-        let gClosure = unsafeBitCast(
-            args!.pointee.p,
-            to: UnsafeMutablePointer<gravity_closure_t>.self
-        )
-        let cName = gClosure.pointee.f.pointee.identifier!
-        return String(cString: cName)
-    }()
-    
-    let vmID = Int(bitPattern: vm)
-
-    guard let function = Gravity.storage[vmID]?.cInternalFunctionMap[functionName] else {
-        fatalError()
-    }
-    var args = UnsafeBufferPointer(start: args, count: Int(nargs)).map({ GravityValue(gValue: $0) })
-    args.removeFirst()  // The first is always the closure being called
-    let result = function(Gravity(vm: vm), args)
-    return _gravityHandleCFuncReturn(vm: vm, returnValue: result, returnSlot: rindex)
-}
-
 @MainActor
 @inline(__always)
+@preconcurrency
 internal func _gravityHandleCFuncReturn(
     vm: OpaquePointer,
     returnValue: GravityValue,
@@ -472,7 +445,28 @@ extension Gravity {
     @MainActor
     public func setFunc(_ key: String, to function: @escaping GravitySwiftFunctionReturns) {
         key.withCString { cKey in
-            let gFunc = gravity_function_new_internal(vm, cKey, gravityCFuncInternal, 0)
+            let exec: gravity_c_internal = { vm, args, nargs, rindex -> Bool in
+                let functionName: String = {
+                    let gClosure = unsafeBitCast(
+                        args!.pointee.p,
+                        to: UnsafeMutablePointer<gravity_closure_t>.self
+                    )
+                    let cName = gClosure.pointee.f.pointee.identifier!
+                    return String(cString: cName)
+                }()
+                
+                let vmID = Int(bitPattern: vm)
+                
+                guard let function = Gravity.storage[vmID]?.cInternalFunctionMap[functionName] else {
+                    fatalError()
+                }
+                var args = UnsafeBufferPointer(start: args, count: Int(nargs)).map({ GravityValue(gValue: $0) })
+                args.removeFirst()  // The first is always the closure being called
+                let result = function(Gravity(vm: vm!), args)
+                return _gravityHandleCFuncReturn(vm: vm!, returnValue: result, returnSlot: rindex)
+            }
+            
+            let gFunc = gravity_function_new_internal(vm, cKey, exec, 0)
             let gClosure = gravity_closure_new(vm, gFunc)
 
             var gValue = gravity_value_t()
