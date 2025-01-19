@@ -6,7 +6,6 @@
  */
 
 import Gravity
-
 import struct Foundation.URL
 
 extension Gravity {
@@ -18,6 +17,7 @@ extension Gravity {
     }
 }
 
+@MainActor
 internal var gravityDelegate: gravity_delegate_t = {
     var delegate: gravity_delegate_t = gravity_delegate_t()
     delegate.error_callback = errorCallback(vm:errorType:description:errorDesc:xdata:)
@@ -35,72 +35,88 @@ public class Gravity {
     var isManaged: Bool
 
     @inline(__always)
+    private var vmID: Int {
+        return Int(bitPattern: vm)
+    }
+    
+    @MainActor
+    @inline(__always)
     var didRunMain: Bool {
-        get { Self.storage[vm]!.didRunMain }
-        set { Self.storage[vm]!.didRunMain = newValue }
+        get { Self.storage[vmID]!.didRunMain }
+        set { Self.storage[vmID]!.didRunMain = newValue }
     }
 
+    @MainActor
     @inline(__always)
     var sourceCodeBaseURL: URL? {
-        get { Self.storage[vm]!.sourceCodeBaseURL }
-        set { Self.storage[vm]!.sourceCodeBaseURL = newValue }
+        get { Self.storage[vmID]!.sourceCodeBaseURL }
+        set { Self.storage[vmID]!.sourceCodeBaseURL = newValue }
     }
 
+    @MainActor
     @inline(__always)
     var sourceCodeSearchPaths: Set<URL> {
         get {
-            return Self.storage[vm]!.sourceCodeSearchPaths
+            return Self.storage[vmID]!.sourceCodeSearchPaths
         }
         set {
-            Self.storage[vm]!.sourceCodeSearchPaths = newValue
+            Self.storage[vmID]!.sourceCodeSearchPaths = newValue
         }
     }
 
+    @MainActor
     @inline(__always)
     var loadedFilesByID: [UInt32: URL] {
         get {
-            return Self.storage[vm]!.loadedFilesByID
+            return Self.storage[vmID]!.loadedFilesByID
         }
         set {
-            Self.storage[vm]!.loadedFilesByID = newValue
+            Self.storage[vmID]!.loadedFilesByID = newValue
         }
     }
 
+    @MainActor
     @inline(__always)
     func appendIncludesCache(_ cache: [URL: String]) {
         for key in cache.keys {
-            Self.storage[vm]!.fileIncludeSourceCode[key] = cache[key]
+            Self.storage[vmID]!.fileIncludeSourceCode[key] = cache[key]
         }
     }
+    @MainActor
     @inline(__always)
     func getSourceCode(forIncludedFile url: URL) -> String? {
-        return Self.storage[vm]!.getSourceCode(forIncludedFile: url)
+        return Self.storage[vmID]!.getSourceCode(forIncludedFile: url)
     }
+    @MainActor
     @inline(__always)
     func hasSourceCacheForInclude(_ url: URL) -> Bool {
-        return Self.storage[vm]!.hasSourceCacheForInclude(url)
+        return Self.storage[vmID]!.hasSourceCacheForInclude(url)
     }
+    @MainActor
     @inline(__always)
     func clearFileIncludeSourceCode() {
-        Self.storage[vm]!.clearFileIncludeSourceCode()
+        Self.storage[vmID]!.clearFileIncludeSourceCode()
     }
-
+    
+    @MainActor
     @inline(__always)
     func filenameForID(_ id: UInt32) -> String? {
-        return Self.storage[vm]!.loadedFilesByID[id]?.lastPathComponent
+        return Self.storage[vmID]!.loadedFilesByID[id]?.lastPathComponent
     }
 
+    @MainActor
     @inline(__always)
     var mainClosure: UnsafeMutablePointer<gravity_closure_t>? {
-        get { Self.storage[vm]!.mainClosure }
-        set { Self.storage[vm]!.mainClosure = newValue }
+        get { Self.storage[vmID]!.mainClosure }
+        set { Self.storage[vmID]!.mainClosure = newValue }
     }
 
+    @MainActor
     @inline(__always)
     var recentError: Error? {
-        get { Self.storage[vm]!.recentError }
+        get { Self.storage[vmID]!.recentError }
         set {
-            Self.storage[vm]!.recentError = newValue
+            Self.storage[vmID]!.recentError = newValue
             #if DEBUG
             if let newValue {
                 self.unitTestError = newValue
@@ -110,7 +126,9 @@ public class Gravity {
     }
 
     #if DEBUG
+    @MainActor
     internal static var unitTestExpected: Testing? = nil
+    @MainActor
     internal var unitTestError: Error? = nil
     #endif
 
@@ -119,6 +137,7 @@ public class Gravity {
      - parameter fileName: The name of the gravity script to check for.
      - returns: true if the compiled script included the additional sourece
      */
+    @MainActor
     public func compiledSourceDidLoadFile(_ fileName: String) -> Bool {
         return loadedFilesByID.values.contains(where: {
             $0.lastPathComponent.compare(fileName) == .orderedSame
@@ -142,11 +161,13 @@ public class Gravity {
             return lhs.reference === rhs.reference
         }
     }
+    @MainActor
     @inline(__always)
     internal var userDataReferences: Set<UserDataReference> {
-        get { Self.storage[vm]!.userDataReferences }
-        set { Self.storage[vm]!.userDataReferences = newValue }
+        get { Self.storage[vmID]!.userDataReferences }
+        set { Self.storage[vmID]!.userDataReferences = newValue }
     }
+    @MainActor
     internal func retainedUserDataPointer(from reference: AnyObject) -> UnsafeMutableRawPointer {
         let userDataP = Unmanaged.passUnretained(reference).toOpaque()
         userDataReferences.insert(UserDataReference(reference: reference))
@@ -154,11 +175,12 @@ public class Gravity {
     }
 
     /// Create a new gravity instance.
+    @MainActor
     public init() {
         self.vm = gravity_vm_new(&gravityDelegate)
         self.isManaged = true
-        assert(Self.storage[vm] == nil)
-        Self.storage[vm] = GravityStorage()
+        assert(Self.storage[vmID] == nil)
+        Self.storage[vmID] = GravityStorage()
     }
 
     internal init(vm: OpaquePointer) {
@@ -178,6 +200,7 @@ public class Gravity {
      - parameter addDebug: `true` to add debug. nil to add debug only in DEBUG configurations.
      - throws: Gravity compilation errors such as syntax problems.
      */
+    @MainActor
     public func compile(source sourceCode: String, addDebug: Bool? = nil) throws {
         self.mainClosure = nil
         self.didRunMain = false
@@ -217,6 +240,7 @@ public class Gravity {
     }
 
     /// Runs the  `func main()` of the gravity script.
+    @MainActor
     @discardableResult
     public func runMain() throws -> GravityValue {
         guard let mainClosure = mainClosure else {
@@ -232,11 +256,13 @@ public class Gravity {
         return GravityValue(gValue: gravity_vm_result(vm))
     }
 
+    @MainActor
     @inline(__always)
     public func getClass(_ key: String) -> GravityClass? {
         return getVar(key)?.getClass(gravity: self)
     }
 
+    @MainActor
     @inline(__always)
     public func setClass(_ key: String, to value: GravityClass) {
         setVar(key, to: value.gravityValue)
@@ -247,6 +273,7 @@ public class Gravity {
      - parameter key: The name of the `var` as written in the gravity script.
      - returns: A `GravityInstance` which references the script closure/function for `key`.
     */
+    @MainActor
     @inline(__always)
     public func getInstance(_ key: String) -> GravityInstance? {
         return getVar(key)?.getInstance(gravity: self)
@@ -257,6 +284,7 @@ public class Gravity {
      - parameter value: The Swift value to store in the `GravityValue`.
      - returns: A `GravityValue` representing the provided Swift vlaue.
      */
+    @MainActor
     public func createValue(_ value: some BinaryInteger) -> GravityValue {
         return GravityValue(value)
     }
@@ -265,6 +293,7 @@ public class Gravity {
      - parameter value: The Swift value to store in the `GravityValue`.
      - returns: A `GravityValue` representing the provided Swift vlaue.
      */
+    @MainActor
     public func createValue(_ value: some BinaryFloatingPoint) -> GravityValue {
         return GravityValue(value)
     }
@@ -274,6 +303,7 @@ public class Gravity {
      - parameter value: The Swift value to store in the `GravityValue`.
      - returns: A `GravityValue` representing the provided Swift vlaue.
      */
+    @MainActor
     public func createValue(_ value: Bool) -> GravityValue {
         return GravityValue(value)
     }
@@ -283,6 +313,7 @@ public class Gravity {
      - parameter value: The Swift value to store in the `GravityValue`.
      - returns: A `GravityValue` representing the provided Swift vlaue.
      */
+    @MainActor
     public func createValue(_ value: String) -> GravityValue {
         return GravityValue(value, self)
     }
@@ -292,6 +323,7 @@ public class Gravity {
      - parameter value: The Swift value to store in the `GravityValue`.
      - returns: A `GravityValue` representing the provided Swift vlaue.
      */
+    @MainActor
     public func createValue(_ value: StaticString) -> GravityValue {
         return GravityValue(value, self)
     }
@@ -301,6 +333,7 @@ public class Gravity {
      - parameter value: The Swift value to store in the `GravityValue`.
      - returns: A `GravityValue` representing the provided Swift vlaue.
      */
+    @MainActor
     public func createValue(_ values: [GravityValue]) -> GravityValue {
         return GravityValue(values, self)
     }
@@ -310,6 +343,7 @@ public class Gravity {
      - parameter value: The Swift value to store in the `GravityValue`.
      - returns: A `GravityValue` representing the provided Swift vlaue.
      */
+    @MainActor
     public func createValue(_ values: [GravityValue: GravityValue]) -> GravityValue {
         return GravityValue(values, self)
     }
@@ -320,6 +354,7 @@ public class Gravity {
      - parameter superClass: An optional super class for the gravity class.
      - returns: A `GravityClass` representing a gravity class.
      */
+    @MainActor
     public func createClass(_ name: String, superClass: GravityClass? = nil) -> GravityClass {
         let theClass = GravityClass(name: name, superClass: superClass, gravity: self)
         name.withCString { cString in
@@ -330,13 +365,17 @@ public class Gravity {
 
     deinit {
         guard isManaged else { return }
-        Self.cleanupStorage(vm)
-        gravity_vm_free(vm)
-        gravity_core_free()
+        let vmID = self.vmID
+        Task {@MainActor in
+            Self.cleanupStorage(vmID)
+            gravity_vm_free(OpaquePointer(bitPattern: vmID))
+            gravity_core_free()
+        }
     }
 }
 
 // This is only called for global closures. Instance methods use the seperate bridge delegate callback.
+@MainActor 
 internal func gravityCFuncInternal(
     vm: OpaquePointer!,
     args: UnsafeMutablePointer<gravity_value_t>!,
@@ -351,8 +390,10 @@ internal func gravityCFuncInternal(
         let cName = gClosure.pointee.f.pointee.identifier!
         return String(cString: cName)
     }()
+    
+    let vmID = Int(bitPattern: vm)
 
-    guard let function = Gravity.storage[vm]?.cInternalFunctionMap[functionName] else {
+    guard let function = Gravity.storage[vmID]?.cInternalFunctionMap[functionName] else {
         fatalError()
     }
     var args = UnsafeBufferPointer(start: args, count: Int(nargs)).map({ GravityValue(gValue: $0) })
@@ -361,6 +402,7 @@ internal func gravityCFuncInternal(
     return _gravityHandleCFuncReturn(vm: vm, returnValue: result, returnSlot: rindex)
 }
 
+@MainActor
 @inline(__always)
 internal func _gravityHandleCFuncReturn(
     vm: OpaquePointer,
@@ -380,7 +422,9 @@ internal func _gravityHandleCFuncReturn(
 }
 
 extension Gravity {
-    internal static var storage: [OpaquePointer: GravityStorage] = [:]
+    @MainActor
+    internal static var storage: [Int: GravityStorage] = [:]
+    @MainActor
     internal struct GravityStorage {
         var mainClosure: UnsafeMutablePointer<gravity_closure_t>? = nil
         var didRunMain: Bool = false
@@ -414,9 +458,10 @@ extension Gravity {
         var cInternalFunctionMap: [String: GravitySwiftFunctionReturns] = [:]
         var cBridgedFunctionMap: [String: GravitySwiftInstanceFunctionReturns] = [:]
     }
+    @MainActor
     @inline(__always)
-    internal static func cleanupStorage(_ vm: OpaquePointer) {
-        storage.removeValue(forKey: vm)
+    internal static func cleanupStorage(_ vmID: Int) {
+        storage.removeValue(forKey: vmID)
     }
 
     /**
@@ -424,6 +469,7 @@ extension Gravity {
      - parameter key: The name of the `extern func` as wirrten in the gravity script.
      - parameter function: The swift function to call
      */
+    @MainActor
     public func setFunc(_ key: String, to function: @escaping GravitySwiftFunctionReturns) {
         key.withCString { cKey in
             let gFunc = gravity_function_new_internal(vm, cKey, gravityCFuncInternal, 0)
@@ -436,9 +482,9 @@ extension Gravity {
             gravity_vm_setvalue(vm, cKey, gValue)
         }
 
-        var funcDatabase = Self.storage[vm]?.cInternalFunctionMap ?? [:]
+        var funcDatabase = Self.storage[vmID]?.cInternalFunctionMap ?? [:]
         funcDatabase[key] = function
-        Self.storage[vm]?.cInternalFunctionMap = funcDatabase
+        Self.storage[vmID]?.cInternalFunctionMap = funcDatabase
     }
 
     /**
@@ -446,6 +492,7 @@ extension Gravity {
      - parameter key: The name of the `extern func` as wirrten in the gravity script.
      - parameter function: The swift function to call
      */
+    @MainActor
     @inlinable
     public func setFunc(_ key: String, to function: @escaping GravitySwiftFunction) {
         let rFunc: GravitySwiftFunctionReturns = { gravity, args -> GravityValue in
@@ -508,12 +555,16 @@ extension Gravity: GravityGetFuncExtended {
         return getVar(key)?.getClosure(gravity: self, sender: nil)
     }
 
-    @discardableResult @inline(__always)
+    @MainActor
+    @discardableResult 
+    @inline(__always)
     public func runFunc(_ name: String) throws -> GravityValue {
         return try runFunc(name, withArguments: nil)
     }
 
-    @discardableResult @inline(__always)
+    @MainActor
+    @discardableResult 
+    @inline(__always)
     public func runFunc(_ name: String, withArguments args: [GravityValue]) throws -> GravityValue {
         guard let closure = getFunc(name) else {
             throw GateEngineError.scriptExecutionError("Failed to get closure \(name).")
@@ -521,7 +572,9 @@ extension Gravity: GravityGetFuncExtended {
         return try closure.run(withArguments: args.map({ $0.gValue }))
     }
 
-    @discardableResult @inline(__always)
+    @MainActor
+    @discardableResult 
+    @inline(__always)
     public func runFunc(_ name: String, withArguments args: GravityValue...) throws -> GravityValue
     {
         guard let closure = getFunc(name) else {
@@ -532,7 +585,7 @@ extension Gravity: GravityGetFuncExtended {
 }
 
 extension Gravity: Equatable {
-    public static func == (lhs: Gravity, rhs: Gravity) -> Bool {
+    nonisolated public static func == (lhs: Gravity, rhs: Gravity) -> Bool {
         return lhs.vm == rhs.vm
     }
 }

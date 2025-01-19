@@ -8,6 +8,7 @@
 #if DEBUG
 import Gravity
 
+@MainActor
 internal func unittestCallback(
     vm: OpaquePointer!,
     errorType: error_type_t,

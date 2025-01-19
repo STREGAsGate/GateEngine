@@ -8,28 +8,36 @@
 import Gravity
 
 //MARK: - Emitters
+@MainActor
 protocol GravityValueEmitting {
     var gValue: gravity_value_t { get }
 }
+@MainActor
 protocol GravityClassEmitting {
     var gClass: UnsafeMutablePointer<gravity_class_t>! { get }
 }
+@MainActor
 protocol GravityInstanceEmitting {
     var gInstance: UnsafeMutablePointer<gravity_instance_t> { get }
 }
+@MainActor
 protocol GravityClosureEmitting {
     var gClosure: UnsafeMutablePointer<gravity_closure_t>! { get }
 }
 
 // MARK: - GravityVMReferencing
+@MainActor
 public protocol GravityVMReferencing {
     var _gravity: Gravity { get }
 }
 
 // MARK: - GravityGetValueExtended
+@MainActor
 public protocol GravityGetVarExtended {
     func getVar(_ key: String) -> GravityValue?
 }
+
+@MainActor
 extension GravityGetVarExtended {
     /**
      Obtain a value from gravity.
@@ -78,6 +86,7 @@ extension GravityGetVarExtended {
 }
 
 // MARK: - GravityGetValueExtendedVMReferencing
+@MainActor
 public protocol GravityGetVarExtendedVMReferencing: GravityGetVarExtended, GravityVMReferencing {}
 extension GravityGetVarExtendedVMReferencing {
     @inline(__always)
@@ -96,6 +105,7 @@ extension GravityGetVarExtendedVMReferencing {
 }
 
 // MARK: - GravitySetValueExtended
+@MainActor
 public protocol GravitySetVarExtended {
     func setVar(_ key: String, to value: GravityValue)
 }
@@ -142,6 +152,7 @@ extension GravitySetVarExtended {
 }
 
 // MARK: - GravityGetClosureExtended
+@MainActor
 public protocol GravityGetFuncExtended {
     func getFunc(_ key: String) -> GravityClosure?
 }

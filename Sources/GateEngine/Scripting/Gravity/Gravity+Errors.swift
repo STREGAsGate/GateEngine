@@ -7,6 +7,7 @@
 
 import Gravity
 
+@MainActor
 internal func errorCallback(
     vm: OpaquePointer?,
     errorType: error_type_t,
