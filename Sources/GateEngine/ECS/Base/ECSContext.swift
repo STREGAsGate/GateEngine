@@ -354,6 +354,7 @@ public extension ECSContext {
         }
         return nil
     }
+    @discardableResult
     func removeEntity(where block: (Entity) -> (Bool)) -> Entity? {
         if let removed = self.entities.first(where: block) {
             self._removedEntities.append(removed)
