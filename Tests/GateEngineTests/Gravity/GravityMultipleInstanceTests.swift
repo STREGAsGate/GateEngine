@@ -9,6 +9,7 @@
 import XCTest
 @testable import GateEngine
 
+@MainActor
 final class GravityMultipleInstanceTests: GateEngineXCTestCase {
     func testMultipleInstanceSetVar() throws {
         let script = "extern var myVar; func main() {return myVar}"

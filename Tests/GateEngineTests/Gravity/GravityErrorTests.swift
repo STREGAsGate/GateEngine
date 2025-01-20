@@ -9,6 +9,7 @@
 import XCTest
 @testable import GateEngine
 
+@MainActor
 final class GravityErrorTests: GateEngineXCTestCase {
     var gravity: Gravity! = nil
     var randomValue: Int = 0

@@ -9,6 +9,7 @@
 import XCTest
 @testable import GateEngine
 
+@MainActor
 final class GravityCreateValueTests: GateEngineXCTestCase {
     let gravity = Gravity()
     func testInt() {

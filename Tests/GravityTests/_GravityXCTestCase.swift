@@ -10,6 +10,7 @@ import XCTest
 @testable import GateEngine
 @testable import Gravity
 
+@MainActor
 open class GravityXCTestCase: XCTestCase {
     func runGravity(at path: String) async {
         let gravity = Gravity()
