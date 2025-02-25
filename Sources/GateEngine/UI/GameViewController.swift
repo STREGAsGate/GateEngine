@@ -37,9 +37,16 @@ public final class GameView: View {
         return super.shouldDraw()
     }
     
+    public override func canBeHit() -> Bool {
+        return true
+    }
+    
     private var pendingBackgroundColor: Color? = nil
     public override var backgroundColor: Color? {
         get {
+            if let pendingBackgroundColor {
+                return pendingBackgroundColor
+            }
             switch mode {
             case .screen:
                 return window?.clearColor
@@ -62,6 +69,40 @@ public final class GameView: View {
         }
     }
     
+    public override func touchesBegan(_ touches: Set<Touch>) {
+        self.gameViewController?.touchesBegan(touches)
+    }
+    public override func touchesMoved(_ touches: Set<Touch>) {
+        self.gameViewController?.touchesMoved(touches)
+    }
+    public override func touchesEnded(_ touches: Set<Touch>) {
+        self.gameViewController?.touchesEnded(touches)
+    }
+    public override func touchesCanceled(_ touches: Set<Touch>) {
+        self.gameViewController?.touchesCanceled(touches)
+    }
+    
+    public override func cursorEntered(_ cursor: Mouse) {
+        self.gameViewController?.cursorEntered(cursor)
+    }
+    public override func cursorMoved(_ cursor: Mouse) {
+        self.gameViewController?.cursorMoved(cursor)
+    }
+    public override func cursorExited(_ cursor: Mouse) {
+        self.gameViewController?.cursorExited(cursor)
+    }
+    
+    public override func cursorButtonDown(button: MouseButton, mouse: Mouse) {
+        self.gameViewController?.cursorButtonDown(button: button, mouse: mouse)
+    }
+    public override func cursorButtonUp(button: MouseButton, mouse: Mouse) {
+        self.gameViewController?.cursorButtonUp(button: button, mouse: mouse)
+    }
+    
+    public override func scrolled(_ delta: Position2, isPlatformGeneratedMomentum isMomentum: Bool) {
+        self.gameViewController?.scrolled(delta, isPlatformGeneratedMomentum: isMomentum)
+    }
+    
     enum Mode {
         case screen
         case offScreen
@@ -72,8 +113,10 @@ public final class GameView: View {
     private var previousTime: Double = 0
     
     override final func draw(_ rect: Rect, into canvas: inout UICanvas) {
+        var frame = frame
         if mode == .offScreen {
             super.draw(rect, into: &canvas)
+            frame *= interfaceScale
             self._renderTarget?.size = frame.size
         }
         
@@ -136,14 +179,16 @@ public final class GameView: View {
             self.mode = .screen
             _renderTarget = nil
             if let pendingBackgroundColor {
-                if let window {
+                if window != nil {
                     self.backgroundColor = pendingBackgroundColor
                     self.pendingBackgroundColor = nil
                 }
             }
         }else{
             self.mode = .offScreen
+            Game.shared.attributes.insert(.renderingIsPermitted)
             _renderTarget = RenderTarget(backgroundColor: self.backgroundColor ?? .clear)
+            Game.shared.attributes.remove(.renderingIsPermitted)
         }
     }
 }
@@ -173,7 +218,9 @@ open class GameViewController: ViewController {
 
     final public override func loadView() {
         self.view = GameView()
-        self.setup(context: self.context)    
+        Task {
+            await self.setup(context: self.context)
+        }
     }
     
     internal var shouldSkipRendering: Bool = false
@@ -183,11 +230,46 @@ open class GameViewController: ViewController {
         self.shouldSkipRendering = (await context.shouldRenderAfterUpdate(withTimePassed: deltaTime) == false)
     }
     
-    open func setup(context: ECSContext) {
+    @MainActor
+    open func setup(context: ECSContext) async {
         
     }
     
     open func render(context: ECSContext, into view: GameView, withTimePassed deltaTime: Float) {
+        
+    }
+    
+    open func touchesBegan(_ touches: Set<Touch>) {
+        
+    }
+    open func touchesMoved(_ touches: Set<Touch>) {
+        
+    }
+    open func touchesEnded(_ touches: Set<Touch>) {
+        
+    }
+    open func touchesCanceled(_ touches: Set<Touch>) {
+        
+    }
+    
+    open func cursorEntered(_ cursor: Mouse) {
+        
+    }
+    open func cursorMoved(_ cursor: Mouse) {
+        
+    }
+    open func cursorExited(_ cursor: Mouse) {
+        
+    }
+    
+    open func cursorButtonDown(button: MouseButton, mouse: Mouse) {
+        
+    }
+    open func cursorButtonUp(button: MouseButton, mouse: Mouse) {
+        
+    }
+    
+    open func scrolled(_ delta: Position2, isPlatformGeneratedMomentum isMomentum: Bool) {
         
     }
 }
@@ -227,7 +309,7 @@ extension GameViewController {
     }
     @_transparent
     public func system<T: System>(ofType systemType: T.Type) -> T {
-        return context.system(ofType: systemType) as! T
+        return context.system(ofType: systemType)
     }
     @_transparent
     public func hasSystem<T: System>(ofType systemType: T.Type) -> Bool {
@@ -235,7 +317,7 @@ extension GameViewController {
     }
     @_transparent
     public func system<T: RenderingSystem>(ofType systemType: T.Type) -> T {
-        return context.system(ofType: systemType) as! T
+        return context.system(ofType: systemType)
     }
     @_transparent
     public func insertSystem(_ newSystem: System) {
@@ -247,11 +329,11 @@ extension GameViewController {
     }
     @_transparent @discardableResult
     public func insertSystem<T: System>(_ system: T.Type) -> T {
-        return context.insertSystem(system) as! T
+        return context.insertSystem(system)
     }
     @_transparent @discardableResult
     public func insertSystem<T: RenderingSystem>(_ system: T.Type) -> T {
-        return context.insertSystem(system) as! T
+        return context.insertSystem(system)
     }
     @_transparent
     public func removeSystem(_ system: System) {
@@ -263,22 +345,22 @@ extension GameViewController {
     }
     @_transparent @discardableResult
     public func removeSystem<T: System>(_ system: T.Type) -> T? {
-        return context.removeSystem(system) as? T
+        return context.removeSystem(system)
     }
     @_transparent @discardableResult
     public func removeSystem<T: RenderingSystem>(_ system: T.Type) -> T? {
-        return context.removeSystem(system) as? T
+        return context.removeSystem(system)
     }
 }
 
 @MainActor extension GameViewController {
     @_transparent
     func system<T: PlatformSystem>(ofType systemType: T.Type) -> T {
-        return context.system(ofType: systemType) as! T
+        return context.system(ofType: systemType)
     }
     @_transparent @discardableResult
     func insertSystem<T: PlatformSystem>(_ system: T.Type) -> T {
-        return context.insertSystem(system) as! T
+        return context.insertSystem(system)
     }
     @_transparent
     func insertSystem(_ newSystem: PlatformSystem) {
@@ -290,6 +372,6 @@ extension GameViewController {
     }
     @_transparent @discardableResult
     func removeSystem<T: PlatformSystem>(_ system: T.Type) -> T? {
-        return context.removeSystem(system) as? T
+        return context.removeSystem(system)
     }
 }
