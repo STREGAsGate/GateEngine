@@ -40,7 +40,7 @@
     }
     @_transparent
     func system<T: System>(ofType systemType: T.Type) -> T {
-        return ecs.system(ofType: systemType) as! T
+        return ecs.system(ofType: systemType)
     }
     @_transparent
     func hasSystem<T: System>(ofType systemType: T.Type) -> Bool {
@@ -48,7 +48,7 @@
     }
     @_transparent
     func system<T: RenderingSystem>(ofType systemType: T.Type) -> T {
-        return ecs.system(ofType: systemType) as! T
+        return ecs.system(ofType: systemType)
     }
     @_transparent
     func insertSystem(_ newSystem: System) {
@@ -60,11 +60,11 @@
     }
     @_transparent @discardableResult
     func insertSystem<T: System>(_ system: T.Type) -> T {
-        return ecs.insertSystem(system) as! T
+        return ecs.insertSystem(system)
     }
     @_transparent @discardableResult
     func insertSystem<T: RenderingSystem>(_ system: T.Type) -> T {
-        return ecs.insertSystem(system) as! T
+        return ecs.insertSystem(system)
     }
     @_transparent
     func removeSystem(_ system: System) {
@@ -76,20 +76,20 @@
     }
     @_transparent @discardableResult
     func removeSystem<T: System>(_ system: T.Type) -> T? {
-        return ecs.removeSystem(system) as? T
+        return ecs.removeSystem(system)
     }
     @_transparent @discardableResult
     func removeSystem<T: RenderingSystem>(_ system: T.Type) -> T? {
-        return ecs.removeSystem(system) as? T
+        return ecs.removeSystem(system)
     }
 
     @_transparent
     func system<T: PlatformSystem>(ofType systemType: T.Type) -> T {
-        return ecs.system(ofType: systemType) as! T
+        return ecs.system(ofType: systemType)
     }
     @_transparent @discardableResult
     func insertSystem<T: PlatformSystem>(_ system: T.Type) -> T {
-        return ecs.insertSystem(system) as! T
+        return ecs.insertSystem(system)
     }
     @_transparent
     func insertSystem(_ newSystem: PlatformSystem) {
@@ -101,7 +101,7 @@
     }
     @_transparent @discardableResult
     func removeSystem<T: PlatformSystem>(_ system: T.Type) -> T? {
-        return ecs.removeSystem(system) as? T
+        return ecs.removeSystem(system)
     }
 }
 
@@ -476,29 +476,29 @@ public extension ECSContext {
         }
     }
     @discardableResult
-    func removeSystem<T: System>(_ system: T.Type) -> System? {
+    func removeSystem<T: System>(_ system: T.Type) -> T? {
         if let index = self._systems.firstIndex(where: { type(of: $0) == system }) {
             let system = self._systems.remove(at: index)
             system.teardown(context: self)
-            return system
+            return system as? T
         }
         return nil
     }
     @discardableResult
-    func removeSystem<T: RenderingSystem>(_ system: T.Type) -> RenderingSystem? {
+    func removeSystem<T: RenderingSystem>(_ system: T.Type) -> T? {
         if let index = self._renderingSystems.firstIndex(where: { type(of: $0) == system }) {
             let system = self._renderingSystems.remove(at: index)
             system.teardown(context: self)
-            return system
+            return system as? T
         }
         return nil
     }
     @discardableResult
-    internal func removeSystem<T: PlatformSystem>(_ system: T.Type) -> PlatformSystem? {
+    internal func removeSystem<T: PlatformSystem>(_ system: T.Type) -> T? {
         if let index = self._platformSystems.firstIndex(where: { type(of: $0) == system }) {
             let system = self._platformSystems.remove(at: index)
             system.teardown(context: self)
-            return system
+            return system as? T
         }
         return nil
     }

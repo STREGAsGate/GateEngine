@@ -128,10 +128,10 @@ extension PlatformSystem {
 }
 
 extension PlatformSystem: Hashable {
-    public static func == (lhs: PlatformSystem, rhs: PlatformSystem) -> Bool {
+    nonisolated public static func == (lhs: PlatformSystem, rhs: PlatformSystem) -> Bool {
         return Swift.type(of: lhs) == Swift.type(of: rhs)
     }
-    public func hash(into hasher: inout Hasher) {
+    nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine("\(type(of: self))")
     }
 }

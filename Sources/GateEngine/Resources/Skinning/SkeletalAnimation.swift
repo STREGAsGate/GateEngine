@@ -62,7 +62,7 @@ extension SkeletalAnimation: Equatable, Hashable {
         return lhs.cacheKey == rhs.cacheKey
     }
     
-    public func hash(into hasher: inout Hasher) {
+    nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine(cacheKey)
     }
 }
