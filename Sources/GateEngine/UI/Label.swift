@@ -144,10 +144,14 @@ public final class Label: View {
     override func draw(_ rect: Rect, into canvas: inout UICanvas) {
         super.draw(rect, into: &canvas)
         
+        // Center text
+        let xOffset: Float = (rect.width / 2) - (size.width / 2)
+        let yOffset: Float = (rect.height / 2) - (size.height / 2)
+        
         canvas.insert(
             DrawCommand(
                 resource: .geometry(geometry),
-                transforms: [Transform3(position: Position3(rect.x, rect.y, 0))],
+                transforms: [Transform3(position: Position3(rect.x + xOffset, rect.y + yOffset, 0))],
                 material: Material(texture: texture, sampleFilter: sampleFilter, tintColor: textColor),
                 vsh: .standard,
                 fsh: .textureSampleTintColor,
