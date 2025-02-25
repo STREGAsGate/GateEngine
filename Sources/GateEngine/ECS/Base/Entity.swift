@@ -158,12 +158,23 @@ extension Entity {
     /// Allows changing a component, addind it first if needed.
     public func configure<T: Component, ResultType>(
         _ type: T.Type,
-        _ config: @escaping (_ component: inout T) async -> ResultType
+        _ config: (_ component: inout T) async -> ResultType
     ) async -> ResultType {
         if self.hasComponent(type) == false {
             self.insert(type.init())
         }
         return await config(&self[T.self])
+    }
+    
+    /// Allows changing a component, addind it first if needed.
+    public func configure<T: Component, ResultType>(
+        _ type: T.Type,
+        _ config: (_ component: inout T) -> ResultType
+    ) -> ResultType {
+        if self.hasComponent(type) == false {
+            self.insert(type.init())
+        }
+        return config(&self[T.self])
     }
 
     /// - returns The removed component or nil if no component was found.
