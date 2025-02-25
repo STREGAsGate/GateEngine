@@ -203,7 +203,6 @@
     
     /** Adds lines to the scene for rendering.
     - parameter lines: The lines to draw.
-    - parameter material: The color information used to draw the geometry.
     - parameter transform: Describes how the lines instance should be positioned and scaled relative to the scene.
     - parameter flags: Options to customize how drawing is handled.
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
@@ -211,16 +210,14 @@
     @_transparent
     public mutating func insert(
         _ lines: Lines,
-        withMaterial material: Material,
         at transform: Transform3,
         flags: SceneElementFlags = .default
     ) {
-        self.insert(lines, withMaterial: material, at: [transform], flags: flags)
+        self.insert(lines, at: [transform], flags: flags)
     }
     
     /** Adds lines to the scene for rendering.
     - parameter lines: The lines to draw.
-    - parameter material: The color information used to draw the geometry.
     - parameter transforms: Describes how each lines instance should be positioned and scaled relative to the scene.
     - parameter flags: Options to customize how drawing is handled.
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
@@ -228,16 +225,57 @@
     @inlinable @inline(__always)
     public mutating func insert(
         _ lines: Lines,
-        withMaterial material: Material,
         at transforms: [Transform3],
         flags: SceneElementFlags = .default
     ) {
         let command = DrawCommand(
             resource: .lines(lines),
             transforms: transforms,
-            material: material,
-            vsh: .standard,
+            material: Material(color: .vertexColors),
+            vsh: .vertexColors,
             fsh: .vertexColor,
+            flags: flags.drawCommandFlags(withPrimitive: .line)
+        )
+        self.insert(command)
+    }
+    
+    /** Adds lines to the scene for rendering.
+    - parameter lines: The lines to draw.
+    - parameter color: The color information used to draw the geometry.
+    - parameter transform: Describes how the lines instance should be positioned and scaled relative to the scene.
+    - parameter flags: Options to customize how drawing is handled.
+    - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
+    */
+    @_transparent
+    public mutating func insert(
+        _ lines: Lines,
+        withColor color: Color,
+        at transform: Transform3,
+        flags: SceneElementFlags = .default
+    ) {
+        self.insert(lines, withColor: color, at: [transform], flags: flags)
+    }
+    
+    /** Adds lines to the scene for rendering.
+    - parameter lines: The lines to draw.
+    - parameter color: The color information used to draw the geometry.
+    - parameter transforms: Describes how each lines instance should be positioned and scaled relative to the scene.
+    - parameter flags: Options to customize how drawing is handled.
+    - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
+    */
+    @inlinable @inline(__always)
+    public mutating func insert(
+        _ lines: Lines,
+        withColor color: Color,
+        at transforms: [Transform3],
+        flags: SceneElementFlags = .default
+    ) {
+        let command = DrawCommand(
+            resource: .lines(lines),
+            transforms: transforms,
+            material: Material(color: color),
+            vsh: .standard,
+            fsh: .materialColor,
             flags: flags.drawCommandFlags(withPrimitive: .line)
         )
         self.insert(command)
@@ -458,7 +496,7 @@ public struct SceneElementFlags: OptionSet, Hashable {
     @_transparent
     public func drawCommandFlags(withPrimitive primitive: DrawCommand.Flags.Primitive, blendMode: DrawCommand.Flags.BlendMode = .normal) -> DrawCommand.Flags {
         let cull: DrawCommand.Flags.Cull = self.contains(.cullBackface) ? .back : .disabled
-        let depthTest: DrawCommand.Flags.DepthTest = self.contains(.disableDepthCull) ? .always : .less
+        let depthTest: DrawCommand.Flags.DepthTest = self.contains(.disableDepthCull) ? .always : .lessEqual
         let depthWrite: DrawCommand.Flags.DepthWrite =
             self.contains(.disableDepthWrite) ? .disabled : .enabled
         return DrawCommand.Flags(
