@@ -106,7 +106,7 @@ public struct Layout {
                     }
                     if target == target.view.trailingAnchor {
                         computed = Value.Computed(
-                            value: sourceWidth.value + targetX + targetWidth.value + hPosition.constant
+                            value: targetWidth.value + targetX - sourceWidth.value - hPosition.constant
                         )
                         break
                     }
