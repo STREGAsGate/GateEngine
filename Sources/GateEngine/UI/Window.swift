@@ -89,9 +89,9 @@ public struct WindowOptions: OptionSet {
         let renderTarget: RenderTarget = RenderTarget(size: Size2(width: 2048, height: 2048), backgroundColor: .clear)
         
         #if DEBUG
-        static let blockSize: Int = 128
+        static let blockSize: Int = 64
         #else
-        static let blockSize: Int = 8
+        static let blockSize: Int = 16
         #endif
         
         private var elements: [Element] = []
@@ -114,14 +114,14 @@ public struct WindowOptions: OptionSet {
 //            @_transparent
             @MainActor
             func blocksWide() -> Int {
-                let value = Int(size.width) / blockSize
-                return value + (value % 2)
+                let value = (size.width / Float(blockSize)).rounded(.up)
+                return max(1, Int(value))
             }
 //            @_transparent
             @MainActor
             func blocksTall() -> Int {
-                let value = Int(size.height) / blockSize
-                return value + (value % 2)
+                let value = (size.height / Float(blockSize)).rounded(.up)
+                return max(1, Int(value))
             }
         }
         
@@ -152,17 +152,26 @@ public struct WindowOptions: OptionSet {
         var viewToRemove: [View] = []
         
         mutating func update() {
+            guard viewToAdd.isEmpty == false || viewToRemove.isEmpty == false else {
+                return
+            }
+            
             for view in viewToRemove {
                 if let index = self.elements.firstIndex(where: {$0.view === view}) {
                     self.elements.remove(at: index)
                 }
             }
+            self.viewToRemove.removeAll(keepingCapacity: true)
+            
             for view in viewToAdd {
                 if self.elements.firstIndex(where: {$0.view === view}) == nil {
                     let size = view.frame.size * view.interfaceScale
-                    self.elements.append(Element(view: view, size: size))
+                    if size.width > 0 && size.height > 0 {
+                        self.elements.append(Element(view: view, size: size))
+                    }
                 }
             }
+            self.viewToAdd.removeAll(keepingCapacity: true)
             
             var cleanIndicies: [Int] = []
             for index in elements.indices {
@@ -227,18 +236,22 @@ public struct WindowOptions: OptionSet {
                 for row in y ..< y + height {
                     guard row < rows.count else {break}
                     for column in x ..< x + width {
-                        guard rows[row][column] == false else {return false}
+                        if rows[row][column] {
+                            return true
+                        }
                     }
                 }
-                return true
+                return false
             }
 
             mutating func firstUnoccupiedFor(width: Int, height: Int, markOccupied: Bool) -> (x: Int, y: Int) {
                 assert(width <= self.width)
                 for row in rows.indices {
                     for column in 0 ..< self.width {
-                        guard column + width <= self.width else {break}
-                        if isOccupied(x: column, y: row, width: width, height: height) {
+                        guard column + width <= self.width else {
+                            break
+                        }
+                        if isOccupied(x: column, y: row, width: width, height: height) == false {
                             if markOccupied {
                                 markAsOccupied(x: column, y: row, width: width, height: height)
                             }
