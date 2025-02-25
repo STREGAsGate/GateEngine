@@ -6,6 +6,30 @@
  */
 
 open class Button: Control {
+    private var backgroundColors: [State: Color] = [
+        .highlighted:.lightBlue,
+        .normal:.blue,
+        .selected:.darkBlue,
+    ]
+    public func setBackgroundColor(_ color: Color, forState state: State) {
+        backgroundColors[state] = color
+        if self.state == state {
+            self.backgroundColor = color
+        }
+    }
+    
+    private var textColors: [State: Color] = [
+        .highlighted:.white,
+        .normal:.white,
+        .selected:.white,
+    ]
+    public func setTextColor(_ color: Color, forState state: State) {
+        textColors[state] = color
+        if self.state == state {
+            self.label.textColor = color
+        }
+    }
+    
     open override func canBeHit() -> Bool {
         return true
     }
@@ -21,17 +45,17 @@ open class Button: Control {
         }
     }
     
-    private var eventActionStorage: [Event: [()->()]] = [:]
+    private var eventActionStorage: [Event: [(Button)->()]] = [:]
     
     public final func sendActions(forEvent event: Event) {
         if let eventActionStorage = eventActionStorage[event] {
             for block in eventActionStorage {
-                block()
+                block(self)
             }
         }
     }
     
-    public final func action(completion: @escaping ()->()) {
+    public final func action(completion: @escaping (Button)->()) {
         var array = eventActionStorage[.pressed] ?? []
         array.append(completion)
         eventActionStorage[.pressed] = array
@@ -46,6 +70,14 @@ open class Button: Control {
         didSet {
             if state != oldValue {
                 self.stateDidChange()
+                if let color = backgroundColors[state] {
+                    self.backgroundColor = color
+                }
+                if labelCreated {
+                    if let color = textColors[state] {
+                        self.label.textColor = color
+                    }
+                }
             }
         }
     }
@@ -106,13 +138,44 @@ open class Button: Control {
         self.state = .normal
     }
     
-    public init(action: (()->())? = nil) {
-        super.init()
+    public init(size: Size2? = nil, label: String? = nil, textColor: Color = .white, backgroundColor: Color = .blue, cornorRadius: Float? = nil, action: ((Button)->())? = nil) {
+        super.init(size: size)
+        
+        self.backgroundColor = backgroundColor
+        self.backgroundColors[.normal] = backgroundColor
+        self.backgroundColors[.highlighted] = backgroundColor
+        self.backgroundColors[.selected] = backgroundColor.interpolated(to: .darkGray, .linear(0.25))
+        
+        self.textColors[.normal] = textColor
+        self.textColors[.highlighted] = textColor
+        self.textColors[.selected] = textColor
+        
+        if let label {
+            self.label.text = label
+            self.label.textColor = textColor
+        }
         if let action {
             self.eventActionStorage[.pressed] = [action]
         }
+        
+        if let cornorRadius {
+            self.cornerRadius = cornorRadius
+        }
+
         self.stateDidChange()
     }
+    
+    private var labelCreated: Bool = false
+    public private(set) lazy var label: Label = {
+        let label = Label(text: "Button", font: .babel, fontSize: 14, style: .regular, textColor: self.textColors[.normal] ?? .white)
+        label.centerXAnchor.constrain(to: self.centerXAnchor)
+        label.centerYAnchor.constrain(to: self.centerYAnchor)
+        label.widthAnchor.constrain(to: self.widthAnchor)
+        label.heightAnchor.constrain(to: self.heightAnchor)
+        self.addSubview(label)
+        self.labelCreated = true
+        return label
+    }()
 }
 
 
