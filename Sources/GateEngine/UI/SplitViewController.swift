@@ -8,17 +8,18 @@
 import Foundation
 
 final class SplitViewDividerControl: Control {
+    var isEnabled: Bool = true
     override func canBeHit() -> Bool {
-        return true
+        return isEnabled
     }
     
     let divider = View()
     
     var isDragging: Bool = false
     
-    override init() {
-        super.init()
-        divider.backgroundColor = .red
+    override init(size: Size2? = nil) {
+        super.init(size: size)
+        divider.backgroundColor = .darkGray
         self.addSubview(divider)
     }
     
@@ -79,14 +80,19 @@ final class SplitViewDividerControl: Control {
 }
 
 public final class SplitView: View {
-    var dividerXOffset: Float = 230 {
+    public var canResizeSidebar: Bool = true {
+        didSet {
+            dividerControl.isEnabled = self.canResizeSidebar
+        }
+    }
+    public var dividerXOffset: Float = 300 {
         didSet {
             self.setNeedsUpdateConstraints()
         }
     }
     
     let dividerControl: SplitViewDividerControl = SplitViewDividerControl()
-    func addSidebarView(_ sidebarView: View, contentView: View) {
+    public func addSidebarView(_ sidebarView: View, contentView: View) {
         for subview in subviews {
             subview.removeFromSuperview()
         }
@@ -95,8 +101,8 @@ public final class SplitView: View {
         self.addSubview(dividerControl)
     }
         
-    public override init() {
-        super.init()
+    public override init(size: Size2? = nil) {
+        super.init(size: size)
  
     }
     
@@ -151,7 +157,7 @@ open class SplitViewController: ViewController {
         self.splitView.addSidebarView(children[0].view, contentView: children[1].view)
     }
     
-    var splitView: SplitView {
+    public var splitView: SplitView {
         return self.view as! SplitView
     }
     

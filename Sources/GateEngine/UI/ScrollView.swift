@@ -43,8 +43,8 @@ open class ScrollView: View {
         self.offset.interpolate(to: destinationOffset, .linear(factor))
     }
     
-    override public init() {
-        super.init()
+    override init(size: Size2? = nil) {
+        super.init(size: size)
         self.addSubview(contentView)
     }
     

@@ -42,8 +42,11 @@ open class View {
         }
     }
     
-    public init() {
-        
+    public init(size: Size2? = nil) {
+        if let size {
+            self.widthAnchor.constrain(to: size.width)
+            self.heightAnchor.constrain(to: size.height)
+        }
     }
     
     public var interfaceScale: Float {
@@ -128,11 +131,13 @@ open class View {
         var _superview: View? = self.superView
         while let superview = _superview {
             if superview.renderingMode == .offScreen {
+                frame.position += window!.offScreenRendering.frameForView(superview).position / interfaceScale
                 break
+            }else{
+                frame.position += superview.bounds.position
+                frame.position += superview.frame.position
+                _superview = superview.superView
             }
-            frame.position += superview.bounds.position
-            frame.position += superview.frame.position
-            _superview = superview.superView
         }
         _representationFrame = frame * interfaceScale
         return _representationFrame!
