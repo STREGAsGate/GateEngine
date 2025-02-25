@@ -28,12 +28,16 @@ public struct Material {
         return customUniformValues.sorted(by: { $0.key.compare($1.key) == .orderedAscending })
     }
     public mutating func setCustomUniformValue(
-        _ value: any CustomUniformType,
+        _ value: (any CustomUniformType)?,
         forUniform name: String
     ) {
         customUniformValues[name] = value
     }
 
+    public func hasCustomUniformValue(named key: String) -> Bool {
+        return customUniformValues.keys.contains(key)
+    }
+    
     @usableFromInline
     internal var channels: [Channel] = [Channel(color: .defaultDiffuseMapColor)]
     @discardableResult
