@@ -166,7 +166,7 @@ public struct Layout {
                     }
                     if target == target.view.bottomAnchor {
                         computed = Value.Computed(
-                            value: targetY + targetHeight.value + vPosition.constant
+                            value: targetY + targetHeight.value - vPosition.constant
                         )
                         break
                     }
@@ -197,7 +197,7 @@ public struct Layout {
                     fatalError("Layout is not able to handle an unknown horizontal position anchor. This is a bug.")
                 }
                 if vPosition.source == view.bottomAnchor {
-                    guard let width = resolveWidth(for: view) else {continue}
+                    guard let height = resolveHeight(for: view) else {continue}
                     guard let targetY = relativeResolvedY(forTarget: target.view) else {continue}
                     if target == target.view.topAnchor {
                         computed = Value.Computed(
@@ -205,16 +205,16 @@ public struct Layout {
                         )
                         break
                     }
-                    guard let targetWidth = resolveWidth(for: target.view) else {continue}
+                    guard let targetHeight = resolveHeight(for: target.view) else {continue}
                     if target == target.view.centerYAnchor {
                         computed = Value.Computed(
-                            value: targetY + (targetWidth.value / 2) - width.value + vPosition.constant
+                            value: targetY + (targetHeight.value / 2) - height.value + vPosition.constant
                         )
                         break
                     }
                     if target == target.view.bottomAnchor {
                         computed = Value.Computed(
-                            value: width.value + targetY + targetWidth.value + vPosition.constant
+                            value: targetY + targetHeight.value - height.value - vPosition.constant
                         )
                         break
                     }
