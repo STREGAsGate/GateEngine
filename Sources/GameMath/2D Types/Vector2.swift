@@ -221,6 +221,12 @@ public func max<V: Vector2>(_ lhs: V, _ rhs: V) -> V {
     return V.init(max(lhs.x, rhs.x), max(lhs.y, rhs.y))
 }
 
+public extension Vector2 {
+    static func < (lhs: Self, rhs: Self) -> Bool {
+        return lhs.x < rhs.x && lhs.y < rhs.y
+    }
+}
+
 //MARK: Operators (Self)
 extension Vector2 {
     //Multiplication

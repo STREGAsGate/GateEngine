@@ -31,6 +31,7 @@ public struct Size2: Vector2, Sendable {
 
 extension Size2: Equatable {}
 extension Size2: Hashable {}
+extension Size2: Comparable {}
 extension Size2: Codable {}
 
 //MARK: Vector2
