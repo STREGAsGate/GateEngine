@@ -114,7 +114,6 @@ open class View {
         var frame = self.frame
         var _superview: View? = self.superView
         while let superview = _superview {
-//            frame.position += superview.bounds.position
             frame.position += superview.frame.position
             _superview = superview.superView
         }
