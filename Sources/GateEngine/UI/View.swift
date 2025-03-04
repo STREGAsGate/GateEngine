@@ -50,7 +50,10 @@ open class View {
     }
     
     public var interfaceScale: Float {
-        return superView?.interfaceScale ?? 1.0
+        if let scale = window?.interfaceScale {
+            return scale
+        }
+        return 1.0
     }
     
     public var userInteractionEnabled: Bool = true
@@ -88,6 +91,15 @@ open class View {
         if let window = view as? Window {
             _window = window
         }
+        
+        if _window == nil {
+            // If the view is removed from the view heirarchy
+            // Check the ViewController chain
+            if let window = self.viewController?.parent?.view.window {
+                _window = window
+            }
+        }
+        
         return _window
     }
     
