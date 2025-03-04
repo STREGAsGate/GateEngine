@@ -257,7 +257,9 @@ extension _RenderTargetProtocol {
             let clip = frame.clamped(within: superClip)
             view.draw(frame, into: &canvas)
             for subview in view.subviews {
-                self.drawView(subview, into: &canvas, forOffScreen: forOffScreen, frameNumber: frameNumber, superClip: clip)
+                if subview.shouldDraw() {
+                    self.drawView(subview, into: &canvas, forOffScreen: forOffScreen, frameNumber: frameNumber, superClip: clip)
+                }
             }
         case .offScreen:
             drawOffScreenViewHierarchy(for: view, into: &canvas, frameNumber: frameNumber)
@@ -265,6 +267,7 @@ extension _RenderTargetProtocol {
     }
     
     private func drawOffScreenViewHierarchy(for view: View, into onScreenCanvas: inout UICanvas, frameNumber: UInt) {
+        guard view.shouldDraw() else {return}
         guard let window = view.window else {fatalError()}
         let offScreenFrame = view.offScreenFrame()
         
@@ -272,7 +275,9 @@ extension _RenderTargetProtocol {
         view.draw(offScreenFrame, into: &offScreenCanvas)
         
         for subview in view.subviews {
-            self.drawView(subview, into: &offScreenCanvas, forOffScreen: true, frameNumber: frameNumber, superClip: offScreenFrame)
+            if subview.shouldDraw() {
+                self.drawView(subview, into: &offScreenCanvas, forOffScreen: true, frameNumber: frameNumber, superClip: offScreenFrame)
+            }
         }
         if offScreenCanvas.hasContent {
             window.offScreenRendering.renderTarget.insert(offScreenCanvas)
