@@ -360,6 +360,9 @@ open class View {
         if self.opacity <= 0 {
             return false
         }
+        if self.frame.size <= .zero {
+            return false
+        }
         return true
     }
     
