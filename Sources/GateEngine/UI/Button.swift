@@ -17,6 +17,12 @@ open class Button: Control {
             self.backgroundColor = color
         }
     }
+    public func setBackgroundColor(_ color: Color) {
+        self.backgroundColor = color
+        self.backgroundColors[.normal] = color
+        self.backgroundColors[.highlighted] = color.interpolated(to: .lightGray, .linear(0.25))
+        self.backgroundColors[.selected] = color.interpolated(to: .darkGray, .linear(0.25))
+    }
     
     private var textColors: [State: Color] = [
         .highlighted:.white,
@@ -141,10 +147,7 @@ open class Button: Control {
     public init(size: Size2? = nil, label: String? = nil, textColor: Color = .white, backgroundColor: Color = .blue, cornorRadius: Float? = nil, action: ((Button)->())? = nil) {
         super.init(size: size)
         
-        self.backgroundColor = backgroundColor
-        self.backgroundColors[.normal] = backgroundColor
-        self.backgroundColors[.highlighted] = backgroundColor
-        self.backgroundColors[.selected] = backgroundColor.interpolated(to: .darkGray, .linear(0.25))
+        self.setBackgroundColor(backgroundColor)
         
         self.textColors[.normal] = textColor
         self.textColors[.highlighted] = textColor
