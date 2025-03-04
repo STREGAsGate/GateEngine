@@ -7,6 +7,16 @@
 
 public final class Label: View {
     public typealias SampleFilter = Material.Channel.SampleFilter
+    public enum TextAlignment {
+        case leading
+        case centered
+        case trailing
+    }
+    public var textAlignment: TextAlignment = .centered {
+        didSet {
+            self.setNeedsLayout()
+        }
+    }
     
     public var textColor: Color
     private var _sampleFilter: SampleFilter? = nil
@@ -124,7 +134,8 @@ public final class Label: View {
         font: Font = .default,
         fontSize: UInt,
         style: Font.Style = .regular,
-        textColor: Color = .white
+        textColor: Color = .white,
+        textAlignment: TextAlignment = .centered
     ) {
         self.needsUpdateGeometry = true
         self.needsUpdateTexture = true
@@ -133,6 +144,7 @@ public final class Label: View {
         self.fontSize = fontSize
         self.style = style
         self.textColor = textColor
+        self.textAlignment = textAlignment
         super.init()
     }
     
@@ -144,9 +156,19 @@ public final class Label: View {
     override func draw(_ rect: Rect, into canvas: inout UICanvas) {
         super.draw(rect, into: &canvas)
         
-        // Center text
-        let xOffset: Float = (rect.width / 2) - (size.width / 2)
-        let yOffset: Float = (rect.height / 2) - (size.height / 2)
+        let xOffset: Float
+        let yOffset: Float
+        switch textAlignment {
+        case .leading:
+            xOffset = 4
+            yOffset = 4
+        case .centered:
+            xOffset = (rect.width / 2) - ((size.width / 2) * self.interfaceScale)
+            yOffset = (rect.height / 2) - ((size.height / 2) * self.interfaceScale)
+        case .trailing:
+            xOffset = rect.width - (size.width * self.interfaceScale) - 4
+            yOffset = rect.height - (size.height * self.interfaceScale) - 4
+        }
         
         canvas.insert(
             DrawCommand(
