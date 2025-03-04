@@ -166,7 +166,7 @@ public struct Layout {
                     }
                     if target == target.view.bottomAnchor {
                         computed = Value.Computed(
-                            value: targetY + targetHeight.value - vPosition.constant
+                            value: targetY + targetHeight.value + vPosition.constant
                         )
                         break
                     }
