@@ -116,7 +116,7 @@ public final class GameView: View {
         var frame = frame
         if mode == .offScreen {
             super.draw(rect, into: &canvas)
-            frame *= interfaceScale
+            frame = rect
             self._renderTarget?.size = frame.size
         }
         
