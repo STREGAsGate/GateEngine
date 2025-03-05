@@ -82,6 +82,19 @@ public final class GameView: View {
         self.gameViewController?.touchesCanceled(touches)
     }
     
+    public override func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        self.gameViewController?.surfaceTouchesBegan(touches, mouse: mouse)
+    }
+    public override func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        self.gameViewController?.surfaceTouchesMoved(touches, mouse: mouse)
+    }
+    public override func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        self.gameViewController?.surfaceTouchesEnded(touches, mouse: mouse)
+    }
+    public override func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        self.gameViewController?.surfaceTouchesCanceled(touches, mouse: mouse)
+    }
+    
     public override func cursorEntered(_ cursor: Mouse) {
         self.gameViewController?.cursorEntered(cursor)
     }
@@ -249,6 +262,19 @@ open class GameViewController: ViewController {
         
     }
     open func touchesCanceled(_ touches: Set<Touch>) {
+        
+    }
+    
+    open func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        
+    }
+    open func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        
+    }
+    open func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        
+    }
+    open func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         
     }
     
