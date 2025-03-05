@@ -132,7 +132,9 @@ extension HID {
         id: AnyHashable,
         event: TouchChangeEvent,
         surfaceID: AnyHashable,
-        normalizedPosition: Position2
+        normalizedPosition: Position2,
+        pressure: Float,
+        window: Window?
     ) {
         recentInputMethod = .touchSurface
         surfaces.surfaceTouchChange(
@@ -141,6 +143,7 @@ extension HID {
             surfaceID: surfaceID,
             normalizedPosition: normalizedPosition
         )
+        window?.surfaceTouchChange(id: id, kind: .unknown, event: event, normalizedPosition: normalizedPosition, pressure: pressure, mouse: self.mouse)
     }
 
     @_transparent

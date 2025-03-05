@@ -609,7 +609,9 @@ extension UGNSWindow {
                             id: id,
                             event: .began,
                             surfaceID: ObjectIdentifier(device),
-                            normalizedPosition: position
+                            normalizedPosition: position,
+                            pressure: 0,
+                            window: window
                         )
                     }
                 default:
@@ -643,7 +645,9 @@ extension UGNSWindow {
                             id: id,
                             event: .moved,
                             surfaceID: ObjectIdentifier(device),
-                            normalizedPosition: position
+                            normalizedPosition: position,
+                            pressure: 0,
+                            window: window
                         )
                     }
                 default:
@@ -677,7 +681,9 @@ extension UGNSWindow {
                             id: id,
                             event: .ended,
                             surfaceID: ObjectIdentifier(device),
-                            normalizedPosition: position
+                            normalizedPosition: position,
+                            pressure: 0,
+                            window: window
                         )
                     }
                 default:
@@ -712,7 +718,9 @@ extension UGNSWindow {
                             id: id,
                             event: .canceled,
                             surfaceID: ObjectIdentifier(device),
-                            normalizedPosition: position
+                            normalizedPosition: position,
+                            pressure: 0,
+                            window: window
                         )
                     }
                 default:

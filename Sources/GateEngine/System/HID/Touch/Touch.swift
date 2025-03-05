@@ -11,7 +11,7 @@ import GameMath
     public internal(set) var id: AnyHashable
     public internal(set) weak var window: Window?
     public internal(set) var position: Position2
-    private var _precisionPosition: Position2?
+    internal var _precisionPosition: Position2?
     public var precisionPosition: Position2 {
         return _precisionPosition ?? position
     }

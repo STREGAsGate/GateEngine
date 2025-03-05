@@ -164,7 +164,9 @@ internal class UIKitViewController: GCEventViewController {
                     id: id,
                     event: .began,
                     surfaceID: ObjectIdentifier(UIDevice.current),
-                    normalizedPosition: location.position
+                    normalizedPosition: location.position,
+                    pressure: Float(touch.force / touch.maximumPossibleForce),
+                    window: self.window.window
                 )
             default:
                 break
@@ -205,7 +207,9 @@ internal class UIKitViewController: GCEventViewController {
                     id: id,
                     event: .moved,
                     surfaceID: ObjectIdentifier(UIDevice.current),
-                    normalizedPosition: location.position
+                    normalizedPosition: location.position,
+                    pressure: Float(touch.force / touch.maximumPossibleForce),
+                    window: self.window.window
                 )
             default:
                 break
@@ -246,7 +250,9 @@ internal class UIKitViewController: GCEventViewController {
                     id: id,
                     event: .ended,
                     surfaceID: ObjectIdentifier(UIDevice.current),
-                    normalizedPosition: location.position
+                    normalizedPosition: location.position,
+                    pressure: Float(touch.force / touch.maximumPossibleForce),
+                    window: self.window.window
                 )
             default:
                 break
@@ -287,7 +293,9 @@ internal class UIKitViewController: GCEventViewController {
                     id: id,
                     event: .canceled,
                     surfaceID: ObjectIdentifier(UIDevice.current),
-                    normalizedPosition: location.position
+                    normalizedPosition: location.position,
+                    pressure: Float(touch.force / touch.maximumPossibleForce),
+                    window: self.window.window
                 )
             default:
                 break

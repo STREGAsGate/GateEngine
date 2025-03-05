@@ -259,6 +259,19 @@ open class View {
         
     }
     
+    open func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        
+    }
+    open func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        
+    }
+    open func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        
+    }
+    open func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        
+    }
+    
     open func cursorEntered(_ cursor: Mouse) {
         
     }

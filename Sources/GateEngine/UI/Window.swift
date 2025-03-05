@@ -554,45 +554,75 @@ public struct WindowOptions: OptionSet {
                 view.touchesBegan([touch])
             }
         case .moved:
-            let touch = Touch(
-                id: id, 
-                window: self, 
-                position: position, 
-                precisionPosition: precisionPosition, 
-                pressure: pressure, 
-                phase: .down, 
-                kind: kind
-            )
-            if let view = currentlyHitTouchViews[touch] {
-                view.touchesMoved([touch])
+            if let touch = currentlyHitTouchViews.keys.first(where: {$0.id == id}) {
+                touch.position = position
+                touch._precisionPosition = precisionPosition
+                touch.pressure = pressure
+                if let view = currentlyHitTouchViews[touch] {
+                    view.touchesMoved([touch])
+                }
             }
         case .ended:
-            let touch = Touch(
-                id: id, 
-                window: self, 
-                position: position, 
-                precisionPosition: precisionPosition, 
-                pressure: pressure, 
-                phase: .down, 
-                kind: kind
-            )
-            if let view = currentlyHitTouchViews[touch] {
-                view.touchesEnded([touch])
-                currentlyHitTouchViews[touch] = nil
+            if let touch = currentlyHitTouchViews.keys.first(where: {$0.id == id}) {
+                if let view = currentlyHitTouchViews[touch] {
+                    view.touchesEnded([touch])
+                    currentlyHitTouchViews[touch] = nil
+                }
             }
         case .canceled:
-            let touch = Touch(
-                id: id, 
-                window: self, 
-                position: position, 
-                precisionPosition: precisionPosition, 
-                pressure: pressure, 
-                phase: .down, 
-                kind: kind
+            if let touch = currentlyHitTouchViews.keys.first(where: {$0.id == id}) {
+                if let view = currentlyHitTouchViews[touch] {
+                    view.touchesCanceled([touch])
+                    currentlyHitTouchViews[touch] = nil
+                }
+            }
+        }
+    }
+    
+    var currentlyHitSurfaceTouchViews: [SurfaceTouch:View] = [:]
+    
+    internal func surfaceTouchChange(
+        id: AnyHashable,
+        kind: TouchKind,
+        event: TouchChangeEvent,
+        normalizedPosition: Position2,
+        pressure: Float,
+        mouse: Mouse
+    ) {
+        
+        switch event {
+        case .began:
+            let touch = SurfaceTouch(
+                id: id,
+                normalizedPosition: normalizedPosition,
+                phase: .down
             )
-            if let view = currentlyHitTouchViews[touch] {
-                view.touchesCanceled([touch])
-                currentlyHitTouchViews[touch] = nil
+            if let mousePosition = mouse.position {
+                if let view = self.hitTest(mousePosition, clipRect: Rect(size: self.size)) {
+                    currentlyHitSurfaceTouchViews[touch] = view
+                    view.surfaceTouchesBegan([touch], mouse: mouse)
+                }
+            }
+        case .moved:
+            if let touch = currentlyHitSurfaceTouchViews.keys.first(where: {$0.id == id}) {
+                touch.position = normalizedPosition
+                if let view = currentlyHitSurfaceTouchViews[touch] {
+                    view.surfaceTouchesMoved([touch], mouse: mouse)
+                }
+            }
+        case .ended:
+            if let touch = currentlyHitSurfaceTouchViews.keys.first(where: {$0.id == id}) {
+                if let view = currentlyHitSurfaceTouchViews[touch] {
+                    view.surfaceTouchesEnded([touch], mouse: mouse)
+                    currentlyHitSurfaceTouchViews[touch] = nil
+                }
+            }
+        case .canceled:
+            if let touch = currentlyHitSurfaceTouchViews.keys.first(where: {$0.id == id}) {
+                if let view = currentlyHitSurfaceTouchViews[touch] {
+                    view.surfaceTouchesCanceled([touch], mouse: mouse)
+                    currentlyHitSurfaceTouchViews[touch] = nil
+                }
             }
         }
     }
