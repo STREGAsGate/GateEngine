@@ -8,7 +8,7 @@
 import GameMath
 
 /// An element array object formatted as triangle primitives
-public struct RawGeometry: Codable, Equatable, Hashable {
+public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
     public enum Attribute: Hashable {
         case position(_ index: UInt8)
         case textureCoordinate(_ index: UInt8)
