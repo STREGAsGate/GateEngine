@@ -99,7 +99,7 @@ public struct RawLines {
         self.indices = indices
     }
 
-    public init(boundingBoxFrom triangles: [Triangle]) {
+    public init(boundingBoxFrom triangles: [Triangle], color prefferedColor: Color? = nil) {
         func getSimilarVertex(to vertext: Vertex, from vertices: [Vertex]) -> Array<Vertex>.Index? {
             return vertices.firstIndex(where: { $0.isSimilar(to: vertext) })
         }
@@ -179,7 +179,11 @@ public struct RawLines {
 
         var _colors: [Float] = []
         for color in colors {
-            _colors.append(contentsOf: [color.red, color.green, color.blue, color.alpha])
+            if let prefferedColor {
+                _colors.append(contentsOf: [prefferedColor.red, prefferedColor.green, prefferedColor.blue, prefferedColor.alpha])
+            }else{
+                _colors.append(contentsOf: [color.red, color.green, color.blue, color.alpha])
+            }
         }
 
         self.positions = _positions
