@@ -114,7 +114,7 @@ public final class SplitView: View {
         super.cursorMoved(cursor)
         if dividerControl.isDragging {
             if cursor.button(.button1).isPressed {
-                if let new = cursor.loactionInView(self)?.x {
+                if let new = cursor.locationInView(self)?.x {
                     dividerXOffset = new
                 }
             }

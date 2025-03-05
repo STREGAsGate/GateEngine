@@ -116,7 +116,7 @@ import GameMath
     */
     public internal(set) var position: Position2? = nil
     
-    public func loactionInView(_ view: View) -> Position2? {
+    public func locationInView(_ view: View) -> Position2? {
         if let position, let window {
             return view.convert(position, from: window)
         }

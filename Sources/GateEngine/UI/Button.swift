@@ -101,7 +101,7 @@ open class Button: Control {
     }
     
     open override func cursorButtonDown(button: MouseButton, mouse: Mouse) {
-        if let mouseLocation = mouse.loactionInView(self) {
+        if let mouseLocation = mouse.locationInView(self) {
             if self.bounds.contains(mouseLocation) {
                 self.sendActions(forEvent: .pressed)
             }
