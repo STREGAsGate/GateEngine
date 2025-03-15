@@ -30,7 +30,7 @@ let package = Package(
         )
 
         // SwiftWASM
-        #if os(macOS) || os(Linux)
+        #if false && (os(macOS) || os(Linux))
         packageDependencies.append(contentsOf: [
             .package(url: "https://github.com/swiftwasm/WebAPIKit.git", .upToNextMajor(from: "0.1.0")),
             .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
@@ -96,7 +96,7 @@ let package = Package(
                                      package: "swift-collections")
                         ])
 
-                        #if os(macOS) || os(Linux)
+                        #if false && (os(macOS) || os(Linux))
                         dependencies.append(contentsOf: [
                             .product(name: "JavaScriptEventLoop",
                                      package: "JavaScriptKit",
@@ -154,11 +154,22 @@ let package = Package(
                             /// The host platform requires an intermediate task, so GateEngine won't load default systems.
                             .define("GATEENGINE_PLATFORM_DEFERS_LAUNCH",
                                 .when(platforms: [.wasi])),
+                        ])
+                        // File System Options
+                        settings.append(contentsOf: [
                             /// The host platform supports file system read/write
                             .define("GATEENGINE_PLATFORM_HAS_FILESYSTEM",
                                 .when(platforms: .any)),
+                            
+                            /// The host platform supports Swift concurrency for file system calls
+                            .define("GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem",
+                                .when(platforms: .any)),
+                            /// The host platform supports file system read/write without requiring Swift concurrency
+                            .define("GATEENGINE_PLATFORM_HAS_SynchronousFileSystem",
+                                .when(platforms: .any(except: .wasi))),
+                            
                             /// The host platform supports Foundation.FileManager
-                            .define("GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER",
+                            .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER",
                                 .when(platforms: .any(except: .wasi))),
                         ])
                         #if !(os(macOS) || os(Linux))
