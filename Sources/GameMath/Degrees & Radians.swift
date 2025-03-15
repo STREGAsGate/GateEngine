@@ -11,6 +11,9 @@ public protocol Angle: Sendable, RawRepresentable, Numeric, Comparable, Floating
     var rawValueAsDegrees: RawValue {get}
     var rawValueAsRadians: RawValue {get}
     
+    var asDegrees: Degrees {get}
+    var asRadians: Radians {get}
+    
     mutating func interpolate(to: some Angle, _ method: InterpolationMethod)
     func interpolated(to: some Angle, _ method: InterpolationMethod) -> Self
     
@@ -534,6 +537,14 @@ public struct Radians: Angle, Hashable, Codable, Sendable {
     public var rawValueAsDegrees: Float {
         return rawValue * (180 / RawValue.pi)
     }
+    @_transparent
+    public var asDegrees: Degrees {
+        return .init(rawValue: rawValueAsDegrees)
+    }
+    @_transparent
+    public var asRadians: Radians {
+        return self
+    }
 }
 
 public struct Degrees: Angle, Hashable, Codable, Sendable {
@@ -577,6 +588,14 @@ public struct Degrees: Angle, Hashable, Codable, Sendable {
     @_transparent
     public var rawValueAsDegrees: Float {
         return rawValue
+    }
+    @_transparent
+    public var asDegrees: Degrees {
+        return self
+    }
+    @_transparent
+    public var asRadians: Radians {
+        return .init(rawValue: rawValueAsRadians)
     }
 }
 
@@ -668,5 +687,11 @@ extension Degrees {
 postfix operator °
 @_transparent
 public postfix func °(lhs: Degrees.RawValue) -> Degrees {
-    return Degrees(lhs)
+    return Degrees(rawValue: lhs)
+}
+
+@_transparent 
+@_disfavoredOverload
+public postfix func °(lhs: Degrees.RawValue) -> Radians {
+    return Degrees(rawValue: lhs).asRadians
 }
