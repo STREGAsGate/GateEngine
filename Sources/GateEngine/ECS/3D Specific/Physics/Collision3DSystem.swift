@@ -37,7 +37,7 @@ public final class Collision3DSystem: System {
 
         var finishedPairs: Set<Set<ObjectIdentifier>> = []
 
-        let octrees = self.octrees
+        let octrees = self.getOctrees()
 
         for dynamicEntity in dynamicEntities {
             guard
@@ -250,7 +250,7 @@ extension Collision3DSystem {
         
         let ray = Ray3D(from: point, toward: directionTraveled)
         let filter = collisionComponent.triangleFilter
-        guard let hit = trianglesHit(by: ray, filter: filter).first else { 
+        guard let hit = trianglesHit(by: ray, triangleFilter: filter).first else { 
             return 
         }
         guard hit.position.distance(from: previousPosition) < distanceTraveled else {
@@ -284,7 +284,7 @@ extension Collision3DSystem {
             let wFilter: (CollisionTriangle) -> Bool = {
                 $0.surfaceType == .wall && $0.plane.classifyPoint(position) == .front
             }
-            return trianglesHit(by: Ray3D(from: position, toward: direction), filter: wFilter).first
+            return trianglesHit(by: Ray3D(from: position, toward: direction), triangleFilter: wFilter).first
         }
 
         @inline(__always)
@@ -292,7 +292,7 @@ extension Collision3DSystem {
             let tFilter: (CollisionTriangle) -> Bool = {
                 $0.surfaceType.isWalkable && $0.plane.classifyPoint(collider.position) == .front
             }
-            return trianglesHit(by: Ray3D(from: position, toward: .down), filter: tFilter).first
+            return trianglesHit(by: Ray3D(from: position, toward: .down), triangleFilter: tFilter).first
         }
 
         @inline(__always)
@@ -427,7 +427,7 @@ extension Collision3DSystem {
 
                 lazy var distance: Float = point.distance(from: transformComponent.position)
 
-                if let hit = trianglesHit(by: Ray3D(from: projected, toward: .down), filter: filter)
+                if let hit = trianglesHit(by: Ray3D(from: projected, toward: .down), triangleFilter: filter)
                     .first
                 {
                     let y1 = transformComponent.position.y
@@ -526,7 +526,10 @@ extension Collision3DSystem {
 }
 
 extension Collision3DSystem {
-    private var octrees: [OctreeComponent] {
+    private func getOctrees(entityFilter: ((Entity)->Bool)? = nil) -> [OctreeComponent] {
+        if let entityFilter {
+            return context.entities.filter({entityFilter($0)}).compactMap({ $0.component(ofType: OctreeComponent.self) })
+        }
         return context.entities.compactMap({ $0.component(ofType: OctreeComponent.self) })
     }
 
@@ -537,7 +540,7 @@ extension Collision3DSystem {
     ) -> [CollisionTriangle] {
         var hits: [CollisionTriangle] = []
 
-        for octree in self.octrees.filter({ $0.boundingBox.isColiding(with: box) }) {
+        for octree in self.getOctrees().filter({ $0.boundingBox.isColiding(with: box) }) {
             let triangles = octree.trianglesNear(box)
             if triangles.isEmpty == false {
                 hits.append(contentsOf: triangles)
@@ -554,25 +557,26 @@ extension Collision3DSystem {
     public func trianglesHit(
         by ray: Ray3D, 
         useRayCastCollider: Bool = false, 
-        filter: ((CollisionTriangle) -> Bool)? = nil
+        triangleFilter: ((CollisionTriangle) -> Bool)? = nil,
+        entityFilter: ((Entity) -> Bool)? = nil
     ) -> [(position: Position3, triangle: CollisionTriangle)] {
         var hits: [(position: Position3, triangle: CollisionTriangle)] = []
 
-        for entity in entitiesProbablyHit(by: ray) {
+        for entity in entitiesProbablyHit(by: ray, filter: entityFilter) {
             let component = entity[Collision3DComponent.self]
             let collider = useRayCastCollider ? (component.rayCastCollider ?? component.collider) : component.collider
             switch collider {
             case let meshCollider as MeshCollider:
-                hits.append(contentsOf: meshCollider.trianglesHit(by: ray))
+                hits.append(contentsOf: meshCollider.trianglesHit(by: ray, filter: triangleFilter))
             case let skinCollider as SkinCollider:
-                hits.append(contentsOf: skinCollider.trianglesHit(by: ray))
+                hits.append(contentsOf: skinCollider.trianglesHit(by: ray, filter: triangleFilter))
             default:
                 break
             }
         }
 
-        for octree in octrees {
-            let triangles = octree.trianglesHit(by: ray, filter: filter)
+        for octree in self.getOctrees(entityFilter: entityFilter) {
+            let triangles = octree.trianglesHit(by: ray, filter: triangleFilter)
             if triangles.isEmpty == false {
                 hits.append(contentsOf: triangles)
             }
@@ -594,10 +598,7 @@ extension Collision3DSystem {
         var entities: [Entity] = []
 
         for entity in context.entities {
-            if 
-                let collisionComponent = entity.component(ofType: Collision3DComponent.self),
-                filter?(entity) ?? true
-            {
+            if let collisionComponent = entity.component(ofType: Collision3DComponent.self), filter?(entity) ?? true {
                 let collider = useRayCastCollider ? (collisionComponent.rayCastCollider ?? collisionComponent.collider) : collisionComponent.collider
                 if collider.boundingBox.surfacePoint(for: ray) != nil {
                     entities.append(entity)
@@ -663,7 +664,7 @@ extension Collision3DSystem {
         entity: Entity?
     )? {
         let entityHit = entitiesHit(by: ray, useRayCastCollider: useRaycastCollider, filter: entityFilter).first
-        guard let triangleHit = trianglesHit(by: ray, useRayCastCollider: useRaycastCollider, filter: triangleFilter).first else {
+        guard let triangleHit = trianglesHit(by: ray, useRayCastCollider: useRaycastCollider, triangleFilter: triangleFilter).first else {
             if let entityHit {
                 return (
                     entityHit.surfaceImpact.position,
