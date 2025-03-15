@@ -16,6 +16,9 @@ public struct LaunchOptions: OptionSet {
 }
 
 public protocol GameDelegate: AnyObject {
+    /// Return false exit the program
+    func shouldFinishLaunching(game: Game) async throws -> Bool
+    
     /// Called when the app finishes loading.
     @MainActor 
     func didFinishLaunching(game: Game, options: LaunchOptions) async
@@ -86,6 +89,8 @@ public protocol GameDelegate: AnyObject {
 }
 
 extension GameDelegate {
+    public func shouldFinishLaunching(game: Game) async throws -> Bool { return true }
+    
     public func createUserRequestedWindow(using manager: WindowManager) throws -> Window? { return nil }
     public func createWindowForExternalScreen(using manager: WindowManager) throws -> Window? { return nil }
 
@@ -156,10 +161,11 @@ extension GameDelegate {
 }
 
 extension GameDelegate {
-    @MainActor public static func main() {
+    @MainActor public static func main() async throws {
         let delegate = Self()
-        let platform = CurrentPlatform(delegate: delegate)
-        Game._shared = Game(delegate: delegate, currentPlatform: platform)
-        Game.shared.platform.main()
+        Game._shared = Game(delegate: delegate)
+        if try await delegate.shouldFinishLaunching(game: Game.shared) == true {
+            Game.shared.platform.main()
+        }
     }
 }
