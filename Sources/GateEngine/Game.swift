@@ -188,11 +188,21 @@ public final class Game {
     #endif
 }
 
-extension Game {
-    @MainActor
-    internal static var _shared: Game! = nil
-    @MainActor
-    public static var shared: Game {
+@MainActor
+public extension Game {
+    /// The shared instance of Game
+    static var shared: Game {
+        // Should never be nil, so unsafely unwrap
+        return _shared.unsafelyUnwrapped
+    }
+}
+
+internal extension Game {
+    nonisolated(unsafe)
+    static var _shared: Game? = nil
+    
+    // Allow unsafe access for GateEngine use
+    nonisolated static var unsafeShared: Game {
         return _shared.unsafelyUnwrapped
     }
 }
