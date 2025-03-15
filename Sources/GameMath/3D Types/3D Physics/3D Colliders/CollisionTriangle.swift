@@ -74,6 +74,16 @@ public extension CollisionTriangle {
                   colors[2],
                   attributes: attributes)
     }
+    
+    init(positions: [Position3], colors: [Color], offset: Position3 = .zero, attributes: UInt32 = 0) {
+        self.init(positions[0] + offset,
+                  positions[1] + offset,
+                  positions[2] + offset,
+                  colors[0],
+                  colors[1],
+                  colors[2],
+                  attributes: attributes)
+    }
 }
 
 extension CollisionTriangle: Surface3D {}
