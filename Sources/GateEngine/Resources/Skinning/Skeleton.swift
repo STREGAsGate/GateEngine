@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-#if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
+#if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
 import Foundation
 #endif
 
@@ -678,7 +678,7 @@ extension ResourceManager {
     }
     
     func skeletonNeedsReload(key: Cache.SkeletonKey) -> Bool {
-        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
+        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
         guard let cache = cache.skeletons[key] else { return false }

@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-#if GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
+#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
 import Foundation
 #endif
 
@@ -363,7 +363,7 @@ extension ResourceManager {
     func geometryNeedsReload(key: Cache.GeometryKey) -> Bool {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
-        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
+        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
         guard let cache = cache.geometries[key] else { return false }
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)

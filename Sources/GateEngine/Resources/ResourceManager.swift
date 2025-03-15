@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-#if GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER
+#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
 import class Foundation.FileManager
 #endif
 import Atomics
