@@ -17,20 +17,24 @@ public class MutableGeometry: Geometry {
 
     public init(rawGeometry: RawGeometry? = nil) {
         self.rawGeometry = rawGeometry
-        super.init(optionalRawGeometry: rawGeometry)
+        super.init(optionalRawGeometry: rawGeometry, immediate: true)
     }
 
     private func load() {
-        guard let rawGeometry = rawGeometry else { return }
         Task(priority: .high) {
             guard let cache = Game.shared.resourceManager.geometryCache(for: cacheKey) else {
                 return
             }
-            cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
-                from: rawGeometry
-            )
-            Task { @MainActor in
-                cache.state = .ready
+            if let rawGeometry, rawGeometry.indices.isEmpty == false {
+                cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
+                    from: rawGeometry
+                )
+                Task(priority: .high) { @MainActor in
+                    cache.state = .ready
+                }
+            }else{
+                cache.geometryBackend = nil
+                cache.state = .pending
             }
         }
     }
