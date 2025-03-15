@@ -18,38 +18,52 @@ public final class MeshCollider: Collider3D {
     }
     
     private let originalTriangles: [CollisionTriangle]
+    /// Triangles as they were provided to the collider
+    /// These triangles are not moved, rotated, or scaled to match its entity
+    public func untransformedTriangles() -> [CollisionTriangle] {
+        return originalTriangles
+    }
     private var transformedTriangles: [CollisionTriangle]
+    /// Triangles as they were provided to the collider
+    /// These triangles are moved, rotated, and scaled by the `transform` property
+    /// - note: The transform property is automatically manipulated by `Collision3DSystem` to match the `Collision3DComponents` entity
     public func triangles() -> [CollisionTriangle] {
         if needsUpdate {
-            needsUpdate = false
-            let matrix = transform.matrix()
-            transformedTriangles = originalTriangles.map({$0 * matrix})
-            var positions: [Position3] = []
-            positions.reserveCapacity(transformedTriangles.count * 3)
-            for triangle in transformedTriangles {
-                positions.append(contentsOf: triangle.positions)
-            }
-            
-            boundingBox = AxisAlignedBoundingBox3D(positions)
+            update()
         }
         return transformedTriangles
+    }
+    
+    private func update() {
+        needsUpdate = false
+        let matrix = transform.matrix()
+        transformedTriangles = originalTriangles.map({$0 * matrix})
+        var positions: [Position3] = []
+        positions.reserveCapacity(transformedTriangles.count * 3)
+        for triangle in transformedTriangles {
+            positions.append(contentsOf: triangle.positions)
+        }
+        
+        _boundingBox = AxisAlignedBoundingBox3D(positions)
     }
     
     private var transform: Transform3 = .default {
         didSet {
             if transform != oldValue {
                 needsUpdate = true
-                
-                //TODO: This update should account for rotation changes
-                //      When triangles are updated a new perfect box is created
-                self.boundingBox.update(transform: transform)
             }
         }
     }
         
     private var needsUpdate: Bool = true
     
-    public private(set) var boundingBox: AxisAlignedBoundingBox3D = AxisAlignedBoundingBox3D()
+    private var _boundingBox: AxisAlignedBoundingBox3D = AxisAlignedBoundingBox3D()
+    public var boundingBox: AxisAlignedBoundingBox3D {
+        if needsUpdate {
+            update()
+        }
+        return _boundingBox
+    }
     
     public func update(transform: Transform3) {
         self.transform = transform
