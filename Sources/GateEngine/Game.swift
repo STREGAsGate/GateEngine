@@ -5,25 +5,23 @@
  * http://stregasgate.com
  */
 
-extension Game {
-    static public fileprivate(set) var identifier: String = ""
-}
-
 public final class Game {
-    public let platform: CurrentPlatform
+    nonisolated(unsafe) internal var unsafePlatform: Platform = Platform()
+    
+    @MainActor public var platform: Platform {
+        get {unsafePlatform}
+        set {unsafePlatform = newValue}
+    }
+    
     public let delegate: any GameDelegate
 
     @MainActor public private(set) var state: State! = nil
     @MainActor internal private(set) var internalState: State! = nil
 
-    @inlinable @inline(__always)
-    nonisolated var identifier: String {
-        return Self.identifier
-    }
+    nonisolated(unsafe) public internal(set) lazy var info: Game.Info = Game.Info()
     
     nonisolated public let isHeadless: Bool
-    @MainActor internal init(delegate: any GameDelegate, currentPlatform: CurrentPlatform) {
-        self.platform = currentPlatform
+    @MainActor internal init(delegate: any GameDelegate) {
         self.delegate = delegate
         if delegate.isHeadless() {
             self.renderer = nil
@@ -35,7 +33,6 @@ public final class Game {
             self.renderingAPI = renderer._backend.renderingAPI
             self.isHeadless = false
         }
-        Self.identifier = delegate.resolvedGameIdentifier()
     }
 
     public struct Attributes: OptionSet, Sendable {
