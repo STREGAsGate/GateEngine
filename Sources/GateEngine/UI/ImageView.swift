@@ -37,14 +37,6 @@ open class ImageView: View {
         super.init()
     }
     
-    open override func updateLayoutConstraints() {
-        let size = contentSize()
-        self.layoutConstraints.removeAllHorizontalSizeConstraints()
-        self.layoutConstraints.removeAllVerticalSizeConstraints()
-        self.widthAnchor.constrain(to: size.width)
-        self.heightAnchor.constrain(to: size.height)
-    }
-    
     public override func contentSize() -> Size2 {
         if let subRect {
             return subRect.size

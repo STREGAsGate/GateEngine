@@ -141,11 +141,12 @@ public struct WindowOptions: OptionSet {
             }
         }
         
-        func frameForView(_ view: View) -> Rect {
+        func frameForView(_ view: View) -> Rect? {
             if let index = self.elements.firstIndex(where: {$0.view === view}) {
                 return self.elements[index].packedFrame
             }
-            fatalError()
+            // The view doesnt exist
+            return nil
         }
         
         var viewToAdd: [View] = []

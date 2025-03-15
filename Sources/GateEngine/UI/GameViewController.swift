@@ -63,9 +63,13 @@ public final class GameView: View {
                     self.pendingBackgroundColor = newValue
                 }
             case .offScreen:
-                _renderTarget?.clearColor = newValue ?? .clear
+                if let _renderTarget {
+                    _renderTarget.clearColor = newValue ?? .clear
+                }else{
+                    self.pendingBackgroundColor = newValue
+                }
             }
-            super.backgroundColor = nil
+            super.backgroundColor = newValue
         }
     }
     
@@ -194,7 +198,6 @@ public final class GameView: View {
             if let pendingBackgroundColor {
                 if window != nil {
                     self.backgroundColor = pendingBackgroundColor
-                    self.pendingBackgroundColor = nil
                 }
             }
         }else{
@@ -203,6 +206,7 @@ public final class GameView: View {
             _renderTarget = RenderTarget(backgroundColor: self.backgroundColor ?? .clear)
             Game.shared.attributes.remove(.renderingIsPermitted)
         }
+        self.pendingBackgroundColor = nil
     }
 }
 extension GameView {
@@ -229,6 +233,11 @@ open class GameViewController: ViewController {
     @usableFromInline
     internal let context = ECSContext()
 
+    @inlinable @inline(__always)
+    public var gameView: GameView {
+        return unsafeDowncast(self.view, to: GameView.self)
+    } 
+    
     final public override func loadView() {
         self.view = GameView()
         Task {
@@ -297,6 +306,58 @@ open class GameViewController: ViewController {
     
     open func scrolled(_ delta: Position2, isPlatformGeneratedMomentum isMomentum: Bool) {
         
+    }
+}
+
+extension GameView {
+    /**
+     Move a 3D point into this view's coordinate space.
+     
+     - returns: A 2D position representing the location of a 3D object in this view's bounds.
+     */
+    public func convert(_ position: Position3, from camera: Camera) -> Position2 {
+        let size = self.bounds.size
+        let matricies = camera.matricies(withViewportSize: size * self.interfaceScale)
+        var position = position * matricies.viewProjection()
+        position.x /= position.z
+        position.y /= position.z
+        
+        position.x = size.width * (position.x + 1) / 2
+        position.y = size.height * (1.0 - ((position.y + 1) / 2))
+        
+//        position.x /= self.interfaceScale
+//        position.y /= self.interfaceScale
+        
+        return Position2(position.x, position.y)
+    }
+    
+    /**
+     Move a 2D point into a 3D space.
+     
+     - returns: A Ray3D representing the location of a 2D point located on the view. The ray's direction is toward the 3D space accounting for perspective distortion.
+     */
+    public func convert(_ position: Position2, to camera: Camera) -> Ray3D {
+        switch camera.fieldOfView {
+        case .perspective(let fieldOfView):
+            let size = self.bounds.size
+            let halfSize = size / 2
+            let aspectRatio = size.aspectRatio
+            
+            let inverseView = camera.matricies(withViewportSize: size * interfaceScale).view.inverse
+            let halfFOV = tan(fieldOfView.rawValueAsRadians * 0.5)
+            let near = camera.clippingPlane.near
+            let far = camera.clippingPlane.far
+            
+            let dx = halfFOV * (position.x / halfSize.width - 1.0) * aspectRatio
+            let dy = halfFOV * (1.0 - position.y / halfSize.height)
+            
+            let p1 = Position3(dx * near, dy * near, near) * inverseView
+            let p2 = Position3(dx * far, dy * far, far) * inverseView
+            
+            return Ray3D(from: p1, toward: p2)
+        case .orthographic(_):
+            fatalError("Not implemented")
+        }
     }
 }
 

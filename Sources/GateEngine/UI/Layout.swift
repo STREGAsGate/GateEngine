@@ -346,6 +346,13 @@ public struct Layout {
             }
         }
         
+        if computed == nil {
+            let contentWidth = view.contentSize().width
+            if contentWidth > 0 {
+                computed = Value<Layout.Horizontal, Layout.Size>.Computed(value: contentWidth)
+            }
+        }
+        
         view.layoutConstraints.resolvedFrame.width.currentlyBeingResolved = false
         if let computed {
             view.layoutConstraints.resolvedFrame.width.computed = computed
@@ -438,6 +445,13 @@ public struct Layout {
             
             if let lowestSubviewBottom {
                 computed = Value.Computed(value: lowestSubviewBottom)
+            }
+        }
+        
+        if computed == nil {
+            let contentHeight = view.contentSize().height
+            if contentHeight > 0 {
+                computed = Value<Layout.Vertical, Layout.Size>.Computed(value: contentHeight)
             }
         }
         

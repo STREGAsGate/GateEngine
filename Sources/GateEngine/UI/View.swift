@@ -142,13 +142,14 @@ open class View {
         var _superview: View? = self.superView
         while let superview = _superview {
             if superview.renderingMode == .offScreen {
-                frame.position += window!.offScreenRendering.frameForView(superview).position / interfaceScale
-                break
-            }else{
-                frame.position += superview.bounds.position
-                frame.position += superview.frame.position
-                _superview = superview.superView
+                if let offsecreenPosition = window?.offScreenRendering.frameForView(superview)?.position {
+                    frame.position += offsecreenPosition / interfaceScale
+                    break
+                }
             }
+            frame.position += superview.bounds.position
+            frame.position += superview.frame.position
+            _superview = superview.superView
         }
         _representationFrame = frame * interfaceScale
         return _representationFrame!
@@ -157,7 +158,9 @@ open class View {
     /// The frame when placing this content in the offscreen buffer
     func offScreenFrame() -> Rect {
         if self.renderingMode == .offScreen {
-            return window!.offScreenRendering.frameForView(self)
+            if let frame = window?.offScreenRendering.frameForView(self) {
+                return frame
+            }
         }
         
         if let _offScreenFrame {
@@ -394,10 +397,13 @@ open class View {
     public static var colorOffscreenRendered: Bool = false
     
     internal func drawOffScreenRepresentation(into canvas: inout UICanvas, at frame: Rect) {
+        guard let offScreenRendering = self.window?.offScreenRendering else {return}
+        guard let offscreenFrame = offScreenRendering.frameForView(self) else {return}
+        
         var material = self.offScreenRepresentationMaterial
         material.channel(0) { channel in
-            channel.texture = self.window!.offScreenRendering.renderTarget.texture
-            channel.setSubRect(self.window!.offScreenRendering.frameForView(self))
+            channel.texture = offScreenRendering.renderTarget.texture
+            channel.setSubRect(offscreenFrame)
         }
         #if DEBUG
         material.channel(1) { channel in

@@ -49,7 +49,27 @@ public final class StackView: View {
         self.needsUpdateConstraints = true
     }
     
+    public override func contentSize() -> Size2 {
+        switch axis {
+        case .horizontal:
+            return Size2(
+                width: subviews.last?.frame.maxX ?? 0, 
+                height: (subviews.sorted(by: {$0.bounds.height > $1.bounds.height}).first?.bounds.height ?? 0) + (spacing * Float(subviews.count - 1))
+            )
+        case .vertical:
+            return Size2(
+                width: (subviews.sorted(by: {$0.bounds.width > $1.bounds.width}).first?.bounds.width ?? 0) + (spacing * Float(subviews.count - 1)), 
+                height: subviews.last?.frame.maxY ?? 0
+            )
+        }
+    }
+    
     public override func updateLayoutConstraints() {
+        if subviews.isEmpty {
+            self.widthAnchor.constrain(to: 0)
+            self.heightAnchor.constrain(to: 0)
+            return
+        }
         switch axis {
         case .horizontal:
             switch distribution {
@@ -63,8 +83,7 @@ public final class StackView: View {
                     }else{
                         subView.leadingAnchor.constrain(spacing, from: previousView.trailingAnchor)
                     }
-                    subView.topAnchor.constrain(to: self.topAnchor)
-                    subView.bottomAnchor.constrain(to: self.bottomAnchor)
+                    subView.centerYAnchor.constrain(to: self.centerYAnchor)
                     previousView = subView
                 }
                 subviews.last?.trailingAnchor.constrain(to: self.trailingAnchor)

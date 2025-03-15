@@ -85,20 +85,46 @@ public final class SplitView: View {
             dividerControl.isEnabled = self.canResizeSidebar
         }
     }
-    public var dividerXOffset: Float = 300 {
+    public var sidebarWidth: Float = 300 {
         didSet {
             self.setNeedsUpdateConstraints()
         }
     }
     
+    public var canResizeDetail: Bool = true {
+        didSet {
+            dividerControl2.isEnabled = self.canResizeDetail
+        }
+    }
+    public var detailWidth: Float = 300 {
+        didSet {
+            self.setNeedsUpdateConstraints()
+        }
+    }
+    
+    weak var sidebarView: View? = nil
+    weak var contentView: View? = nil
+    weak var detailView: View? = nil
+    
     let dividerControl: SplitViewDividerControl = SplitViewDividerControl()
-    public func addSidebarView(_ sidebarView: View, contentView: View) {
+    let dividerControl2: SplitViewDividerControl = SplitViewDividerControl()
+    
+    public func addSidebarView(_ sidebarView: View, contentView: View, detailView: View?) {
         for subview in subviews {
             subview.removeFromSuperview()
         }
+        self.sidebarView = sidebarView
         self.addSubview(sidebarView)
+        self.contentView = contentView
         self.addSubview(contentView)
+        if let detailView {
+            self.detailView = detailView
+            self.addSubview(detailView)
+        }
         self.addSubview(dividerControl)
+        if detailView != nil {
+            self.addSubview(dividerControl2)
+        }
     }
         
     public override init(size: Size2? = nil) {
@@ -115,7 +141,7 @@ public final class SplitView: View {
         if dividerControl.isDragging {
             if cursor.button(.button1).isPressed {
                 if let new = cursor.locationInView(self)?.x {
-                    dividerXOffset = new
+                    sidebarWidth = new
                 }
             }
         }
@@ -128,19 +154,41 @@ public final class SplitView: View {
         dividerControl.topAnchor.constrain(to: self.topAnchor)
         dividerControl.bottomAnchor.constrain(to: self.bottomAnchor)
         dividerControl.widthAnchor.constrain(to: 8)
-        dividerControl.leadingAnchor.constrain(dividerXOffset - 4, from: self.leadingAnchor, priority: .high)
+        dividerControl.leadingAnchor.constrain(sidebarWidth - 4, from: self.leadingAnchor, priority: .high)
+        
+        dividerControl2.layoutConstraints.removeAllConstraints()
+        if detailView != nil {
+            dividerControl2.topAnchor.constrain(to: self.topAnchor)
+            dividerControl2.bottomAnchor.constrain(to: self.bottomAnchor)
+            dividerControl2.widthAnchor.constrain(to: 8)
+            dividerControl2.leadingAnchor.constrain(-detailWidth - 4, from: self.trailingAnchor, priority: .high)
+        }
         
         self.subviews[0].layoutConstraints.removeAllConstraints()
         self.subviews[0].topAnchor.constrain(to: self.topAnchor)
         self.subviews[0].leadingAnchor.constrain(to: self.leadingAnchor)
         self.subviews[0].bottomAnchor.constrain(to: self.bottomAnchor)
-        self.subviews[0].widthAnchor.constrain(to: dividerXOffset)
+        self.subviews[0].widthAnchor.constrain(to: sidebarWidth)
         
-        self.subviews[1].layoutConstraints.removeAllConstraints()
-        self.subviews[1].topAnchor.constrain(to: self.topAnchor)
-        self.subviews[1].leadingAnchor.constrain(dividerXOffset + 1, from: self.leadingAnchor)
-        self.subviews[1].bottomAnchor.constrain(to: self.bottomAnchor)
-        self.subviews[1].trailingAnchor.constrain(to: self.trailingAnchor)
+        if detailView != nil {
+            self.subviews[1].layoutConstraints.removeAllConstraints()
+            self.subviews[1].topAnchor.constrain(to: self.topAnchor)
+            self.subviews[1].leadingAnchor.constrain(sidebarWidth + 1, from: self.leadingAnchor)
+            self.subviews[1].bottomAnchor.constrain(to: self.bottomAnchor)
+            self.subviews[1].trailingAnchor.constrain(-detailWidth, from: self.trailingAnchor)
+            
+            self.subviews[2].layoutConstraints.removeAllConstraints()
+            self.subviews[2].topAnchor.constrain(to: self.topAnchor)
+            self.subviews[2].leadingAnchor.constrain(-detailWidth, from: self.trailingAnchor)
+            self.subviews[2].bottomAnchor.constrain(to: self.bottomAnchor)
+            self.subviews[2].widthAnchor.constrain(to: detailWidth)
+        }else{
+            self.subviews[1].layoutConstraints.removeAllConstraints()
+            self.subviews[1].topAnchor.constrain(to: self.topAnchor)
+            self.subviews[1].leadingAnchor.constrain(sidebarWidth + 1, from: self.leadingAnchor)
+            self.subviews[1].bottomAnchor.constrain(to: self.bottomAnchor)
+            self.subviews[1].trailingAnchor.constrain(to: self.trailingAnchor)
+        }
     }
 }
 
@@ -154,16 +202,32 @@ open class SplitViewController: ViewController {
     
     open override func viewDidLoad() {
         super.viewDidLoad()
-        self.splitView.addSidebarView(children[0].view, contentView: children[1].view)
+        if detailViewController != nil {
+            self.splitView.addSidebarView(children[0].view, contentView: children[1].view, detailView: children[2].view)
+        }else{
+            self.splitView.addSidebarView(children[0].view, contentView: children[1].view, detailView: nil)
+        }
     }
     
     public var splitView: SplitView {
         return self.view as! SplitView
     }
     
-    public init(sideBar: ViewController, content: ViewController) {
+    weak var sidebarViewController: ViewController? = nil
+    weak var contentViewController: ViewController? = nil
+    weak var detailViewController: ViewController? = nil
+    
+    public init(sideBar: ViewController, content: ViewController, detail: ViewController? = nil) {
         super.init()
         self.addChildViewController(sideBar)
+        self.sidebarViewController = sideBar
+        
         self.addChildViewController(content)
+        self.contentViewController = content
+        
+        if let detail {
+            self.detailViewController = detail
+            self.addChildViewController(detail)
+        }
     }
 }
