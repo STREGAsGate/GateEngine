@@ -18,16 +18,20 @@ public class MutableLines: Lines {
     }
 
     private func load() {
-        guard let rawLines = rawLines else { return }
         Task(priority: .high) {
             guard let cache = Game.shared.resourceManager.geometryCache(for: cacheKey) else {
                 return
             }
-            cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
-                from: rawLines
-            )
-            Task { @MainActor in
-                cache.state = .ready
+            if let rawLines, rawLines.indices.isEmpty == false {
+                cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
+                    from: rawLines
+                )
+                Task { @MainActor in
+                    cache.state = .ready
+                }
+            }else{
+                cache.geometryBackend = nil
+                cache.state = .pending
             }
         }
     }
