@@ -34,6 +34,15 @@ extension VertexShader {
         return vsh
     }()
     
+    public static let materialColor: VertexShader = {
+        let vsh = VertexShader()
+        let mvp = vsh.modelViewProjectionMatrix
+        let vertexPosition = vsh.input.geometry(0).position
+        vsh.output.position = mvp * Vec4(vertexPosition, 1)
+        vsh.output["color"] = vsh.channel(0).color
+        return vsh
+    }()
+    
     public static let skinned: VertexShader = {
         let vsh = VertexShader()
         let bones = vsh.uniforms.value(named: "bones", as: Mat4Array.self, arrayCapacity: 64)

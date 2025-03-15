@@ -5,6 +5,8 @@
  * http://stregasgate.com
  */
 
+import Shaders
+
 /// A Scene is a drawing space with 3 dimensions and a perspective camera.
 @MainActor public struct Scene: Drawable {
     @usableFromInline internal var camera: Camera
@@ -65,9 +67,10 @@
         _ geometry: Geometry,
         withMaterial material: Material,
         at transform: Transform3,
+        blendMode: DrawCommand.Flags.BlendMode = .normal,
         flags: SceneElementFlags = .default
     ) {
-        self.insert(geometry, withMaterial: material, at: [transform], flags: flags)
+        self.insert(geometry, withMaterial: material, at: [transform], blendMode: blendMode, flags: flags)
     }
 
     /** Adds geometry to the scene for rendering.
@@ -89,8 +92,8 @@
             resource: .geometry(geometry),
             transforms: transforms,
             material: material,
-            vsh: .standard,
-            fsh: (material.channels.first?.texture != nil) ? .textureSample : .materialColor,
+            vsh: (material.channels.first?.texture != nil) ? .standard : material.channels.first?.color == .vertexColors ? .vertexColors : .standard,
+            fsh: (material.channels.first?.texture != nil) ? .textureSample : material.channels.first?.color == .vertexColors ? .vertexColor : .materialColor,
             flags: flags.drawCommandFlags(withPrimitive: .triangle, blendMode: blendMode)
         )
         self.insert(command)
@@ -203,6 +206,7 @@
     
     /** Adds lines to the scene for rendering.
     - parameter lines: The lines to draw.
+    - parameter color: The color information used to draw the geometry. nil will use vertex color data.
     - parameter transform: Describes how the lines instance should be positioned and scaled relative to the scene.
     - parameter flags: Options to customize how drawing is handled.
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
@@ -210,46 +214,7 @@
     @_transparent
     public mutating func insert(
         _ lines: Lines,
-        at transform: Transform3,
-        flags: SceneElementFlags = .default
-    ) {
-        self.insert(lines, at: [transform], flags: flags)
-    }
-    
-    /** Adds lines to the scene for rendering.
-    - parameter lines: The lines to draw.
-    - parameter transforms: Describes how each lines instance should be positioned and scaled relative to the scene.
-    - parameter flags: Options to customize how drawing is handled.
-    - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
-    */
-    @inlinable @inline(__always)
-    public mutating func insert(
-        _ lines: Lines,
-        at transforms: [Transform3],
-        flags: SceneElementFlags = .default
-    ) {
-        let command = DrawCommand(
-            resource: .lines(lines),
-            transforms: transforms,
-            material: Material(color: .vertexColors),
-            vsh: .vertexColors,
-            fsh: .vertexColor,
-            flags: flags.drawCommandFlags(withPrimitive: .line)
-        )
-        self.insert(command)
-    }
-    
-    /** Adds lines to the scene for rendering.
-    - parameter lines: The lines to draw.
-    - parameter color: The color information used to draw the geometry.
-    - parameter transform: Describes how the lines instance should be positioned and scaled relative to the scene.
-    - parameter flags: Options to customize how drawing is handled.
-    - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
-    */
-    @_transparent
-    public mutating func insert(
-        _ lines: Lines,
-        withColor color: Color,
+        withColor color: Color? = nil,
         at transform: Transform3,
         flags: SceneElementFlags = .default
     ) {
@@ -258,7 +223,7 @@
     
     /** Adds lines to the scene for rendering.
     - parameter lines: The lines to draw.
-    - parameter color: The color information used to draw the geometry.
+    - parameter color: The color information used to draw the geometry. nil will use vertex color data.
     - parameter transforms: Describes how each lines instance should be positioned and scaled relative to the scene.
     - parameter flags: Options to customize how drawing is handled.
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
@@ -266,15 +231,16 @@
     @inlinable @inline(__always)
     public mutating func insert(
         _ lines: Lines,
-        withColor color: Color,
+        withColor color: Color? = nil,
         at transforms: [Transform3],
         flags: SceneElementFlags = .default
     ) {
+        let useVertexColors: Bool = (color == nil)
         let command = DrawCommand(
             resource: .lines(lines),
             transforms: transforms,
-            material: Material(color: color),
-            vsh: .standard,
+            material: Material(color: useVertexColors ? .black : color!),
+            vsh: useVertexColors ? .vertexColors : .materialColor,
             fsh: .materialColor,
             flags: flags.drawCommandFlags(withPrimitive: .line)
         )
@@ -399,7 +365,7 @@
     
     @_transparent
     public func matrices(withSize size: GameMath.Size2) -> Matrices {
-        self.camera.matricies(withAspectRatio: size.aspectRatio)
+        self.camera.matricies(withViewportSize: size)
     }
 }
 

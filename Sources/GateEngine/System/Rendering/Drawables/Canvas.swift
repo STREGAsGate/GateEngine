@@ -424,7 +424,7 @@
             preconditionFailure("Must set size during `Canvas.init` to use \(#function).")
         }
 
-        let matricies = camera.matricies(withAspectRatio: size.aspectRatio)
+        let matricies = camera.matricies(withViewportSize: size)
         var position = position * matricies.viewProjection()
         position.x /= position.z
         position.y /= position.z
@@ -446,28 +446,33 @@
             preconditionFailure("Must set size during `Canvas.init` to use \(#function).")
         }
 
-        let halfSize = size / 2
-        let aspectRatio = size.aspectRatio
+        switch camera.fieldOfView {
+        case .perspective(let fov):
+            let halfSize = size / 2
+            let aspectRatio = size.aspectRatio
 
-        let inverseView = camera.matricies(withAspectRatio: aspectRatio).view.inverse
-        let halfFOV = tan(camera.fieldOfViewAsRadians.rawValue * 0.5)
-        let near = camera.clippingPlane.near
-        let far = camera.clippingPlane.far
+            let inverseView = camera.matricies(withViewportSize: size).view.inverse
+            let halfFOV = tan(fov.rawValueAsRadians * 0.5)
+            let near = camera.clippingPlane.near
+            let far = camera.clippingPlane.far
 
-        let dx = halfFOV * (position.x / halfSize.width - 1.0) * aspectRatio
-        let dy = halfFOV * (1.0 - position.y / halfSize.height)
+            let dx = halfFOV * (position.x / halfSize.width - 1.0) * aspectRatio
+            let dy = halfFOV * (1.0 - position.y / halfSize.height)
 
-        let p1 = Position3(dx * near, dy * near, near) * inverseView
-        let p2 = Position3(dx * far, dy * far, far) * inverseView
+            let p1 = Position3(dx * near, dy * near, near) * inverseView
+            let p2 = Position3(dx * far, dy * far, far) * inverseView
 
-        return Ray3D(from: p1, toward: p2)
+            return Ray3D(from: p1, toward: p2)
+        case .orthographic(_):
+            fatalError("Not implemented")
+        }
     }
 
     /**
      Create a canvas.
 
      - parameter camera: An optional Scene camera, which is required for 3D space conversions.
-     - parameter size: The exact size of the canvas, this should be the saizxe of your renderTarget.
+     - parameter size: The exact size of the canvas, this should be the size of your renderTarget.
      - parameter interfaceScale: The userInterface scale. Sometimes called HiDPI. This setting changes how some drawable items are laid out. Use `1` for traditional gaming style drawing.
      - parameter estimatedCommandCount: A performance hint of how many commands will be added.
      */
