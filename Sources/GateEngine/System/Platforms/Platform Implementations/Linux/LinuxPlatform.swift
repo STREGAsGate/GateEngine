@@ -8,7 +8,7 @@
 import Foundation
 import LinuxSupport
 
-public final class LinuxPlatform: Platform, InternalPlatform {
+public final class LinuxPlatform: PlatformProtocol, InternalPlatformProtocol {
     public static let fileSystem: LinuxFileSystem = LinuxFileSystem()
     let staticResourceLocations: [URL]
 
@@ -21,6 +21,9 @@ public final class LinuxPlatform: Platform, InternalPlatform {
     }
 
     public func locateResource(from path: String) async -> String? {
+        if path.hasPrefix("/"), await fileSystem.itemExists(at: path) {
+            return path
+        }
         let searchPaths =
             await Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {

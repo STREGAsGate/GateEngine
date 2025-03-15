@@ -11,7 +11,7 @@ import DOM
 import JavaScriptKit
 import JavaScriptEventLoop
 
-public final class WASIPlatform: Platform, InternalPlatform {
+public final class WASIPlatform: PlatformProtocol, InternalPlatformProtocol {
     public static let fileSystem: WASIFileSystem = WASIFileSystem()
     var staticResourceLocations: [URL]
     var pathCache: [String: String] = [:]

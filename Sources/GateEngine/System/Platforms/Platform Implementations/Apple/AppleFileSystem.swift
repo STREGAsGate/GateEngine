@@ -4,12 +4,13 @@
  *
  * http://stregasgate.com
  */
-#if canImport(Darwin)
+#if canImport(Darwin) && GATEENGINE_PLATFORM_HAS_FILESYSTEM
 import Foundation
 
-public struct AppleFileSystem: FileSystem {
-    public func pathForSearchPath(_ searchPath: FileSystemSearchPath,
-                                  in domain: FileSystemSearchPathDomain = .currentUser) throws -> String {
+internal enum AppleFileSystem {
+    @inline(__always)
+    @inlinable
+    static func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain = .currentUser) throws -> String {
         let foundationSearchPath: FileManager.SearchPathDirectory
         switch searchPath {
         case .persistent:
@@ -18,7 +19,7 @@ public struct AppleFileSystem: FileSystem {
             foundationSearchPath = .cachesDirectory
         case .temporary:
             let tmpDir = FileManager.default.temporaryDirectory
-            return tmpDir.appendingPathComponent(Game.identifier).path
+            return tmpDir.appendingPathComponent(Game.unsafeShared.info.identifier).path
         }
         let foundationDomainMask: FileManager.SearchPathDomainMask
         switch domain {
@@ -31,9 +32,8 @@ public struct AppleFileSystem: FileSystem {
                                                    in: foundationDomainMask,
                                                    appropriateFor: nil,
                                                    create: false)
-        url = url.appendingPathComponent(Game.identifier)
+        url = url.appendingPathComponent(Game.unsafeShared.info.identifier)
         return url.path
     }
 }
-
 #endif

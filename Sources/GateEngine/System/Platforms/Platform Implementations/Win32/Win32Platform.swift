@@ -8,9 +8,21 @@
 import Foundation
 import WinSDK
 
-public final class Win32Platform: InternalPlatform {
-    public static let fileSystem: Win32FileSystem = Win32FileSystem()
-    var staticResourceLocations: [URL]
+public final class Win32Platform: PlatformProtocol, InternalPlatformProtocol {
+    #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
+    #if GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem
+    public static let fileSystem: some AsynchronousFileSystem = AsynchronousWin32FileSystem()
+    #endif
+    #if GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem
+    /**
+     - Warning: Not all platforms, that support FileSystem, support SynchronusFileSystem.
+     At least HTML5 lacks support. For best cross-platform compatibility use `fileSystem` property.
+     */
+    public static let synchronousFileSystem: some SynchronousFileSystem = SynchronousWin32FileSystem()
+    #endif
+    #endif
+    
+    let staticResourceLocations: [URL]
 
     init(delegate: any GameDelegate) {
         self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
@@ -21,6 +33,9 @@ public final class Win32Platform: InternalPlatform {
     }
 
     public func locateResource(from path: String) async -> String? {
+        if path.hasPrefix("/"), await fileSystem.itemExists(at: path) {
+            return path
+        }
         let searchPaths =
             await Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
@@ -45,6 +60,36 @@ public final class Win32Platform: InternalPlatform {
 
         throw GateEngineError.failedToLocate
     }
+    
+    #if GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
+    public func synchronousLocateResource(from path: String) -> String? {
+        if path.hasPrefix("/"), synchronousFileSystem.itemExists(at: path) {
+            return path
+        }
+        let searchPaths = Game.unsafeShared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
+        for searchPath in searchPaths {
+            let file = searchPath.appendingPathComponent(path)
+            if synchronousFileSystem.itemExists(at: file.path) {
+                return file.path
+            }
+        }
+
+        return nil
+    }
+
+    public func synchronousLoadResource(from path: String) throws -> Data {
+        if let resolvedPath = synchronousLocateResource(from: path) {
+            do {
+                return try synchronousFileSystem.read(from: resolvedPath)
+            } catch {
+                Log.error("Failed to load resource \"\(resolvedPath)\".", error)
+                throw GateEngineError.failedToLoad("\(error)")
+            }
+        }
+
+        throw GateEngineError.failedToLocate
+    }
+    #endif
 }
 
 extension Win32Platform {

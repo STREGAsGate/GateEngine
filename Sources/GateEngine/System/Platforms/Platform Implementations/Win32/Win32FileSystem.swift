@@ -4,26 +4,25 @@
  *
  * http://stregasgate.com
  */
-#if canImport(WinSDK)
-import Foundation
+#if canImport(WinSDK) && GATEENGINE_PLATFORM_HAS_FILESYSTEM
 import WinSDK
+import Foundation
 
-public struct Win32FileSystem: FileSystem {
-    @MainActor
+internal enum Win32FileSystem {
+    @inline(__always)
+    @inlinable
     func urlForFolderID(_ folderID: KNOWNFOLDERID) -> URL {
         var folderID: KNOWNFOLDERID = folderID
         var pwString: PWSTR! = nil
         _ = SHGetKnownFolderPath(&folderID, DWORD(KF_FLAG_DEFAULT.rawValue), nil, &pwString)
         let string: String = String(windowsUTF16: pwString)
         CoTaskMemFree(pwString)
-        return URL(fileURLWithPath: string).appendingPathComponent(Game.shared.identifier)
+        return URL(fileURLWithPath: string).appendingPathComponent(Game.unsafeShared.info.identifier)
     }
-
-    @MainActor
-    public func pathForSearchPath(
-        _ searchPath: FileSystemSearchPath,
-        in domain: FileSystemSearchPathDomain
-    ) throws -> String {
+    
+    @inline(__always)
+    @inlinable
+    static func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain = .currentUser) throws -> String {
         switch searchPath {
         case .persistent:
             switch domain {

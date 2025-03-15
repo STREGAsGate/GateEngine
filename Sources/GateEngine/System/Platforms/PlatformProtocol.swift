@@ -7,27 +7,50 @@
 import Foundation
 import Collections
 
-public protocol Platform: AnyObject {
+public extension Platform {
+    /// The current platform (read only)
+    @inline(__always)
+    nonisolated static var current: Platform {Game.unsafeShared.unsafePlatform}
+}
+
+public protocol PlatformProtocol: Sendable {
     func locateResource(from path: String) async -> String?
     func loadResource(from path: String) async throws -> Data
 
     var supportsMultipleWindows: Bool { get }
 
     #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
-    associatedtype FileSystem: GateEngine.FileSystem
-    static var fileSystem: FileSystem { get }
-    var fileSystem: FileSystem { get }
+    #if GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
+    associatedtype AsyncFileSystem: AsynchronousFileSystem
+    static var fileSystem: AsyncFileSystem { get }
+    var fileSystem: AsyncFileSystem { get }
+    #endif
+    #if GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem
+    associatedtype SyncFileSystem: SynchronousFileSystem
+    static var synchronousFileSystem: SyncFileSystem { get }
+    var synchronousFileSystem: SyncFileSystem { get }
+    #endif
     #endif
 }
 
-extension Platform {
+#if GATEENGINE_PLATFORM_HAS_FILESYSTEM
+extension PlatformProtocol {
+    #if GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
     @_transparent
-    public var fileSystem: Self.FileSystem {
+    public var fileSystem: Self.AsyncFileSystem {
         return Self.fileSystem
     }
+    #endif
+    #if GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem
+    @_transparent
+    public var synchronousFileSystem: Self.SyncFileSystem {
+        return Self.synchronousFileSystem
+    }
+    #endif
 }
+#endif
 
-internal protocol InternalPlatform: AnyObject, Platform {
+internal protocol InternalPlatformProtocol: PlatformProtocol {
     var staticResourceLocations: [URL] { get }
     
     func setCursorStyle(_ style: Mouse.Style)
@@ -41,13 +64,11 @@ internal protocol InternalPlatform: AnyObject, Platform {
     #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
     func saveStatePath(forStateNamed name: String) throws -> String
     #endif
-
-    init(delegate: any GameDelegate)
 }
 
-#if GATEENGINE_PLATFORM_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
-extension InternalPlatform {
-    static func getStaticSearchPaths(delegate: any GameDelegate) -> [URL] {
+#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+extension InternalPlatformProtocol {
+    static func getStaticSearchPaths() -> [URL] {
         let executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
         let executableDirectoryURL = executableURL.deletingLastPathComponent()
         
@@ -225,7 +246,7 @@ extension InternalPlatform {
     }
 }
 
-extension InternalPlatform {
+extension InternalPlatformProtocol {
     func saveStatePath(forStateNamed name: String) throws -> String {
         return URL(fileURLWithPath: try fileSystem.pathForSearchPath(.persistent, in: .currentUser))
             .appendingPathComponent(name).path
@@ -242,7 +263,7 @@ extension InternalPlatform {
     #endif
 }
 
-extension InternalPlatform {
+extension InternalPlatformProtocol {
     func loadState(named name: String) async -> Game.State {
         do {
             let data = try await fileSystem.read(from: try saveStatePath(forStateNamed: name))
@@ -274,17 +295,17 @@ extension InternalPlatform {
 #endif
 
 #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
-public typealias CurrentPlatform = WASIPlatform
+public typealias Platform = WASIPlatform
 #elseif canImport(UIKit)
-public typealias CurrentPlatform = UIKitPlatform
+public typealias Platform = UIKitPlatform
 #elseif canImport(AppKit)
-public typealias CurrentPlatform = AppKitPlatform
+public typealias Platform = AppKitPlatform
 #elseif canImport(WinSDK)
-public typealias CurrentPlatform = Win32Platform
+public typealias Platform = Win32Platform
 #elseif os(Linux)
-public typealias CurrentPlatform = LinuxPlatform
+public typealias Platform = LinuxPlatform
 #elseif os(Android)
-public typealias CurrentPlatform = AndroidPlatform
+public typealias Platform = AndroidPlatform
 #else
 #error("The target platform is not supported.")
 #endif

@@ -9,13 +9,21 @@
 import UIKit
 import AVFoundation
 
-public final class UIKitPlatform: Platform, InternalPlatform {
-    public static let fileSystem: AppleFileSystem = AppleFileSystem()
-    public let staticResourceLocations: [URL]
-
-    init(delegate: any GameDelegate) {
-        self.staticResourceLocations = Self.getStaticSearchPaths(delegate: delegate)
-    }
+public struct UIKitPlatform: PlatformProtocol, InternalPlatformProtocol {
+    #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
+    #if GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem
+    public static let fileSystem: some AsynchronousFileSystem = AsynchronousAppleFileSystem()
+    #endif
+    #if GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem
+    /**
+     - Warning: Not all platforms, that support FileSystem, support SynchronusFileSystem.
+     At least HTML5 lacks support. For best cross-platform compatibility use `fileSystem` property.
+     */
+    public static let synchronousFileSystem: some SynchronousFileSystem = SynchronousAppleFileSystem()
+    #endif
+    #endif
+    
+    let staticResourceLocations: [URL] = UIKitPlatform.getStaticSearchPaths()
 
     internal var applicationRequestedWindow: Bool = false
     weak internal var windowPreparingForSceneConnection: UIKitWindow? = nil
@@ -35,6 +43,9 @@ public final class UIKitPlatform: Platform, InternalPlatform {
 
     @MainActor
     public func locateResource(from path: String) async -> String? {
+        if path.hasPrefix("/"), await fileSystem.itemExists(at: path) {
+            return path
+        }
         let searchPaths =
             Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
@@ -59,6 +70,36 @@ public final class UIKitPlatform: Platform, InternalPlatform {
 
         throw GateEngineError.failedToLocate
     }
+    
+    #if GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
+    public func synchronousLocateResource(from path: String) -> String? {
+        if path.hasPrefix("/"), synchronousFileSystem.itemExists(at: path) {
+            return path
+        }
+        let searchPaths = Game.unsafeShared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
+        for searchPath in searchPaths {
+            let file = searchPath.appendingPathComponent(path)
+            if synchronousFileSystem.itemExists(at: file.path) {
+                return file.path
+            }
+        }
+
+        return nil
+    }
+
+    public func synchronousLoadResource(from path: String) throws -> Data {
+        if let resolvedPath = synchronousLocateResource(from: path) {
+            do {
+                return try synchronousFileSystem.read(from: resolvedPath)
+            } catch {
+                Log.error("Failed to load resource \"\(resolvedPath)\".", error)
+                throw GateEngineError.failedToLoad("\(error)")
+            }
+        }
+
+        throw GateEngineError.failedToLocate
+    }
+    #endif
 }
 
 internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {

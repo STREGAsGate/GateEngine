@@ -8,13 +8,13 @@
 public final class PNGImporter: TextureImporter {
     public required init() {}
 
-    public func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (
-        data: Data, size: Size2
-    ) {
-        return try decode(data: data, size: size, options: options)
+    public func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (data: Data, size: Size2) {
+        let png = try PNGDecoder().decode(data)
+        return (png.data, Size2(Float(png.width), Float(png.height)))
     }
 
     public static func canProcessFile(_ file: URL) -> Bool {
+        guard PNGDecoder.isSupported else { return false }
         return file.pathExtension.caseInsensitiveCompare("png") == .orderedSame
     }
 }
