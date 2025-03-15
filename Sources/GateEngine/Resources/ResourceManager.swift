@@ -246,7 +246,7 @@ public final class ResourceManager {
 
 extension ResourceManager {
     @usableFromInline
-    class Cache {
+    final class Cache {
         var textures: [TextureKey: TextureCache] = [:]
         var geometries: [GeometryKey: GeometryCache] = [:]
         var skinnedGeometries: [SkinnedGeometryKey: SkinnedGeometryCache] = [:]

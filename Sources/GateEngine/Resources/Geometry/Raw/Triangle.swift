@@ -100,18 +100,14 @@ public struct Triangle: Codable, Equatable, Hashable {
             v3.normal = faceNormal
         }
 
-        if v1.texturePosition1 == .zero && v2.texturePosition1 == .zero
-            && v3.texturePosition1 == .zero
-        {
+        if v1.texturePosition1 == .zero && v2.texturePosition1 == .zero && v3.texturePosition1 == .zero {
             //Assign some UVs, no way to know what they should be...
             v1.texturePosition1 = Position2(x: 0, y: 0)
             v2.texturePosition1 = Position2(x: 1, y: 1)
             v3.texturePosition1 = Position2(x: 0, y: 1)
         }
 
-        if v1.texturePosition2 == .zero && v2.texturePosition2 == .zero
-            && v3.texturePosition2 == .zero
-        {
+        if v1.texturePosition2 == .zero && v2.texturePosition2 == .zero && v3.texturePosition2 == .zero {
             //Assign some UVs, no way to know what they should be...
             v1.texturePosition2 = Position2(x: 0, y: 0)
             v2.texturePosition2 = Position2(x: 1, y: 1)
