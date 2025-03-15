@@ -17,7 +17,8 @@ extension ResourceManager {
         ]
 
         internal var geometryImporters: [any GeometryImporter.Type] = [
-            GLTransmissionFormat.self, 
+            RawGeometryImporter.self,
+            GLTransmissionFormat.self,
             WavefrontOBJImporter.self,
         ]
         
