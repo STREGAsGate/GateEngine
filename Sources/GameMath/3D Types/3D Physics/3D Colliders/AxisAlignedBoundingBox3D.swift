@@ -67,12 +67,13 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
     public init(_ positions: [Position3]) {
         var minPosition: Position3 = positions.first ?? .zero
         var maxPosition: Position3 = positions.first ?? .zero
-        for index in 1 ..< positions.count {
-            let position = positions[index]
-            minPosition = min(minPosition, position)
-            maxPosition = max(maxPosition, position)
+        if positions.isEmpty == false {
+            for index in 1 ..< positions.count {
+                let position = positions[index]
+                minPosition = min(minPosition, position)
+                maxPosition = max(maxPosition, position)
+            }
         }
-        
         self._offset = (minPosition + maxPosition) / 2
         self.offset = _offset
         self.center = .zero
