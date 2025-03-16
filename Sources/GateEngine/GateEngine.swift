@@ -23,6 +23,12 @@ import GameMath
 @_exported import func Foundation.sin
 @_exported import func Foundation.tan
 
+@attached(member, names: named(phase), named(macroPhase))
+public macro System(_ macroPhase: GateEngine.System.Phase) = #externalMacro(module: "ECSMacros", type: "ECSSystemMacro")
+
+@attached(extension, conformances: Component, names: named(componentID), named(`init`))
+public macro Component() = #externalMacro(module: "ECSMacros", type: "ECSComponentMacro")
+
 #if canImport(WinSDK)
 import WinSDK
 #endif

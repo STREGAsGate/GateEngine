@@ -2,6 +2,7 @@
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
+import CompilerPluginSupport
 
 let package = Package(
     name: "GateEngine",
@@ -14,17 +15,20 @@ let package = Package(
         var packageDependencies: [Package.Dependency] = []
 
         // Official
-        #if os(Windows)
-        packageDependencies.append(
+        packageDependencies.append(contentsOf: {
+            var official: [Package.Dependency] = []
+            #if os(Windows)
             // Windows requires 1.2.0+
-            .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.2.0"))
-        )
-        #else
-        packageDependencies.append(
+            official.append(.package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.2.0")))
+            #else
             // swift-atomics must use extact 1.1.0 pending https://github.com/apple/swift/issues/69264
-            .package(url: "https://github.com/apple/swift-atomics.git", exact: "1.1.0")
-        )
-        #endif
+            official.append(.package(url: "https://github.com/apple/swift-atomics.git", exact: "1.1.0"))
+            #endif
+            official.append(.package(url: "https://github.com/apple/swift-syntax", from: "509.0.0"))
+            return official
+        }())
+            
+            
         packageDependencies.append(
             .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0"))
         )
@@ -51,6 +55,11 @@ let package = Package(
             .target(name: "GateEngine",
                     dependencies: {
                         var dependencies: [Target.Dependency] = []
+                        
+                        dependencies.append(
+                            "ECSMacros"
+                        )
+                        
                         dependencies.append(contentsOf: [
                             "GameMath",
                             "Shaders",
@@ -264,6 +273,18 @@ let package = Package(
                 
                 return array.isEmpty ? nil : array
             }()),
+        ])
+        
+        // MARK: - Macros
+        targets.append(contentsOf: [
+            .macro(
+                name: "ECSMacros",
+                dependencies: [
+                    .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                    .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+                ],
+                path: "Macros/ECSMacros"
+            ),
         ])
         
         // MARK: - Dependencies
