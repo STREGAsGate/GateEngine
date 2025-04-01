@@ -84,8 +84,69 @@ open class ViewController {
         }
     }
     
+    /// Forwarded from this ViewController's view
     open func update(withTimePassed deltaTime: Float) {
         
+    }
+    
+    /// Forwarded from this ViewController's view
+    open func touchesBegan(_ touches: Set<Touch>) {
+
+    }
+    /// Forwarded from this ViewController's view
+    open func touchesMoved(_ touches: Set<Touch>) {
+
+    }
+    /// Forwarded from this ViewController's view
+    open func touchesEnded(_ touches: Set<Touch>) {
+
+    }
+    /// Forwarded from this ViewController's view
+    open func touchesCanceled(_ touches: Set<Touch>) {
+
+    }
+    
+    /// Forwarded from this ViewController's view
+    open func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+
+    }
+    /// Forwarded from this ViewController's view
+    open func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+
+    }
+    /// Forwarded from this ViewController's view
+    open func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+
+    }
+    /// Forwarded from this ViewController's view
+    open func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+
+    }
+    
+    /// Forwarded from this ViewController's view
+    open func cursorEntered(_ cursor: Mouse) {
+  
+    }
+    /// Forwarded from this ViewController's view
+    open func cursorMoved(_ cursor: Mouse) {
+
+    }
+    /// Forwarded from this ViewController's view
+    open func cursorExited(_ cursor: Mouse) {
+
+    }
+    /// Forwarded from this ViewController's view
+    open func cursorButtonDown(button: MouseButton, mouse: Mouse) {
+  
+    }
+    
+    /// Forwarded from this ViewController's view
+    open func cursorButtonUp(button: MouseButton, mouse: Mouse) {
+   
+    }
+    /// Forwarded from this ViewController's view
+    open func scrolled(_ delta: Position2, isPlatformGeneratedMomentum isMomentum: Bool) {
+
     }
 }
 

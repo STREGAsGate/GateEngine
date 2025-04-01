@@ -42,11 +42,8 @@ open class View {
         }
     }
     
-    public init(size: Size2? = nil) {
-        if let size {
-            self.widthAnchor.constrain(to: size.width)
-            self.heightAnchor.constrain(to: size.height)
-        }
+    public init() {
+
     }
     
     public var interfaceScale: Float {
@@ -95,7 +92,13 @@ open class View {
         if _window == nil {
             // If the view is removed from the view heirarchy
             // Check the ViewController chain
-            if let window = self.viewController?.parent?.view.window {
+            var parent: ViewController? = self._viewController?.parent
+            while parent != nil {
+                let next = parent?.parent
+                if next == nil {break}
+                parent = next
+            }
+            if let window = parent?.view.window {
                 _window = window
             }
         }
@@ -249,51 +252,105 @@ open class View {
     
     //MARK: User Interaction
     
+    public private(set) var gestureRecognizers: [GestureRecognizer] = []
+    public func addGestureRecognizer(_ gestureRecognizer: GestureRecognizer) {
+        gestureRecognizer.view = self
+        gestureRecognizers.append(gestureRecognizer)
+    }
+    public func removeGestureRecognizer(_ gestureRecognizer: GestureRecognizer) {
+        gestureRecognizers.removeAll { $0 === gestureRecognizer }
+        if gestureRecognizer.view === self {
+            gestureRecognizer.view = nil
+        }
+    }
+    
     open func touchesBegan(_ touches: Set<Touch>) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.touchesBegan(touches)
+        }
+        self.controllingViewController?.touchesBegan(touches)
     }
     open func touchesMoved(_ touches: Set<Touch>) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.touchesMoved(touches)
+        }
+        self.controllingViewController?.touchesMoved(touches)
     }
     open func touchesEnded(_ touches: Set<Touch>) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.touchesEnded(touches)
+        }
+        self.controllingViewController?.touchesEnded(touches)
     }
     open func touchesCanceled(_ touches: Set<Touch>) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.touchesCanceled(touches)
+        }
+        self.controllingViewController?.touchesCanceled(touches)
     }
     
     open func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.surfaceTouchesBegan(touches, mouse: mouse)
+        }
+        self.controllingViewController?.surfaceTouchesBegan(touches, mouse: mouse)
     }
     open func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.surfaceTouchesMoved(touches, mouse: mouse)
+        }
+        self.controllingViewController?.surfaceTouchesMoved(touches, mouse: mouse)
     }
     open func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.surfaceTouchesEnded(touches, mouse: mouse)
+        }
+        self.controllingViewController?.surfaceTouchesEnded(touches, mouse: mouse)
     }
     open func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.surfaceTouchesCanceled(touches, mouse: mouse)
+        }
+        self.controllingViewController?.surfaceTouchesCanceled(touches, mouse: mouse)
     }
     
     open func cursorEntered(_ cursor: Mouse) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.cursorEntered(cursor)
+        }
+        self.controllingViewController?.cursorEntered(cursor)
     }
     open func cursorMoved(_ cursor: Mouse) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.cursorMoved(cursor)
+        }
+        self.controllingViewController?.cursorMoved(cursor)
     }
     open func cursorExited(_ cursor: Mouse) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.cursorExited(cursor)
+        }
+        self.controllingViewController?.cursorExited(cursor)
     }
     
     open func cursorButtonDown(button: MouseButton, mouse: Mouse) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.cursorButtonDown(button: button, mouse: mouse)
+        }
+        self.controllingViewController?.cursorButtonDown(button: button, mouse: mouse)
     }
     open func cursorButtonUp(button: MouseButton, mouse: Mouse) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.cursorButtonUp(button: button, mouse: mouse)
+        }
+        self.controllingViewController?.cursorButtonUp(button: button, mouse: mouse)
     }
     
     open func scrolled(_ delta: Position2, isPlatformGeneratedMomentum isMomentum: Bool) {
-        
+        for gestureRecognizer in gestureRecognizers {
+            gestureRecognizer.scrolled(delta, isPlatformGeneratedMomentum: isMomentum)
+        }
+        self.controllingViewController?.scrolled(delta, isPlatformGeneratedMomentum: isMomentum)
     }
     
     open func canBeHit() -> Bool {
@@ -479,6 +536,16 @@ extension View {
             view = view?.superView
         }
         return view?._viewController
+    }
+    
+    public func firstParentViewController<ViewControllerResult: ViewController>(ofType type: ViewControllerResult.Type) -> ViewControllerResult? {
+        guard var viewController else {return nil}
+        while viewController is ViewControllerResult == false {
+            guard let parent = viewController.parent else {return nil}
+            viewController = parent
+        }
+        assert(viewController is ViewControllerResult)
+        return viewController as? ViewControllerResult
     }
 }
 

@@ -73,53 +73,6 @@ public final class GameView: View {
         }
     }
     
-    public override func touchesBegan(_ touches: Set<Touch>) {
-        self.gameViewController?.touchesBegan(touches)
-    }
-    public override func touchesMoved(_ touches: Set<Touch>) {
-        self.gameViewController?.touchesMoved(touches)
-    }
-    public override func touchesEnded(_ touches: Set<Touch>) {
-        self.gameViewController?.touchesEnded(touches)
-    }
-    public override func touchesCanceled(_ touches: Set<Touch>) {
-        self.gameViewController?.touchesCanceled(touches)
-    }
-    
-    public override func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        self.gameViewController?.surfaceTouchesBegan(touches, mouse: mouse)
-    }
-    public override func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        self.gameViewController?.surfaceTouchesMoved(touches, mouse: mouse)
-    }
-    public override func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        self.gameViewController?.surfaceTouchesEnded(touches, mouse: mouse)
-    }
-    public override func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        self.gameViewController?.surfaceTouchesCanceled(touches, mouse: mouse)
-    }
-    
-    public override func cursorEntered(_ cursor: Mouse) {
-        self.gameViewController?.cursorEntered(cursor)
-    }
-    public override func cursorMoved(_ cursor: Mouse) {
-        self.gameViewController?.cursorMoved(cursor)
-    }
-    public override func cursorExited(_ cursor: Mouse) {
-        self.gameViewController?.cursorExited(cursor)
-    }
-    
-    public override func cursorButtonDown(button: MouseButton, mouse: Mouse) {
-        self.gameViewController?.cursorButtonDown(button: button, mouse: mouse)
-    }
-    public override func cursorButtonUp(button: MouseButton, mouse: Mouse) {
-        self.gameViewController?.cursorButtonUp(button: button, mouse: mouse)
-    }
-    
-    public override func scrolled(_ delta: Position2, isPlatformGeneratedMomentum isMomentum: Bool) {
-        self.gameViewController?.scrolled(delta, isPlatformGeneratedMomentum: isMomentum)
-    }
-    
     enum Mode {
         case screen
         case offScreen
@@ -249,7 +202,11 @@ open class GameViewController: ViewController {
     
     internal override func _update(withTimePassed deltaTime: Float) async {
         await super._update(withTimePassed: deltaTime)
-        self.shouldSkipRendering = (await context.shouldRenderAfterUpdate(withTimePassed: deltaTime) == false)
+        if view.superView != nil {
+            self.shouldSkipRendering = (await context.shouldRenderAfterUpdate(withTimePassed: deltaTime) == false)
+        }else{
+            self.shouldSkipRendering = true
+        }
     }
     
     @MainActor
@@ -258,53 +215,6 @@ open class GameViewController: ViewController {
     }
     
     open func render(context: ECSContext, into view: GameView, withTimePassed deltaTime: Float) {
-        
-    }
-    
-    open func touchesBegan(_ touches: Set<Touch>) {
-        
-    }
-    open func touchesMoved(_ touches: Set<Touch>) {
-        
-    }
-    open func touchesEnded(_ touches: Set<Touch>) {
-        
-    }
-    open func touchesCanceled(_ touches: Set<Touch>) {
-        
-    }
-    
-    open func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        
-    }
-    open func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        
-    }
-    open func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        
-    }
-    open func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-        
-    }
-    
-    open func cursorEntered(_ cursor: Mouse) {
-        
-    }
-    open func cursorMoved(_ cursor: Mouse) {
-        
-    }
-    open func cursorExited(_ cursor: Mouse) {
-        
-    }
-    
-    open func cursorButtonDown(button: MouseButton, mouse: Mouse) {
-        
-    }
-    open func cursorButtonUp(button: MouseButton, mouse: Mouse) {
-        
-    }
-    
-    open func scrolled(_ delta: Position2, isPlatformGeneratedMomentum isMomentum: Bool) {
         
     }
 }
@@ -355,8 +265,23 @@ extension GameView {
             let p2 = Position3(dx * far, dy * far, far) * inverseView
             
             return Ray3D(from: p1, toward: p2)
-        case .orthographic(_):
-            fatalError("Not implemented")
+        case .orthographic(let center):
+            let size = self.bounds.size * interfaceScale
+            var position = position * interfaceScale
+            switch center {
+            case .topLeft:
+                break
+            case .center:
+                position -= size / 2
+            }
+            
+            let x = position.x
+            let y = position.y
+
+            let inverseView = camera.matricies(withViewportSize: size).view.inverse
+            let start = Position3(x, y, -1) * inverseView
+
+            return Ray3D(from: start, toward: camera.transform.rotation.forward)
         }
     }
 }

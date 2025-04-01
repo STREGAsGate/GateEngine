@@ -20,7 +20,7 @@ public class Camera {
         }
     }
     
-    @usableFromInline internal var fieldOfView: FieldOfView {
+    public var fieldOfView: FieldOfView {
         didSet {
             needsUpdateProjection = true
         }
@@ -88,7 +88,12 @@ public class Camera {
             needsUpdateTransform = false
             let position = Matrix4x4(position: transform.position * -1.0)
             let rotation = Matrix4x4(rotation: transform.rotation.conjugate)
-            self.view = Self.viewScale * rotation * position
+            let scale = if transform.scale == .one {
+                Self.viewScale
+            }else{
+                Matrix4x4(scale: Size3(transform.scale.x, transform.scale.y, -transform.scale.z))
+            }
+            self.view = scale * rotation * position
         }
 
         self.matrices = Matrices(projection: self.perspective, view: self.view)
@@ -110,11 +115,11 @@ public struct ClippingPlane {
     }
     public static let minPerspectiveNear: Float = 1 / Float(UInt8.max)
 
-    internal init(_ range: ClosedRange<Float>) {
+    public init(_ range: ClosedRange<Float>) {
         self.near = range.lowerBound
         self.far = range.upperBound
     }
-    internal init(_ range: Range<Float>) {
+    public init(_ range: Range<Float>) {
         if range.lowerBound == 0 {
             self.near = range.lowerBound
         } else {
@@ -122,15 +127,15 @@ public struct ClippingPlane {
         }
         self.far = range.upperBound - Float.leastNormalMagnitude
     }
-    internal init(_ range: PartialRangeThrough<Float>) {
+    public init(_ range: PartialRangeThrough<Float>) {
         self.near = Self.minPerspectiveNear
         self.far = range.upperBound
     }
-    internal init(_ range: PartialRangeUpTo<Float>) {
+    public init(_ range: PartialRangeUpTo<Float>) {
         self.near = Self.minPerspectiveNear
         self.far = range.upperBound - Float.leastNormalMagnitude
     }
-    internal init(_ range: PartialRangeFrom<Float>) {
+    public init(_ range: PartialRangeFrom<Float>) {
         self.near = range.lowerBound
         self.far = Float.greatestFiniteMagnitude
     }

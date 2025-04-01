@@ -71,8 +71,8 @@ open class ScrollView: View {
         return Size2(maxX, maxY)
     }
     
-    override public init(size: Size2? = nil) {
-        super.init(size: size)
+    override public init() {
+        super.init()
         self.clipToBounds = true
         self.addSubview(contentView)
     }

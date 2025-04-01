@@ -201,7 +201,7 @@ public struct Layout {
                     guard let targetY = relativeResolvedY(forTarget: target.view) else {continue}
                     if target == target.view.topAnchor {
                         computed = Value.Computed(
-                            value: targetY + vPosition.constant
+                            value: targetY - height.value + vPosition.constant
                         )
                         break
                     }
@@ -348,7 +348,7 @@ public struct Layout {
         
         if computed == nil {
             let contentWidth = view.contentSize().width
-            if contentWidth > 0 {
+            if contentWidth.isFinite {
                 computed = Value<Layout.Horizontal, Layout.Size>.Computed(value: contentWidth)
             }
         }
@@ -428,6 +428,7 @@ public struct Layout {
                 }
             }
         }
+        
         if computed == nil {
             // Subview must determine height
             var lowestSubviewBottom: Float? = nil
@@ -450,7 +451,7 @@ public struct Layout {
         
         if computed == nil {
             let contentHeight = view.contentSize().height
-            if contentHeight > 0 {
+            if contentHeight.isFinite {
                 computed = Value<Layout.Vertical, Layout.Size>.Computed(value: contentHeight)
             }
         }

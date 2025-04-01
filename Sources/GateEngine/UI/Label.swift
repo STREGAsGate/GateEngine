@@ -55,7 +55,7 @@ public final class Label: View {
         }
         return _geometry
     }
-    private var _size: Size2 = .zero
+    private var _size: Size2
     public var size: Size2 {
         if needsUpdateGeometry, font.state == .ready {
             needsUpdateGeometry = false
@@ -145,6 +145,7 @@ public final class Label: View {
         self.style = style
         self.textColor = textColor
         self.textAlignment = textAlignment
+        self._size = Size2(width: Float(fontSize), height: Float(fontSize))
         super.init()
     }
     

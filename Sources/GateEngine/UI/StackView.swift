@@ -53,12 +53,12 @@ public final class StackView: View {
         switch axis {
         case .horizontal:
             return Size2(
-                width: subviews.last?.frame.maxX ?? 0, 
+                width: subviews.last?.frame.maxX ?? 0,
                 height: (subviews.sorted(by: {$0.bounds.height > $1.bounds.height}).first?.bounds.height ?? 0) + (spacing * Float(subviews.count - 1))
             )
         case .vertical:
             return Size2(
-                width: (subviews.sorted(by: {$0.bounds.width > $1.bounds.width}).first?.bounds.width ?? 0) + (spacing * Float(subviews.count - 1)), 
+                width: (subviews.sorted(by: {$0.bounds.width > $1.bounds.width}).first?.bounds.width ?? 0) + (spacing * Float(subviews.count - 1)),
                 height: subviews.last?.frame.maxY ?? 0
             )
         }
@@ -86,7 +86,7 @@ public final class StackView: View {
                     subView.centerYAnchor.constrain(to: self.centerYAnchor)
                     previousView = subView
                 }
-                subviews.last?.trailingAnchor.constrain(to: self.trailingAnchor)
+                previousView.trailingAnchor.constrain(to: self.trailingAnchor)
             }
         case .vertical:
             switch distribution {
@@ -104,7 +104,7 @@ public final class StackView: View {
                     subView.trailingAnchor.constrain(to: self.trailingAnchor)
                     previousView = subView
                 }
-                subviews.last?.bottomAnchor.constrain(to: self.bottomAnchor)
+                previousView.bottomAnchor.constrain(to: self.bottomAnchor)
             }
         }
     }

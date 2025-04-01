@@ -17,8 +17,8 @@ final class SplitViewDividerControl: Control {
     
     var isDragging: Bool = false
     
-    override init(size: Size2? = nil) {
-        super.init(size: size)
+    override init() {
+        super.init()
         divider.backgroundColor = .darkGray
         self.addSubview(divider)
     }
@@ -127,8 +127,8 @@ public final class SplitView: View {
         }
     }
         
-    public override init(size: Size2? = nil) {
-        super.init(size: size)
+    public override init() {
+        super.init()
  
     }
     

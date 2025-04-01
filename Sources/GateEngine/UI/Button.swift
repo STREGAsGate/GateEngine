@@ -145,7 +145,12 @@ open class Button: Control {
     }
     
     public init(size: Size2? = nil, label: String? = nil, textColor: Color = .white, backgroundColor: Color = .blue, cornorRadius: Float? = nil, action: ((Button)->())? = nil) {
-        super.init(size: size)
+        super.init()
+        
+        if let size {
+            self.widthAnchor.constrain(to: size.width)
+            self.heightAnchor.constrain(to: size.height)
+        }
         
         self.setBackgroundColor(backgroundColor)
         
