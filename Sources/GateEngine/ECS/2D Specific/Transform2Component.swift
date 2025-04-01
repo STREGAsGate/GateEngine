@@ -23,7 +23,7 @@ public final class Transform2Component: Component {
     }
 
     public private(set) var _distanceTraveled: Float = 0
-    @inlinable @inline(__always)
+    @inlinable
     public func distanceTraveled() -> Float {
         if needsUpdate {
             update()
@@ -32,7 +32,7 @@ public final class Transform2Component: Component {
     }
 
     public private(set) var _directionTraveled: Direction2 = .right
-    @inlinable @inline(__always)
+    @inlinable
     public func directionTraveled() -> Direction2 {
         if needsUpdate {
             update()
@@ -40,7 +40,7 @@ public final class Transform2Component: Component {
         return _directionTraveled
     }
 
-    @usableFromInline @inline(__always)
+    @usableFromInline
     internal func update() {
         needsUpdate = false
         self._distanceTraveled = transform.distance(from: previousTransform)
@@ -50,7 +50,7 @@ public final class Transform2Component: Component {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<Transform2, T>) -> T {
         get { return transform[keyPath: keyPath] }
         set { transform[keyPath: keyPath] = newValue }
@@ -61,7 +61,7 @@ public final class Transform2Component: Component {
 }
 
 extension Entity {
-    @inlinable @inline(__always)
+    @inlinable
     public var transform2: Transform2 {
         @inlinable get {
             return self[Transform2Component.self].transform
@@ -71,7 +71,7 @@ extension Entity {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var position2: Position2 {
         @inlinable get {
             return transform2.position
@@ -81,7 +81,7 @@ extension Entity {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func distance(from position: Position2) -> Float {
         return self.transform2.position.distance(from: position)
     }

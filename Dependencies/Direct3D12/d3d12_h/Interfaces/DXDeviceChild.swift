@@ -13,7 +13,7 @@ public class D3DDeviceChild: D3DObject {
     /** Gets a pointer to the device that created this interface.
     - returns: A pointer to a memory block that receives a pointer to the ID3D12Device interface for the device.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func device() throws -> D3DDevice {
         return try perform(as: RawValue.self) {pThis in 
             var riid = D3DDevice.interfaceID
@@ -24,7 +24,7 @@ public class D3DDeviceChild: D3DObject {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -33,7 +33,7 @@ extension D3DDeviceChild {
     typealias RawValue = WinSDK.ID3D12DeviceChild
 }
 extension D3DDeviceChild.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12DeviceChild}
 }
 

@@ -11,7 +11,7 @@ import WinSDK
 public final class D3DHeap: D3DPageable {
     
     /// Gets the heap description.
-    @inlinable @inline(__always)
+    @inlinable
     public var heapDescription: D3DHeapDescription {
         return performFatally(as: RawValue.self) {pThis in
             var desc: D3DHeapDescription.RawValue = D3DHeapDescription.RawValue()
@@ -22,7 +22,7 @@ public final class D3DHeap: D3DPageable {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -31,7 +31,7 @@ extension D3DHeap {
     typealias RawValue = WinSDK.ID3D12Heap
 }
 extension D3DHeap.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12Heap}
 }
 

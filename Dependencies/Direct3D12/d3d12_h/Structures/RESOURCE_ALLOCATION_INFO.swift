@@ -14,7 +14,7 @@ public struct D3DResourceAllocationInfo {
     internal var rawValue: RawValue
 
     /// The size, in bytes, of the resource.
-    @inlinable @inline(__always)
+    @inlinable
     public var byteCount: UInt64 {
         get {
             return rawValue.SizeInBytes
@@ -25,7 +25,7 @@ public struct D3DResourceAllocationInfo {
     }
 
     /// The alignment value for the resource; one of 4KB (4096), 64KB (65536), or 4MB (4194304) alignment.
-    @inlinable @inline(__always)
+    @inlinable
     public var alignment: UInt64 {
         get {
             return rawValue.Alignment
@@ -39,12 +39,12 @@ public struct D3DResourceAllocationInfo {
     - parameter byteCount: The size, in bytes, of the resource.
     - parameter alignment: The alignment value for the resource; one of 4KB (4096), 64KB (65536), or 4MB (4194304) alignment.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(byteCount: UInt64, alignment: UInt64) {
         self.rawValue = RawValue(SizeInBytes: byteCount, Alignment: alignment)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

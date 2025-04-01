@@ -42,7 +42,8 @@ public struct BitStream: Sendable {
      Create a new BitStream
      - parameter data: The data to read bits from.
      */
-    @inlinable @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public init(_ data: Any) {
         self.bytes = withUnsafeBytes(of: data, { bufferPointer -> ContiguousArray<UInt8> in
             return ContiguousArray<UInt8>(bufferPointer)
@@ -55,7 +56,6 @@ public struct BitStream: Sendable {
      - returns: A Bool representing the bit. true for 1, false for 0.
      */
     @inlinable
-    @inline(__always)
     public subscript (index: Int) -> Bool {
         return bytes.withUnsafeBytes { bytes in
             let byte = bytes[byteOffset]
@@ -68,7 +68,7 @@ public struct BitStream: Sendable {
      - parameter numBits: The number of bits to read
      - returns: A FixedWidthInteger containing the value of the requested bits
      */
-    @_transparent
+    @inlinable
     public mutating func readBits<T: FixedWidthInteger>(_ numBits: Int) -> T {
         assert(numBits > 0, "Cannot read zero bits.")
         
@@ -93,7 +93,7 @@ public struct BitStream: Sendable {
      Move the current read position.
      - parameter numBits: The number of bits to move the read position.
      */
-    @_transparent
+    @inlinable
     public mutating func seekBits(_ numBits: Int) {
         offset += numBits
     }

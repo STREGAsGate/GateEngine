@@ -11,12 +11,12 @@ public typealias D3DRange = ClosedRange<WinSDK.SIZE_T>
 internal extension D3DRange {
     @usableFromInline
     typealias RawValue = WinSDK.D3D12_RANGE
-    @inlinable @inline(__always)
+    @inlinable
     var rawValue: RawValue {
         return RawValue(Begin: lowerBound, End: upperBound)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     init(_ rawValue: RawValue) {
         self = rawValue.Begin ... rawValue.End
     }

@@ -17,20 +17,20 @@ public struct SystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral, Se
     }
 
     /// Sorter after another system
-    @inlinable @inline(__always)
+    @inlinable
     public static func after(_ system: System.Type) -> Self {
         guard let sortOrder = system.sortOrder() else { return Self(rawValue: .min) }
         return Self(rawValue: sortOrder.rawValue + 1)
     }
 
     /// Sorter before another system
-    @inlinable @inline(__always)
+    @inlinable
     public static func before(_ system: System.Type) -> Self? {
         guard let sortOrder = system.sortOrder() else { return nil }
         return Self(rawValue: sortOrder.rawValue - 1)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public static var last: Self {
         return Self(rawValue: .max)
     }
@@ -48,20 +48,20 @@ public struct RenderingSystemSortOrder: RawRepresentable, ExpressibleByIntegerLi
     }
 
     /// Sorter after another system
-    @inlinable @inline(__always)
+    @inlinable
     public static func after(_ system: RenderingSystem.Type) -> Self {
         guard let sortOrder = system.sortOrder() else { return Self(rawValue: .min) }
         return Self(rawValue: sortOrder.rawValue + 1)
     }
 
     /// Sorter before another system
-    @inlinable @inline(__always)
+    @inlinable
     public static func before(_ system: RenderingSystem.Type) -> Self? {
         guard let sortOrder = system.sortOrder() else { return nil }
         return Self(rawValue: sortOrder.rawValue - 1)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public static var last: Self {
         return Self(rawValue: .max)
     }
@@ -114,20 +114,20 @@ public struct PlatformSystemSortOrder: RawRepresentable, ExpressibleByIntegerLit
     }
 
     /// Sorter after another system
-    @inlinable @inline(__always)
+    @inlinable
     public static func after(_ system: System.Type) -> Self {
         guard let sortOrder = system.sortOrder() else { return Self(rawValue: .min) }
         return Self(rawValue: sortOrder.rawValue + 1)
     }
 
     /// Sorter before another system
-    @inlinable @inline(__always)
+    @inlinable
     public static func before(_ system: System.Type) -> Self? {
         guard let sortOrder = system.sortOrder() else { return nil }
         return Self(rawValue: sortOrder.rawValue - 1)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public static var last: Self {
         return Self(rawValue: .max)
     }

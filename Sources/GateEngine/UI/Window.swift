@@ -57,7 +57,7 @@ public struct WindowOptions: OptionSet {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var isMainWindow: Bool {
         return identifier == WindowManager.mainWindowIdentifier
     }
@@ -111,13 +111,11 @@ public struct WindowOptions: OptionSet {
                 )
             }
             
-//            @_transparent
             @MainActor
             func blocksWide() -> Int {
                 let value = (size.width / Float(blockSize)).rounded(.up)
                 return max(1, Int(value))
             }
-//            @_transparent
             @MainActor
             func blocksTall() -> Int {
                 let value = (size.height / Float(blockSize)).rounded(.up)
@@ -283,12 +281,12 @@ public struct WindowOptions: OptionSet {
         case destroyed
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var state: State {
         return windowBacking.state
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var title: String? {
         get {
             return windowBacking.title
@@ -308,32 +306,31 @@ public struct WindowOptions: OptionSet {
         return self.pointSize
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var size: Size2 {
         return windowBacking.pixelSize
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var pointSize: Size2 {
         return windowBacking.pointSize
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public override var interfaceScale: Float {
         return windowBacking.interfaceScaleFactor
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var safeAreaInsets: Insets {
         return windowBacking.pixelSafeAreaInsets
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var pointSafeAreaInsets: Insets {
         return windowBacking.pointSafeAreaInsets
     }
 
-    @inline(__always)
     internal func reshapeIfNeeded() {
         if self.newPixelSize != renderTargetBackend.size || renderTargetBackend.wantsReshape {
             renderTargetBackend.size = self.newPixelSize
@@ -445,11 +442,11 @@ public struct WindowOptions: OptionSet {
         )
     }
 
-    @usableFromInline @inline(__always)
+    @usableFromInline @inlinable
     func setMouseHidden(_ hidden: Bool) {
         self.windowBacking.setMouseHidden(hidden)
     }
-    @usableFromInline @inline(__always)
+    @usableFromInline @inlinable
     func setMousePosition(_ position: Position2) {
         let windowFrame = Rect(size: self.size)
         let clampedToWindowFrame = position.clamped(within: windowFrame)
@@ -653,7 +650,6 @@ public struct WindowOptions: OptionSet {
 }
 
 extension Window {
-    @_transparent
     func createWindowBacking() -> any WindowBacking {
         #if canImport(UIKit)
         return UIKitWindow(window: self)

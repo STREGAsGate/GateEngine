@@ -14,7 +14,7 @@ public struct D3DShaderResourceViewBuffer {
     internal var rawValue: RawValue
 
     /// The index of the first element to be accessed by the view.
-    @inlinable @inline(__always)
+    @inlinable
     public var index: UInt64 {
         get {
             return rawValue.FirstElement
@@ -25,7 +25,7 @@ public struct D3DShaderResourceViewBuffer {
     }
 
     /// The number of elements in the resource.
-    @inlinable @inline(__always)
+    @inlinable
     public var count: UInt32 {
         get {
             return rawValue.NumElements
@@ -36,7 +36,7 @@ public struct D3DShaderResourceViewBuffer {
     }
 
     /// The size of each element in the buffer structure (in bytes) when the buffer represents a structured buffer.
-    @inlinable @inline(__always)
+    @inlinable
     public var stride: UInt32 {
         get {
             return rawValue.StructureByteStride
@@ -47,7 +47,7 @@ public struct D3DShaderResourceViewBuffer {
     }
 
     /// A D3D12_BUFFER_SRV_FLAGS-typed value that identifies view options for the buffer. Currently, the only option is to identify a raw view of the buffer. For more info about raw viewing of buffers, see Raw Views of Buffers.
-    @inlinable @inline(__always)
+    @inlinable
     public var flags: D3DBufferShaderResourceViewFlags {
         get {
             return D3DBufferShaderResourceViewFlags(rawValue.Flags)
@@ -63,12 +63,12 @@ public struct D3DShaderResourceViewBuffer {
     - parameter stride: The size of each element in the buffer structure (in bytes) when the buffer represents a structured buffer.
     - parameter flags: A D3D12_BUFFER_SRV_FLAGS-typed value that identifies view options for the buffer. Currently, the only option is to identify a raw view of the buffer. For more info about raw viewing of buffers, see Raw Views of Buffers.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(index: UInt64, count: UInt32, stride: UInt32, flags: D3DBufferShaderResourceViewFlags) {
         self.rawValue = RawValue(FirstElement: index, NumElements: count, StructureByteStride: stride, Flags: flags.rawType)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

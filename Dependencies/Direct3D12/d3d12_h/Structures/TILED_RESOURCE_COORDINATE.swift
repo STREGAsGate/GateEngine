@@ -14,7 +14,7 @@ public struct D3DTiledResourceCoordinate {
     var rawValue: RawValue
 
     /// The x-coordinate of the tiled resource.
-    @inlinable @inline(__always)
+    @inlinable
     public var x: UInt32 {
         get {
             return rawValue.X
@@ -25,7 +25,7 @@ public struct D3DTiledResourceCoordinate {
     }
 
     /// The y-coordinate of the tiled resource.
-    @inlinable @inline(__always)
+    @inlinable
     public var y: UInt32 {
         get {
             return rawValue.Y
@@ -36,7 +36,7 @@ public struct D3DTiledResourceCoordinate {
     }
 
     /// The z-coordinate of the tiled resource.
-    @inlinable @inline(__always)
+    @inlinable
     public var z: UInt32 {
         get {
             return rawValue.Z
@@ -49,7 +49,7 @@ public struct D3DTiledResourceCoordinate {
     /**The index of the subresource for the tiled resource.
     For mipmaps that use nonstandard tiling, or are packed, or both use nonstandard tiling and are packed, any subresource value that indicates any of the packed mipmaps all refer to the same tile. Additionally, the X coordinate is used to indicate a tile within the packed mip region, rather than a logical region of a single subresource. The Y and Z coordinates must be zero.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public var subresourceIndex: UInt32 {
         get {
             return rawValue.Subresource
@@ -65,12 +65,12 @@ public struct D3DTiledResourceCoordinate {
     - parameter z: The z-coordinate of the tiled resource.
     - parameter subresourceIndex: The index of the subresource for the tiled resource.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(x: UInt32, y: UInt32, z: UInt32, subresourceIndex: UInt32) {
         self.rawValue = RawValue(X: x, Y: y, Z: z, Subresource: subresourceIndex)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     init(rawValue: RawValue) {
         self.rawValue = rawValue
     }

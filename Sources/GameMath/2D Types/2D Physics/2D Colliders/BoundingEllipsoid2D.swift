@@ -39,7 +39,7 @@ public struct BoundingEllipsoid2D: Collider2D, Sendable {
         return (4 / 3) * Float.pi * radius.x * radius.y
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public var boundingBox: AxisAlignedBoundingBox2D {
         return AxisAlignedBoundingBox2D(center: center, offset: offset, radius: radius)
     }

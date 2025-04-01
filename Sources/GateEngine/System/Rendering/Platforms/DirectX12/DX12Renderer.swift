@@ -11,7 +11,7 @@ import GameMath
 import Shaders
 
 final class DX12Renderer: RendererBackend {
-    @inline(__always)
+    @inlinable
     var renderingAPI: RenderingAPI { .d3d12 }
     let factory: DGIFactory
     let device: D3DDevice
@@ -180,7 +180,7 @@ final class DX12Renderer: RendererBackend {
 }
 
 extension DX12Renderer {
-    @inline(__always)
+    @inlinable
     private func setGeometries(
         _ geometries: [DX12Geometry],
         on commandList: D3DGraphicsCommandList,
@@ -214,7 +214,7 @@ extension DX12Renderer {
         index += UInt32(bufferViews.count)
     }
 
-    @inline(__always)
+    @inlinable
     private func setTransforms(
         _ transforms: [Transform3],
         on commandList: D3DGraphicsCommandList,
@@ -256,7 +256,7 @@ extension DX12Renderer {
         index += 1
     }
 
-    @inline(__always)
+    @inlinable
     private func setUniforms(
         _ uniforms: ContiguousArray<UInt8>,
         commandList: D3DGraphicsCommandList,
@@ -288,7 +288,7 @@ extension DX12Renderer {
         }
     }
 
-    @inline(__always)
+    @inlinable
     private func setMaterials(
         _ materials: ContiguousArray<ShaderMaterial>,
         commandList: D3DGraphicsCommandList,
@@ -320,7 +320,7 @@ extension DX12Renderer {
         }
     }
 
-    @inline(__always)
+    @inlinable
     private func setTextures(
         _ textures: ContiguousArray<D3DResource?>,
         commandList: D3DGraphicsCommandList,
@@ -378,7 +378,7 @@ extension DX12Renderer {
         }
     }
 
-    @inline(__always)
+    @inlinable
     private func createUniforms(_ drawCommand: DrawCommand, _ camera: Camera?, _ matricies: Matrices) -> (
         uniforms: ContiguousArray<UInt8>, materials: ContiguousArray<ShaderMaterial>,
         textures: ContiguousArray<D3DResource?>
@@ -548,7 +548,6 @@ extension DX12Renderer {
         rootSignature: D3DRootSignature
     ) -> D3DPipelineState {
         do {
-            @_transparent
             var primitive: D3DPrimitiveTopologyType {
                 switch flags.primitive {
                 case .point:
@@ -560,7 +559,6 @@ extension DX12Renderer {
                 }
             }
 
-            @_transparent
             var inputLayoutDescription: D3DInputLayoutDescription {
                 let append: UInt32 = WinSDK.D3D11_APPEND_ALIGNED_ELEMENT
                 var elementDescriptions: [D3DInputElementDescription] = []
@@ -801,7 +799,7 @@ extension DX12Renderer {
         }
     }
 
-    @inline(__always)
+    @inlinable
     func rootSignature(cbvCount: UInt32, srvCount: UInt32) -> D3DRootSignature {
         do {
             let table1: D3DRootDescriptorTable = D3DRootDescriptorTable(descriptorRanges: [
@@ -856,7 +854,7 @@ extension DX12Renderer {
 }
 
 extension DX12Renderer {
-    @inline(__always)
+    @inlinable
     static func createBuffer<T>(
         withData data: [T],
         heapProperties: D3DHeapProperties,
@@ -874,7 +872,7 @@ extension DX12Renderer {
         }
     }
 
-    @inline(__always)
+    @inlinable
     static func createBuffer<T>(
         withData data: ContiguousArray<T>,
         heapProperties: D3DHeapProperties,
@@ -892,7 +890,6 @@ extension DX12Renderer {
         }
     }
 
-    @_transparent
     static func createBuffer<T>(
         withData data: UnsafeBufferPointer<T>,
         heapProperties: D3DHeapProperties,
@@ -994,15 +991,12 @@ extension DX12Renderer {
 }
 
 extension Renderer {
-    @_transparent
     var backend: DX12Renderer {
         return self._backend as! DX12Renderer
     }
-    @_transparent
     var device: D3DDevice {
         return backend.device
     }
-    @_transparent
     var backgroundCommandQueue: D3DCommandQueue {
         return backend.backgroundCommandQueue
     }

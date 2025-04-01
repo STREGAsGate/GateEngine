@@ -21,7 +21,7 @@
         return Game.shared.resourceManager.geometryCache(for: cacheKey)?.geometryBackend
     }
 
-    @inlinable @inline(__always) @_disfavoredOverload
+    @inlinable @_disfavoredOverload
     public convenience init(as path: GeoemetryPath, options: GeometryImporterOptions = .none) {
         self.init(path: path.value, options: options)
     }
@@ -63,7 +63,7 @@ extension Lines: Equatable, Hashable {
 }
 
 extension RawLines {
-    @inlinable @inline(__always) @_disfavoredOverload
+    @inlinable @_disfavoredOverload
     public init(_ path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws {
         try await self.init(path: path.value, options: options)
     }

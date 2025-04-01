@@ -6,7 +6,7 @@
  */
 
 public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
-    @inlinable @inline(__always)
+    @inlinable
     public var volume: Float {
         return self.radius.x * self.radius.y * self.radius.z
     }
@@ -28,7 +28,7 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
     @usableFromInline
     internal var _offset: Position3
     
-    @inlinable @inline(__always)
+    @inlinable
     public var size: Size3 {
         get {
             return radius * 2
@@ -38,20 +38,20 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         }
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public var originalSize: Size3 {
         return originalRadius * 2
     }
-    @inlinable @inline(__always)
+    @inlinable
     public var originalRadius: Size3 {
         return _radius
     }
-    @inlinable @inline(__always)
+    @inlinable
     public var originalOffset: Position3 {
         return _offset
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public var boundingBox: AxisAlignedBoundingBox3D {
         return self
     }
@@ -110,7 +110,7 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
     public var minPosition: Position3 {self.position - self.radius}
     public var maxPosition: Position3 {self.position + self.radius}
 
-    @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: AxisAlignedBoundingBox3D) -> Interpenetration3D? {
         guard self.isColiding(with: collider) else {return nil}
         let p1 = self.position
@@ -126,7 +126,7 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         return Interpenetration3D(depth: depth, direction: direction, points: [point])
     }
 
-    @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: BoundingSphere3D) -> Interpenetration3D? {
         let p1 = self.position
         let p2 = collider.position
@@ -145,7 +145,7 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         return Interpenetration3D(depth: depth, direction: direction, points: [point2])
     }
 
-    @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: BoundingEllipsoid3D) -> Interpenetration3D? {
         let position = self.position
         if position == collider.position {
@@ -168,7 +168,7 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         return Interpenetration3D(depth: depth, direction: direction, points: [point])
     }
 
-    @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: OrientedBoundingBox3D) -> Interpenetration3D? {
         if self.position == collider.position {
             // When the centers are the same a collision is always happening no matter the radius
@@ -184,7 +184,7 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         return Interpenetration3D(depth: depth, direction: direction, points: [p2])
     }
 
-    @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: Collider3D) -> Interpenetration3D? {
         switch collider {
         case let collider as BoundingSphere3D:
@@ -200,7 +200,7 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         }
     }
     
-    @inline(__always)
+    @inlinable
     public func isColiding(with rhs: Self) -> Bool {
         let a = self
         let aPosition = a.position
@@ -220,7 +220,7 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         return true
     }
     
-    @inline(__always)
+    @inlinable
     public func isColiding(with rhs: Ray3D) -> Bool {
         if self.contains(rhs.origin) {
             return true
@@ -228,14 +228,14 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         return self.surfacePoint(for: rhs) != nil
     }
     
-    @inline(__always)
+    @inlinable
     public func contains(_ rhs: Self, withThreshold threshold: Float = 0) -> Bool {
         guard self.contains(rhs.minPosition, withThreshold: threshold) else {return false}
         guard self.contains(rhs.maxPosition, withThreshold: threshold) else {return false}
         return true
     }
     
-    @inline(__always)
+    @inlinable
     public func contains(_ rhs: Position3, withThreshold threshold: Float = 0) -> Bool {
         let position = self.position - (self.radius + threshold)
 
@@ -251,7 +251,7 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         return true
     }
     
-    @inline(__always)
+    @inlinable
     public func contains(any positions: [Position3]) -> Bool {
         for position in positions {
             if self.contains(position) {
@@ -261,7 +261,7 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         return false
     }
     
-    @inline(__always)
+    @inlinable
     public func closestSurfacePoint(from point: Position3) -> Position3 {
         var pos: Position3 = .zero
         let minPosition = self.minPosition
@@ -283,19 +283,19 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
 }
 
 extension AxisAlignedBoundingBox3D {
-    @inline(__always)
+    @inlinable
     func movedInsideEllipsoidSpace(_ ellipsoidRadius: Size3) -> Self {
         return AxisAlignedBoundingBox3D(center: self.center / ellipsoidRadius, offset: self.offset / ellipsoidRadius, radius: self.radius / ellipsoidRadius)
     }
     
-    @inline(__always)
+    @inlinable
     func movedOutsideEllipsoidSpace(_ ellipsoidRadius: Size3) -> Self {
         return AxisAlignedBoundingBox3D(center: self.center * ellipsoidRadius, offset: self.offset * ellipsoidRadius, radius: self.radius * ellipsoidRadius)
     }
 }
 
 extension AxisAlignedBoundingBox3D {
-    @inline(__always)
+    @inlinable
     public func planes() -> [Plane3D] {
         return [
             Plane3D(origin: position + radius, normal: .right),
@@ -308,7 +308,7 @@ extension AxisAlignedBoundingBox3D {
         ]
     }
     
-    @inline(__always)
+    @inlinable
     public func rects() -> [Rect] {
         let position: Position3 = self.position - radius
         return [Rect(position: Position2(x: Float(position.x), y: Float(position.y)), size: Size2(width: Float(radius.x) * 2, height: Float(radius.y) * 2)),
@@ -316,7 +316,7 @@ extension AxisAlignedBoundingBox3D {
                 Rect(position: Position2(x: Float(position.y), y: Float(position.z)), size: Size2(width: Float(radius.y) * 2, height: Float(radius.z) * 2))]
     }
     
-    @inline(__always)
+    @inlinable
     public func points() -> [Position3] {
         let p1 = position - radius
         let p2 = Position3(x: p1.x + (radius.x * 2), y: p1.y, z: p1.z)
@@ -334,7 +334,7 @@ extension AxisAlignedBoundingBox3D {
 
 public extension AxisAlignedBoundingBox3D {
     // Not working as expected
-//    @inline(__always)
+//    @inlinable
 //    func isIntersected(by ray: Ray3D) -> Bool {
 //        if self.contains(ray.origin) {
 //            return true
@@ -347,7 +347,7 @@ public extension AxisAlignedBoundingBox3D {
 //        return false
 //    }
     
-    @inline(__always)
+    @inlinable
     func surfacePoint(for ray: Ray3D) -> Position3? {
         let minPosition = self.minPosition
         let maxPosition = self.maxPosition
@@ -401,7 +401,7 @@ public extension AxisAlignedBoundingBox3D {
         return ray.origin.moved(t, toward: ray.direction)
     }
     
-    @inline(__always)
+    @inlinable
     func surfaceNormal(facing point: Position3) -> Direction3 {
         let point = point - position
         if point == .zero {
@@ -476,7 +476,7 @@ public extension AxisAlignedBoundingBox3D {
 }
 
 public extension AxisAlignedBoundingBox3D {
-    @inline(__always)
+    @inlinable
     func expandedToEnclose(_ rhs: Self) -> Self {
         return AxisAlignedBoundingBox3D([self.maxPosition, self.minPosition, rhs.maxPosition, rhs.minPosition])
     }

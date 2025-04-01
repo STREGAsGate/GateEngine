@@ -8,7 +8,7 @@
 import Foundation
 import WinSDK
 
-@inlinable @inline(__always)
+@inlinable
 public func compileFromFile(_ url: URL, functionName: String, target: String) throws -> D3DBlob {
     let pFileName: [WCHAR] = url.withUnsafeFileSystemRepresentation {
         return String(cString: $0!).windowsUTF16

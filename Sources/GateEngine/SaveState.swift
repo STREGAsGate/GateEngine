@@ -332,7 +332,6 @@ extension Game {
 }
 
 extension String {
-    @_transparent
     fileprivate var isAscii: Bool {
         for char in self {
             for code in char.unicodeScalars {

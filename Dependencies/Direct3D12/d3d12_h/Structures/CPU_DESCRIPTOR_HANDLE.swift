@@ -14,7 +14,7 @@ public struct D3DCPUDescriptorHandle {
     internal var rawValue: RawValue
 
     /// The address of the descriptor.
-    @inlinable @inline(__always)
+    @inlinable
     public var pointer: UInt64 {
         get {
             return rawValue.ptr
@@ -27,13 +27,13 @@ public struct D3DCPUDescriptorHandle {
     /** Describes a CPU descriptor handle.
     - parameter pointer: The address of the descriptor.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(pointer: UInt64) {
         self.rawValue = RawValue()
         self.pointer = pointer
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

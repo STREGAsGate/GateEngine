@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+#if HTML5
 import DOM
 import WebGL2
 import GameMath
@@ -154,7 +154,7 @@ final class WASIWindow: WindowBacking {
         pointerLock.setRequestedLockIfNeeded()
     }
 
-    @inline(__always)
+    @inlinable
     private func getPositionAndDelta(from event: MouseEvent) -> (
         position: Position2, delta: Position2
     ) {

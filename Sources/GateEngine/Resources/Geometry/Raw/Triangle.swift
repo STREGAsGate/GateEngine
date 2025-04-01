@@ -68,7 +68,15 @@ public struct Triangle: Codable, Equatable, Hashable {
     }
     /// The 3 colors counter-clockwise wound as an array
     public var colors: [Color] {
-        return [v1.color, v2.color, v3.color]
+        get {
+            return [v1.color, v2.color, v3.color]
+        }
+        set {
+            assert(newValue.count == 3, "1 Color is required for ever vertex")
+            v1.color = newValue[0]
+            v2.color = newValue[1]
+            v3.color = newValue[2]
+        }
     }
     /// Positions as an element array
     public var vertices: [Float] {

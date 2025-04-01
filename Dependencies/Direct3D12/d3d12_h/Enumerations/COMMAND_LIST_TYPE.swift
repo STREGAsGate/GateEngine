@@ -31,7 +31,7 @@ public enum D3DCommandListType {
 extension D3DCommandListType: RawRepresentable {
     public typealias RawValue = WinSDK.D3D12_COMMAND_LIST_TYPE
     
-    @inlinable @inline(__always)
+    @inlinable
     public var rawValue: WinSDK.D3D12_COMMAND_LIST_TYPE {
         switch self {
         case .direct:
@@ -53,7 +53,7 @@ extension D3DCommandListType: RawRepresentable {
         }
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public init(rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_COMMAND_LIST_TYPE_DIRECT:

@@ -89,23 +89,23 @@ public extension CollisionTriangle {
 extension CollisionTriangle: Surface3D {}
 
 public extension CollisionTriangle {
-    @inlinable @inline(__always)
+    @inlinable
     var p1: Position3 {return positions[0]}
-    @inlinable @inline(__always)
+    @inlinable
     var p2: Position3 {return positions[1]}
-    @inlinable @inline(__always)
+    @inlinable
     var p3: Position3 {return positions[2]}
     
-    @inlinable @inline(__always)
+    @inlinable
     var c1: Color {return colors[0]}
-    @inlinable @inline(__always)
+    @inlinable
     var c2: Color {return colors[1]}
-    @inlinable @inline(__always)
+    @inlinable
     var c3: Color {return colors[2]}
 }
 
 public extension CollisionTriangle {
-    @inline(__always)
+    @inlinable
     func interpolated(to rhs: CollisionTriangle, _ method: InterpolationMethod) -> CollisionTriangle {
         var normal: Direction3? = self.normal.interpolated(to: rhs.normal, method)
         if normal?.isFinite == false {
@@ -123,7 +123,7 @@ public extension CollisionTriangle {
 }
 
 extension CollisionTriangle {
-    @inline(__always)
+    @inlinable
     func movedInsideEllipsoidSpace(_ ellipsoidRadius: Size3) -> CollisionTriangle {
         let p1 = self.p1 / ellipsoidRadius
         let p2 = self.p2 / ellipsoidRadius
@@ -132,7 +132,7 @@ extension CollisionTriangle {
         return CollisionTriangle(p1, p2, p3, c1, c2, c3, normal: normal, attributes: _attributes)
     }
     
-    @inline(__always)
+    @inlinable
     func movedOutsideEllipsoidSpace(_ ellipsoidRadius: Size3) -> CollisionTriangle {
         let p1 = self.p1 * ellipsoidRadius
         let p2 = self.p2 * ellipsoidRadius
@@ -144,27 +144,27 @@ extension CollisionTriangle {
 
 
 extension CollisionTriangle: Collider3D {
-    @inline(__always)
+    @inlinable
     public var offset: Position3 {
         return .zero
     }
     
-    @inline(__always)
+    @inlinable
     public func update(transform: Transform3) {
         
     }
     
-    @inline(__always)
+    @inlinable
     public func update(sizeAndOffsetUsingTransform transform: Transform3) {
 
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public var boundingBox: AxisAlignedBoundingBox3D {
         return AxisAlignedBoundingBox3D(self.positions)
     }
     
-    @inline(__always)
+    @inlinable
     public func isPotentiallyColliding(with collider: Collider3D) -> Bool {
         var collider = collider.boundingBox
         // We grab all possible triangles to respond to in one phase.
@@ -175,7 +175,7 @@ extension CollisionTriangle: Collider3D {
         return collider.contains(p)
     }
     
-    @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: Collider3D) -> Interpenetration3D? {
         guard self.isPotentiallyColliding(with: collider) else {return nil}
 
@@ -197,7 +197,7 @@ extension CollisionTriangle: Collider3D {
             // TODO: Size less than 0.6 cause the collider to incorrectly pass through the triangle
             // Can probably fix this by scaling both up for the check then scale the result back down
             let position = ellipsoid.position / ellipsoid.radius
-            @_transparent
+
             func closestUnitSphereSurfacePoint(from point: Position3) -> Position3 {
                 let scale: Float = 1
                 return ((point - position).normalized * scale) + position
@@ -233,7 +233,7 @@ extension CollisionTriangle: Collider3D {
         }
     }
     
-    @inline(__always)
+    @inlinable
     public func surfacePoint(for ray: Ray3D) -> Position3? {
         let e1 = p2 - p1
         let e2 = p3 - p1
@@ -261,12 +261,12 @@ extension CollisionTriangle: Collider3D {
         return nil
     }
     
-    @inline(__always)
+    @inlinable
     public func surfaceNormal(facing point: Position3) -> Direction3 {
         return normal
     }
     
-    @inline(__always)
+    @inlinable
     public func closestSurfacePoint(from p: Position3) -> Position3 {
         let a = p1, b = p2, c = p3
         
@@ -319,7 +319,7 @@ extension CollisionTriangle: Collider3D {
         return a + ab * v + ac * w //=u*a+v*b+w*c,u=va*denom=1.0f-v-w
     }
     
-    @inline(__always)
+    @inlinable
     public func edgeNear(_ p: Position3) -> Line3D {
         let edges: [Line3D] = [Line3D(p1, p2), Line3D(p1, p3), Line3D(p2, p3)]
         let edgesWithDistance: [(d: Float, edge: Line3D)] = edges.map({
@@ -330,13 +330,13 @@ extension CollisionTriangle: Collider3D {
         return edge.edge
     }
     
-    @inline(__always)
+    @inlinable
     public func edgeNormal(toward p: Position3) -> Direction3 {
         let edge = edgeNear(p)
         return normal.cross(Direction3(from: edge.p1, to: edge.p2))
     }
     
-    @inline(__always)
+    @inlinable
     func contains(_ position: Position3) -> Bool {
         let pa = p1
         let pb = p2
@@ -360,32 +360,32 @@ extension CollisionTriangle: Collider3D {
 }
 
 extension CollisionTriangle: Hashable {
-    @_transparent
+    @inlinable
     nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine(positions)
     }
     
-    @_transparent
+    @inlinable
     public static func ==(lhs: CollisionTriangle, rhs: CollisionTriangle) -> Bool {
         return lhs.positions == rhs.positions
     }
 }
 
 public extension CollisionTriangle {
-    @_transparent
+    @inlinable
     static func +(lhs: CollisionTriangle, rhs: Position3) -> CollisionTriangle {
         return CollisionTriangle(lhs.p1 + rhs, lhs.p2 + rhs, lhs.p3 + rhs, lhs.c1, lhs.c2, lhs.c3, normal: lhs.normal, attributes: lhs._attributes)
     }
-    @_transparent
+    @inlinable
     static func +=(lhs: inout CollisionTriangle, rhs: Position3) {
         lhs = lhs + rhs
     }
     
-    @_transparent
+    @inlinable
     static func *(lhs: CollisionTriangle, rhs: Matrix4x4) -> CollisionTriangle {
         return CollisionTriangle(lhs.p1 * rhs, lhs.p2 * rhs, lhs.p3 * rhs, lhs.c1, lhs.c2, lhs.c3, normal: nil, attributes: lhs._attributes)
     }
-    @_transparent
+    @inlinable
     static func *=(lhs: inout CollisionTriangle, rhs: Matrix4x4) {
         lhs = lhs * rhs
     }

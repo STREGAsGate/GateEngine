@@ -533,7 +533,7 @@ extension ResourceManager.Cache {
         var lastLoaded: Date
         var _state: ResourceState
         var state: ResourceState {
-            @inline(__always) get {
+            get {
                 return _state
             }
             set {

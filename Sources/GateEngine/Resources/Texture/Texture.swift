@@ -16,6 +16,7 @@ public enum MipMapping: Hashable, Sendable {
     case auto(levels: Int = .max)
 }
 
+@usableFromInline
 @MainActor internal protocol TextureBackend: AnyObject {
     var size: Size2 { get }
     init(data: Data, size: Size2, mipMapping: MipMapping)
@@ -65,11 +66,12 @@ public enum MipMapping: Hashable, Sendable {
         return renderTarget != nil
     }
 
+    @usableFromInline
     internal var textureBackend: (any TextureBackend)? {
         return Game.shared.resourceManager.textureCache(for: cacheKey)?.textureBackend
     }
     
-    @inline(__always)
+    @inlinable
     public func replaceData(with data: Data, size: Size2, mipMapping: MipMapping) {
         textureBackend?.replaceData(with: data, size: size, mipMapping: mipMapping)
     }
@@ -82,7 +84,7 @@ public enum MipMapping: Hashable, Sendable {
      - parameter options: Options that will be given to the texture importer.
      - parameter mipMapping: The mip level to generate for this texture.
      */
-    @inlinable @inline(__always) @_disfavoredOverload
+    @inlinable @_disfavoredOverload
     public convenience init(
         as path: TexturePath,
         sizeHint: Size2? = nil,
@@ -372,7 +374,6 @@ extension ResourceManager {
     }
 
     @MainActor 
-    @inline(__always)
     private func _reloadTexture(key: Cache.TextureKey) {
         Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
         Task.detached(priority: .high) {

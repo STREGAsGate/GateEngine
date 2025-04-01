@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if canImport(AppKit) && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+#if canImport(AppKit) && !HTML5
 
 import AppKit
 import System

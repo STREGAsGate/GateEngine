@@ -86,7 +86,6 @@ final class OpenGLRenderTarget: RenderTargetBackend {
 }
 
 extension OpenGLRenderTarget {
-    @_transparent
     func clear() {
         glClearColor(clearColor.red, clearColor.green, clearColor.blue, clearColor.alpha)
         glClearDepth(1)
@@ -104,8 +103,8 @@ extension OpenGLRenderTarget {
             glBindFramebuffer(0)
             glViewport(x: 0, y: 0, width: GLsizei(size.width), height: GLsizei(size.height))
             glScissor(x: 0, y: 0, width: GLsizei(size.width), height: GLsizei(size.height))
-            let renderer: Renderer = Game.shared.renderer
-            let sizeOnlyRenderTarget = renderer.openGLBackend.sizeOnlyRenderTarget
+            let renderer = Game.shared.renderer!
+            let sizeOnlyRenderTarget = (renderer as! OpenGLRenderer).sizeOnlyRenderTarget
             sizeOnlyRenderTarget.size = self.size
             renderer.draw(
                 windowRenderTarget,

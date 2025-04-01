@@ -7,7 +7,7 @@
 
 public struct Transform3: Sendable {
     public var position: Position3 {
-        @_transparent didSet {
+        didSet {
             assert(position.isFinite)
             if _needsUpdate == false && oldValue != position {
                 _needsUpdate = true
@@ -15,7 +15,7 @@ public struct Transform3: Sendable {
         }
     }
     public var rotation: Quaternion {
-        @_transparent didSet {
+        didSet {
             assert(rotation.isFinite)
             if _needsUpdate == false && oldValue != rotation {
                 _needsUpdate = true
@@ -23,7 +23,7 @@ public struct Transform3: Sendable {
         }
     }
     public var scale: Size3 {
-        @_transparent didSet {
+        didSet {
             assert(scale.isFinite)
             if _needsUpdate == false && oldValue != scale {
                 _needsUpdate = true
@@ -45,15 +45,43 @@ public extension Transform3 {
         self.scale = scale
     }
     
-    @_transparent
+    @inlinable
     var isFinite: Bool {
         return position.isFinite && scale.isFinite && rotation.isFinite
     }
 }
 
 public extension Transform3 {
+    @inlinable
+    func moved(_ distance: Float, toward direction: Direction3) -> Transform3 {
+        var result = self
+        result.move(distance, toward: direction)
+        return result
+    }
+    
+    @inlinable
+    mutating func move(_ distance: Float, toward direction: Direction3) {
+        self.position.move(distance, toward: direction)
+    }
+}
+
+public extension Transform3 {
+    @inlinable
+    func rotated(by angle: some Angle, around axis: Direction3) -> Transform3 {
+        var result = self
+        result.rotate(by: angle, around: axis)
+        return result
+    }
+    
+    @inlinable
+    mutating func rotate(by angle: some Angle, around axis: Direction3) {
+        self.rotation *= Quaternion(angle, axis: axis)
+    }
+}
+
+public extension Transform3 {
     ///Returns a cached matrix, creating the cache if needed.
-    @_transparent
+    @inlinable
     mutating func matrix() -> Matrix4x4 {
         if _needsUpdate {
             _matrix = self.createMatrix()
@@ -63,7 +91,7 @@ public extension Transform3 {
     }
     
     ///Creates and returns a new matrix, or a cached matrix if the cache already exists.
-    @_transparent
+    @inlinable
     func createMatrix() -> Matrix4x4 {
         if _needsUpdate == false {
             return _matrix
@@ -73,7 +101,7 @@ public extension Transform3 {
 }
 
 extension Transform3: Equatable {
-    @_transparent
+    @inlinable
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.position == rhs.position && lhs.rotation == rhs.rotation && lhs.scale == rhs.scale
     }
@@ -88,7 +116,7 @@ extension Transform3: Hashable {
 }
 
 extension Transform3 {
-    @_transparent
+    @inlinable
     public mutating func rotate(_ degrees: Degrees, direction: Direction3) {
         self.rotation = Quaternion(degrees, axis: direction) * self.rotation
     }
@@ -99,54 +127,29 @@ public extension Transform3 {
 }
 
 extension Transform3 {
-    @_transparent
+    @inlinable
     public func interpolated(to destination: Self, _ method: InterpolationMethod) -> Self {
         var copy = self
         copy.interpolate(to: destination, method)
         return copy
     }
     
-    @_transparent
+    @inlinable
     public mutating func interpolate(to: Self, _ method: InterpolationMethod) {
         self.position.interpolate(to: to.position, method)
         self.rotation.interpolate(to: to.rotation, method)
         self.scale.interpolate(to: to.scale, method)
     }
-    
-    //TODO: Remove this. Position is the only value that is clear. Scale and rotation are confusing.
-    @available(*, unavailable /*0.0.8*/, message: "This will be removed in a future update.")
-    @_transparent
-    public func difference(removing: Self) -> Self {
-        var transform: Self = .default
-        transform.position = self.position - removing.position
-        transform.rotation = self.rotation * removing.rotation.inverse
-        return transform
-    }
 }
 
 extension Transform3 {
-    @_transparent
+    @inlinable
     public func distance(from: Self) -> Float {
         return self.position.distance(from: from.position)
     }
 }
 
-//TODO: Remove operators. Position is the only value that is clear. Scale and rotation are confusing.
-public extension Transform3 {
-    @available(*, unavailable /*0.0.8*/, message: "This will be removed in a future update.")
-    @_transparent
-    static func +=(lhs: inout Self, rhs: Self) {
-        fatalError()
-    }
-    @available(*, unavailable /*0.0.8*/, message: "This will be removed in a future update.")
-    @_transparent
-    static func +(lhs: Self, rhs: Self) -> Self {
-        fatalError()
-    }
-}
-
 extension Transform3: Codable {
-    @inlinable
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([position.x, position.y, position.z,
@@ -154,7 +157,6 @@ extension Transform3: Codable {
                               scale.x, scale.y, scale.z])
     }
     
-    @inlinable
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let values = try container.decode(Array<Float>.self)

@@ -34,7 +34,7 @@ internal protocol SkinnedGeometryBackend: AnyObject {
         return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!.skinJoints!
     }
 
-    @inlinable @inline(__always) @_disfavoredOverload
+    @inlinable @_disfavoredOverload
     public convenience init(
         as path: GeoemetryPath,
         geometryOptions: GeometryImporterOptions = .none,

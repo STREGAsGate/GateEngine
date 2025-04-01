@@ -14,7 +14,7 @@ public struct D3DResourceUnorderedAccessViewBarrier {
     internal var rawValue: RawValue
 
     /// The resource used in the transition, as a pointer to ID3D12Resource.
-    @inlinable @inline(__always)
+    @inlinable
     public var resource: D3DResource? {
         get {
             return D3DResource(winSDKPointer: rawValue.pResource)
@@ -25,12 +25,12 @@ public struct D3DResourceUnorderedAccessViewBarrier {
     }
 
     /// Represents a resource in which all UAV accesses must complete before any future UAV accesses can begin.
-    @inlinable @inline(__always)
+    @inlinable
     public init() {
         self.rawValue = RawValue()
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

@@ -44,7 +44,7 @@ internal final class CAAudioTrackReference: AudioTrackReference {
             }
         }
     }
-    @inline(__always)
+    @inlinable
     var volume: Float {
         get {
             return playerNode.volume
@@ -53,7 +53,7 @@ internal final class CAAudioTrackReference: AudioTrackReference {
             playerNode.volume = newValue
         }
     }
-    @inline(__always)
+    @inlinable
     var pitch: Float {
         get {
             return playerNode.rate
@@ -63,15 +63,15 @@ internal final class CAAudioTrackReference: AudioTrackReference {
         }
     }
 
-    @inline(__always)
+    @inlinable
     func play() {
         playerNode.play()
     }
-    @inline(__always)
+    @inlinable
     func pause() {
         playerNode.pause()
     }
-    @inline(__always)
+    @inlinable
     func stop() {
         playerNode.stop()
     }

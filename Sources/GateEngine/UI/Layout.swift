@@ -509,7 +509,7 @@ public struct Layout {
             case horizontalSize
             case verticalSize
         }
-        @inline(__always)
+
         func resolve(_ view: View) -> (failure: FailedResolutions, view: View)? {
             for subview in view.subviews {
                 if let failed = resolve(subview) {
@@ -574,7 +574,7 @@ public struct Layout {
         var viewsLayedOut: Int = 0
         var hadError: Bool = false
         #endif
-        @inline(__always)
+        
         func finishLayout(for view: View) {
             guard view.needsLayout else {return}
             
@@ -836,11 +836,11 @@ extension Layout {
 
 @MainActor
 extension Layout.Anchor where D == Layout.Horizontal, A == Layout.Location {
-    @_transparent
+    @inlinable
     public func constrain(to target: Layout.Anchor<Layout.Horizontal, Layout.Location>, priority: Layout.Priority = .default) {
         self.constrain(0, from: target, priority: priority)
     }
-    @_transparent
+    @inlinable
     public func constrain(_ constant: Float, from target: Layout.Anchor<Layout.Horizontal, Layout.Location>, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.horizontalPositions.append(
             Layout.Constraint(source: self, target: target, constant: constant, multiplier: 1, priority: priority)
@@ -850,11 +850,11 @@ extension Layout.Anchor where D == Layout.Horizontal, A == Layout.Location {
 
 @MainActor
 extension Layout.Anchor where D == Layout.Vertical, A == Layout.Location {
-    @_transparent
+    @inlinable
     public func constrain(to target: Layout.Anchor<Layout.Vertical, Layout.Location>, priority: Layout.Priority = .default) {
         self.constrain(0, from: target, priority: priority)
     }
-    @_transparent
+    @inlinable
     public func constrain(_ constant: Float, from target: Layout.Anchor<Layout.Vertical, Layout.Location>, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.verticalPositions.append(
             Layout.Constraint(source: self, target: target, constant: constant, multiplier: 1, priority: priority)
@@ -864,13 +864,13 @@ extension Layout.Anchor where D == Layout.Vertical, A == Layout.Location {
 
 @MainActor
 extension Layout.Anchor where D == Layout.Horizontal, A == Layout.Size {
-    @_transparent
+    @inlinable
     public func constrain(to target: Layout.Anchor<Layout.Horizontal, Layout.Size>, multiplier: Float = 1, adding constant: Float = 0, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.horizontalSizes.append(
             Layout.Constraint(source: self, target: target, constant: constant, multiplier: multiplier, priority: priority)
         )
     }
-    @_transparent
+    @inlinable
     public func constrain(to constant: Float, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.horizontalSizes.append(
             Layout.Constraint(source: self, target: nil, constant: constant, multiplier: 1, priority: priority)
@@ -880,13 +880,13 @@ extension Layout.Anchor where D == Layout.Horizontal, A == Layout.Size {
 
 @MainActor
 extension Layout.Anchor where D == Layout.Vertical, A == Layout.Size {
-    @_transparent
+    @inlinable
     public func constrain(to target: Layout.Anchor<Layout.Vertical, Layout.Size>, multiplier: Float = 1, adding constant: Float = 0, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.verticalSizes.append(
             Layout.Constraint(source: self, target: target, constant: constant, multiplier: multiplier, priority: priority)
         )
     }
-    @_transparent
+    @inlinable
     public func constrain(to constant: Float, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.verticalSizes.append(
             Layout.Constraint(source: self, target: nil, constant: constant, multiplier: 1, priority: priority)

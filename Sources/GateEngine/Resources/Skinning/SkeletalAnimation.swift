@@ -259,7 +259,6 @@ extension SkeletalAnimation {
         static let rotation = KeyedComponents(rawValue: 1 << 2)
         static let scale = KeyedComponents(rawValue: 1 << 3)
 
-        @_transparent
         var isFull: Bool {
             return self == [.position, .rotation, .scale]
         }

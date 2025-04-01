@@ -55,12 +55,13 @@ import GameMath
 }
 
 extension Touch: Equatable {
-    @_transparent
+    @inlinable
     public static func == (lhs: Touch, rhs: Touch) -> Bool {
         return lhs.id == rhs.id
     }
 }
 extension Touch: Hashable {
+    @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }

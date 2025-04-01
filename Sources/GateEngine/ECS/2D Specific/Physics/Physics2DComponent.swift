@@ -43,7 +43,7 @@ public final class Physics2DComponent: Component {
 }
 
 extension Entity {
-    @inlinable @inline(__always)
+    @inlinable
     var physics2DComponent: Physics2DComponent {
         return self[Physics2DComponent.self]
     }

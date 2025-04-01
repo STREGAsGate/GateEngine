@@ -9,14 +9,14 @@ import WinSDK
 
 public class D3DCommandList: D3DDeviceChild {
     /// Gets the type of the command list, such as direct, bundle, compute, or copy.
-    @inlinable @inline(__always)
+    @inlinable
     public var commandListType: D3DCommandListType {
         return performFatally(as: RawValue.self) {
             return D3DCommandListType(rawValue: $0.pointee.lpVtbl.pointee.GetType($0))
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -25,7 +25,7 @@ extension D3DCommandList {
     typealias RawValue = WinSDK.ID3D12CommandList
 }
 extension D3DCommandList.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: IID {WinSDK.IID_ID3D12CommandList}
 }
 

@@ -21,7 +21,7 @@ public enum D3DCommandQueuePriority {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
 
-    @inlinable @inline(__always)
+    @inlinable
     public var rawValue: WinSDK.D3D12_COMMAND_QUEUE_PRIORITY {
         switch self {
         case .normal:
@@ -35,7 +35,7 @@ public enum D3DCommandQueuePriority {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public init(rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_COMMAND_QUEUE_PRIORITY_NORMAL:
@@ -49,7 +49,7 @@ public enum D3DCommandQueuePriority {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public init(rawValue: Int32) {
         switch rawValue {
         case WinSDK.D3D12_COMMAND_QUEUE_PRIORITY_NORMAL.rawValue:

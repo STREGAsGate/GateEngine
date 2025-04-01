@@ -73,7 +73,7 @@ internal class UIKitViewController: GCEventViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @inline(__always)
+    @inlinable
     private func type(for touch: UITouch) -> TouchKind {
         switch touch.type {
         case .direct:
@@ -85,21 +85,21 @@ internal class UIKitViewController: GCEventViewController {
         }
     }
 
-    @inline(__always)
+    @inlinable
     func locationOfTouch(_ touch: UITouch, from event: UIEvent?) -> (position: Position2, precision: Position2?) {
         let l = touch.location(in: nil)
         let p = touch.preciseLocation(in: nil)
         return (Position2(Float(p.x), Float(p.y)), p != l ? Position2(Float(p.x), Float(p.y)) : nil)
     }
     
-    @inline(__always)
+    @inlinable
     func precisionLocationOfTouch(_ touch: UITouch, from event: UIEvent?) -> Position2? {
         let p = touch.preciseLocation(in: nil)
         return Position2(Float(p.x), Float(p.y))
     }
 
     #if !os(tvOS)
-    @inline(__always)
+    @inlinable
     func deltaLocationOfTouch(_ touch: UITouch, from event: UIEvent?) -> Position2 {
         let cgL = touch.preciseLocation(in: nil)
         let cgPL = touch.precisePreviousLocation(in: nil)
@@ -107,7 +107,7 @@ internal class UIKitViewController: GCEventViewController {
     }
 
     @available(iOS 13.4, *)
-    @inline(__always)
+    @inlinable
     func mouseButtonFromEvent(_ event: UIEvent?) -> MouseButton {
         guard let event else { return .unknown(nil) }
         switch event.buttonMask {
@@ -304,7 +304,7 @@ internal class UIKitViewController: GCEventViewController {
     }
 
     // MARK: - Keyboard
-    @inline(__always)
+    @inlinable
     func keysFromEvent(_ event: UIPressesEvent) -> [(key: KeyboardKey, characters: String?)] {
         var keys: [(key: KeyboardKey, characters: String?)] = []
         for press in event.allPresses {
@@ -745,7 +745,7 @@ internal class UIKitViewController: GCEventViewController {
         return keys
     }
 
-    @inline(__always)
+    @inlinable
     func modifiersFromEvent(_ event: UIPressesEvent) -> KeyboardModifierMask {
         var modifiers: KeyboardModifierMask = []
         for press in event.allPresses {
@@ -769,7 +769,7 @@ internal class UIKitViewController: GCEventViewController {
         return modifiers
     }
 
-    @inline(__always)
+    @inlinable
     func didHandlePressEvent(_ event: UIPressesEvent?, _ keyEvent: KeyboardEvent) -> Bool {
         var handled: Bool = false
         guard let event else { return handled }

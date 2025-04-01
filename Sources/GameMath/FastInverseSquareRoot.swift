@@ -7,7 +7,7 @@
 #if GameMathUseFastInverseSquareRoot
 
 public extension Float {
-    @_transparent
+    @inlinable
     func fastInverseSquareRoot() -> Self {
         var x = self
         let xhalf = 0.5 * x
@@ -20,7 +20,7 @@ public extension Float {
 }
 
 extension Vector2 {
-    @_transparent
+    @inlinable
     public var normalized: Self  {
         let x = pow(x, 2)
         let y = pow(y, 2)
@@ -28,7 +28,7 @@ extension Vector2 {
         return self * squaredMagnitude.fastInverseSquareRoot()
     }
     
-    @_transparent
+    @inlinable
     public mutating func normalize() {
         let x = pow(x, 2)
         let y = pow(y, 2)
@@ -38,7 +38,7 @@ extension Vector2 {
 }
 
 extension Vector3 {
-    @_transparent
+    @inlinable
     public var normalized: Self  {
         let x = pow(x, 2)
         let y = pow(y, 2)
@@ -47,7 +47,7 @@ extension Vector3 {
         return self * squaredMagnitude.fastInverseSquareRoot()
     }
     
-    @_transparent
+    @inlinable
     public mutating func normalize() {
         let x = pow(x, 2)
         let y = pow(y, 2)

@@ -16,7 +16,7 @@ public extension DGIFactory {
     - parameter commandQueue: For Direct3D 11, and earlier versions of Direct3D, this is a pointer to the Direct3D device for the swap chain. For Direct3D 12 this is a pointer to a direct command queue (refer to ID3D12CommandQueue). This parameter cannot be NULL.
     - returns: A pointer to a variable that receives a pointer to the IDXGISwapChain1 interface for the swap chain that CreateSwapChainForHwnd creates.
     */
-    @inlinable @inline(__always)
+    @inlinable
     func createSwapChain(description: DGISwapChainDescription1, 
                          window: HWND,
                          fullScreen: DGISwapChainFullscreenDescription?, 
@@ -45,7 +45,7 @@ public extension DGIFactory {
     - parameter commandQueue: For Direct3D 11, and earlier versions of Direct3D, this is a pointer to the Direct3D device for the swap chain. For Direct3D 12 this is a pointer to a direct command queue (refer to ID3D12CommandQueue). This parameter cannot be NULL.
     - returns: A pointer to a variable that receives a pointer to the IDXGISwapChain1 interface for the swap chain that CreateSwapChainForHwnd creates.
     */
-    @inlinable @inline(__always)
+    @inlinable
     func createSwapChain(window: HWND,
                          format: DGIFormat,
                          bufferCount: UInt32,

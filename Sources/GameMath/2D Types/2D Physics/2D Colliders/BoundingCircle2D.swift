@@ -31,37 +31,37 @@ public struct BoundingCircle2D: Collider2D, Sendable {
         self._offset = offset
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public var volume: Float {
         return (4.0 * Float.pi * radius * radius * radius) / 3.0
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public var boundingBox: AxisAlignedBoundingBox2D {
         return AxisAlignedBoundingBox2D(center: center, offset: offset, radius: Size2(radius))
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public mutating func update(transform: Transform2) {
         self.center = transform.position
         self.offset = _offset * transform.scale
         self.radius = _radius * (transform.scale.length / 2)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public mutating func update(sizeAndOffsetUsingTransform transform: Transform2) {
         self.offset = _offset * transform.scale
         self.radius = _radius * (transform.scale.length / 2)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func closestSurfacePoint(from point: Position2) -> Position2 {
         let position: Position2 = self.position
         let d = Direction2(from: position, to: point)
         return Position2(d * radius) + position
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: BoundingCircle2D) -> Interpenetration2D? {
         let p1 = self.position
         let p2 = collider.position
@@ -83,7 +83,7 @@ public struct BoundingCircle2D: Collider2D, Sendable {
         return interpenetration
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: BoundingEllipsoid2D) -> Interpenetration2D? {
         if self.position == collider.position {
             // When the centers are the same a collision is always happening no matter the radius
@@ -102,7 +102,7 @@ public struct BoundingCircle2D: Collider2D, Sendable {
         return interpenetration
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: Collider2D) -> Interpenetration2D? {
         switch collider {
         case let collider as BoundingCircle2D:
@@ -114,12 +114,12 @@ public struct BoundingCircle2D: Collider2D, Sendable {
         }
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func contains(_ rhs: Position2, withThreshold threshold: Float = 0) -> Bool {
         return self.position.distance(from: rhs) < radius + threshold
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     func isColliding(with rhs: BoundingCircle2D) -> Bool {
         // Calculate squared distance between centers
         let center = self.center - rhs.center
@@ -131,7 +131,7 @@ public struct BoundingCircle2D: Collider2D, Sendable {
 }
 
 public extension BoundingCircle2D {
-    @inlinable @inline(__always)
+    @inlinable
     func surfacePoint(for ray: Ray2D) -> Position2? {
         let L = Direction2(self.center - ray.origin)
         let tca = L.dot(ray.direction)
@@ -157,7 +157,7 @@ public extension BoundingCircle2D {
         return ray.origin.moved(t0, toward: ray.direction)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     func surfaceNormal(facing point: Position2) -> Direction2 {
         let position = self.position
         // If the points are the same there is no direction, return a default
@@ -167,13 +167,13 @@ public extension BoundingCircle2D {
 }
 
 internal extension BoundingCircle2D {
-    @inlinable @inline(__always)
+    @inlinable
     func movedInsideEllipsoidSpace(_ ellipsoidRadius: Size2) -> Self {
         assert(ellipsoidRadius.x != 0 && ellipsoidRadius.y != 0)
         return BoundingCircle2D(center: self.center / ellipsoidRadius, offset: self.offset / ellipsoidRadius, radius: self.radius / (ellipsoidRadius.length / 2))
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     func movedOutsideEllipsoidSpace(_ ellipsoidRadius: Size2) -> Self {
         return BoundingCircle2D(center: self.center * ellipsoidRadius, offset: self.offset * ellipsoidRadius, radius: self.radius * (ellipsoidRadius.length / 2))
     }

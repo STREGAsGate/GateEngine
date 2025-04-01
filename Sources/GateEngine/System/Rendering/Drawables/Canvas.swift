@@ -23,12 +23,12 @@
 
     @usableFromInline 
     internal var _drawCommands: ContiguousArray<DrawCommand> = []
-    @_transparent
+    @inlinable
     public var drawCommands: ContiguousArray<DrawCommand> {
         return _drawCommands
     }
     
-    @_transparent 
+    @inlinable
     public mutating func insert(_ drawCommand: DrawCommand) {
         if drawCommand.isReady {
             assert(drawCommand.validate())
@@ -379,7 +379,7 @@
     - The  instancing is best effort and does not guarantee the same performance across platforms or package version. You should test each platform if you use many instances.
     - You may not explicitly choose the instancing, however you could create a new `Geometry` from the same URL which would have a different id and have separate instancing. This would allow both instancing types at the expense of an additional GPU resource for each `Geometry` reference.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public mutating func insert(
         _ skinnedGeometry: SkinnedGeometry,
         withPose pose: Skeleton.Pose,
@@ -463,8 +463,23 @@
             let p2 = Position3(dx * far, dy * far, far) * inverseView
 
             return Ray3D(from: p1, toward: p2)
-        case .orthographic(_):
-            fatalError("Not implemented")
+        case .orthographic(let center):
+            let size = size
+            var position = position
+            switch center {
+            case .topLeft:
+                break
+            case .center:
+                position -= size / 2
+            }
+            
+            let x = position.x
+            let y = position.y
+
+            let inverseView = camera.matricies(withViewportSize: size).view.inverse
+            let start = Position3(x, y, -1) * inverseView
+
+            return Ray3D(from: start, toward: camera.transform.rotation.forward)
         }
     }
 
@@ -496,7 +511,6 @@
      - parameter window: The Window this canvas will be added to.
      - parameter estimatedCommandCount: A performance hint of how many commands will be added.
      */
-    @_transparent
     public init(view: View, camera: Camera? = nil, estimatedCommandCount: Int = 10) {
         self.init(
             camera: camera,

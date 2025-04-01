@@ -47,7 +47,7 @@ extension Direction2: Hashable {}
 extension Direction2: Codable {}
 
 public extension Direction2 {
-    @_transparent
+    @inlinable
     func angle(to rhs: Self) -> Radians {
         let v0 = self.normalized
         let v1 = rhs.normalized
@@ -56,14 +56,14 @@ public extension Direction2 {
         return Radians(acos(dot))
     }
     
-    @_transparent
+    @inlinable
     var angleAroundZ: Radians {
         return Radians(atan2(x, -y))
     }
 }
 
 public extension Direction2 {
-    @_transparent
+    @inlinable
     func rotated(by rotation: Quaternion) -> Self {
         let conjugate = rotation.normalized.conjugate
         let w = rotation * self * conjugate
@@ -71,7 +71,7 @@ public extension Direction2 {
         return Direction2(dir3.x, dir3.y).normalized
     }
     
-    @_transparent
+    @inlinable
     func reflected(off normal: Self) -> Self {
         let normal: Self = normal.normalized
         let dn: Float = -2 * self.dot(normal)

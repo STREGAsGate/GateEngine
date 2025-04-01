@@ -17,12 +17,12 @@ public struct Color: Vector4, Sendable {
     public var blue: Float
     public var alpha: Float
     
-    @_transparent public var x: Float {get{red}set{red=newValue}}
-    @_transparent public var y: Float {get{green}set{green=newValue}}
-    @_transparent public var z: Float {get{blue}set{blue=newValue}}
-    @_transparent public var w: Float {get{alpha}set{alpha=newValue}}
+    @inlinable public var x: Float {get{red}set{red=newValue}}
+    @inlinable public var y: Float {get{green}set{green=newValue}}
+    @inlinable public var z: Float {get{blue}set{blue=newValue}}
+    @inlinable public var w: Float {get{alpha}set{alpha=newValue}}
 
-    public static var zero: Color {Color(0)}
+    public static let zero: Color = Color(0)
     
     @inlinable
     public init(red: Float, green: Float, blue: Float, alpha: Float = 1) {
@@ -32,12 +32,12 @@ public struct Color: Vector4, Sendable {
         self.alpha = alpha
     }
 
-    @_transparent
+    @inlinable
     public init(_ red: Float, _ green: Float, _ blue: Float, _ alpha: Float = 1) {
         self.init(red: red, green: green, blue: blue, alpha: alpha)
     }
 
-    @_transparent
+    @inlinable
     public init(_ array: [Float]) {
         self.init(array[0], array[1], array[2], array.count > 3 ? array[3] : 1)
     }
@@ -64,7 +64,7 @@ public struct Color: Vector4, Sendable {
         }
     }
     
-    @_transparent
+    @inlinable
     public init(hexValue: UInt32) {
         self.init(eightBitRed: UInt8((hexValue >> 16) & 0xFF),
                   green: UInt8((hexValue >> 8) & 0xFF),
@@ -88,41 +88,60 @@ public struct Color: Vector4, Sendable {
     }
     #endif
 
-    @_transparent
+    @inlinable
     public init(white: Float, alpha: Float = 1) {
         self.init(red: white, green: white, blue: white, alpha: alpha)
     }
 
-    @_transparent
+    @inlinable
     public func withAlpha(_ alpha: Float) -> Color {
         return Self(self.red, self.green, self.blue, self.alpha * alpha)
+    }
+    
+    @inlinable
+    public static func random(in range: ClosedRange<Color> = Color.black ... Color.white) -> Color {
+        return Color(
+            red: .random(in: range.lowerBound.red ... range.upperBound.red),
+            green: .random(in: range.lowerBound.green ... range.upperBound.green),
+            blue: .random(in: range.lowerBound.blue ... range.upperBound.blue),
+            alpha: .random(in: range.lowerBound.alpha ... range.upperBound.alpha)
+        )
+    }
+    @inlinable
+    public static func random(in range: Range<Color>) -> Color {
+        return Color(
+            red: .random(in: range.lowerBound.red ... range.upperBound.red),
+            green: .random(in: range.lowerBound.green ... range.upperBound.green),
+            blue: .random(in: range.lowerBound.blue ... range.upperBound.blue),
+            alpha: .random(in: range.lowerBound.alpha ... range.upperBound.alpha)
+        )
     }
 }
 
 public extension Color {
-    @_transparent
+    @inlinable
     var eightBitRed: UInt8 {
         return UInt8(clamping: Int(Float(UInt8.max) * red))
     }
-    @_transparent
+    @inlinable
     var eightBitGreen: UInt8 {
         return UInt8(clamping: Int(Float(UInt8.max) * green))
     }
-    @_transparent
+    @inlinable
     var eightBitBlue: UInt8 {
         return UInt8(clamping: Int(Float(UInt8.max) * blue))
     }
-    @_transparent
+    @inlinable
     var eightBitAlpha: UInt8 {
         return UInt8(clamping: Int(Float(UInt8.max) * alpha))
     }
     
-    @_transparent
+    @inlinable
     func eightBitValuesArray() -> [UInt8] {
         return [eightBitRed, eightBitGreen, eightBitBlue, eightBitAlpha]
     }
     
-    @_transparent
+    @inlinable
     var eightBitHexValue: UInt32 {
         let r = UInt32(eightBitRed) << 24
         let g = UInt32(eightBitGreen) << 16
@@ -160,7 +179,7 @@ public extension Color {
     ///   - y: Another floating-point value.
     /// - Returns: The minimum of `x` and `y`, or whichever is a number if the
     ///   other is NaN.
-    @_transparent
+    @inlinable
     static func minimum(_ lhs: Color, _ rhs: Color) -> Color {
         return Color(.minimum(lhs.red, rhs.red), .minimum(lhs.green, rhs.green), .minimum(lhs.blue, rhs.blue), .minimum(lhs.alpha, rhs.alpha))
     }
@@ -192,14 +211,14 @@ public extension Color {
     ///   - y: Another floating-point value.
     /// - Returns: The greater of `x` and `y`, or whichever is a number if the
     ///   other is NaN.
-    @_transparent
+    @inlinable
     static func maximum(_ lhs: Color, _ rhs: Color) -> Color {
         return Color(.maximum(lhs.red, rhs.red), .maximum(lhs.green, rhs.green), .maximum(lhs.blue, rhs.blue), .maximum(lhs.alpha, rhs.alpha))
     }
 }
 
 extension Color: _ExpressibleByColorLiteral {
-    @_transparent
+    @inlinable
     public init(_colorLiteralRed red: Float, green: Float, blue: Float, alpha: Float) {
         self.init(red, green, blue, alpha)
     }
@@ -242,15 +261,19 @@ public extension Color {
 }
 
 extension Color: Equatable {}
+extension Color: Comparable {
+    @inlinable
+    public static func < (lhs: Color, rhs: Color) -> Bool {
+        return lhs.red < rhs.red && lhs.green < rhs.green && lhs.blue < rhs.blue && lhs.alpha < rhs.alpha
+    }
+}
 extension Color: Hashable {}
 extension Color: Codable {
-    @inlinable
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([red, green, blue, alpha])
     }
 
-    @inlinable
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let values = try container.decode(Array<Float>.self)

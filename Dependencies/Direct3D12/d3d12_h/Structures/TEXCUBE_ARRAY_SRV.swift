@@ -14,7 +14,7 @@ public struct D3DTextureCubeArrayShaderResourceView {
     internal var rawValue: RawValue
 
     /// Index of the most detailed mipmap level to use; this number is between 0 and MipLevels (from the original Texture2D for which ID3D12Device::CreateShaderResourceView creates a view) -1.
-    @inlinable @inline(__always)
+    @inlinable
     public var maxMipLevel: UInt32 {
         get {
             return rawValue.MostDetailedMip
@@ -25,7 +25,7 @@ public struct D3DTextureCubeArrayShaderResourceView {
     }
 
     /// The maximum number of mipmap levels for the view of the texture. See the remarks in D3D12_TEX1D_SRV. Set to -1 to indicate all the mipmap levels from MostDetailedMip on down to least detailed.
-    @inlinable @inline(__always)
+    @inlinable
     public var mipLevels: UInt32 {
         get {
             return rawValue.MipLevels
@@ -36,7 +36,7 @@ public struct D3DTextureCubeArrayShaderResourceView {
     }
 
     /// Index of the first 2D texture to use.
-    @inlinable @inline(__always)
+    @inlinable
     public var first2DArrayFace: UInt32 {
         get {
             return rawValue.First2DArrayFace
@@ -47,7 +47,7 @@ public struct D3DTextureCubeArrayShaderResourceView {
     }
 
     /// Number of cube textures in the array.
-    @inlinable @inline(__always)
+    @inlinable
     public var cubeTextureCount: UInt32 {
         get {
             return rawValue.NumCubes
@@ -58,7 +58,7 @@ public struct D3DTextureCubeArrayShaderResourceView {
     }
 
     /// A value to clamp sample LOD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
-    @inlinable @inline(__always)
+    @inlinable
     public var minLODClamp: Float {
         get {
             return rawValue.ResourceMinLODClamp
@@ -75,7 +75,7 @@ public struct D3DTextureCubeArrayShaderResourceView {
     - parameter cubeTextureCount: Number of cube textures in the array.
     - parameter minLODClamp: A value to clamp sample LOD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(maxMipLevel: UInt32, mipLevels: UInt32, first2DArrayFace: UInt32, cubeTextureCount: UInt32, minLODClamp: Float) {
         self.rawValue = RawValue(MostDetailedMip: maxMipLevel,
                                  MipLevels: mipLevels,
@@ -84,7 +84,7 @@ public struct D3DTextureCubeArrayShaderResourceView {
                                  ResourceMinLODClamp: minLODClamp)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

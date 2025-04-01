@@ -91,7 +91,6 @@ extension ECSContext {
                 case rendering
             }
 
-            @_transparent
             public var duration: Double {
                 return endDate - startDate
             }

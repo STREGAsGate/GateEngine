@@ -51,7 +51,7 @@ final class UIKitWindow: WindowBacking {
         {
             Game.shared.platform.windowPreparingForSceneConnection = self
 
-            @inline(__always)
+            @inlinable
             func existingSession(forWindow window: Window) -> UISceneSession? {
                 for session in UIApplication.shared.openSessions {
                     let sceneID = session.persistentIdentifier

@@ -121,12 +121,10 @@ extension Octree {
         var children: [Node]?
 
         var collisionTriangles: [CollisionTriangle]
-        @_transparent
         mutating func appendTriangle(_ triangle: CollisionTriangle) {
             self.collisionTriangles.append(triangle)
         }
 
-        @_transparent
         var isLeaf: Bool {
             return children == nil
         }
@@ -138,7 +136,7 @@ extension Octree {
             self.collisionTriangles = []
         }
 
-        @inline(__always)
+        @inlinable
         func childrenNear(_ box: AxisAlignedBoundingBox3D, visibleTo frustum: ViewFrustum3D?)
             -> [Node]?
         {
@@ -160,7 +158,7 @@ extension Octree {
             return nodes
         }
 
-        @inline(__always)
+        @inlinable
         func trianglesHit(by ray: Ray3D) -> [(point: Position3, triangle: CollisionTriangle)] {
             var hits: [(point: Position3, triangle: CollisionTriangle)] = []
             if self.isLeaf {
@@ -189,7 +187,7 @@ extension Octree {
             return hits
         }
 
-        @inline(__always)
+        @inlinable
         mutating func insertTriangles(_ triangles: [CollisionTriangle]) {
             if self.isLeaf {
                 for triangle in triangles {

@@ -55,7 +55,7 @@ internal protocol ResourceCache: AnyObject {
 }
 
 extension ResourceCache {
-    @_transparent
+    @inlinable
     var effectiveCacheHint: CacheHint {
         return cacheHint ?? defaultCacheHint
     }

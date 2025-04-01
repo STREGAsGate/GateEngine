@@ -90,7 +90,6 @@ public final class MeshCollider: Collider3D {
         return closestTriangle(to: point).normal
     }
     
-    @inline(__always)
     private func closestTriangle(to point: Position3) -> CollisionTriangle {
         var triangles = triangles().sorted(by: {$0.center.distance(from: point) < $1.center.distance(from: point)})
         if triangles.count > 10 {

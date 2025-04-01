@@ -52,7 +52,7 @@ public protocol Resource: AnyObject, Equatable, Hashable {
 
 extension Resource {
     @MainActor
-    @_transparent
+    @inlinable
     public var isReady: Bool { self.state == .ready }
 }
 
@@ -65,12 +65,14 @@ internal protocol _Resource: Resource {
 
 extension _Resource {
     @MainActor
+    @inlinable
     public var state: ResourceState {
-        @_transparent get { self.cache.state }
+        get { self.cache.state }
         set { self.cache.state = newValue }
     }
     
     @MainActor
+    @inlinable
     public var cacheHint: CacheHint {
         get {
             let cache = self.cache
@@ -82,6 +84,7 @@ extension _Resource {
     }
     
     @MainActor
+    @inlinable
     var defaultCacheHint: CacheHint {
         get {
             let cache = self.cache
@@ -93,7 +96,7 @@ extension _Resource {
     }
     
     @MainActor
-    @_transparent
+    @inlinable
     var cachHintIsDefault: Bool {
         return cache.cacheHint == nil
     }
@@ -119,9 +122,11 @@ public class OldResource: Equatable, Hashable, Identifiable {
 }
 
 extension OldResource {
+    @inlinable
     public static func == (lhs: OldResource, rhs: OldResource) -> Bool {
         return lhs.id == rhs.id
     }
+    @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.id)
     }

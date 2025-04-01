@@ -25,14 +25,14 @@ public struct D3DRootSignatureDescription {
     - parameter staticSamplers: Pointer to one or more D3D12_STATIC_SAMPLER_DESC structures.
     - parameter flags: A combination of D3D12_ROOT_SIGNATURE_FLAGS-typed values that are combined by using a bitwise OR operation. The resulting value specifies options for the root signature layout.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(parameters: [D3DRootParameter], staticSamplers: [D3DStaticSamplerDescription], flags: D3DRootSignatureFlags) {
         self.parameters = parameters
         self.staticSamplers = staticSamplers
         self.flags = flags
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal func withUnsafeRawValue<ResultType>(_ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
         func withUnsafeParameter(at index: Int, _ pParameters: inout [D3DRootParameter.RawValue], _ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
             if parameters.indices.isEmpty || index == parameters.indices.last! + 1 {

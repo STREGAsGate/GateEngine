@@ -10,7 +10,8 @@ import GameMath
 import func Foundation.floor
 
 extension OctreeComponent {
-    @_transparent @_disfavoredOverload
+    @inlinable
+    @_disfavoredOverload
     public func load(
         path: GeoemetryPath,
         options: GeometryImporterOptions = .none,
@@ -29,14 +30,14 @@ extension OctreeComponent {
 }
 
 extension OctreeComponent {
-    @inline(__always)
+    @usableFromInline
     func trianglesHit(by ray: Ray3D, filter: ((CollisionTriangle) -> Bool)? = nil) -> [(
         position: Position3, triangle: CollisionTriangle
     )] {
         return rootNode.trianglesHit(by: ray, filter: filter)
     }
 
-    @inline(__always)
+    @usableFromInline
     func trianglesNear(_ box: AxisAlignedBoundingBox3D) -> [CollisionTriangle] {
         var triangles: [CollisionTriangle] = []
         for node in self.nodesNear(box) {
@@ -52,17 +53,18 @@ extension OctreeComponent {
 
 public final class OctreeComponent: Component {
     public private(set) var didLoad: Bool = false
-    @inline(__always)
+    @usableFromInline
     var center: Position3 { return rootNode.boundingBox.center }
-    @inline(__always)
+    @usableFromInline
     var size: Size3 { return rootNode.boundingBox.size }
 
+    @usableFromInline
     var rootNode: Node! = nil
     lazy var leafNodes: [Node] = {
         return self.nodesNear(self.rootNode.boundingBox).filter({ $0.isLeaf })
     }()
 
-    @inline(__always)
+    @inlinable
     public var boundingBox: AxisAlignedBoundingBox3D {
         return rootNode.boundingBox
     }
@@ -78,7 +80,6 @@ public final class OctreeComponent: Component {
 
 // MARK: - Helpers
 extension OctreeComponent {
-    @_transparent
     fileprivate func boxesVisibleTo(_ frustum: ViewFrustum3D, leafOnly: Bool)
         -> [AxisAlignedBoundingBox3D]
     {
@@ -90,7 +91,6 @@ extension OctreeComponent {
         return nodes.map { $0.boundingBox }
     }
 
-    @_transparent
     fileprivate func nodesNear(
         _ box: AxisAlignedBoundingBox3D,
         visibleTo frustum: ViewFrustum3D? = nil
@@ -106,7 +106,6 @@ extension OctreeComponent {
         return nodes
     }
 
-    @_transparent
     fileprivate func nodesHit(by ray: Ray3D) -> [Node] {
         guard rootNode.boundingBox.isColiding(with: ray) else {
             Log.debug("No collision")
@@ -119,7 +118,6 @@ extension OctreeComponent {
         return nodes
     }
 
-    @_transparent
     fileprivate func node(at position: Position3, depth: Int) -> Node? {
         guard depth > 0 else { return rootNode.boundingBox.contains(position) ? rootNode : nil }
 
@@ -133,12 +131,10 @@ extension OctreeComponent {
 
 // MARK: - Setup
 extension OctreeComponent {
-    @inline(__always)
     func insertTriangles(_ triangles: [CollisionTriangle], boxes: [AxisAlignedBoundingBox3D]) {
         self.rootNode.insertTriangles(triangles, boxes)
     }
 
-    @inline(__always)
     public func load(withCenter center: Position3, triangles: [CollisionTriangle]) {
         struct Primer {
             let center: Position3
@@ -188,7 +184,6 @@ extension OctreeComponent {
         }
     }
 
-    @inline(__always)
     private func setup(size: Size3, offset: Position3, position: Position3) {
         let maxDepth: Int = {
             return max(1, min(4, Int(floor(size.max / 150))))
@@ -223,7 +218,6 @@ extension OctreeComponent {
         )
     }
 
-    @inline(__always)
     private func cleanEmptyNodes() {
         var checks = 0
         func removeAnyNode() -> Bool {
@@ -260,9 +254,12 @@ extension OctreeComponent {
     final class Node: Codable {
         let depth: Int
         let maxDepth: Int
+        @usableFromInline
         fileprivate(set) var boundingBox: AxisAlignedBoundingBox3D
+        @usableFromInline
         var children: [Node]?
 
+        @usableFromInline
         var collisionTriangles: [CollisionTriangle]
         func appendTriangle(_ triangle: CollisionTriangle) {
             if self.collisionTriangles.contains(triangle) == false {
@@ -270,17 +267,17 @@ extension OctreeComponent {
             }
         }
 
-        @inline(__always)
+        @inlinable
         var isLeaf: Bool {
             return hasChildren == false
         }
 
-        @inline(__always)
+        @inlinable
         var hasContent: Bool {
             return collisionTriangles.isEmpty == false
         }
 
-        @inline(__always)
+        @inlinable
         var hasChildren: Bool {
             return children?.isEmpty == false
         }
@@ -293,7 +290,6 @@ extension OctreeComponent {
             self.collisionTriangles = []
         }
 
-        @inline(__always)
         func childrenHit(by ray: Ray3D) -> [Node]? {
             guard let children = self.children else { return nil }
 
@@ -309,7 +305,6 @@ extension OctreeComponent {
             return nodes
         }
 
-        @inline(__always)
         func childrenNear(_ box: AxisAlignedBoundingBox3D, visibleTo frustum: ViewFrustum3D? = nil)
             -> [Node]?
         {
@@ -331,7 +326,6 @@ extension OctreeComponent {
             return nodes
         }
 
-        @inline(__always)
         func trianglesHit(by ray: Ray3D, filter: ((CollisionTriangle) -> Bool)?) -> [(
             position: Position3, triangle: CollisionTriangle
         )] {
@@ -358,7 +352,6 @@ extension OctreeComponent {
             return hits
         }
 
-        @inline(__always)
         func insertTriangles(_ triangles: [CollisionTriangle], _ boxes: [AxisAlignedBoundingBox3D])
         {
             if self.isLeaf {

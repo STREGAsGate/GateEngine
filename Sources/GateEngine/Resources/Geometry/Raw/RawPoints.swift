@@ -129,13 +129,13 @@ extension RawPoints {  // 3D
 }
 
 extension RawPoints {  // 2D
-    @_transparent
+    @inlinable
     public init(points: [Position2], color: Color) {
         let points = points.map({ Position3($0.x, $0.y, 0) })
         self.init(points: points, color: color)
     }
 
-    @_transparent
+    @inlinable
     public mutating func insert(_ point: Position2, color: Color) {
         let point = Position3(point.x, point.y, 0)
         self.insert(point, color: color)

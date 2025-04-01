@@ -14,7 +14,7 @@ public struct D3DTexture2DRenderTargetView {
     internal var rawValue: RawValue
 
     /// The index of the mipmap level to use.
-    @inlinable @inline(__always)
+    @inlinable
     public var mipIndex: UInt32 {
         get {
             return rawValue.MipSlice
@@ -25,7 +25,7 @@ public struct D3DTexture2DRenderTargetView {
     }
 
     /// The index (plane slice number) of the plane to use in the texture.
-    @inlinable @inline(__always)
+    @inlinable
     public var planeSlice: UInt32 {
         get {
             return rawValue.PlaneSlice
@@ -40,12 +40,12 @@ public struct D3DTexture2DRenderTargetView {
     - parameter mipIndex: 
     - parameter planeSlice: 
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(mipIndex: UInt32, planeSlice: UInt32) {
         self.rawValue = RawValue(MipSlice: mipIndex, PlaneSlice: planeSlice)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

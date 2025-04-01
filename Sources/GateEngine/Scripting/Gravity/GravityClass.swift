@@ -9,9 +9,11 @@ import Gravity
 
 /// A gravity script class definition.
 public class GravityClass: GravityValueEmitting, GravityClassEmitting {
+    @usableFromInline
     internal let gravity: Gravity
     public let gClass: UnsafeMutablePointer<gravity_class_t>!
 
+    @usableFromInline
     internal init(name: String, superClass: GravityClass?, gravity: Gravity) {
         self.gravity = gravity
         self.gClass = name.withCString { name in
@@ -19,16 +21,19 @@ public class GravityClass: GravityValueEmitting, GravityClassEmitting {
         }
     }
 
+    @usableFromInline
     internal init(value: GravityValue, gravity: Gravity) {
         self.gravity = gravity
         self.gClass = unsafeBitCast(value.gValue.p, to: UnsafeMutablePointer<gravity_class_t>.self)
     }
 
+    @usableFromInline
     internal init(gravity: Gravity, gClass: UnsafeMutablePointer<gravity_class_t>) {
         self.gravity = gravity
         self.gClass = gClass
     }
 
+    @inlinable
     public var gValue: gravity_value_t {
         return gravity_value_from_object(gClass)
     }
@@ -37,6 +42,7 @@ public class GravityClass: GravityValueEmitting, GravityClassEmitting {
      The super class definition, if any.
      - returns: A new instance of `GravityClass` representing the superclass or `nil`.
      */
+    @inlinable
     public var gravitySuperClass: GravityClass? {
         guard let result = gravity_class_getsuper(gClass) else { return nil }
         return GravityClass(gravity: gravity, gClass: result)
@@ -96,7 +102,7 @@ public class GravityClass: GravityValueEmitting, GravityClassEmitting {
      - parameter name: The name of the function as written in a gravity script.
      - parameter function: A swift function or closure to be called when this func is called in the gravity script.
      */
-    @inline(__always)
+    @inlinable
     public func addFunc(_ key: String, calling function: @escaping GravitySwiftInstanceFunction) {
         let rFunc: GravitySwiftInstanceFunctionReturns = { gravity, sender, args -> GravityValue in
             function(gravity, sender, args)

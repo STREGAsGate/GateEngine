@@ -51,13 +51,13 @@ public struct Interpenetration2D {
     public var points: Set<Position2>
     
     /// - returns true if the two compared colliders have penetration
-    @inlinable @inline(__always)
+    @inlinable
     public var isColiding: Bool {
         return depth < 0 && direction.isFinite && depth.isFinite
     }
     
     /// - returns true if the comparison can safely be used to determine penetration
-    @inlinable @inline(__always)
+    @inlinable
     public var isValid: Bool {
         return depth.isFinite
         && direction.isFinite

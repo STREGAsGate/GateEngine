@@ -39,7 +39,7 @@ import GameMath
     public var mode: Mode {
         get { return _mode }
         set {
-            #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+            #if HTML5
             if let wasiWindow = Game.shared.windowManager.mainWindow?.windowBacking as? WASIWindow {
                 wasiWindow.pointerLock.requestLock(shouldLock: newValue == .locked)
             }

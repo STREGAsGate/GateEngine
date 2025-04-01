@@ -12,18 +12,18 @@ public struct D3DMessage: Swift.Error, CustomStringConvertible {
     @usableFromInline
     internal var rawValue: RawValue
 
-    @inlinable @inline(__always)
+    @inlinable
     public var description: String {
         let buffer: UnsafeRawBufferPointer = UnsafeRawBufferPointer(start: rawValue.pDescription, count: Int(rawValue.DescriptionByteLength))
         return String(bytes: buffer, encoding: .utf8) ?? String(bytes: buffer, encoding: .ascii) ?? String(cString: rawValue.pDescription)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var sevarity: D3DMessageSeverity {
         return D3DMessageSeverity(rawValue: rawValue.Severity)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

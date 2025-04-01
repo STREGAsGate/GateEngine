@@ -14,7 +14,7 @@ public struct D3DTexture2DArrayUnorderedAccessView {
     internal var rawValue: RawValue
 
     /// The index of the first mipmap level to use.
-    @inlinable @inline(__always)
+    @inlinable
     public var mipIndex: UInt32 {
         get {
             return rawValue.MipSlice
@@ -25,7 +25,7 @@ public struct D3DTexture2DArrayUnorderedAccessView {
     }
 
     /// The index of the first texture to use in an array of textures.
-    @inlinable @inline(__always)
+    @inlinable
     public var textureIndex: UInt32 {
         get {
             return rawValue.FirstArraySlice
@@ -36,7 +36,7 @@ public struct D3DTexture2DArrayUnorderedAccessView {
     }
 
     /// Number of textures to use.
-    @inlinable @inline(__always)
+    @inlinable
     public var textureCount: UInt32 {
         get {
             return rawValue.ArraySize
@@ -47,7 +47,7 @@ public struct D3DTexture2DArrayUnorderedAccessView {
     }
 
     /// The index (plane slice number) of the plane to use in an array of textures.
-    @inlinable @inline(__always)
+    @inlinable
     public var planeSlice: UInt32 {
         get {
             return rawValue.PlaneSlice
@@ -63,7 +63,7 @@ public struct D3DTexture2DArrayUnorderedAccessView {
     - parameter textureCount: Number of textures to use.
     - parameter minLODClamp: A value to clamp sample LOD values to. For example, if you specify 2.0f for the clamp value, you ensure that no individual sample accesses a mip level less than 2.0f.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(mipIndex: UInt32, textureIndex: UInt32, textureCount: UInt32, planeSlice: UInt32) {
         self.rawValue = RawValue(MipSlice: mipIndex,
                                  FirstArraySlice: textureIndex,
@@ -71,7 +71,7 @@ public struct D3DTexture2DArrayUnorderedAccessView {
                                  PlaneSlice: planeSlice)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

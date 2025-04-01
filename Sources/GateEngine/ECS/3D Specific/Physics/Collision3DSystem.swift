@@ -47,7 +47,6 @@ public final class Collision3DSystem: System {
             guard let transformComponent = dynamicEntity.component(ofType: Transform3Component.self)
             else { continue }
 
-            @_transparent
             func updateCollider() {
                 collisionComponent.updateColliders(transformComponent.transform)
             }
@@ -222,7 +221,7 @@ public final class Collision3DSystem: System {
 }
 
 extension Collision3DSystem {
-    @inline(__always)
+    @inlinable
     func performRobustnessProtection(
         _ entity: Entity,
         transformComponent: Transform3Component,
@@ -265,7 +264,7 @@ extension Collision3DSystem {
         )
     }
 
-    @inline(__always)
+    @inlinable
     func performLedgeDetection(
         _ entity: Entity,
         transformComponent: Transform3Component,
@@ -277,7 +276,6 @@ extension Collision3DSystem {
             return 
         }
 
-        @inline(__always)
         func wall(_ position: Position3, _ direction: Direction3) -> (
             position: Position3, triangle: CollisionTriangle
         )? {
@@ -287,7 +285,6 @@ extension Collision3DSystem {
             return trianglesHit(by: Ray3D(from: position, toward: direction), triangleFilter: wFilter).first
         }
 
-        @inline(__always)
         func floor(_ position: Position3) -> (position: Position3, triangle: CollisionTriangle)? {
             let tFilter: (CollisionTriangle) -> Bool = {
                 $0.surfaceType.isWalkable && $0.plane.classifyPoint(collider.position) == .front
@@ -295,7 +292,6 @@ extension Collision3DSystem {
             return trianglesHit(by: Ray3D(from: position, toward: .down), triangleFilter: tFilter).first
         }
 
-        @inline(__always)
         func processDirection(_ direction: Direction3) -> Bool {
             defer {
                 collisionComponent.updateColliders(transformComponent.transform)
@@ -359,7 +355,6 @@ extension Collision3DSystem {
         }
 
         if doSides {
-            @_transparent
             var directions2: [Direction3] {
                 let r = transformComponent.rotation
                 return [
@@ -380,7 +375,7 @@ extension Collision3DSystem {
         //        }
     }
 
-    @inline(__always)
+    @inlinable
     func _performTriangleLedgeDetection(
         _ entity: Entity,
         transformComponent: Transform3Component,
@@ -457,7 +452,7 @@ extension Collision3DSystem {
         }
     }
 
-    @inline(__always)
+    @inlinable
     func sortedTrianglesProbablyHitting(
         entity: Entity, 
         triangles: [CollisionTriangle]
@@ -473,7 +468,6 @@ extension Collision3DSystem {
         return values
     }
 
-    @inline(__always)
     func respondToCollision(dynamicEntity: Entity, triangle: CollisionTriangle) -> Bool {
         guard 
             let collisionComponent = dynamicEntity.component(ofType: Collision3DComponent.self),
@@ -500,7 +494,6 @@ extension Collision3DSystem {
         return true
     }
 
-    @inline(__always)
     func respondToCollision(
         dynamicEntity: Entity,
         staticEntity: Entity,
@@ -512,7 +505,6 @@ extension Collision3DSystem {
         }
     }
 
-    @inline(__always)
     func respondToCollision(
         sourceEntity: Entity,
         dynamicEntity: Entity,
@@ -526,14 +518,15 @@ extension Collision3DSystem {
 }
 
 extension Collision3DSystem {
-    private func getOctrees(entityFilter: ((Entity)->Bool)? = nil) -> [OctreeComponent] {
+    @usableFromInline
+    internal func getOctrees(entityFilter: ((Entity)->Bool)? = nil) -> [OctreeComponent] {
         if let entityFilter {
             return context.entities.filter({entityFilter($0)}).compactMap({ $0.component(ofType: OctreeComponent.self) })
         }
         return context.entities.compactMap({ $0.component(ofType: OctreeComponent.self) })
     }
 
-    @inline(__always)
+    @inlinable
     public func trianglesNear(
         _ box: AxisAlignedBoundingBox3D,
         filter: ((CollisionTriangle) -> Bool)? = nil
@@ -553,7 +546,7 @@ extension Collision3DSystem {
         return hits
     }
 
-    @inline(__always)
+    @inlinable
     public func trianglesHit(
         by ray: Ray3D, 
         useRayCastCollider: Bool = false, 
@@ -589,7 +582,7 @@ extension Collision3DSystem {
         return hits
     }
 
-    @inline(__always)
+    @inlinable
     public func entitiesProbablyHit(
         by ray: Ray3D, 
         useRayCastCollider: Bool = false, 
@@ -609,7 +602,7 @@ extension Collision3DSystem {
         return entities
     }
 
-    @inline(__always)
+    @inlinable
     public func entitiesProbablyHit(
         by collider: some Collider3D, 
         filter: ((Entity) -> Bool)? = nil
@@ -629,7 +622,7 @@ extension Collision3DSystem {
         return entities
     }
 
-    @inline(__always)
+    @inlinable
     public func entitiesHit(
         by ray: Ray3D, useRayCastCollider: Bool = false, 
         filter: ((Entity) -> Bool)? = nil
@@ -651,7 +644,7 @@ extension Collision3DSystem {
         })
     }
 
-    @inline(__always)
+    @inlinable
     public func closestHit(
         from ray: Ray3D,
         useRaycastCollider: Bool = false,
@@ -695,7 +688,7 @@ extension Collision3DSystem {
 }
 
 @MainActor extension ECSContext {
-    @_transparent
+    @inlinable
     public var collision3DSystem: Collision3DSystem {
         return self.system(ofType: Collision3DSystem.self)
     }

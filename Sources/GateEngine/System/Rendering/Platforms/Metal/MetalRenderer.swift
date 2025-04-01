@@ -13,12 +13,36 @@ import MetalKit
 import GameMath
 import Shaders
 
-final class MetalRenderer: RendererBackend {
-    @inline(__always)
-    var renderingAPI: RenderingAPI { .metal }
-    static var isSupported: Bool = MTLCreateSystemDefaultDevice() != nil
-    var device: any MTLDevice = MTLCreateSystemDefaultDevice()!
-    lazy var commandQueue: any MTLCommandQueue = self.device.makeCommandQueue()!
+extension Renderer {
+    var device: any MTLDevice {
+        get {
+            return unsafeDowncast(self, to: MetalRenderer.self).device
+        }
+        set {
+            let renderer = unsafeDowncast(self, to: MetalRenderer.self)
+            renderer.device = newValue
+        }
+    }
+    var commandQueue: any MTLCommandQueue {
+        return unsafeDowncast(self, to: MetalRenderer.self).commandQueue
+    }
+}
+
+final class MetalRenderer: Renderer {
+    static let api: RenderingAPI = .metal
+    static let isSupported: Bool = (MTLCreateSystemDefaultDevice() != nil)
+    var device: any MTLDevice {
+        didSet {
+            self.commandQueue = device.makeCommandQueue()!
+        }
+    }
+    var commandQueue: any MTLCommandQueue
+    
+    required init() {
+        let device = MTLCreateSystemDefaultDevice()!
+        self.device = device
+        self.commandQueue = device.makeCommandQueue()!
+    }
 
     private var _shaders: [ShaderKey: MetalShader] = [:]
     struct ShaderKey: Hashable {
@@ -46,16 +70,18 @@ final class MetalRenderer: RendererBackend {
         matrices: Matrices,
         renderTarget: some _RenderTargetProtocol
     ) {
-        let renderTarget = renderTarget.renderTargetBackend as! MetalRenderTarget
-        let encoder = renderTarget.commandEncoder!
-        let geometries = drawCommand.geometries.map({ $0 as! MetalGeometry })
-        let data = createUniforms(drawCommand, camera, matrices)
-
         #if GATEENGINE_DEBUG_RENDERING
+        let renderTarget = renderTarget.renderTargetBackend as! MetalRenderTarget
+        let geometries = drawCommand.geometries as! Array<MetalGeometry>
         for geometry in geometries {
             assert(drawCommand.flags.primitive == geometry.primitive)
         }
+        #else
+        let renderTarget = unsafeDowncast(renderTarget.renderTargetBackend, to: MetalRenderTarget.self)
+        let geometries = unsafeBitCast(drawCommand.geometries, to: Array<MetalGeometry>.self)
         #endif
+        let encoder = renderTarget.commandEncoder!
+        let data = createUniforms(drawCommand, camera, matrices)
 
         self.setWinding(drawCommand.flags.winding, encoder: encoder)
         self.setFlags(drawCommand, geometries: geometries, encoder: encoder)
@@ -135,7 +161,6 @@ final class MetalRenderer: RendererBackend {
         _storedDepthStencilStates[key] = new
         return new
 
-//        @_transparent
         func build() -> some MTLDepthStencilState {
             let depthStencilDescriptor = MTLDepthStencilDescriptor()
 
@@ -375,9 +400,6 @@ extension MetalRenderer {
 }
 
 extension MetalRenderer {
-    #if !GATEENGINE_DEBUG_RENDERING
-    @_transparent
-    #endif
     func metalShader(_ drawCommand: DrawCommand,
         geometries: [MetalGeometry],
         flags: DrawCommand.Flags
@@ -417,9 +439,6 @@ extension MetalRenderer {
         }
     }
 
-    #if !GATEENGINE_DEBUG_RENDERING
-    @_transparent
-    #endif
     private func setFlags(_ drawCommand: DrawCommand,
         geometries: [MetalGeometry],
         encoder: some MTLRenderCommandEncoder
@@ -438,9 +457,6 @@ extension MetalRenderer {
         encoder.setRenderPipelineState(shader.renderPipelineState)
     }
 
-    #if !GATEENGINE_DEBUG_RENDERING
-    @_transparent
-    #endif
     private func setWinding(_ winding: DrawCommand.Flags.Winding, encoder: some MTLRenderCommandEncoder) {
         switch winding {
         case .clockwise:
@@ -450,9 +466,6 @@ extension MetalRenderer {
         }
     }
 
-    #if !GATEENGINE_DEBUG_RENDERING
-    @_transparent
-    #endif
     private func setUniforms(
         _ uniforms: ContiguousArray<UInt8>,
         encoder: some MTLRenderCommandEncoder,
@@ -480,9 +493,6 @@ extension MetalRenderer {
         }
     }
     
-    #if !GATEENGINE_DEBUG_RENDERING
-    @_transparent
-    #endif
     private func primitive(from primitive: DrawCommand.Flags.Primitive) -> MTLPrimitiveType {
         switch primitive {
         case .point:
@@ -498,9 +508,6 @@ extension MetalRenderer {
         }
     }
 
-    #if !GATEENGINE_DEBUG_RENDERING
-    @_transparent
-    #endif
     private func setTextures(
         _ textures: ContiguousArray<(some MTLTexture)?>,
         encoder: some MTLRenderCommandEncoder
@@ -510,9 +517,6 @@ extension MetalRenderer {
         }
     }
 
-    #if !GATEENGINE_DEBUG_RENDERING
-    @_transparent
-    #endif
     private func createUniforms(_ drawCommand: DrawCommand, _ camera: Camera?, _ matricies: Matrices) -> (
         uniforms: ContiguousArray<UInt8>, materials: ContiguousArray<ShaderMaterial>,
         textures: ContiguousArray<(some MTLTexture)?>
@@ -633,9 +637,6 @@ extension MetalRenderer {
         return (uniforms, materials, textures)
     }
 
-    #if !GATEENGINE_DEBUG_RENDERING
-    @_transparent
-    #endif
     private func setTransforms(
         _ transforms: [Transform3],
         on encoder: some MTLRenderCommandEncoder,
@@ -673,9 +674,6 @@ extension MetalRenderer {
         vertexIndex += 1
     }
 
-    #if !GATEENGINE_DEBUG_RENDERING
-    @_transparent
-    #endif
     private func setMaterials(
         _ materials: ContiguousArray<ShaderMaterial>,
         on encoder: some MTLRenderCommandEncoder,
@@ -703,9 +701,6 @@ extension MetalRenderer {
         fragmentIndex += 1
     }
 
-    #if !GATEENGINE_DEBUG_RENDERING
-    @_transparent
-    #endif
     private func setGeometries(
         _ geometries: [MetalGeometry],
         on encoder: some MTLRenderCommandEncoder,
@@ -720,24 +715,4 @@ extension MetalRenderer {
     }
 }
 
-extension Renderer {
-    @_transparent
-    var metalBackend: MetalRenderer {
-        return _backend as! MetalRenderer
-    }
-    @_transparent
-    var device: any MTLDevice {
-        get {
-            return metalBackend.device
-        }
-        set {
-            metalBackend.device = newValue
-            metalBackend.commandQueue = newValue.makeCommandQueue()!
-        }
-    }
-    @_transparent
-    var commandQueue: any MTLCommandQueue {
-        return metalBackend.commandQueue
-    }
-}
 #endif

@@ -19,12 +19,12 @@ public final class CameraComponent: Component {
     }
     
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<Camera, T>) -> T {
-        @inlinable @inline(__always)
+        @inlinable
         get {
             assert(keyPath != \Camera.transform, "CameraComponent.transform cannot be used. Add a Transform3Component to the camera entity.")
             return _camera[keyPath: keyPath]
         }
-        @inlinable @inline(__always)
+        @inlinable
         set {
             assert(keyPath != \Camera.transform, "CameraComponent.transform cannot be used. Add a Transform3Component to the camera entity.")
             _camera[keyPath: keyPath] = newValue

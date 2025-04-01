@@ -39,14 +39,13 @@ public struct BoundingEllipsoid3D: Collider3D, Sendable {
     
     public var size: Size3 {return radius * 2}
     
-    @inline(__always)
+    @inlinable
     public var volume: Float {
         return (4 / 3) * Float.pi * radius.x * radius.y * radius.z
     }
     
     public private(set) var boundingBox: AxisAlignedBoundingBox3D
     
-    @inline(__always)
     public mutating func update(transform: Transform3) {
         center = transform.position
         offset = _offset * transform.scale
@@ -54,14 +53,13 @@ public struct BoundingEllipsoid3D: Collider3D, Sendable {
         boundingBox.update(transform: transform)
     }
     
-    @inline(__always)
     public mutating func update(sizeAndOffsetUsingTransform transform: Transform3) {
         _offset = transform.position
         _radius = transform.scale / 2
         boundingBox.update(sizeAndOffsetUsingTransform: transform)
     }
     
-    @inline(__always)
+    @inlinable
     public func closestSurfacePoint(from point: Position3) -> Position3 {
         let point = point / self.radius
         let center = self.position
@@ -69,7 +67,7 @@ public struct BoundingEllipsoid3D: Collider3D, Sendable {
         return (((point - center).normalized * scale) + center) * self.radius
     }
 
-    @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: BoundingEllipsoid3D) -> Interpenetration3D? {
         return self.boundingBox.interpenetration(comparing: collider)
         if self.position == collider.position {
@@ -89,7 +87,7 @@ public struct BoundingEllipsoid3D: Collider3D, Sendable {
         return interpenetration
     }
     
-    @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: Collider3D) -> Interpenetration3D? {
         switch collider {
         case let collider as BoundingEllipsoid3D:
@@ -99,26 +97,26 @@ public struct BoundingEllipsoid3D: Collider3D, Sendable {
         }
     }
     
-    @inline(__always)
+    @inlinable
     public func contains(_ rhs: Position3, withThreshold threshold: Float = 0) -> Bool {
         return rhs.distance(from: self.position / self.radius) < 1 + threshold
     }
 }
 
 internal extension BoundingEllipsoid3D {
-    @inline(__always)
+    @inlinable
     func movedInsideEllipsoidSpace(_ ellipsoidRadius: Size3) -> Self {
         return BoundingEllipsoid3D(center: self.center / ellipsoidRadius, offset: self.offset / ellipsoidRadius, radius: self.radius / ellipsoidRadius)
     }
     
-    @inline(__always)
+    @inlinable
     func movedOutsideEllipsoidSpace(_ ellipsoidRadius: Size3) -> Self {
         return BoundingEllipsoid3D(center: self.center * ellipsoidRadius, offset: self.offset * ellipsoidRadius, radius: self.radius * ellipsoidRadius)
     }
 }
 
 public extension BoundingEllipsoid3D {
-    @inline(__always)
+    @inlinable
     func surfacePoint(for ray: Ray3D) -> Position3? {
         let ray = ray.movedInsideEllipsoidSpace(self.radius)
         
@@ -145,7 +143,7 @@ public extension BoundingEllipsoid3D {
         return ray.origin.moved(t0, toward: ray.direction) * self.radius
     }
     
-    @inline(__always)
+    @inlinable
     func surfaceNormal(facing point: Position3) -> Direction3 {
         return Direction3(from: position / radius, to: point / radius) * radius
     }

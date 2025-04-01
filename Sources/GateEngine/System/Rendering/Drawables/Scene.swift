@@ -19,12 +19,12 @@ import Shaders
 
     @usableFromInline 
     internal var _drawCommands: ContiguousArray<DrawCommand> = []
-    @_transparent
+    @inlinable
     public var drawCommands: ContiguousArray<DrawCommand> {
         return _drawCommands
     }
     
-    @_transparent 
+    @inlinable
     public mutating func insert(_ drawCommand: DrawCommand) {
         if drawCommand.isReady {
             assert(drawCommand.validate())
@@ -36,17 +36,17 @@ import Shaders
     Each scene can have a single camera. Only the most recent camera is kept.
     - parameter camera: The camera to view the scene from
      */
-    @inlinable @inline(__always)
+    @inlinable
     public mutating func setCamera(_ camera: Camera) {
         self.camera = camera
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public mutating func setViewport(_ viewport: Rect?) {
         self.viewport = viewport
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public mutating func setScissorRect(_ scissorRect: Rect?) {
         self.scissorRect = scissorRect
     }
@@ -62,7 +62,7 @@ import Shaders
     - The  instancing is best effort and does not guarantee the same performance across platforms or package version. You should test each platform if you use many instances.
     - You may not explicitly choose the instancing, however you could create a new `Geometry` from the same URL which would have a different id and have separate instancing. This would allow both instancing types at the expense of an additional GPU resource for each `Geometry` reference.
     */
-    @_transparent
+    @inlinable
     public mutating func insert(
         _ geometry: Geometry,
         withMaterial material: Material,
@@ -80,7 +80,7 @@ import Shaders
     - parameter flags: Options to customize how drawing is handled.
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public mutating func insert(
         _ geometry: Geometry,
         withMaterial material: Material,
@@ -110,7 +110,7 @@ import Shaders
     - The  instancing is best effort and does not guarantee the same performance across platforms or package version. You should test each platform if you use many instances.
     - You may not explicitly choose the instancing, however you could create a new `Geometry` from the same URL which would have a different id and have separate instancing. This would allow both instancing types at the expense of an additional GPU resource for each `Geometry` reference.
     */
-    @_transparent
+    @inlinable
     public mutating func insert(
         _ geometry: SkinnedGeometry,
         withPose pose: Skeleton.Pose,
@@ -132,7 +132,7 @@ import Shaders
     - The  instancing is best effort and does not guarantee the same performance across platforms or package version. You should test each platform if you use many instances.
     - You may not explicitly choose the instancing, however you could create a new `Geometry` from the same URL which would have a different id and have separate instancing. This would allow both instancing types at the expense of an additional GPU resource for each `Geometry` reference.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public mutating func insert(
         _ skinnedGeometry: SkinnedGeometry,
         withPose pose: Skeleton.Pose,
@@ -165,7 +165,7 @@ import Shaders
     - parameter flags: Options to customize how drawing is handled.
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
     */
-    @_transparent
+    @inlinable
     public mutating func insert(
         _ points: Points,
         color: Color,
@@ -183,7 +183,7 @@ import Shaders
     - parameter flags: Options to customize how drawing is handled.
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public mutating func insert(
         _ points: Points,
         color: Color,
@@ -211,7 +211,7 @@ import Shaders
     - parameter flags: Options to customize how drawing is handled.
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
     */
-    @_transparent
+    @inlinable
     public mutating func insert(
         _ lines: Lines,
         withColor color: Color? = nil,
@@ -228,7 +228,7 @@ import Shaders
     - parameter flags: Options to customize how drawing is handled.
     - Explicitly instances the geometry as it's own batch. Use this for known instancing like particles.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public mutating func insert(
         _ lines: Lines,
         withColor color: Color? = nil,
@@ -247,7 +247,7 @@ import Shaders
         self.insert(command)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public mutating func insert(
         _ source: Geometry,
         morphingTo destination: Geometry,
@@ -269,7 +269,7 @@ import Shaders
         self.insert(command)
     }
 
-    @_transparent
+    @inlinable
     public mutating func insert(
         _ source: Geometry,
         morphingTo destination: Geometry,
@@ -288,6 +288,7 @@ import Shaders
         )
     }
     
+    @inlinable
     public mutating func insert(
         _ sprite: Sprite,
         at transform: Transform3,
@@ -329,25 +330,22 @@ import Shaders
     }
 
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
-    @inline(__always)
     public mutating func insert(_ light: PointLight) {
         guard light.state == .ready else { return }
         self.pointLights.insert(ScenePointLight(light))
     }
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
-    @inline(__always)
     public mutating func insert(_ light: SpotLight) {
         guard light.state == .ready else { return }
         self.spotLights.insert(SceneSpotLight(light))
     }
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
-    @inline(__always)
     public mutating func insert(_ light: DirectionalLight) {
         guard light.state == .ready else { return }
         self.directionalLight = SceneDirectionalLight(light)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal var hasLights: Bool {
         guard directionalLight != nil else { return true }
         guard pointLights.isEmpty else { return true }
@@ -363,7 +361,7 @@ import Shaders
         self._drawCommands.reserveCapacity(estimatedCommandCount)
     }
     
-    @_transparent
+    @inlinable
     public func matrices(withSize size: GameMath.Size2) -> Matrices {
         self.camera.matricies(withViewportSize: size)
     }
@@ -389,7 +387,8 @@ internal struct ScenePointLight: Hashable {
         self.position = pointer.position.simd
     }
 
-    @usableFromInline func hash(into hasher: inout Hasher) {
+    @usableFromInline 
+    func hash(into hasher: inout Hasher) {
         hasher.combine(pointer.id)
     }
 }
@@ -418,7 +417,8 @@ internal struct SceneSpotLight: Hashable {
         self.direction = pointer.direction.simd
     }
 
-    @usableFromInline func hash(into hasher: inout Hasher) {
+    @usableFromInline 
+    func hash(into hasher: inout Hasher) {
         hasher.combine(pointer.id)
     }
 }
@@ -439,7 +439,8 @@ internal struct SceneDirectionalLight: Hashable {
         self.direction = pointer.direction.simd
     }
 
-    @usableFromInline func hash(into hasher: inout Hasher) {
+    @usableFromInline 
+    func hash(into hasher: inout Hasher) {
         hasher.combine(pointer.id)
     }
 }
@@ -459,7 +460,7 @@ public struct SceneElementFlags: OptionSet, Hashable {
         self.rawValue = rawValue
     }
 
-    @_transparent
+    @inlinable
     public func drawCommandFlags(withPrimitive primitive: DrawCommand.Flags.Primitive, blendMode: DrawCommand.Flags.BlendMode = .normal) -> DrawCommand.Flags {
         let cull: DrawCommand.Flags.Cull = self.contains(.cullBackface) ? .back : .disabled
         let depthTest: DrawCommand.Flags.DepthTest = self.contains(.disableDepthCull) ? .always : .lessEqual

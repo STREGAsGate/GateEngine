@@ -135,12 +135,13 @@ extension HID.TouchSurface: Hashable {
 }
 
 extension SurfaceTouch: Equatable {
-    @_transparent
+    @inlinable
     public static func == (lhs: SurfaceTouch, rhs: SurfaceTouch) -> Bool {
         return lhs.id == rhs.id
     }
 }
 extension SurfaceTouch: Hashable {
+    @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }

@@ -37,22 +37,22 @@ public extension Insets {
 }
 
 public extension Insets {
-    @_transparent
+    @inlinable
     static func *(lhs: Self, rhs: Float) -> Self {
         return Insets(top: lhs.top * rhs, leading: lhs.leading * rhs, bottom: lhs.bottom * rhs, trailing: lhs.trailing * rhs)
     }
-    @_transparent
+    @inlinable
     static func *=(lhs: inout Self, rhs: Float) {
         lhs = lhs * rhs
     }
 }
 
 public extension Insets {
-    @_transparent
+    @inlinable
     static func /(lhs: Self, rhs: Float) -> Self {
         return Insets(top: lhs.top / rhs, leading: lhs.leading / rhs, bottom: lhs.bottom / rhs, trailing: lhs.trailing / rhs)
     }
-    @_transparent
+    @inlinable
     static func /=(lhs: inout Self, rhs: Float) {
         lhs = lhs / rhs
     }

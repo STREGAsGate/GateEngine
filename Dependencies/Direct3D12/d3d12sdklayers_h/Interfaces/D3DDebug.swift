@@ -11,7 +11,7 @@ import WinSDK
 public final class D3DDebug: IUnknown {
 
     /// Enables the debug layer.
-    @inlinable @inline(__always)
+    @inlinable
     public func enableDebugLayer() {
         performFatally(as: RawValue.self) {pThis in
             pThis.pointee.lpVtbl.pointee.EnableDebugLayer(pThis)
@@ -30,7 +30,7 @@ public final class D3DDebug: IUnknown {
         super.init(winSDKPointer: pointer, memoryManagement: memoryManagement)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -39,7 +39,7 @@ extension D3DDebug {
     typealias RawValue = WinSDK.ID3D12Debug
 }
 extension D3DDebug.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12Debug}
 }
 

@@ -8,7 +8,7 @@
 import WinSDK
 
 public final class D3DQueryHeap: D3DPageable {
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -17,7 +17,7 @@ extension D3DQueryHeap {
     typealias RawValue = WinSDK.ID3D12QueryHeap
 }
 extension D3DQueryHeap.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12QueryHeap}
 }
 

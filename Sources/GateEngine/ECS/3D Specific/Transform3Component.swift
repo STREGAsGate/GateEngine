@@ -25,7 +25,7 @@ public final class Transform3Component: Component {
     }
 
     public internal(set) var _distanceTraveled: Float = 0
-    @inlinable @inline(__always)
+    @inlinable
     public func distanceTraveled() -> Float {
         if needsUpdate {
             update()
@@ -34,7 +34,7 @@ public final class Transform3Component: Component {
     }
 
     public private(set) var _directionTraveled: Direction3 = .forward
-    @inlinable @inline(__always)
+    @inlinable
     public func directionTraveled() -> Direction3 {
         if needsUpdate {
             update()
@@ -42,7 +42,7 @@ public final class Transform3Component: Component {
         return _directionTraveled
     }
 
-    @usableFromInline @inline(__always)
+    @usableFromInline
     internal func update() {
         needsUpdate = false
         self._distanceTraveled = transform.distance(from: previousTransform)
@@ -52,10 +52,18 @@ public final class Transform3Component: Component {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<Transform3, T>) -> T {
         get { return transform[keyPath: keyPath] }
         set { transform[keyPath: keyPath] = newValue }
+    }
+    
+    public init(_ transform: Transform3) {
+        self.transform = transform
+    }
+    
+    public init(position: Position3 = .zero, rotation: Quaternion = .zero, scale: Size3 = .one) {
+        self.transform = Transform3(position: position, rotation: rotation, scale: scale)
     }
 
     public init() {}
@@ -63,7 +71,7 @@ public final class Transform3Component: Component {
 }
 
 extension Entity {
-    @inlinable @inline(__always)
+    @inlinable
     public var transform3: Transform3 {
         get {
             return self[Transform3Component.self].transform
@@ -73,7 +81,7 @@ extension Entity {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var position3: Position3 {
         get {
             return transform3.position
@@ -83,7 +91,7 @@ extension Entity {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var rotation: Quaternion {
         get {
             return transform3.rotation
@@ -93,12 +101,12 @@ extension Entity {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func distance(from entity: Entity) -> Float {
         return self.transform3.position.distance(from: entity.transform3.position)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func distance(from position: Position3) -> Float {
         return self.transform3.position.distance(from: position)
     }

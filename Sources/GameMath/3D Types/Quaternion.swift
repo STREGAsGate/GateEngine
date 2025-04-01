@@ -18,7 +18,7 @@ public struct Quaternion: Vector4, SIMD, Sendable {
     @usableFromInline
     var _storage = Float.SIMD4Storage()
     
-    @_transparent
+    @inlinable
     public var scalarCount: Int {_storage.scalarCount}
 
     @inlinable
@@ -31,37 +31,37 @@ public struct Quaternion: Vector4, SIMD, Sendable {
 
     @inlinable
     public var x: Scalar {
-        @_transparent get {
+        get {
             return _storage[0]
         }
-        @_transparent set {
+        set {
             _storage[0] = newValue
         }
     }
     @inlinable
     public var y: Scalar {
-        @_transparent get {
+        get {
             return _storage[1]
         }
-        @_transparent set {
+        set {
             _storage[1] = newValue
         }
     }
     @inlinable
     public var z: Scalar {
-        @_transparent get {
+        get {
             return _storage[2]
         }
-        @_transparent set {
+        set {
             _storage[2] = newValue
         }
     }
     @inlinable
     public var w: Scalar {
-        @_transparent get {
+        get {
             return _storage[3]
         }
-        @_transparent set {
+        set {
             _storage[3] = newValue
         }
     }
@@ -83,6 +83,7 @@ public struct Quaternion: Vector4, SIMD, Sendable {
 public struct Quaternion: Vector4, Sendable {
     public var x, y, z, w: Float
     
+    @inlinable
     public init(_ x: Float, _ y: Float, _ z: Float, _ w: Float) {
         self.x = x
         self.y = y
@@ -93,13 +94,8 @@ public struct Quaternion: Vector4, Sendable {
 #endif
 
 public extension Quaternion {
-    @_transparent
+    @inlinable
     init(x: Float, y: Float, z: Float, w: Float) {
-        self.init(x, y, z, w)
-    }
-    
-    @available(*, unavailable, message: "Use init(x:y:z:w:) (the w is at the end now)")
-    init(w: Float, x: Float, y: Float, z: Float) {
         self.init(x, y, z, w)
     }
 }
@@ -107,7 +103,7 @@ public extension Quaternion {
 public extension Quaternion {
     @inlinable
     subscript (_ index: Int) -> Float {
-        @_transparent get {
+        get {
             switch index {
             case 0: return x
             case 1: return y
@@ -117,7 +113,7 @@ public extension Quaternion {
                 fatalError("Index \(index) out of range \(0..<4) for type \(type(of: self))")
             }
         }
-        @_transparent set {
+        set {
             switch index {
             case 0: x = newValue
             case 1: y = newValue
@@ -131,7 +127,7 @@ public extension Quaternion {
 }
 
 extension Quaternion {
-    @_transparent
+    @inlinable
     public init(direction: Direction3, up: Direction3 = .up, right: Direction3 = .right) {
         self = Matrix3x3(direction: direction, up: up, right: right).rotation
     }
@@ -153,6 +149,7 @@ extension Quaternion {
      - parameter degrees: The angle to rotate
      - parameter axis: The direction to rotate around
      */
+    @_disfavoredOverload
     @inlinable
     public init(_ angle: some Angle, axis: Direction3) {
         // Will always be radians (because degrees is explicitly below), but leave ambiguous so degrees can use a literal
@@ -172,7 +169,7 @@ extension Quaternion {
      - parameter axis: The direction to rotate around
      - note: Allows initialization with `degrees` as a literial. Example: `Quaternion(180, axis: .up)`.
      */
-    @_transparent
+    @inlinable
     public init(_ degrees: Degrees, axis: Direction3) {
         self.init(Radians(degrees), axis: axis)
     }
@@ -197,7 +194,7 @@ extension Quaternion {
 }
 
 extension Quaternion {
-    @_transparent
+    @inlinable
     public init(rotationMatrix rot: Matrix4x4) {
         let trace: Float = rot.a + rot.f + rot.k
         
@@ -237,7 +234,7 @@ extension Quaternion {
         w /= length
     }
     
-    @_transparent
+    @inlinable
     public init(rotationMatrix rot: Matrix3x3) {
         let trace: Float = rot.a + rot.f + rot.k
         
@@ -279,7 +276,7 @@ extension Quaternion {
 }
 
 extension Quaternion {
-    @_transparent
+    @inlinable
     public mutating func lookAt(_ target: Position3, from source: Position3) {
         let forwardVector: Position3 = (source - target).normalized
         let dot: Float = Direction3.forward.dot(forwardVector)
@@ -313,7 +310,7 @@ extension Quaternion {
         case pitchAndYaw
     }
     
-    @_transparent
+    @inlinable
     public init(lookingAt target: Position3, from source: Position3, up: Direction3 = .up, right: Direction3 = .right, constraint: LookAtConstraint, isCamera: Bool) {
         self.init(Direction3(from: source, to: target), up: up, right: right, constraint: constraint, isCamera: isCamera)
     }
@@ -354,7 +351,7 @@ extension Quaternion {
 }
 
 public extension Quaternion {
-    @_transparent
+    @inlinable
     var direction: Direction3 {
         get {
             return Direction3(x: x, y: y, z: z)
@@ -366,27 +363,27 @@ public extension Quaternion {
         }
     }
     
-    @_transparent
+    @inlinable
     var forward: Direction3 {
         return Direction3.forward.rotated(by: self)
     }
-    @_transparent
+    @inlinable
     var backward: Direction3 {
         return Direction3.backward.rotated(by: self)
     }
-    @_transparent
+    @inlinable
     var up: Direction3 {
         return Direction3.up.rotated(by: self)
     }
-    @_transparent
+    @inlinable
     var down: Direction3 {
         return Direction3.down.rotated(by: self)
     }
-    @_transparent
+    @inlinable
     var left: Direction3 {
         return Direction3.left.rotated(by: self)
     }
-    @_transparent
+    @inlinable
     var right: Direction3 {
         return Direction3.right.rotated(by: self)
     }
@@ -395,7 +392,7 @@ public extension Quaternion {
 public extension Quaternion {
     static let zero = Self(Radians(0), axis: .forward)
     
-    @_transparent
+    @inlinable
     var inverse: Self {
         var absoluteValue: Float = magnitude
         absoluteValue *= absoluteValue
@@ -410,18 +407,18 @@ public extension Quaternion {
 }
 
 public extension Quaternion {
-    @_transparent
+    @inlinable
     var conjugate: Self {
         return Self(x: -x, y: -y, z: -z, w: w)
     }
-    @_transparent
+    @inlinable
     var transposed: Self {
         return Matrix4x4(rotation: self).transposed().rotation
     }
 }
 
 public extension Quaternion {
-    @_transparent
+    @inlinable
     func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
         switch method {
         case let .linear(factor, options):
@@ -457,14 +454,14 @@ public extension Quaternion {
     
     //let easeInOutFactor = -(cos(.pi * factor) - 1) / 2
     
-    @_transparent
+    @inlinable
     mutating func interpolate(to: Self, _ method: InterpolationMethod) {
         self = self.interpolated(to: to, method)
     }
 }
 
 internal extension Quaternion {
-    @_transparent @usableFromInline
+    @inlinable
     func lerped(to q2: Self, factor t: Float) -> Self {
         var qr: Quaternion = .zero
         
@@ -477,12 +474,12 @@ internal extension Quaternion {
         return qr
     }
     
-    @_transparent @usableFromInline
+    @inlinable
     mutating func lerp(to q2: Self, factor: Float) {
         self = self.lerped(to: q2, factor: factor)
     }
     
-    @_transparent @usableFromInline
+    @inlinable
     func slerped(to destination: Self, factor t: Float) -> Self {
         // Adapted from javagl.JglTF
         
@@ -527,19 +524,19 @@ internal extension Quaternion {
         return Quaternion(x: rx, y: ry, z: rz, w: rw)
     }
     
-    @_transparent @usableFromInline
+    @inlinable
     mutating func slerp(to qb: Self, factor: Float) {
         self = self.slerped(to: qb, factor: factor)
     }
 }
 
 public extension Quaternion {
-    @_transparent
-    static func *=(lhs: inout Self, rhs: Self) {
+    @inlinable
+    static func *= (lhs: inout Self, rhs: Self) {
         lhs = lhs * rhs
     }
-    @_transparent
-    static func *(lhs: Self, rhs: Self) -> Self {
+    @inlinable
+    static func * (lhs: Self, rhs: Self) -> Self {
         var x: Float = lhs.x * rhs.w
         x += lhs.w * rhs.x
         x += lhs.y * rhs.z
@@ -560,12 +557,12 @@ public extension Quaternion {
         return Self(x: x, y: y, z: z, w: w)
     }
     
-    @_transparent
-    static func *=<V: Vector2>(lhs: inout Self, rhs: V) {
+    @inlinable
+    static func *= <V: Vector2>(lhs: inout Self, rhs: V) {
         lhs = lhs * rhs
     }
-    @_transparent
-    static func *<V: Vector2>(lhs: Self, rhs: V) -> Self {
+    @inlinable
+    static func * <V: Vector2>(lhs: Self, rhs: V) -> Self {
 
         var x: Float =  lhs.w * rhs.x
         x -= lhs.z * rhs.y
@@ -578,12 +575,12 @@ public extension Quaternion {
         return Self(x: x, y: y, z: z, w: w)
     }
     
-    @_transparent
-    static func *=<V: Vector3>(lhs: inout Self, rhs: V) {
+    @inlinable
+    static func *= <V: Vector3>(lhs: inout Self, rhs: V) {
         lhs = lhs * rhs
     }
-    @_transparent
-    static func *<V: Vector3>(lhs: Self, rhs: V) -> Self {
+    @inlinable
+    static func * <V: Vector3>(lhs: Self, rhs: V) -> Self {
         var x: Float =  lhs.w * rhs.x
         x += lhs.y * rhs.z
         x -= lhs.z * rhs.y
@@ -604,10 +601,10 @@ public extension Quaternion {
 public extension Quaternion {
     @inlinable
     var simd: SIMD4<Float> {
-        @_transparent get {
+        get {
             return SIMD4<Float>(x, y, z, w)
         }
-        @_transparent set {
+        set {
             x = newValue[0]
             y = newValue[1]
             z = newValue[2]
@@ -620,13 +617,11 @@ extension Quaternion: Equatable {}
 extension Quaternion: Hashable {}
 
 extension Quaternion: Codable {
-    @inlinable
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([x, y, z, w])
     }
     
-    @inlinable
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let values = try container.decode(Array<Float>.self)

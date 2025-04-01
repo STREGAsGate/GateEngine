@@ -58,7 +58,7 @@ public final class PNGEncoder {
 import LibSPNG
 
 enum LibSPNG {
-    @inline(__always)
+    @inlinable
     static func encode(data: Data, width: Int, height: Int) throws -> Data {
         return try data.withUnsafeBytes({ (bytes: UnsafeRawBufferPointer) throws -> Data in
             /* Create a context */
@@ -94,7 +94,7 @@ enum LibSPNG {
             throw PNGEncoder.EncodingError.failedToEncode(String(cString: spng_strerror(error)))
         })
     }
-    @inline(__always)
+    @inlinable
     static func decode(data: Data) throws -> PNGDecoder.Image {
         return try data.withUnsafeBytes { data in
             /* Create a context */

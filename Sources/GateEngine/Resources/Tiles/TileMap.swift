@@ -51,24 +51,59 @@ import GameMath
         resourceManager.incrementReference(self.cacheKey)
     }
     
-    public struct Tile: Equatable {
+    public struct Tile: Equatable, Sendable, ExpressibleByIntegerLiteral, ExpressibleByNilLiteral {        
         public let id: Int
         public let options: Options
-        public struct Options: OptionSet {
+        public struct Options: OptionSet, Equatable, Sendable {
             public let rawValue: UInt
             public init(rawValue: UInt) {
                 self.rawValue = rawValue
             }
             
+            /// Inverts pixels along x axis
             public static let flippedHorizontal    = Options(rawValue: 0x80000000)
+            /// Inverts pixels along y axis
             public static let flippedVertical      = Options(rawValue: 0x40000000)
+            /// Inverts pixels along x axis and inverts pixels along y axis
+            /// - note: This option can be combined with ``flippedHorizontal`` and ``flippedVertical`` to create rotations
             public static let flippedDiagonal      = Options(rawValue: 0x20000000)
+            
             public static let rotatedHexagonal120  = Options(rawValue: 0x10000000)
+            
+            /**
+             Causes the tile to draw with pixels inverted along the x axis.
+             - note: This convenience option is identical to ``flippedHorizontal``.
+             */
+            @inlinable
+            public static var flipX: Self {Self.flippedHorizontal}
+            
+            /**
+             Causes the tile to draw with pixels inverted along the y axis.
+             - note: This convenience option is identical to ``flippedVertical``.
+             */
+            @inlinable
+            public static var flipY: Self {Self.flippedVertical}
         }
         
         public init(id: Int, options: Options) {
             self.id = id
             self.options = options
+        }
+        
+        public typealias IntegerLiteralType = Int
+        public init(integerLiteral value: Int) {
+            self.id = value
+            self.options = []
+        }
+        
+        public init(nilLiteral: ()) {
+            self = .empty
+        }
+        
+        public static let empty = Tile(id: -1, options: [])
+        
+        public static func id(_ id: Int, _ options: Options = []) -> Self {
+            return .init(id: id, options: options)
         }
     }
     

@@ -23,28 +23,28 @@ public struct Direction3: Vector3, SIMD, Sendable {
     
     @inlinable
     public var x: Scalar {
-        @_transparent get {
+        get {
             return _storage[0]
         }
-        @_transparent set {
+        set {
             _storage[0] = newValue
         }
     }
     @inlinable
     public var y: Scalar {
-        @_transparent get {
+        get {
             return _storage[1]
         }
-        @_transparent set {
+        set {
             _storage[1] = newValue
         }
     }
     @inlinable
     public var z: Scalar {
-        @_transparent get {
+        get {
             return _storage[2]
         }
-        @_transparent set {
+        set {
             _storage[2] = newValue
         }
     }
@@ -73,14 +73,14 @@ public struct Direction3: Vector3, Sendable {
 #endif
 
 public extension Direction3 {
-    @_transparent
+    @inlinable
     init(_ x: Float, _ y: Float, _ z: Float) {
         self.init(x: x, y: y, z: z)
     }
 }
 
 public extension Direction3  {
-    @_transparent
+    @inlinable
     init(from position1: Position3, to position2: Position3) {
         self = Self(position2 - position1).normalized
     }
@@ -100,40 +100,41 @@ public extension Direction3 {
 }
 
 public extension Direction3  {
-    @_transparent
-    func angle(to rhs: Self) -> Radians {
+    @inlinable
+    func angle<T: Angle>(to rhs: Self) -> T {
         let v0 = self.normalized
         let v1 = rhs.normalized
         
         let dot = v0.dot(v1)
-        return Radians(acos(dot / (v0.magnitude * v1.magnitude)))
+        return T(rawValueAsRadians: acos(dot / (v0.magnitude * v1.magnitude)))
     }
-    @_transparent
-    var angleAroundX: Radians {
+    @inlinable
+    var angleAroundX: some Angle {
         assert(isFinite)
-        return Radians(atan2(y, z))
+        return Radians(rawValueAsRadians: atan2(y, z))
     }
-    @_transparent
-    var angleAroundY: Radians {
+    @inlinable
+    var angleAroundY: some Angle {
         assert(isFinite)
-        return Radians(atan2(x, z))
+        return Radians(rawValueAsRadians: atan2(x, z))
     }
-    @_transparent
-    var angleAroundZ: Radians {
+    @inlinable
+    var angleAroundZ: some Angle {
         assert(isFinite)
-        return Radians(atan2(y, x))
+        return Radians(rawValueAsRadians: atan2(y, x))
     }
 }
 
 public extension Direction3 {
-    @_transparent
+    @inlinable
     func rotated(by rotation: Quaternion) -> Self {
         let conjugate = rotation.normalized.conjugate
         let w = rotation * self * conjugate
         return w.direction
     }
     
-    @_transparent
+    /// This angles perpendicular angle
+    @inlinable
     func orthogonal() -> Self {
         let x = abs(self.x)
         let y = abs(self.y)
@@ -143,7 +144,7 @@ public extension Direction3 {
         return self.cross(other)
     }
     
-    @_transparent
+    @inlinable
     func reflected(off normal: Self) -> Self {
         let normal = normal.normalized
         let dn = -2 * self.dot(normal)
@@ -151,7 +152,7 @@ public extension Direction3 {
     }
     
     /// true if the difference in angles is less than 180°
-    @_transparent
+    @inlinable
     func isFrontFacing(toward direction: Direction3) -> Bool {
         return (self.dot(direction) <= 0) == false
     }

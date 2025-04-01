@@ -14,7 +14,7 @@ public struct D3DDescriptorHeapDescription {
     internal var rawValue: RawValue
 
     /// A D3D12_DESCRIPTOR_HEAP_TYPE-typed value that specifies the types of descriptors in the heap.
-    @inlinable @inline(__always)
+    @inlinable
     public var `type`: D3DDescriptorHeapType {
         get {
             return D3DDescriptorHeapType(rawValue.Type)
@@ -25,7 +25,7 @@ public struct D3DDescriptorHeapDescription {
     } 
     
     /// The number of descriptors in the heap.
-    @inlinable @inline(__always)
+    @inlinable
     public var descriptorCount: UInt32 {
         get {
             return rawValue.NumDescriptors
@@ -36,7 +36,7 @@ public struct D3DDescriptorHeapDescription {
     }
 
     /// A combination of D3D12_DESCRIPTOR_HEAP_FLAGS-typed values that are combined by using a bitwise OR operation. The resulting value specifies options for the heap.
-    @inlinable @inline(__always)
+    @inlinable
     public var flags: D3DDescriptorHeapFlags {
         get {
             return D3DDescriptorHeapFlags(rawValue.Flags)
@@ -47,7 +47,7 @@ public struct D3DDescriptorHeapDescription {
     }
 
     /// For single GPU operation, set this to zero. If there are multiple GPU nodes, set a bit to identify the node (the device's physical adapter) to which the command queue applies. Each bit in the mask corresponds to a single node. Only 1 bit must be set. Refer to Multi-adapter systems.
-    @inlinable @inline(__always)
+    @inlinable
     public var multipleAdapterNodeMask: UInt32 {
         get {
             return self.rawValue.NodeMask
@@ -63,12 +63,12 @@ public struct D3DDescriptorHeapDescription {
     - parameter flags: A combination of D3D12_DESCRIPTOR_HEAP_FLAGS-typed values that are combined by using a bitwise OR operation. The resulting value specifies options for the heap.
     - parameter multipleAdapterNodeMask: For single-adapter operation, set this to zero. If there are multiple adapter nodes, set a bit to identify the node (one of the device's physical adapters) to which the descriptor heap applies. Each bit in the mask corresponds to a single node. Only one bit must be set. See Multi-adapter systems.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(type: D3DDescriptorHeapType, count: UInt32, flags: D3DDescriptorHeapFlags, multipleAdapterNodeMask: UInt32 = 0) {
         self.rawValue = RawValue(Type: type.rawValue, NumDescriptors: count, Flags: flags.rawType, NodeMask: multipleAdapterNodeMask)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

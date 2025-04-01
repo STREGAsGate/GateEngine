@@ -14,7 +14,7 @@ public struct D3DRootConstants {
     internal var rawValue: RawValue
 
     /// The shader register.
-    @inlinable @inline(__always)
+    @inlinable
     public var shaderRegister: UInt32 {
         get {
             return rawValue.ShaderRegister
@@ -25,7 +25,7 @@ public struct D3DRootConstants {
     }
 
     /// The register space.
-    @inlinable @inline(__always)
+    @inlinable
     public var registerSpace: UInt32 {
         get {
             return rawValue.RegisterSpace
@@ -36,7 +36,7 @@ public struct D3DRootConstants {
     }
 
     /// The number of constants that occupy a single shader slot (these constants appear like a single constant buffer). All constants occupy a single root signature bind slot.
-    @inlinable @inline(__always)
+    @inlinable
     public var num32BitValues: UInt32 {
         get {
             return rawValue.Num32BitValues
@@ -51,12 +51,12 @@ public struct D3DRootConstants {
     - parameter registerSpace: The register space.
     - parameter num32BitValues: The number of constants that occupy a single shader slot (these constants appear like a single constant buffer). All constants occupy a single root signature bind slot.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(shaderRegister: UInt32 = 0, registerSpace: UInt32 = 0, num32BitValues: UInt32 = 0) {
         self.rawValue = RawValue(ShaderRegister: shaderRegister, RegisterSpace: registerSpace, Num32BitValues: num32BitValues)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

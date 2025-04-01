@@ -14,7 +14,7 @@ public struct TexturePath: ExpressibleByStringLiteral, CustomStringConvertible {
     }
 
     /// A simple texture suitable for a placeholder
-    @inlinable @inline(__always)
+    @inlinable
     public static var checkerPattern: TexturePath { "GateEngine/Textures/CheckerPattern.png" }
 }
 
@@ -27,15 +27,15 @@ public struct GeoemetryPath: ExpressibleByStringLiteral, CustomStringConvertible
     }
 
     /// A 1x1x1 Cube
-    @inlinable @inline(__always)
+    @inlinable
     public static var unitCube: GeoemetryPath { "GateEngine/Primitives/Unit Cube.obj" }
     /// A 1x1x1 Geosphere
-    @inlinable @inline(__always)
+    @inlinable
     public static var unitSphere: GeoemetryPath { "GateEngine/Primitives/Unit Sphere.obj" }
     /// A 1x1x1 Plane
-    @inlinable @inline(__always)
+    @inlinable
     public static var unitPlane: GeoemetryPath { "GateEngine/Primitives/Unit Plane.obj" }
     /// A 1x1x1 Joint Shape
-    @inlinable @inline(__always)
+    @inlinable
     public static var unitJoint: GeoemetryPath { "GateEngine/Primitives/Unit Joint.obj" }
 }

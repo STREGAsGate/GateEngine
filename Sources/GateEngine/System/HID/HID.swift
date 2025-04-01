@@ -39,7 +39,6 @@ public enum InputMethod {
     /// The most recent input method used by the end user
     public private(set) var recentInputMethod: InputMethod = .mouseKeyboard
 
-    @inline(__always)
     func update(_ deltaTime: Float) {
         self.mouse.update()
         self.screen.update()
@@ -51,7 +50,6 @@ public enum InputMethod {
 }
 
 extension HID {
-//    @_transparent
     internal func mouseChange(
         event: Mouse.ChangeEvent,
         position: Position2,
@@ -62,7 +60,7 @@ extension HID {
         mouse.mouseChange(event: event, position: position, delta: delta, window: window)
         window?.mouseChange(event: event, position: position, delta: delta)
     }
-    @_transparent
+
     internal func mouseClick(
         event: Mouse.ClickEvent,
         button: MouseButton,
@@ -88,7 +86,7 @@ extension HID {
             delta: delta
         )
     }
-    @_transparent
+
     internal func mouseScrolled(
         delta: Position3,
         uiDelta: Position3,
@@ -112,7 +110,6 @@ extension HID {
         )
     }
 
-    @_transparent
     internal func screenTouchChange(
         id: AnyHashable,
         kind: TouchKind,
@@ -127,7 +124,6 @@ extension HID {
         window.touchChange(id: id, kind: kind, event: event, position: position, precisionPosition: precisionPosition, pressure: pressure)
     }
     
-    @_transparent
     internal func surfaceTouchChange(
         id: AnyHashable,
         event: TouchChangeEvent,
@@ -146,7 +142,6 @@ extension HID {
         window?.surfaceTouchChange(id: id, kind: .unknown, event: event, normalizedPosition: normalizedPosition, pressure: pressure, mouse: self.mouse)
     }
 
-    @_transparent
     internal func keyboardDidHandle(
         key: KeyboardKey,
         character: Character?,

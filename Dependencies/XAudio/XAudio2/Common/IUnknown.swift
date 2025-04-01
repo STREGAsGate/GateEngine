@@ -11,13 +11,13 @@ public class IUnknown {
     @usableFromInline
     internal let pUnk: UnsafeMutableRawPointer
 
-    @inlinable @inline(__always)
+    @inlinable
     func perform<Type, ResultType>(as type: Type.Type, body: (_ pThis: UnsafeMutablePointer<Type>) throws -> ResultType) rethrows -> ResultType {
         let pThis = pUnk.bindMemory(to: Type.self, capacity: 1)
         return try body(pThis)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     func performFatally<Type, ResultType>(as type: Type.Type, body: (_ pThis: UnsafeMutablePointer<Type>) throws -> ResultType) -> ResultType {
         do {
             let pThis = pUnk.bindMemory(to: Type.self, capacity: 1)
@@ -37,7 +37,7 @@ public class IUnknown {
         case retain
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     required internal init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagement: MemoryManagement = .alreadyRetained) {
         guard let pointer = pointer else {return nil}
         self.pUnk = pointer
@@ -46,28 +46,28 @@ public class IUnknown {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal func retain() {
         self.performFatally(as: WinSDK.IUnknown.self) {pThis in
             _ = pThis.pointee.lpVtbl.pointee.AddRef(pThis)
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal func release() {
         self.performFatally(as: WinSDK.IUnknown.self) {pThis in
             _ = pThis.pointee.lpVtbl.pointee.Release(pThis)
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func fullRelease() {
         self.performFatally(as: WinSDK.IUnknown.self) {pThis in
             while pThis.pointee.lpVtbl.pointee.Release(pThis) > 0 {}
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func queryInterface<T: IUnknown>(_ type: T.Type) -> T? {
         return self.perform(as: WinSDK.IUnknown.self) { pThis in
             var pointer: UnsafeMutableRawPointer? = nil
@@ -85,7 +85,7 @@ public class IUnknown {
         self.release()
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     class var interfaceID: WinSDK.IID {preconditionFailure("Must override!")}
 }
 
@@ -94,6 +94,6 @@ extension IUnknown {
     typealias RawValue = WinSDK.IUnknown
 }
 extension IUnknown.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: WinSDK.IID {WinSDK.IID_IUnknown}
 }

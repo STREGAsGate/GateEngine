@@ -14,7 +14,7 @@ public struct D3DIndirectArgumentDescription {
     internal var rawValue: RawValue
 
     /// A single D3D12_INDIRECT_ARGUMENT_TYPE enumeration constant.
-    @inlinable @inline(__always)
+    @inlinable
     public var `type`: D3DIndirectArgumentType {
         get {
             return D3DIndirectArgumentType(rawValue.Type)
@@ -28,7 +28,7 @@ public struct D3DIndirectArgumentDescription {
         /// Specifies the slot containing the vertex buffer address.
         var slot: UInt32
     }
-    @inlinable @inline(__always)
+    @inlinable
     public var vertexBuffer: VertexBuffer {
         get {
             return unsafeBitCast(rawValue.VertexBuffer, to: VertexBuffer.self)
@@ -46,7 +46,7 @@ public struct D3DIndirectArgumentDescription {
         /// The number of 32-bit constants that are set at the given root index. Supports multi-value constants at a given root index.
         var num32BitValuesToSet: UInt32
     }
-    @inlinable @inline(__always)
+    @inlinable
     public var constant: Constant {
         get {
             return unsafeBitCast(rawValue.Constant, to: Constant.self)
@@ -60,7 +60,7 @@ public struct D3DIndirectArgumentDescription {
         /// Specifies the root index of the CBV.
         var rootParameterIndex: UInt32
     }
-    @inlinable @inline(__always)
+    @inlinable
     public var constantBufferView: ConstantBufferView {
         get {
             return unsafeBitCast(rawValue.ConstantBufferView, to: ConstantBufferView.self)
@@ -74,7 +74,7 @@ public struct D3DIndirectArgumentDescription {
         /// Specifies the root index of the SRV.
         var rootParameterIndex: UInt32
     }
-    @inlinable @inline(__always)
+    @inlinable
     public var shaderResourceView: ShaderResourceView {
         get {
             return unsafeBitCast(rawValue.ShaderResourceView, to: ShaderResourceView.self)
@@ -88,7 +88,7 @@ public struct D3DIndirectArgumentDescription {
         /// Specifies the root index of the UAV.
         var rootParameterIndex: UInt32
     }
-    @inlinable @inline(__always)
+    @inlinable
     public var unorderedAccessView: UnorderedAccessView {
         get {
             return unsafeBitCast(rawValue.UnorderedAccessView, to: UnorderedAccessView.self)
@@ -99,12 +99,12 @@ public struct D3DIndirectArgumentDescription {
     }
 
     /// Describes an indirect argument (an indirect parameter), for use with a command signature.
-    @inlinable @inline(__always)
+    @inlinable
     public init() {
         self.rawValue = RawValue()
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

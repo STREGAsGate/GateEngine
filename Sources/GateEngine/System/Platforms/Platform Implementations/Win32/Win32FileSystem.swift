@@ -9,7 +9,6 @@ import WinSDK
 import Foundation
 
 internal enum Win32FileSystem {
-    @inline(__always)
     @inlinable
     func urlForFolderID(_ folderID: KNOWNFOLDERID) -> URL {
         var folderID: KNOWNFOLDERID = folderID
@@ -20,7 +19,6 @@ internal enum Win32FileSystem {
         return URL(fileURLWithPath: string).appendingPathComponent(Game.unsafeShared.info.identifier)
     }
     
-    @inline(__always)
     @inlinable
     static func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain = .currentUser) throws -> String {
         switch searchPath {

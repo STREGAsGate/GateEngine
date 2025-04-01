@@ -14,7 +14,7 @@ public struct D3DTexture2DMultiSampledArrayShaderResourceView {
     internal var rawValue: RawValue
 
     /// The index of the first texture to use in an array of textures.
-    @inlinable @inline(__always)
+    @inlinable
     public var textureIndex: UInt32 {
         get {
             return rawValue.FirstArraySlice
@@ -25,7 +25,7 @@ public struct D3DTexture2DMultiSampledArrayShaderResourceView {
     }
 
     /// Number of textures to use.
-    @inlinable @inline(__always)
+    @inlinable
     public var textureCount: UInt32 {
         get {
             return rawValue.ArraySize
@@ -39,12 +39,12 @@ public struct D3DTexture2DMultiSampledArrayShaderResourceView {
     - parameter firstArraySlice: The index of the first texture to use in an array of textures.
     - parameter arraySize: Number of textures to use.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(textureIndex: UInt32, textureCount: UInt32) {
         self.rawValue = RawValue(FirstArraySlice: textureIndex, ArraySize: textureCount)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

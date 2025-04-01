@@ -22,7 +22,6 @@ public final class SkinCollider: Collider3D {
     private var attributesPerTriangle: [UInt32]! = nil
     
     @MainActor
-    @inline(__always)
     var rigComponent: Rig3DComponent? {
         return entity.component(ofType: Rig3DComponent.self)
     }

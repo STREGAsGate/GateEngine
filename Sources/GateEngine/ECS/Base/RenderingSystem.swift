@@ -9,7 +9,7 @@
     private var didSetup = false
 
     /// The game instance.
-    @inlinable @inline(__always)
+    @inlinable
     public final var game: Game {
         return Game.shared
     }

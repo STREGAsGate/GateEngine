@@ -42,7 +42,7 @@ internal final class CASourceReference: SpatialAudioSourceReference {
             }
         }
     }
-    @inline(__always)
+    @inlinable
     var volume: Float {
         get {
             return playerNode.volume
@@ -51,7 +51,7 @@ internal final class CASourceReference: SpatialAudioSourceReference {
             playerNode.volume = newValue
         }
     }
-    @inline(__always)
+    @inlinable
     var pitch: Float {
         get {
             return playerNode.rate
@@ -61,20 +61,20 @@ internal final class CASourceReference: SpatialAudioSourceReference {
         }
     }
 
-    @inline(__always)
+    @inlinable
     func play() {
         playerNode.play()
     }
-    @inline(__always)
+    @inlinable
     func pause() {
         playerNode.pause()
     }
-    @inline(__always)
+    @inlinable
     func stop() {
         playerNode.stop()
     }
 
-    @inline(__always)
+    @inlinable
     func setPosition(_ position: Position3) {
         playerNode.position = AVAudio3DPoint(x: position.x, y: position.y, z: position.z)
     }

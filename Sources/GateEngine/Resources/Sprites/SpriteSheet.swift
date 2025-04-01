@@ -22,7 +22,7 @@ import GameMath
         self.tintColor = tintColor
     }
 
-    @inlinable @inline(__always) @_disfavoredOverload
+    @inlinable @_disfavoredOverload
     public convenience init(
         as path: TexturePath,
         mipMapping: MipMapping = .none,

@@ -14,7 +14,7 @@ public struct DGISampleDescription {
     internal var rawValue: RawValue
 
     /// The number of multisamples per pixel.
-    @inlinable @inline(__always)
+    @inlinable
     public var count: UInt32 {
         get {
             return rawValue.Count
@@ -26,7 +26,7 @@ public struct DGISampleDescription {
 
     /// The image quality level. The higher the quality, the lower the performance. The valid range is between zero and one less than the level returned by ID3D10Device::CheckMultisampleQualityLevels for Direct3D 10 or ID3D11Device::CheckMultisampleQualityLevels for Direct3D 11.
     /// For Direct3D 10.1 and Direct3D 11, you can use two special quality level values. For more information about these quality level values, see Remarks.
-    @inlinable @inline(__always)
+    @inlinable
     public var quality: UInt32 {
         get {
             return rawValue.Quality
@@ -40,12 +40,12 @@ public struct DGISampleDescription {
     - parameter count: The number of multisamples per pixel.
     - parameter quality: The image quality level. The higher the quality, the lower the performance. The valid range is between zero and one less than the level returned by ID3D10Device::CheckMultisampleQualityLevels for Direct3D 10 or ID3D11Device::CheckMultisampleQualityLevels for Direct3D 11.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(count: UInt32, quality: UInt32) {
         self.rawValue = RawValue(Count: count, Quality: quality)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

@@ -47,7 +47,7 @@ public enum D3DLogicOperation {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
 
-    @inlinable @inline(__always)
+    @inlinable
     public var rawValue: RawValue {
         switch self {
         case .clear:
@@ -87,7 +87,7 @@ public enum D3DLogicOperation {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_LOGIC_OP_CLEAR:

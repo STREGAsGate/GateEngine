@@ -41,7 +41,7 @@ public struct D3DInputElementDescription {
     - parameter inputSlotClassification: A value that identifies the input data class for a single input slot.
     - parameter instanceDataStepRate: The number of instances to draw using the same per-instance data before advancing in the buffer by one element. This value must be 0 for an element that contains per-vertex data (the slot class is set to the D3D12_INPUT_PER_VERTEX_DATA member of D3D12_INPUT_CLASSIFICATION).
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(semanticName: String,
                 semanticIndex: UInt32 = 0,
                 format: DGIFormat,
@@ -58,7 +58,7 @@ public struct D3DInputElementDescription {
         self.instanceDataStepRate = instanceDataStepRate
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal func withUnsafeRawValue<ResultType>(_ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
         return try semanticName.windowsUTF8.withUnsafeBufferPointer {SemanticName in
             let SemanticName = SemanticName.baseAddress!

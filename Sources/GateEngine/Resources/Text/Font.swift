@@ -137,7 +137,7 @@ public final class Font: OldResource {
         let pointSize: UInt
     }
 
-    @_transparent
+    @inlinable
     public nonisolated static var `default`: Font { .tuffy }
 
     public nonisolated static let tuffy: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy.ttf")

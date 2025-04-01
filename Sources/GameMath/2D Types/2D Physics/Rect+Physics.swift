@@ -6,7 +6,7 @@
  */
 
 extension Rect {
-    @inlinable @inline(__always)
+    @inlinable
     public func nearest(outsidePositionFrom circle: Circle) -> Position2 {
         var position = circle.center
         
@@ -26,7 +26,7 @@ extension Rect {
         return position
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func intersects(_ rect: Rect) -> Bool {
         var part1: Bool {
             let lhs = abs(x - rect.x) * 2
@@ -41,7 +41,7 @@ extension Rect {
         return part1 && part2
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func contains(_ position: Position2) -> Bool {
         if position.x < x || position.x > maxX {
             return false
@@ -52,7 +52,7 @@ extension Rect {
         return true
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func intersects(_ circle: Circle) -> Bool {
         let topLeft = Position2(x: circle.center.x - circle.radius, y: circle.center.y - circle.radius)
         if contains(topLeft) {

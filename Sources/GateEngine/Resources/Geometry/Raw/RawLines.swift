@@ -193,7 +193,7 @@ public struct RawLines {
 }
 
 extension RawLines {  // 2D
-    @_transparent
+    @inlinable
     public mutating func insert(_ point: Position2, color: Color) {
         let point = Position3(point.x, point.y, 0)
         self.insert(point, color: color)

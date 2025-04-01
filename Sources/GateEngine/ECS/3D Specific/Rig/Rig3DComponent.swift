@@ -147,6 +147,7 @@
 
 @MainActor public final class Rig3DAnimation {
     public var subAnimations: [SubAnimation]
+    @usableFromInline
     var primaryIndex: Int = 0
 
     public var isReady: Bool {
@@ -158,7 +159,7 @@
         return true
     }
     
-    @inline(__always)
+    @inlinable
     public var progress: Float {
         get {
             return subAnimations[primaryIndex].progress
@@ -168,7 +169,7 @@
         }
     }
 
-    @inline(__always)
+    @inlinable
     public var scale: Float {
         get {
             return subAnimations[primaryIndex].scale
@@ -178,12 +179,12 @@
         }
     }
 
-    @inline(__always)
+    @inlinable
     public var isFinished: Bool {
         return subAnimations[primaryIndex].isFinished
     }
 
-    @inline(__always)
+    @inlinable
     public var repeats: Bool {
         get {
             return subAnimations[primaryIndex].repeats
@@ -193,7 +194,7 @@
         }
     }
 
-    @inline(__always)
+    @inlinable
     public var skeletalAnimation: SkeletalAnimation {
         get {
             return subAnimations[primaryIndex].skeletalAnimation
@@ -203,7 +204,7 @@
         }
     }
 
-    @inline(__always)
+    @inlinable
     func update(deltaTime: Float, objectScale: Size3) {
         for index in subAnimations.indices {
             let animation = subAnimations[index]
@@ -212,7 +213,7 @@
         }
     }
 
-    @inline(__always)
+    @inlinable
     func resetAccumulatedTime() {
         for index in subAnimations.indices {
             subAnimations[index].accumulatedTime = 0
@@ -223,7 +224,6 @@
         subAnimations = []
     }
 
-    @inline(__always)
     public init(
         _ skeletalAnimation: SkeletalAnimation,
         skipJoints: [Skeleton.SkipJoint] = [],
@@ -262,6 +262,7 @@
         public var skeletalAnimation: SkeletalAnimation
         public var skipJoints: [Skeleton.SkipJoint]
 
+        @usableFromInline
         var duration: Float {
             return skeletalAnimation.duration
         }
@@ -283,7 +284,7 @@
             }
         }
 
-        @inline(__always)
+        @inlinable
         public var progress: Float {
             get {
                 return .maximum(
@@ -302,7 +303,7 @@
             }
         }
 
-        @inline(__always)
+        @inlinable
         public var isFinished: Bool {
             guard duration > 0 else { return true }
             if repeats {
@@ -333,7 +334,7 @@ public class RigAttachmentComponent: Component {
 }
 
 extension Entity {
-    @inlinable @inline(__always)
+    @inlinable
     public var rig3DComponent: Rig3DComponent {
         return self[Rig3DComponent.self]
     }

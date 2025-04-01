@@ -26,14 +26,14 @@ import GameMath
 @attached(member, names: named(phase), named(macroPhase))
 public macro System(_ macroPhase: GateEngine.System.Phase) = #externalMacro(module: "ECSMacros", type: "ECSSystemMacro")
 
-@attached(extension, conformances: Component, names: named(componentID), named(`init`))
+@attached(extension, conformances: Component, names: named(componentID), named(init))
 public macro Component() = #externalMacro(module: "ECSMacros", type: "ECSComponentMacro")
 
 #if canImport(WinSDK)
 import WinSDK
 #endif
 
-#if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+#if HTML5
 import JavaScriptKit
 import WebAPIBase
 #endif
@@ -54,10 +54,6 @@ import WebAPIBase
 
 #if os(Android)
 #error("Android is not currently supported, but is planned.")
-#endif
-
-#if GATEENGINE_WASI_UNSUPPORTED_HOST && os(WASI)
-#error("HTML5 builds are not supported on this host platform. Use macOS or Linux.")
 #endif
 
 extension Color {
@@ -174,7 +170,7 @@ internal enum Log {
         case `default` = "\u{001B}[0;0m"
     }
 
-    @inline(__always) @usableFromInline
+    @inlinable @usableFromInline
     static var supportsColor: Bool {
         #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
         if CommandLine.isDebuggingWithXcode {
@@ -188,7 +184,7 @@ internal enum Log {
         #endif
     }
 
-    @_transparent @usableFromInline
+    @usableFromInline
     internal static func _message(prefix: String, _ items: Any..., separator: String) -> String {
         var message = prefix
         for item in items {
@@ -198,11 +194,11 @@ internal enum Log {
         return message
     }
 
-    @_transparent @usableFromInline
+    @usableFromInline
     static func info(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let message = _message(prefix: "[GateEngine]", items, separator: separator)
 
-        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        #if HTML5
         console.info(data: .string(message))
         #else
         Swift.print(message, terminator: terminator)
@@ -212,7 +208,7 @@ internal enum Log {
         #endif
     }
 
-    @_transparent @usableFromInline
+    @usableFromInline
     static func infoOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let hash = items.compactMap({ $0 as? AnyHashable }).hashValue
         if onceHashes.contains(hash) == false {
@@ -221,10 +217,10 @@ internal enum Log {
         }
     }
 
-    @_transparent @usableFromInline
+    @usableFromInline
     static func debug(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         #if DEBUG
-        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        #if HTML5
         let message = _message(prefix: "[GateEngine]", items, separator: separator)
         console.debug(data: .string(message))
         #else
@@ -233,7 +229,7 @@ internal enum Log {
         #endif
     }
 
-    @_transparent @usableFromInline
+    @usableFromInline
     static func debugOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         #if DEBUG
         let hash = items.compactMap({ $0 as? AnyHashable }).hashValue
@@ -244,7 +240,7 @@ internal enum Log {
         #endif
     }
 
-    @_transparent @usableFromInline
+    @usableFromInline
     static func warn(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let resolvedMessage: String
         if supportsColor {
@@ -256,7 +252,7 @@ internal enum Log {
         } else {
             resolvedMessage = _message(prefix: "[GateEngine] warning:", items, separator: separator)
         }
-        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        #if HTML5
         console.warn(data: .string(resolvedMessage))
         #else
 
@@ -268,7 +264,7 @@ internal enum Log {
         #endif
     }
 
-    @_transparent @usableFromInline
+    @usableFromInline
     static func warnOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let hash = items.compactMap({ $0 as? AnyHashable }).hashValue
         if onceHashes.contains(hash) == false {
@@ -277,7 +273,7 @@ internal enum Log {
         }
     }
 
-    @_transparent @usableFromInline
+    @usableFromInline
     static func error(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let resolvedMessage: String
         if supportsColor {
@@ -293,7 +289,7 @@ internal enum Log {
                 separator: separator
             )
         }
-        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        #if HTML5
         console.error(data: .string(resolvedMessage))
         #else
 
@@ -305,7 +301,7 @@ internal enum Log {
         #endif
     }
 
-    @_transparent @usableFromInline
+    @usableFromInline
     static func errorOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let hash = items.compactMap({ $0 as? AnyHashable }).hashValue
         if onceHashes.contains(hash) == false {
@@ -314,7 +310,7 @@ internal enum Log {
         }
     }
 
-    @_transparent @usableFromInline
+    @usableFromInline
     static func assert(
         _ condition: @autoclosure () -> Bool,
         _ message: @autoclosure () -> String,
@@ -344,7 +340,7 @@ internal enum Log {
         WinSDK.OutputDebugStringW((resolvedMessage + "/n").windowsUTF16)
         #endif
 
-        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        #if HTML5
         console.assert(condition: condition, data: .string(resolvedMessage))
         #endif
 
@@ -371,10 +367,18 @@ internal enum Log {
         WinSDK.OutputDebugStringW((resolvedMessage + "/n").windowsUTF16)
         #endif
 
-        #if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+        #if HTML5
         console.assert(condition: false, data: .string(resolvedMessage))
         #endif
 
         return Swift.fatalError(resolvedMessage, file: file, line: line)
     }
+}
+
+package func name<T>(of type: T.Type) -> String {
+    let description = String(describing: type)
+    if let name = description.split(separator: ".").last {
+        return String(name)
+    }
+    return description
 }

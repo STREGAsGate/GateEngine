@@ -20,15 +20,15 @@ public struct DGISwapChainFlags: OptionSet {
     public static let allowTearing = DGISwapChainFlags(rawValue: WinSDK.DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING.rawValue)
 
 
-    @inlinable @inline(__always)
+    @inlinable
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
-    @inlinable @inline(__always)
+    @inlinable
     public init(_ rawType: RawType) {
         self.rawValue = rawType.rawValue
     }
-    @inlinable @inline(__always)
+    @inlinable
     public init() {
         self.rawValue = 0
     }

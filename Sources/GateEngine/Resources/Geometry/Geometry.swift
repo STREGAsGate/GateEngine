@@ -82,23 +82,23 @@ public extension Geometry {
 
     @usableFromInline
     internal var backend: (any GeometryBackend)? {
-        return Game.shared.resourceManager.geometryCache(for: cacheKey)?.geometryBackend
+        return Game.unsafeShared.resourceManager.geometryCache(for: cacheKey)?.geometryBackend
     }
 
-    @inlinable @inline(__always) @_disfavoredOverload
+    @inlinable @_disfavoredOverload
     public convenience init(as path: GeoemetryPath, options: GeometryImporterOptions = .none) {
         self.init(path: path.value, options: options)
     }
 
     public init(path: String, options: GeometryImporterOptions = .none) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.geometryCacheKey(path: path, options: options)
         self.defaultCacheHint = .until(minutes: 5)
         resourceManager.incrementReference(self.cacheKey)
     }
 
     internal init(optionalRawGeometry rawGeometry: RawGeometry?, immediate: Bool = false) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.geometryCacheKey(rawGeometry: rawGeometry, immediate: immediate)
         self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
@@ -188,7 +188,7 @@ extension ResourceManager {
 }
 
 extension RawGeometry {
-    @inlinable @inline(__always) @_disfavoredOverload
+    @inlinable @_disfavoredOverload
     public init(_ path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws {
         try await self.init(path: path.value, options: options)
     }
@@ -259,7 +259,7 @@ extension ResourceManager {
         let key = Cache.GeometryKey(requestedPath: path, geometryOptions: options)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
-            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
+            Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
             Task.detached(priority: .high) {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)

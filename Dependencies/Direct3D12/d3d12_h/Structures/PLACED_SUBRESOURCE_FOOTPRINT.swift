@@ -14,7 +14,7 @@ public struct D3DPlacedSubresourceFootprint {
     internal var rawValue: RawValue
 
     /// The offset of the subresource within the parent resource, in bytes. The offset between the start of the parent resource and this subresource.
-    @inlinable @inline(__always)
+    @inlinable
     public var offset: UInt64 {
         get {
             return rawValue.Offset
@@ -25,7 +25,7 @@ public struct D3DPlacedSubresourceFootprint {
     }
 
     /// The format, width, height, depth, and row-pitch of the subresource, as a D3D12_SUBRESOURCE_FOOTPRINT structure.
-    @inlinable @inline(__always)
+    @inlinable
     public var footprint: D3DSubresourceFootprint {
         get {
             return D3DSubresourceFootprint(rawValue.Footprint)
@@ -39,7 +39,7 @@ public struct D3DPlacedSubresourceFootprint {
     - parameter offset: The offset of the subresource within the parent resource, in bytes. The offset between the start of the parent resource and this subresource.
     - parameter footprint: The format, width, height, depth, and row-pitch of the subresource, as a D3D12_SUBRESOURCE_FOOTPRINT structure.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(offset: UInt64, footprint: D3DSubresourceFootprint) {
         self.rawValue = RawValue()
         self.offset = offset
@@ -47,12 +47,12 @@ public struct D3DPlacedSubresourceFootprint {
     }
 
     /// Describes the footprint of a placed subresource, including the offset and the D3D12_SUBRESOURCE_FOOTPRINT.
-    @inlinable @inline(__always)
+    @inlinable
     public init() {
         self.rawValue = RawValue()
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

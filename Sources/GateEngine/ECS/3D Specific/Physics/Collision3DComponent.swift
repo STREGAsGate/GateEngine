@@ -55,25 +55,25 @@ public final class Collision3DComponent: Component {
 
     public var entityFilter: ((Entity) -> (Bool))? = nil
 
-    @inlinable @inline(__always)
+    @inlinable
     public func interpenetration(comparing: some Collider3D) -> Interpenetration3D? {
         return collider.interpenetration(comparing: comparing)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func interpenetration(comparing: Collision3DComponent) -> Interpenetration3D? {
         let lhs = collider
         let rhs = comparing.collider
         return lhs.interpenetration(comparing: rhs)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func updateColliders(_ transform: Transform3) {
         self.collider.update(transform: transform)
         self.rayCastCollider?.update(transform: transform)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func update(sizeAndOffsetUsingTransform transform: Transform3) {
         self.collider.update(sizeAndOffsetUsingTransform: transform)
         self.rayCastCollider?.update(sizeAndOffsetUsingTransform: transform)
@@ -84,7 +84,7 @@ public final class Collision3DComponent: Component {
 }
 
 extension Entity {
-    @inlinable @inline(__always)
+    @inlinable
     public var collision3DComponent: Collision3DComponent {
         return self[Collision3DComponent.self]
     }

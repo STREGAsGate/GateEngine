@@ -9,7 +9,7 @@ import Collections
 
 public extension Platform {
     /// The current platform (read only)
-    @inline(__always)
+    @inlinable
     nonisolated static var current: Platform {Game.unsafeShared.unsafePlatform}
 }
 
@@ -36,13 +36,13 @@ public protocol PlatformProtocol: Sendable {
 #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
 extension PlatformProtocol {
     #if GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
-    @_transparent
+    @inlinable
     public var fileSystem: Self.AsyncFileSystem {
         return Self.fileSystem
     }
     #endif
     #if GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem
-    @_transparent
+    @inlinable
     public var synchronousFileSystem: Self.SyncFileSystem {
         return Self.synchronousFileSystem
     }
@@ -66,7 +66,7 @@ internal protocol InternalPlatformProtocol: PlatformProtocol {
     #endif
 }
 
-#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER && !GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER && !HTML5
 extension InternalPlatformProtocol {
     static func getStaticSearchPaths() -> [URL] {
         let executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
@@ -294,7 +294,7 @@ extension InternalPlatformProtocol {
 }
 #endif
 
-#if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+#if HTML5
 public typealias Platform = WASIPlatform
 #elseif canImport(UIKit)
 public typealias Platform = UIKitPlatform

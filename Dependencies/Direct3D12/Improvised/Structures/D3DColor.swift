@@ -12,7 +12,7 @@ public struct D3DColor: Equatable {
     @usableFromInline
     internal var rawValue: RawValue
     
-    @inlinable @inline(__always)
+    @inlinable
     public var red: Float {
         get {
             return rawValue[0]
@@ -22,7 +22,7 @@ public struct D3DColor: Equatable {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var green: Float {
         get {
             return rawValue[1]
@@ -32,7 +32,7 @@ public struct D3DColor: Equatable {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var blue: Float {
         get {
             return rawValue[2]
@@ -42,7 +42,7 @@ public struct D3DColor: Equatable {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var alpha: Float {
         get {
             return rawValue[3]
@@ -52,7 +52,7 @@ public struct D3DColor: Equatable {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public subscript(_ index: Int) -> Float {
         get {
             return rawValue[index]
@@ -62,31 +62,31 @@ public struct D3DColor: Equatable {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal var tuple: (Float, Float, Float, Float) {
         return (rawValue[0], rawValue[1], rawValue[2], rawValue[3])
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ tuple: (Float, Float, Float, Float)) {
         self.rawValue = [tuple.0, tuple.1, tuple.2, tuple.3]
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public init(red: Float, green: Float, blue: Float, alpha: Float) {
         self.rawValue = [red, green, blue, alpha]
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }
 
-    @inlinable @inline(__always) public static var black: D3DColor {D3DColor(red: 0, green: 0, blue: 0, alpha: 1)}
-    @inlinable @inline(__always) public static var white: D3DColor {D3DColor(red: 1, green: 1, blue: 1, alpha: 1)}
-    @inlinable @inline(__always) public static var clear: D3DColor {D3DColor(red: 1, green: 1, blue: 1, alpha: 0)}
+    @inlinable public static var black: D3DColor {D3DColor(red: 0, green: 0, blue: 0, alpha: 1)}
+    @inlinable public static var white: D3DColor {D3DColor(red: 1, green: 1, blue: 1, alpha: 1)}
+    @inlinable public static var clear: D3DColor {D3DColor(red: 1, green: 1, blue: 1, alpha: 0)}
 
-    @inlinable @inline(__always) public static var red: D3DColor {D3DColor(red: 1, green: 0, blue: 0, alpha: 1)}
-    @inlinable @inline(__always) public static var green: D3DColor {D3DColor(red: 0, green: 1, blue: 0, alpha: 1)}
-    @inlinable @inline(__always) public static var blue: D3DColor {D3DColor(red: 0, green: 0, blue: 1, alpha: 1)}
+    @inlinable public static var red: D3DColor {D3DColor(red: 1, green: 0, blue: 0, alpha: 1)}
+    @inlinable public static var green: D3DColor {D3DColor(red: 0, green: 1, blue: 0, alpha: 1)}
+    @inlinable public static var blue: D3DColor {D3DColor(red: 0, green: 0, blue: 1, alpha: 1)}
 }

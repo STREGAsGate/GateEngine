@@ -11,7 +11,7 @@ import WinSDK
 public final class D3DInfoQueue: IUnknown {
 
     /// Get a message from the message queue.
-    @inlinable @inline(__always)
+    @inlinable
     public func getMessage(messageIndex: UInt64, block: (D3DMessage?) -> Void) {
         perform(as: RawValue.self) { pThis in
             
@@ -43,7 +43,7 @@ public final class D3DInfoQueue: IUnknown {
     }
 
     /// Get the number of messages currently stored in the message queue.
-    @inlinable @inline(__always)
+    @inlinable
     public var storedMessageCount: UInt64 {
         return performFatally(as: RawValue.self) {pThis in
             return pThis.pointee.lpVtbl.pointee.GetNumStoredMessages(pThis)
@@ -54,7 +54,7 @@ public final class D3DInfoQueue: IUnknown {
         super.init(winSDKPointer: pointer, memoryManagement: memoryManagement)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -63,7 +63,7 @@ extension D3DInfoQueue {
     typealias RawValue = WinSDK.ID3D12InfoQueue
 }
 extension D3DInfoQueue.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12InfoQueue}
 }
 

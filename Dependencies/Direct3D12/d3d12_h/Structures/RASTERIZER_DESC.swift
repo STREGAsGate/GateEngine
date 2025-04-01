@@ -14,7 +14,7 @@ public struct D3DRasterizerDescription {
     internal var rawValue: RawValue
 
     /// A D3D12_FILL_MODE-typed value that specifies the fill mode to use when rendering.
-    @inlinable @inline(__always)
+    @inlinable
     public var fillMode: D3DFillMode {
         get {
             return D3DFillMode(rawValue.FillMode)
@@ -25,7 +25,7 @@ public struct D3DRasterizerDescription {
     }
 
     /// A D3D12_CULL_MODE-typed value that specifies that triangles facing the specified direction are not drawn.
-    @inlinable @inline(__always)
+    @inlinable
     public var cullMode: D3DCullMode {
         get {
             return D3DCullMode(rawValue.CullMode)
@@ -36,7 +36,7 @@ public struct D3DRasterizerDescription {
     }
 
     /// Determines if a triangle is front- or back-facing. If this member is TRUE, a triangle will be considered front-facing if its vertices are counter-clockwise on the render target and considered back-facing if they are clockwise. If this parameter is FALSE, the opposite is true.
-    @inlinable @inline(__always)
+    @inlinable
     public var windingDirection: D3DWindingDirection {
         get {
             return rawValue.FrontCounterClockwise.boolValue ? .counterClockwise : .clockwise
@@ -47,7 +47,7 @@ public struct D3DRasterizerDescription {
     }
 
     /// Depth value added to a given pixel. For info about depth bias, see Depth Bias.
-    @inlinable @inline(__always)
+    @inlinable
     public var depthBias: Int32 {
         get {
             return rawValue.DepthBias
@@ -58,7 +58,7 @@ public struct D3DRasterizerDescription {
     }
 
     /// Maximum depth bias of a pixel. For info about depth bias, see Depth Bias.
-    @inlinable @inline(__always)
+    @inlinable
     public var depthBiasClamp: Float {
         get {
             return rawValue.DepthBiasClamp
@@ -69,7 +69,7 @@ public struct D3DRasterizerDescription {
     }
 
     /// Scalar on a given pixel's slope. For info about depth bias, see Depth Bias.
-    @inlinable @inline(__always)
+    @inlinable
     public var slopeScaledDepthBias: Float {
         get {
             return rawValue.SlopeScaledDepthBias
@@ -80,7 +80,7 @@ public struct D3DRasterizerDescription {
     }
 
     /// Specifies whether to enable clipping based on distance.
-    @inlinable @inline(__always)
+    @inlinable
     public var shouldClipDepth: Bool {
         get {
             return rawValue.DepthClipEnable.boolValue
@@ -91,7 +91,7 @@ public struct D3DRasterizerDescription {
     }
 
     /// Specifies whether to use the quadrilateral or alpha line anti-aliasing algorithm on multisample antialiasing (MSAA) render targets. Set to TRUE to use the quadrilateral line anti-aliasing algorithm and to FALSE to use the alpha line anti-aliasing algorithm. For more info about this member, see Remarks.
-    @inlinable @inline(__always)
+    @inlinable
     public var shouldMultisample: Bool {
         get {
             return rawValue.MultisampleEnable.boolValue
@@ -102,7 +102,7 @@ public struct D3DRasterizerDescription {
     }
 
     /// Specifies whether to enable line antialiasing; only applies if doing line drawing and MultisampleEnable is FALSE. For more info about this member, see Remarks.
-    @inlinable @inline(__always)
+    @inlinable
     public var shouldAntialiasedLines: Bool {
         get {
             return rawValue.AntialiasedLineEnable.boolValue
@@ -113,7 +113,7 @@ public struct D3DRasterizerDescription {
     }
 
     /// The sample count that is forced while UAV rendering or rasterizing. Valid values are 0, 1, 2, 4, 8, and optionally 16. 0 indicates that the sample count is not forced.
-    @inlinable @inline(__always)
+    @inlinable
     public var forcedSampleCount: UInt32 {
         get {
             return rawValue.ForcedSampleCount
@@ -124,7 +124,7 @@ public struct D3DRasterizerDescription {
     }
 
     /// A D3D12_CONSERVATIVE_RASTERIZATION_MODE-typed value that identifies whether conservative rasterization is on or off.
-    @inlinable @inline(__always)
+    @inlinable
     public var conservativeRaster: D3DConservativeRasterizationMode {
         get {
             return D3DConservativeRasterizationMode(rawValue.ConservativeRaster)
@@ -147,7 +147,7 @@ public struct D3DRasterizerDescription {
     - parameter forcedSampleCount: The sample count that is forced while UAV rendering or rasterizing. Valid values are 0, 1, 2, 4, 8, and optionally 16. 0 indicates that the sample count is not forced.
     - parameter conservativeRaster: A D3D12_CONSERVATIVE_RASTERIZATION_MODE-typed value that identifies whether conservative rasterization is on or off.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(fillMode: D3DFillMode = .solid,
                 cullMode: D3DCullMode = .back,
                 windingDirection: D3DWindingDirection = .counterClockwise,
@@ -173,7 +173,7 @@ public struct D3DRasterizerDescription {
         self.conservativeRaster = conservativeRaster
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

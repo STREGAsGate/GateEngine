@@ -11,7 +11,7 @@ import WinSDK.DirectX
 public final class D3DDevice: D3DObject {
 
     /// Gets the reason that the device was removed.
-    @inlinable @inline(__always)
+    @inlinable
     public func checkDeviceRemovedReason() throws {
         try perform(as: RawValue.self) {pThis in
             try pThis.pointee.lpVtbl.pointee.GetDeviceRemovedReason(pThis).checkResult(self, #function)
@@ -22,7 +22,7 @@ public final class D3DDevice: D3DObject {
     - parameter feature: A constant from the D3D12_FEATURE enumeration describing the feature(s) that you want to query for support.
     - parameter A pointer to a data structure that corresponds to the value of the Feature parameter. To determine the corresponding data structure for each constant, see D3D12_FEATURE.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func supports<T>(_ feature: D3DFeature, _ structure: T) -> Bool {
         return performFatally(as: RawValue.self) {pThis in
             let size = UInt32(MemoryLayout<T>.size)
@@ -39,7 +39,7 @@ public final class D3DDevice: D3DObject {
     - parameter srcRangeSizes: An array of source descriptor range sizes to copy from.
     - parameter type: The D3D12_DESCRIPTOR_HEAP_TYPE-typed value that specifies the type of descriptor heap to copy with. This is required as different descriptor types may have different sizes.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func copyDescriptors(destRangeStarts: [D3DCPUDescriptorHandle],
                                 destRangeSizes: [UInt32],
                                 srcRangeStarts: [D3DCPUDescriptorHandle],
@@ -66,7 +66,7 @@ public final class D3DDevice: D3DObject {
     - parameter count: The number of descriptors to copy.
     - parameter type: The D3D12_DESCRIPTOR_HEAP_TYPE-typed value that specifies the type of descriptor heap to copy with. This is required as different descriptor types may have different sizes.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func copyDescriptors(from destRangeStart: D3DCPUDescriptorHandle,
                                 to srcRangeStart: D3DCPUDescriptorHandle,
                                 count: UInt32,
@@ -86,7 +86,7 @@ public final class D3DDevice: D3DObject {
     /** Creates a command allocator object.
     - parameter type: A D3D12_COMMAND_LIST_TYPE-typed value that specifies the type of command allocator to create. The type of command allocator can be the type that records either direct command lists or bundles.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createCommandAllocator(type: D3DCommandListType) throws -> D3DCommandAllocator {
         return try perform(as: RawValue.self) {pThis in
             var ppCommandAllocator: UnsafeMutableRawPointer?
@@ -106,7 +106,7 @@ public final class D3DDevice: D3DObject {
     - parameter commandAllocator: A pointer to the command allocator object from which the device creates command lists.
     - parameter initialState: An optional pointer to the pipeline state object that contains the initial pipeline state for the command list. If it is nulltpr, then the runtime sets a dummy initial pipeline state, so that drivers don't have to deal with undefined state. The overhead for this is low, particularly for a command list, for which the overall cost of recording the command list likely dwarfs the cost of a single initial state setting. So there's little cost in not setting the initial pipeline state parameter, if doing so is inconvenient. For bundles, on the other hand, it might make more sense to try to set the initial state parameter (since bundles are likely smaller overall, and can be reused frequently).
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createCommandList(multipleAdapterNodeMask: UInt32 = 0,
                            type: D3DCommandListType,
                            commandAllocator: D3DCommandAllocator,
@@ -133,7 +133,7 @@ public final class D3DDevice: D3DObject {
     - parameter commandAllocator: A pointer to the command allocator object from which the device creates command lists.
     - parameter initialState: An optional pointer to the pipeline state object that contains the initial pipeline state for the command list. If it is nulltpr, then the runtime sets a dummy initial pipeline state, so that drivers don't have to deal with undefined state. The overhead for this is low, particularly for a command list, for which the overall cost of recording the command list likely dwarfs the cost of a single initial state setting. So there's little cost in not setting the initial pipeline state parameter, if doing so is inconvenient. For bundles, on the other hand, it might make more sense to try to set the initial state parameter (since bundles are likely smaller overall, and can be reused frequently).
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createGraphicsCommandList(multipleAdapterNodeMask: UInt32 = 0,
                                           type: D3DCommandListType,
                                           commandAllocator: D3DCommandAllocator,
@@ -157,7 +157,7 @@ public final class D3DDevice: D3DObject {
     /** Creates a command queue.
     - parameter description: Specifies a D3D12_COMMAND_QUEUE_DESC that describes the command queue.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createCommandQueue(description: D3DCommandQueueDescription) throws -> D3DCommandQueue {
         return try perform(as: RawValue.self) {pThis in
             var pDesc = description.rawValue
@@ -178,7 +178,7 @@ public final class D3DDevice: D3DObject {
     - parameter flags: Specifies any flags from the D3D12_COMMAND_QUEUE_FLAGS enumeration.
     - parameter multipleAdapterNodeMask: For single GPU operation, set this to zero. If there are multiple GPU nodes, set a bit to identify the node (the device's physical adapter) to which the command queue applies. Each bit in the mask corresponds to a single node. Only 1 bit must be set. Refer to Multi-adapter systems.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createCommandQueue(type: D3DCommandListType, priority: D3DCommandQueuePriority = .normal, flags: D3DCommandQueueFlags = [], multipleAdapterNodeMask: UInt32 = 0)  throws -> D3DCommandQueue {
         let queueDescription = D3DCommandQueueDescription(type: type, priority: priority, flags: flags, multipleAdapterNodeMask: multipleAdapterNodeMask)
         return try createCommandQueue(description: queueDescription)
@@ -188,7 +188,7 @@ public final class D3DDevice: D3DObject {
     - parameter description: Describes the command signature to be created with the D3D12_COMMAND_SIGNATURE_DESC structure.
     - parameter rootSignature: Specifies the ID3D12RootSignature that the command signature applies to. The root signature is required if any of the commands in the signature will update bindings on the pipeline. If the only command present is a draw or dispatch, the root signature parameter can be set to NULL.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createCommandSignature(description: D3DCommandSignatureDescription, rootSignature: D3DRootSignature?) throws -> D3DCommandSignature {
         return try perform(as: RawValue.self) {pThis in
             var pDesc = description.rawValue
@@ -211,7 +211,7 @@ public final class D3DDevice: D3DObject {
     - parameter state: The initial state of the resource, as a bitwise-OR'd combination of D3D12_RESOURCE_STATES enumeration constants. When you create a resource together with a D3D12_HEAP_TYPE_UPLOAD heap, you must set InitialResourceState to D3D12_RESOURCE_STATE_GENERIC_READ. When you create a resource together with a D3D12_HEAP_TYPE_READBACK heap, you must set InitialResourceState to D3D12_RESOURCE_STATE_COPY_DEST.
     - parameter clearValue: Specifies a D3D12_CLEAR_VALUE structure that describes the default value for a clear color.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createCommittedResource(description: D3DResourceDescription,
                                         properties: D3DHeapProperties,
                                         flags: D3DHeapFlags = [],
@@ -240,7 +240,7 @@ public final class D3DDevice: D3DObject {
     /** Creates a compute pipeline state object.
     - parameter description: A pointer to a D3D12_COMPUTE_PIPELINE_STATE_DESC structure that describes compute pipeline state.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createComputePipelineState(description: D3DComputePipelineStateDescription) throws -> D3DPipelineState {
         return try perform(as: RawValue.self) {pThis in
             return try description.withUnsafeRawValue {pDesc in
@@ -261,7 +261,7 @@ public final class D3DDevice: D3DObject {
     - parameter description: A pointer to a D3D12_CONSTANT_BUFFER_VIEW_DESC structure that describes the constant-buffer view.
     - parameter destination: Describes the CPU descriptor handle that represents the start of the heap that holds the constant-buffer view.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createConstantBufferView(description: D3DConstantBufferViewDescription, destination: D3DCPUDescriptorHandle) {
         performFatally(as: RawValue.self) {pThis in
             var pDesc = description.rawValue
@@ -274,7 +274,7 @@ public final class D3DDevice: D3DObject {
     - parameter description: A pointer to a D3D12_DEPTH_STENCIL_VIEW_DESC structure that describes the depth-stencil view. A null pDesc is used to initialize a default descriptor, if possible. This behavior is identical to the D3D11 null descriptor behavior, where defaults are filled in. This behavior inherits the resource format and dimension (if not typeless) and DSVs target the first mip and all array slices. Not all resources support null descriptor initialization.
     - parameter destination: Describes the CPU descriptor handle that represents the start of the heap that holds the depth-stencil view.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createDepthStencilView(resource: D3DResource, description: D3DDepthStencilViewDescription, destination: D3DCPUDescriptorHandle) {
         performFatally(as: RawValue.self) {pThis in
             let pResource = resource.performFatally(as: D3DResource.RawValue.self) {$0}
@@ -286,7 +286,7 @@ public final class D3DDevice: D3DObject {
     /** Creates a descriptor heap object.
     - parameter description: A pointer to a D3D12_DESCRIPTOR_HEAP_DESC structure that describes the heap.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createDescriptorHeap(description: D3DDescriptorHeapDescription) throws -> D3DDescriptorHeap {
         return try perform(as: RawValue.self) {pThis in
             var pDesc = description.rawValue
@@ -305,7 +305,7 @@ public final class D3DDevice: D3DObject {
     - parameter initialValue: The initial value for the fence.
     - parameter flags: A combination of D3D12_FENCE_FLAGS-typed values that are combined by using a bitwise OR operation. The resulting value specifies options for the fence.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createFence(initialValue: UInt64 = 0, flags: D3DFenceFlags = []) throws -> D3DFence {
         return try perform(as: RawValue.self) {pThis in
             let InitialValue = initialValue
@@ -324,7 +324,7 @@ public final class D3DDevice: D3DObject {
     /** Creates a graphics pipeline state object.
     - parameter description: A pointer to a D3D12_GRAPHICS_PIPELINE_STATE_DESC structure that describes graphics pipeline state.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createGraphicsPipelineState(description: D3DGraphicsPipelineStateDescription) throws -> D3DPipelineState {
         return try perform(as: RawValue.self) {pThis in
             return try description.withUnsafeRawValue {pDesc in
@@ -344,7 +344,7 @@ public final class D3DDevice: D3DObject {
     /** Creates a heap that can be used with placed resources and reserved resources.
     - parameter description: A pointer to a constant D3D12_HEAP_DESC structure that describes the heap.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createHeap(description: D3DHeapDescription) throws -> D3DHeap {
         return try perform(as: RawValue.self) {pThis in
             var pDesc = description.rawValue
@@ -367,7 +367,7 @@ public final class D3DDevice: D3DObject {
     - parameter clearValue: Specifies a D3D12_CLEAR_VALUE that describes the default value for a clear color.
     */
     @available(Windows, deprecated: 10.0.19041, message: "Use description type ResourceDescription1")
-    @inlinable @inline(__always)
+    @inlinable
     public func createPlacedResource(heap: D3DHeap,
                                      offset: UInt64, 
                                      description: D3DResourceDescription,
@@ -393,7 +393,7 @@ public final class D3DDevice: D3DObject {
     /** Creates a query heap. A query heap contains an array of queries.
     - parameter description: Specifies the query heap in a D3D12_QUERY_HEAP_DESC structure.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createQueryHeap(description: D3DQueryHeapDescription) throws -> D3DQueryHeap {
        return try perform(as: RawValue.self) {pThis in
             var pDesc = description.rawValue
@@ -413,7 +413,7 @@ public final class D3DDevice: D3DObject {
     - parameter description: A pointer to a D3D12_RENDER_TARGET_VIEW_DESC structure that describes the render-target view.
     - parameter destination: Describes the CPU descriptor handle that represents the destination where the newly-created render target view will reside.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createRenderTargetView(resource: D3DResource, description: D3DRenderTargetViewDescription?, destination: D3DCPUDescriptorHandle) {
         performFatally(as: RawValue.self) {pThis in
             let pResource = resource.performFatally(as: D3DResource.RawValue.self) {$0}
@@ -430,7 +430,7 @@ public final class D3DDevice: D3DObject {
     - parameter initialState: The initial state of the resource, as a bitwise-OR'd combination of D3D12_RESOURCE_STATES enumeration constants.
     - parameter clearValue: Specifies a D3D12_CLEAR_VALUE structure that describes the default value for a clear color.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createReservedResource(description: D3DResourceDescription,
                                        initialState: D3DResourceStates,
                                        clearValue: D3DClearValue) throws -> D3DResource {
@@ -454,7 +454,7 @@ public final class D3DDevice: D3DObject {
     - parameter description: The description of the root signature, as a pointer to a D3D12_ROOT_SIGNATURE_DESC structure.
     - parameter version: A D3D_ROOT_SIGNATURE_VERSION-typed value that specifies the version of root signature.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createRootSignature(multipleAdapterNodeMask: UInt32 = 0,
                                     description: D3DRootSignatureDescription,
                                     version: D3DRootSignatureVersion) throws -> D3DRootSignature {
@@ -475,7 +475,7 @@ public final class D3DDevice: D3DObject {
     - parameter description: A pointer to a D3D12_SAMPLER_DESC structure that describes the sampler.
     - parameter destination: Describes the CPU descriptor handle that represents the start of the heap that holds the sampler.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createSampler(description: D3DSamplerDescription, destination: D3DCPUDescriptorHandle) {
         performFatally(as: RawValue.self) {pThis in
             var pDesc = description.rawValue
@@ -488,7 +488,7 @@ public final class D3DDevice: D3DObject {
     - parameter description: A pointer to a D3D12_SHADER_RESOURCE_VIEW_DESC structure that describes the shader-resource view.
     - parameter destination: Describes the CPU descriptor handle that represents the shader-resource view. This handle can be created in a shader-visible or non-shader-visible descriptor heap.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createShaderResourceView(resource: D3DResource, description: D3DShaderResourceViewDescription, destination: D3DCPUDescriptorHandle) {
         performFatally(as: RawValue.self) {pThis in
             let pResource = resource.performFatally(as: D3DResource.RawValue.self) {$0}
@@ -502,7 +502,7 @@ public final class D3DDevice: D3DObject {
     - parameter object: A pointer to the ID3D12DeviceChild interface that represents the heap, resource, or fence object to create for sharing. The following interfaces (derived from ID3D12DeviceChild) are supported:
     - parameter name: A NULL-terminated UNICODE string that contains the name to associate with the shared heap. The name is limited to MAX_PATH characters. Name comparison is case-sensitive. If Name matches the name of an existing resource, CreateSharedHandle fails with DXGI_ERROR_NAME_ALREADY_EXISTS. This occurs because these objects share the same namespace. The name can have a "Global" or "Local" prefix to explicitly create the object in the global or session namespace. The remainder of the name can contain any character except the backslash character (\). For more information, see Kernel Object Namespaces. Fast user switching is implemented using Terminal Services sessions. Kernel object names must follow the guidelines outlined for Terminal Services so that applications can support multiple users.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createSharedHandle(object: D3DDeviceChild, name: String) throws -> UnsafeMutableRawPointer {
         return try perform(as: RawValue.self) {pThis in
             let pObject = object.perform(as: D3DDeviceChild.RawValue.self) {$0}
@@ -522,7 +522,7 @@ public final class D3DDevice: D3DObject {
     - parameter description: A pointer to a D3D12_UNORDERED_ACCESS_VIEW_DESC structure that describes the unordered-access view.
     - parameter destination: Describes the CPU descriptor handle that represents the start of the heap that holds the unordered-access view.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func createUnorderedAccessView(resource: D3DResource, counter: D3DResource, description: D3DUnorderedAccessViewDescription, destination: D3DCPUDescriptorHandle) {
         performFatally(as: RawValue.self) {pThis in
             let pResource = resource.performFatally(as: D3DResource.RawValue.self) {$0}
@@ -535,7 +535,7 @@ public final class D3DDevice: D3DObject {
     /** Enables the page-out of data, which precludes GPU access of that data.
     - parameter objects: A pointer to a memory block that contains an array of ID3D12Pageable interface pointers for the objects. Even though most D3D12 objects inherit from ID3D12Pageable, residency changes are only supported on the following objects: Descriptor Heaps, Heaps, Committed Resources, and Query Heaps
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func evict(_ objects: [D3DPageable]) throws {
         try perform(as: RawValue.self) {pThis in 
             let NumObjects = UInt32(objects.count)
@@ -548,7 +548,7 @@ public final class D3DDevice: D3DObject {
     - parameter multipleAdapterNodeMask: For single-GPU operation, set this to zero. If there are multiple GPU nodes, then set bits to identify the nodes (the device's physical adapters). Each bit in the mask corresponds to a single node. Also see Multi-adapter systems.
     - parameter descriptors: An array of D3D12_RESOURCE_DESC structures that described the resources to get info about.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func resourceAllocationInfo(multipleAdapterNodeMask: UInt32 = 0,
                                        descriptors: [D3DResourceDescription]) -> D3DResourceAllocationInfo {
         return performFatally(as: RawValue.self) {pThis in
@@ -563,7 +563,7 @@ public final class D3DDevice: D3DObject {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func resourceTiling(for resource: D3DResource, start: UInt32, count: UInt32) -> (tilesNeeded: UInt32, 
                                                                                             mipInfo: D3DPackedMipInfo, 
                                                                                             shape: D3DTileShape,
@@ -574,7 +574,7 @@ public final class D3DDevice: D3DObject {
     }
 
     /// Gets a locally unique identifier for the current device (adapter).
-    @inlinable @inline(__always)
+    @inlinable
     public var adapterLUID: WinSDK.LUID {
         return performFatally(as: RawValue.self) {pThis in
             var luid: WinSDK.LUID = WinSDK.LUID()
@@ -596,7 +596,7 @@ public final class D3DDevice: D3DObject {
     - returns totalByteSize: A pointer to an integer variable, to be filled with the total size, in bytes.
     */
     @available(Windows, deprecated: 10.0.19041, message: "Use description type ResourceDescription1.")
-    @inlinable @inline(__always)
+    @inlinable
     func copyableFootprints(description: D3DResourceDescription,
                             firstIndex: UInt32,
                             count: UInt32,
@@ -620,7 +620,7 @@ public final class D3DDevice: D3DObject {
     /** Gets the size of the handle increment for the given type of descriptor heap. This value is typically used to increment a handle into a descriptor array by the correct amount.
     - parameter type: The D3D12_DESCRIPTOR_HEAP_TYPE-typed value that specifies the type of descriptor heap to get the size of the handle increment for.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func descriptorHandleIncrementSize(for type: D3DDescriptorHeapType) -> UInt32 {
         return performFatally(as: RawValue.self) {pThis in 
             return pThis.pointee.lpVtbl.pointee.GetDescriptorHandleIncrementSize(pThis, type.rawValue)
@@ -630,7 +630,7 @@ public final class D3DDevice: D3DObject {
     /** Makes objects resident for the device.
     - parameter objects: A pointer to a memory block that contains an array of ID3D12Pageable interface pointers for the objects. Even though most D3D12 objects inherit from ID3D12Pageable, residency changes are only supported on the following objects: Descriptor Heaps, Heaps, Committed Resources, and Query Heaps
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func makeResident(_ objects: [D3DPageable]) throws {
         try perform(as: RawValue.self) {pThis in 
             let NumObjects = UInt32(objects.count)
@@ -644,7 +644,7 @@ public final class D3DDevice: D3DObject {
     - parameter type: The globally unique identifier (GUID) for one of the following interfaces: ID3D12Heap, ID3D12Resource, ID3D12Fence
     - returns: The REFIID, or GUID, of the interface can be obtained by using the __uuidof() macro. For example, __uuidof(ID3D12Heap) will get the GUID of the interface to a resource.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func openSharedHandle<T: D3DPageable>(_ handle: UnsafeMutableRawPointer, for type: T.Type) throws -> T {
         return try perform(as: RawValue.self) {pThis in
             var riid: WinSDK.IID = try {
@@ -677,7 +677,7 @@ public final class D3DDevice: D3DObject {
     - parameter name: The name that was optionally passed as the Name parameter in the call to ID3D12Device::CreateSharedHandle.
     - returns: Pointer to the shared handle.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func openSharedHandle(byName name: String) throws -> UnsafeMutableRawPointer {
         return try perform(as: RawValue.self) {pThis in
             let Name = name.windowsUTF16
@@ -692,7 +692,7 @@ public final class D3DDevice: D3DObject {
     /** A development-time aid for certain types of profiling and experimental prototyping.
     - parameter enabled: Specifies a BOOL that turns the stable power state on or off.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func setStablePowerState(enabled: Bool) throws {
         try perform(as: RawValue.self) {pThis in
             let Enable = WindowsBool(booleanLiteral: enabled)
@@ -700,7 +700,7 @@ public final class D3DDevice: D3DObject {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {
         // if #available(Windows 10.0.19041, *) {
         //     //Device7 and Device8 were released at the same time. Always use Device8.
@@ -723,7 +723,7 @@ public final class D3DDevice: D3DObject {
         // }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public init(adapter: DGIAdapter? = nil, minimumFeatureLevel featureLevel: D3DFeatureLevel = .v11) throws {
         let pAdapter = adapter?.perform(as: IUnknown.RawValue.self) {$0}
         let MinimumFeatureLevel = featureLevel.rawValue
@@ -734,7 +734,7 @@ public final class D3DDevice: D3DObject {
         super.init(winSDKPointer: p)!
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     required init?(winSDKPointer pointer: UnsafeMutableRawPointer?, memoryManagement: IUnknown.MemoryManagement = .alreadyRetained) {
         super.init(winSDKPointer: pointer, memoryManagement: memoryManagement)
     }
@@ -745,7 +745,7 @@ extension D3DDevice {
     typealias RawValue = WinSDK.ID3D12Device5
 }
 extension D3DDevice.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: IID {WinSDK.IID_ID3D12Device5}
 }
 

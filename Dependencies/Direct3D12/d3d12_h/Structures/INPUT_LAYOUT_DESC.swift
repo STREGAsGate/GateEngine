@@ -17,12 +17,12 @@ public struct D3DInputLayoutDescription {
     /** Describes the input-buffer data for the input-assembler stage.
     - parameter elementDescriptions: An array of D3D12_INPUT_ELEMENT_DESC structures that describe the data types of the input-assembler stage.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(elementDescriptions: [D3DInputElementDescription]) {
         self.elementDescriptions = elementDescriptions
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal func withUnsafeRawValue<ResultType>(_ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
         func withUnsafeParameter(at index: Int, _ pInputElementDescs: inout [D3DInputElementDescription.RawValue], _ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
             if elementDescriptions.indices.isEmpty || index == elementDescriptions.indices.last! + 1 {

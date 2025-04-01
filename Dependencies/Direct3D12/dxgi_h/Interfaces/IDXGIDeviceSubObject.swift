@@ -12,7 +12,7 @@ public class DGIDeviceSubObject: DGIObject {
     /** Retrieves the device.
     - returns: The address of a pointer to the device.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public func device() throws -> DGIDevice {
         return try perform(as: RawValue.self) {pThis in
             var riid = DGIDevice.interfaceID
@@ -23,7 +23,7 @@ public class DGIDeviceSubObject: DGIObject {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -32,7 +32,7 @@ extension DGIDeviceSubObject {
     typealias RawValue = WinSDK.IDXGIDeviceSubObject
 }
 extension DGIDeviceSubObject.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: WinSDK.IID {WinSDK.IID_IDXGIDeviceSubObject}
 }
 

@@ -89,7 +89,7 @@ final class DX12Texture: TextureBackend {
             DX12Renderer.checkError(error)
         }
     }
-    @inline(__always)
+    @inlinable
     static func textureResourceDesc(size: Size2, mipMapping: MipMapping) -> D3DResourceDescription {
         var textureResourceDesc: D3DResourceDescription = D3DResourceDescription()
         textureResourceDesc.mipLevels = 1

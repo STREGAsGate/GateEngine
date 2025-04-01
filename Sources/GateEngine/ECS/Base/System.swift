@@ -15,11 +15,6 @@ import GameMath
         self.context = context
     }
 
-    @inlinable @inline(__always)
-    public var game: Game {
-        return Game.shared
-    }
-    
     public let context: ECSContext
 
     internal final func willUpdate(input: HID, withTimePassed deltaTime: Float) async {

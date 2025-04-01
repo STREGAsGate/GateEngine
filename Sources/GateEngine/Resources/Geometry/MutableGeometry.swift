@@ -22,7 +22,7 @@ public class MutableGeometry: Geometry {
 
     private func load() {
         Task(priority: .high) {
-            guard let cache = Game.shared.resourceManager.geometryCache(for: cacheKey) else {
+            guard let cache = Game.unsafeShared.resourceManager.geometryCache(for: cacheKey) else {
                 return
             }
             if let rawGeometry, rawGeometry.indices.isEmpty == false {

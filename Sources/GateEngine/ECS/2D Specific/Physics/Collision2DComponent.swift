@@ -53,24 +53,24 @@ public final class Collision2DComponent: Component {
 
     public var entityFilter: ((Entity) -> (Bool))? = nil
 
-    @inlinable @inline(__always)
+    @inlinable
     func interpenetration(comparing: some Collider2D) -> Interpenetration2D? {
         return collider.interpenetration(comparing: comparing)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     func interpenetration(comparing: Collision2DComponent) -> Interpenetration2D? {
         let lhs = collider
         let rhs = comparing.collider
         return lhs.interpenetration(comparing: rhs)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     func updateColliders(_ transform: Transform2) {
         self.collider.update(transform: transform)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     func update(sizeAndOffsetUsingTransform transform: Transform2) {
         self.collider.update(sizeAndOffsetUsingTransform: transform)
     }
@@ -80,7 +80,7 @@ public final class Collision2DComponent: Component {
 }
 
 extension Entity {
-    @inlinable @inline(__always)
+    @inlinable
     var collision2DComponent: Collision2DComponent {
         return self[Collision2DComponent.self]
     }

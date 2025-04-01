@@ -12,24 +12,24 @@ public protocol Vector2: Sendable, ExpressibleByFloatLiteral where FloatLiteralT
 }
 
 public extension Vector2 {
-    @_transparent
+    @inlinable
     init(_ value: Float) {
         self.init(value, value)
     }
     
-    @_transparent
+    @inlinable
     init(_ values: [Float]) {
         assert(values.count == 2, "values must have 2 elements. Use init(_: Float) to fill x,y with a single value.")
         self.init(values[0], values[1])
     }
     
-    @_transparent
+    @inlinable
     init(_ values: Float...) {
         assert(values.count == 2, "values must have 2 elements. Use init(_: Float) to fill x,y with a single value.")
         self.init(values[0], values[1])
     }
     
-    @_transparent
+    @inlinable
     init(floatLiteral float: Float) {
         self.init(float)
     }
@@ -40,21 +40,21 @@ extension Vector2 {
     public init<V: Vector2>(_ value: V) {
         self = Self(value.x, value.y)
     }
-    @_transparent
+    @inlinable
     public init() {
         self.init(0, 0)
     }
 }
 
 public extension Vector2 {
-    @_transparent
+    @inlinable
     static var zero: Self {
         return Self(0)
     }
 }
 
 extension Vector2 {
-    @_transparent
+    @inlinable
     public var isFinite: Bool {
         return x.isFinite && y.isFinite
     }
@@ -66,7 +66,7 @@ public extension Vector2 {
      - parameter value: The amount to add to `x`. To subtract use a negative value.
      - returns: A new Self with `x` incremented by `value`.
     */
-    @_transparent
+    @inlinable
     func addingTo(x: Float) -> Self {
         return Self(self.x + x, y)
     }
@@ -76,7 +76,7 @@ public extension Vector2 {
      - parameter value: The amount to add to `y`. To subtract use a negative value.
      - returns: A new Self with `y` incremented by `value`.
     */
-    @_transparent
+    @inlinable
     func addingTo(y value: Float) -> Self {
         return Self(x, y + value)
     }
@@ -85,7 +85,7 @@ public extension Vector2 {
 extension Vector2 {
     @inlinable
     public subscript (_ index: Int) -> Float {
-        @_transparent get {
+        get {
             switch index {
             case 0: return x
             case 1: return y
@@ -93,7 +93,7 @@ extension Vector2 {
                 fatalError("Index \(index) out of range \(0 ..< 2) for type \(type(of: self)).")
             }
         }
-        @_transparent set {
+        set {
             switch index {
             case 0: x = newValue
             case 1: y = newValue
@@ -103,43 +103,43 @@ extension Vector2 {
         }
     }
     
-    @_transparent
+    @inlinable
     public func dot<V: Vector2>(_ vector: V) -> Float {
         return (x * vector.x) + (y * vector.y)
     }
     
     /// Returns the hypothetical Z axis
-    @_transparent
+    @inlinable
     public func cross<V: Vector2>(_ vector: V) -> Float {
         return self.x * vector.y - vector.x * self.y
     }
 }
 
 extension Vector2 {
-    @_transparent
+    @inlinable
     public var length: Float {
         return x + y
     }
     
-    @_transparent
+    @inlinable
     public var squaredLength: Float {
         return x * x + y * y
     }
     
-    @_transparent
+    @inlinable
     public var magnitude: Float {
         return squaredLength.squareRoot()
     }
 
     #if !GameMathUseFastInverseSquareRoot
-    @_transparent
+    @inlinable
     public var normalized: Self {
         var copy = self
         copy.normalize()
         return copy
     }
 
-    @_transparent
+    @inlinable
     public mutating func normalize() {
         let magnitude = self.magnitude
         guard magnitude != 0 else {return}
@@ -150,21 +150,21 @@ extension Vector2 {
     }
     #endif
     
-    @_transparent
+    @inlinable
     public func squareRoot() -> Self {
         return Self(x.squareRoot(), y.squareRoot())
     }
 }
 
 extension Vector2 {
-    @_transparent
+    @inlinable
     public func interpolated<V: Vector2>(to: V, _ method: InterpolationMethod) -> Self {
         var copy = self
         copy.x.interpolate(to: to.x, method)
         copy.y.interpolate(to: to.y, method)
         return copy
     }
-    @_transparent
+    @inlinable
     public mutating func interpolate<V: Vector2>(to: V, _ method: InterpolationMethod) {
         self.x.interpolate(to: to.x, method)
         self.y.interpolate(to: to.y, method)
@@ -172,11 +172,11 @@ extension Vector2 {
 }
 
 public extension Vector2 {
-    @_transparent
+    @inlinable
     var max: Float {
         return Swift.max(x, y)
     }
-    @_transparent
+    @inlinable
     var min: Float {
         return Swift.min(x, y)
     }
@@ -184,44 +184,45 @@ public extension Vector2 {
 
 //MARK: - SIMD
 public extension Vector2 {
-    @_transparent
+    @inlinable
     var simd: SIMD2<Float> {
         return SIMD2<Float>(x, y)
     }
 }
 
 //MARK: - Operations
-@_transparent
+@inlinable
 public func ceil<V: Vector2>(_ v: V) -> V {
     return V.init(ceil(v.x), ceil(v.y))
 }
 
-@_transparent
+@inlinable
 public func floor<V: Vector2>(_ v: V) -> V {
     return V.init(floor(v.x), floor(v.y))
 }
 
-@_transparent
+@inlinable
 public func round<V: Vector2>(_ v: V) -> V {
     return V.init(round(v.x), round(v.y))
 }
 
-@_transparent
+@inlinable
 public func abs<V: Vector2>(_ v: V) -> V {
     return V.init(abs(v.x), abs(v.y))
 }
 
-@_transparent
+@inlinable
 public func min<V: Vector2>(_ lhs: V, _ rhs: V) -> V {
     return V.init(min(lhs.x, rhs.x), min(lhs.y, rhs.y))
 }
 
-@_transparent
+@inlinable
 public func max<V: Vector2>(_ lhs: V, _ rhs: V) -> V {
     return V.init(max(lhs.x, rhs.x), max(lhs.y, rhs.y))
 }
 
 public extension Vector2 {
+    @inlinable
     static func < (lhs: Self, rhs: Self) -> Bool {
         return lhs.x < rhs.x && lhs.y < rhs.y
     }
@@ -230,36 +231,42 @@ public extension Vector2 {
 //MARK: Operators (Self)
 extension Vector2 {
     //Multiplication
-    @_transparent @_disfavoredOverload
+    @inlinable
+    @_disfavoredOverload
     public static func *(lhs: Self, rhs: some Vector2) -> Self {
         return Self(lhs.x * rhs.x,
                     lhs.y * rhs.y)
     }
-    @_transparent @_disfavoredOverload
+    @inlinable
+    @_disfavoredOverload
     public static func *=(lhs: inout Self, rhs: some Vector2) {
         lhs.x *= rhs.x
         lhs.y *= rhs.y
     }
     
     //Addition
-    @_transparent @_disfavoredOverload
+    @inlinable
+    @_disfavoredOverload
     public static func +(lhs: Self, rhs: some Vector2) -> Self {
         return Self(lhs.x + rhs.x,
                     lhs.y + rhs.y)
     }
-    @_transparent @_disfavoredOverload
+    @inlinable
+    @_disfavoredOverload
     public static func +=(lhs: inout Self, rhs: some Vector2) {
         lhs.x += rhs.x
         lhs.y += rhs.y
     }
     
     //Subtraction
-    @_transparent @_disfavoredOverload
+    @inlinable
+    @_disfavoredOverload
     public static func -(lhs: Self, rhs: some Vector2) -> Self {
         return Self(lhs.x - rhs.x,
                     lhs.y - rhs.y)
     }
-    @_transparent @_disfavoredOverload
+    @inlinable
+    @_disfavoredOverload
     public static func -=(lhs: inout Self, rhs: some Vector2) {
         lhs.x -= rhs.x
         lhs.y -= rhs.y
@@ -267,12 +274,14 @@ extension Vector2 {
 }
 extension Vector2 {
     //Division
-    @_transparent @_disfavoredOverload
+    @inlinable
+    @_disfavoredOverload
     public static func /(lhs: Self, rhs: some Vector2) -> Self {
         return Self(lhs.x / rhs.x,
                     lhs.y / rhs.y)
     }
-    @_transparent @_disfavoredOverload
+    @inlinable
+    @_disfavoredOverload
     public static func /=(lhs: inout Self, rhs: some Vector2) {
         lhs.x /= rhs.x
         lhs.y /= rhs.y
@@ -282,48 +291,48 @@ extension Vector2 {
 //MARK: Operators (Integers and Floats)
 extension Vector2 {
     //Multiplication Without Casting
-    @_transparent
+    @inlinable
     public static func *(lhs: Self, rhs: Float) -> Self {
         return Self(lhs.x * rhs,
                     lhs.y * rhs)
     }
-    @_transparent
+    @inlinable
     public static func *=(lhs: inout Self, rhs: Float) {
         lhs.x *= rhs
         lhs.y *= rhs
     }
     
     //Addition Without Casting
-    @_transparent
+    @inlinable
     public static func +(lhs: Self, rhs: Float) -> Self {
         return Self(lhs.x + rhs,
                     lhs.y + rhs)
     }
-    @_transparent
+    @inlinable
     public static func +=(lhs: inout Self, rhs: Float) {
         lhs.x += rhs
         lhs.y += rhs
     }
     
     //Subtraction Without Casting
-    @_transparent
+    @inlinable
     public static func -(lhs: Self, rhs: Float) -> Self {
         return Self(lhs.x - rhs,
                     lhs.y - rhs)
     }
-    @_transparent
+    @inlinable
     public static func -=(lhs: inout Self, rhs: Float) {
         lhs.x -= rhs
         lhs.y -= rhs
     }
     
-    @_transparent
+    @inlinable
     public static func -(lhs: Float, rhs: Self) -> Self {
         return Self(lhs - rhs.x,
                     lhs - rhs.y)
     }
     
-    @_transparent
+    @inlinable
     public static func -=(lhs: Float, rhs: inout Self) {
         rhs.x = lhs - rhs.x
         rhs.y = lhs - rhs.y
@@ -332,23 +341,23 @@ extension Vector2 {
 
 extension Vector2 {
     //Division Without Casting
-    @_transparent
+    @inlinable
     public static func /(lhs: Self, rhs: Float) -> Self {
         return Self(lhs.x / rhs,
                     lhs.y / rhs)
     }
-    @_transparent
+    @inlinable
     public static func /=(lhs: inout Self, rhs: Float) {
         lhs.x /= rhs
         lhs.y /= rhs
     }
     
-    @_transparent
+    @inlinable
     public static func /(lhs: Float, rhs: Self) -> Self {
         return Self(lhs / rhs.x,
                     lhs / rhs.y)
     }
-    @_transparent
+    @inlinable
     public static func /=(lhs: Float, rhs: inout Self) {
         rhs.x = lhs / rhs.x
         rhs.y = lhs / rhs.y
@@ -357,7 +366,7 @@ extension Vector2 {
 
 //MARK: Matrix4
 public extension Vector2 {
-    @_transparent
+    @inlinable
     static func *(lhs: Self, rhs: Matrix4x4) -> Self {
         var x: Float = lhs.x * rhs.a
         x += lhs.y * rhs.b
@@ -370,7 +379,7 @@ public extension Vector2 {
         return Self(x, y)
     }
     
-    @_transparent
+    @inlinable
     static func *(lhs: Matrix4x4, rhs: Self) -> Self {
         var x: Float = rhs.x * lhs.a
         x += rhs.y * lhs.e
@@ -383,7 +392,7 @@ public extension Vector2 {
         return Self(x, y)
     }
     
-    @_transparent
+    @inlinable
     static func *(lhs: Self, rhs: Matrix3x3) -> Self {
         var vector: Self = .zero
         
@@ -397,12 +406,12 @@ public extension Vector2 {
 }
 
 extension Vector2 {
-    @_transparent
+    @inlinable
     public static prefix func -(rhs: Self) -> Self {
         return Self(-rhs.x, -rhs.y)
     }
 
-    @_transparent
+    @inlinable
     public static prefix func +(rhs: Self) -> Self {
         return Self(+rhs.x, +rhs.y)
     }
@@ -424,6 +433,6 @@ extension Vector2 {
 }
 
 extension Vector2 {
-    @_transparent
+    @inlinable
     public func valuesArray() -> [Float] {return [x, y]}
 }

@@ -16,19 +16,18 @@ public final class CharacterStream {
     }
 
     internal func insert(_ character: Character?, as key: KeyboardKey) {
-        @_transparent
         func insertCharacter(_ character: Character) {
             self.string.insert(character, at: cursor)
             self.cursor = string.index(after: cursor)
         }
-        @_transparent
+
         func moveLeft() {
             if cursor > string.startIndex {
                 let index = string.index(before: cursor)
                 cursor = index
             }
         }
-        @_transparent
+
         func moveRight() {
             if cursor < string.endIndex {
                 let index = string.index(after: cursor)

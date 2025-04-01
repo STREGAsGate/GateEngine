@@ -25,7 +25,7 @@ public enum D3DBlendOperation {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
 
-    @inlinable @inline(__always)
+    @inlinable
     public var rawValue: RawValue {
         switch self {
         case .add:
@@ -43,7 +43,7 @@ public enum D3DBlendOperation {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_BLEND_OP_ADD:

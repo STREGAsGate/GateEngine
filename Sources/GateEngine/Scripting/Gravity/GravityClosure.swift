@@ -12,6 +12,7 @@ public class GravityClosure: GravityValueEmitting, GravityClosureEmitting {
     public let gClosure: UnsafeMutablePointer<gravity_closure_t>!
     let sender: GravityValue?
 
+    @usableFromInline
     internal init(
         gravity: Gravity,
         closure: UnsafeMutablePointer<gravity_closure_t>,

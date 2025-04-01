@@ -12,12 +12,12 @@ public struct DGIPresentParameters {
     @usableFromInline
     internal var rawValue: RawValue
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }
 
-    @_transparent
+    @inlinable
     public static var `fullFrame`: DGIPresentParameters {
         var params = WinSDK.DXGI_PRESENT_PARAMETERS()
         params.DirtyRectsCount = 0

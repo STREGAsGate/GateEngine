@@ -14,8 +14,7 @@ public protocol Drawable {
 }
 
 internal extension Drawable {
-    @_transparent
-    @usableFromInline
+    @inlinable
     var hasContent: Bool {
         return drawCommands.isEmpty == false
     }

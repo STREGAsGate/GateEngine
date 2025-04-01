@@ -23,17 +23,17 @@ public protocol Angle: Sendable, RawRepresentable, Numeric, Comparable, Floating
 }
 
 public extension Angle {
-    @_transparent
+    @inlinable
     var isFinite: Bool {
         return rawValue.isFinite
     }
     
-    @_transparent
+    @inlinable
     mutating func interpolate(to: some Angle, _ method: InterpolationMethod) {
         self.rawValue.interpolate(to: to.rawValue, method)
     }
     
-    @_transparent
+    @inlinable
     func interpolated(to: some Angle, _ method: InterpolationMethod) -> Self {
         var copy = self
         copy.interpolate(to: to, method)
@@ -42,99 +42,99 @@ public extension Angle {
 }
 
 public extension Angle {
-    @_transparent
+    @inlinable
     static var zero: Self {
         return Self(rawValue: 0)
     }
     
-    @_transparent
+    @inlinable
     static func +(_ lhs: Self, _ rhs: Self) -> Self {
         assert(type(of: lhs) == type(of: rhs))
         return Self(rawValue: lhs.rawValue + rhs.rawValue)
     }
-    @_transparent
+    @inlinable
     static func +(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians + rhs.rawValueAsRadians)
     }
-    @_transparent
+    @inlinable
     static func +=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs = lhs + rhs
     }
-    @_transparent
+    @inlinable
     static func +(_ lhs: Self, _ rhs: RawValue) -> Self {
         return Self(rawValue: lhs.rawValue + rhs)
     }
-    @_transparent
+    @inlinable
     static func +(_ lhs: RawValue, _ rhs: Self) -> RawValue {
         return lhs + rhs.rawValue
     }
     
-    @_transparent
+    @inlinable
     static func -(_ lhs: Self, _ rhs: Self) -> Self {
         assert(type(of: lhs) == type(of: rhs))
         return Self(rawValue: lhs.rawValue - rhs.rawValue)
     }
-    @_transparent
+    @inlinable
     static func -(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians - rhs.rawValueAsRadians)
     }
-    @_transparent
+    @inlinable
     static func -=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs = lhs - rhs
     }
-    @_transparent
+    @inlinable
     static func -(_ lhs: Self, _ rhs: RawValue) -> Self {
         return Self(rawValue: lhs.rawValue - rhs)
     }
-    @_transparent
+    @inlinable
     static func -(_ lhs: RawValue, _ rhs: Self) -> RawValue {
         return lhs - rhs.rawValue
     }
     
-    @_transparent
+    @inlinable
     static prefix func -(_ rhs: Self) -> Self {
         return Self(rawValue: -rhs.rawValue)
     }
     
-    @_transparent
+    @inlinable
     static prefix func +(_ rhs: Self) -> Self {
         return Self(rawValue: +rhs.rawValue)
     }
 }
 
 extension Angle {
-    @_transparent
+    @inlinable
     public static func *(_ lhs: Self, _ rhs: Self) -> Self {
         assert(type(of: lhs) == type(of: rhs))
         return Self(rawValue: lhs.rawValue * rhs.rawValue)
     }
-    @_transparent
+    @inlinable
     public static func *(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians * rhs.rawValueAsRadians)
     }
-    @_transparent
+    @inlinable
     public static func *(_ lhs: Self, _ rhs: RawValue) -> Self {
         return Self(rawValue: lhs.rawValue * rhs)
     }
-    @_transparent
+    @inlinable
     public static func *(_ lhs: RawValue, _ rhs: Self) -> RawValue {
         return lhs * rhs.rawValue
     }
     
-    @_transparent
+    @inlinable
     public static func *=(_ lhs: inout Self, _ rhs: Self) {
         assert(type(of: lhs) == type(of: rhs))
         lhs.rawValue *= rhs.rawValue
     }
-    @_transparent
+    @inlinable
     public static func *=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs.rawValue = Self(rawValueAsRadians: lhs.rawValueAsRadians * rhs.rawValueAsRadians).rawValue
     }
-    @_transparent
+    @inlinable
     public static func *=(_ lhs: inout Self, _ rhs: RawValue) {
         lhs.rawValue *= rhs
     }
-    @_transparent
+    @inlinable
     public static func *=(_ lhs: inout RawValue, _ rhs: Self) {
         lhs *= rhs.rawValue
     }
@@ -142,353 +142,353 @@ extension Angle {
 
 
 extension Angle {
-    @_transparent
+    @inlinable
     public static func /(_ lhs: Self, _ rhs: Self) -> Self {
         assert(type(of: lhs) == type(of: rhs))
         return Self(rawValue: lhs.rawValue / rhs.rawValue)
     }
-    @_transparent
+    @inlinable
     public static func /(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians / rhs.rawValueAsRadians)
     }
-    @_transparent
+    @inlinable
     public static func /(_ lhs: Self, _ rhs: RawValue) -> Self {
         return Self(rawValue: lhs.rawValue / rhs)
     }
-    @_transparent
+    @inlinable
     public static func /(_ lhs: RawValue, _ rhs: Self) -> RawValue {
         return lhs / rhs.rawValue
     }
     
-    @_transparent
+    @inlinable
     public static func /=(_ lhs: inout Self, _ rhs: Self) {
         assert(type(of: lhs) == type(of: rhs))
         lhs.rawValue /= rhs.rawValue
     }
-    @_transparent
+    @inlinable
     public static func /=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs.rawValue = Self(rawValueAsRadians: lhs.rawValueAsRadians / rhs.rawValueAsRadians).rawValue
     }
-    @_transparent
+    @inlinable
     public static func /=(_ lhs: inout Self, _ rhs: RawValue) {
         lhs.rawValue /= rhs
     }
-    @_transparent
+    @inlinable
     public static func /=(_ lhs: inout RawValue, _ rhs: Self) {
         lhs /= rhs.rawValue
     }
 }
 
 public extension Angle {
-    @_transparent
+    @inlinable
     static func minimum(_ lhs: Self, _ rhs: Self) -> Self {
         return Self(.minimum(lhs.rawValue, rhs.rawValue))
     }
-    @_transparent
+    @inlinable
     static func minimum(_ lhs: some Angle, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: .minimum(lhs.rawValueAsRadians, rhs.rawValueAsRadians))
     }
-    @_transparent
+    @inlinable
     static func minimum(_ lhs: Self, _ rhs: RawValue) -> Self {
         return Self(.minimum(lhs.rawValue, rhs))
     }
-    @_transparent
+    @inlinable
     static func minimum(_ lhs: RawValue, _ rhs: Self) -> Self {
         return Self(.minimum(lhs, rhs.rawValue))
     }
     
-    @_transparent
+    @inlinable
     static func maximum(_ lhs: Self, _ rhs: Self) -> Self {
         return Self(.maximum(lhs.rawValue, rhs.rawValue))
     }
-    @_transparent
+    @inlinable
     static func maximum(_ lhs: some Angle, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: .maximum(lhs.rawValueAsRadians, rhs.rawValueAsRadians))
     }
-    @_transparent
+    @inlinable
     static func maximum(_ lhs: Self, _ rhs: RawValue) -> Self {
         return Self(.maximum(lhs.rawValue, rhs))
     }
-    @_transparent
+    @inlinable
     static func maximum(_ lhs: RawValue, _ rhs: Self) -> Self {
         return Self(.maximum(lhs, rhs.rawValue))
     }
 }
 
-@_transparent
+@inlinable
 public func min<T: Angle>(_ lhs: T.RawValue, _ rhs: T) -> T {
     return T(Swift.min(lhs, rhs.rawValue))
 }
 
-@_transparent
+@inlinable
 public func min<T: Angle>(_ lhs: T, _ rhs: T.RawValue) -> T {
     return T(Swift.min(lhs.rawValue, rhs))
 }
 
-@_transparent
+@inlinable
 public func max<T: Angle>(_ lhs: T.RawValue, _ rhs: T) -> T {
     return T(Swift.max(lhs, rhs.rawValue))
 }
 
-@_transparent
+@inlinable
 public func max<T: Angle>(_ lhs: T, _ rhs: T.RawValue) -> T {
     return T(Swift.max(lhs.rawValue, rhs))
 }
 
 extension Angle {
-    @_transparent
+    @inlinable
     public static func <(lhs: Self, rhs: Self) -> Bool {
         return lhs.rawValue < rhs.rawValue
     }
-    @_transparent
+    @inlinable
     public static func <(lhs: Self, rhs: some Angle) -> Bool {
         return lhs.rawValueAsRadians < rhs.rawValueAsRadians
     }
-    @_transparent
+    @inlinable
     public static func <(lhs: Self, rhs: RawValue) -> Bool {
         return lhs.rawValue < rhs
     }
-    @_transparent
+    @inlinable
     public static func <(lhs: RawValue, rhs: Self) -> Bool {
         return lhs < rhs.rawValue
     }
     
-    @_transparent
+    @inlinable
     public static func >(lhs: Self, rhs: Self) -> Bool {
         return lhs.rawValue > rhs.rawValue
     }
-    @_transparent
+    @inlinable
     public static func >(lhs: Self, rhs: some Angle) -> Bool {
         return lhs.rawValueAsRadians > rhs.rawValueAsRadians
     }
-    @_transparent
+    @inlinable
     public static func >(lhs: Self, rhs: RawValue) -> Bool {
         return lhs.rawValue > rhs
     }
-    @_transparent
+    @inlinable
     public static func >(lhs: RawValue, rhs: Self) -> Bool {
         return lhs > rhs.rawValue
     }
 }
 
 extension Angle {
-    @_transparent
+    @inlinable
     public static func <=(lhs: Self, rhs: Self) -> Bool {
         return lhs.rawValue <= rhs.rawValue
     }
-    @_transparent
+    @inlinable
     public static func <=(lhs: Self, rhs: some Angle) -> Bool {
         return lhs.rawValueAsRadians <= rhs.rawValueAsRadians
     }
-    @_transparent
+    @inlinable
     public static func <=(lhs: Self, rhs: RawValue) -> Bool {
         return lhs.rawValue <= rhs
     }
-    @_transparent
+    @inlinable
     public static func <=(lhs: RawValue, rhs: Self) -> Bool {
         return lhs <= rhs.rawValue
     }
     
-    @_transparent
+    @inlinable
     public static func >=(lhs: Self, rhs: Self) -> Bool {
         return lhs.rawValue >= rhs.rawValue
     }
-    @_transparent
+    @inlinable
     public static func >=(lhs: Self, rhs: some Angle) -> Bool {
         return lhs.rawValueAsRadians >= rhs.rawValueAsRadians
     }
-    @_transparent
+    @inlinable
     public static func >=(lhs: Self, rhs: RawValue) -> Bool {
         return lhs.rawValue >= rhs
     }
-    @_transparent
+    @inlinable
     public static func >=(lhs: RawValue, rhs: Self) -> Bool {
         return lhs >= rhs.rawValue
     }
 }
 
 extension Angle {
-    @_transparent
+    @inlinable
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         assert(type(of: lhs) == type(of: rhs))
         return lhs.rawValue == rhs.rawValue
     }
     
-    @_transparent
+    @inlinable
     public static func ==(lhs: Self, rhs: RawValue) -> Bool {
         return lhs.rawValue == rhs
     }
     
-    @_transparent
+    @inlinable
     public static func ==(lhs: RawValue, rhs: Self) -> Bool {
         return lhs == rhs.rawValue
     }
 }
 
 public extension Angle {
-    @_transparent
+    @inlinable
     static func random<T>(in range: Range<RawValue>, using generator: inout T) -> Self where T : RandomNumberGenerator {
         return Self(RawValue.random(in: range, using: &generator))
     }
     
-    @_transparent
+    @inlinable
     static func random(in range: Range<RawValue>) -> Self {
         return Self(RawValue.random(in: range))
     }
 
-    @_transparent
+    @inlinable
     static func random<T>(in range: ClosedRange<RawValue>, using generator: inout T) -> Self where T : RandomNumberGenerator {
         return Self(RawValue.random(in: range, using: &generator))
     }
 
-    @_transparent
+    @inlinable
     static func random(in range: ClosedRange<RawValue>) -> Self {
         return Self(RawValue.random(in: range))
     }
 }
 
 public extension Angle {
-    @_transparent
+    @inlinable
     mutating func round(_ rule: FloatingPointRoundingRule) {
         rawValue.round(rule)
     }
-    @_transparent
+    @inlinable
     init(sign: FloatingPointSign, exponent: RawValue.Exponent, significand: Self) {
         self.init(rawValue: RawValue(sign: sign, exponent: exponent, significand: significand.rawValue.significand))
     }
-    @_transparent
+    @inlinable
     var exponent: RawValue.Exponent {
         return rawValue.exponent
     }
-    @_transparent
+    @inlinable
     func distance(to other: Self) -> RawValue.Stride {
         return rawValue.distance(to: other.rawValue)
     }
-    @_transparent
+    @inlinable
     func advanced(by n: RawValue.Stride) -> Self {
         return Self(rawValue: rawValue.advanced(by: n))
     }
-    @_transparent
+    @inlinable
     init(signOf: Self, magnitudeOf: Self) {
         self.init(RawValue(signOf: signOf.rawValue, magnitudeOf: magnitudeOf.rawValue))
     }
-    @_transparent
+    @inlinable
     init(_ value: Int) {
         self.init(RawValue(value))
     }
-    @_transparent
+    @inlinable
     init<Source>(_ value: Source) where Source : BinaryInteger {
         self.init(RawValue(value))
     }
-    @_transparent
+    @inlinable
     static var radix: Int {
         return RawValue.radix
     }
-    @_transparent
+    @inlinable
     static var nan: Self {
         return Self(rawValue: .nan)
     }
-    @_transparent
+    @inlinable
     static var signalingNaN: Self {
         return Self(rawValue: .signalingNaN)
     }
-    @_transparent
+    @inlinable
     static var infinity: Self {
         return Self(rawValue: .infinity)
     }
-    @_transparent
+    @inlinable
     static var greatestFiniteMagnitude: Self {
         return Self(rawValue: .greatestFiniteMagnitude)
     }
-    @_transparent
+    @inlinable
     static var pi: Self {
         return Self(rawValue: .pi)
     }
-    @_transparent
+    @inlinable
     var ulp: Self {
         return Self(rawValue: rawValue.ulp)
     }
-    @_transparent
+    @inlinable
     static var leastNormalMagnitude: Self {
         return Self(rawValue: .leastNormalMagnitude)
     }
-    @_transparent
+    @inlinable
     static var leastNonzeroMagnitude: Self {
         return Self(rawValue: .leastNonzeroMagnitude)
     }
-    @_transparent
+    @inlinable
     var sign: FloatingPointSign {
         return rawValue.sign
     }
-    @_transparent
+    @inlinable
     var significand: Self {
         return Self(rawValue: rawValue.significand)
     }
-    @_transparent
+    @inlinable
     mutating func formRemainder(dividingBy other: Self) {
         rawValue.formRemainder(dividingBy: other.rawValue)
     }
-    @_transparent
+    @inlinable
     mutating func formTruncatingRemainder(dividingBy other: Self) {
         rawValue.formTruncatingRemainder(dividingBy: other.rawValue)
     }
-    @_transparent
+    @inlinable
     mutating func formSquareRoot() {
         rawValue.formSquareRoot()
     }
-    @_transparent
+    @inlinable
     mutating func addProduct(_ lhs: Self, _ rhs: Self) {
         rawValue.addProduct(lhs.rawValue, rhs.rawValue)
     }
-    @_transparent
+    @inlinable
     var nextUp: Self {
         return Self(rawValue: rawValue.nextUp)
     }
-    @_transparent
+    @inlinable
     func isEqual(to other: Self) -> Bool {
         return rawValue.isEqual(to: other.rawValue)
     }
-    @_transparent
+    @inlinable
     func isLess(than other: Self) -> Bool {
         return rawValue.isLess(than: other.rawValue)
     }
-    @_transparent
+    @inlinable
     func isLessThanOrEqualTo(_ other: Self) -> Bool {
         return rawValue.isLessThanOrEqualTo(other.rawValue)
     }
-    @_transparent
+    @inlinable
     func isTotallyOrdered(belowOrEqualTo other: Self) -> Bool {
         return rawValue.isTotallyOrdered(belowOrEqualTo: other.rawValue)
     }
-    @_transparent
+    @inlinable
     var isNormal: Bool {
         return rawValue.isNormal
     }
-    @_transparent
+    @inlinable
     var isZero: Bool {
         return rawValue.isZero
     }
-    @_transparent
+    @inlinable
     var isSubnormal: Bool {
         return rawValue.isSubnormal
     }
-    @_transparent
+    @inlinable
     var isInfinite: Bool {
         return rawValue.isInfinite
     }
-    @_transparent
+    @inlinable
     var isNaN: Bool {
         return rawValue.isNaN
     }
-    @_transparent
+    @inlinable
     var isSignalingNaN: Bool {
         rawValue.isSignalingNaN
     }
-    @_transparent
+    @inlinable
     var isCanonical: Bool {
         return rawValue.isCanonical
     }
-    @_transparent
+    @inlinable
     var magnitude: Magnitude {
         return Self(rawValue: rawValue.magnitude)
     }
@@ -508,40 +508,40 @@ public struct Radians: Angle, Hashable, Codable, Sendable {
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
-    @_transparent
+    @inlinable
     public init(_ rawValue: RawValue) {
         self.init(rawValue: rawValue)
     }
-    @_transparent
+    @inlinable
     public init?<T>(exactly source: T) where T : BinaryInteger {
         self.init(RawValue(source))
     }
-    @_transparent
+    @inlinable
     public init(integerLiteral value: RawValue) {
         self.init(rawValue: value)
     }
-    @_transparent
+    @inlinable
     public init(rawValueAsRadians: Float) {
         self.init(rawValue: rawValueAsRadians)
     }
-    @_transparent
+    @inlinable
     public init(_ value: some Angle) {
         self.init(rawValue: value.rawValueAsRadians)
     }
     
-    @_transparent
+    @inlinable
     public var rawValueAsRadians: Float {
         return rawValue
     }
-    @_transparent
+    @inlinable
     public var rawValueAsDegrees: Float {
         return rawValue * (180 / RawValue.pi)
     }
-    @_transparent
+    @inlinable
     public var asDegrees: Degrees {
         return .init(rawValue: rawValueAsDegrees)
     }
-    @_transparent
+    @inlinable
     public var asRadians: Radians {
         return self
     }
@@ -560,52 +560,52 @@ public struct Degrees: Angle, Hashable, Codable, Sendable {
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
-    @_transparent
+    @inlinable
     public init(_ rawValue: RawValue) {
         self.init(rawValue: rawValue)
     }
-    @_transparent
+    @inlinable
     public init?<T>(exactly source: T) where T : BinaryInteger {
         self.init(RawValue(source))
     }
-    @_transparent
+    @inlinable
     public init(integerLiteral value: RawValue) {
         self.init(rawValue: value)
     }
-    @_transparent
+    @inlinable
     public init(rawValueAsRadians: Float) {
         self.init(rawValue: rawValueAsRadians * (180 / RawValue.pi))
     }
-    @_transparent
+    @inlinable
     public init(_ value: some Angle) {
         self.init(rawValue: value.rawValueAsDegrees)
     }
     
-    @_transparent
+    @inlinable
     public var rawValueAsRadians: Float {
         return rawValue * (RawValue.pi / 180)
     }
-    @_transparent
+    @inlinable
     public var rawValueAsDegrees: Float {
         return rawValue
     }
-    @_transparent
+    @inlinable
     public var asDegrees: Degrees {
         return self
     }
-    @_transparent
+    @inlinable
     public var asRadians: Radians {
         return .init(rawValue: rawValueAsRadians)
     }
 }
 
 public extension Degrees {
-    @_transparent
+    @inlinable
     mutating func interpolate(to: Self, _ method: InterpolationMethod) {
         self = self.interpolated(to: to, method)
     }
     
-    @_transparent
+    @inlinable
     func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
         if case .linear(_, let options) = method, options.contains(.shortest) {
             // Shortest distance
@@ -615,17 +615,17 @@ public extension Degrees {
         return Self(self.rawValue.interpolated(to: to.rawValue, method))
     }
     
-    @_transparent
+    @inlinable
     mutating func interpolate(to: Radians, _ method: InterpolationMethod) {
         self.interpolate(to: Self(to), method)
     }
     
-    @_transparent
+    @inlinable
     func interpolated(to: Radians, _ method: InterpolationMethod) -> Self {
         return self.interpolated(to: Self(to), method)
     }
     
-    @_transparent
+    @inlinable
     static func random() -> Self {
         return .random(in: 0 ..< 360)
     }
@@ -633,7 +633,7 @@ public extension Degrees {
 
 extension Degrees {
     /// Returns an angle equivalent to the current angle if it rolled over when exceeding 360, or rolled back to 360 when less then zero. The value is always within 0 ... 360
-    @_transparent
+    @inlinable
     public var normalized: Self {
         let scaler: RawValue = 1000000
         let degrees = (self * scaler).truncatingRemainder(dividingBy: 360 * scaler) / scaler
@@ -644,13 +644,13 @@ extension Degrees {
     }
     
     /// Makes the angle equivalent to the current angle if it rolled over when exceeding 360, or rolled back to 360 when less then zero. The value is always within 0 ... 360
-    @_transparent
+    @inlinable
     public mutating func normalize() {
         self = self.normalized
     }
     
     /// Returns the shortest angle, that when added to `self.normalized` will result in `destination.normalized`
-    @_transparent
+    @inlinable
     public func shortestAngle(to destination: Self) -> Self {
         var src = self.rawValue
         var dst = destination.rawValue
@@ -685,12 +685,12 @@ extension Degrees {
 }
 
 postfix operator °
-@_transparent
+@inlinable
 public postfix func °(lhs: Degrees.RawValue) -> Degrees {
     return Degrees(rawValue: lhs)
 }
 
-@_transparent 
+@inlinable 
 @_disfavoredOverload
 public postfix func °(lhs: Degrees.RawValue) -> Radians {
     return Degrees(rawValue: lhs).asRadians

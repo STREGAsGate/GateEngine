@@ -17,12 +17,12 @@ public struct D3DShaderBytecode {
     /** Describes shader data.
     - parameter byteCodeBlob: A pointer to a memory block that contains the shader data.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(byteCodeBlob blob: D3DBlob?) {
         self.blob = blob
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal func withUnsafeRawValue<ResultType>(_ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
         let rawValue = RawValue(pShaderBytecode: blob?.bufferPointer, BytecodeLength: blob?.bufferSize ?? 0)
         return try body(rawValue)

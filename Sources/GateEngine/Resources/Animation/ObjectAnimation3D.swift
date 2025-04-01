@@ -50,7 +50,7 @@ import Foundation
         }
     }
 
-    @inline(__always)
+    @inlinable
     public var progress: Float {
         get {
             return .maximum(
@@ -69,7 +69,7 @@ import Foundation
         }
     }
 
-    @inline(__always)
+    @inlinable
     public var isFinished: Bool {
         guard duration > 0 else { return true }
         if repeats {
@@ -457,7 +457,6 @@ extension ObjectAnimation3D {
         static let rotation = KeyedComponents(rawValue: 1 << 2)
         static let scale = KeyedComponents(rawValue: 1 << 3)
 
-        @_transparent
         var isFull: Bool {
             return self == [.position, .rotation, .scale]
         }

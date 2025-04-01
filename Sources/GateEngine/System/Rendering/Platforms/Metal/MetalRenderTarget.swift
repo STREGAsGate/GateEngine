@@ -148,7 +148,6 @@ final class MetalRenderTarget: RenderTargetBackend {
         self.commandEncoder.endEncoding()
     }
 
-    @inline(__always)
     private var renderPassDescriptor: MTLRenderPassDescriptor {
         var descriptor: MTLRenderPassDescriptor
 
@@ -181,7 +180,6 @@ final class MetalRenderTarget: RenderTargetBackend {
         return descriptor
     }
 
-    @inline(__always)
     private var firstPassRenderPassDescriptor: MTLRenderPassDescriptor {
         let descriptor: MTLRenderPassDescriptor = renderPassDescriptor
 

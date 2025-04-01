@@ -14,7 +14,7 @@ public struct D3DTexture2DArrayRenderTargetView {
     internal var rawValue: RawValue
 
     /// The index of the first mipmap level to use.
-    @inlinable @inline(__always)
+    @inlinable
     public var mipIndex: UInt32 {
         get {
             return rawValue.MipSlice
@@ -25,7 +25,7 @@ public struct D3DTexture2DArrayRenderTargetView {
     }
 
     /// The index of the first texture to use in an array of textures.
-    @inlinable @inline(__always)
+    @inlinable
     public var textureIndex: UInt32 {
         get {
             return rawValue.FirstArraySlice
@@ -36,7 +36,7 @@ public struct D3DTexture2DArrayRenderTargetView {
     }
 
     /// Number of textures to use.
-    @inlinable @inline(__always)
+    @inlinable
     public var textureCount: UInt32 {
         get {
             return rawValue.ArraySize
@@ -47,7 +47,7 @@ public struct D3DTexture2DArrayRenderTargetView {
     }
 
     /// The index (plane slice number) of the plane to use in an array of textures.
-    @inlinable @inline(__always)
+    @inlinable
     public var planeSlice: UInt32 {
         get {
             return rawValue.PlaneSlice
@@ -64,7 +64,7 @@ public struct D3DTexture2DArrayRenderTargetView {
     - parameter textureCount: Number of textures to use.
     - parameter planeSlice: The index (plane slice number) of the plane to use in an array of textures.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(mipIndex: UInt32, textureIndex: UInt32, textureCount: UInt32, planeSlice: UInt32) {
         self.rawValue = RawValue(MipSlice: mipIndex,
                                  FirstArraySlice: textureIndex,
@@ -72,7 +72,7 @@ public struct D3DTexture2DArrayRenderTargetView {
                                  PlaneSlice: planeSlice)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

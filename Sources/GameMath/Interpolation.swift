@@ -56,7 +56,7 @@ public enum InterpolationMethod {
 
 public extension Float {
     /// Interpolates toward `to` by using `method `
-    @_transparent
+    @inlinable
     func interpolated(to: Float, _ method: InterpolationMethod) -> Float {
         switch method {
         case let .linear(factor, _):
@@ -71,7 +71,7 @@ public extension Float {
     }
     
     /// Interpolates toward `to` by using `method `
-    @_transparent
+    @inlinable
     mutating func interpolate(to: Float, _ method: InterpolationMethod) {
         switch method {
         case let .linear(factor, _):
@@ -87,7 +87,7 @@ public extension Float {
 }
 
 internal extension Float {
-    @usableFromInline @_transparent
+    @inlinable
     func lerped(to: Float, factor: Float) -> Float {
         #if GameMathUseSIMD && canImport(simd)
         return simd_mix(self, to, factor)
@@ -96,46 +96,46 @@ internal extension Float {
         #endif
     }
     
-    @usableFromInline @_transparent
+    @inlinable
     mutating func lerp(to: Float, factor: Float) {
         self = self.lerped(to: to, factor: factor)
     }
 }
 
 internal extension Float {
-    @usableFromInline @_transparent
+    @inlinable
     func easedIn(to: Float, factor: Float) -> Float {
         let easeInFactor = 1 - cos((factor * .pi) / 2)
         return self.lerped(to: to, factor: easeInFactor)
     }
     
-    @usableFromInline @_transparent
+    @inlinable
     mutating func easeIn(to: Float, factor: Float) {
         self = self.easedIn(to: to, factor: factor)
     }
 }
 
 internal extension Float {
-    @usableFromInline @_transparent
+    @inlinable
     func easedOut(to: Float, factor: Float) -> Float {
         let easeOutFactor = sin((factor * .pi) / 2)
         return self.lerped(to: to, factor: easeOutFactor)
     }
     
-    @usableFromInline @_transparent
+    @inlinable
     mutating func easeOut(to: Float, factor: Float) {
         self = self.easedOut(to: to, factor: factor)
     }
 }
 
 internal extension Float {
-    @usableFromInline @_transparent
+    @inlinable
     func easedInOut(to: Float, factor: Float) -> Float {
         let easeInOutFactor = -(cos(.pi * factor) - 1) / 2
         return self.lerped(to: to, factor: easeInOutFactor)
     }
     
-    @usableFromInline @_transparent
+    @inlinable
     mutating func easeInOut(to: Float, factor: Float) {
         self = self.easedInOut(to: to, factor: factor)
     }

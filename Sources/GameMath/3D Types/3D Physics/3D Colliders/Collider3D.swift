@@ -32,7 +32,7 @@ public extension Collider3D {
 }
 
 public extension Collider3D {
-    @inline(__always)
+    @inlinable
     func surfaceImpact(comparing ray: Ray3D) -> SurfaceImpact3D? {
         guard let point = self.surfacePoint(for: ray) else {return nil}
         let normal = self.surfaceNormal(facing: point)
@@ -52,13 +52,13 @@ public struct Interpenetration3D {
     public var points: Set<Position3>
     
     /// - returns true if the two compared colliders have penetration
-    @inlinable @inline(__always)
+    @inlinable
     public var isColiding: Bool {
         return depth < 0 && direction.isFinite && depth.isFinite
     }
     
     /// - returns true if the comparison can safely be used to determine penetration
-    @inlinable @inline(__always)
+    @inlinable
     public var isValid: Bool {
         return depth.isFinite
         && direction.isFinite
@@ -107,7 +107,7 @@ public protocol Surface3D {
 }
 
 public extension Surface3D {
-    @inline(__always)
+    @inlinable
     var surfaceType: SurfaceType {
         let angle: Radians = self.normal.angle(to: .up)
         switch angle.rawValue {

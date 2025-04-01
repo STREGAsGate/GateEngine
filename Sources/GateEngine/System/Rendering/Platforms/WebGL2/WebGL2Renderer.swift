@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+#if HTML5
 import WebAPIBase
 import DOM
 import WebGL1
@@ -15,7 +15,7 @@ import Shaders
 public typealias GL = WebGL2RenderingContext
 
 class WebGL2Renderer: RendererBackend {
-    @inline(__always)
+    @inlinable
     var renderingAPI: RenderingAPI { .webGL2 }
 
     lazy private var instanceMatriciesVBO: WebGLBuffer = WebGL2Renderer.context.createBuffer()!
@@ -41,7 +41,7 @@ class WebGL2Renderer: RendererBackend {
         let vertexShader: VertexShader
         let fragmentShader: FragmentShader
     }
-    @inline(__always)
+    @inlinable
     func webGLShader(
         vsh: VertexShader,
         fsh: FragmentShader,
@@ -188,7 +188,7 @@ class WebGL2Renderer: RendererBackend {
 }
 
 extension WebGL2Renderer {
-    @inline(__always)
+    @inlinable
     private func setFlags(_ flags: DrawCommand.Flags, in gl: WebGL2RenderingContext) {
         switch flags.cull {
         case .disabled:
@@ -257,7 +257,7 @@ extension WebGL2Renderer {
         }
     }
 
-    @inline(__always)
+    @inlinable
     private func setWinding(_ winding: DrawCommand.Flags.Winding, in gl: WebGL2RenderingContext) {
         switch winding {
         case .clockwise:
@@ -267,7 +267,7 @@ extension WebGL2Renderer {
         }
     }
 
-    @inline(__always)
+    @inlinable
     private func setUniforms(
         _ matrices: Matrices,
         program: WebGLProgram,
@@ -297,7 +297,7 @@ extension WebGL2Renderer {
         }
     }
 
-    @inline(__always)
+    @inlinable
     private func primitive(from primitive: DrawCommand.Flags.Primitive) -> GLenum {
         switch primitive {
         case .point:
@@ -313,7 +313,7 @@ extension WebGL2Renderer {
         }
     }
 
-    @inline(__always)
+    @inlinable
     private func setTransforms(
         _ transforms: [Transform3],
         at index: inout Int,
@@ -350,7 +350,7 @@ extension WebGL2Renderer {
         #endif
     }
 
-    @inline(__always)
+    @inlinable
     private func setMaterial(
         _ drawCommand: DrawCommand,
         generator: GLSLCodeGenerator,
@@ -511,7 +511,7 @@ extension WebGL2Renderer {
         #endif
     }
 
-    @inline(__always)
+    @inlinable
     private func setGeometries(
         _ geometries: [WebGL2Geometry],
         at index: inout Int,
@@ -563,7 +563,6 @@ extension WebGL2Renderer {
 }
 
 extension WebGL2Renderer {
-    @_transparent
     var context: WebGL2RenderingContext {
         return Self.context
     }
@@ -583,7 +582,6 @@ extension WebGL2Renderer {
     }()
 
     #if GATEENGINE_DEBUG_RENDERING
-    @_transparent
     func checkError(_ function: String = #function, _ line: Int = #line) {
         var error = Self.context.checkFramebufferStatus(target: GL.FRAMEBUFFER)
         if error == GL.FRAMEBUFFER_COMPLETE {
@@ -624,7 +622,6 @@ extension WebGL2Renderer {
 
 #if GATEENGINE_DEBUG_RENDERING
 extension Renderer {
-    @_transparent
     func checkError(_ function: String = #function, _ line: Int = #line) {
         (self._backend as! WebGL2Renderer).checkError(function, line)
     }

@@ -89,7 +89,7 @@ extension GravityValue {
 
 // MARK: - Bool
 extension GravityValue {
-    @inline(__always)
+    @inlinable
     public init(_ value: Bool) {
         gValue = gravity_value_from_bool(value)
     }
@@ -101,7 +101,7 @@ extension GravityValue {
 
 // MARK: - Int
 extension GravityValue {
-    @inline(__always)
+    @inlinable
     public init<T: BinaryInteger>(_ value: T) {
         gValue = gravity_value_from_int(gravity_int_t(value))
     }
@@ -139,7 +139,7 @@ extension GravityValue {
 
 // MARK: - Float
 extension GravityValue {
-    @inline(__always)
+    @inlinable
     internal init<T: BinaryFloatingPoint>(_ value: T) {
         let value = gravity_float_t(value)
         if value.isFinite == false {
@@ -191,7 +191,7 @@ extension GravityValue {
 
 // MARK: - Range
 extension GravityValue {
-    @inline(__always) @usableFromInline
+    @usableFromInline
     internal init(_ value: Range<Int>, _ gravity: Gravity? = nil) {
         let value = gravity_range_new(
             gravity?.vm,
@@ -207,7 +207,7 @@ extension GravityValue {
         return Int(range.from) ..< Int(range.to)
     }
 
-    @inline(__always) @usableFromInline
+    @usableFromInline
     internal init(_ value: ClosedRange<Int>, _ gravity: Gravity? = nil) {
         let value = gravity_range_new(
             gravity?.vm,
@@ -239,13 +239,13 @@ extension GravityValue {
 
 // MARK: - String
 extension GravityValue {
-    @inline(__always)
+    @usableFromInline
     internal init(_ value: String, _ gravity: Gravity? = nil) {
         self.gValue = value.withCString { cValue in
             return gravity_string_to_value(gravity?.vm, cValue, UInt32(value.utf8.count))
         }
     }
-    @inline(__always)
+    @usableFromInline
     internal init(_ value: StaticString, _ gravity: Gravity) {
         self.gValue = gravity_string_to_value(
             gravity.vm,
@@ -280,7 +280,7 @@ extension GravityValue {
 
 // MARK: - List
 extension GravityValue {
-    @inline(__always)
+    @usableFromInline
     internal init(_ values: [GravityValue], _ gravity: Gravity? = nil) {
         var values = values.map({ $0.gValue })
         let list = gravity_list_from_array(gravity?.vm, UInt32(values.count), &values)
@@ -307,7 +307,7 @@ extension GravityValue {
 
 // MARK: - Map
 extension GravityValue {
-    @inline(__always)
+    @usableFromInline
     internal init(_ values: [GravityValue: GravityValue], _ gravity: Gravity? = nil) {
         let map = gravity_map_new(gravity?.vm, UInt32(values.count))
         for pair in values {
@@ -315,7 +315,7 @@ extension GravityValue {
         }
         self.gValue = gravity_value_from_object(map)
     }
-    @inline(__always) @usableFromInline
+    @inlinable
     internal func getMap() -> [GravityValue: GravityValue] {
         assert(valueType == .map, "Expected \"map\" but found \"\(valueType)\".")
         let map = unsafeBitCast(gValue.p, to: UnsafeMutablePointer<gravity_map_t>.self).pointee
@@ -339,7 +339,7 @@ extension GravityValue {
 
 // MARK: - Closure
 extension GravityValue {
-    @inline(__always)
+    @inlinable
     public func getClosure(
         gravity: Gravity,
         sender: (any GravityValueConvertible)?
@@ -358,7 +358,7 @@ extension GravityValue {
 
 // MARK: - Class
 extension GravityValue {
-    @inline(__always)
+    @inlinable
     public func getClass(gravity: Gravity) -> GravityClass? {
         guard valueType == .class else {
             assert(
@@ -373,7 +373,7 @@ extension GravityValue {
 
 // MARK: - Instance
 extension GravityValue {
-    @inline(__always)
+    @inlinable
     public func getInstance(gravity: Gravity) -> GravityInstance? {
         guard valueType == .instance else {
             assert(
@@ -443,14 +443,14 @@ extension GravityValue: CustomReflectable {
 }
 
 extension GravityValue: Equatable {
-    @inline(__always)
+    @inlinable
     public static func == (lhs: GravityValue, rhs: GravityValue) -> Bool {
         return gravity_value_equals(lhs.gValue, rhs.gValue)
     }
 }
 
 extension GravityValue: Hashable {
-    @inline(__always)
+    @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(gValue.n)
         hasher.combine(gValue.f)
@@ -460,7 +460,7 @@ extension GravityValue: Hashable {
 }
 
 extension GravityValue: ExpressibleByNilLiteral {
-    @inline(__always)
+    @inlinable
     public init(nilLiteral: ()) {
         self.gValue = Self.null.gValue
     }
@@ -468,7 +468,7 @@ extension GravityValue: ExpressibleByNilLiteral {
 
 extension GravityValue: ExpressibleByBooleanLiteral {
     public typealias BooleanLiteralType = Bool
-    @inline(__always)
+    @inlinable
     public init(booleanLiteral value: BooleanLiteralType) {
         self.init(value)
     }
@@ -476,7 +476,7 @@ extension GravityValue: ExpressibleByBooleanLiteral {
 
 extension GravityValue: ExpressibleByIntegerLiteral {
     public typealias IntegerLiteralType = Int
-    @inline(__always)
+    @inlinable
     public init(integerLiteral value: IntegerLiteralType) {
         self.init(value)
     }
@@ -488,7 +488,7 @@ extension GravityValue: ExpressibleByFloatLiteral {
     #else
     public typealias FloatLiteralType = Double  // 64bit target
     #endif
-    @inline(__always)
+    @inlinable
     public init(floatLiteral value: FloatLiteralType) {
         self.init(value)
     }
@@ -496,7 +496,7 @@ extension GravityValue: ExpressibleByFloatLiteral {
 
 extension GravityValue: ExpressibleByStringLiteral {
     public typealias StringLiteralType = String
-    @inline(__always)
+    @inlinable
     public init(stringLiteral value: StringLiteralType) {
         self.init(value)
     }
@@ -504,7 +504,7 @@ extension GravityValue: ExpressibleByStringLiteral {
 
 extension GravityValue: ExpressibleByArrayLiteral {
     public typealias ArrayLiteralElement = GravityValue
-    @inline(__always)
+    @inlinable
     public init(arrayLiteral elements: GravityValue...) {
         self.init(elements)
     }
@@ -513,7 +513,7 @@ extension GravityValue: ExpressibleByArrayLiteral {
 extension GravityValue: ExpressibleByDictionaryLiteral {
     public typealias Key = GravityValue
     public typealias Value = GravityValue
-    @inline(__always)
+    @inlinable
     public init(dictionaryLiteral elements: (GravityValue, GravityValue)...) {
         self.init(Dictionary(uniqueKeysWithValues: elements))
     }

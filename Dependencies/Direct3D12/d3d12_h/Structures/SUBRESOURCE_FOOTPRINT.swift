@@ -14,7 +14,7 @@ public struct D3DSubresourceFootprint {
     internal var rawValue: RawValue
 
     /// A DXGI_FORMAT-typed value that specifies the viewing format.
-    @inlinable @inline(__always)
+    @inlinable
     public var format: DGIFormat {
         get {
             return DGIFormat(rawValue.Format)
@@ -25,7 +25,7 @@ public struct D3DSubresourceFootprint {
     }
 
     /// The width of the subresource.
-    @inlinable @inline(__always)
+    @inlinable
     public var width: UInt32 {
         get {
             return rawValue.Width
@@ -36,7 +36,7 @@ public struct D3DSubresourceFootprint {
     }
 
     /// The height of the subresource.
-    @inlinable @inline(__always)
+    @inlinable
     public var height: UInt32 {
         get {
             return rawValue.Height
@@ -47,7 +47,7 @@ public struct D3DSubresourceFootprint {
     }
 
     /// The depth of the subresource.
-    @inlinable @inline(__always)
+    @inlinable
     public var depth: UInt32 {
         get {
             return rawValue.Depth
@@ -58,7 +58,7 @@ public struct D3DSubresourceFootprint {
     }
 
     /// The row pitch, or width, or physical size, in bytes, of the subresource data. This must be a multiple of D3D12_TEXTURE_DATA_PITCH_ALIGNMENT (256), and must be greater than or equal to the size of the data within a row.
-    @inlinable @inline(__always)
+    @inlinable
     public var rowPitch: UInt32 {
         get {
             return rawValue.RowPitch
@@ -75,7 +75,7 @@ public struct D3DSubresourceFootprint {
     - parameter depth: The depth of the subresource.
     - parameter rowPitch: The row pitch, or width, or physical size, in bytes, of the subresource data. This must be a multiple of D3D12_TEXTURE_DATA_PITCH_ALIGNMENT (256), and must be greater than or equal to the size of the data within a row.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(format: DGIFormat, width: UInt32, height: UInt32, depth: UInt32, rowPitch: UInt32) {
         self.rawValue = RawValue()
         self.format = format
@@ -85,7 +85,7 @@ public struct D3DSubresourceFootprint {
         self.rowPitch = rowPitch
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

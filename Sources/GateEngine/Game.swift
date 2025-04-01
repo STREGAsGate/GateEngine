@@ -6,6 +6,7 @@
  */
 
 public final class Game {
+    @usableFromInline
     nonisolated(unsafe) internal var unsafePlatform: Platform = Platform()
     
     @MainActor public var platform: Platform {
@@ -28,9 +29,9 @@ public final class Game {
             self.isHeadless = true
             self.renderingAPI = .headless
         } else {
-            let renderer = Renderer()
+            let renderer = createRenderer()
             self.renderer = renderer
-            self.renderingAPI = renderer._backend.renderingAPI
+            self.renderingAPI = renderer.api
             self.isHeadless = false
         }
     }
@@ -47,9 +48,10 @@ public final class Game {
 
     /// The graphics library being used to render.
     public let renderingAPI: RenderingAPI
-    @MainActor @usableFromInline let renderer: Renderer!
+    @MainActor let renderer: (any Renderer)!
 
     @MainActor public private(set) lazy var windowManager: WindowManager = WindowManager(self)
+    @usableFromInline
     @MainActor internal private(set) lazy var ecs: ECSContext = ECSContext()
     @MainActor public private(set) lazy var hid: HID = HID()
     public private(set) lazy var resourceManager: ResourceManager = {
@@ -110,7 +112,6 @@ public final class Game {
     private var previousTime: Double = 0
     
     @MainActor
-    @inline(__always)
     internal static func getNextDeltaTime(accumulator: inout Double, previous: inout Double) -> Double? {
         // 240fps
         let stepDuration: Double = /* 1/240 */ 0.004166666667
@@ -199,6 +200,7 @@ internal extension Game {
     static var _shared: Game? = nil
     
     // Allow unsafe access for GateEngine use
+    @usableFromInline
     nonisolated static var unsafeShared: Game {
         return _shared.unsafelyUnwrapped
     }

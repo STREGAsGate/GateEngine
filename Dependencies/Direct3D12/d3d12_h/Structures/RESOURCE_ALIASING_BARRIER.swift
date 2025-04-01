@@ -14,7 +14,7 @@ public struct D3DResourceAliasingBarrier {
     internal var rawValue: RawValue
 
     /// A pointer to the ID3D12Resource object that represents the before resource used in the transition.
-    @inlinable @inline(__always)
+    @inlinable
     public var before: D3DResource? {
         get {
             return D3DResource(winSDKPointer: rawValue.pResourceBefore)
@@ -25,7 +25,7 @@ public struct D3DResourceAliasingBarrier {
     }
 
     /// A pointer to the ID3D12Resource object that represents the after resource used in the transition.
-    @inlinable @inline(__always)
+    @inlinable
     public var after: D3DResource? {
         get {
             return D3DResource(winSDKPointer: rawValue.pResourceAfter)
@@ -35,14 +35,14 @@ public struct D3DResourceAliasingBarrier {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public init(before: D3DResource?, after: D3DResource?) {
         let before = before?.performFatally(as: D3DResource.RawValue.self) {$0}
         let after = after?.performFatally(as: D3DResource.RawValue.self) {$0}
         self.rawValue = RawValue(pResourceBefore: before, pResourceAfter: after)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

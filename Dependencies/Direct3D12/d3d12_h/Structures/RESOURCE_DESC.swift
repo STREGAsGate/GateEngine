@@ -15,7 +15,7 @@ public struct D3DResourceDescription {
     internal var rawValue: RawValue
 
     /// One member of D3D12_RESOURCE_DIMENSION, specifying the dimensions of the resource (for example, D3D12_RESOURCE_DIMENSION_TEXTURE1D), or whether it is a buffer ((D3D12_RESOURCE_DIMENSION_BUFFER).
-    @inlinable @inline(__always)
+    @inlinable
     public var dimension: D3DResourceDimension {
         get {
             return D3DResourceDimension(rawValue.Dimension)
@@ -26,7 +26,7 @@ public struct D3DResourceDescription {
     }
 
     /// Specifies the alignment.
-    @inlinable @inline(__always)
+    @inlinable
     public var alignment: UInt64 {
         get {
             return rawValue.Alignment
@@ -37,7 +37,7 @@ public struct D3DResourceDescription {
     }
 
     /// Specifies the width of the resource.
-    @inlinable @inline(__always)
+    @inlinable
     public var width: UInt64 {
         get {
             return rawValue.Width
@@ -48,7 +48,7 @@ public struct D3DResourceDescription {
     }
 
     /// Specifies the height of the resource.
-    @inlinable @inline(__always)
+    @inlinable
     public var height: UInt32 {
         get {
             return rawValue.Height
@@ -59,7 +59,7 @@ public struct D3DResourceDescription {
     }
 
     /// Specifies the depth of the resource, if it is 3D, or the array size if it is an array of 1D or 2D resources.
-    @inlinable @inline(__always)
+    @inlinable
     public var depthOrArraySize: UInt16 {
         get {
             return rawValue.DepthOrArraySize
@@ -70,7 +70,7 @@ public struct D3DResourceDescription {
     }
 
     /// Specifies the number of MIP levels.
-    @inlinable @inline(__always)
+    @inlinable
     public var mipLevels: UInt16 {
         get {
             return rawValue.MipLevels
@@ -81,7 +81,7 @@ public struct D3DResourceDescription {
     }
 
     /// Specifies one member of DXGI_FORMAT.
-    @inlinable @inline(__always)
+    @inlinable
     public var format: DGIFormat {
         get {
             return DGIFormat(rawValue.Format)
@@ -92,7 +92,7 @@ public struct D3DResourceDescription {
     }
 
     /// Specifies a DXGI_SAMPLE_DESC structure.
-    @inlinable @inline(__always)
+    @inlinable
     public var sampleDescription: DGISampleDescription {
         get {
             return DGISampleDescription(rawValue.SampleDesc)
@@ -103,7 +103,7 @@ public struct D3DResourceDescription {
     }
 
     /// Specifies one member of D3D12_TEXTURE_LAYOUT.
-    @inlinable @inline(__always)
+    @inlinable
     public var layout: D3DTextureLayout {
         get {
             return D3DTextureLayout(rawValue.Layout)
@@ -114,7 +114,7 @@ public struct D3DResourceDescription {
     }
 
     /// Bitwise-OR'd flags, as D3D12_RESOURCE_FLAGS enumeration constants.
-    @inlinable @inline(__always)
+    @inlinable
     public var flags: D3DResourceFlags {
         get {
             return D3DResourceFlags(rawValue.Flags)
@@ -125,12 +125,12 @@ public struct D3DResourceDescription {
     }
 
     /// Describes a resource, such as a texture. This structure is used extensively.
-    @inlinable @inline(__always)
+    @inlinable
     public init() {
         self.rawValue = RawValue()
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

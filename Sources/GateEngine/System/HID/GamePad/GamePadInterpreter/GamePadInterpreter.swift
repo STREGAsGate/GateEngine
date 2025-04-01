@@ -17,6 +17,5 @@
 }
 
 extension GamePadInterpreter {
-    @_transparent
     var hid: HID { Game.shared.hid }
 }

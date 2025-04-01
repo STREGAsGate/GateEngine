@@ -14,7 +14,7 @@ public struct D3DTexture1DUnorderedAccessView {
     internal var rawValue: RawValue
 
     /// The index of the first mipmap level to use.
-    @inlinable @inline(__always)
+    @inlinable
     public var mipIndex: UInt32 {
         get {
             return rawValue.MipSlice
@@ -27,12 +27,12 @@ public struct D3DTexture1DUnorderedAccessView {
     /** Describes a unordered-access 1D texture resource.
     - parameter mipIndex: The index of the first mipmap level to use.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(mipIndex: UInt32) {
         self.rawValue = RawValue(MipSlice: mipIndex)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

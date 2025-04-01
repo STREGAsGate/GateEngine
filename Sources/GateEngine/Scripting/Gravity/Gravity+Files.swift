@@ -67,7 +67,6 @@ internal func loadFileCallback(
 }
 
 extension Gravity {
-    @inline(__always)
     private func fileIncludesFromSource(_ source: String) -> Set<URL> {
         var imports = source.components(separatedBy: .newlines)
         imports = imports.filter({ $0.contains("#include") })
@@ -79,7 +78,6 @@ extension Gravity {
         return Set(urls)
     }
 
-    @inline(__always)
     private func sourceCode(forFileIncludes includes: Set<URL>) async throws -> [URL: String] {
         return try await withThrowingTaskGroup(of: (url: URL, sourceCode: String).self) { group in
             for url in includes {
@@ -106,7 +104,6 @@ extension Gravity {
     }
 
     @MainActor
-    @inline(__always)
     private func cacheIncludes(fromSource sourceCode: String) async throws {
         let includes = self.fileIncludesFromSource(sourceCode).filter({
             return self.hasSourceCacheForInclude($0) == false

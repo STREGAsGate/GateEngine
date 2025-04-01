@@ -108,7 +108,7 @@ extension PlatformSystem {
             case finished
         }
         public private(set) var state: State = .initial
-        @inline(__always)
+        @inlinable
         nonisolated final public var isRunning: Bool {
             return state == .running
         }

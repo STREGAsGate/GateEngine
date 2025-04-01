@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT
+#if HTML5
 import Foundation
 import Collections
 import DOM
@@ -106,7 +106,7 @@ public final class WASIPlatform: PlatformProtocol, InternalPlatformProtocol {
         return Data(arrayBuffer)
     }
 
-    @inline(__always)
+    @inlinable
     func fetch(_ url: String, _ options: [String: JSValue] = [:]) async throws -> JSValue {
         let jsFetch = JSObject.global.fetch.function!
         return try await JSPromise(jsFetch(url, options).object!)!.value

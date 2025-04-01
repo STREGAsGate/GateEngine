@@ -34,14 +34,13 @@ import GameMath
 }
 
 extension RenderTargetProtocol {
-    @_transparent
     var isWindow: Bool {
         return self is Window
     }
 }
 
 extension _RenderTargetProtocol {
-    @inlinable @inline(__always)
+    @inlinable
     internal func insert(_ canvas: UICanvas) {
         precondition(
             Game.shared.attributes.contains(.renderingIsPermitted),
@@ -50,7 +49,7 @@ extension _RenderTargetProtocol {
         self.drawables.append(canvas)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func insert(_ scene: Scene) {
         precondition(
             Game.shared.attributes.contains(.renderingIsPermitted),
@@ -59,7 +58,7 @@ extension _RenderTargetProtocol {
         self.drawables.append(scene)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func insert(_ canvas: Canvas) {
         precondition(
             Game.shared.attributes.contains(.renderingIsPermitted),
@@ -72,7 +71,7 @@ extension _RenderTargetProtocol {
         self.drawables.append(canvas)
     }
 
-//    @inlinable @inline(__always)
+//    @inlinable
 //    public func insert(_ drawCommand: DrawCommand) {
 //        precondition(
 //            Game.shared.attributes.contains(.renderingIsPermitted),
@@ -81,7 +80,6 @@ extension _RenderTargetProtocol {
 //        self.drawables.append(drawCommand)
 //    }
 
-    @inline(__always)
     internal var renderTargets: [any _RenderTargetProtocol] {
         var allDrawCommands: [DrawCommand] = []
         for drawable in drawables {
@@ -119,7 +117,7 @@ extension _RenderTargetProtocol {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var size: Size2 {
         get {
             return renderTargetBackend.size
@@ -133,7 +131,6 @@ extension _RenderTargetProtocol {
         }
     }
 
-    @inline(__always)
     internal func reshapeIfNeeded() {
         if previousSize != renderTargetBackend.size || renderTargetBackend.wantsReshape {
             previousSize = renderTargetBackend.size
@@ -163,7 +160,7 @@ extension _RenderTargetProtocol {
 }
 
 extension _RenderTargetProtocol {
-    @inlinable @inline(__always)
+    @inlinable
     public var size: Size2 {
         get {
             return renderTargetBackend.size
@@ -177,7 +174,7 @@ extension _RenderTargetProtocol {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var clearColor: Color {
         get {
             return renderTargetBackend.clearColor
@@ -287,7 +284,6 @@ extension _RenderTargetProtocol {
         }
     }
     
-    @inline(__always)
     private func drawUICanvas(_ canvas: UICanvas, clipRect: Rect?, stencil: UInt8?) {
         assert(canvas.hasContent)
         let matrices = canvas.matrices(withSize: self.size)
@@ -306,7 +302,6 @@ extension _RenderTargetProtocol {
         renderTargetBackend.didEndContent()
     }
 
-    @inline(__always)
     private func drawScene(_ scene: Scene, viewportSize size: Size2, clipRect: Rect?, stencil: UInt8?) {
         let matrices = scene.camera.matricies(withViewportSize: size)
 
@@ -333,7 +328,6 @@ extension _RenderTargetProtocol {
         renderTargetBackend.didEndContent()
     }
 
-    @inline(__always)
     private func drawCanvas(_ canvas: Canvas, clipRect: Rect?, stencil: UInt8?) {
         let matrices = canvas.matrices(withSize: self.size)
         
@@ -360,7 +354,6 @@ extension _RenderTargetProtocol {
         renderTargetBackend.didEndContent()
     }
 
-    @inline(__always)
     private func drawRenderTarget(_ container: RenderTargetFillContainer, frame: UInt, clipRect: Rect?, stencil: UInt8?) {
         container.renderTarget.draw(frame)
                 
@@ -399,7 +392,7 @@ struct RenderTargetFillContainer {
     let filter: RenderTargetFillSampleFilter    
 }
 //extension RenderTargetProtocol {
-//    @inline(__always)
+//    @inlinable
 //    public func insert(
 //        _ target: any RenderTargetProtocol,
 //        withOptions options: RenderTargetFillOptions = [],
@@ -422,17 +415,18 @@ struct RenderTargetFillContainer {
 //}
 
 extension RenderTargetProtocol {
-    @_transparent
+    @inlinable
     nonisolated public static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs === rhs
     }
+    @inlinable
     nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(self))
     }
 }
 
 @usableFromInline
-@MainActor internal protocol RenderTargetBackend {
+@MainActor internal protocol RenderTargetBackend: AnyObject {
     var size: Size2 { get set }
     var clearColor: Color { get set }
     var wantsReshape: Bool { get }
@@ -446,11 +440,10 @@ extension RenderTargetProtocol {
 }
 
 extension RenderTargetBackend {
-    @inlinable @inline(__always)
+    @inlinable
     var wantsReshape: Bool { false }
 }
 
-@_transparent
 @MainActor func getRenderTargetBackend() -> any RenderTargetBackend {
     #if GATEENGINE_FORCE_OPNEGL_APPLE
     return OpenGLRenderTarget(windowBacking: nil)

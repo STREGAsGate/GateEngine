@@ -9,7 +9,7 @@ import WinSDK
 
 /// An interface from which many other core interfaces inherit from. It indicates that the object type encapsulates some amount of GPU-accessible memory; but does not strongly indicate whether the application can manipulate the object's residency.
 public class D3DPageable: D3DDeviceChild {
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -18,7 +18,7 @@ extension D3DPageable {
     typealias RawValue = WinSDK.ID3D12Pageable
 }
 extension D3DPageable.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D12Pageable}
 }
 

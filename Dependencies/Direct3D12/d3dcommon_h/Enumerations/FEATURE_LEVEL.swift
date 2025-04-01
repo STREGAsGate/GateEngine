@@ -22,7 +22,7 @@ public enum D3DFeatureLevel {
     case v12
     case v12_1
 
-    @inlinable @inline(__always)
+    @inlinable
     public var rawValue: RawValue {
         switch self {
             case .v1Core:

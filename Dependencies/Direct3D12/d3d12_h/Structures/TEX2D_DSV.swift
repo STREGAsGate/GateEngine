@@ -14,7 +14,7 @@ public struct D3DTexture2DDepthStencilView {
     internal var rawValue: RawValue
 
     /// The index of the first mipmap level to use.
-    @inlinable @inline(__always)
+    @inlinable
     public var mipIndex: UInt32 {
         get {
             return rawValue.MipSlice
@@ -27,12 +27,12 @@ public struct D3DTexture2DDepthStencilView {
     /** Describes the subresource from a 2D texture that is accessible to a depth-stencil view.
     - parameter mipIndex: The index of the first mipmap level to use.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(mipIndex: UInt32) {
         self.rawValue = RawValue(MipSlice: mipIndex)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

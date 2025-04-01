@@ -9,9 +9,9 @@ import Foundation
 import OpenGL_GateEngine
 import Shaders
 
-class OpenGLRenderer: RendererBackend {
-    @inline(__always)
-    var renderingAPI: RenderingAPI {
+class OpenGLRenderer: Renderer {
+    @inlinable
+    nonisolated static var api: RenderingAPI {
         #if os(macOS) || os(Windows) || (os(Linux) && !os(Android))
         return .openGL
         #elseif os(iOS) || os(tvOS) || os(Android)
@@ -634,7 +634,6 @@ extension OpenGLRenderer {
 
 extension OpenGLRenderer {
     #if GATEENGINE_DEBUG_RENDERING
-    @_transparent
     func checkError(_ function: String = #function, _ line: Int = #line) {
         assert(glCheckFramebufferStatus(target: .draw) == .complete)
         assert(
@@ -650,7 +649,6 @@ extension OpenGLRenderer {
 
 #if GATEENGINE_DEBUG_RENDERING
 extension Renderer {
-    @_transparent
     func openGLCheckError(_ function: String = #function, _ line: Int = #line) {
         (self._backend as! OpenGLRenderer).checkError(function, line)
     }
@@ -723,13 +721,6 @@ extension OpenGLRenderer {
             Log.fatalError("\(error)")
         }
         return shader
-    }
-}
-
-extension Renderer {
-    @_transparent
-    var openGLBackend: OpenGLRenderer {
-        return _backend as! OpenGLRenderer
     }
 }
 

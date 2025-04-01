@@ -9,7 +9,7 @@
 public struct UICanvas: Drawable {
     @usableFromInline
     internal var _drawCommands: ContiguousArray<DrawCommand> = []
-    @_transparent
+    @inlinable
     public var drawCommands: ContiguousArray<DrawCommand> {
         return _drawCommands
     }
@@ -26,7 +26,7 @@ public struct UICanvas: Drawable {
         self._drawCommands.reserveCapacity(estimatedCommandCount)
     }
     
-    @_transparent
+    @inlinable
     public mutating func insert(_ drawCommand: DrawCommand) {
         if drawCommand.isReady {
             assert(drawCommand.validate())

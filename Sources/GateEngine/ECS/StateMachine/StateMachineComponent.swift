@@ -9,7 +9,7 @@ public final class StateMachineComponent: Component {
     public var stateMachine: StateMachine
     internal var shouldApplyInitialState: Bool = true
 
-    @inlinable @inline(__always)
+    @inlinable
     public var currentState: any State {
         return stateMachine.currentState
     }

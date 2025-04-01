@@ -97,7 +97,7 @@ final class Win32Window: WindowBacking {
         self.state = .shown
     }
 
-    @inline(__always)
+    @inlinable
     @MainActor func render() {
         guard state == .shown else { return }
         self.window.vSyncCalled()
@@ -300,14 +300,14 @@ private class Win32WindowClass {
 
 //These are the notifation calls
 extension Win32Window {
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgPaint() {
         self.render()
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgResized(_ wParam: WPARAM, _ lParam: LPARAM) {
@@ -315,7 +315,7 @@ extension Win32Window {
         self.window.newPixelSize = self.pixelSize
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgResizing(_ wParam: WPARAM, _ lParam: LPARAM) {
@@ -324,7 +324,7 @@ extension Win32Window {
         self.window.newPixelSize = self.pixelSize
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgShow() {
@@ -332,7 +332,7 @@ extension Win32Window {
         self.updateStoredMetaData(newSize: nil)
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgRestore() {
@@ -340,28 +340,28 @@ extension Win32Window {
         self.updateStoredMetaData(newSize: nil)
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgHide() {
         self.hide()
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgClose() {
         self.close()
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgDestroy() {
         self.state = .destroyed
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgMouseMoved(_ lparam: LPARAM) {
@@ -378,7 +378,7 @@ extension Win32Window {
         )
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgMouseExited() {
@@ -391,7 +391,7 @@ extension Win32Window {
         )
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgMouseScrolledVertical(_ wParam: WPARAM, _ lParam: LPARAM) {
@@ -420,7 +420,7 @@ extension Win32Window {
         )
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgMouseScrolledHorizontal(_ wParam: WPARAM, _ lParam: LPARAM) {
@@ -450,7 +450,7 @@ extension Win32Window {
     }
 
     //return true if input was used
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgKeyDown(_ wparam: WPARAM, _ lparam: LPARAM) -> Bool {
@@ -464,7 +464,7 @@ extension Win32Window {
     }
 
     //return true if input was used
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _msgKeyUp(_ wparam: WPARAM, _ lparam: LPARAM) -> Bool {
@@ -477,7 +477,7 @@ extension Win32Window {
         )
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _mouseDownLeft(_ lparam: LPARAM) {
@@ -492,7 +492,7 @@ extension Win32Window {
         )
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _mouseUpLeft(_ lparam: LPARAM) {
@@ -507,7 +507,7 @@ extension Win32Window {
         )
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _mouseDownRight(_ lparam: LPARAM) {
@@ -522,7 +522,7 @@ extension Win32Window {
         )
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _mouseUpRight(_ lparam: LPARAM) {
@@ -537,7 +537,7 @@ extension Win32Window {
         )
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _mouseDownMiddle(_ lparam: LPARAM) {
@@ -552,7 +552,7 @@ extension Win32Window {
         )
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _mouseUpMiddle(_ lparam: LPARAM) {
@@ -567,7 +567,7 @@ extension Win32Window {
         )
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _mouseDownX(_ lparam: LPARAM, _ wparam: WPARAM) {
@@ -593,7 +593,7 @@ extension Win32Window {
         )
     }
 
-    @inline(__always)
+    @inlinable
     @preconcurrency
     @MainActor
     fileprivate func _mouseUpX(_ lparam: LPARAM, _ wparam: WPARAM) {
@@ -621,7 +621,7 @@ extension Win32Window {
 }
 
 extension Win32Window {
-    @inline(__always)
+    @inlinable
     func modifierKeyFromWPARAM(_ param: WPARAM) -> KeyboardModifierMask {
         switch Int32(param) {
         case VK_MENU, VK_LMENU, VK_RMENU:
@@ -639,7 +639,7 @@ extension Win32Window {
         }
     }
 
-    @inline(__always)
+    @inlinable
     func character(from param: WPARAM) -> Character? {
         var keyboardState: [UInt8] = [UInt8](repeating: 0, count: 256)
         if modifierKeyFromWPARAM(param).contains(.shift) {
@@ -655,7 +655,7 @@ extension Win32Window {
         return nil
     }
 
-    @inline(__always)
+    @inlinable
     func keyFromWPARAM(_ wparam: WPARAM, _ lparam: LPARAM) -> KeyboardKey {
         let key: Int32 = Int32(wparam)
 
@@ -1170,7 +1170,7 @@ private struct MouseState {
         self.hwnd = hwnd
     }
     private var deltaPosition: Position2 = .zero
-    @inline(__always)
+    @inlinable
     mutating func setMousePosition(to newPosition: Position2) {
         self.deltaPosition = floor(newPosition)
     }
@@ -1183,7 +1183,7 @@ private struct MouseState {
     private(set) var state: State = .outside
 
     private var tracking: Bool = false
-    @inline(__always)
+    @inlinable
     mutating func mouseMoved(_ lpParam: LPARAM) {
         guard tracking == false else { return }
         let newPosition: Position2 = positionFrom(lpParam)
@@ -1198,7 +1198,7 @@ private struct MouseState {
         TrackMouseEvent(&event)
     }
 
-    @inline(__always)
+    @inlinable
     mutating func mouseExited() {
         tracking = false
         state = .outside

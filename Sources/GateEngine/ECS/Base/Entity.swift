@@ -35,7 +35,7 @@ public final class Entity: Identifiable {
 }
 
 extension Entity {
-    @_transparent
+    @inlinable
     public convenience init(
         name: String? = nil,
         priority: Priority = .normal,
@@ -47,39 +47,40 @@ extension Entity {
 
 //MARK: Component Management
 extension Entity {
-    @usableFromInline @_transparent
+    @usableFromInline
     func getComponent(at index: Int) -> (any Component)? {
         return self.componentBank[index]
     }
     
-    @usableFromInline @_transparent
+    @usableFromInline
     internal func hasComponent(at index: Int) -> Bool {
         return self.componentIDs.contains(index)
     }
     
     /// - returns true if the entity has the component
-    @_transparent
+    @inlinable
     public func hasComponent(_ type: any Component.Type) -> Bool {
         return self.hasComponent(at: type.componentID.value)
     }
 
     /// - returns The component, addind it to the entity if necessary
+    @inlinable
     public subscript<T: Component>(_ type: T.Type) -> T {
-        @_transparent get {
+        get {
             let componentID = type.componentID.value
             #if DEBUG
             Log.assert(hasComponent(at: componentID), "Component \"\(type)\" is not a member of this entity.")
             #endif
             return self.getComponent(at: componentID) as! T
         }
-        @_transparent set {
+        set {
             self.insert(newValue)
         }
     }
 
     /// Obtain an existing component by it's ID.
     /// - returns The existing component or nil if it's not present.
-    @_transparent
+    @inlinable
     public func component<T: Component>(ofType type: T.Type) -> T? {
         let componentID = type.componentID.value
         guard self.hasComponent(at: componentID) else {return nil}
@@ -89,6 +90,7 @@ extension Entity {
     /// Obtain an existing component by it's ID.
     /// - returns The existing component or nil if it's not present.
     @MainActor
+    @inlinable
     public func component<T: ResourceConstrainedComponent>(ofType type: T.Type) -> T? {
         let componentID = type.componentID.value
         guard self.hasComponent(at: componentID) else {return nil}
@@ -108,7 +110,7 @@ extension Entity {
         }
     }
     
-    @inline(__always)
+    @inlinable
     public func insert<T: Component>(_ component: T) {
         let index = T.self.componentID.value
         
@@ -125,6 +127,7 @@ extension Entity {
     }
 
     /// - returns true if an existing component was replaced
+    @inlinable
     @discardableResult
     public func insert<T: Component>(_ component: T, replacingExisting: Bool) -> Bool {
         let componentID = T.self.componentID.value
@@ -135,6 +138,7 @@ extension Entity {
     }
 
     ///Adds or replaces a component with option configuration closure
+    @inlinable
     public func insert<T: Component>(
         _ type: T.Type,
         replaceExisting: Bool = false,
@@ -147,7 +151,8 @@ extension Entity {
     }
     
     /// Allows changing an existing component
-    @_transparent @discardableResult
+    @inlinable
+    @discardableResult
     public func modify<T: Component, ResultType>(
         _ type: T.Type,
         _ config: @escaping (_ component: inout T) -> ResultType
@@ -156,6 +161,7 @@ extension Entity {
     }
 
     /// Allows changing a component, addind it first if needed.
+    @inlinable
     public func configure<T: Component, ResultType>(
         _ type: T.Type,
         _ config: (_ component: inout T) async -> ResultType
@@ -167,6 +173,7 @@ extension Entity {
     }
     
     /// Allows changing a component, addind it first if needed.
+    @inlinable
     public func configure<T: Component, ResultType>(
         _ type: T.Type,
         _ config: (_ component: inout T) -> ResultType
@@ -178,6 +185,7 @@ extension Entity {
     }
 
     /// - returns The removed component or nil if no component was found.
+    @inlinable
     @discardableResult
     public func remove<T: Component>(_ type: T.Type) -> T? {
         if let value = component(ofType: type) {
@@ -199,10 +207,11 @@ extension Entity {
 }
 
 extension Entity: Hashable {
-    @_transparent
+    @inlinable
     public static func == (lhs: Entity, rhs: Entity) -> Bool {
         return lhs.id == rhs.id
     }
+    @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }

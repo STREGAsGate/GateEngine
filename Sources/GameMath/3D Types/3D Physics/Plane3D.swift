@@ -9,7 +9,7 @@ public struct Plane3D: Sendable {
     public let normal: Direction3
     public let constant: Float
     
-    @inlinable @inline(__always)
+    @inlinable
     public var origin: Position3 {return Position3(normal * constant)}
     
     public init(normal: Direction3, constant: Float) {
@@ -17,24 +17,24 @@ public struct Plane3D: Sendable {
         self.normal = normal
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public init(origin: Position3, normal: Direction3) {
         self.init(normal: normal, constant: -origin.dot(normal))
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public init(_ a: Float, _ b: Float, _ c: Float, _ d: Float) {
         self.init(normal: Direction3(a, b, c), constant: d)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public var normalized: Self {
         let m = normal.magnitude
         return Plane3D(normal: normal / m, constant: constant / m)
     }
     
     /// true if a line in `direction` will intersect the plane
-    @inlinable @inline(__always)
+    @inlinable
     public func isIntersecting(with direction: Direction3) -> Bool {
         return normal.isFrontFacing(toward: direction) == false
     }
@@ -46,17 +46,17 @@ public extension Plane3D {
         case back
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     func classifyPoint(_ p: Position3) -> Side {
         return (p.dot(normal) + constant) < 0 ? .back : .front
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     func distanceToPoint(_ p: Position3) -> Float {
         return (p.x * normal.x + p.y * normal.y + p.z * normal.z) + constant
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     func intersectionOfLine(_ line: Line3D) -> Position3 {
         let distance = self.constant
         
@@ -72,7 +72,7 @@ public extension Plane3D {
         return Position3((dir * t) + line.p1)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     func intersectionOfRay(_ ray: Ray3D) -> Position3 {
         let p1 = ray.origin
         let p2 = ray.origin.moved(Float.greatestFiniteMagnitude, toward: ray.direction)
@@ -90,7 +90,7 @@ public extension Plane3D {
         return Position3((dir * t) + p1)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     func isCollidingWith(_ box: AxisAlignedBoundingBox3D) -> Bool {
         // Convert AABB to center-extents representation
         let c = box.center + box.offset // Compute AABB center
@@ -108,12 +108,12 @@ public extension Plane3D {
 }
 
 public extension Plane3D {
-    @_transparent
+    @inlinable
     static func *=(lhs: inout Plane3D, rhs: Matrix4x4) {
         lhs = lhs * rhs
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     static func *(lhs: Plane3D, rhs: Matrix4x4) -> Plane3D {
         let origin = rhs * lhs.origin
         let normal = rhs.transposed().inverse * lhs.normal
@@ -122,12 +122,12 @@ public extension Plane3D {
 }
 
 public extension Plane3D {
-    @_transparent
+    @inlinable
     static func *=(lhs: inout Plane3D, rhs: Quaternion) {
         lhs = lhs * rhs
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     static func *(lhs: Plane3D, rhs: Quaternion) -> Plane3D {
         return lhs * Matrix4x4(position: lhs.origin) * Matrix4x4(rotation: rhs)
     }

@@ -62,7 +62,6 @@ extension HID.GamePadManger {
     }
 }
 
-@_transparent
 @MainActor private func getGamepadInterpreters() -> [any GamePadInterpreter] {
     #if os(macOS) || os(iOS) || os(tvOS)
     var interpreters: [(any GamePadInterpreter)?] = []

@@ -11,7 +11,7 @@ import WinSDK
 public final class D3DDescriptorHeap: D3DPageable {
 
     /// Gets the CPU descriptor handle that represents the start of the heap.
-    @inlinable @inline(__always)
+    @inlinable
     public var cpuDescriptorHandleForHeapStart: D3DCPUDescriptorHandle {
         return performFatally(as: RawValue.self) {pThis in            
             //fix from @compnerd's SwiftCOM package
@@ -24,7 +24,7 @@ public final class D3DDescriptorHeap: D3DPageable {
     }
 
     /// Gets the descriptor heap description.
-    @inlinable @inline(__always)
+    @inlinable
     public var descriptorHeapDescription: D3DDescriptorHeapDescription {
         return performFatally(as: RawValue.self) {pThis in
             var desc: D3DDescriptorHeapDescription.RawValue = D3DDescriptorHeapDescription.RawValue()
@@ -36,7 +36,7 @@ public final class D3DDescriptorHeap: D3DPageable {
     }
 
     /// Gets the GPU descriptor handle that represents the start of the heap.
-    @inlinable @inline(__always)
+    @inlinable
     public var gpuDescriptorHandleForHeapStart: D3DGPUDescriptorHandle {
         return performFatally(as: RawValue.self) {pThis in
             //fix from @compnerd's SwiftCOM package
@@ -48,7 +48,7 @@ public final class D3DDescriptorHeap: D3DPageable {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -57,7 +57,7 @@ extension D3DDescriptorHeap {
     typealias RawValue = WinSDK.ID3D12DescriptorHeap
 }
 extension D3DDescriptorHeap.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: IID {WinSDK.IID_ID3D12DescriptorHeap}
 }
 

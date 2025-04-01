@@ -15,7 +15,7 @@ public struct Position2: Vector2, Sendable {
         self.storage = SIMD2(x: x, y: y)
     }
     
-    @_transparent
+    @inlinable
     public var x: Float {
         get {
             return storage.x
@@ -25,7 +25,7 @@ public struct Position2: Vector2, Sendable {
         }
     }
     
-    @_transparent
+    @inlinable
     public var y: Float {
         get {
             return storage.y
@@ -62,7 +62,7 @@ public extension Position2 {
 }
 
 public extension Position2 {
-    @_transparent
+    @inlinable
     func distance(from: Self) -> Float {
         let difference = self - from
         let distance = difference.dot(difference)
@@ -74,12 +74,12 @@ public extension Position2 {
 //Addition
 extension Position2 {
     //Self:Self
-    @_transparent
+    @inlinable
     public static func +(lhs: Self, rhs: Self) -> Self {
         return Self(lhs.x + rhs.x,
                     lhs.y + rhs.y)
     }
-    @_transparent
+    @inlinable
     public static func +=(lhs: inout Self, rhs: Self) {
         lhs = lhs + rhs
     }
@@ -88,12 +88,12 @@ extension Position2 {
 //Subtraction
 extension Position2 {
     //Self:Self
-    @_transparent
+    @inlinable
     public static func -(lhs: Self, rhs: Self) -> Self {
         return Self(lhs.x - rhs.x,
                     lhs.y - rhs.y)
     }
-    @_transparent
+    @inlinable
     public static func -=(lhs: inout Self, rhs: Self) {
         lhs = lhs - rhs
     }
@@ -102,12 +102,12 @@ extension Position2 {
 //Division
 extension Position2 {
     //Self:Self
-    @_transparent
+    @inlinable
     public static func /(lhs: Self, rhs: Self) -> Self {
         return Self(lhs.x / rhs.x,
                     lhs.y / rhs.y)
     }
-    @_transparent
+    @inlinable
     public static func /=(lhs: inout Self, rhs: Self) {
         lhs = lhs / rhs
     }
@@ -118,7 +118,7 @@ public extension Position2 {
     - parameter distance: The units away from `self` to create the new position.
     - parameter direction: The angle away from self to create the new position.
      */
-    @_transparent
+    @inlinable
     func moved(_ distance: Float, toward direction: Direction2) -> Self {
         return self + (direction * distance)
     }
@@ -127,7 +127,7 @@ public extension Position2 {
     - parameter distance: The units away to move.
     - parameter direction: The angle to move.
      */
-    @_transparent
+    @inlinable
     mutating func move(_ distance: Float, toward direction: Direction2) {
         self = moved(distance, toward: direction)
     }
@@ -138,7 +138,7 @@ public extension Position2 {
     - parameter origin: The anchor to rotate around.
     - parameter rotation: The direction and angle to rotate.
      */
-    @_transparent
+    @inlinable
     func rotated(around anchor: Self = .zero, by angle: Direction2) -> Self {
         var p = self - anchor
         let d = p.distance(from: .zero)
@@ -151,14 +151,14 @@ public extension Position2 {
      - parameter origin: The anchor to rotate around.
      - parameter rotation: The direction and angle to rotate.
      */
-    @_transparent
+    @inlinable
     mutating func rotate(around anchor: Self = .zero, by angle: Direction2) {
         self = rotated(around: anchor, by: angle)
     }
 }
 
 public extension Position2 {
-    @_transparent
+    @inlinable
     mutating func clamp(within rect: Rect) {
         self.x = .maximum(self.x, rect.x)
         self.x = .minimum(self.x, rect.maxX)
@@ -166,7 +166,7 @@ public extension Position2 {
         self.y = .minimum(self.y, rect.maxY)
     }
     
-    @_transparent
+    @inlinable
     func clamped(within rect: Rect) -> Position2 {
         var copy = self
         copy.clamp(within: rect)

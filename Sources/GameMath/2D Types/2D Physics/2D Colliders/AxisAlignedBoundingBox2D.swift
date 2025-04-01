@@ -23,36 +23,36 @@ public struct AxisAlignedBoundingBox2D: Collider2D, Sendable {
         }
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public var volume: Float {
         return self.radius.x * self.radius.y
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public var size: Size2 {
         return radius * 2
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public var originalSize: Size2 {
         return originalRadius * 2
     }
-    @inlinable @inline(__always)
+    @inlinable
     public var originalRadius: Size2 {
         return _radius
     }
-    @inlinable @inline(__always)
+    @inlinable
     public var originalOffset: Position2 {
         return _offset
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public var boundingBox: AxisAlignedBoundingBox2D {
         return self
     }
     
     /// A frame representation of the collider
-    @inlinable @inline(__always)
+    @inlinable
     public var rect: Rect {
         return Rect(size: size, center: position)
     }

@@ -46,7 +46,7 @@ internal final class AudioSystem: PlatformSystem {
 
 // MARK: - Music
 extension AudioSystem {
-    @inline(__always)
+    @inlinable
     func updateMusic(withTimePassed deltaTime: Float) {
         for index in musicPlaying.indices.reversed() {
             let music = musicPlaying[index]
@@ -81,7 +81,7 @@ extension AudioSystem {
             }
         }
     }
-    @inline(__always)
+    @inlinable
     func musicMixer(for kind: Music.Kind) -> AudioMixer {
         if let existing = musicMixers[kind] {
             return existing
@@ -90,7 +90,7 @@ extension AudioSystem {
         musicMixers[kind] = mixer
         return mixer
     }
-    @inline(__always)
+    @inlinable
     func musicTrack(for mixer: AudioMixer) -> AudioTrack? {
         #if !os(WASI)
         let mixerID = ObjectIdentifier(mixer)
@@ -102,7 +102,7 @@ extension AudioSystem {
         #endif
         return mixer.createAudioTrack()
     }
-    @inline(__always)
+    @inlinable
     func markUnusedMusicTrack(from playingMusic: PlayingMusic) {
         #if !os(WASI)
         let source = playingMusic.track
@@ -124,7 +124,7 @@ extension AudioSystem {
         var currentActionAccumulator: Float = 0
         var actionStartVolume: Float = 0
         var actionEndVolume: Float = 1
-        @inline(__always)
+        @inlinable
         func processAction(deltaTime: Float) {
             if let pendingAction {
                 self.pendingAction = nil
@@ -199,7 +199,7 @@ extension AudioSystem {
             self.accumulatedTime = accumulatedTime
         }
 
-        @inline(__always)
+        @inlinable
         func update(_ deltaTime: Float) {
             guard buffer.state == .ready else { return }
             if accumulatedTime == 0 {
@@ -226,7 +226,7 @@ extension AudioSystem {
 
 // MARK: - Sounds
 extension AudioSystem {
-    @inline(__always)
+    @inlinable
     func updateSounds(context: ECSContext, withTimePassed deltaTime: Float) {
         updateListener(context: context)
         for index in soundsPlaying.indices.reversed() {
@@ -271,7 +271,7 @@ extension AudioSystem {
         }
     }
 
-    @inline(__always)
+    @inlinable
     func spatialMixer(for kind: Sound.Kind) -> SpatialAudioMixer {
         if let existing = spatialMixers[kind] {
             return existing
@@ -280,7 +280,7 @@ extension AudioSystem {
         spatialMixers[kind] = mixer
         return mixer
     }
-    @inline(__always)
+    @inlinable
     func spacialSource(for mixer: SpatialAudioMixer) -> SpatialAudioSource? {
         #if !os(WASI)
         let mixerID = ObjectIdentifier(mixer)
@@ -292,7 +292,7 @@ extension AudioSystem {
         #endif
         return mixer.createSource()
     }
-    @inline(__always)
+    @inlinable
     func markUnusedSpacialSource(from playingSound: PlayingSound) {
         #if !os(WASI)
         let source = playingSound.source
@@ -322,7 +322,7 @@ extension AudioSystem {
                 self.source.volume = newValue
             }
         }
-        @inline(__always)
+        @inlinable
         func processAction(deltaTime: Float) {
             if let pendingAction {
                 self.pendingAction = nil
@@ -373,13 +373,13 @@ extension AudioSystem {
         weak var entity: Entity?
         let buffer: AudioBuffer
         var accumulatedTime: Double
-        @inline(__always)
+        @inlinable
         public var duration: Double {
             return buffer.duration
         }
 
         var forceRemove: Bool = false
-        @inline(__always)
+        @inlinable
         public var isDone: Bool {
             guard forceRemove == false else { return true }
             guard source.repeats == false else { return false }
@@ -406,7 +406,7 @@ extension AudioSystem {
             self.volume = volume
         }
 
-        @inline(__always)
+        @inlinable
         @MainActor func update(_ deltaTime: Float, context: ECSContext) {
             guard buffer.state == .ready else { return }
             if accumulatedTime == 0 {
@@ -435,13 +435,13 @@ extension AudioSystem {
         let handle: ActiveSound
     }
     
-    @inline(__always)
+    @inlinable
     func queueSound(_ sound: Sound, as kind: Sound.Kind, entity: Entity?, volume: Float, handle: ActiveSound) {
         let waiting = WaitingSound(sound: sound, kind: kind, entity: entity, volume: volume, handle: handle)
         soundsWaitingToPlay.append(waiting)
     }
 
-    @inline(__always)
+    @inlinable
     func updateListener(context: ECSContext) {
         var entity: Entity? = nil
         if let listenerID {
@@ -464,7 +464,6 @@ extension AudioSystem {
 }
 
 @MainActor extension Game {
-    @_transparent
     var audio: AudioSystem {
         return system(ofType: AudioSystem.self)
     }

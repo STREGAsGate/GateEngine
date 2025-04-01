@@ -43,7 +43,7 @@ extension GravityGetVarExtended {
      Obtain a value from gravity.
      - parameter key: The name of the `var` as written in the gravity script.
      */
-    @inline(__always)
+    @inlinable
     public func getVar(_ key: String) -> Bool? {
         return getVar(key)?.getBool()
     }
@@ -52,7 +52,7 @@ extension GravityGetVarExtended {
      Obtain a value from gravity.
      - parameter key: The name of the `var` as written in the gravity script.
      */
-    @inline(__always)
+    @inlinable
     public func getVar<T: BinaryInteger>(_ key: String) -> T? {
         return getVar(key)?.getInt()
     }
@@ -61,7 +61,7 @@ extension GravityGetVarExtended {
      Obtain a value from gravity.
      - parameter key: The name of the `var` as written in the gravity script.
      */
-    @inline(__always)
+    @inlinable
     public func getVar(_ key: String) -> Float? {
         return getVar(key)?.asFloat()
     }
@@ -70,7 +70,7 @@ extension GravityGetVarExtended {
      Obtain a value from gravity.
      - parameter key: The name of the `var` as written in the gravity script.
      */
-    @inline(__always)
+    @inlinable
     public func getVar(_ key: String) -> Double? {
         return getVar(key)?.asDouble()
     }
@@ -79,7 +79,7 @@ extension GravityGetVarExtended {
      Obtain a value from gravity.
      - parameter key: The name of the `var` as written in the gravity script.
      */
-    @inline(__always)
+    @inlinable
     public func getVar(_ key: String) -> String? {
         return getVar(key)?.getString()
     }
@@ -89,7 +89,7 @@ extension GravityGetVarExtended {
 @MainActor
 public protocol GravityGetVarExtendedVMReferencing: GravityGetVarExtended, GravityVMReferencing {}
 extension GravityGetVarExtendedVMReferencing {
-    @inline(__always)
+    @inlinable
     public func getVar(_ key: String) -> GravityClosure? {
         return getVar(key)?.getClosure(
             gravity: _gravity,
@@ -115,7 +115,7 @@ extension GravitySetVarExtended {
      - parameter value: The swift value to assign
      - parameter key: The name of the `extern var` as written in the gravity script.
      */
-    @inline(__always)
+    @inlinable
     public func setVar(_ key: String, to value: some BinaryInteger) {
         self.setVar(key, to: GravityValue(value))
     }
@@ -125,7 +125,7 @@ extension GravitySetVarExtended {
      - parameter value: The swift value to assign
      - parameter key: The name of the `extern var` as written in the gravity script.
      */
-    @inline(__always)
+    @inlinable
     public func setVar(_ key: String, to value: some BinaryFloatingPoint) {
         self.setVar(key, to: GravityValue(value))
     }
@@ -135,7 +135,7 @@ extension GravitySetVarExtended {
      - parameter value: The swift value to assign
      - parameter key: The name of the `extern var` as written in the gravity script.
      */
-    @inline(__always)
+    @inlinable
     public func setVar(_ key: String, to value: String) {
         self.setVar(key, to: GravityValue(value))
     }
@@ -145,7 +145,7 @@ extension GravitySetVarExtended {
      - parameter value: The swift value to assign
      - parameter key: The name of the `extern var` as written in the gravity script.
      */
-    @inline(__always)
+    @inlinable
     public func setVar(_ key: String, to value: GravityInstance) {
         self.setVar(key, to: value.gravityValue)
     }

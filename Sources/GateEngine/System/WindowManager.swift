@@ -83,7 +83,7 @@ import GameMath
         #endif
     }
 
-    @inline(__always)
+    @inlinable
     func identifierIsUnused(_ identifier: String) -> Bool {
         for window: Window in windows {
             if window.identifier.caseInsensitiveCompare(identifier) == .orderedSame {

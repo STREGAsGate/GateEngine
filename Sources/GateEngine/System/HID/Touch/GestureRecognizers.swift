@@ -6,6 +6,7 @@
  */
 
 @MainActor open class GestureRecognizer {
+    weak var view: View? = nil
     public internal(set) var phase: Phase = .unrecognized
     public enum Phase {
         case unrecognized
@@ -14,6 +15,53 @@
     }
     
     nonisolated public init() {
+        
+    }
+    
+    open func touchesBegan(_ touches: Set<Touch>) {
+
+    }
+    open func touchesMoved(_ touches: Set<Touch>) {
+        
+    }
+    open func touchesEnded(_ touches: Set<Touch>) {
+        
+    }
+    open func touchesCanceled(_ touches: Set<Touch>) {
+        
+    }
+    
+    open func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        
+    }
+    open func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        
+    }
+    open func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        
+    }
+    open func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        
+    }
+    
+    open func cursorEntered(_ cursor: Mouse) {
+        
+    }
+    open func cursorMoved(_ cursor: Mouse) {
+        
+    }
+    open func cursorExited(_ cursor: Mouse) {
+        
+    }
+    
+    open func cursorButtonDown(button: MouseButton, mouse: Mouse) {
+        
+    }
+    open func cursorButtonUp(button: MouseButton, mouse: Mouse) {
+        
+    }
+    
+    open func scrolled(_ delta: Position2, isPlatformGeneratedMomentum isMomentum: Bool) {
         
     }
 }
@@ -134,22 +182,22 @@ final public class PanGestureRecognizer: GestureRecognizer {
         }
     }
     
-    public func touchesBegan(_ touches: Set<Touch>) {
+    public override func touchesBegan(_ touches: Set<Touch>) {
         for touch in touches {
             self.touches.insert(touch)
         }
     }
-    public func touchesMoved(_ touches: Set<Touch>) {
+    public override func touchesMoved(_ touches: Set<Touch>) {
         if self.phase == .recognizing || self.phase == .recognized {
             performRecognition()
         }
     }
-    public func touchesEnded(_ touches: Set<Touch>) {
+    public override func touchesEnded(_ touches: Set<Touch>) {
         for touch in touches {
             self.touches.remove(touch)
         }
     }
-    public func touchesCanceled(_ touches: Set<Touch>) {
+    public override func touchesCanceled(_ touches: Set<Touch>) {
         for touch in touches {
             self.touches.remove(touch)
         }
@@ -199,12 +247,12 @@ final public class PanGestureRecognizer: GestureRecognizer {
         }
     }
     
-    public func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+    public override func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         for touch in touches {
             surfaceTouches.insert(touch)
         }
     }
-    public func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+    public override func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         if self.phase == .recognizing || self.phase == .recognized {
             switch mouseButtons {
             case .none:
@@ -251,12 +299,12 @@ final public class PanGestureRecognizer: GestureRecognizer {
             performSurfaceRecognition()
         }
     }
-    public func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+    public override func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         for touch in touches {
             surfaceTouches.remove(touch)
         }
     }
-    public func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+    public override func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         for touch in touches {
             surfaceTouches.remove(touch)
         }
@@ -304,22 +352,22 @@ final public class ZoomGestureRecognizer: GestureRecognizer {
         }
     }
     
-    public func touchesBegan(_ touches: Set<Touch>) {
+    public override func touchesBegan(_ touches: Set<Touch>) {
         for touch in touches {
             self.touches.insert(touch)
         }
     }
-    public func touchesMoved(_ touches: Set<Touch>) {
+    public override func touchesMoved(_ touches: Set<Touch>) {
         if self.phase == .recognizing || self.phase == .recognized {
             performRecognition()
         }
     }
-    public func touchesEnded(_ touches: Set<Touch>) {
+    public override func touchesEnded(_ touches: Set<Touch>) {
         for touch in touches {
             self.touches.remove(touch)
         }
     }
-    public func touchesCanceled(_ touches: Set<Touch>) {
+    public override func touchesCanceled(_ touches: Set<Touch>) {
         for touch in touches {
             self.touches.remove(touch)
         }
@@ -356,24 +404,120 @@ final public class ZoomGestureRecognizer: GestureRecognizer {
         }
     }
     
-    public func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+    public override func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         for touch in touches {
             surfaceTouches.insert(touch)
         }
     }
-    public func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+    public override func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         if self.phase == .recognizing || self.phase == .recognized {
             performSurfaceRecognition()
         }
     }
-    public func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+    public override func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         for touch in touches {
             surfaceTouches.remove(touch)
         }
     }
-    public func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+    public override func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         for touch in touches {
             surfaceTouches.remove(touch)
+        }
+    }
+}
+
+final public class TapGestureRecognizer: GestureRecognizer {
+    public var touchCount: Int = 1
+    private var actions: [(_ position: Position2)->()] = []
+    var distance1: Float? = nil
+    var distance2: Float? = nil
+    
+    public init(touchCount: Int = 1, recognized: @escaping (_ position: Position2)->()) {
+        self.touchCount = touchCount
+        self.actions = [recognized]
+    }
+    
+    var touches: Set<Touch> = [] {
+        didSet {
+            if touches.count == touchCount {
+                self.phase = .recognizing
+            }else{
+                self.phase = .unrecognized
+                distance1 = nil
+                distance2 = nil
+            }
+        }
+    }
+    
+    var startPositions: [Touch: Position2] = [:]
+    
+    func performRecognition() {
+        guard touches.count == touchCount else { return }
+        guard let view else {return}
+
+        
+        var position: Position2 = .zero
+        for touch in self.touches {
+            let distance = touch.position.distance(from: startPositions[touch]!)
+            if distance > 10 {return}
+
+            position += touch.locationInView(view)
+        }
+               
+        position /= Float(touches.count)
+        guard view.bounds.contains(position) else {return}
+        
+        self.phase = .recognized
+        for action in actions {
+            action(position)
+        }
+    }
+    
+    public override func touchesBegan(_ touches: Set<Touch>) {
+        for touch in touches {
+            self.touches.insert(touch)
+            startPositions[touch] = touch.position
+        }
+    }
+    public override func touchesMoved(_ touches: Set<Touch>) {
+        
+    }
+    public override func touchesEnded(_ touches: Set<Touch>) {
+        performRecognition()
+        for touch in touches {
+            self.touches.remove(touch)
+            self.startPositions.removeValue(forKey: touch)
+        }
+    }
+    public override func touchesCanceled(_ touches: Set<Touch>) {
+        for touch in touches {
+            self.touches.remove(touch)
+            self.startPositions.removeValue(forKey: touch)
+        }
+    }
+    
+    var downInside: Bool = false
+    public override func cursorButtonDown(button: MouseButton, mouse: Mouse) {
+        guard let view else {return}
+        guard let position = mouse.locationInView(view) else {return}
+        guard view.bounds.contains(position) else {return}
+        downInside = true
+    }
+    
+    public override func cursorExited(_ cursor: Mouse) {
+        downInside = false
+    }
+    
+    public override func cursorButtonUp(button: MouseButton, mouse: Mouse) {
+        guard downInside else {
+            downInside = false
+            return
+        }
+        guard let view else {return}
+        guard let position = mouse.locationInView(view) else {return}
+        guard view.bounds.contains(position) else {return}
+        for action in actions {
+            action(position)
         }
     }
 }

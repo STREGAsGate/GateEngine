@@ -108,7 +108,6 @@ internal final class CABufferReference: AudioBufferBackend {
         self.pcmBuffer.frameLength = frameCapacity
         self.format = avFormat
 
-        @_transparent
         func writeData<T: Numeric>(
             _ data: Data,
             to pointer: UnsafePointer<UnsafeMutablePointer<T>>?

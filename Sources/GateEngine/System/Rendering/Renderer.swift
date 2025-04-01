@@ -19,7 +19,8 @@ public enum RenderingAPI {
         case topLeft
         case bottomLeft
     }
-    @_transparent
+
+    @inlinable
     public var origin: Origin {
         switch self {
         case .openGL, .openGLES, .webGL2:
@@ -30,18 +31,24 @@ public enum RenderingAPI {
     }
 }
 
-@MainActor public final class Renderer {
-    let _backend: any RendererBackend = getDefaultBackend()
-    @inline(__always)
-    nonisolated public var api: RenderingAPI { _backend.renderingAPI }
+@MainActor 
+protocol Renderer: AnyObject {
+    var api: RenderingAPI {get}
+    nonisolated static var api: RenderingAPI { get }
+    func draw(_ drawCommand: DrawCommand, camera: Camera?, matrices: Matrices, renderTarget: some _RenderTargetProtocol)
+}
 
+extension Renderer {
+    @inlinable
+    public var api: RenderingAPI {
+        return Self.api
+    }
     func draw(
         _ renderTarget: any _RenderTargetProtocol,
         into destinationRenderTarget: any _RenderTargetProtocol,
         options: RenderTargetFillOptions,
         sampler: RenderTargetFillSampleFilter
     ) {
-        @_transparent
         func matrices(withSize size: Size2) -> Matrices {
             let ortho = Matrix4x4(
                 orthographicWithTop: 0,
@@ -96,7 +103,7 @@ public enum RenderingAPI {
             flags: flags
         )
         if command.isReady {
-            _backend.draw(
+            self.draw(
                 command,
                 camera: nil,
                 matrices: matrices,
@@ -104,34 +111,9 @@ public enum RenderingAPI {
             )
         }
     }
-
-    func draw(
-        _ drawCommand: DrawCommand,
-        camera: Camera?,
-        matrices: Matrices,
-        renderTarget: some _RenderTargetProtocol
-    ) {
-        self._backend.draw(
-            drawCommand,
-            camera: camera,
-            matrices: matrices,
-            renderTarget: renderTarget
-        )
-    }
 }
 
-@MainActor internal protocol RendererBackend {
-    nonisolated var renderingAPI: RenderingAPI { get }
-    func draw(
-        _ drawCommand: DrawCommand,
-        camera: Camera?,
-        matrices: Matrices,
-        renderTarget: some _RenderTargetProtocol
-    )
-}
-
-@_transparent
-@MainActor private func getDefaultBackend() -> any RendererBackend {
+@MainActor internal func createRenderer() -> any Renderer {
     #if GATEENGINE_FORCE_OPNEGL_APPLE
     return OpenGLRenderer()
     #elseif canImport(MetalKit)

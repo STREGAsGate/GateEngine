@@ -1,4 +1,4 @@
-// swift-tools-version:6.0
+// swift-tools-version:6.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -10,6 +10,18 @@ let package = Package(
     products: [
         .library(name: "GateEngine", targets: ["GateEngine"]),
         .library(name: "GameMath", targets: ["GameMath"]),
+    ],
+    traits: [
+        .default(enabledTraits: ["SIMD"]),
+        
+        .trait(
+            name: "SIMD", 
+            description: "Enables SIMD acceleration when available. Note: Debug builds may skip SIMD, as without optimization SIMD hardware won't be used."
+        ),
+        .trait(
+            name: "HTML5", 
+            description: "Configures GateEngine for WebAssembly builds using the SwiftWASM project. Note: Building works in IDE, for cenvenince. But running requires building for WASI."
+        ),
     ],
     dependencies: {
         var packageDependencies: [Package.Dependency] = []
@@ -34,12 +46,10 @@ let package = Package(
         )
 
         // SwiftWASM
-        #if false && (os(macOS) || os(Linux))
         packageDependencies.append(contentsOf: [
             .package(url: "https://github.com/swiftwasm/WebAPIKit.git", .upToNextMajor(from: "0.1.0")),
             .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
         ])
-        #endif
         
         // Linting / Formating
         packageDependencies.append(contentsOf: [
@@ -105,28 +115,26 @@ let package = Package(
                                      package: "swift-collections")
                         ])
 
-                        #if false && (os(macOS) || os(Linux))
                         dependencies.append(contentsOf: [
                             .product(name: "JavaScriptEventLoop",
                                      package: "JavaScriptKit",
-                                     condition: .when(platforms: [.wasi])),
+                                     condition: .when(traits: ["HTML5"])),
                             .product(name: "DOM",
                                      package: "WebAPIKit",
-                                     condition: .when(platforms: [.wasi])),
+                                     condition: .when(traits: ["HTML5"])),
                             .product(name: "FileSystem",
                                      package: "WebAPIKit",
-                                     condition: .when(platforms: [.wasi])),
+                                     condition: .when(traits: ["HTML5"])),
                             .product(name: "WebAudio",
                                      package: "WebAPIKit",
-                                     condition: .when(platforms: [.wasi])),
+                                     condition: .when(traits: ["HTML5"])),
                             .product(name: "Gamepad",
                                      package: "WebAPIKit",
-                                     condition: .when(platforms: [.wasi])),
+                                     condition: .when(traits: ["HTML5"])),
                             .product(name: "WebGL2",
                                      package: "WebAPIKit",
-                                     condition: .when(platforms: [.wasi])),
+                                     condition: .when(traits: ["HTML5"])),
                         ])
-                        #endif
                         
                         return dependencies
                     }(),
@@ -181,10 +189,6 @@ let package = Package(
                             .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER",
                                 .when(platforms: .any(except: .wasi))),
                         ])
-                        #if !(os(macOS) || os(Linux))
-                        /// The host platform can't be used to compile HTML5 products
-                        settings.append(.define("GATEENGINE_WASI_UNSUPPORTED_HOST", .when(platforms: [.wasi])))
-                        #endif
 
                         #if true // Experimental and upcomming language features.
                         // These should be disabled for releases.
@@ -211,22 +215,16 @@ let package = Package(
                         ])
                         #endif
                         
-                        #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
-                        #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
-                        
+       
+                        #if HTML5
                         // Options for development of WASI platform
-                        #if false
                         settings.append(contentsOf: [
-                            /// Allows HTML5 platform to be compiled from a compatible host, such as macOS.
-                            /// This allows the IDE to show compile errors without targeting WASI.
-                            .define("GATEENGINE_ENABLE_WASI_IDE_SUPPORT",
-                                .when(platforms: [.macOS, .linux], configuration: .debug)),
-                            /// see comment in "Gate Engine options".
-                            .define("GATEENGINE_PLATFORM_EVENT_DRIVEN",
-                                .when(platforms: [.macOS, .linux, .wasi], configuration: .debug)),
+                            .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.macOS, .linux, .wasi])),
                         ])
                         #endif
                         
+                        #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
+                        #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
                         settings.append(contentsOf: [
                             /// Prints the output of generated shaders
                             .define("GATEENGINE_DEBUG_LAYOUT"),
@@ -252,7 +250,8 @@ let package = Package(
                     dependencies: [
                         "GameMath",
                         .product(name: "Collections", package: "swift-collections")
-                    ], swiftSettings: [
+                    ],
+                    swiftSettings: [
                         .define("GATEENGINE_DEBUG_SHADERS", .when(configuration: .debug))
                     ]),
             
@@ -267,7 +266,7 @@ let package = Package(
                 
                 // These settings are faster only with optimization.
                 #if true
-                array.append(.define("GameMathUseSIMD", .when(configuration: .release)))
+                array.append(.define("GameMathUseSIMD", .when(configuration: .release, traits: ["SIMD"])))
                 array.append(.define("GameMathUseLoopVectorization", .when(configuration: .release)))
                 #endif
                 

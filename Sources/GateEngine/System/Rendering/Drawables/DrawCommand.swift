@@ -117,10 +117,10 @@ public struct DrawCommand {
 }
 
 extension DrawCommand.Flags {
-    @_transparent
+    @inlinable
     public static var `default`: Self { Self() }
     
-    @_transparent
+    @inlinable
     internal static var userInterface: Self {
         return DrawCommand.Flags(
             cull: .disabled,
@@ -134,7 +134,7 @@ extension DrawCommand.Flags {
         )
     }
     
-    @_transparent
+    @inlinable
     internal static var userInterfaceMask: Self {
         return DrawCommand.Flags(
             cull: .disabled,

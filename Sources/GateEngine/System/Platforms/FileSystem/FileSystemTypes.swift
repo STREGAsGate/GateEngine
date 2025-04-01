@@ -57,7 +57,7 @@ public struct FileSystemWriteOptions: OptionSet, Sendable {
     public static let createDirectories = Self(rawValue: 1 << 1)
     public static let atomically = Self(rawValue: 1 << 2)
 
-    @_transparent
+    @inlinable
     public static var `default`: Self { [] }  // {[.createDirectories, .atomically]}
 }
 

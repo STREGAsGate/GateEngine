@@ -14,7 +14,7 @@ public struct D3DResourceTransitionBarrier {
     internal var rawValue: RawValue
 
     /// A pointer to the ID3D12Resource object that represents the resource used in the transition.
-    @inlinable @inline(__always)
+    @inlinable
     public var resource: D3DResource? {
         get {
             return D3DResource(winSDKPointer: rawValue.pResource)
@@ -25,7 +25,7 @@ public struct D3DResourceTransitionBarrier {
     }
 
     /// The index of the subresource for the transition. Use the D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES flag ( 0xffffffff ), nil in swift, to transition all subresources in a resource at the same time.
-    @inlinable @inline(__always)
+    @inlinable
     public var subresourceIndex: UInt32? {
         get {
             return rawValue.Subresource == WinSDK.D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES ? nil : rawValue.Subresource
@@ -40,7 +40,7 @@ public struct D3DResourceTransitionBarrier {
     }
 
     /// The "before" usages of the subresources, as a bitwise-OR'd combination of D3D12_RESOURCE_STATES enumeration constants.
-    @inlinable @inline(__always)
+    @inlinable
     public var stateBefore: D3DResourceStates {
         get {
             return D3DResourceStates(rawValue.StateBefore)
@@ -51,7 +51,7 @@ public struct D3DResourceTransitionBarrier {
     }
 
     /// The "after" usages of the subresources, as a bitwise-OR'd combination of D3D12_RESOURCE_STATES enumeration constants.
-    @inlinable @inline(__always)
+    @inlinable
     public var stateAfter: D3DResourceStates {
         get {
             return D3DResourceStates(rawValue.StateAfter)
@@ -62,12 +62,12 @@ public struct D3DResourceTransitionBarrier {
     }
 
     /// Describes the transition of subresources between different usages.
-    @inlinable @inline(__always)
+    @inlinable
     public init() {
         self.rawValue = RawValue()
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

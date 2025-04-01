@@ -39,12 +39,12 @@ extension Rect: Hashable {}
 extension Rect: Codable {}
 
 public extension Rect {
-    @_transparent
+    @inlinable
     var area: Float {
         return size.width * size.height
     }
     // The left side of the rect
-    @_transparent
+    @inlinable
     var x: Float {
         get {
             return position.x
@@ -54,7 +54,7 @@ public extension Rect {
         }
     }
     // The top of the rect
-    @_transparent
+    @inlinable
     var y: Float {
         get {
             return position.y
@@ -63,7 +63,7 @@ public extension Rect {
             position.y = y
         }
     }
-    @_transparent
+    @inlinable
     var width: Float {
         get {
             return size.width
@@ -72,7 +72,7 @@ public extension Rect {
             size.width = width
         }
     }
-    @_transparent
+    @inlinable
     var height: Float {
         get {
             return size.height
@@ -85,29 +85,29 @@ public extension Rect {
 
 extension Rect {
     // The left side of the rect
-    @_transparent
+    @inlinable
     public var minX: Float {
         return x
     }
     // The top of the rect
-    @_transparent
+    @inlinable
     public var minY: Float {
         return y
     }
     // The right side of the rect
-    @_transparent
+    @inlinable
     public var maxX: Float {
         return x + width
     }
     // The bottom of the rect
-    @_transparent
+    @inlinable
     public var maxY: Float {
         return y + height
     }
 }
 
 extension Rect {
-    @_transparent
+    @inlinable
     public var center: Position2 {
         get {
             return position + size * 0.5
@@ -119,20 +119,20 @@ extension Rect {
 }
 
 public extension Rect {
-    @_transparent
+    @inlinable
     var isFinite: Bool {
         return position.isFinite && size.isFinite
     }
 }
 
 public extension Rect {
-    @_transparent
+    @inlinable
     func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
         var copy = self
         copy.interpolate(to: to, method)
         return copy
     }
-    @_transparent
+    @inlinable
     mutating func interpolate(to: Self, _ method: InterpolationMethod) {
         self.position.interpolate(to: to.position, method)
         self.size.interpolate(to: to.size, method)
@@ -140,7 +140,7 @@ public extension Rect {
 }
 
 public extension Rect {
-    @_transparent
+    @inlinable
     func inset(by insets: Insets) -> Rect {
         var copy = self
         copy.x += insets.leading
@@ -150,7 +150,7 @@ public extension Rect {
         return copy
     }
     
-    @_transparent
+    @inlinable
     func clamped(within rect: Rect) -> Rect {
         var copy = self
         copy.x = max(rect.x, self.x)
@@ -170,20 +170,20 @@ extension Rect {
 }
 
 extension Rect {
-    @_transparent
+    @inlinable
     public static func * (lhs: Self, rhs: Float) -> Self {
         return Rect(position: lhs.position * rhs, size: lhs.size * rhs)
     }
-    @_transparent
+    @inlinable
     public static func *= (lhs: inout Self, rhs: Float) {
         lhs = lhs * rhs
     }
     
-    @_transparent
+    @inlinable
     public static func / (lhs: Self, rhs: Float) -> Self {
         return Rect(position: lhs.position / rhs, size: lhs.size / rhs)
     }
-    @_transparent
+    @inlinable
     public static func /= (lhs: inout Self, rhs: Float) {
         lhs = lhs / rhs
     }

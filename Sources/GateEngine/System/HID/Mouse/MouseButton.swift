@@ -13,15 +13,15 @@ public enum MouseButton: Hashable {
     case button5
     case unknown(_ index: Int?)
 
-    @_transparent
+    @inlinable
     public static var primary: Self { .button1 }
-    @_transparent
+    @inlinable
     public static var secondary: Self { .button2 }
-    @_transparent
+    @inlinable
     public static var middle: Self { .button3 }
-    @_transparent
+    @inlinable
     public static var backward: Self { .button4 }
-    @_transparent
+    @inlinable
     public static var forward: Self { .button5 }
 }
 

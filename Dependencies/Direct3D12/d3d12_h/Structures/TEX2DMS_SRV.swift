@@ -12,7 +12,7 @@ public struct D3DTexture2DMultiSampledShaderResourceView {
     @usableFromInline
     internal var rawValue: RawValue
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

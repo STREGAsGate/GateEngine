@@ -8,7 +8,7 @@
 import WinSDK
 
 public final class DGIOutput: DGIObject {
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -17,7 +17,7 @@ extension DGIOutput {
     typealias RawValue = WinSDK.IDXGIOutput
 }
 extension DGIOutput.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: WinSDK.IID {WinSDK.IID_IDXGIOutput}
 }
 

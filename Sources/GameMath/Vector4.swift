@@ -5,15 +5,14 @@
  * http://stregasgate.com
  */
 
-#if GameMathUseSIMD && canImport(simd)
+#if GameMathUseSIMD
+#if canImport(simd)
 import simd
 #endif
-
-#if GameMathUseSIMD && canImport(Accelerate)
+#if canImport(Accelerate)
 import Accelerate
 #endif
 
-#if GameMathUseSIMD
 public protocol Vector4: SIMD, Equatable, Sendable, ExpressibleByFloatLiteral where FloatLiteralType == Float, Scalar == Float, MaskStorage == SIMD4<Float>.MaskStorage, ArrayLiteralElement == Scalar {
     var x: Scalar {get set}
     var y: Scalar {get set}
@@ -37,20 +36,20 @@ public protocol Vector4: Equatable, Sendable, ExpressibleByFloatLiteral where Fl
 
 #if GameMathUseSIMD
 public extension Vector4 {
-    @_transparent
+    @inlinable
     var scalarCount: Int {return 4}
     
-    @_transparent
+    @inlinable
     init(_ simd: SIMD4<Float>) {
         self.init(simd[0], simd[1], simd[2], simd[3])
     }
 }
 #endif
- 
+
 public extension Vector4 {
     @inlinable
     subscript (_ index: Int) -> Float {
-        @_transparent get {
+        @inlinable get {
             switch index {
             case 0: return x
             case 1: return y
@@ -60,7 +59,7 @@ public extension Vector4 {
                 fatalError("Index \(index) out of range \(0..<4) for type \(type(of: self))")
             }
         }
-        @_transparent set {
+        @inlinable set {
             switch index {
             case 0: x = newValue
             case 1: y = newValue
@@ -74,18 +73,18 @@ public extension Vector4 {
 }
 
 public extension Vector4 {
-    @_transparent
+    @inlinable
     init(_ value: Float) {
         self.init(value, value, value)
     }
     
-    @_transparent
+    @inlinable
     init(_ values: [Float]) {
         assert(values.count == 4, "Values must have 4 elements. Use init(_: Float) to fill w,x,y,z with a single value.")
         self.init(values[0], values[1], values[2], values[3])
     }
     
-    @_transparent
+    @inlinable
     init(_ values: Float...) {
         assert(values.count == 4, "Values must have 3 elements. Use init(_: Float) to fill w,x,y,z with a single value.")
         self.init(values[0], values[1], values[2], values[3])
@@ -98,18 +97,18 @@ public extension Vector4 {
 
 //Mark: Integer Casting
 extension Vector4 {
-    @_transparent
+    @inlinable
     public init<V: Vector4>(_ value: V) {
         self = Self(value.x, value.y, value.z, value.w)
     }
-    @_transparent
+    @inlinable
     public init() {
         self.init(0, 0, 0, 0)
     }
 }
 
 extension Vector4 {
-    @_transparent
+    @inlinable
     public var isFinite: Bool {
         return x.isFinite && y.isFinite && z.isFinite && w.isFinite
     }
@@ -120,8 +119,8 @@ public extension Vector4 {
      Returns a new instance with `x` incremented by `value`.
      - parameter x: The amount to add to `x`. To subtract use a negatie value.
      - returns: A new Self with the additions.
-    */
-    @_transparent
+     */
+    @inlinable
     func addingTo(w: Float) -> Self {
         return Self(x, y, z, self.w + w)
     }
@@ -130,8 +129,8 @@ public extension Vector4 {
      Returns a new instance with `x` incremented by `value`.
      - parameter x: The amount to add to `x`. To subtract use a negatie value.
      - returns: A new Self with the additions.
-    */
-    @_transparent
+     */
+    @inlinable
     func addingTo(x: Float) -> Self {
         return Self(self.x + x, y, z, w)
     }
@@ -140,8 +139,8 @@ public extension Vector4 {
      Returns a new instance with `y` incremented by `value`.
      - parameter y: The amount to add to `y`. To subtract use a negatie value.
      - returns: A new Self with the additions.
-    */
-    @_transparent
+     */
+    @inlinable
     func addingTo(y value: Float) -> Self {
         return Self(x, y + value, z, w)
     }
@@ -150,8 +149,8 @@ public extension Vector4 {
      Returns a new instance with `z` incremented by `value`.
      - parameter value: The amount to add to `z`. To subtract use a negatie value.
      - returns: A new Self with the additions.
-    */
-    @_transparent
+     */
+    @inlinable
     func addingTo(z value: Float) -> Self {
         return Self(x, y, z + value, w)
     }
@@ -161,8 +160,8 @@ public extension Vector4 {
      - parameter x: The amount to add to `x`. To subtract use a negatie value.
      - parameter y: The amount to add to `y`. To subtract use a negatie value.
      - returns: A new Self with the additions.
-    */
-    @_transparent
+     */
+    @inlinable
     func addingTo(x: Float, y: Float) -> Self {
         return Self(self.x + x, self.y + y, z, w)
     }
@@ -172,15 +171,15 @@ public extension Vector4 {
      - parameter x: The amount to add to `x`. To subtract use a negatie value.
      - parameter z: The amount to add to `z`. To subtract use a negatie value.
      - returns: A new Self with the additions.
-    */
-    @_transparent
+     */
+    @inlinable
     func addingTo(x: Float, z: Float) -> Self {
         return Self(self.x + x, y, self.z + z, w)
     }
 }
 
 extension Vector4 {
-    @_transparent
+    @inlinable
     public func dot<V: Vector4>(_ vector: V) -> Float {
         #if GameMathUseSIMD && canImport(simd)
         return simd_dot(self.simd, vector.simd)
@@ -191,7 +190,7 @@ extension Vector4 {
 }
 
 extension Vector4 {
-    @_transparent
+    @inlinable
     public var length: Float {
         #if GameMathUseSIMD
         return self.sum()
@@ -200,7 +199,7 @@ extension Vector4 {
         #endif
     }
     
-    @_transparent
+    @inlinable
     public var squaredLength: Float {
         #if GameMathUseSIMD && canImport(simd)
         return simd_length_squared(self.simd)
@@ -209,20 +208,20 @@ extension Vector4 {
         #endif
     }
     
-    @_transparent
+    @inlinable
     public var magnitude: Float {
         return squaredLength.squareRoot()
     }
-
+    
     #if !GameMathUseFastInverseSquareRoot
-    @_transparent
+    @inlinable
     public var normalized: Self {
         var copy = self
         copy.normalize()
         return copy
     }
     
-    @_transparent
+    @inlinable
     public mutating func normalize() {
         if self != Self.zero {
             #if GameMathUseSIMD && canImport(simd)
@@ -236,7 +235,7 @@ extension Vector4 {
     }
     #endif
     
-    @_transparent
+    @inlinable
     public func squareRoot() -> Self {
         #if GameMathUseSIMD && canImport(Accelerate)
         if #available(macOS 10.15, macCatalyst 13, iOS 13, tvOS 13, watchOS 13, *) {
@@ -250,20 +249,20 @@ extension Vector4 {
             return Self(x.squareRoot(), y.squareRoot(), z.squareRoot(), w.squareRoot())
         }
         #else
-            return Self(x.squareRoot(), y.squareRoot(), z.squareRoot(), w.squareRoot())
+        return Self(x.squareRoot(), y.squareRoot(), z.squareRoot(), w.squareRoot())
         #endif
     }
 }
 
 extension Vector4 {
-    @_transparent
+    @inlinable
     public func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
         return Self(self.x.interpolated(to: to.x, method),
                     self.y.interpolated(to: to.y, method),
                     self.z.interpolated(to: to.z, method),
                     self.w.interpolated(to: to.w, method))
     }
-    @_transparent
+    @inlinable
     public mutating func interpolate(to: Self, _ method: InterpolationMethod) {
         self.x.interpolate(to: to.x, method)
         self.y.interpolate(to: to.y, method)
@@ -273,7 +272,7 @@ extension Vector4 {
 }
 
 public extension Vector4 {
-    @_transparent
+    @inlinable
     var max: Float {
         #if GameMathUseSIMD
         return self.max()
@@ -282,7 +281,7 @@ public extension Vector4 {
         #endif
         
     }
-    @_transparent
+    @inlinable
     var min: Float {
         #if GameMathUseSIMD
         return self.min()
@@ -296,10 +295,10 @@ public extension Vector4 {
 public extension Vector4 {
     @inlinable
     var simd: SIMD4<Float> {
-        @_transparent get {
+        @inlinable get {
             return SIMD4<Float>(x, y, z, w)
         }
-        @_transparent set {
+        @inlinable set {
             x = newValue[0]
             y = newValue[1]
             z = newValue[2]
@@ -309,32 +308,32 @@ public extension Vector4 {
 }
 
 //MARK: - Operations
-@_transparent
+@inlinable
 public func ceil<V: Vector4>(_ v: V) -> V {
     return V.init(ceil(v.x), ceil(v.y), ceil(v.z), ceil(v.w))
 }
 
-@_transparent
+@inlinable
 public func floor<V: Vector4>(_ v: V) -> V {
     return V.init(floor(v.x), floor(v.y), floor(v.z), floor(v.w))
 }
 
-@_transparent
+@inlinable
 public func round<V: Vector4>(_ v: V) -> V {
     return V.init(round(v.x), round(v.y), round(v.z), round(v.w))
 }
 
-@_transparent
+@inlinable
 public func abs<V: Vector4>(_ v: V) -> V {
     return V.init(abs(v.x), abs(v.y), abs(v.z), abs(v.w))
 }
 
-@_transparent
+@inlinable
 public func min<V: Vector4>(_ lhs: V, _ rhs: V) -> V {
     return V.init(min(lhs.x, rhs.x), min(lhs.y, rhs.y), min(lhs.z, rhs.z), min(lhs.w, rhs.w))
 }
 
-@_transparent
+@inlinable
 public func max<V: Vector4>(_ lhs: V, _ rhs: V) -> V {
     return V.init(max(lhs.x, rhs.x), max(lhs.y, rhs.y), max(lhs.z, rhs.z), max(lhs.w, rhs.w))
 }
@@ -342,187 +341,201 @@ public func max<V: Vector4>(_ lhs: V, _ rhs: V) -> V {
 //MARK: - Self Operators
 extension Vector4 {
     // Multiplication
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func *(lhs: Self, rhs: some Vector4) -> Self {
         var lhs = lhs
         lhs *= rhs
         return lhs
     }
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func *=(lhs: inout Self, rhs: some Vector4) {
-        #if GameMathUseLoopVectorization
+#if GameMathUseLoopVectorization
         for index in 0 ..< 4 {
             lhs[index] *= rhs[index]
         }
-        #else
+#else
         lhs.x *= rhs.x
         lhs.y *= rhs.y
         lhs.z *= rhs.z
         lhs.w *= rhs.w
-        #endif
+#endif
     }
     
     // Addition
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func +(lhs: Self, rhs: some Vector4) -> Self {
         var lhs = lhs
         lhs += rhs
         return lhs
     }
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func +=(lhs: inout Self, rhs: some Vector4) {
-        #if GameMathUseLoopVectorization
+#if GameMathUseLoopVectorization
         for index in 0 ..< 4 {
             lhs[index] += rhs[index]
         }
-        #else
+#else
         lhs.x += rhs.x
         lhs.y += rhs.y
         lhs.z += rhs.z
         lhs.w += rhs.w
-        #endif
+#endif
     }
     
     // Subtraction
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func -(lhs: Self, rhs: some Vector4) -> Self {
         var lhs = lhs
         lhs -= rhs
         return lhs
     }
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func -=(lhs: inout Self, rhs: some Vector4) {
-        #if GameMathUseLoopVectorization
+#if GameMathUseLoopVectorization
         for index in 0 ..< 4 {
             lhs[index] -= rhs[index]
         }
-        #else
+#else
         lhs.x -= rhs.x
         lhs.y -= rhs.y
         lhs.z -= rhs.z
         lhs.w -= rhs.w
-        #endif
+#endif
     }
 }
 extension Vector4 {
     // Division
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func /(lhs: Self, rhs: some Vector4) -> Self {
         var lhs = lhs
         lhs /= rhs
         return lhs
     }
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func /=(lhs: inout Self, rhs: some Vector4) {
-        #if GameMathUseLoopVectorization
+#if GameMathUseLoopVectorization
         for index in 0 ..< 4 {
             lhs[index] /= rhs[index]
         }
-        #else
+#else
         lhs.x /= rhs.x
         lhs.y /= rhs.y
         lhs.z /= rhs.z
         lhs.w /= rhs.w
-        #endif
+#endif
     }
 }
 
 //MARK: - Float Operators
 extension Vector4 {
     // Multiplication
-    @_transparent
+    @inlinable
     public static func *(lhs: Self, rhs: Float) -> Self {
         var lhs = lhs
         lhs *= rhs
         return lhs
     }
-    @_transparent
+    @inlinable
     public static func *=(lhs: inout Self, rhs: Float) {
-        #if GameMathUseLoopVectorization
+#if GameMathUseLoopVectorization
         for index in 0 ..< 4 {
             lhs[index] *= rhs
         }
-        #else
+#else
         lhs.x *= rhs
         lhs.y *= rhs
         lhs.z *= rhs
         lhs.w *= rhs
-        #endif
+#endif
     }
     
     // Addition
-    @_transparent
+    @inlinable
     public static func +(lhs: Self, rhs: Float) -> Self {
         var lhs = lhs
         lhs += rhs
         return lhs
     }
-    @_transparent
+    @inlinable
     public static func +=(lhs: inout Self, rhs: Float) {
-        #if GameMathUseLoopVectorization
+#if GameMathUseLoopVectorization
         for index in 0 ..< 4 {
             lhs[index] += rhs
         }
-        #else
+#else
         lhs.x += rhs
         lhs.y += rhs
         lhs.z += rhs
         lhs.w += rhs
-        #endif
+#endif
     }
     
     // Subtraction
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func -(lhs: Self, rhs: Float) -> Self {
         var lhs = lhs
         lhs -= rhs
         return lhs
     }
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func -=(lhs: inout Self, rhs: Float) {
-        #if GameMathUseLoopVectorization
+#if GameMathUseLoopVectorization
         for index in 0 ..< 4 {
             lhs[index] -= rhs
         }
-        #else
+#else
         lhs.x -= rhs
         lhs.y -= rhs
         lhs.z -= rhs
         lhs.w -= rhs
-        #endif
+#endif
     }
 }
 
 extension Vector4 {
     // Division
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func /(lhs: Self, rhs: Float) -> Self {
         var lhs = lhs
         lhs /= rhs
         return lhs
     }
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static func /=(lhs: inout Self, rhs: Float) {
-        #if GameMathUseLoopVectorization
+#if GameMathUseLoopVectorization
         for index in 0 ..< 4 {
             lhs[index] /= rhs
         }
-        #else
+#else
         lhs.x /= rhs
         lhs.y /= rhs
         lhs.z /= rhs
         lhs.w /= rhs
-        #endif
+#endif
     }
 }
 
 extension Vector4 {
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     public static prefix func -(rhs: Self) -> Self {
         return Self(-rhs.x, -rhs.y, -rhs.z, -rhs.w)
     }
-
-    @_transparent @_disfavoredOverload
+    
+    @_disfavoredOverload
+    @inlinable
     public static prefix func +(rhs: Self) -> Self {
         return Self(+rhs.x, +rhs.y, +rhs.z, +rhs.w)
     }
@@ -530,7 +543,8 @@ extension Vector4 {
 
 //MARK: Matrix4
 public extension Vector4 {
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     static func *(lhs: Self, rhs: Matrix4x4) -> Self {
         var x: Float = lhs.x * rhs.a
         x += lhs.y * rhs.b
@@ -546,7 +560,7 @@ public extension Vector4 {
         z += lhs.y * rhs.j
         z += lhs.z * rhs.k
         z += rhs.l
-
+        
         var w: Float = lhs.x * rhs.m
         w += lhs.y * rhs.n
         w += lhs.z * rhs.o
@@ -555,7 +569,8 @@ public extension Vector4 {
         return Self(x, y, z, w)
     }
     
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     static func *(lhs: Matrix4x4, rhs: Self) -> Self {
         
         var x: Float = rhs.x * lhs.a
@@ -581,7 +596,8 @@ public extension Vector4 {
         return Self(x, y, z, w)
     }
     
-    @_transparent @_disfavoredOverload
+    @_disfavoredOverload
+    @inlinable
     static func *(lhs: Self, rhs: Matrix3x3) -> Self {
         var vector: Self = .zero
         
@@ -600,7 +616,7 @@ extension Vector4 where Self: Codable {
         var container = encoder.singleValueContainer()
         try container.encode([x, y, z, w])
     }
-
+    
     @inlinable
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -610,6 +626,6 @@ extension Vector4 where Self: Codable {
 }
 
 extension Vector4 {
-    @_transparent
+    @inlinable
     public func valuesArray() -> [Float] {return [x, y, z, w]}
 }

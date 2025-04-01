@@ -14,7 +14,7 @@ public struct D3DStaticSamplerDescription {
     internal var rawValue: RawValue
 
     /// The filtering method to use when sampling a texture, as a D3D12_FILTER enumeration constant.
-    @inlinable @inline(__always)
+    @inlinable
     public var filter: D3DFilter {
         get {
             return D3DFilter(rawValue.Filter)
@@ -25,7 +25,7 @@ public struct D3DStaticSamplerDescription {
     }
 
     /// Specifies the D3D12_TEXTURE_ADDRESS_MODE mode to use for resolving a u texture coordinate that is outside the 0 to 1 range.
-    @inlinable @inline(__always)
+    @inlinable
     public var addressU: D3DTextureAddressMode {
         get {
             return D3DTextureAddressMode(rawValue.AddressU)
@@ -36,7 +36,7 @@ public struct D3DStaticSamplerDescription {
     }
 
     /// Specifies the D3D12_TEXTURE_ADDRESS_MODE mode to use for resolving a v texture coordinate that is outside the 0 to 1 range.
-    @inlinable @inline(__always)
+    @inlinable
     public var addressV: D3DTextureAddressMode {
         get {
             return D3DTextureAddressMode(rawValue.AddressV)
@@ -47,7 +47,7 @@ public struct D3DStaticSamplerDescription {
     }
 
     /// Specifies the D3D12_TEXTURE_ADDRESS_MODE mode to use for resolving a w texture coordinate that is outside the 0 to 1 range.
-    @inlinable @inline(__always)
+    @inlinable
     public var addressW: D3DTextureAddressMode {
         get {
             return D3DTextureAddressMode(rawValue.AddressW)
@@ -58,7 +58,7 @@ public struct D3DStaticSamplerDescription {
     }
 
     /// Offset from the calculated mipmap level. For example, if Direct3D calculates that a texture should be sampled at mipmap level 3 and MipLODBias is 2, then the texture will be sampled at mipmap level 5.
-    @inlinable @inline(__always)
+    @inlinable
     public var mipLODBias: Float {
         get {
             return rawValue.MipLODBias
@@ -69,7 +69,7 @@ public struct D3DStaticSamplerDescription {
     }
 
     /// Clamping value used if D3D12_FILTER_ANISOTROPIC or D3D12_FILTER_COMPARISON_ANISOTROPIC is specified as the filter. Valid values are between 1 and 16.
-    @inlinable @inline(__always)
+    @inlinable
     public var maxAnisotropy: UInt32 {
         get {
             return rawValue.MaxAnisotropy
@@ -80,7 +80,7 @@ public struct D3DStaticSamplerDescription {
     }
 
     /// A function that compares sampled data against existing sampled data. The function options are listed in D3D12_COMPARISON_FUNC.
-    @inlinable @inline(__always)
+    @inlinable
     public var comparisonFunction: D3DComparisonFunction {
         get {
             return D3DComparisonFunction(rawValue.ComparisonFunc)
@@ -91,7 +91,7 @@ public struct D3DStaticSamplerDescription {
     }
 
     /// One member of D3D12_STATIC_BORDER_COLOR, the border color to use if D3D12_TEXTURE_ADDRESS_MODE_BORDER is specified for AddressU, AddressV, or AddressW. Range must be between 0.0 and 1.0 inclusive.
-    @inlinable @inline(__always)
+    @inlinable
     public var borderColor: D3DStaticBorderColor {
         get {
             return D3DStaticBorderColor(rawValue.BorderColor)
@@ -102,7 +102,7 @@ public struct D3DStaticSamplerDescription {
     }
 
     /// Lower end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed.
-    @inlinable @inline(__always)
+    @inlinable
     public var minLOD: Float {
         get {
             return rawValue.MinLOD
@@ -113,7 +113,7 @@ public struct D3DStaticSamplerDescription {
     }
 
     /// Upper end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed. This value must be greater than or equal to MinLOD. To have no upper limit on LOD set this to a large value such as D3D12_FLOAT32_MAX.
-    @inlinable @inline(__always)
+    @inlinable
     public var maxLOD: Float {
         get {
             return rawValue.MaxLOD
@@ -130,7 +130,7 @@ public struct D3DStaticSamplerDescription {
     This corresponds to a ShaderRegister of 2 (indicating the type is SRV), and RegisterSpace is 3.
     The ShaderRegister and RegisterSpace pair is needed to establish correspondence between shader resources and runtime heap descriptors, using the root signature data structure.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public var shaderRegister: UInt32 {
         get {
             return rawValue.ShaderRegister
@@ -147,7 +147,7 @@ public struct D3DStaticSamplerDescription {
     This corresponds to a ShaderRegister of 2 (indicating the type is SRV), and RegisterSpace is 3.
     The ShaderRegister and RegisterSpace pair is needed to establish correspondence between shader resources and runtime heap descriptors, using the root signature data structure.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public var registerSpace: UInt32 {
         get {
             return rawValue.RegisterSpace
@@ -158,7 +158,7 @@ public struct D3DStaticSamplerDescription {
     }
 
     /// Specifies the visibility of the sampler to the pipeline shaders, one member of D3D12_SHADER_VISIBILITY.
-    @inlinable @inline(__always)
+    @inlinable
     public var shaderVisibility: D3DShaderVisibility {
         get {
             return D3DShaderVisibility(rawValue.ShaderVisibility)
@@ -183,7 +183,7 @@ public struct D3DStaticSamplerDescription {
     - parameter registerSpace: The ShaderRegister and RegisterSpace parameters correspond to the binding syntax of HLSL.
     - parameter shaderVisibility: Specifies the visibility of the sampler to the pipeline shaders, one member of D3D12_SHADER_VISIBILITY.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(filter: D3DFilter,
                 addressU: D3DTextureAddressMode = .border,
                 addressV: D3DTextureAddressMode = .border,
@@ -212,7 +212,7 @@ public struct D3DStaticSamplerDescription {
         self.shaderVisibility = shaderVisibility
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

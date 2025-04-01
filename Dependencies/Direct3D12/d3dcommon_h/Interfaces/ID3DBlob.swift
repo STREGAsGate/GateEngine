@@ -12,7 +12,7 @@ import WinSDK
 public final class D3DBlob: IUnknown {
 
     /// Gets a pointer to the data.
-    @inlinable @inline(__always)
+    @inlinable
     public var bufferPointer: LPVOID? {
         return performFatally(as: RawValue.self) {pThis in
             return pThis.pointee.lpVtbl.pointee.GetBufferPointer(pThis)
@@ -20,14 +20,14 @@ public final class D3DBlob: IUnknown {
     }
 
     /// Gets the size.
-    @inlinable @inline(__always)
+    @inlinable
     public var bufferSize: SIZE_T {
         return performFatally(as: RawValue.self) {pThis in
             return pThis.pointee.lpVtbl.pointee.GetBufferSize(pThis)
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var data: Data? {
         guard bufferPointer != nil && bufferSize > 0 else {return nil}
         return withUnsafeBytes(of: bufferPointer) {
@@ -35,14 +35,14 @@ public final class D3DBlob: IUnknown {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var stringValue: String? {
         guard bufferSize > 0, let bufferPointer = bufferPointer else {return nil}
         let pointer = bufferPointer.bindMemory(to: CHAR.self, capacity: Int(bufferSize))
         return String(cString: pointer).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     override class var interfaceID: WinSDK.IID {RawValue.interfaceID}
 }
 
@@ -51,7 +51,7 @@ extension D3DBlob {
     typealias RawValue = WinSDK.ID3D10Blob
 }
 extension D3DBlob.RawValue {
-    @inlinable @inline(__always)
+    @inlinable
     static var interfaceID: WinSDK.IID {WinSDK.IID_ID3D10Blob}
 }
 

@@ -14,7 +14,7 @@ class DX12Geometry: GeometryBackend, SkinnedGeometryBackend {
     let attributes: ContiguousArray<GeometryAttribute>
     let buffers: ContiguousArray<D3DResource>
     let indicesCount: Int
-    @inline(__always)
+    @inlinable
     var indexBuffer: D3DResource {
         return buffers.last!
     }

@@ -93,13 +93,17 @@ public final class TileMapSystem: System {
                         tv1: tileRect.maxY * hM
                     )
                     
-                    if tile.options.contains(.flippedHorizontal) || tile.options.contains(.flippedDiagonal) {
+                    if tile.options.contains(.flippedHorizontal) {
                         swap(&v1.u1, &v2.u1)
                         swap(&v3.u1, &v4.u1)
                     }
-                    if tile.options.contains(.flippedVertical) || tile.options.contains(.flippedDiagonal) {
+                    if tile.options.contains(.flippedVertical) {
                         swap(&v1.v1, &v3.v1)
                         swap(&v2.v1, &v4.v1)
+                    }
+                    if tile.options.contains(.flippedDiagonal) {
+                        swap(&v1.u1, &v3.u1)
+                        swap(&v1.v1, &v3.v1)
                     }
                     
                     triangles.append(Triangle(v1: v1, v2: v3, v3: v2, repairIfNeeded: false))

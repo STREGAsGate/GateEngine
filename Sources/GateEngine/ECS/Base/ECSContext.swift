@@ -6,100 +6,97 @@
  */
 
 @MainActor internal extension Game {
-    @_transparent
-    var entities: ContiguousArray<Entity> {
+    @inlinable
+    var entities: [Entity] {
         return ecs.sortedEntities()
     }
-    @_transparent
+    @inlinable
     func insertEntity(_ entity: Entity) {
         ecs.insertEntity(entity)
     }
-    @_transparent
+    @inlinable
     func removeEntity(_ entity: Entity) {
         ecs.removeEntity(entity)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     func removeEntity(named name: String) -> Entity? {
         return ecs.removeEntity(named: name)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     func removeEntity(where block: (Entity) -> (Bool)) -> Entity? {
         return ecs.removeEntity(where: block)
     }
-    @_transparent
+    @inlinable
     func entity(named name: String) -> Entity? {
         return ecs.entity(named: name)
     }
-    @_transparent
+    @inlinable
     func entity(withID id: ObjectIdentifier) -> Entity? {
         return ecs.entity(withID: id)
     }
-    @_transparent
+    @inlinable
     func firstEntity(withComponent component: any Component.Type) -> Entity? {
         return ecs.firstEntity(withComponent: component)
     }
-    @_transparent
+    @inlinable
     func system<T: System>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType)
     }
-    @_transparent
+    @inlinable
     func hasSystem<T: System>(ofType systemType: T.Type) -> Bool {
         return ecs.hasSystem(ofType: systemType)
     }
-    @_transparent
+    @inlinable
     func system<T: RenderingSystem>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType)
     }
-    @_transparent
+    @inlinable
     func insertSystem(_ newSystem: System) {
         ecs.insertSystem(newSystem)
     }
-    @_transparent
+    @inlinable
     func insertSystem(_ newSystem: RenderingSystem) {
         ecs.insertSystem(newSystem)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     func insertSystem<T: System>(_ system: T.Type) -> T {
         return ecs.insertSystem(system)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     func insertSystem<T: RenderingSystem>(_ system: T.Type) -> T {
         return ecs.insertSystem(system)
     }
-    @_transparent
+    @inlinable
     func removeSystem(_ system: System) {
         ecs.removeSystem(system)
     }
-    @_transparent
+    @inlinable
     func removeSystem(_ system: RenderingSystem) {
         ecs.removeSystem(system)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     func removeSystem<T: System>(_ system: T.Type) -> T? {
         return ecs.removeSystem(system)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     func removeSystem<T: RenderingSystem>(_ system: T.Type) -> T? {
         return ecs.removeSystem(system)
     }
 
-    @_transparent
     func system<T: PlatformSystem>(ofType systemType: T.Type) -> T {
         return ecs.system(ofType: systemType)
     }
-    @_transparent @discardableResult
+    @discardableResult
     func insertSystem<T: PlatformSystem>(_ system: T.Type) -> T {
         return ecs.insertSystem(system)
     }
-    @_transparent
     func insertSystem(_ newSystem: PlatformSystem) {
         ecs.insertSystem(newSystem)
     }
-    @_transparent
     func removeSystem(_ system: PlatformSystem) {
         ecs.removeSystem(system)
     }
-    @_transparent @discardableResult
+    @discardableResult
     func removeSystem<T: PlatformSystem>(_ system: T.Type) -> T? {
         return ecs.removeSystem(system)
     }
@@ -203,17 +200,18 @@
     }
 
     private var entitiesDidChange: Bool = true
-    public private(set) var entities: Set<Entity> = .init(minimumCapacity: 16) {
+    public var entities: Set<Entity> = .init(minimumCapacity: 16) {
         didSet {
             self.entitiesDidChange = true
         }
     }
     
-    internal var _removedEntities: ContiguousArray<Entity> = []
-
-    private var _sortedEntities: ContiguousArray<Entity> = []
     @usableFromInline
-    func sortedEntities() -> ContiguousArray<Entity> {
+    internal var _removedEntities: [Entity] = []
+
+    private var _sortedEntities: [Entity] = []
+    @usableFromInline
+    func sortedEntities() -> [Entity] {
         if entitiesDidChange {
             entitiesDidChange = false
             self.sortEntities()
@@ -329,6 +327,7 @@ extension ECSContext {
 
 //MARK: Entity Management
 public extension ECSContext {
+    @inlinable
     func insertEntity(_ entity: Entity) {
         self.entities.insert(entity)
         
@@ -342,11 +341,13 @@ public extension ECSContext {
             }
         }
     }
+    @inlinable
     func removeEntity(_ entity: Entity) {
         if let entity = self.entities.remove(entity) {
             self._removedEntities.append(entity)
         }
     }
+    @inlinable
     func removeEntity(named name: String) -> Entity? {
         if let entity = self.removeEntity(where: { $0.name == name }) {
             self._removedEntities.append(entity)
@@ -354,6 +355,7 @@ public extension ECSContext {
         }
         return nil
     }
+    @inlinable
     @discardableResult
     func removeEntity(where block: (Entity) -> (Bool)) -> Entity? {
         if let removed = self.entities.first(where: block) {
@@ -363,15 +365,15 @@ public extension ECSContext {
         }
         return nil
     }
-    @_transparent
+    @inlinable
     func entity(named name: String) -> Entity? {
         return entities.first(where: { $0.name == name })
     }
-    @_transparent
+    @inlinable
     func entity(withID id: ObjectIdentifier) -> Entity? {
         return entities.first(where: { $0.id == id })
     }
-    @_transparent
+    @inlinable
     func firstEntity(withComponent type: any Component.Type) -> Entity? {
         return entities.first(where: { $0.hasComponent(type) })
     }
@@ -451,7 +453,7 @@ public extension ECSContext {
         self.insertSystem(system)
         return system
     }
-    @inline(__always) @discardableResult
+    @discardableResult
     internal func insertSystem<T: PlatformSystem>(_ system: T.Type) -> T {
         let system = system.init(context: self)
         self.insertSystem(system)

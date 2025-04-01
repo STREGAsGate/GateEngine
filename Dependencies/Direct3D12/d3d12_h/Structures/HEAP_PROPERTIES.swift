@@ -14,7 +14,7 @@ public struct D3DHeapProperties {
     internal var rawValue: RawValue
 
     /// A D3D12_HEAP_TYPE-typed value that specifies the type of heap.
-    @inlinable @inline(__always)
+    @inlinable
     public var `type`: D3DHeapType {
         get {
             return D3DHeapType(rawValue.Type)
@@ -25,7 +25,7 @@ public struct D3DHeapProperties {
     }
 
     /// A D3D12_CPU_PAGE_PROPERTY-typed value that specifies the CPU-page properties for the heap.
-    @inlinable @inline(__always)
+    @inlinable
     public var cpuPageProperty: D3DCPUPageProperty {
         get {
             return D3DCPUPageProperty(rawValue.CPUPageProperty)
@@ -36,7 +36,7 @@ public struct D3DHeapProperties {
     }
 
     /// A D3D12_MEMORY_POOL-typed value that specifies the memory pool for the heap.
-    @inlinable @inline(__always)
+    @inlinable
     public var memoryPoolPreference: D3DMemoryPool {
         get {
             return D3DMemoryPool(rawValue.MemoryPoolPreference)
@@ -53,7 +53,7 @@ public struct D3DHeapProperties {
 
         Passing zero is equivalent to passing one, in order to simplify the usage of single-GPU adapters.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public var multiAdapterCreationNodeMask: UInt32 {
         get {
             return rawValue.CreationNodeMask
@@ -70,7 +70,7 @@ public struct D3DHeapProperties {
 
         Passing zero is equivalent to passing one, in order to simplify the usage of single-GPU adapters.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public var multiAdapterVisibleNodeMask: UInt32 {
         get {
             return rawValue.VisibleNodeMask
@@ -87,7 +87,7 @@ public struct D3DHeapProperties {
     - parameter creationNodeMask: Passing zero is equivalent to passing one, in order to simplify the usage of single-GPU adapters.
     - parameter visibleNodeMask: Passing zero is equivalent to passing one, in order to simplify the usage of single-GPU adapters.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(type: D3DHeapType,
                 cpuPageProperty: D3DCPUPageProperty = .unknown,
                 memoryPoolPreference: D3DMemoryPool = .unknown,
@@ -100,17 +100,17 @@ public struct D3DHeapProperties {
                                  VisibleNodeMask: visibleNodeMask)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public static var forBuffer: D3DHeapProperties {
         return D3DHeapProperties(type: .upload, cpuPageProperty: .unknown, memoryPoolPreference: .unknown)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public static var forTexture: D3DHeapProperties {D3DHeapProperties(type: .default)}
 }
 

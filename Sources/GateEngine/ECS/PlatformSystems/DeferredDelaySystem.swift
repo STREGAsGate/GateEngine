@@ -19,12 +19,12 @@ internal final class DeferredDelaySystem: PlatformSystem {
     var deferredClosures: [DeferredClosure] = []
     var delays: Deque<Delay> = []
     
-    @inline(__always)
+    @inlinable
     func append(deferredClosure block: @escaping DeferredClosure) {
         deferredClosures.append(block)
     }
     
-    @inline(__always)
+    @inlinable
     func append(delayDuration duration: Float, closure: @escaping DelayClosure) {
         delays.append(Delay(duration: duration, closure: closure))
     }
@@ -52,14 +52,12 @@ internal final class DeferredDelaySystem: PlatformSystem {
 }
 
 extension ECSContext {
-    @inline(__always)
     public func `defer`(_ closure: @escaping DeferredClosure) {
         let _system = self.system(ofType: DeferredDelaySystem.self)
         let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
         system.append(deferredClosure: closure)
     }
     
-    @inline(__always)
     public func delay(_ duration: Float, completion: @escaping ()->()) {
         let _system = self.system(ofType: DeferredDelaySystem.self)
         let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
@@ -68,14 +66,12 @@ extension ECSContext {
 }
 
 extension System {
-    @inline(__always)
     public func `defer`(_ closure: @escaping DeferredClosure) {
         let _system = context.system(ofType: DeferredDelaySystem.self)
         let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
         system.append(deferredClosure: closure)
     }
     
-    @inline(__always)
     public func delay(_ duration: Float, completion: @escaping ()->()) {
         let _system = context.system(ofType: DeferredDelaySystem.self)
         let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
@@ -84,14 +80,12 @@ extension System {
 }
 
 extension PlatformSystem {
-    @_transparent
     func `defer`(_ closure: @escaping DeferredClosure) {
         let _system = context.system(ofType: DeferredDelaySystem.self)
         let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
         system.append(deferredClosure: closure)
     }
     
-    @_transparent
     func delay(_ duration: Float, completion: @escaping ()->()) {
         let _system = context.system(ofType: DeferredDelaySystem.self)
         let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
@@ -100,14 +94,12 @@ extension PlatformSystem {
 }
 
 @MainActor extension Game {
-    @inline(__always)
     public func `defer`(_ closure: @escaping DeferredClosure) {
         let _system = self.system(ofType: DeferredDelaySystem.self)
         let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)
         system.append(deferredClosure: closure)
     }
     
-    @inline(__always)
     public func delay(_ duration: Float, _ closure: @escaping DeferredClosure) {
         let _system = self.system(ofType: DeferredDelaySystem.self)
         let system = unsafeDowncast(_system, to: DeferredDelaySystem.self)

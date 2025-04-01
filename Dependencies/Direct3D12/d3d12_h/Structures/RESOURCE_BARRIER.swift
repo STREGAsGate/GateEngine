@@ -14,7 +14,7 @@ public struct D3DResourceBarrier {
     internal var rawValue: RawValue
 
     /// A D3D12_RESOURCE_BARRIER_TYPE-typed value that specifies the type of resource barrier. This member determines which type to use in the union below.
-    @inlinable @inline(__always)
+    @inlinable
     public var `type`: D3DResourceBarrierType {
         get {
             return D3DResourceBarrierType(rawValue.Type)
@@ -25,7 +25,7 @@ public struct D3DResourceBarrier {
     }
 
     /// Specifies a D3D12_RESOURCE_BARRIER_FLAGS enumeration constant such as for "begin only" or "end only".
-    @inlinable @inline(__always)
+    @inlinable
     public var flags: D3DResourceBarrierFlags {
         get {
             return D3DResourceBarrierFlags(rawValue.Flags)
@@ -36,7 +36,7 @@ public struct D3DResourceBarrier {
     }
 
     /// A D3D12_RESOURCE_TRANSITION_BARRIER structure that describes the transition of subresources between different usages. Members specify the before and after usages of the subresources.
-    @inlinable @inline(__always)
+    @inlinable
     public var transition: D3DResourceTransitionBarrier {
         get {
             return D3DResourceTransitionBarrier(rawValue.Transition)
@@ -47,7 +47,7 @@ public struct D3DResourceBarrier {
     }
 
     /// A D3D12_RESOURCE_ALIASING_BARRIERstructure that describes the transition between usages of two different resources that have mappings into the same heap.
-    @inlinable @inline(__always)
+    @inlinable
     public var aliasing: D3DResourceAliasingBarrier {
         get {
             return D3DResourceAliasingBarrier(rawValue.Aliasing)
@@ -58,7 +58,7 @@ public struct D3DResourceBarrier {
     }
 
     /// A D3D12_RESOURCE_UAV_BARRIERstructure that describes a resource in which all UAV accesses (reads or writes) must complete before any future UAV accesses (read or write) can begin.
-    @inlinable @inline(__always)
+    @inlinable
     public var unorderedAccessView: D3DResourceUnorderedAccessViewBarrier {
         get {
             return D3DResourceUnorderedAccessViewBarrier(rawValue.UAV)
@@ -75,7 +75,7 @@ public struct D3DResourceBarrier {
     - parameter aliasing: A D3D12_RESOURCE_ALIASING_BARRIERstructure that describes the transition between usages of two different resources that have mappings into the same heap.
     - parameter unorderedAccessView: A D3D12_RESOURCE_UAV_BARRIERstructure that describes a resource in which all UAV accesses (reads or writes) must complete before any future UAV accesses (read or write) can begin.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(type: D3DResourceBarrierType,
                 flags: D3DResourceBarrierFlags,
                 transition: D3DResourceTransitionBarrier,
@@ -90,12 +90,12 @@ public struct D3DResourceBarrier {
     }
 
     /// Describes a resource barrier (transition in resource use).
-    @inlinable @inline(__always)
+    @inlinable
     public init() {
         self.rawValue = RawValue()
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

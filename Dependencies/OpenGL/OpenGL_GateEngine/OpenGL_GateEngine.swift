@@ -16,7 +16,7 @@ public enum OpenGL {
                 case subtract
                 case reverseSubtract
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .min: return GL_MIN
                 case .max: return GL_MAX
@@ -58,7 +58,7 @@ public enum OpenGL {
             ///(i,i,i,1)
             case sourceAlphaSaturate
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .zero: return GL_ZERO
                 case .one: return GL_ONE
@@ -85,7 +85,7 @@ public enum OpenGL {
         case rgba
         case depth
         
-        @inlinable @inline(__always) internal var value: Int32 {
+        @inlinable internal var value: Int32 {
             switch self {
             case .red: return GL_RED
             case .rgb: return GL_RGB
@@ -101,7 +101,7 @@ public enum OpenGL {
             case srgba
             case depth
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .red: return GL_RED
                 case .rgb: return GL_RGB
@@ -121,7 +121,7 @@ public enum OpenGL {
             case lines
             case lineStrip
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .triangles: return GL_TRIANGLES
                 case .triangleStrip: return GL_TRIANGLE_STRIP
@@ -139,7 +139,7 @@ public enum OpenGL {
         case uint8
         case float
         
-        @inlinable @inline(__always) internal var value: Int32 {
+        @inlinable internal var value: Int32 {
             switch self {
             case .int32: return GL_INT
             case .uint32: return GL_UNSIGNED_INT
@@ -154,7 +154,7 @@ public enum OpenGL {
             case pack
             case unpack
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .pack: return GL_PACK_ALIGNMENT
                 case .unpack: return GL_UNPACK_ALIGNMENT
@@ -168,7 +168,7 @@ public enum OpenGL {
         case version
         case shadingLanguageVersion
         
-        @inlinable @inline(__always) internal var value: Int32 {
+        @inlinable internal var value: Int32 {
             switch self {
             case .vendor: return GL_VENDOR
             case .renderer: return GL_RENDERER
@@ -182,7 +182,7 @@ public enum OpenGL {
         case maxTextureUnits
         case drawFramebufferBinding
         
-        @inlinable @inline(__always) internal var value: Int32 {
+        @inlinable internal var value: Int32 {
             switch self {
             case .maxTextureSize:
                 return GL_MAX_TEXTURE_SIZE
@@ -198,7 +198,7 @@ public enum OpenGL {
             case array
             case elementArray
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .array:
                     return GL_ARRAY_BUFFER
@@ -212,7 +212,7 @@ public enum OpenGL {
                 case `static`
                 case dynamic
                 
-                @inlinable @inline(__always) internal var value: Int32 {
+                @inlinable internal var value: Int32 {
                     switch self {
                     case .static:
                         return GL_STATIC_DRAW
@@ -239,7 +239,7 @@ public enum OpenGL {
             ///
             case unknown(Int32)
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .complete: return GL_FRAMEBUFFER_COMPLETE
                 case .incompleteAttachment: return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT
@@ -256,7 +256,7 @@ public enum OpenGL {
                 }
             }
             
-            @inlinable @inline(__always) static func fromValue(_ value: Int32) -> Status {
+            @inlinable static func fromValue(_ value: Int32) -> Status {
                 switch value {
                 case GL_FRAMEBUFFER_COMPLETE: return .complete
                 case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: return .incompleteAttachment
@@ -277,7 +277,7 @@ public enum OpenGL {
             case draw
             case read
             
-            @inlinable @inline(__always) var value: Int32 {
+            @inlinable var value: Int32 {
                 switch self {
                 case .draw:
                     return GL_FRAMEBUFFER
@@ -291,7 +291,7 @@ public enum OpenGL {
             case front
             case back
             
-            @inlinable @inline(__always) var value: Int32 {
+            @inlinable var value: Int32 {
                 switch self {
                 case .color(0): return GL_COLOR_ATTACHMENT0
                 case .color(1): return GL_COLOR_ATTACHMENT1
@@ -325,7 +325,7 @@ public enum OpenGL {
                 case type
                 case name
                 
-                @inlinable @inline(__always) internal var value: Int32 {
+                @inlinable internal var value: Int32 {
                     switch self {
                     case .type:
                         return GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE
@@ -335,7 +335,7 @@ public enum OpenGL {
                 }
             }
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .color(0): return GL_COLOR_ATTACHMENT0
                 case .color(1): return GL_COLOR_ATTACHMENT1
@@ -366,7 +366,7 @@ public enum OpenGL {
         case depthTest
         case cullFace
         case blend
-        @inlinable @inline(__always) internal var value: Int32 {
+        @inlinable internal var value: Int32 {
             switch self {
             case .depthTest:
                 return GL_DEPTH_TEST
@@ -386,7 +386,7 @@ public enum OpenGL {
             #endif
             case fragment
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .vertex:
                     return GL_VERTEX_SHADER
@@ -405,7 +405,7 @@ public enum OpenGL {
                 case linkStatus
                 case infoLogLength
                 case validateStatus
-                @inlinable @inline(__always) internal var value: Int32 {
+                @inlinable internal var value: Int32 {
                     switch self {
                     case .linkStatus:
                         return GL_LINK_STATUS
@@ -422,7 +422,7 @@ public enum OpenGL {
             case compileStatus
             case infoLogLength
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .compileStatus:
                     return GL_COMPILE_STATUS
@@ -448,7 +448,7 @@ public enum OpenGL {
                 case lessThanOrEqualTo
                 case greaterThanOrEqualTo
                 
-                @inlinable @inline(__always) internal var value: Int32 {
+                @inlinable internal var value: Int32 {
                     switch self {
                     case .neverSucceed: return GL_NEVER
                     case .alwaysSucceed: return GL_ALWAYS
@@ -465,7 +465,7 @@ public enum OpenGL {
         public enum Target {
             case texture2D
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .texture2D:
                     return GL_TEXTURE_2D
@@ -475,7 +475,7 @@ public enum OpenGL {
         public enum Unit {
             case texture(_ index: Int)
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .texture(0): return GL_TEXTURE0
                 case .texture(1): return GL_TEXTURE1
@@ -519,7 +519,7 @@ public enum OpenGL {
             case minimize
             case magnify
             
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .minimize: return GL_TEXTURE_MIN_FILTER
                 case .magnify: return GL_TEXTURE_MAG_FILTER
@@ -533,7 +533,7 @@ public enum OpenGL {
                 case linearMipMap
                 case nearestMipMap
                 
-                @inlinable @inline(__always) internal var value: Int32 {
+                @inlinable internal var value: Int32 {
                     switch self {
                     case .linear: return GL_LINEAR
                     case .nearest: return GL_NEAREST
@@ -547,7 +547,7 @@ public enum OpenGL {
         public enum Wrap {
             case horizontal
             case vertical
-            @inlinable @inline(__always) internal var value: Int32 {
+            @inlinable internal var value: Int32 {
                 switch self {
                 case .horizontal: return GL_TEXTURE_WRAP_S
                 case .vertical: return GL_TEXTURE_WRAP_T
@@ -558,7 +558,7 @@ public enum OpenGL {
                 case `repeat`
                 case clampToEdge
                 
-                @inlinable @inline(__always) internal var value: Int32 {
+                @inlinable internal var value: Int32 {
                     switch self {
                     case .repeat: return GL_REPEAT
                     case .clampToEdge: return GL_CLAMP_TO_EDGE
@@ -576,12 +576,12 @@ public enum OpenGL {
         public static let depth = ClearMask(rawValue: 0 << 2)
         public static let stencil = ClearMask(rawValue: 0 << 3)
         
-        @inlinable @inline(__always)
+        @inlinable
         public init(rawValue: RawValue) {
             self.rawValue = rawValue
         }
         
-        @inlinable @inline(__always) internal var value: Int32 {
+        @inlinable internal var value: Int32 {
             var value: Int32 = 0
             if self.contains(.color) {
                 value |= GL_COLOR_BUFFER_BIT
@@ -600,7 +600,7 @@ public enum OpenGL {
         case clockwise
         case counterClockwise
         
-        @inlinable @inline(__always) var value: Int32 {
+        @inlinable var value: Int32 {
             switch self {
             case .clockwise:
                 return GL_CW
@@ -614,7 +614,7 @@ public enum OpenGL {
         case front
         case back
         
-        @inlinable @inline(__always) var value: Int32 {
+        @inlinable var value: Int32 {
             switch self {
             case .front:
                 return GL_FRONT
@@ -628,7 +628,7 @@ public enum OpenGL {
         public let kind: Kind
         public let function: StaticString
         public let possibleReasons: [String]
-        @inlinable @inline(__always) public var localizedDescription: String {
+        @inlinable public var localizedDescription: String {
             var string = "\n \(function) \(kind)"
             if possibleReasons.isEmpty == false {
                 string += ": Possible Reasons..."
@@ -638,15 +638,15 @@ public enum OpenGL {
             }
             return string + "\n"
         }
-        @inlinable @inline(__always) public var description: String {
+        @inlinable public var description: String {
             return self.localizedDescription
         }
-        @inlinable @inline(__always) internal init(_ kind: Kind, _ function: StaticString, _ possibleReasons: String...) {
+        @inlinable internal init(_ kind: Kind, _ function: StaticString, _ possibleReasons: String...) {
             self.kind = kind
             self.function = function
             self.possibleReasons = possibleReasons
         }
-        @inlinable @inline(__always) internal init(_ kind: Kind, _ function: StaticString, _ possibleReasons: [String]) {
+        @inlinable internal init(_ kind: Kind, _ function: StaticString, _ possibleReasons: [String]) {
             self.kind = kind
             self.function = function
             self.possibleReasons = possibleReasons
@@ -661,7 +661,7 @@ public enum OpenGL {
             case invalidFramebufferOperation
             case unknown
             
-            @inlinable @inline(__always) internal static func fromValue(_ value: Int32) -> Kind {
+            @inlinable internal static func fromValue(_ value: Int32) -> Kind {
                 switch value {
                 case GL_NO_ERROR: return .none
                 case GL_INVALID_ENUM: return .invalidEnum
@@ -679,37 +679,37 @@ public enum OpenGL {
 public let glDefaultDepth = GL_DEPTH
 public let glBackBuffer = GL_BACK
 
-@inlinable @inline(__always) public func glFrontFacing(_ mode: OpenGL.FaceWinding) {
+@inlinable public func glFrontFacing(_ mode: OpenGL.FaceWinding) {
     _glFrontFacing(GLenum(mode.value))
 }
 
-@inlinable @inline(__always) public func glCullFace(_ mode: OpenGL.CullFace) {
+@inlinable public func glCullFace(_ mode: OpenGL.CullFace) {
     _glCullFace(GLenum(mode.value))
 }
 
-@inlinable @inline(__always) public func glCheckFramebufferStatus(target: OpenGL.Framebuffer.Target) -> OpenGL.Framebuffer.Status {
+@inlinable public func glCheckFramebufferStatus(target: OpenGL.Framebuffer.Target) -> OpenGL.Framebuffer.Status {
     return OpenGL.Framebuffer.Status.fromValue(Int32(_glCheckFramebufferStatus(GLenum(target.value))))
 }
 
-@inlinable @inline(__always) public func glGenFramebuffers(count: Int) -> [GLuint] {
+@inlinable public func glGenFramebuffers(count: Int) -> [GLuint] {
     var framebuffers: [GLuint] = Array(repeating: 0, count: count)
     _glGenFramebuffers(GLsizei(count), &framebuffers)
     return framebuffers
 }
 
-@inlinable @inline(__always) public func glBindFramebuffer(_ framebuffer: GLuint, as target: OpenGL.Framebuffer.Target = .draw) {
+@inlinable public func glBindFramebuffer(_ framebuffer: GLuint, as target: OpenGL.Framebuffer.Target = .draw) {
     _glBindFramebuffer(GLenum(target.value), framebuffer)
 }
 
-@inlinable @inline(__always) public func glDeleteFramebuffers(_ buffers: [GLuint]) {
+@inlinable public func glDeleteFramebuffers(_ buffers: [GLuint]) {
     _glDeleteFramebuffers(GLsizei(buffers.count), buffers)
 }
 
-@inlinable @inline(__always) public func glDeleteFramebuffers(_ buffers: GLuint...) {
+@inlinable public func glDeleteFramebuffers(_ buffers: GLuint...) {
     _glDeleteFramebuffers(GLsizei(buffers.count), buffers)
 }
 
-@inlinable @inline(__always) public func glGetFramebufferAttachmentParameter<T: FixedWidthInteger>(target: OpenGL.Framebuffer.Target, attachment: OpenGL.Framebuffer.Attachment, parameter: OpenGL.Framebuffer.Attachment.Parameter) -> T {
+@inlinable public func glGetFramebufferAttachmentParameter<T: FixedWidthInteger>(target: OpenGL.Framebuffer.Target, attachment: OpenGL.Framebuffer.Attachment, parameter: OpenGL.Framebuffer.Attachment.Parameter) -> T {
     var params: GLint = 0
     _glGetFramebufferAttachmentParameteriv(GLenum(target.value), GLenum(attachment.value), GLenum(parameter.value), &params)
     return T(params)
@@ -778,7 +778,7 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     _glUniform4f(location, value1, value2, value3, value4)
 }
 
-@inlinable @inline(__always) public func glUniformMatrix3fv(location: GLint, transpose: Bool, values: [[GLfloat]]) {
+@inlinable public func glUniformMatrix3fv(location: GLint, transpose: Bool, values: [[GLfloat]]) {
     var floats: [GLfloat] = []
     for array in values {
         floats.append(contentsOf: array)
@@ -786,7 +786,7 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     _glUniformMatrix3fv(location, GLsizei(values.count), transpose ? GLboolean(GL_TRUE) : GLboolean(GL_FALSE), floats)
 }
 
-@inlinable @inline(__always) public func glUniformMatrix3fv(location: GLint, transpose: Bool, values: [GLfloat]...) {
+@inlinable public func glUniformMatrix3fv(location: GLint, transpose: Bool, values: [GLfloat]...) {
     var floats: [GLfloat] = []
     for array in values {
         floats.append(contentsOf: array)
@@ -794,7 +794,7 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     _glUniformMatrix3fv(location, GLsizei(values.count), transpose ? GLboolean(GL_TRUE) : GLboolean(GL_FALSE), floats)
 }
 
-@inlinable @inline(__always) public func glUniformMatrix4fv(location: GLint, transpose: Bool, values: [[GLfloat]]) {
+@inlinable public func glUniformMatrix4fv(location: GLint, transpose: Bool, values: [[GLfloat]]) {
     var floats: [GLfloat] = []
     floats.reserveCapacity(values.count * 16)
     for array in values {
@@ -803,13 +803,13 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     _glUniformMatrix4fv(location, GLsizei(values.count), transpose ? GLboolean(GL_TRUE) : GLboolean(GL_FALSE), floats)
 }
 
-@inlinable @inline(__always) public func glUniformMatrix4fv(location: GLint, transpose: Bool, values: [GLfloat]) {
+@inlinable public func glUniformMatrix4fv(location: GLint, transpose: Bool, values: [GLfloat]) {
     values.withUnsafeBufferPointer { floats in
         _glUniformMatrix4fv(location, GLsizei(values.count / 16), transpose ? GLboolean(GL_TRUE) : GLboolean(GL_FALSE), floats.baseAddress)
     }
 }
 
-@inlinable @inline(__always) public func glGetShaderInfoLog(shader: GLuint) throws -> String? {
+@inlinable public func glGetShaderInfoLog(shader: GLuint) throws -> String? {
     let length: GLint = try glGetShaderiv(shader: shader, property: .infoLogLength)
     guard length > 0 else {return nil}
     var str = [GLchar](repeating: GLchar(0), count: Int(length) + 1)
@@ -818,7 +818,7 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     return String(cString: str)
 }
 
-@inlinable @inline(__always) public func glGetShaderiv<T: FixedWidthInteger>(shader: GLuint, property: OpenGL.Shader.Property) throws -> T {
+@inlinable public func glGetShaderiv<T: FixedWidthInteger>(shader: GLuint, property: OpenGL.Shader.Property) throws -> T {
     var param: GLint = -1
     _glGetShaderiv(shader, GLenum(property.value), &param)
     
@@ -840,21 +840,21 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     return T(param)
 }
 
-@inlinable @inline(__always) public func glGetShaderCompileStatus(shader: GLuint) throws -> Bool {
+@inlinable public func glGetShaderCompileStatus(shader: GLuint) throws -> Bool {
     return try glGetShaderiv(shader: shader, property: .compileStatus) == GL_TRUE
 }
 
-@inlinable @inline(__always) public func glGetProgramiv<T: FixedWidthInteger>(program: GLuint, property: OpenGL.Shader.Program.Property) -> T {
+@inlinable public func glGetProgramiv<T: FixedWidthInteger>(program: GLuint, property: OpenGL.Shader.Program.Property) -> T {
     var param: GLint = -1
     _glGetProgramiv(program, GLenum(property.value), &param)
     return T(param)
 }
 
-@inlinable @inline(__always) public func glGetAttribLocation(program: GLuint, attribute: String) -> GLint {
+@inlinable public func glGetAttribLocation(program: GLuint, attribute: String) -> GLint {
     return _glGetAttribLocation(program, attribute.cString(using: .ascii))
 }
 
-@inlinable @inline(__always) public func glShaderSource(shader: GLuint, source: String) throws {
+@inlinable public func glShaderSource(shader: GLuint, source: String) throws {
     source.withCString { (glcSource) in
         var glcSource: UnsafePointer<GLchar>? = glcSource
         var length = GLint(source.count)
@@ -862,93 +862,93 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     }
 }
 
-@inlinable @inline(__always) public func glBindBuffer(_ buffer: GLuint, as target: OpenGL.Buffer.Target) {
+@inlinable public func glBindBuffer(_ buffer: GLuint, as target: OpenGL.Buffer.Target) {
     _glBindBuffer(GLenum(target.value), buffer)
 }
 
 @_disfavoredOverload
-@inlinable @inline(__always) public func glBufferData<D: Collection>(_ data: D, withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
+@inlinable public func glBufferData<D: Collection>(_ data: D, withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
     data.withContiguousStorageIfAvailable { buffer in
         _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<D>.stride * data.count), buffer.baseAddress, GLenum(usage.value))
     }
 }
 
-@inlinable @inline(__always) public func glBufferData(_ data: [Int32], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
+@inlinable public func glBufferData(_ data: [Int32], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
     data.withUnsafeBufferPointer { buffer in
         _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<Int32>.stride * data.count), buffer.baseAddress, GLenum(usage.value))
     }
 }
 
-@inlinable @inline(__always) public func glBufferData(_ data: [UInt16], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
+@inlinable public func glBufferData(_ data: [UInt16], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
     data.withUnsafeBufferPointer { buffer in
         _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<UInt16>.stride * data.count), buffer.baseAddress, GLenum(usage.value))
     }
 }
 
-@inlinable @inline(__always) public func glBufferData(_ data: [UInt32], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
+@inlinable public func glBufferData(_ data: [UInt32], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
     data.withUnsafeBufferPointer { buffer in
         _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<UInt32>.stride * data.count), buffer.baseAddress, GLenum(usage.value))
     }
 }
 
-@inlinable @inline(__always) public func glBufferData(_ data: [Float], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
+@inlinable public func glBufferData(_ data: [Float], withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
     data.withUnsafeBufferPointer { buffer in
         _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<Float>.stride * data.count), buffer.baseAddress, GLenum(usage.value))
     }
 }
 
-@inlinable @inline(__always) public func glBufferData(_ data: Data, withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
+@inlinable public func glBufferData(_ data: Data, withUsage usage: OpenGL.Buffer.Data.Usage, as target: OpenGL.Buffer.Target) {
     data.withUnsafeBytes { (pointer) -> Void in
         _glBufferData(GLenum(target.value), GLsizeiptr(MemoryLayout<UInt8>.stride * data.count), pointer.baseAddress, GLenum(usage.value))
     }
 }
 
-@inlinable @inline(__always) public func glTexParameter(target: OpenGL.Texture.Target = .texture2D, filtering parameter: OpenGL.Texture.Filter, by method: OpenGL.Texture.Filter.Method) {
+@inlinable public func glTexParameter(target: OpenGL.Texture.Target = .texture2D, filtering parameter: OpenGL.Texture.Filter, by method: OpenGL.Texture.Filter.Method) {
     _glTexParameteri(GLenum(target.value), GLenum(parameter.value), method.value)
 }
 
-@inlinable @inline(__always) public func glTexParameter(target: OpenGL.Texture.Target = .texture2D, wrapping wrap: OpenGL.Texture.Wrap, by method: OpenGL.Texture.Wrap.Method) {
+@inlinable public func glTexParameter(target: OpenGL.Texture.Target = .texture2D, wrapping wrap: OpenGL.Texture.Wrap, by method: OpenGL.Texture.Wrap.Method) {
     _glTexParameteri(GLenum(target.value), GLenum(wrap.value), method.value)
 }
 
-@inlinable @inline(__always) public func glTexParameter(target: OpenGL.Texture.Target = .texture2D, comparingBy method: OpenGL.Texture.Blending.Function) {
+@inlinable public func glTexParameter(target: OpenGL.Texture.Target = .texture2D, comparingBy method: OpenGL.Texture.Blending.Function) {
     _glTexParameteri(GLenum(target.value), GLenum(GL_TEXTURE_COMPARE_FUNC), method.value)
 }
 
-@inlinable @inline(__always) public func glGetIntegerv<T: FixedWidthInteger>(property: OpenGL.Properties) -> T? {
+@inlinable public func glGetIntegerv<T: FixedWidthInteger>(property: OpenGL.Properties) -> T? {
     var value: GLint = -1
     _glGetIntegerv(GLenum(property.value), &value)
     return value != -1 ? T(value) : nil
 }
 
-@inlinable @inline(__always) public func glBindTexture(_ texture: GLuint, as target: OpenGL.Texture.Target = .texture2D) {
+@inlinable public func glBindTexture(_ texture: GLuint, as target: OpenGL.Texture.Target = .texture2D) {
     _glBindTexture(GLenum(target.value), texture)
 }
 
-@inlinable @inline(__always) public func glGenTextures() -> GLuint {
+@inlinable public func glGenTextures() -> GLuint {
     return glGenTextures(count: 1)[0]
 }
 
-@inlinable @inline(__always) public func glGenTextures(count: GLsizei) -> [GLuint] {
+@inlinable public func glGenTextures(count: GLsizei) -> [GLuint] {
     var textures: [GLuint] = Array(repeating: 0, count: Int(count))
     _glGenTextures(count, &textures)
     return textures
 }
 
-@inlinable @inline(__always) public func glDeleteTextures(_ textures: GLuint...) {
+@inlinable public func glDeleteTextures(_ textures: GLuint...) {
     var mutableTextures = textures
     _glDeleteTextures(GLsizei(textures.count), &mutableTextures)
 }
 
-@inlinable @inline(__always) public func glActiveTexture(unit: OpenGL.Texture.Unit) {
+@inlinable public func glActiveTexture(unit: OpenGL.Texture.Unit) {
     _glActiveTexture(GLenum(unit.value))
 }
 
-@inlinable @inline(__always) public func glPixelStorei(parameter: OpenGL.PixelStore.Alignment, value: GLint) {
+@inlinable public func glPixelStorei(parameter: OpenGL.PixelStore.Alignment, value: GLint) {
     _glPixelStorei(GLenum(parameter.value), value)
 }
 
-@inlinable @inline(__always) public func glTexImage2D(target: OpenGL.Texture.Target = .texture2D, level: Int = 0, internalFormat: OpenGL.Format.Internal, width: Int, height: Int, border: Int = 0, format: OpenGL.Format, type: OpenGL.Types, pixels: Data? = nil) {
+@inlinable public func glTexImage2D(target: OpenGL.Texture.Target = .texture2D, level: Int = 0, internalFormat: OpenGL.Format.Internal, width: Int, height: Int, border: Int = 0, format: OpenGL.Format, type: OpenGL.Types, pixels: Data? = nil) {
     if let pixels = pixels {
         pixels.withUnsafeBytes { (data) in
             _glTexImage2D(GLenum(target.value), GLint(level), internalFormat.value, GLsizei(width), GLsizei(height), GLint(border), GLenum(format.value), GLenum(type.value), data.baseAddress)
@@ -958,50 +958,50 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     }
 }
 
-@inlinable @inline(__always) public func glVertexAttribPointer(attributeIndex index: GLuint, unitsPerComponent size: GLint, unitType type: OpenGL.Types, componentsAreNormalized normalized: Bool = false, stride: GLsizei = 0, pointer: UnsafeMutableRawPointer! = nil) {
+@inlinable public func glVertexAttribPointer(attributeIndex index: GLuint, unitsPerComponent size: GLint, unitType type: OpenGL.Types, componentsAreNormalized normalized: Bool = false, stride: GLsizei = 0, pointer: UnsafeMutableRawPointer! = nil) {
     _glVertexAttribPointer(index, size, GLenum(type.value), normalized ? GLboolean(GL_TRUE) : GLboolean(GL_FALSE), stride, pointer)
 }
 
-@inlinable @inline(__always) public func glVertexAttribDivisor(_ index: GLuint, divisor: GLuint) {
+@inlinable public func glVertexAttribDivisor(_ index: GLuint, divisor: GLuint) {
     _glVertexAttribDivisor(index, divisor: divisor)
 }
 
-@inlinable @inline(__always) public func glGetError() -> OpenGL.Error.Kind {
+@inlinable public func glGetError() -> OpenGL.Error.Kind {
     let val: GLenum = _glGetError()
     return OpenGL.Error.Kind.fromValue(Int32(val))
 }
 
-@inlinable @inline(__always) public func glEnable(capability: OpenGL.Capability) {
+@inlinable public func glEnable(capability: OpenGL.Capability) {
     _glEnable(GLenum(capability.value))
 }
 
-@inlinable @inline(__always) public func glDisable(capability: OpenGL.Capability) {
+@inlinable public func glDisable(capability: OpenGL.Capability) {
     _glDisable(GLenum(capability.value))
 }
 
-@inlinable @inline(__always) public func glGenBuffer() -> GLuint {
+@inlinable public func glGenBuffer() -> GLuint {
     return glGenBuffers(count: 1)[0]
 }
 
-@inlinable @inline(__always) public func glGenBuffers(count: GLint) -> [GLuint] {
+@inlinable public func glGenBuffers(count: GLint) -> [GLuint] {
     var buffers: [GLuint] = Array(repeating: 0, count: Int(count))
     _glGenBuffers(count, &buffers)
     return buffers
 }
 
-@inlinable @inline(__always) public func glDeleteBuffers(_ buffers: [GLuint]) {
+@inlinable public func glDeleteBuffers(_ buffers: [GLuint]) {
     _glDeleteBuffers(GLsizei(buffers.count), buffers)
 }
 
-@inlinable @inline(__always) public func glDeleteBuffers(_ buffers: GLuint...) {
+@inlinable public func glDeleteBuffers(_ buffers: GLuint...) {
     _glDeleteBuffers(GLsizei(buffers.count), buffers)
 }
 
-@inlinable @inline(__always) public func glClearColor(red: GLfloat, green: GLfloat, blue: GLfloat, alpha: GLfloat) {
+@inlinable public func glClearColor(red: GLfloat, green: GLfloat, blue: GLfloat, alpha: GLfloat) {
     _glClearColor(red, green, blue, alpha)
 }
 
-@inlinable @inline(__always) public func glClearColor(_ color: [GLfloat]) {
+@inlinable public func glClearColor(_ color: [GLfloat]) {
     if color.count == 0 {
         _glClearColor(0, 0, 0, 0)
     }else if color.count == 1 {
@@ -1015,41 +1015,41 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     }
 }
 
-@inlinable @inline(__always) public func glClearColor(_ red: GLfloat, _ green: GLfloat, _ blue: GLfloat, _ alpha: GLfloat) {
+@inlinable public func glClearColor(_ red: GLfloat, _ green: GLfloat, _ blue: GLfloat, _ alpha: GLfloat) {
     _glClearColor(red, green, blue, alpha)
 }
 
-@inlinable @inline(__always) public func glClearDepth(_ value: GLfloat) {
+@inlinable public func glClearDepth(_ value: GLfloat) {
     _glClearDepth(value)
 }
 
-@inlinable @inline(__always) public func glClear(_ mask: OpenGL.ClearMask) {
+@inlinable public func glClear(_ mask: OpenGL.ClearMask) {
     _glClear(GLenum(mask.value))
 }
 
-@inlinable @inline(__always) public func glGenVertexArrays(count: GLint) -> [GLuint] {
+@inlinable public func glGenVertexArrays(count: GLint) -> [GLuint] {
     var arrays: [GLuint] = Array(repeating: 0, count: Int(count))
     _glGenVertexArrays(count, &arrays)
     return arrays
 }
 
-@inlinable @inline(__always) public func glDeleteVertexArrays(_ arrays: [GLuint]) {
+@inlinable public func glDeleteVertexArrays(_ arrays: [GLuint]) {
     _glDeleteVertexArrays(GLsizei(arrays.count), arrays)
 }
 
-@inlinable @inline(__always) public func glDeleteVertexArrays(_ arrays: GLuint...) {
+@inlinable public func glDeleteVertexArrays(_ arrays: GLuint...) {
     _glDeleteVertexArrays(GLsizei(arrays.count), arrays)
 }
 
-@inlinable @inline(__always) public func glViewport(x: GLint, y: GLint, width: GLsizei, height: GLsizei) {
+@inlinable public func glViewport(x: GLint, y: GLint, width: GLsizei, height: GLsizei) {
     _glViewport(x, y, width, height)
 }
 
-@inlinable @inline(__always) public func glScissor(x: GLint, y: GLint, width: GLsizei, height: GLsizei) {
+@inlinable public func glScissor(x: GLint, y: GLint, width: GLsizei, height: GLsizei) {
     _glScissor(x, y, width, height)
 }
 
-@inlinable @inline(__always) public func glGetString(describing name: OpenGL.Description) throws -> String  {
+@inlinable public func glGetString(describing name: OpenGL.Description) throws -> String  {
     guard let pointer = _glGetString(GLenum(name.value)), pointer.pointee != 0 else {
         let kind: OpenGL.Error.Kind = glGetError()
         switch kind {
@@ -1064,7 +1064,7 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     return string
 }
 
-@inlinable @inline(__always) public func glDrawElements(mode: OpenGL.Elements.Mode, count: GLsizei, type: OpenGL.Types, indices: UnsafeRawPointer! = nil) throws {
+@inlinable public func glDrawElements(mode: OpenGL.Elements.Mode, count: GLsizei, type: OpenGL.Types, indices: UnsafeRawPointer! = nil) throws {
     _glDrawElements(GLenum(mode.value), count, GLenum(type.value), indices)
     let error = OpenGL_GateEngine.glGetError()
     switch error {
@@ -1081,7 +1081,7 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     }
 }
 
-@inlinable @inline(__always) public func glDrawElementsInstanced(mode: OpenGL.Elements.Mode, count: GLsizei, type: OpenGL.Types, indices: UnsafeRawPointer! = nil, instanceCount: GLsizei) throws {
+@inlinable public func glDrawElementsInstanced(mode: OpenGL.Elements.Mode, count: GLsizei, type: OpenGL.Types, indices: UnsafeRawPointer! = nil, instanceCount: GLsizei) throws {
     _glDrawElementsInstanced(GLenum(mode.value), count, GLenum(type.value), indices, instanceCount)
     let error = OpenGL_GateEngine.glGetError()
     switch error {
@@ -1098,7 +1098,7 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     }
 }
 
-@inlinable @inline(__always) public func glGetUniformBlockIndex(inProgram program: GLuint, named uniformBlockName: String) throws -> GLuint? {
+@inlinable public func glGetUniformBlockIndex(inProgram program: GLuint, named uniformBlockName: String) throws -> GLuint? {
     guard let cString = uniformBlockName.cString(using: .nonLossyASCII) else {throw OpenGL.Error(.unknown, #function, "name must be ascii encodable")}
     let index = _glGetUniformBlockIndex(program, cString)
     if index != GL_INVALID_INDEX {
@@ -1107,7 +1107,7 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     return nil
 }
 
-@inlinable @inline(__always) public func glGetUniformLocation(inProgram program: GLuint, named name: String) throws -> GLint? {
+@inlinable public func glGetUniformLocation(inProgram program: GLuint, named name: String) throws -> GLint? {
     guard let cString = name.cString(using: .nonLossyASCII) else {throw OpenGL.Error(.unknown, #function, "name must be ascii encodable")}
     let location = _glGetUniformLocation(program, cString)
     if location > -1 {
@@ -1116,11 +1116,11 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     return nil
 }
 
-@inlinable @inline(__always) public func glCreateShader(ofType kind: OpenGL.Shader.Kind) -> GLuint {
+@inlinable public func glCreateShader(ofType kind: OpenGL.Shader.Kind) -> GLuint {
     return _glCreateShader(GLenum(kind.value))
 }
 
-@inlinable @inline(__always) public func glGetProgramInfoLog(forProgram program: GLuint) -> String {
+@inlinable public func glGetProgramInfoLog(forProgram program: GLuint) -> String {
     let length: GLint = glGetProgramiv(program: program, property: .infoLogLength)
     var str = [GLchar](repeating: GLchar(0), count: Int(length) + 1)
     var size: GLsizei = 0
@@ -1128,95 +1128,95 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     return String(cString: str)
 }
 
-@inlinable @inline(__always) public func glLinkProgram(_ program: GLuint) {
+@inlinable public func glLinkProgram(_ program: GLuint) {
     _glLinkProgram(program)
 }
 
-@inlinable @inline(__always) public func glValidateProgram(_ program: GLuint) {
+@inlinable public func glValidateProgram(_ program: GLuint) {
     _glValidateProgram(program)
 }
 
-@inlinable @inline(__always) public func glDeleteShader(_ shader: GLuint) {
+@inlinable public func glDeleteShader(_ shader: GLuint) {
     _glDeleteShader(shader)
 }
 
-@inlinable @inline(__always) public func glAttachShader(_ shader: GLuint, toProgram program: GLuint) {
+@inlinable public func glAttachShader(_ shader: GLuint, toProgram program: GLuint) {
     _glAttachShader(program, shader)
 }
 
-@inlinable @inline(__always) public func glCreateProgram() -> GLuint {
+@inlinable public func glCreateProgram() -> GLuint {
     return _glCreateProgram()
 }
 
-@inlinable @inline(__always) public func glGenerateMipmap(target: OpenGL.Texture.Target) {
+@inlinable public func glGenerateMipmap(target: OpenGL.Texture.Target) {
     _glGenerateMipmap(GLenum(target.value))
 }
 
-@inlinable @inline(__always) public func glDeleteProgram(_ program: GLuint) {
+@inlinable public func glDeleteProgram(_ program: GLuint) {
     _glDeleteProgram(program)
 }
 
-@inlinable @inline(__always) public func glUseProgram(_ program: GLuint) {
+@inlinable public func glUseProgram(_ program: GLuint) {
     _glUseProgram(program)
 }
 
-@inlinable @inline(__always) public func glCompileShader(_ shader: GLuint) {
+@inlinable public func glCompileShader(_ shader: GLuint) {
     _glCompileShader(shader)
 }
 
-@inlinable @inline(__always) public func glEnableVertexAttribArray(attributeIndex name: GLuint) {
+@inlinable public func glEnableVertexAttribArray(attributeIndex name: GLuint) {
     _glEnableVertexAttribArray(name)
 }
 
-@inlinable @inline(__always) public func glDisableVertexAttribArray(attributeIndex name: GLuint) {
+@inlinable public func glDisableVertexAttribArray(attributeIndex name: GLuint) {
     _glDisableVertexAttribArray(name)
 }
 
-@inlinable @inline(__always) public func glBindVertexArray(_ array: GLuint) {
+@inlinable public func glBindVertexArray(_ array: GLuint) {
     _glBindVertexArray(array)
 }
 
-@inlinable @inline(__always) public func glDepthFunc(_ function: OpenGL.Texture.Blending.Function) {
+@inlinable public func glDepthFunc(_ function: OpenGL.Texture.Blending.Function) {
     _glDepthFunc(GLenum(function.value))
 }
 
-@inlinable @inline(__always) public func glDepthMask(_ enabled: Bool) {
+@inlinable public func glDepthMask(_ enabled: Bool) {
     _glDepthMask(enabled ? GLboolean(GL_TRUE) : GLboolean(GL_FALSE))
 }
 
-@inlinable @inline(__always) public func glFramebufferTexture2D(target: OpenGL.Framebuffer.Target = .draw, attachment: OpenGL.Framebuffer.Attachment, textureTarget textarget: OpenGL.Texture.Target = .texture2D, texture: GLuint, level: GLint = 0) {
+@inlinable public func glFramebufferTexture2D(target: OpenGL.Framebuffer.Target = .draw, attachment: OpenGL.Framebuffer.Attachment, textureTarget textarget: OpenGL.Texture.Target = .texture2D, texture: GLuint, level: GLint = 0) {
     _glFramebufferTexture2D(GLenum(target.value), GLenum(attachment.value), GLenum(textarget.value), texture, level)
 }
 
-@inlinable @inline(__always) public func glDrawBuffers(_ buffers: [OpenGL.Framebuffer.Attachment]) {
+@inlinable public func glDrawBuffers(_ buffers: [OpenGL.Framebuffer.Attachment]) {
     _glDrawBuffers(GLsizei(buffers.count), buffers.map({GLenum($0.value)}))
 }
 
-@inlinable @inline(__always) public func glDrawArrays(mode: OpenGL.Elements.Mode, startIndex first: Int, numberOfComponents count: Int) {
+@inlinable public func glDrawArrays(mode: OpenGL.Elements.Mode, startIndex first: Int, numberOfComponents count: Int) {
     _glDrawArrays(GLenum(mode.value), GLint(first), GLsizei(count))
 }
 
-@inlinable @inline(__always) public func glBlendEquationSeparate(_ modeRGB: OpenGL.Blending.Equation, _ modeAlpha: OpenGL.Blending.Equation) {
+@inlinable public func glBlendEquationSeparate(_ modeRGB: OpenGL.Blending.Equation, _ modeAlpha: OpenGL.Blending.Equation) {
     _glBlendEquationSeparate(GLenum(modeRGB.value), GLenum(modeAlpha.value))
 }
 
-@inlinable @inline(__always) public func glBlendEquation(_ equation: OpenGL.Blending.Equation) {
+@inlinable public func glBlendEquation(_ equation: OpenGL.Blending.Equation) {
     _glBlendEquation(GLenum(equation.value))
 }
 
-@inlinable @inline(__always) public func glBlendFunc(source: OpenGL.Blending.Function, destination: OpenGL.Blending.Function) {
+@inlinable public func glBlendFunc(source: OpenGL.Blending.Function, destination: OpenGL.Blending.Function) {
     _glBlendFunc(GLenum(source.value), GLenum(destination.value))
 }
 
-@inlinable @inline(__always) public func glBlendFuncSeparate(sourceRGB: OpenGL.Blending.Function, destinationRGB: OpenGL.Blending.Function, sourceAlpha: OpenGL.Blending.Function, destinationAlpha: OpenGL.Blending.Function) {
+@inlinable public func glBlendFuncSeparate(sourceRGB: OpenGL.Blending.Function, destinationRGB: OpenGL.Blending.Function, sourceAlpha: OpenGL.Blending.Function, destinationAlpha: OpenGL.Blending.Function) {
     _glBlendFuncSeparate(GLenum(sourceRGB.value), GLenum(destinationRGB.value), sfactorAlpha: GLenum(sourceAlpha.value), dfactorAlpha: GLenum(destinationAlpha.value))
 }
 
-@inlinable @inline(__always) public func glReadBuffer(_ target: OpenGL.Framebuffer.ReadWrite) {
+@inlinable public func glReadBuffer(_ target: OpenGL.Framebuffer.ReadWrite) {
     _glReadBuffer(GLenum(target.value))
 }
 
-@inlinable @inline(__always) public func glReadPixels(x: Int, y: Int, width: Int, height: Int, format: OpenGL.Format) -> [UInt8] {
+@inlinable public func glReadPixels(x: Int, y: Int, width: Int, height: Int, format: OpenGL.Format) -> [UInt8] {
     var pixels: [UInt8]
     switch format {
     case .depth, .red:
@@ -1230,6 +1230,6 @@ public func glUniform4f(location: GLint, value1: Float, value2: Float, value3: F
     return pixels
 }
 
-@inlinable @inline(__always) public func glFlush() {
+@inlinable public func glFlush() {
     _glFlush()
 }

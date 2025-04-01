@@ -14,7 +14,7 @@ public struct DGIRational {
     internal var rawValue: RawValue
 
     /// An unsigned integer value representing the top of the rational number.
-    @inlinable @inline(__always)
+    @inlinable
     public var numerator: UInt32 {
         get {
             return rawValue.Numerator
@@ -25,7 +25,7 @@ public struct DGIRational {
     }
 
     /// An unsigned integer value representing the bottom of the rational number.
-    @inlinable @inline(__always)
+    @inlinable
     public var denominator: UInt32 {
         get {
             return rawValue.Denominator
@@ -39,12 +39,12 @@ public struct DGIRational {
     - parameter numerator: An unsigned integer value representing the top of the rational number.
     - parameter denominator: An unsigned integer value representing the bottom of the rational number.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(numerator: UInt32, denominator: UInt32) {
         self.rawValue = RawValue(Numerator: numerator, Denominator: denominator)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

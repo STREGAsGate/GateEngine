@@ -103,7 +103,6 @@ extension GameDelegate {
 
     public func gameIdentifier() -> StaticString? { return nil }
 
-    @_transparent
     internal func resolvedGameIdentifier() -> String {
         let charSet = CharacterSet(
             charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-."

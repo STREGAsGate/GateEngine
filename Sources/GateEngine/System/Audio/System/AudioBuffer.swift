@@ -102,7 +102,6 @@ public class AudioBuffer: OldResource {
     }
 }
 
-@_transparent
 private func getBackend(path: String, context: AudioContext, audioBuffer: AudioBuffer)
     -> any AudioBufferBackend
 {

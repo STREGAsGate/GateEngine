@@ -23,28 +23,28 @@ public struct Size3: Vector3, SIMD, Sendable {
     
     @inlinable
     public var x: Scalar {
-        @_transparent get {
+        get {
             return _storage[0]
         }
-        @_transparent set {
+        set {
             _storage[0] = newValue
         }
     }
     @inlinable
     public var y: Scalar {
-        @_transparent get {
+        get {
             return _storage[1]
         }
-        @_transparent set {
+        set {
             _storage[1] = newValue
         }
     }
     @inlinable
     public var z: Scalar {
-        @_transparent get {
+        get {
             return _storage[2]
         }
-        @_transparent set {
+        set {
             _storage[2] = newValue
         }
     }
@@ -72,12 +72,12 @@ public struct Size3: Vector3, Sendable {
 #endif
 
 public extension Size3 {
-    @_transparent
+    @inlinable
     init(_ x: Float, _ y: Float, _ z: Float) {
         self.init(x: x, y: y, z: z)
     }
     
-    @_transparent
+    @inlinable
     init(width x: Float, height y: Float, depth z: Float) {
         self.init(x: x, y: y, z: z)
     }
@@ -107,30 +107,30 @@ public extension Size3 {
 extension Size3 {
     @inlinable
     public var width: Float {
-        @_transparent get {
+        get {
             return x
         }
-        @_transparent set(val) {
+        set(val) {
             x = val
         }
     }
 
     @inlinable
     public var height: Float {
-        @_transparent get {
+        get {
             return y
         }
-        @_transparent set(val) {
+        set(val) {
             y = val
         }
     }
 
     @inlinable
     public var depth: Float {
-        @_transparent get {
+        get {
             return z
         }
-        @_transparent set(val) {
+        set(val) {
             z = val
         }
     }

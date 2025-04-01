@@ -47,7 +47,7 @@ class DX12RenderTarget: RenderTargetBackend {
         }
     }
 
-    @inline(__always)
+    @inlinable
     private var renderer: DX12Renderer {
         return Game.shared.renderer.backend
     }

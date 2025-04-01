@@ -23,7 +23,6 @@ public final class PNGImporter: TextureImporter {
 import LibSPNG
 
 extension PNGImporter {
-    @_transparent
     func decode(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (
         data: Data, size: Size2
     ) {

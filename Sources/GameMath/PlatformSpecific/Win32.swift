@@ -8,6 +8,7 @@
 import WinSDK
 
 public extension Rect {
+    @inlinable
     func RECT() -> WinSDK.RECT {
         let left: Int32 = Int32(position.x)
         let top: Int32 = Int32(position.y)
@@ -16,6 +17,7 @@ public extension Rect {
         return WinSDK.RECT(left: left, top: top, right: right, bottom: bottom)
     }
 
+    @inlinable
     init(_ RECT: WinSDK.RECT) {
         let position: Position2 = Position2(x: Float(RECT.left), y: Float(RECT.top))
         let size: Size2 = Size2(width: Float(RECT.width), height: Float(RECT.height))
@@ -25,13 +27,13 @@ public extension Rect {
 
 
 public extension WinSDK.RECT {
-    @_transparent
+    @inlinable
     var x: Int32 {self.left}
-    @_transparent 
+    @inlinable 
     var y: Int32 {self.top}
-    @_transparent 
+    @inlinable 
     var width: Int32 {self.right - self.left}
-    @_transparent 
+    @inlinable 
     var height: Int32 {self.bottom - self.top}
 }
 

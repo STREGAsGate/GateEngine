@@ -21,7 +21,7 @@ public enum D3DIndexBufferStripCutValue {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
 
-    @inlinable @inline(__always)
+    @inlinable
     public var rawValue: RawValue {
         switch self {
         case .disabled:
@@ -35,7 +35,7 @@ public enum D3DIndexBufferStripCutValue {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED:

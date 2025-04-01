@@ -163,18 +163,18 @@ public final class GameView: View {
     }
 }
 extension GameView {
-    @_transparent
+    @inlinable
     public var gameViewController: GameViewController? {
         return _viewController as? GameViewController
     }
-    @_transparent
+    @inlinable
     public func insert(_ canvas: Canvas) {
         if canvas.hasContent {
             self.renderTarget.insert(canvas)
         }
     }
     
-    @_transparent
+    @inlinable
     public func insert(_ scene: Scene) {
         if scene.hasContent {
             self.renderTarget.insert(scene)
@@ -186,7 +186,7 @@ open class GameViewController: ViewController {
     @usableFromInline
     internal let context = ECSContext()
 
-    @inlinable @inline(__always)
+    @inlinable
     public var gameView: GameView {
         return unsafeDowncast(self.view, to: GameView.self)
     } 
@@ -287,102 +287,101 @@ extension GameView {
 }
 
 extension GameViewController {
-    @_transparent
-    public var entities: ContiguousArray<Entity> {
+    @inlinable
+    public var entities: [Entity] {
         return context.sortedEntities()
     }
-    @_transparent
+    @inlinable
     public func insertEntity(_ entity: Entity) {
         context.insertEntity(entity)
     }
-    @_transparent
+    @inlinable
     public func removeEntity(_ entity: Entity) {
         context.removeEntity(entity)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     public func removeEntity(named name: String) -> Entity? {
         return context.removeEntity(named: name)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     public func removeEntity(where block: (Entity) -> (Bool)) -> Entity? {
         return context.removeEntity(where: block)
     }
-    @_transparent
+    @inlinable
     public func entity(named name: String) -> Entity? {
         return context.entity(named: name)
     }
-    @_transparent
+    @inlinable
     public func entity(withID id: ObjectIdentifier) -> Entity? {
         return context.entity(withID: id)
     }
-    @_transparent
+    @inlinable
     public func firstEntity(withComponent component: any Component.Type) -> Entity? {
         return context.firstEntity(withComponent: component)
     }
-    @_transparent
+    @inlinable
     public func system<T: System>(ofType systemType: T.Type) -> T {
         return context.system(ofType: systemType)
     }
-    @_transparent
+    @inlinable
     public func hasSystem<T: System>(ofType systemType: T.Type) -> Bool {
         return context.hasSystem(ofType: systemType)
     }
-    @_transparent
+    @inlinable
     public func system<T: RenderingSystem>(ofType systemType: T.Type) -> T {
         return context.system(ofType: systemType)
     }
-    @_transparent
+    @inlinable
     public func insertSystem(_ newSystem: System) {
         context.insertSystem(newSystem)
     }
-    @_transparent
+    @inlinable
     public func insertSystem(_ newSystem: RenderingSystem) {
         context.insertSystem(newSystem)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     public func insertSystem<T: System>(_ system: T.Type) -> T {
         return context.insertSystem(system)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     public func insertSystem<T: RenderingSystem>(_ system: T.Type) -> T {
         return context.insertSystem(system)
     }
-    @_transparent
+    @inlinable
     public func removeSystem(_ system: System) {
         context.removeSystem(system)
     }
-    @_transparent
+    @inlinable
     public func removeSystem(_ system: RenderingSystem) {
         context.removeSystem(system)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     public func removeSystem<T: System>(_ system: T.Type) -> T? {
         return context.removeSystem(system)
     }
-    @_transparent @discardableResult
+    @inlinable @discardableResult
     public func removeSystem<T: RenderingSystem>(_ system: T.Type) -> T? {
         return context.removeSystem(system)
     }
 }
 
 @MainActor extension GameViewController {
-    @_transparent
     func system<T: PlatformSystem>(ofType systemType: T.Type) -> T {
         return context.system(ofType: systemType)
     }
-    @_transparent @discardableResult
+    @discardableResult
     func insertSystem<T: PlatformSystem>(_ system: T.Type) -> T {
         return context.insertSystem(system)
     }
-    @_transparent
+    
     func insertSystem(_ newSystem: PlatformSystem) {
         context.insertSystem(newSystem)
     }
-    @_transparent
+    
     func removeSystem(_ system: PlatformSystem) {
         context.removeSystem(system)
     }
-    @_transparent @discardableResult
+    @discardableResult
     func removeSystem<T: PlatformSystem>(_ system: T.Type) -> T? {
         return context.removeSystem(system)
     }

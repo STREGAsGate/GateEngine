@@ -4,7 +4,7 @@
  *
  * http://stregasgate.com
  */
-#if (os(WASI) || GATEENGINE_ENABLE_WASI_IDE_SUPPORT) && canImport(FileSystem)
+#if (HTML5) && canImport(FileSystem)
 import Foundation
 import DOM
 import WebAPIBase

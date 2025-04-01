@@ -10,7 +10,6 @@ import TrueType
 typealias CharData = TrueType.stbtt_bakedchar
 typealias AlignedQuad = TrueType.stbtt_aligned_quad
 
-@_transparent
 private func bakeFontBitmap(
     fontData: Data,
     _ offset: Int32 = 0,
@@ -37,7 +36,6 @@ private func bakeFontBitmap(
     }
 }
 
-@_transparent
 private func getBakedQuad(
     characterData: [CharData],
     pixelsWidth: Int32,

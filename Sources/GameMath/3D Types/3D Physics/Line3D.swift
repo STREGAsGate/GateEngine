@@ -18,7 +18,7 @@ public struct Line3D: Sendable {
 }
 
 public extension Line3D {
-    @inlinable @inline(__always)
+    @inlinable
     func pointNear(_ p: Position3) -> Position3 {
         let ab = p2 - p1
         let ap = p - p1
@@ -32,7 +32,7 @@ public extension Line3D {
 }
 
 public extension Line3D {
-    @inlinable @inline(__always)
+    @inlinable
     static func *(lhs: Self, rhs: Matrix4x4) -> Self {
         return Line3D(lhs.p1 * rhs, lhs.p2 * rhs)
     }

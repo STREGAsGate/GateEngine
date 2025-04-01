@@ -10,11 +10,11 @@ public enum MouseScroller: Hashable {
     case y
     case z
 
-    @_transparent
+    @inlinable
     public static var horizontal: Self { .x }
-    @_transparent
+    @inlinable
     public static var vertical: Self { .y }
-    @_transparent
+    @inlinable
     public static var depth: Self { .z }
 }
 

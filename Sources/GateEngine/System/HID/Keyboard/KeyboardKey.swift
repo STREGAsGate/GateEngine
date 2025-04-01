@@ -141,7 +141,7 @@ extension KeyboardKey {
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
      - note: If you are solo and use qwerty, this function can be omitted as the unerlying representation is already \"qwerty\".
      */
-    @_transparent
+    @inlinable
     public static func qwerty(_ character: Character, origin: KeyOrigin = .anyVariation) -> Self {
         return .character(character, origin)
     }
@@ -155,6 +155,7 @@ extension KeyboardKey {
      - parameter character: The character on your keyboard, assuming your keyboard layout is \"qwertz\".
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
      */
+    @inlinable
     public static func qwertz(_ character: Character, origin: KeyOrigin = .anyVariation) -> Self {
         switch character {
         case "<":
@@ -200,6 +201,7 @@ extension KeyboardKey {
      - parameter character: The character on your keyboard, assuming your keyboard layout is \"azerty\".
      - parameter origin: The location of the key on the keyboard. `nil` means any instance of the key.
      */
+    @inlinable
     public static func azerty(_ character: Character, origin: KeyOrigin = .anyVariation) -> Self {
         switch character {
         case "<":

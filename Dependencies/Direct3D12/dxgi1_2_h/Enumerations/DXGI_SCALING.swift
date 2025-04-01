@@ -21,7 +21,7 @@ public enum DGIScaling {
 
     case _unimplemented(RawValue)
     
-    @inlinable @inline(__always)
+    @inlinable
     public var rawValue: RawValue {
         switch self {
         case .none:
@@ -35,7 +35,7 @@ public enum DGIScaling {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public init(_ rawValue: RawValue) {
        switch rawValue {
         case WinSDK.DXGI_SCALING_NONE:

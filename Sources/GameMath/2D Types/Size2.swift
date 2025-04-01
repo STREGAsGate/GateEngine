@@ -36,7 +36,7 @@ extension Size2: Codable {}
 
 //MARK: Vector2
 extension Size2 {
-    @_transparent
+    @inlinable
     public var x: Float {
         get {
             return width
@@ -46,7 +46,7 @@ extension Size2 {
         }
     }
     
-    @_transparent
+    @inlinable
     public var y: Float {
         get {
             return height
@@ -70,18 +70,18 @@ public extension Size2 {
 }
 
 public extension Size2 {
-    @_transparent
+    @inlinable
     var aspectRatio: Float {
         return width / height
     }
 }
 
 public extension Size2 {
-    @_transparent
+    @inlinable
     static func *(lhs: Size2, rhs: Float) -> Self {
         return Size2(width: lhs.width * rhs, height: lhs.height * rhs)
     }
-    @_transparent
+    @inlinable
     static func *=(lhs: inout Self, rhs: Float) {
         lhs = lhs * rhs
     }
@@ -91,12 +91,12 @@ public extension Size2 {
 //Addition
 public extension Size2 {
     //Self:Self
-    @_transparent
+    @inlinable
     static func +(lhs: Self, rhs: Self) -> Self {
         return Self(lhs.x + rhs.x,
                     lhs.y + rhs.y)
     }
-    @_transparent
+    @inlinable
     static func +=(lhs: inout Self, rhs: Self) {
         lhs = lhs + rhs
     }
@@ -105,12 +105,12 @@ public extension Size2 {
 //Subtraction
 public extension Size2 {
     //Self:Self
-    @_transparent
+    @inlinable
     static func -(lhs: Self, rhs: Self) -> Self {
         return Self(lhs.x - rhs.x,
                     lhs.y - rhs.y)
     }
-    @_transparent
+    @inlinable
     static func -=(lhs: inout Self, rhs: Self) {
         lhs = lhs - rhs
     }
@@ -119,12 +119,12 @@ public extension Size2 {
 //Division(FloatingPoint)
 public extension Size2 {
     //Self:Self
-    @_transparent
+    @inlinable
     static func /(lhs: Self, rhs: Self) -> Self {
         return Self(lhs.x / rhs.x,
                     lhs.y / rhs.y)
     }
-    @_transparent
+    @inlinable
     static func /=(lhs: inout Self, rhs: Self) {
         lhs = lhs / rhs
     }

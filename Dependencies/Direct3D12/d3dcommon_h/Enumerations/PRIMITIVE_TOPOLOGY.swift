@@ -101,7 +101,7 @@ public enum D3DPrimitiveTopology {
     /// This Swift Package had no implementation, this can happen if the Base API is expanded.
     case _unimplemented(RawValue)
     
-    @inlinable @inline(__always)
+    @inlinable
     public var rawValue: RawValue {
         switch self {
         case .undefined:
@@ -193,7 +193,7 @@ public enum D3DPrimitiveTopology {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public init(_ rawValue: RawValue) {
         switch rawValue {
         case WinSDK.D3D_PRIMITIVE_TOPOLOGY_UNDEFINED:

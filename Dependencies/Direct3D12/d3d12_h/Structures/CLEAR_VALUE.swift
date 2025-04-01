@@ -14,7 +14,7 @@ public struct D3DClearValue {
     internal var rawValue: RawValue
 
     /// Specifies one member of the DXGI_FORMAT enum. The format of the commonly cleared color follows the same validation rules as a view/ descriptor creation. In general, the format of the clear color can be any format in the same typeless group that the resource format belongs to. This Format must match the format of the view used during the clear operation. It indicates whether the Color or the DepthStencil member is valid and how to convert the values for usage with the resource.
-    @inlinable @inline(__always)
+    @inlinable
     public var format: DGIFormat {
         get {
             return DGIFormat(self.rawValue.Format)
@@ -25,7 +25,7 @@ public struct D3DClearValue {
     }
 
     /// Specifies a 4-entry array of float values, determining the RGBA value. The order of RGBA matches the order used with ClearRenderTargetView.
-    @inlinable @inline(__always)
+    @inlinable
     public var color: D3DColor {
         get {
             return D3DColor(rawValue.Color)
@@ -36,7 +36,7 @@ public struct D3DClearValue {
     }
 
     /// Specifies one member of D3D12_DEPTH_STENCIL_VALUE. These values match the semantics of Depth and Stencil in ClearDepthStencilView.
-    @inlinable @inline(__always)
+    @inlinable
     public var depthStencil: D3DDepthStencilValue {
         get {
             return D3DDepthStencilValue(self.rawValue.DepthStencil)
@@ -51,14 +51,14 @@ public struct D3DClearValue {
     - parameter color: Specifies a 4-entry array of float values, determining the RGBA value. The order of RGBA matches the order used with ClearRenderTargetView.
     - parameter depthStencil: Specifies one member of D3D12_DEPTH_STENCIL_VALUE. These values match the semantics of Depth and Stencil in ClearDepthStencilView.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(format: DGIFormat, color: D3DColor, depthStencil: D3DDepthStencilValue = .init(depth: 1, stencil: 0)) {
         var field1 = RawValue.__Unnamed_union___Anonymous_field1(Color: color.tuple)
         field1.DepthStencil = depthStencil.rawValue
         self.rawValue = RawValue(Format: format.rawValue, field1)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

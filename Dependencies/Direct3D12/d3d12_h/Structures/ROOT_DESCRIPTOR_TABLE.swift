@@ -17,14 +17,13 @@ public struct D3DRootDescriptorTable {
     /** Describes the root signature 1.0 layout of a descriptor table as a collection of descriptor ranges that are all relative to a single base descriptor handle.
     - parameter descriptorRanges: An array of D3D12_DESCRIPTOR_RANGE structures that describe the descriptor ranges.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(descriptorRanges: [D3DDescriptorRange]) {
         self.descriptorRanges = descriptorRanges
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal func withUnsafeRawValue<ResultType>(_ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
-        @inline(__always)
         func withUnsafeParameter(at index: Int, _ pDescriptorRanges: inout [D3DDescriptorRange.RawValue], _ body: (RawValue) throws -> ResultType) rethrows -> ResultType {
             if descriptorRanges.isEmpty || index == descriptorRanges.count {
                 return try pDescriptorRanges.withUnsafeBufferPointer {pDescriptorRanges in

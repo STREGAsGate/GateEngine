@@ -10,7 +10,7 @@ import LinuxSupport
 final class X11Window: WindowBacking {
     weak var window: Window!
     nonisolated let xWindow: LinuxSupport.Window
-    @inline(__always)
+    @inlinable
     nonisolated var xDisplay: OpaquePointer {
         return Self.xDisplay
     }
@@ -94,7 +94,6 @@ final class X11Window: WindowBacking {
     private var previousKeyEvent: XKeyEvent = XKeyEvent()
 
     @MainActor func processEvent(_ event: XEvent) {
-        @_transparent
         func isRepeatedKey(_ event: XKeyEvent) -> Bool {
             return false
         }
@@ -308,7 +307,7 @@ final class X11Window: WindowBacking {
         }
     }
 
-    @inline(__always)
+    @inlinable
     func modifierKeyFromState(_ state: Int32) -> KeyboardModifierMask {
         var modifiers: KeyboardModifierMask = []
         if state & ShiftMask == ShiftMask {
@@ -323,7 +322,7 @@ final class X11Window: WindowBacking {
         return modifiers
     }
 
-    @inline(__always)
+    @inlinable
     func characterFromEvent(_ event: XKeyEvent) -> Character? {
         var status: Int32 = 0
         var event: XKeyEvent = event

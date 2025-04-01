@@ -24,6 +24,7 @@ public class GravityInstance: GravityValueEmitting, GravityInstanceEmitting {
         return GravityInstance(value: v, gravity: gravity)
     }()
 
+    @usableFromInline
     internal convenience init(value: GravityValue, gravity: Gravity) {
         assert(value.valueType == .instance || value.valueType == .null)
         self.init(value: value.gValue.p, gravity: gravity)
@@ -44,7 +45,6 @@ public class GravityInstance: GravityValueEmitting, GravityInstanceEmitting {
 }
 
 extension GravityInstance: GravityGetVarExtendedVMReferencing {
-    @_transparent
     public var _gravity: Gravity {
         return gravity
     }
@@ -107,12 +107,12 @@ extension GravityInstance: GravityGetFuncExtended {
         return value.getClosure(gravity: gravity, sender: self)!
     }
 
-    @discardableResult @inline(__always)
+    @discardableResult @inlinable
     public func runFunc(_ name: String) throws -> GravityValue {
         return try runFunc(name, withArguments: nil)
     }
 
-    @discardableResult @inline(__always)
+    @discardableResult @inlinable
     public func runFunc(_ name: String, withArguments args: [GravityValue]) throws -> GravityValue {
         guard let closure = getFunc(name) else {
             throw GateEngineError.scriptExecutionError("Failed to get closure \(name).")
@@ -120,7 +120,7 @@ extension GravityInstance: GravityGetFuncExtended {
         return try closure.run(withArguments: args.map({ $0.gValue }))
     }
 
-    @discardableResult @inline(__always)
+    @discardableResult @inlinable
     public func runFunc(_ name: String, withArguments args: GravityValue...) throws -> GravityValue
     {
         guard let closure = getFunc(name) else {

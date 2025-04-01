@@ -8,7 +8,7 @@
 public struct ViewFrustum3D: Sendable {
     public let planes: Array<Plane3D>
     
-    @inlinable @inline(__always)
+    @inlinable
     public var center: Position3 {
         let points = self.planes.map({$0.origin})
         var center: Position3 = .zero
@@ -59,7 +59,7 @@ public struct ViewFrustum3D: Sendable {
         self.planes = [left, right, near, far, top, bottom]
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func pointInside(_ point: Position3) -> Bool {
         if planes[0].classifyPoint(point) != .front && planes[1].classifyPoint(point) != .front {
             // if it's not within near and far it's not in the frustum
@@ -77,7 +77,7 @@ public struct ViewFrustum3D: Sendable {
         return true
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func isCollidingWith(_ box: AxisAlignedBoundingBox3D) -> Bool {
         var count = 0
         for plane in planes {
@@ -94,7 +94,7 @@ public struct ViewFrustum3D: Sendable {
 }
 
 public extension ViewFrustum3D {
-    @inlinable @inline(__always)
+    @inlinable
     func canSeeBox(_ box: AxisAlignedBoundingBox3D) -> Bool {
         return pointInside(box.position) || isCollidingWith(box)
     }

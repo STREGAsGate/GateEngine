@@ -39,7 +39,7 @@ public enum D3DQueryType {
     */
     case videoDecodeStatistics
 
-    @inlinable @inline(__always)
+    @inlinable
     public var rawValue: RawValue {
         switch self {
         case .occlusion:

@@ -84,14 +84,14 @@ public extension Transform2 {
         self.scale = scale
     }
     
-    @_transparent
+    @inlinable
     var isFinite: Bool {
         return position.isFinite && scale.isFinite && rotation.isFinite
     }
 }
 
 extension Transform2: Equatable {
-    @_transparent
+    @inlinable
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.position == rhs.position && lhs.rotation == rhs.rotation && lhs.scale == rhs.scale
     }
@@ -112,21 +112,21 @@ extension Transform2 {
 }
 
 extension Transform2 {
-    @_transparent
+    @inlinable
     public func interpolated(to destination: Self, _ method: InterpolationMethod) -> Self {
         var copy = self
         copy.interpolate(to: destination, method)
         return copy
     }
     
-    @_transparent
+    @inlinable
     public mutating func interpolate(to: Self, _ method: InterpolationMethod) {
         self.position.interpolate(to: to.position, method)
         self.rotation.interpolate(to: to.rotation, method)
         self.scale.interpolate(to: to.scale, method)
     }
     
-    @_transparent
+    @inlinable
     public func difference(removing: Self) -> Self {
         var transform: Self = .default
         transform.position = self.position - removing.position
@@ -136,20 +136,20 @@ extension Transform2 {
 }
 
 extension Transform2 {
-    @_transparent
+    @inlinable
     public func distance(from: Self) -> Float {
         return self.position.distance(from: from.position)
     }
 }
 
 public extension Transform2 {
-    @_transparent
+    @inlinable
     static func +=(lhs: inout Self, rhs: Self) {
         lhs.position += rhs.position
         lhs.rotation = (lhs.rotation + rhs.rotation).normalized
         lhs.scale = (lhs.scale + rhs.scale) / 2
     }
-    @_transparent
+    @inlinable
     static func +(lhs: Self, rhs: Self) -> Self {
         var lhsCopy = lhs
         lhsCopy += rhs

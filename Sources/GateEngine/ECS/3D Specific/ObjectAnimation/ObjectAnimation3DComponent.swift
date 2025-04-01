@@ -119,7 +119,7 @@ extension ObjectAnimation3DComponent {
 }
 
 extension Entity {
-    @inlinable @inline(__always)
+    @inlinable
     public var objectAnimation3DComponent: ObjectAnimation3DComponent {
         return self[ObjectAnimation3DComponent.self]
     }

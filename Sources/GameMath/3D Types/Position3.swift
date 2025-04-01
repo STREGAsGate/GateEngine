@@ -24,28 +24,28 @@ public struct Position3: Vector3, SIMD, Sendable {
     
     @inlinable
     public var x: Scalar {
-        @_transparent get {
+        get {
             return _storage[0]
         }
-        @_transparent set {
+        set {
             _storage[0] = newValue
         }
     }
     @inlinable
     public var y: Scalar {
-        @_transparent get {
+        get {
             return _storage[1]
         }
-        @_transparent set {
+        set {
             _storage[1] = newValue
         }
     }
     @inlinable
     public var z: Scalar {
-        @_transparent get {
+        get {
             return _storage[2]
         }
-        @_transparent set {
+        set {
             _storage[2] = newValue
         }
     }
@@ -73,7 +73,7 @@ public struct Position3: Vector3, Sendable {
 #endif
 
 public extension Position3 {
-    @_transparent
+    @inlinable
     init(_ x: Float, _ y: Float, _ z: Float) {
         self.init(x: x, y: y, z: z)
     }
@@ -107,7 +107,7 @@ public extension Position3 {
     /** The distance between `from` and `self`
     - parameter from: A value representing the source position.
      */
-    @_transparent
+    @inlinable
     func distance(from: Self) -> Float {
         let difference = self - from
         let distance = difference.dot(difference)
@@ -118,7 +118,7 @@ public extension Position3 {
     - parameter rhs: A value representing the destination position.
     - parameter threshold: The maximum distance that is considered "near".
      */
-    @_transparent
+    @inlinable
     func isNear(_ rhs: Self, threshold: Float) -> Bool {
         return self.distance(from: rhs) < threshold
     }
@@ -129,7 +129,7 @@ public extension Position3 {
     - parameter distance: The units away from `self` to create the new position.
     - parameter direction: The angle away from self to create the new position.
      */
-    @_transparent
+    @inlinable
     func moved(_ distance: Float, toward direction: Direction3) -> Self {
         return self + (direction.normalized * distance)
     }
@@ -138,7 +138,7 @@ public extension Position3 {
     - parameter distance: The units away to move.
     - parameter direction: The angle to move.
      */
-    @_transparent
+    @inlinable
     mutating func move(_ distance: Float, toward direction: Direction3) {
         self = moved(distance, toward: direction)
     }
@@ -149,7 +149,7 @@ public extension Position3 {
     - parameter origin: The anchor to rotate around.
     - parameter rotation: The direction and angle to rotate.
      */
-    @_transparent
+    @inlinable
     func rotated(around anchor: Self = .zero, by rotation: Quaternion) -> Self {
         let d = self.distance(from: anchor)
         return anchor.moved(d, toward: rotation.forward)
@@ -159,7 +159,7 @@ public extension Position3 {
      - parameter origin: The anchor to rotate around.
      - parameter rotation: The direction and angle to rotate.
      */
-    @_transparent
+    @inlinable
     mutating func rotate(around anchor: Self = .zero, by rotation: Quaternion) {
         self = rotated(around: anchor, by: rotation)
     }

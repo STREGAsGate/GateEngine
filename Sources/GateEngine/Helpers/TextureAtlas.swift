@@ -87,11 +87,10 @@ extension TextureAtlasBuilder {
         }
     }
     
-    @_transparent
     func textureBlocksWide(texturePixelWidth: Float) -> Int {
         return Int(ceil(texturePixelWidth / Float(blockSize)))
     }
-    @_transparent
+
     func textureBlocksTall(texturePixelHeight: Float) -> Int {
         return Int(ceil(texturePixelHeight / Float(blockSize)))
     }
@@ -214,11 +213,9 @@ public final class TextureAtlasBuilder {
 extension TextureAtlasBuilder {
     struct SearchGrid {
         var rows: [[Bool]] = []
-        @_transparent
         var width: Int {
             return rows.first?.count ?? 0
         }
-        @_transparent
         var height: Int {
             return rows.count
         }
@@ -243,7 +240,6 @@ extension TextureAtlasBuilder {
             }
         }
         
-        @inline(__always)
         func isOccupied(x: Int, y: Int, width: Int, height: Int) -> Bool {
             if x < self.width && y < self.height {
                 for row in y ..< min(y + height, self.height) {

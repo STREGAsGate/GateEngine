@@ -8,7 +8,7 @@
 import GLKit
 
 extension OpenGLRenderer {
-    @inline(__always)
+    @inlinable
     class var pixelFormat: NSOpenGLPixelFormat {
         return NSOpenGLPixelFormat(attributes: [
             UInt32(NSOpenGLPFAAccelerated),

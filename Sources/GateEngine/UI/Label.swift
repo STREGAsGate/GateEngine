@@ -212,18 +212,16 @@ public final class Label: View {
 
         var currentWord: [Triangle] = []
 
-        @inline(__always)
         func newLine() {
             yPosition += pointSize
             lineCount += 1
         }
 
-        @inline(__always)
         func processWord() {
             triangles.append(contentsOf: currentWord)
             currentWord.removeAll(keepingCapacity: true)
         }
-        @inline(__always)
+
         func moveCurrentWordToNextLine() {
             let pointSize = Float(pointSize)
             newLine()
@@ -243,7 +241,6 @@ public final class Label: View {
             xPosition -= offset
         }
 
-        @inline(__always)
         func charType(for character: Character) -> CharType {
             switch character {
             case " ":
@@ -257,7 +254,6 @@ public final class Label: View {
             }
         }
 
-        @inline(__always)
         func obtainFirstLineYCoord() -> Float {
             var yMin: Float = 0
             var xAdvance: Float = 0
@@ -292,7 +288,6 @@ public final class Label: View {
             return yMin
         }
 
-        @inline(__always)
         func insertCharacter(_ char: Character) {
             var xAdvance: Float = .nan
             let quad = font.alignedCharacter(

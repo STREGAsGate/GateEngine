@@ -26,19 +26,17 @@ public struct OrientedBoundingBox3D: Collider3D, Sendable {
         self.boundingBox = AxisAlignedBoundingBox3D(center: center, offset: offset, radius: radius * 2)
     }
     
-    @inline(__always)
     fileprivate var matrix: Matrix4x4 {
         return Matrix4x4(position: position) * Matrix4x4(rotation: rotation)
     }
     
-    @inline(__always)
+    @inlinable
     public var volume: Float {
         return (radius.x * 2.0) * (radius.y * 2.0) * (radius.z * 2.0)
     }
     
     public private(set) var boundingBox: AxisAlignedBoundingBox3D
 
-    @inline(__always)
     mutating public func update(transform: Transform3) {
         rotation = transform.rotation
         center = transform.position
@@ -47,7 +45,6 @@ public struct OrientedBoundingBox3D: Collider3D, Sendable {
         self.boundingBox.update(transform: transform)
     }
     
-    @inline(__always)
     public mutating func update(sizeAndOffsetUsingTransform transform: Transform3) {
         _offset = transform.position
         _radius = transform.scale / 2
@@ -83,7 +80,7 @@ public extension OrientedBoundingBox3D {
 }
 
 public extension OrientedBoundingBox3D {
-    @inline(__always)
+    @inlinable
     func surfacePoint(for ray: Ray3D) -> Position3? {
         var tMin: Float = -.infinity
         var tMax: Float = .infinity
@@ -137,7 +134,7 @@ public extension OrientedBoundingBox3D {
         return nil
     }
     
-    @inline(__always)
+    @inlinable
     func surfaceNormal(facing point: Position3) -> Direction3 {
         let arr: [Direction3] = [Direction3(1, 0, 0).rotated(by: rotation),
                                         Direction3(0, 1, 0).rotated(by: rotation),
@@ -161,19 +158,19 @@ public extension OrientedBoundingBox3D {
 }
 
 extension OrientedBoundingBox3D {
-    @inline(__always)
+    @inlinable
     func movedInsideEllipsoidSpace(_ ellipsoidRadius: Size3) -> Self {
         return OrientedBoundingBox3D(center: self.center / ellipsoidRadius, offset: self.offset / ellipsoidRadius, radius: self.radius / ellipsoidRadius, rotation: rotation)
     }
     
-    @inline(__always)
+    @inlinable
     func movedOutsideEllipsoidSpace(_ ellipsoidRadius: Size3) -> Self {
         return OrientedBoundingBox3D(center: self.center * ellipsoidRadius, offset: self.offset * ellipsoidRadius, radius: self.radius * ellipsoidRadius, rotation: rotation)
     }
 }
 
 extension OrientedBoundingBox3D {
-    @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: Collider3D) -> Interpenetration3D? {
         switch collider {
         case let collider as OrientedBoundingBox3D:
@@ -186,7 +183,7 @@ extension OrientedBoundingBox3D {
         }
     }
     
-    @inline(__always)
+    @inlinable
     public func interpenetration(comparing collider: BoundingEllipsoid3D) -> Interpenetration3D? {
         let position = self.position
         if position == collider.position {
@@ -209,7 +206,7 @@ extension OrientedBoundingBox3D {
         return Interpenetration3D(depth: depth, direction: direction, points: [point])
     }
     
-    @inline(__always)
+    @inlinable
     func isColliding(with rhs: OrientedBoundingBox3D) -> Bool {
         let rhsRotation = [rhs.rotation.right, rhs.rotation.up, rhs.rotation.forward]
         let lhs = self
@@ -320,7 +317,7 @@ extension OrientedBoundingBox3D {
         return true
     }
     
-    @inline(__always)
+    @inlinable
     public func closestSurfacePoint(from point: Position3) -> Position3 {
         let rotation = [self.rotation.right, self.rotation.up, self.rotation.forward]
         
@@ -346,7 +343,6 @@ extension OrientedBoundingBox3D {
         return q
     }
     
-    @inline(__always)
     public func contains(_ point: Position3) -> Bool {
         #warning("This might be wrong")
         let p = point * matrix.inverse
@@ -362,7 +358,6 @@ extension OrientedBoundingBox3D {
 }
 
 extension OrientedBoundingBox3D {
-    @inline(__always)
     public var vertices: [Position3] {
         let x = self.radius.width
         let y = self.radius.height
@@ -378,7 +373,7 @@ extension OrientedBoundingBox3D {
                 Position3(  x, -y, -z),
                 Position3( -x, -y, -z)].map({$0 * self.matrix})
     }
-    @inline(__always)
+    @inlinable
     func vertexSpan(along axis: Direction3) -> ClosedRange<Float> {
         let vertices = self.vertices
         
@@ -398,7 +393,7 @@ extension OrientedBoundingBox3D {
         return min ... max
     }
     
-    @inline(__always)
+    @inlinable
     static func spanIntersect(_ box0: OrientedBoundingBox3D,
                               _ box1: OrientedBoundingBox3D,
                               _ axisc: Direction3,
@@ -455,7 +450,7 @@ extension OrientedBoundingBox3D {
         return true
     }
     
-    @inline(__always)
+    @inlinable
     static func getNumHitPoints(_ box0: OrientedBoundingBox3D, _ hitNormal: Direction3, _ penetration: Float, _ vertIndexes: inout [Array<Position3>.Index]) -> [Position3] {
         let vertices = box0.vertices
         
@@ -489,7 +484,7 @@ extension OrientedBoundingBox3D {
         return collisionPoints
     }
     
-    @inline(__always)
+    @inlinable
     static func sortVertices(_ vertices: inout [Position3], _ vertexIndices: inout [Array<Position3>.Index]) {
         let faces = [[4,0,3,7],
                      [1,5,6,2],
@@ -522,7 +517,7 @@ extension OrientedBoundingBox3D {
         vertexIndices = sortedIndices
     }
     
-    @inline(__always)
+    @inlinable
     static func vertInsideFace(_ verts0: [Position3], _ p0: Position3, _ planeErr: Float = 0) -> Bool {
         // Work out the normal for the face
         let v0 = verts0[1] - verts0[0]
@@ -551,7 +546,7 @@ extension OrientedBoundingBox3D {
         return true
     }
     
-    @inline(__always)
+    @inlinable
     static func clipFaceFaceVerts(_ verts0: inout [Position3],
                                   _ vertIndexes0: inout [Array<Position3>.Index],
                                   _ verts1: inout [Position3],
@@ -640,7 +635,7 @@ extension OrientedBoundingBox3D {
         return temp
     }
     
-    @inline(__always)
+    @inlinable
     static func closestPtPointOBB(_ point: Position3, _ box0: OrientedBoundingBox3D) -> Position3 {
         let d = point - box0.center
         var q = box0.center
@@ -657,7 +652,7 @@ extension OrientedBoundingBox3D {
         return q
     }
     
-    @inline(__always)
+    @inlinable
     static func clipLinePlane(_ verts0: [Position3], _ vertIndexes0: [Array<Position3>.Index], _ box0: OrientedBoundingBox3D,
                               _ verts1: [Position3], _ vertIndexes1: [Array<Position3>.Index], _ box1: OrientedBoundingBox3D) -> [Position3] {
         
@@ -666,7 +661,7 @@ extension OrientedBoundingBox3D {
         return [p1, p2]
     }
     
-    @inline(__always)
+    @inlinable
     static func closestPointLineLine(_ verts0: [Position3], _ verts1: [Position3]) -> Position3 {
         let p1 = verts0[0]
         let q1 = verts0[1]
@@ -733,7 +728,7 @@ extension OrientedBoundingBox3D {
         return (c1 + c2) * 0.5
     }
     
-    @inline(__always)
+    @inlinable
     static func calculateHitPoint(_ box0: OrientedBoundingBox3D, _ box1: OrientedBoundingBox3D, _ penetration: Float, _ hitNormal: inout Direction3) -> [Position3] {
         let norm0 = hitNormal
         var vertIndex0: Array<Array<Position3>.Index> = []
@@ -784,7 +779,7 @@ extension OrientedBoundingBox3D {
         return vertsX
     }
     
-    @inline(__always)
+    @inlinable
     static func cubeCubeCollisionCheck(_ box0: OrientedBoundingBox3D, _ box1: OrientedBoundingBox3D) -> Interpenetration3D? {
         let box0Rotation = [box0.rotation.right, box0.rotation.up, box0.rotation.forward]
         let box1Rotation = [box1.rotation.right, box1.rotation.up, box1.rotation.forward]

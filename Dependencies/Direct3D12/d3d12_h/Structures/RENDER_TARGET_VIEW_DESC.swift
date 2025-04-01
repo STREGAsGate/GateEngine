@@ -14,7 +14,7 @@ public struct D3DRenderTargetViewDescription {
     internal var rawValue: RawValue
 
     /// A DXGI_FORMAT-typed value that specifies the viewing format.
-    @inlinable @inline(__always)
+    @inlinable
     public var format: DGIFormat {
         get {
             return DGIFormat(rawValue.Format)
@@ -25,7 +25,7 @@ public struct D3DRenderTargetViewDescription {
     }
 
     /// A D3D12_RTV_DIMENSION-typed value that specifies how the render-target resource will be accessed. This type specifies how the resource will be accessed. This member also determines which _RTV to use in the following union.
-    @inlinable @inline(__always)
+    @inlinable
     public var dimension: D3DRenderTargetViewDiemension {
         get {
             return D3DRenderTargetViewDiemension(rawValue.ViewDimension)
@@ -36,7 +36,7 @@ public struct D3DRenderTargetViewDescription {
     }
 
     /// A D3D12_BUFFER_RTV structure that specifies which buffer elements can be accessed.
-    @inlinable @inline(__always)
+    @inlinable
     public var buffer: D3DRenderTargetViewBuffer {
         get {
             return D3DRenderTargetViewBuffer(rawValue.Buffer)
@@ -47,7 +47,7 @@ public struct D3DRenderTargetViewDescription {
     }
 
     /// A D3D12_TEX1D_RTV structure that specifies the subresources in a 1D texture that can be accessed.
-    @inlinable @inline(__always)
+    @inlinable
     public var texture1D: D3DTexture1DRenderTargetView {
         get {
             return D3DTexture1DRenderTargetView(rawValue.Texture1D)
@@ -58,7 +58,7 @@ public struct D3DRenderTargetViewDescription {
     }
 
     /// A D3D12_TEX1D_ARRAY_RTV structure that specifies the subresources in a 1D texture array that can be accessed.
-    @inlinable @inline(__always)
+    @inlinable
     public var texture1DArray: D3DTexture1DArrayRenderTargetView {
         get {
             return D3DTexture1DArrayRenderTargetView(rawValue.Texture1DArray)
@@ -69,7 +69,7 @@ public struct D3DRenderTargetViewDescription {
     }
 
     /// A D3D12_TEX2D_RTV structure that specifies the subresources in a 2D texture that can be accessed.
-    @inlinable @inline(__always)
+    @inlinable
     public var texture2D: D3DTexture2DRenderTargetView {
         get {
             return D3DTexture2DRenderTargetView(rawValue.Texture2D)
@@ -80,7 +80,7 @@ public struct D3DRenderTargetViewDescription {
     }
 
     /// A D3D12_TEX2D_ARRAY_RTV structure that specifies the subresources in a 2D texture array that can be accessed.
-    @inlinable @inline(__always)
+    @inlinable
     public var texture2DArray: D3DTexture2DArrayRenderTargetView {
         get {
             return D3DTexture2DArrayRenderTargetView(rawValue.Texture2DArray)
@@ -91,7 +91,7 @@ public struct D3DRenderTargetViewDescription {
     }
 
     /// A D3D12_TEX2DMS_RTV structure that specifies a single subresource because a multisampled 2D texture only contains one subresource.
-    @inlinable @inline(__always)
+    @inlinable
     public var texture2DMultiSampled: D3DTexture2DMultiSampledRenderTargetView {
         get {
             return D3DTexture2DMultiSampledRenderTargetView(rawValue.Texture2DMS)
@@ -102,7 +102,7 @@ public struct D3DRenderTargetViewDescription {
     }
 
     /// A D3D12_TEX2DMS_ARRAY_RTV structure that specifies the subresources in a multisampled 2D texture array that can be accessed.
-    @inlinable @inline(__always)
+    @inlinable
     public var texture2DMultiSampledArray: D3DTexture2DMultiSampledArrayRenderTargetView {
         get {
             return D3DTexture2DMultiSampledArrayRenderTargetView(rawValue.Texture2DMSArray)
@@ -113,7 +113,7 @@ public struct D3DRenderTargetViewDescription {
     }
 
     /// A D3D12_TEX3D_RTV structure that specifies subresources in a 3D texture that can be accessed.
-    @inlinable @inline(__always)
+    @inlinable
     public var texture3D: D3DTexture3DRenderTargetView {
         get {
             return D3DTexture3DRenderTargetView(rawValue.Texture3D)
@@ -135,7 +135,7 @@ public struct D3DRenderTargetViewDescription {
     - parameter texture2DMiltiSampledArray: A D3D12_TEX2DMS_ARRAY_RTV structure that specifies the subresources in a multisampled 2D texture array that can be accessed.
     - parameter texture3D: A D3D12_TEX3D_RTV structure that specifies subresources in a 3D texture that can be accessed.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(format: DGIFormat,
                 dimension: D3DRenderTargetViewDiemension,
                 buffer: D3DRenderTargetViewBuffer,
@@ -160,12 +160,12 @@ public struct D3DRenderTargetViewDescription {
     }
 
     /// Describes the subresources from a resource that are accessible by using a render-target view.
-    @inlinable @inline(__always)
+    @inlinable
     public init() {
         self.rawValue = RawValue()
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

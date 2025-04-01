@@ -13,7 +13,7 @@ public struct D3DBox {
     internal var rawValue: RawValue
 
     /// The x position of the left hand side of the box.
-    @inlinable @inline(__always)
+    @inlinable
     public var left: UInt32 {
         get {
             return rawValue.left
@@ -24,7 +24,7 @@ public struct D3DBox {
     }
 
     /// The y position of the top of the box.
-    @inlinable @inline(__always)
+    @inlinable
     public var top: UInt32 {
         get {
             return rawValue.top
@@ -35,7 +35,7 @@ public struct D3DBox {
     }
 
     /// The z position of the front of the box.
-    @inlinable @inline(__always)
+    @inlinable
     public var front: UInt32 {
         get {
             return rawValue.front
@@ -46,7 +46,7 @@ public struct D3DBox {
     }
 
     /// The x position of the right hand side of the box, plus 1. This means that right - left equals the width of the box.
-    @inlinable @inline(__always)
+    @inlinable
     public var right: UInt32 {
         get {
             return rawValue.right
@@ -57,7 +57,7 @@ public struct D3DBox {
     }
 
     /// The y position of the bottom of the box, plus 1. This means that top - bottom equals the height of the box.
-    @inlinable @inline(__always)
+    @inlinable
     public var bottom: UInt32 {
         get {
             return rawValue.bottom
@@ -68,7 +68,7 @@ public struct D3DBox {
     }
 
     /// The z position of the back of the box, plus 1. This means that front - back equals the depth of the box.
-    @inlinable @inline(__always)
+    @inlinable
     public var back: UInt32 {
         get {
             return rawValue.back
@@ -86,12 +86,12 @@ public struct D3DBox {
     - parameter bottom: The y position of the bottom of the box, plus 1. This means that top - bottom equals the height of the box.
     - parameter back: The z position of the back of the box, plus 1. This means that front - back equals the depth of the box.
     */
-    @inlinable @inline(__always)
+    @inlinable
     public init(left: UInt32 = 0, top: UInt32 = 0, front: UInt32 = 0, right: UInt32 = 0, bottom: UInt32 = 0, back: UInt32 = 0) {
         self.rawValue = RawValue(left: left, top: top, front: front, right: right, bottom: bottom, back: back)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ rawValue: RawValue) {
         self.rawValue = rawValue
     }

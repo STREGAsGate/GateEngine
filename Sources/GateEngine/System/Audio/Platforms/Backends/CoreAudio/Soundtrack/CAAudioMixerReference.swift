@@ -31,7 +31,7 @@ internal final class CAAudioMixerReference: AudioMixerReference {
         self.mixerNode = mixerNode
     }
 
-    @inline(__always)
+    @inlinable
     var volume: Float {
         get {
             return mixerNode.volume
@@ -41,7 +41,7 @@ internal final class CAAudioMixerReference: AudioMixerReference {
         }
     }
 
-    @inline(__always)
+    @inlinable
     func createAudioTrackReference() -> any AudioTrackReference {
         return CAAudioTrackReference(self)
     }

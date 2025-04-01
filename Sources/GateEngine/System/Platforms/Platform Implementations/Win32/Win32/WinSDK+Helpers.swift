@@ -60,7 +60,6 @@ internal var QS_ALLINPUT: DWORD {
         | DWORD(QS_SENDMESSAGE)
 }
 
-@inline(__always)
 func getFILETIMEoffset() -> WinSDK.LARGE_INTEGER {
     var s: SYSTEMTIME = WinSDK.SYSTEMTIME()
     var f: FILETIME = WinSDK.FILETIME()
@@ -89,7 +88,6 @@ internal struct timespec {
     var tv_nsec: Double = 0
 }
 let CLOCK_MONOTONIC_RAW = 1
-@inline(__always)
 internal func clock_gettime(_ X: Int, _ tv: inout timespec) -> Int {
     var t: WinSDK.LARGE_INTEGER = LARGE_INTEGER()
     var f: WinSDK.FILETIME = FILETIME()
@@ -125,7 +123,7 @@ internal func clock_gettime(_ X: Int, _ tv: inout timespec) -> Int {
 }
 
 extension String {
-    @inlinable @inline(__always)
+    @inlinable
     init(windowsUTF8 lpcstr: LPCSTR) {
         self = withUnsafePointer(to: lpcstr) {
             return $0.withMemoryRebound(to: UInt8.self, capacity: MemoryLayout.size(ofValue: $0)) {
@@ -134,7 +132,7 @@ extension String {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     var windowsUTF8: [CHAR] {
         return self.withCString(encodedAs: UTF8.self) {
             return $0.withMemoryRebound(to: CHAR.self, capacity: self.utf8.count + 1) {
@@ -143,12 +141,12 @@ extension String {
         }
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     init(windowsUTF16 lpcwstr: LPCWSTR) {
         self.init(decodingCString: lpcwstr, as: UTF16.self)
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     var windowsUTF16: [WCHAR] {
         return self.withCString(encodedAs: UTF16.self) {
             return $0.withMemoryRebound(to: WCHAR.self, capacity: self.utf16.count + 1) {

@@ -8,8 +8,6 @@
 import Foundation
 
 internal enum AppleFileSystem {
-    @inline(__always)
-    @inlinable
     static func pathForSearchPath(_ searchPath: FileSystemSearchPath, in domain: FileSystemSearchPathDomain = .currentUser) throws -> String {
         let foundationSearchPath: FileManager.SearchPathDirectory
         switch searchPath {

@@ -156,7 +156,6 @@ extension Win32Platform {
             }
         }
     }
-    @_transparent
     func queryRegistry(forKey key: String) -> Bool {
         if let value: Int = queryRegistry(forKey: key) {
             return value != 0

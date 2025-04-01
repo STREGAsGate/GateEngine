@@ -18,14 +18,14 @@ public struct Ray3D: Sendable {
         self.direction = Direction3(from: origin, to: destination)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     internal func movedInsideEllipsoidSpace(_ ellipsoidRadius: Size3) -> Ray3D {
         return Ray3D(from: self.origin / ellipsoidRadius, toward: (self.direction / ellipsoidRadius).normalized)
     }
 }
 
 public extension Transform3 {
-    @inlinable @inline(__always)
+    @inlinable
     func createRay() -> Ray3D {
         return Ray3D(from: position, toward: rotation.forward)
     }
