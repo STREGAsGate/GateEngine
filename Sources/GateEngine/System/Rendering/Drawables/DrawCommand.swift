@@ -78,19 +78,30 @@ public struct DrawCommand {
     }
     
     @MainActor 
-    internal var geometries: [any GeometryBackend] {
+    internal var geometries: [any GeometryBackend]? {
         switch resource {
         case .points(let points):
-            return [points.backend!]
+            if let backend = points.backend {
+                return [backend]
+            }
         case .lines(let lines):
-            return [lines.backend!]
+            if let backend = lines.backend {
+                return [backend]
+            }
         case .geometry(let geometry):
-            return [geometry.backend!]
+            if let backend = geometry.backend {
+                return [backend]
+            }
         case .morph(let source, let destination):
-            return [source.backend!, destination.backend!]
+            if let srcBackend = source.backend, let dstBackend = destination.backend {
+                return [srcBackend, dstBackend]
+            }
         case .skinned(let skinnedGeometry):
-            return [skinnedGeometry.backend!]
+            if let backend = skinnedGeometry.backend {
+                return [backend]
+            }
         }
+        return nil
     }
     
     @usableFromInline
