@@ -107,10 +107,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
     }
 
     public func flipped() -> RawGeometry {
-        return RawGeometry(
-            triangles: self.generateTriangles().map({ $0.flipped() }),
-            optimizeDistance: nil
-        )
+        return RawGeometry(triangles: self.generateTriangles().map({ $0.flipped() }))
     }
 
     /// Creates a new `Geometry` from element array values.
@@ -143,10 +140,22 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         self.colors = colors
         self.indices = indices
     }
+    
+    public enum Optimization {
+        /// Keeps every vertex as is, including duplicates.
+        /// This option is required for skins as the indices are pre computed
+        case dontOptimize
+        /// Compares each vertex using equality. If equal,  they are considered the same and will be folded into a single vertex.
+        case byEquality
+        /// Compares the vertex components. If the difference between components is within `threshold` they are considered the same and will be folded into a single vertex.
+        case byThreshold(_ threshold: Float)
+        /// Checks the result of the provided comparator. If true, the vertices will be folded into a single vertex. The vertex kept is always lhs.
+        case usingComparator(_ comparator: (_ lhs: Vertex, _ rhs: Vertex) -> Bool)
+    }
 
     /// Create `Geometry` from counter-clockwise wound `Triangles` and optionanly attempts to optimize the arrays by distance.
     /// Optimization is extremely slow and may result in loss of data. It should be used to pre-optimize assets and should not be used at runtime.
-    public init(triangles: [Triangle], optimizeDistance: Float? = nil) {
+    public init(triangles: [Triangle], optimization: Optimization = .dontOptimize) {
         assert(triangles.isEmpty == false)
 
         self.positions = []
@@ -166,32 +175,90 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
 
         let inVertices: [Vertex] = triangles.vertices
 
-        var similars: [UInt16?]? = nil
-        if let threshold = optimizeDistance {
-            similars = Array(repeating: nil, count: inVertices.count)
+        var optimizedIndicies: [UInt16]
+        switch optimization {
+        case .dontOptimize:
+            assert(inVertices.count < UInt16.max, "Exceeded the maximum number of indices (\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
+            optimizedIndicies = Array(0 ..< UInt16(inVertices.count))
+        case .byEquality:
+            optimizedIndicies = Array(repeating: 0, count: inVertices.count)
             for index in 0 ..< inVertices.count {
+                assert(index < UInt16.max, "Exceeded the maximum number of indices (\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
                 let vertex = inVertices[index]
-                if let similarIndex = Array(inVertices[..<index]).firstIndex(where: {
-                    $0.isSimilar(to: vertex, threshold: threshold)
-                }) {
-                    similars?[index] = UInt16(similarIndex)
+                if let similarIndex = inVertices.firstIndex(where: {$0 == vertex}) {
+                    optimizedIndicies[index] = UInt16(similarIndex)
+                }else{
+                    optimizedIndicies[index] = UInt16(index)
+                }
+            }
+        case .byThreshold(let threshold):
+            optimizedIndicies = Array(repeating: 0, count: inVertices.count)
+            for index in 0 ..< inVertices.count {
+                assert(index < UInt16.max, "Exceeded the maximum number of indices (\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
+                let vertex = inVertices[index]
+                if let similarIndex = inVertices.firstIndex(where: {$0.isSimilar(to: vertex, threshold: threshold)}) {
+                    optimizedIndicies[index] = UInt16(similarIndex)
+                }else{
+                    optimizedIndicies[index] = UInt16(index)
+                }
+            }
+        case .usingComparator(let comparator):
+            optimizedIndicies = Array(repeating: 0, count: inVertices.count)
+            for index in 0 ..< inVertices.count {
+                assert(index < UInt16.max, "Exceeded the maximum number of indices (\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
+                let vertex = inVertices[index]
+                if let similarIndex = inVertices.firstIndex(where: { comparator($0, vertex)}) {
+                    optimizedIndicies[index] = UInt16(similarIndex)
+                }else{
+                    optimizedIndicies[index] = UInt16(index)
                 }
             }
         }
-
+        
+        // The next real indices index
         var nextIndex = 0
-        for vertexIndex in inVertices.indices {
-            if let similarIndex = similars?[vertexIndex] {
-                indices.append(similarIndex)
-            } else {
-                let vertex = inVertices[vertexIndex]
-                positions.append(contentsOf: vertex.storage[0 ..< 3])
-                normals.append(contentsOf: vertex.storage[3 ..< 6])
+        if case .dontOptimize = optimization {
+            for vertex in inVertices {
+                self.positions.append(contentsOf: vertex.storage[0 ..< 3])
+                self.normals.append(contentsOf: vertex.storage[3 ..< 6])
                 uvSet1.append(contentsOf: vertex.storage[6 ..< 8])
                 uvSet2.append(contentsOf: vertex.storage[8 ..< 10])
-                tangents.append(contentsOf: vertex.storage[10 ..< 13])
-                colors.append(contentsOf: vertex.storage[13 ..< 17])
-                indices.append(UInt16(nextIndex))
+                self.tangents.append(contentsOf: vertex.storage[10 ..< 13])
+                self.colors.append(contentsOf: vertex.storage[13 ..< 17])
+
+                self.indices.append(UInt16(nextIndex))
+                // Increment the next real indicies index
+                nextIndex += 1
+            }
+        }else{
+            // Store the optimized vertex index using the actual indicies index
+            // so we can look up the real index for repeated verticies
+            var indicesMap: [UInt16:UInt16] = [:]
+            indicesMap.reserveCapacity(inVertices.count)
+            for vertexIndexInt in inVertices.indices {
+                // Obtain the optimized vertexIndex for this vertex
+                let vertexIndex: UInt16 = optimizedIndicies[vertexIndexInt]
+                
+                // Check our map to see if this vertex was already added
+                if let index = indicesMap[vertexIndex] {
+                    // Add the repeated index to the indices and continue to the next
+                    self.indices.append(index)
+                    continue
+                }
+                
+                let vertex = inVertices[vertexIndexInt]
+                self.positions.append(contentsOf: vertex.storage[0 ..< 3])
+                self.normals.append(contentsOf: vertex.storage[3 ..< 6])
+                uvSet1.append(contentsOf: vertex.storage[6 ..< 8])
+                uvSet2.append(contentsOf: vertex.storage[8 ..< 10])
+                self.tangents.append(contentsOf: vertex.storage[10 ..< 13])
+                self.colors.append(contentsOf: vertex.storage[13 ..< 17])
+                
+                let index = UInt16(nextIndex)
+                self.indices.append(index)
+                // Update the map
+                indicesMap[vertexIndex] = index
+                // Increment the next real indicies index
                 nextIndex += 1
             }
         }
@@ -203,7 +270,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         for geom in geometries {
             triangles.append(contentsOf: geom.generateTriangles())
         }
-        self.init(triangles: triangles, optimizeDistance: nil)
+        self.init(triangles: triangles)
     }
 
     /// Creates a new `Geometry` by merging multiple geometry. This is usful for loading files that store geometry speretly base don material if you intend to only use a single material for them all.
@@ -212,7 +279,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         for geometry in geometries {
             triangles.append(contentsOf: geometry.generateTriangles())
         }
-        self.init(triangles: triangles, optimizeDistance: nil)
+        self.init(triangles: triangles)
     }
 
     public func hash(into hasher: inout Hasher) {
