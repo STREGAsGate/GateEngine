@@ -279,7 +279,9 @@ open class TileMapView: View {
                     triangles.append(Triangle(v1: v3, v2: v1, v3: v4, repairIfNeeded: false))
                 }
             }
-            if triangles.isEmpty == false {
+            if triangles.isEmpty {
+                layer.geometry.rawGeometry = nil
+            }else{
                 layer.geometry.rawGeometry = RawGeometry(triangles: triangles)
             }
         }
