@@ -183,8 +183,7 @@ extension GameView {
 }
 
 open class GameViewController: ViewController {
-    @usableFromInline
-    internal let context = ECSContext()
+    public let context = ECSContext()
 
     @inlinable
     public var gameView: GameView {
