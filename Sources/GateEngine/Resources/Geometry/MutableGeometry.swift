@@ -20,22 +20,22 @@ public class MutableGeometry: Geometry {
         super.init(optionalRawGeometry: rawGeometry, immediate: true)
     }
 
-    private func load() {
-        Task(priority: .high) {
-            guard let cache = Game.unsafeShared.resourceManager.geometryCache(for: cacheKey) else {
-                return
-            }
-            if let rawGeometry, rawGeometry.indices.isEmpty == false {
+    private func load() {        
+        guard let cache = Game.unsafeShared.resourceManager.geometryCache(for: cacheKey) else {
+            return
+        }
+        if let rawGeometry, rawGeometry.indices.isEmpty == false {
+            Task(priority: .high) {
                 cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
                     from: rawGeometry
                 )
                 Task(priority: .high) { @MainActor in
                     cache.state = .ready
                 }
-            }else{
-                cache.geometryBackend = nil
-                cache.state = .pending
             }
+        }else{
+            cache.geometryBackend = nil
+            cache.state = .pending
         }
     }
 }

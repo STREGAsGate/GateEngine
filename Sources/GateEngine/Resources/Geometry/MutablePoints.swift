@@ -5,34 +5,34 @@
  * http://stregasgate.com
  */
 
-public class MutableLines: Lines {
-    public var rawLines: RawLines? = nil {
+public class MutablePoints: Points {
+    public var rawPoints: RawPoints? = nil {
         didSet {
             load()
         }
     }
 
-    public init(rawLines: RawLines? = nil) {
-        self.rawLines = rawLines
-        super.init(optionalRawLines: rawLines)
+    public init(rawPoints: RawPoints? = nil) {
+        self.rawPoints = rawPoints
+        super.init(optionalRawPoints: rawPoints)
     }
 
     private func load() {
-        Task(priority: .high) {
-            guard let cache = Game.shared.resourceManager.geometryCache(for: cacheKey) else {
-                return
-            }
-            if let rawLines, rawLines.indices.isEmpty == false {
+        guard let cache = Game.unsafeShared.resourceManager.geometryCache(for: cacheKey) else {
+            return
+        }
+        if let rawPoints, rawPoints.indices.isEmpty == false {
+            Task(priority: .high) {
                 cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
-                    from: rawLines
+                    from: rawPoints
                 )
-                Task { @MainActor in
+                Task(priority: .high) { @MainActor in
                     cache.state = .ready
                 }
-            }else{
-                cache.geometryBackend = nil
-                cache.state = .pending
             }
+        }else{
+            cache.geometryBackend = nil
+            cache.state = .pending
         }
     }
 }
