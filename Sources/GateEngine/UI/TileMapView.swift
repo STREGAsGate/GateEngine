@@ -5,8 +5,15 @@
  * http://stregasgate.com
  */
 
+@MainActor
+public protocol TileMapViewDelegate: AnyObject {
+    func tileMapViewDidLoadLayers(_ tileMapView: TileMapView)
+}
+
 open class TileMapView: View {
     public typealias SampleFilter = Material.Channel.SampleFilter
+    
+    public weak var delegate: (any TileMapViewDelegate)? = nil
     
     internal var material = Material()
     public var sampleFilter: SampleFilter {
@@ -41,11 +48,12 @@ open class TileMapView: View {
     
     public var layers: [Layer] = []
     
-    public func editLayer(named name: String, _ block: (inout Layer)->()) {
+    public func editLayer<ResultType>(named name: String, _ block: (inout Layer)->ResultType) -> ResultType {
         let index = self.layers.firstIndex(where: {$0.name == name})!
         var layer = self.layers[index]
-        block(&layer)
+        let result = block(&layer)
         self.layers[index] = layer
+        return result
     }
     
     public init(tileSetPath: String, tileMapPath: String, sampleFilter: SampleFilter = .nearest) {
@@ -65,6 +73,12 @@ open class TileMapView: View {
                 channel.texture = self.tileSet.texture
             }
             self.needsSetup = false
+
+            
+            if let delegate = self.delegate {
+                delegate.tileMapViewDidLoadLayers(self)
+            }
+            
             self.setNeedsLayout()
             self.setNeedsUpdateConstraints()
         }else{
