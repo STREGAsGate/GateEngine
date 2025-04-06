@@ -525,10 +525,16 @@ open class View {
 }
 
 extension View {
-    /// The ViewController that loaded this view, if any
+    /**
+     The ViewController that loaded this view, if any.
+     
+     - returns: The `ViewController` that  created this view in it's ``ViewController/loadView()`` function, or `nil`.
+     - SeeAlso: ``viewController``, ``firstParentViewController(ofType:)``
+     */
     public var controllingViewController: ViewController? {
         return _viewController
     }
+    
     /// The first ViewController found traviling up the view heirarchy
     public var viewController: ViewController? {
         var view: View? = self
@@ -538,14 +544,15 @@ extension View {
         return view?._viewController
     }
     
+    /**
+     Finds the first ViewController that is of type `type`.
+     
+     This is equivalent to `self.viewController?.firstParent(ofType: type)`
+     - Parameter type: Any ViewController type
+     - Returns: The first ViewController instance matching type `type`, or nil.
+     */
     public func firstParentViewController<ViewControllerResult: ViewController>(ofType type: ViewControllerResult.Type) -> ViewControllerResult? {
-        guard var viewController else {return nil}
-        while viewController is ViewControllerResult == false {
-            guard let parent = viewController.parent else {return nil}
-            viewController = parent
-        }
-        assert(viewController is ViewControllerResult)
-        return viewController as? ViewControllerResult
+        return self.viewController?.firstParent(ofType: type)
     }
 }
 

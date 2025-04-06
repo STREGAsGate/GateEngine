@@ -170,3 +170,32 @@ extension ViewController {
         }
     }
 }
+
+
+public extension ViewController {
+    /// Checks self, and then each parent until a match is found
+    func firstParent<T: ViewController>(ofType type: T.Type) -> T? {
+        var viewController: ViewController = self
+        while viewController is T == false {
+            guard let parent = viewController.parent else {return nil}
+            viewController = parent
+        }
+        return viewController as? T
+    }
+    
+    /// Scans child ViewControllers recursively until a match is found
+    func firstChild<T: ViewController>(ofType type: T.Type) -> T? {
+        func scanChildren(of parent: ViewController) -> T? {
+            if let match = parent as? T {
+                return match
+            }
+            for child in parent.children {
+                if let match = scanChildren(of: child) {
+                    return match
+                }
+            }
+            return nil
+        }
+        return scanChildren(of: self)
+    }
+}
