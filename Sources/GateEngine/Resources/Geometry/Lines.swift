@@ -68,17 +68,14 @@ extension RawLines {
         try await self.init(path: path.value, options: options)
     }
     public init(path: String, options: GeometryImporterOptions = .none) async throws {
-        let file = URL(fileURLWithPath: path)
         guard
-            let importer: any GeometryImporter = await Game.shared.resourceManager.geometryImporterForFile(
-                file
-            )
+            let importer: any GeometryImporter = try await Game.shared.resourceManager.geometryImporterForPath(path)
         else {
-            throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
+            throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
         do {
-            self = RawLines(wireframeFrom: try await importer.loadData(path: path, options: options).generateTriangles())
+            self = RawLines(wireframeFrom: try await importer.loadGeometry(options: options).generateTriangles())
         } catch {
             throw GateEngineError(error)
         }

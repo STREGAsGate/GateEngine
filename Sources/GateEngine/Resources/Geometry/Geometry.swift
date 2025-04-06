@@ -131,12 +131,8 @@ extension Geometry: Equatable, Hashable {
 
 // MARK: - Resource Manager
 
-public protocol GeometryImporter: AnyObject {
-    init()
-
-    func loadData(path: String, options: GeometryImporterOptions) async throws -> RawGeometry
-
-    static func canProcessFile(_ file: URL) -> Bool
+public protocol GeometryImporter: ResourceImporter {
+    func loadGeometry(options: GeometryImporterOptions) async throws -> RawGeometry
 }
 
 public struct GeometryImporterOptions: Equatable, Hashable, Sendable {
@@ -177,10 +173,10 @@ extension ResourceManager {
         }
     }
 
-    func geometryImporterForFile(_ file: URL) -> (any GeometryImporter)? {
+    func geometryImporterForPath(_ path: String) async throws -> (any GeometryImporter)? {
         for type in self.importers.geometryImporters {
-            if type.canProcessFile(file) {
-                return type.init()
+            if type.canProcessFile(path) {
+                return try await self.importers.getImporter(path: path, type: type)
             }
         }
         return nil
@@ -193,17 +189,14 @@ extension RawGeometry {
         try await self.init(path: path.value, options: options)
     }
     public init(path: String, options: GeometryImporterOptions = .none) async throws {
-        let file = URL(fileURLWithPath: path)
         guard
-            let importer: any GeometryImporter = await Game.shared.resourceManager.geometryImporterForFile(
-                file
-            )
+            let importer: any GeometryImporter = try await Game.shared.resourceManager.geometryImporterForPath(path)
         else {
-            throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
+            throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
         do {
-            self = try await importer.loadData(path: path, options: options)
+            self = try await importer.loadGeometry(options: options)
         } catch {
             throw GateEngineError(error)
         }

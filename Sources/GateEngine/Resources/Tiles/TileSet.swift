@@ -159,12 +159,8 @@ public final class TileSetBackend {
 
 // MARK: - Resource Manager
 
-public protocol TileSetImporter: AnyObject {
-    init()
-
-    func process(data: Data, baseURL: URL, options: TileSetImporterOptions) async throws -> TileSetBackend
-
-    static func supportedFileExtensions() -> [String]
+public protocol TileSetImporter: ResourceImporter {
+    func loadTileSet(options: TileSetImporterOptions) async throws(GateEngineError) -> TileSetBackend
 }
 
 public struct TileSetImporterOptions: Equatable, Hashable, Sendable {
@@ -179,12 +175,10 @@ extension ResourceManager {
         importers.tileSetImporters.insert(type, at: 0)
     }
 
-    fileprivate func importerForFileType(_ file: String) -> (any TileSetImporter)? {
+    fileprivate func importerForFileType(_ file: String) async throws -> (any TileSetImporter)? {
         for type in self.importers.tileSetImporters {
-            if type.supportedFileExtensions().contains(where: {
-                $0.caseInsensitiveCompare(file) == .orderedSame
-            }) {
-                return type.init()
+            if type.canProcessFile(file) {
+                return try await self.importers.getImporter(path: file, type: type)
             }
         }
         return nil
@@ -305,22 +299,12 @@ extension ResourceManager {
             let path = key.requestedPath
             
             do {
-                guard let fileExtension = path.components(separatedBy: ".").last else {
-                    throw GateEngineError.failedToLoad("Unknown file type.")
-                }
-                guard
-                    let importer: any TileSetImporter = await Game.shared.resourceManager
-                        .importerForFileType(fileExtension)
+                guard let importer: any TileSetImporter = try await Game.shared.resourceManager.importerForFileType(path)
                 else {
-                    throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
+                    throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
                 }
 
-                let data = try await Game.shared.platform.loadResource(from: path)
-                let backend = try await importer.process(
-                    data: data,
-                    baseURL: URL(string: path)!.deletingLastPathComponent(),
-                    options: key.tileSetOptions
-                )
+                let backend = try await importer.loadTileSet(options: key.tileSetOptions)
 
                 Task { @MainActor in
                     if let cache = self.cache.tileSets[key] {

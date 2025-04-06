@@ -13,18 +13,36 @@ import Foundation
  The file extension of the asset to load must match `RawGeometryImporter.fileExtension`
  */
 public final class RawGeometryImporter: GeometryImporter {
+    var data: Data! = nil
     public required init() {}
 
-    public func loadData(path: String, options: GeometryImporterOptions) async throws -> RawGeometry {
-        let data = try await Game.shared.platform.loadResource(from: path)
-        return try RawGeometryDecoder().decode(data)
+    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
+        do {
+            self.data = try Platform.current.synchronousLoadResource(from: path)
+        }catch{
+            throw GateEngineError(error)
+        }
     }
-
-    public static func canProcessFile(_ file: URL) -> Bool {
-        return file.pathExtension.caseInsensitiveCompare(Self.fileExtension) == .orderedSame
+    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+        do {
+            self.data = try await Game.shared.platform.loadResource(from: path)
+        }catch{
+            throw GateEngineError(error)
+        }
+    }
+    
+    public func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry {
+        do {
+            return try RawGeometryDecoder().decode(data)
+        }catch{
+            throw GateEngineError(error)
+        }
     }
     
     /// The expected file extension
     /// Write data created with `RawGeometryEncoder` to a file with this extension to be imported by this `GeometryImporter`
     public static let fileExtension: String = "gaterg"
+    public static func supportedFileExtensions() -> [String] {
+        return [Self.fileExtension]
+    }
 }

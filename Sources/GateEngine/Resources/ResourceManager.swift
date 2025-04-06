@@ -10,6 +10,52 @@ import class Foundation.FileManager
 #endif
 import Atomics
 
+public protocol ResourceImporter: AnyObject {
+    init()
+    
+    #if GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
+    func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError)
+    #endif
+    #if GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem
+    func prepareToImportResourceFrom(path: String) async throws(GateEngineError)
+    #endif
+    
+    static func supportedFileExtensions() -> [String]
+    static func canProcessFile(_ path: String) -> Bool
+    
+    /**
+     Importers can report if they are capable of returning multiple resource instances from the same file.
+     
+     Properly returning `true` or `false` will effect performance. If the importer can decode multiple resources, 
+     it will be kept in memory for a period of time allowing it to deocde more resources from the already accessed file data.
+     - returns: `true` if this importer is able to return more then one resources from a single file, otherwise `false`.
+     */
+    func currentFileContainsMutipleResources() -> Bool
+}
+
+public extension ResourceImporter {
+    static func supportedFileExtensions() -> [String] {
+        return []
+    }
+    
+    static func canProcessFile(_ path: String) -> Bool {
+        let supportedExtensions = self.supportedFileExtensions()
+        precondition(supportedExtensions.isEmpty == false, "Imporers must implement `supportedFileExtensions()` or  `canProcessFile(_:)`.")
+        let fileExtension = URL(fileURLWithPath: path).pathExtension
+        guard fileExtension.isEmpty == false else {return false}
+        for supportedFileExtension in supportedExtensions {
+            if fileExtension.caseInsensitiveCompare(supportedFileExtension) == .orderedSame {
+                return true
+            }
+        }
+        return false
+    }
+    
+    func currentFileContainsMutipleResources() -> Bool {
+        return false
+    }
+}
+
 extension ResourceManager {
     struct Importers {
         internal var textureImporters: [any TextureImporter.Type] = [
@@ -42,6 +88,40 @@ extension ResourceManager {
         internal var tileMapImporters: [any TileMapImporter.Type] = [
             TiledTMJImporter.self,
         ]
+        
+        private var activeImporters: [ActiveImporterKey : ActiveImporter] = [:]
+        private struct ActiveImporterKey: Hashable {
+            let path: String
+        }
+        private struct ActiveImporter {
+            let importer: any ResourceImporter
+            var lastAccessed: Date = Date()
+        }
+        internal mutating func getImporter<I: ResourceImporter>(path: String, type: I.Type) async throws -> I? {
+            let key = ActiveImporterKey(path: path)
+            if let existing = activeImporters[key] {
+                // Make sure the importer can be the type requested
+                if let importer = existing.importer as? I {
+                    activeImporters[key]?.lastAccessed = Date()
+                    return importer
+                }
+            }
+            let importer = type.init()
+            try await importer.prepareToImportResourceFrom(path: path)
+            if importer.currentFileContainsMutipleResources() {
+                let active = ActiveImporter(importer: importer, lastAccessed: Date())
+                activeImporters[key] = active
+            }
+            return importer
+        }
+        
+        internal mutating func clean() {
+            for key in activeImporters.keys {
+                if activeImporters[key]!.lastAccessed.timeIntervalSinceNow < -60 {
+                    activeImporters.removeValue(forKey: key)
+                }
+            }
+        }
     }
 }
 
@@ -105,9 +185,8 @@ public final class ResourceManager {
         accumulatedSeconds += deltaTime
         if accumulatedSeconds > 60 {
             accumulatedSeconds -= 60
-        
-                incrementMinutes()
-        
+            incrementMinutes()
+            importers.clean()
         }
     }
     enum Phase {

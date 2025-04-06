@@ -60,40 +60,67 @@ fileprivate struct TSJFile: Decodable {
 }
 
 public final class TiledTSJImporter: TileSetImporter {
+    fileprivate var file: TSJFile! = nil
+    var basePath: String = ""
     public required init() {}
-
-    public func process(data: Data, baseURL: URL, options: TileSetImporterOptions) async throws -> TileSetBackend {
+    
+    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
         do {
-            let file = try JSONDecoder().decode(TSJFile.self, from: data)
+            let data = try Platform.current.synchronousLoadResource(from: path)
+            self.file = try JSONDecoder().decode(TSJFile.self, from: data)
             
-            let tiles: [TileSet.Tile] = (0 ..< file.tilecount).map({ id in
-                var properties: [String: String] = [:]
-                if let fileTiles = file.tiles {
-                    if let fileTile = fileTiles.first(where: {$0.id == id}) {
-                        if let fileTileProperties = fileTile.properties {
-                            for property in fileTileProperties {
-                                if let value = property.value {
-                                    properties[property.name] = "\(value)"
-                                }
+            var comps = path.components(separatedBy: "/")
+            comps.removeLast()
+            if path.hasPrefix("/") {
+                comps.insert("/", at: 0)
+            }
+            self.basePath = comps.joined(separator: "/")
+        }catch{
+            throw GateEngineError(error)
+        }
+    }
+    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+        do {
+            let data = try await Game.shared.platform.loadResource(from: path)
+            self.file = try JSONDecoder().decode(TSJFile.self, from: data)
+            
+            var comps = path.components(separatedBy: "/")
+            comps.removeLast()
+            if path.hasPrefix("/") {
+                comps.insert("/", at: 0)
+            }
+            self.basePath = comps.joined(separator: "/")
+        }catch{
+            throw GateEngineError(error)
+        }
+    }
+
+    public func loadTileSet(options: TileSetImporterOptions) async throws(GateEngineError) -> TileSetBackend {        
+        let tiles: [TileSet.Tile] = (0 ..< file.tilecount).map({ id in
+            var properties: [String: String] = [:]
+            if let fileTiles = file.tiles {
+                if let fileTile = fileTiles.first(where: {$0.id == id}) {
+                    if let fileTileProperties = fileTile.properties {
+                        for property in fileTileProperties {
+                            if let value = property.value {
+                                properties[property.name] = "\(value)"
                             }
                         }
                     }
                 }
-                return TileSet.Tile(id: id, properties: properties, colliders: nil)
-            })
-            
-            let textureURL = baseURL.appendingPathComponent(file.image)
-            
-            return await TileSetBackend(
-                texture: Texture(path: textureURL.path, sizeHint: Size2(Float(file.imagewidth), Float(file.imageheight))),
-                count: file.tilecount,
-                columns: file.columns,
-                tileSize: Size2(Float(file.tilewidth), Float(file.tileheight)),
-                tiles: tiles
-            )
-        }catch{
-            throw GateEngineError(error)
-        }
+            }
+            return TileSet.Tile(id: id, properties: properties, colliders: nil)
+        })
+        
+        let texturePath = basePath + "/" + file.image
+        
+        return await TileSetBackend(
+            texture: Texture(path: texturePath, sizeHint: Size2(Float(file.imagewidth), Float(file.imageheight))),
+            count: file.tilecount,
+            columns: file.columns,
+            tileSize: Size2(Float(file.tilewidth), Float(file.tileheight)),
+            tiles: tiles
+        )
     }
     
     static public func supportedFileExtensions() -> [String] {

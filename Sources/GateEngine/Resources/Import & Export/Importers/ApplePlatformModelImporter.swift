@@ -137,9 +137,22 @@ public final class ApplePlatformModelImporter: GeometryImporter {
         return indices
     }
     
-    public func loadData(path: String, options: GeometryImporterOptions) async throws -> RawGeometry {
-        let asset = MDLAsset(url: URL(fileURLWithPath: path))
-
+    var asset: MDLAsset! = nil
+    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
+        guard let path = Platform.current.synchronousLocateResource(from: path) else {throw .failedToLocate}
+        self.asset = MDLAsset(url: URL(fileURLWithPath: path))
+    }
+    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+        guard let path = await Game.shared.platform.locateResource(from: path) else {throw .failedToLocate}
+        self.asset = await withCheckedContinuation { continuation in
+            Task.detached {
+                let asset = MDLAsset(url: URL(fileURLWithPath: path))
+                continuation.resume(returning: asset)
+            }
+        }
+    }
+    
+    public func loadGeometry(options: GeometryImporterOptions) async throws -> RawGeometry {
         for meshIndex in 0 ..< asset.count {
             guard let mesh = asset.object(at: meshIndex) as? MDLMesh else {
                 throw GateEngineError.failedToDecode("mesh[\(meshIndex)] is not a MDLMesh instance.")
@@ -165,8 +178,8 @@ public final class ApplePlatformModelImporter: GeometryImporter {
         throw GateEngineError.failedToDecode("Failed to locate model.")
     }
 
-    public static func canProcessFile(_ file: URL) -> Bool {
-        return MDLAsset.canImportFileExtension(file.pathExtension)
+    public static func canProcessFile(_ path: String) -> Bool {
+        return MDLAsset.canImportFileExtension(URL(fileURLWithPath: path).pathExtension)
     }
 }
 

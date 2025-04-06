@@ -120,8 +120,9 @@ public final class TextureAtlasBuilder {
     }
     
     public func insertTexture(withPath unresolvedPath: String) throws {
-        let data = try Platform.current.synchronousLoadResource(from: unresolvedPath)
-        let png = try PNGImporter().process(data: data, size: nil, options: .none)
+        let importer = PNGImporter()
+        try importer.synchronousPrepareToImportResourceFrom(path: unresolvedPath)
+        let png = try importer.loadTexture(options: .none)
         let width = Int(png.size.width)
         let height = Int(png.size.height)
         let coord = searchGrid.firstUnoccupiedFor(

@@ -406,9 +406,31 @@ private class GLTF: Decodable {
     }
 }
 
-public final class GLTransmissionFormat {
+public final class GLTransmissionFormat: ResourceImporter {
+    fileprivate var gltf: GLTF! = nil
     required public init() {}
-
+    
+    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
+        guard let path = Platform.current.synchronousLocateResource(from: path) else {throw .failedToLocate}
+        let baseURL = URL(fileURLWithPath: path).deletingLastPathComponent()
+        do {
+            let data = try Platform.current.synchronousLoadResource(from: path)
+            self.gltf = try gltf(from: data, baseURL: baseURL)
+        }catch{
+            throw GateEngineError(error)
+        }
+    }
+    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+        guard let path = await Game.shared.platform.locateResource(from: path) else {throw .failedToLocate}
+        let baseURL = URL(fileURLWithPath: path).deletingLastPathComponent()
+        do {
+            let data = try await Game.shared.platform.loadResource(from: path)
+            self.gltf = try gltf(from: data, baseURL: baseURL)
+        }catch{
+            throw GateEngineError(error)
+        }
+    }
+    
     fileprivate func gltf(from data: Data, baseURL: URL) throws -> GLTF {
         var jsonData: Data = data
         var bufferData: Data? = nil
@@ -424,29 +446,23 @@ public final class GLTransmissionFormat {
         gltf.cachedBuffers[0] = bufferData
         return gltf
     }
-
-    public static func canProcessFile(_ file: URL) -> Bool {
-        let fileType = file.pathExtension
-        if fileType.caseInsensitiveCompare("glb") == .orderedSame {
-            return true
-        }
-        if fileType.caseInsensitiveCompare("gltf") == .orderedSame {
-            return true
-        }
-        return false
-    }
     
     public static func supportedFileExtensions() -> [String] {
         return ["gltf", "glb"]
     }
+    
+    public func currentFileContainsMutipleResources() -> Bool {
+        return [
+            gltf.meshes?.count,
+            gltf.animations?.count,
+            gltf.skins?.count,
+        ].compactMap({$0}).reduce(0, +) > 1
+    }
+    
 }
 
 extension GLTransmissionFormat: GeometryImporter {
-    public func loadData(path: String, options: GeometryImporterOptions) async throws -> RawGeometry {
-        let baseURL = URL(string: path)!.deletingLastPathComponent()
-        let data = try await Game.shared.platform.loadResource(from: path)
-        let gltf = try gltf(from: data, baseURL: baseURL)
-
+    public func loadGeometry(options: GeometryImporterOptions) async throws -> RawGeometry {
         guard gltf.meshes != nil else {throw GateEngineError.failedToDecode("File contains no geometry.")}
         
         var mesh: GLTF.Mesh? = nil
@@ -611,10 +627,7 @@ extension GLTransmissionFormat: SkinImporter {
         })
     }
     
-    public func loadData(path: String, options: SkinImporterOptions) async throws -> Skin {
-        let baseURL = URL(string: path)!.deletingLastPathComponent()
-        let data = try await Game.shared.platform.loadResource(from: path)
-        let gltf = try gltf(from: data, baseURL: baseURL)
+    public func loadSkin(options: SkinImporterOptions) async throws(GateEngineError) -> Skin {
         guard let skins = gltf.skins, skins.isEmpty == false else {
             throw GateEngineError.failedToDecode("File contains no skins.")
         }

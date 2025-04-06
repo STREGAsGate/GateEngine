@@ -37,12 +37,8 @@ public struct Skin: Hashable {
 
 // MARK: - Resource Manager
 
-public protocol SkinImporter: AnyObject {
-    init()
-
-    func loadData(path: String, options: SkinImporterOptions) async throws -> Skin
-
-    static func canProcessFile(_ file: URL) -> Bool
+public protocol SkinImporter: ResourceImporter {
+    func loadSkin(options: SkinImporterOptions) async throws(GateEngineError) -> Skin
 }
 
 public struct SkinImporterOptions: Equatable, Hashable, Sendable {
@@ -63,10 +59,10 @@ extension ResourceManager {
         importers.skinImporters.insert(type, at: 0)
     }
 
-    fileprivate func importerForFile(_ file: URL) -> (any SkinImporter)? {
+    fileprivate func importerForPath(_ path: String) async throws -> (any SkinImporter)? {
         for type in self.importers.skinImporters {
-            if type.canProcessFile(file) {
-                return type.init()
+            if type.canProcessFile(path) {
+                return try await self.importers.getImporter(path: path, type: type)
             }
         }
         return nil
@@ -75,15 +71,14 @@ extension ResourceManager {
 
 extension Skin {
     public init(path: String, options: SkinImporterOptions = .none) async throws {
-        let file = URL(fileURLWithPath: path)
         guard
-            let importer: any SkinImporter = await Game.shared.resourceManager.importerForFile(file)
+            let importer: any SkinImporter = try await Game.shared.resourceManager.importerForPath(path)
         else {
-            throw GateEngineError.failedToLoad("No importer for \(file.pathExtension).")
+            throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
         do {
-            self = try await importer.loadData(path: path, options: options)
+            self = try await importer.loadSkin(options: options)
         } catch {
             throw GateEngineError(error)
         }

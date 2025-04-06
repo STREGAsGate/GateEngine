@@ -166,26 +166,8 @@ extension Texture: Equatable, Hashable {
 
 // MARK: - Resource Manager
 
-public protocol TextureImporter: AnyObject {
-    init()
-
-    func loadData(path: String, options: TextureImporterOptions) async throws -> (
-        data: Data, size: Size2?
-    )
-
-    func process(data: Data, size: Size2?, options: TextureImporterOptions) throws -> (
-        data: Data, size: Size2
-    )
-
-    static func canProcessFile(_ file: URL) -> Bool
-}
-
-extension TextureImporter {
-    public func loadData(path: String, options: TextureImporterOptions) async throws -> (
-        data: Data, size: Size2?
-    ) {
-        return (try await Game.shared.platform.loadResource(from: path), nil)
-    }
+public protocol TextureImporter: ResourceImporter {
+    func loadTexture(options: TextureImporterOptions) async throws -> (data: Data, size: Size2)
 }
 
 public struct TextureImporterOptions: Equatable, Hashable, Sendable {
@@ -219,10 +201,10 @@ extension ResourceManager {
         }
     }
 
-    internal func textureImporterForFile(_ file: URL) -> (any TextureImporter)? {
+    internal func textureImporterForPath(_ path: String) async throws -> (any TextureImporter)? {
         for type in self.importers.textureImporters {
-            if type.canProcessFile(file) {
-                return type.init()
+            if type.canProcessFile(path) {
+                return try await self.importers.getImporter(path: path, type: type)
             }
         }
         return nil
@@ -379,26 +361,21 @@ extension ResourceManager {
         Task.detached(priority: .high) {
             do {
                 let path = key.requestedPath
-                guard let fileExtension = path.components(separatedBy: ".").last else {
+                let fileExtension = URL(fileURLWithPath: path).pathExtension
+                if fileExtension.isEmpty {
                     throw GateEngineError.failedToLoad("Unknown file type.")
                 }
+                
                 guard
-                    let importer = await Game.shared.resourceManager.textureImporterForFile(
-                        URL(fileURLWithPath: key.requestedPath)
-                    )
+                    let importer = try await Game.shared.resourceManager.textureImporterForPath(path)
                 else {
                     throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
                 }
 
-                let v = try await importer.loadData(path: path, options: key.textureOptions)
-                guard v.data.isEmpty == false else {
+                let texture = try await importer.loadTexture(options: key.textureOptions)
+                guard texture.data.isEmpty == false else {
                     throw GateEngineError.failedToLoad("File is empty.")
                 }
-                let texture = try importer.process(
-                    data: v.data,
-                    size: v.size,
-                    options: key.textureOptions
-                )
 
                 let backend = await self.textureBackend(
                     data: texture.data,

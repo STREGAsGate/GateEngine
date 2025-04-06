@@ -7,20 +7,19 @@
 
 struct ImageFont: FontBackend {
     private let fontData:
-        [Font.Style: (data: Data, size: Size2?, importer: any TextureImporter.Type)]
+        [Font.Style: (data: Data, size: Size2, importer: any TextureImporter.Type)]
     internal var nativePointSizes: [Font.Style: UInt] = [:]
     internal var textures: [Font.Style: Texture] = [:]
     internal var characterXAdvances: [Font.Style: [Float]] = [:]
 
     init(regular: String) async throws {
-        let url = URL(fileURLWithPath: regular)
-        guard let importer = await Game.shared.resourceManager.textureImporterForFile(url) else {
+        guard let importer = try await Game.shared.resourceManager.textureImporterForPath(regular) else {
             Log.debug("No TextureImporter for file \"\(regular)\"")
             throw GateEngineError.failedToDecode("No TextureImporter for file \"\(regular)\"")
         }
-        let regular = try await importer.loadData(path: regular, options: .none)
+        let regular = try await importer.loadTexture(options: .none)
 
-        let fontData: [Font.Style: (data: Data, size: Size2?, importer: any TextureImporter.Type)] =
+        let fontData: [Font.Style: (data: Data, size: Size2, importer: any TextureImporter.Type)] =
             [.regular: (regular.data, regular.size, type(of: importer))]
         //        fontData[.bold] = bold
         //        fontData[.italic] = italic
@@ -96,11 +95,8 @@ struct ImageFont: FontBackend {
 
     @MainActor private mutating func populate(style: Font.Style) {
         let fontData = fontData[style]!
-        let (data, size) = try! fontData.importer.init().process(
-            data: fontData.data,
-            size: fontData.size,
-            options: .none
-        )
+        let data = fontData.data
+        let size = fontData.size
 
         let width: Int = Int(size.width)
         let height: Int = Int(size.height)

@@ -121,14 +121,19 @@ import GameMath
             return tiles.first?.count ?? 0
         }
         
-        public struct Coordinate: Hashable {
+        public struct Coordinate: Hashable, ExpressibleByArrayLiteral {
             public var column: Int
             public var row: Int
-            
             
             public init(column: Int, row: Int) {
                 self.column = column
                 self.row = row
+            }
+            
+            public typealias ArrayLiteralElement = Int
+            public init(arrayLiteral elements: Int...) {
+                assert(elements.count == 2, "A Coordinate must have exactly 2 elements.")
+                self.init(column: elements[0], row: elements[1])
             }
         }
 
@@ -212,12 +217,8 @@ public struct TileMapImporterOptions: Equatable, Hashable, Sendable {
     }
 }
 
-public protocol TileMapImporter: AnyObject {
-    init()
-
-    func process(data: Data, baseURL: URL, options: TileMapImporterOptions) async throws -> TileMapBackend
-
-    static func supportedFileExtensions() -> [String]
+public protocol TileMapImporter: ResourceImporter {
+    func loadTileMap(options: TileMapImporterOptions) async throws(GateEngineError) -> TileMapBackend
 }
 
 extension ResourceManager {
@@ -226,12 +227,10 @@ extension ResourceManager {
         importers.tileMapImporters.insert(type, at: 0)
     }
 
-    fileprivate func importerForFileType(_ file: String) -> (any TileMapImporter)? {
+    fileprivate func importerForFileType(_ file: String) async throws -> (any TileMapImporter)? {
         for type in self.importers.tileMapImporters {
-            if type.supportedFileExtensions().contains(where: {
-                $0.caseInsensitiveCompare(file) == .orderedSame
-            }) {
-                return type.init()
+            if type.canProcessFile(file) {
+                return try await self.importers.getImporter(path: file, type: type)
             }
         }
         return nil
@@ -347,22 +346,13 @@ extension ResourceManager {
             let path = key.requestedPath
             
             do {
-                guard let fileExtension = path.components(separatedBy: ".").last else {
-                    throw GateEngineError.failedToLoad("Unknown file type.")
-                }
-                guard
-                    let importer: any TileMapImporter = await Game.shared.resourceManager
-                        .importerForFileType(fileExtension)
+                guard 
+                    let importer: any TileMapImporter = try await Game.shared.resourceManager.importerForFileType(path)
                 else {
-                    throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
+                    throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
                 }
 
-                let data = try await Game.shared.platform.loadResource(from: path)
-                let backend = try await importer.process(
-                    data: data,
-                    baseURL: URL(string: path)!.deletingLastPathComponent(),
-                    options: key.tileMapOptions
-                )
+                let backend = try await importer.loadTileMap(options: key.tileMapOptions)
 
                 Task { @MainActor in
                     if let cache = self.cache.tileMaps[key] {
