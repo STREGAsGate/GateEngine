@@ -129,7 +129,7 @@ class OpenGLRenderer: Renderer {
         matrices: Matrices,
         renderTarget: some _RenderTargetProtocol
     ) {
-        let geometries = drawCommand.geometries.map({ $0 as! OpenGLGeometry })
+        guard let geometries = drawCommand.geometries?.map({ unsafeDowncast($0, to: OpenGLGeometry.self) }) else {return}
 
         #if GATEENGINE_DEBUG_RENDERING
         for geometry in geometries {

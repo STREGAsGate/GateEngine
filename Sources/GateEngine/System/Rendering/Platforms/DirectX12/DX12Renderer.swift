@@ -58,7 +58,7 @@ final class DX12Renderer: RendererBackend {
         renderTarget: some _RenderTargetProtocol
     ) {
         let renderTarget: DX12RenderTarget = renderTarget.renderTargetBackend as! DX12RenderTarget
-        let geometries = drawCommand.geometries.map({ $0 as! DX12Geometry })
+        guard let geometries = drawCommand.geometries?.map({ unsafeDowncast(_geometries, to: DX12Geometry.self) }) else {return}
         let commandList: D3DGraphicsCommandList = renderTarget.commandList
         let data = createUniforms(drawCommand, camera, matrices)
         let shader: DX12Renderer.DXShader = getShader(

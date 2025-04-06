@@ -70,16 +70,19 @@ final class MetalRenderer: Renderer {
         matrices: Matrices,
         renderTarget: some _RenderTargetProtocol
     ) {
+        guard let _geometries = drawCommand.geometries else {return}
         #if GATEENGINE_DEBUG_RENDERING
         let renderTarget = renderTarget.renderTargetBackend as! MetalRenderTarget
-        let geometries = drawCommand.geometries as! Array<MetalGeometry>
+        let geometries = _geometries as! Array<MetalGeometry>
         for geometry in geometries {
             assert(drawCommand.flags.primitive == geometry.primitive)
         }
+        assert(geometries.isEmpty == false)
         #else
         let renderTarget = unsafeDowncast(renderTarget.renderTargetBackend, to: MetalRenderTarget.self)
-        let geometries = unsafeBitCast(drawCommand.geometries, to: Array<MetalGeometry>.self)
+        let geometries = unsafeBitCast(_geometries, to: Array<MetalGeometry>.self)
         #endif
+        
         let encoder = renderTarget.commandEncoder!
         let data = createUniforms(drawCommand, camera, matrices)
 
@@ -131,7 +134,7 @@ final class MetalRenderer: Renderer {
         samplerDescriptor.minFilter = .linear
         samplerDescriptor.magFilter = .linear
 
-        return device.makeSamplerState(descriptor: samplerDescriptor)!
+        return device.makeSamplerState(descriptor: samplerDescriptor).unsafelyUnwrapped
     }()
 
     lazy private(set) var nearestSamplerState: any MTLSamplerState = {
@@ -143,7 +146,7 @@ final class MetalRenderer: Renderer {
         samplerDescriptor.minFilter = .nearest
         samplerDescriptor.magFilter = .nearest
 
-        return device.makeSamplerState(descriptor: samplerDescriptor)!
+        return device.makeSamplerState(descriptor: samplerDescriptor).unsafelyUnwrapped
     }()
 
     struct DepthStencilStateKey: Hashable {
@@ -222,7 +225,7 @@ final class MetalRenderer: Renderer {
             depthStencilDescriptor.frontFaceStencil = stencil
             depthStencilDescriptor.backFaceStencil = stencil
             
-            return device.makeDepthStencilState(descriptor: depthStencilDescriptor)!
+            return device.makeDepthStencilState(descriptor: depthStencilDescriptor).unsafelyUnwrapped
         }
     }
 

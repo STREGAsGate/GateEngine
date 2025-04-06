@@ -73,7 +73,6 @@ internal class UIKitViewController: GCEventViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @inlinable
     private func type(for touch: UITouch) -> TouchKind {
         switch touch.type {
         case .direct:

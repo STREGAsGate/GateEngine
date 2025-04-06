@@ -47,11 +47,9 @@ final class UIKitWindow: WindowBacking {
         self.uiWindow.rootViewController = UIKitViewController(window: self)
         self.uiWindow.translatesAutoresizingMaskIntoConstraints = true
 
-        if Game.shared.platform.applicationRequestedWindow == false && window.isMainWindow == false
-        {
+        if Game.shared.platform.applicationRequestedWindow == false && window.isMainWindow == false {
             Game.shared.platform.windowPreparingForSceneConnection = self
 
-            @inlinable
             func existingSession(forWindow window: Window) -> UISceneSession? {
                 for session in UIApplication.shared.openSessions {
                     let sceneID = session.persistentIdentifier
