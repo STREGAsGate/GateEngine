@@ -264,13 +264,13 @@ extension ECSContext {
 //        }
         for system in self.systems {
             self.performance?.beginStatForSystem(system)
-            await system.willUpdate(input: input, withTimePassed: deltaTime)
+            await system.willUpdate(input: input, withTimePassed: deltaTime, context: self)
             self.performance?.endCurrentStatistic()
         }
         for system in self.platformSystems {
 //            guard type(of: system).phase == .postDeferred else { continue }
             self.performance?.beginStatForSystem(system)
-            await system.willUpdate(input: input, withTimePassed: deltaTime)
+            await system.willUpdate(input: input, withTimePassed: deltaTime, context: self)
             self.performance?.endCurrentStatistic()
         }
         
@@ -314,7 +314,7 @@ extension ECSContext {
 
         for system in self.renderingSystems {
             self.performance?.beginStatForSystem(system)
-            system.willRender(into: view, withTimePassed: deltaTime)
+            system.willRender(into: view, withTimePassed: deltaTime, context: self)
             self.performance?.endCurrentStatistic()
         }
         
@@ -443,38 +443,38 @@ public extension ECSContext {
     }
     @discardableResult
     func insertSystem<T: System>(_ system: T.Type) -> T {
-        let system = system.init(context: self)
+        let system = system.init()
         self.insertSystem(system)
         return system
     }
     @discardableResult
     func insertSystem<T: RenderingSystem>(_ system: T.Type) -> T {
-        let system = system.init(context: self)
+        let system = system.init()
         self.insertSystem(system)
         return system
     }
     @discardableResult
     internal func insertSystem<T: PlatformSystem>(_ system: T.Type) -> T {
-        let system = system.init(context: self)
+        let system = system.init()
         self.insertSystem(system)
         return system
     }
     func removeSystem(_ system: System) {
         if let index = self._systems.firstIndex(where: { $0 === system }) {
             let system = self._systems.remove(at: index)
-            system.teardown(context: self)
+            system._teardown(context: self)
         }
     }
     func removeSystem(_ system: RenderingSystem) {
         if let index = self._renderingSystems.firstIndex(where: { $0 === system }) {
             let system = self._renderingSystems.remove(at: index)
-            system.teardown(context: self)
+            system._teardown(context: self)
         }
     }
     internal func removeSystem(_ system: PlatformSystem) {
         if let index = self._platformSystems.firstIndex(where: { $0 === system }) {
             let system = self._platformSystems.remove(at: index)
-            system.teardown(context: self)
+            system._teardown(context: self)
         }
     }
     @discardableResult

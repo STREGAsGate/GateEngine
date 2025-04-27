@@ -11,8 +11,8 @@ public final class StandardRenderingSystem: RenderingSystem {
     internal var verticalResolution: Float? = nil
     internal lazy var renderTarget: RenderTarget = RenderTarget()
 
-    public convenience init(verticalResolution: UInt, context: ECSContext) {
-        self.init(context: context)
+    public convenience init(verticalResolution: UInt) {
+        self.init()
         self.verticalResolution = Float(verticalResolution)
     }
     
