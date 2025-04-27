@@ -6,17 +6,13 @@
  */
 
 extension RawGeometry {
-    @MainActor
-    public func generateCollisionTriangles() -> [CollisionTriangle] {
+    public func generateCollisionTriangles<Attributes: CollisionAttributesGroup>(using attributesType: Attributes.Type = BasicCollisionAttributes.self) -> [CollisionTriangle] {
         var positions: [Position3] = []
         positions.reserveCapacity(indices.count * 3)
         var uvs: [[Position2]] = Array(repeating: [], count: uvSets.count)
         for uvSet in uvs.indices {
             uvs[uvSet].reserveCapacity(positions.capacity)
         }
-        var colors: [Color] = []
-        colors.reserveCapacity(positions.capacity)
-        let colorComponents: Int = self.colors.count / (self.positions.count / 3)
 
         for vertexIndex in indices.indices {
             let index = Int(indices[vertexIndex])
@@ -29,25 +25,6 @@ extension RawGeometry {
                 uvs[uvIndex].append(Position2(uvSet[start2], uvSet[start2 + 1]))
             }
 
-            if colorComponents == 3 {
-                colors.append(
-                    Color(
-                        self.colors[start3],
-                        self.colors[start3 + 1],
-                        self.colors[start3 + 2]
-                    )
-                )
-            } else {
-                colors.append(
-                    Color(
-                        self.colors[start4],
-                        self.colors[start4 + 1],
-                        self.colors[start4 + 2],
-                        self.colors[start4 + 3]
-                    )
-                )
-            }
-
             positions.append(
                 Position3(
                     self.positions[start3],
@@ -57,20 +34,29 @@ extension RawGeometry {
             )
         }
 
-        func attributeUVs(forTiangle index: Int) -> [Position2] {
-            var _uvs: [Position2] = []
+        func attributeUVs(forTiangle index: Int) -> CollisionAttributeUVs {
+            var triangleUVs: [CollisionAttributeUVs.TriangleUVs] = []
             for uvIndex in 0 ..< uvSets.count {
-                _uvs.append(uvs[uvIndex][index])
+                triangleUVs.append(
+                    CollisionAttributeUVs.TriangleUVs(
+                        uv1: unsafeBitCast(uvs[uvIndex][index], to: TextureCoordinate.self),
+                        uv2: unsafeBitCast(uvs[uvIndex][index + 1], to: TextureCoordinate.self),
+                        uv3: unsafeBitCast(uvs[uvIndex][index + 2], to: TextureCoordinate.self)
+                    )
+                )
             }
-            return _uvs
+            return CollisionAttributeUVs(uvSets: triangleUVs)
         }
 
         let stride = stride(from: 0, to: positions.count, by: 3)
         return stride.map({
             CollisionTriangle(
-                positions: [positions[$0 + 0], positions[$0 + 1], positions[$0 + 2]],
-                colors: [colors[$0 + 0], colors[$0 + 1], colors[$0 + 2]],
-                attributeUV: attributeUVs(forTiangle: $0)
+                p1: positions[$0 + 0],
+                p2: positions[$0 + 1],
+                p3: positions[$0 + 2],
+                normal: nil,
+                using: attributesType,
+                with: attributeUVs(forTiangle: $0)
             )
         })
     }
