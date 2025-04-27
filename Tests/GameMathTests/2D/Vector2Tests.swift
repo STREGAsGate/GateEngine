@@ -8,7 +8,7 @@ final class Vector2Tests: XCTestCase {
     struct Imposter: Vector2, Equatable {
         var x: Float
         var y: Float
-        init(_ x: Float, _ y: Float) {
+        init(x: Float, y: Float) {
             self.x = x
             self.y = y
         }
@@ -17,7 +17,7 @@ final class Vector2Tests: XCTestCase {
     struct Other: Vector2, Equatable {
         var x: Float
         var y: Float
-        init(_ x: Float, _ y: Float) {
+        init(x: Float, y: Float) {
             self.x = x
             self.y = y
         }

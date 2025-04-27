@@ -8,10 +8,15 @@
 public protocol Vector2: Sendable, ExpressibleByFloatLiteral where FloatLiteralType == Float {
     var x: Float {get set}
     var y: Float {get set}
-    init(_ x: Float, _ y: Float)
+    init(x: Float, y: Float)
 }
 
 public extension Vector2 {
+    @inlinable
+    init(_ x: Float, _ y: Float) {
+        self.init(x: x, y: y)
+    }
+    
     @inlinable
     init(_ value: Float) {
         self.init(value, value)
@@ -23,10 +28,20 @@ public extension Vector2 {
         self.init(values[0], values[1])
     }
     
+    // Alternative init for any collection, including subranges
+    @_disfavoredOverload
+    @inlinable
+    init<C: RandomAccessCollection>(_ values: C) where C.Element == Float {
+        assert(values.count == 2, "Values must have 2 elements. Use init(_: Float) to fill x,y,z with a single value.")
+        let index0 = values.startIndex
+        let index1 = values.index(after: index0)
+        self.init(values[index0], values[index1])
+    }
+    
+    @_disfavoredOverload
     @inlinable
     init(_ values: Float...) {
-        assert(values.count == 2, "values must have 2 elements. Use init(_: Float) to fill x,y with a single value.")
-        self.init(values[0], values[1])
+        self.init(values)
     }
     
     @inlinable
@@ -435,4 +450,17 @@ extension Vector2 {
 extension Vector2 {
     @inlinable
     public func valuesArray() -> [Float] {return [x, y]}
+}
+
+extension Array where Element: Vector2 {
+    @inlinable
+    public func valuesArray() -> [Float] {
+        var values: [Float] = []
+        values.reserveCapacity(self.count * 2)
+        for value: some Vector2 in self {
+            values.append(value.x)
+            values.append(value.y)
+        }
+        return values
+    }
 }

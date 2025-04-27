@@ -18,7 +18,7 @@ public protocol Vector4: SIMD, Equatable, Sendable, ExpressibleByFloatLiteral wh
     var y: Scalar {get set}
     var z: Scalar {get set}
     var w: Scalar {get set}
-    init(_ x: Scalar, _ y: Scalar, _ z: Scalar, _ w: Scalar)
+    init(x: Scalar, y: Scalar, z: Scalar, w: Scalar)
     
     static var zero: Self {get}
 }
@@ -28,7 +28,7 @@ public protocol Vector4: Equatable, Sendable, ExpressibleByFloatLiteral where Fl
     var y: Float {get set}
     var z: Float {get set}
     var w: Float {get set}
-    init(_ x: Float, _ y: Float, _ z: Float, _ w: Float)
+    init(x: Float, y: Float, z: Float, w: Float)
     
     static var zero: Self {get}
 }
@@ -74,24 +74,47 @@ public extension Vector4 {
 
 public extension Vector4 {
     @inlinable
+    init(_ x: Float, _ y: Float, _ z: Float, _ w: Float) {
+        self.init(x: x, y: y, z: z, w: w)
+    }
+    
+    @inlinable
     init(_ value: Float) {
         self.init(value, value, value)
     }
     
     @inlinable
     init(_ values: [Float]) {
-        assert(values.count == 4, "Values must have 4 elements. Use init(_: Float) to fill w,x,y,z with a single value.")
+        assert(values.count == 4, "Values must have 4 elements. Use init(_: Float) to fill x,y,z,w with a single value.")
         self.init(values[0], values[1], values[2], values[3])
+    }
+    
+    // Alternative init for any collection, including subranges
+    @_disfavoredOverload
+    @inlinable
+    init<C: RandomAccessCollection>(_ values: C) where C.Element == Float {
+        assert(values.count == 4, "Values must have 4 elements. Use init(_: Float) to fill x,y,z,w with a single value.")
+        let index0 = values.startIndex
+        let index1 = values.index(after: index0)
+        let index2 = values.index(after: index1)
+        let index3 = values.index(after: index2)
+        self.init(values[index0], values[index1], values[index2], values[index3])
+    }
+    
+    @_disfavoredOverload
+    @inlinable
+    init(_ values: Float...) {
+        self.init(values)
     }
     
     @inlinable
-    init(_ values: Float...) {
-        assert(values.count == 4, "Values must have 3 elements. Use init(_: Float) to fill w,x,y,z with a single value.")
-        self.init(values[0], values[1], values[2], values[3])
-    }
-    
     init(floatLiteral value: FloatLiteralType) {
         self.init(value)
+    }
+    
+    @inlinable
+    init(xyz: some Vector3, w: Float) {
+        self.init(xyz.x, xyz.y, xyz.z, w)
     }
 }
 
@@ -628,4 +651,19 @@ extension Vector4 where Self: Codable {
 extension Vector4 {
     @inlinable
     public func valuesArray() -> [Float] {return [x, y, z, w]}
+}
+
+extension Array where Element: Vector4 {
+    @inlinable
+    public func valuesArray() -> [Float] {
+        var values: [Float] = []
+        values.reserveCapacity(self.count * 4)
+        for value: some Vector4 in self {
+            values.append(value.x)
+            values.append(value.y)
+            values.append(value.z)
+            values.append(value.w)
+        }
+        return values
+    }
 }

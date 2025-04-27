@@ -15,6 +15,12 @@ public struct Size2: Vector2, Sendable {
         self.width = width
         self.height = height
     }
+    
+    @inlinable
+    public init(x: Float, y: Float) {
+        self.width = x
+        self.height = y
+    }
 }
 #else
 public struct Size2: Vector2, Sendable {
@@ -25,6 +31,12 @@ public struct Size2: Vector2, Sendable {
     public init(width: Float, height: Float) {
         self.width = width
         self.height = height
+    }
+    
+    @inlinable
+    public init(x: Float, y: Float) {
+        self.width = x
+        self.height = y
     }
 }
 #endif
@@ -58,8 +70,7 @@ extension Size2 {
     
     @inlinable
     public init(_ x: Float, _ y: Float) {
-        self.width = x
-        self.height = y
+        self.init(x: x, y: y)
     }
 }
 

@@ -18,7 +18,7 @@ public protocol Vector3: SIMD, Equatable, Sendable, ExpressibleByFloatLiteral wh
     var x: Scalar {get set}
     var y: Scalar {get set}
     var z: Scalar {get set}
-    init(_ x: Scalar, _ y: Scalar, _ z: Scalar)
+    init(x: Scalar, y: Scalar, z: Scalar)
     
     static var zero: Self {get}
 }
@@ -27,7 +27,7 @@ public protocol Vector3: Equatable, Sendable, ExpressibleByFloatLiteral where Fl
     var x: Float {get set}
     var y: Float {get set}
     var z: Float {get set}
-    init(_ x: Float, _ y: Float, _ z: Float)
+    init(x: Float, y: Float, z: Float)
     
     static var zero: Self {get}
 }
@@ -71,6 +71,11 @@ public extension Vector3 {
 
 public extension Vector3 {
     @inlinable
+    init(_ x: Float, _ y: Float, _ z: Float) {
+        self.init(x: x, y: y, z: z)
+    }
+    
+    @inlinable
     init(_ value: Float) {
         self.init(value, value, value)
     }
@@ -81,10 +86,21 @@ public extension Vector3 {
         self.init(values[0], values[1], values[2])
     }
     
+    // Alternative init for any collection, including subranges
+    @_disfavoredOverload
+    @inlinable
+    init<C: RandomAccessCollection>(_ values: C) where C.Element == Float {
+        assert(values.count == 3, "Values must have 3 elements. Use init(_: Float) to fill x,y,z with a single value.")
+        let index0 = values.startIndex
+        let index1 = values.index(after: index0)
+        let index2 = values.index(after: index1)
+        self.init(values[index0], values[index1], values[index2])
+    }
+    
+    @_disfavoredOverload
     @inlinable
     init(_ values: Float...) {
-        assert(values.count == 3, "Values must have 3 elements. Use init(_: Float) to fill x,y,z with a single value.")
-        self.init(values[0], values[1], values[2])
+        self.init(values)
     }
     
     @inlinable
@@ -93,8 +109,16 @@ public extension Vector3 {
     }
     
     @inlinable
-    init(_ vec2: some Vector2, _ z: Float) {
-        self.init(vec2.x, vec2.y, z)
+    init(xy: some Vector2, z: Float) {
+        self.init(xy.x, xy.y, z)
+    }
+    @inlinable
+    init(xz: some Vector2, y: Float) {
+        self.init(xz.x, y, xz.y)
+    }
+    @inlinable
+    init(x: Float, yz: some Vector2) {
+        self.init(x, yz.x, yz.y)
     }
 }
 
@@ -596,4 +620,18 @@ extension Vector3 where Self: Codable {
 extension Vector3 {
     @inlinable
     public func valuesArray() -> [Float] {return [x, y, z]}
+}
+
+extension Array where Element: Vector3 {
+    @inlinable
+    public func valuesArray() -> [Float] {
+        var values: [Float] = []
+        values.reserveCapacity(self.count * 3)
+        for value: some Vector3 in self {
+            values.append(value.x)
+            values.append(value.y)
+            values.append(value.z)
+        }
+        return values
+    }
 }
