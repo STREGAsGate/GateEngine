@@ -7,8 +7,6 @@
 
 import Gravity
 
-@MainActor 
-@preconcurrency
 internal func errorCallback(
     vm: OpaquePointer?,
     errorType: error_type_t,

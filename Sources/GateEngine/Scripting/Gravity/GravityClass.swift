@@ -139,8 +139,6 @@ internal class GravityCFuncBridgedUserData {
     }
 }
 
-@MainActor
-@preconcurrency
 internal func gravityCFuncBridged(
     vm: OpaquePointer!,
     xdata: UnsafeMutableRawPointer?,
