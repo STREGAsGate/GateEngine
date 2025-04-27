@@ -92,14 +92,14 @@ public extension Geometry {
 
     public init(path: String, options: GeometryImporterOptions = .none) {
         let resourceManager = Game.unsafeShared.resourceManager
-        self.cacheKey = resourceManager.geometryCacheKey(path: path, options: options)
+        self.cacheKey = resourceManager.geometryCacheKey(path: path, kind: .geometry, options: options)
         self.defaultCacheHint = .until(minutes: 5)
         resourceManager.incrementReference(self.cacheKey)
     }
 
     internal init(optionalRawGeometry rawGeometry: RawGeometry?, immediate: Bool = false) {
         let resourceManager = Game.unsafeShared.resourceManager
-        self.cacheKey = resourceManager.geometryCacheKey(rawGeometry: rawGeometry, immediate: immediate)
+        self.cacheKey = resourceManager.geometryCacheKey(rawGeometry: rawGeometry, kind: .geometry, immediate: immediate)
         self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
@@ -206,7 +206,13 @@ extension RawGeometry {
 extension ResourceManager.Cache {
     @usableFromInline
     struct GeometryKey: Hashable, Sendable, CustomStringConvertible {
+        enum Kind: Hashable {
+            case geometry
+            case lines
+            case points
+        }
         let requestedPath: String
+        let kind: Kind
         let geometryOptions: GeometryImporterOptions
         
         @usableFromInline
@@ -248,8 +254,8 @@ extension ResourceManager {
         }
     }
 
-    @MainActor func geometryCacheKey(path: String, options: GeometryImporterOptions) -> Cache.GeometryKey {
-        let key = Cache.GeometryKey(requestedPath: path, geometryOptions: options)
+    @MainActor func geometryCacheKey(path: String, kind: Cache.GeometryKey.Kind, options: GeometryImporterOptions) -> Cache.GeometryKey {
+        let key = Cache.GeometryKey(requestedPath: path, kind: kind, geometryOptions: options)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
@@ -282,9 +288,9 @@ extension ResourceManager {
         return key
     }
 
-    @MainActor func geometryCacheKey(rawGeometry geometry: RawGeometry?, immediate: Bool) -> Cache.GeometryKey {
+    @MainActor func geometryCacheKey(rawGeometry geometry: RawGeometry?, kind: Cache.GeometryKey.Kind, immediate: Bool) -> Cache.GeometryKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
-        let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
+        let key = Cache.GeometryKey(requestedPath: path, kind: kind, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             if let geometry = geometry {

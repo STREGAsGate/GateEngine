@@ -86,7 +86,7 @@ extension RawPoints {
 
 extension ResourceManager {
     @MainActor func pointsCacheKey(path: String, options: GeometryImporterOptions) -> Cache.GeometryKey {
-        let key = Cache.GeometryKey(requestedPath: path, geometryOptions: options)
+        let key = Cache.GeometryKey(requestedPath: path, kind: .points, geometryOptions: options)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
@@ -122,7 +122,7 @@ extension ResourceManager {
     
     @MainActor func pointsCacheKey(rawPoints points: RawPoints?) -> Cache.GeometryKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
-        let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
+        let key = Cache.GeometryKey(requestedPath: path, kind: .points, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             if let points {
