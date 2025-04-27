@@ -113,6 +113,12 @@ public extension Position3 {
         let distance = difference.dot(difference)
         return distance.squareRoot()
     }
+    
+    @inlinable
+    func squaredDistance(from: Self) -> Float {
+        let difference = self - from
+        return pow(difference.x, 2) + pow(difference.y, 2) + pow(difference.z, 2)
+    }
 
     /** Returns true when the distance from `self` and  `rhs` is less then `threshold`
     - parameter rhs: A value representing the destination position.
