@@ -10,8 +10,13 @@ import XCTest
 @testable import GateEngine
 @testable import Gravity
 
-@MainActor
 open class GravityXCTestCase: XCTestCase {
+    // This test simply makes this class have a test that passes so Xcode marks the test as completed
+    // Without this Xcode marks the test ambiguous
+    func testNothing() {
+        XCTAssert(true)
+    }
+    
     func runGravity(at path: String) async {
         let gravity = Gravity()
 
@@ -76,8 +81,7 @@ open class GravityXCTestCase: XCTestCase {
         guard Game._shared == nil else { return }
 
         let delegate = TestGameDelegate()
-        let platform = CurrentPlatform(delegate: delegate)
-        Game._shared = Game(delegate: delegate, currentPlatform: platform)
+        Game._shared = Game(delegate: delegate)
 
         await Game.shared.didFinishLaunching()
 

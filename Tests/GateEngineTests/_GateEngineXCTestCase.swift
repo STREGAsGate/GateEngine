@@ -51,8 +51,7 @@ open class GateEngineXCTestCase: XCTestCase {
         guard Game._shared == nil else { return }
 
         let delegate = TestGameDelegate()
-        let platform = CurrentPlatform(delegate: delegate)
-        Game._shared = Game(delegate: delegate, currentPlatform: platform)
+        Game._shared = Game(delegate: delegate)
 
         await Game.shared.didFinishLaunching()
 
