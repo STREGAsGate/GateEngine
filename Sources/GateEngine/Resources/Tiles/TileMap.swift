@@ -323,7 +323,7 @@ extension ResourceManager {
         guard let cache = self.tileMapCache(for: key) else {return}
         cache.referenceCount -= 1
         
-        if case .whileReferenced = cache.cacheHint {
+        if case .whileReferenced = cache.effectiveCacheHint {
             if cache.referenceCount == 0 {
                 self.cache.tileMaps.removeValue(forKey: key)
                 Log.debug("Removing cache (no longer referenced), TileMap: \(key)")
