@@ -94,16 +94,16 @@ public final class TileMapSystem: System {
                     )
                     
                     if tile.options.contains(.flippedHorizontal) {
-                        swap(&v1.u1, &v2.u1)
-                        swap(&v3.u1, &v4.u1)
+                        swap(&v1.uv1.u, &v2.uv1.u)
+                        swap(&v3.uv1.u, &v4.uv1.u)
                     }
                     if tile.options.contains(.flippedVertical) {
-                        swap(&v1.v1, &v3.v1)
-                        swap(&v2.v1, &v4.v1)
+                        swap(&v1.uv1.v, &v3.uv1.v)
+                        swap(&v2.uv1.v, &v4.uv1.v)
                     }
                     if tile.options.contains(.flippedDiagonal) {
-                        swap(&v1.u1, &v3.u1)
-                        swap(&v1.v1, &v3.v1)
+                        swap(&v1.uv1.u, &v3.uv1.u)
+                        swap(&v1.uv1.v, &v3.uv1.v)
                     }
                     
                     triangles.append(Triangle(v1: v1, v2: v3, v3: v2, repairIfNeeded: false))

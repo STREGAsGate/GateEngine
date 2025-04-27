@@ -186,17 +186,17 @@ public final class Text {
             let pointSize = Float(pointSize)
             newLine()
             let offset: Float = .minimum(
-                currentWord.first?.v1.x ?? 0,
-                .minimum(currentWord.first?.v2.x ?? 0, currentWord.first?.v3.x ?? 0)
+                currentWord.first?.v1.position.x ?? 0,
+                .minimum(currentWord.first?.v2.position.x ?? 0, currentWord.first?.v3.position.x ?? 0)
             )
             for index in currentWord.indices {
-                currentWord[index].v1.x -= offset
-                currentWord[index].v2.x -= offset
-                currentWord[index].v3.x -= offset
+                currentWord[index].v1.position.x -= offset
+                currentWord[index].v2.position.x -= offset
+                currentWord[index].v3.position.x -= offset
 
-                currentWord[index].v1.y += pointSize
-                currentWord[index].v2.y += pointSize
-                currentWord[index].v3.y += pointSize
+                currentWord[index].v1.position.y += pointSize
+                currentWord[index].v2.position.y += pointSize
+                currentWord[index].v3.position.y += pointSize
             }
             xPosition -= offset
         }

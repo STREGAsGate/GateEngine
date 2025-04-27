@@ -14,100 +14,55 @@ public struct Vertex: Codable, Equatable, Hashable {
     internal var storage: [Float] = Array(repeating: 0, count: 17)
 
     /// The x component of the position
-    public var x: Float {
+    public var position: Position3 {
         get {
-            return storage[0]
+            return Position3(storage[0 ..< 3])
         }
         set {
-            storage[0] = newValue
+            storage[0] = newValue.x
+            storage[1] = newValue.y
+            storage[2] = newValue.z
         }
     }
-    /// The y component of the position
-    public var y: Float {
-        get {
-            return storage[1]
-        }
-        set {
-            storage[1] = newValue
-        }
-    }
-    /// The z component of the position
-    public var z: Float {
-        get {
-            return storage[2]
-        }
-        set {
-            storage[2] = newValue
-        }
-    }
+    
     /// The x component of the normal
-    public var nx: Float {
+    public var normal: Direction3 {
         get {
-            return storage[3]
+            return Direction3(storage[3 ..< 6])
         }
         set {
-            storage[3] = newValue
-        }
-    }
-    /// The y component of the normal
-    public var ny: Float {
-        get {
-            return storage[4]
-        }
-        set {
-            storage[4] = newValue
-        }
-    }
-    /// The z component of the normal
-    public var nz: Float {
-        get {
-            return storage[5]
-        }
-        set {
-            storage[5] = newValue
-        }
-    }
-    /// The horizontal vertical texture coordinate
-    public var u1: Float {
-        get {
-            return storage[6]
-        }
-        set {
-            storage[6] = newValue
-        }
-    }
-    /// The vertical texture coordinate
-    public var v1: Float {
-        get {
-            return storage[7]
-        }
-        set {
-            storage[7] = newValue
+            storage[3] = newValue.x
+            storage[4] = newValue.y
+            storage[5] = newValue.z
         }
     }
 
-    /// The horizontal vertical texture coordinate
-    public var u2: Float {
+    /// The TextureCoordinate for UV set #1 (index 0)
+    public var uv1: TextureCoordinate {
         get {
-            return storage[8]
+            return TextureCoordinate(storage[6 ..< 8])
         }
         set {
-            storage[8] = newValue
+            storage[6] = newValue.u
+            storage[7] = newValue.v
         }
     }
-    /// The vertical texture coordinate
-    public var v2: Float {
+    
+    /// The TextureCoordinate for UV set #2 (index 1)
+    public var uv2: TextureCoordinate {
         get {
-            return storage[9]
+            return TextureCoordinate(storage[8 ..< 10])
         }
         set {
-            storage[9] = newValue
+            storage[8] = newValue.u
+            storage[9] = newValue.v
         }
     }
+    
     /// The tangent. Used to compute tangent space normals of a `Triangle`.
     var tangent: Direction3 {
         get {
-            return Direction3(x: storage[10], y: storage[11], z: storage[12])
+            return Direction3(storage[10 ..< 13])
         }
         set {
             storage[10] = newValue.x
@@ -115,68 +70,25 @@ public struct Vertex: Codable, Equatable, Hashable {
             storage[12] = newValue.z
         }
     }
+    
     /// The vertex color.
     public var color: Color {
         get {
-            return Color(storage[13], storage[14], storage[15], storage[16])
+            return Color(storage[13 ..< 17])
         }
         set {
             storage[13] = newValue.red
             storage[14] = newValue.green
             storage[15] = newValue.blue
             storage[16] = newValue.alpha
-
-        }
-    }
-    /// The location in 3D space
-    public var position: Position3 {
-        get {
-            return Position3(x: x, y: y, z: z)
-        }
-        set {
-            x = newValue.x
-            y = newValue.y
-            z = newValue.z
-        }
-    }
-    /// The direction this vertex points, used for shading
-    public var normal: Direction3 {
-        get {
-            return Direction3(x: nx, y: ny, z: nz)
-        }
-        set {
-            nx = newValue.x
-            ny = newValue.y
-            nz = newValue.z
-        }
-    }
-    /// Texture coordante
-    public var texturePosition1: Position2 {
-        get {
-            return Position2(x: u1, y: v1)
-        }
-        set {
-            u1 = newValue.x
-            v1 = newValue.y
-        }
-    }
-
-    /// Texture coordante
-    public var texturePosition2: Position2 {
-        get {
-            return Position2(x: u2, y: v2)
-        }
-        set {
-            u2 = newValue.x
-            v2 = newValue.y
         }
     }
 
     public init(
         _ position: Position3 = .zero,
         _ normal: Direction3 = .zero,
-        _ uvSet1: Position2 = .zero,
-        _ uvSet2: Position2 = .zero,
+        _ uvSet1: TextureCoordinate = .zero,
+        _ uvSet2: TextureCoordinate = .zero,
         color: SIMD4<Float> = SIMD4(0.5, 0.5, 0.5, 1)
     ) {
         self.init(
@@ -221,7 +133,7 @@ public struct Vertex: Codable, Equatable, Hashable {
         guard threshold > 0 else { return self.storage == vertex.storage }
         guard self.position.distance(from: vertex.position) <= threshold else { return false }
         guard self.normal.angle(to: vertex.normal) <= Radians(threshold) else { return false }
-        guard self.texturePosition1.distance(from: vertex.texturePosition1) <= threshold else {
+        guard self.uv1.distance(from: vertex.uv1) <= threshold else {
             return false
         }
         return true
@@ -241,14 +153,14 @@ extension Vertex {
         lhs = lhs * rhs
     }
     public static func * (lhs: Vertex, rhs: Float) -> Vertex {
-        return Vertex(lhs.position * rhs, lhs.normal * rhs, lhs.texturePosition1)
+        return Vertex(lhs.position * rhs, lhs.normal * rhs, lhs.uv1, lhs.uv2, color: lhs.color.simd)
     }
 
     public static func /= (lhs: inout Vertex, rhs: Float) {
         lhs = lhs * rhs
     }
     public static func / (lhs: Vertex, rhs: Float) -> Vertex {
-        return Vertex(lhs.position / rhs, lhs.normal / rhs, lhs.texturePosition1)
+        return Vertex(lhs.position / rhs, lhs.normal / rhs, lhs.uv1, lhs.uv2, color: lhs.color.simd)
     }
 }
 

@@ -58,7 +58,7 @@ public final class WavefrontOBJImporter: GeometryImporter {
             }
             
             var positions: [Position3] = []
-            var uvs: [Position2] = []
+            var uvs: [TextureCoordinate] = []
             var normals: [Direction3] = []
             
             var triangles: [Triangle] = []
@@ -79,7 +79,7 @@ public final class WavefrontOBJImporter: GeometryImporter {
                     }
                     positions.append(try rawPositionConvert(line))
                 } else if line.hasPrefix("vt ") {
-                    func rawUVConvert(_ string: String) throws -> Position2 {
+                    func rawUVConvert(_ string: String) throws -> TextureCoordinate {
                         let comps = string.components(separatedBy: " ")
                         let floats = comps.compactMap({ Float($0) })
                         guard floats.count == 2 else {
@@ -87,7 +87,7 @@ public final class WavefrontOBJImporter: GeometryImporter {
                                 "File malformed vertex texture coord: \(line)"
                             )
                         }
-                        return Position2(floats[0], 1 - floats[1])
+                        return TextureCoordinate(floats[0], 1 - floats[1])
                     }
                     uvs.append(try rawUVConvert(line))
                 } else if line.hasPrefix("vn ") {
