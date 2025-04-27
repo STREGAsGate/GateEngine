@@ -32,7 +32,7 @@ public enum MipMapping: Hashable, Sendable {
     var cache: any ResourceCache { 
         return Game.shared.resourceManager.textureCache(for: cacheKey)!
     }
-    internal var renderTarget: (any _RenderTargetProtocol)?
+    internal unowned var renderTarget: (any _RenderTargetProtocol)?
     private let sizeHint: Size2?
 
     /** The dimensions of the texture.
