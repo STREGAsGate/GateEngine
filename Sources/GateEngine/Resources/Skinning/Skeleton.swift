@@ -95,10 +95,7 @@ import Foundation
     }
     
     deinit {
-        let cacheKey = self.cacheKey
-        Task.detached(priority: .low) { @MainActor in
-            Game.shared.resourceManager.decrementReference(cacheKey)
-        }
+        Game.unsafeShared.resourceManager.decrementReference(cacheKey)
     }
 }
 
