@@ -12,23 +12,22 @@ public final class StateMachineSystem: System {
                 continue
             }
             if stateMachineComponent.shouldApplyInitialState {
-                applyInitialStateIfNeeded(for: stateMachineComponent, of: entity, inContext: context, input: input)
+                await applyInitialStateIfNeeded(for: stateMachineComponent, of: entity, inContext: context, input: input)
             }
-            stateMachineComponent.stateMachine.updateState(for: entity, context: context, input: input, deltaTime: deltaTime)
+            await stateMachineComponent.stateMachine.updateState(for: entity, context: context, input: input, deltaTime: deltaTime)
         }
     }
     
-    func applyInitialStateIfNeeded(for component: StateMachineComponent, of entity: Entity, inContext context: ECSContext, input: HID) {
-        component.stateMachine.currentState.apply(to: entity, previousState: component.stateMachine.currentState, context: context, input: input)
+    func applyInitialStateIfNeeded(for component: StateMachineComponent, of entity: Entity, inContext context: ECSContext, input: HID) async {
+        await component.stateMachine.currentState.apply(to: entity, previousState: component.stateMachine.currentState, context: context, input: input)
         component.shouldApplyInitialState = false
     }
-    
     
     public override func didRemove(entity: Entity, from context: ECSContext, input: HID) async {
         guard let stateMachineComponent = entity.component(ofType: StateMachineComponent.self) else {
             return
         }
-        stateMachineComponent.stateMachine.currentState.willMoveToNextState(
+        await stateMachineComponent.stateMachine.currentState.willMoveToNextState(
             for: entity,
             nextState: StateMachineComponent.NoState.self,
             context: context,
