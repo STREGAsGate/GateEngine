@@ -9,9 +9,6 @@ import GameMath
 
 public final class Physics3DSystem: System {
     public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
-        // Skip Physics if we don't have at least 20 fps
-        guard deltaTime < 1 / 20 else { return }
-
         for entity in context.entities {
             var deltaTime = deltaTime
             if let scale = entity.component(ofType: TimeScaleComponent.self)?.scale {
@@ -29,8 +26,7 @@ public final class Physics3DSystem: System {
                     let velocity = physicsComponent.velocity
                     var gravity = velocity
                     gravity.y = physicsComponent.effectiveGravity().y
-                    if let collisionComponent = entity.component(ofType: Collision3DComponent.self)
-                    {
+                    if let collisionComponent = entity.component(ofType: Collision3DComponent.self) {
                         if collisionComponent.touching.first(where: {
                             return $0.triangle.surfaceType.isWalkable
                         }) != nil {
