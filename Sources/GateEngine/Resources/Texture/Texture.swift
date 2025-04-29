@@ -220,7 +220,11 @@ extension ResourceManager.Cache {
             if let name = textureOptions.subobjectName {
                 string += ", Named: \(name)"
             }
-            string += ", MipMapping: \(mipMapping)"
+            if case .auto(.max) = mipMapping {
+                string += ", MipMapping: auto(levels: .max)"
+            }else{
+                string += ", MipMapping: \(mipMapping)"
+            }
             return string
         }
     }
