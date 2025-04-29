@@ -100,26 +100,35 @@ public extension Direction3 {
 }
 
 public extension Direction3  {
+    @_disfavoredOverload
     @inlinable
-    func angle<T: Angle>(to rhs: Self) -> T {
+    func angle(to rhs: Self) -> Degrees {
         let v0 = self.normalized
         let v1 = rhs.normalized
         
         let dot = v0.dot(v1)
-        return T(rawValueAsRadians: acos(dot / (v0.magnitude * v1.magnitude)))
+        return Degrees(rawValueAsRadians: acos(dot / (v0.magnitude * v1.magnitude)))
     }
     @inlinable
-    var angleAroundX: some Angle {
+    func angle(to rhs: Self) -> Radians {
+        let v0 = self.normalized
+        let v1 = rhs.normalized
+        
+        let dot = v0.dot(v1)
+        return Radians(rawValueAsRadians: acos(dot / (v0.magnitude * v1.magnitude)))
+    }
+    @inlinable
+    var angleAroundX: Radians {
         assert(isFinite)
         return Radians(rawValueAsRadians: atan2(y, z))
     }
     @inlinable
-    var angleAroundY: some Angle {
+    var angleAroundY: Radians {
         assert(isFinite)
         return Radians(rawValueAsRadians: atan2(x, z))
     }
     @inlinable
-    var angleAroundZ: some Angle {
+    var angleAroundZ: Radians {
         assert(isFinite)
         return Radians(rawValueAsRadians: atan2(y, x))
     }
