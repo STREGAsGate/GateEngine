@@ -149,13 +149,15 @@ public struct RawLines {
             }
             func pairIsABoxEdge(_ v1: Vertex, _ v2: Vertex) -> Bool {
                 var count = 0
-                if abs(v1.x - v2.x) < 0.001 {
+                let p1 = v1.position
+                let p2 = v2.position
+                if abs(p1.x - p2.x) < 0.001 {
                     count += 1
                 }
-                if abs(v1.y - v2.y) < 0.001 {
+                if abs(p1.y - p2.y) < 0.001 {
                     count += 1
                 }
-                if abs(v1.z - v2.z) < 0.001 {
+                if abs(p1.z - p2.z) < 0.001 {
                     count += 1
                 }
                 return count == 2

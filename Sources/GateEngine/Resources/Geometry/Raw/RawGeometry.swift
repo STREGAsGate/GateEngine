@@ -71,8 +71,8 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
                 positions[start3 + 1],
                 positions[start3 + 2]
             )
-            vertices[vertexIndex].texturePosition1 = Position2(uvSet1[start2], uvSet1[start2 + 1])
-            vertices[vertexIndex].texturePosition2 = Position2(uvSet2[start2], uvSet2[start2 + 1])
+            vertices[vertexIndex].uv1 = TextureCoordinate(uvSet1[start2], uvSet1[start2 + 1])
+            vertices[vertexIndex].uv2 = TextureCoordinate(uvSet2[start2], uvSet2[start2 + 1])
             vertices[vertexIndex].normal = Direction3(
                 normals[start3],
                 normals[start3 + 1],

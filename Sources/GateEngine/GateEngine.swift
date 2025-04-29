@@ -310,6 +310,7 @@ internal enum Log {
         }
     }
 
+    @_transparent // Must be transparent to inline and function similar to a Swift.assert
     @usableFromInline
     static func assert(
         _ condition: @autoclosure () -> Bool,

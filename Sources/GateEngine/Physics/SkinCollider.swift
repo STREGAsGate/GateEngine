@@ -45,33 +45,40 @@ public final class SkinCollider: Collider3D {
         return false
     }
     
-    @MainActor 
-    func populateAttributes() {
-        let indicies = geometry.indices.map({Int($0)})
-        let uvs = geometry.uvSets
-        
-        let positionCount: Int = indicies.count
-        
-        var transformedUVs: [[Size2]] = Array(repeating: Array(repeating: .zero, count: positionCount), count: geometry.uvSets.count)
-        for vertexIndex in indicies.indices {
-            let index = indicies[vertexIndex]
- 
-            let index2_1 = index * 2
-            let index2_2 = index2_1 + 1
-            
-            for setIndex in 0 ..< geometry.uvSets.count {
-                transformedUVs[setIndex][vertexIndex] = Size2(uvs[setIndex][index2_1], uvs[setIndex][index2_2])
+    func populateAttributes<Attributes: CollisionAttributesGroup>(using attributesType: Attributes.Type) {
+        var uvs: [[TextureCoordinate]] = Array(repeating: [], count: geometry.uvSets.count)
+        for uvSet in uvs.indices {
+            uvs[uvSet].reserveCapacity(geometry.positions.count)
+        }
+        for vertexIndex in geometry.indices.indices {
+            let index = Int(geometry.indices[vertexIndex])
+            let start3 = index * 3
+            let start2 = index * 2
+            let start4 = index * 4
+
+            for uvIndex in 0 ..< geometry.uvSets.count {
+                let uvSet = geometry.uvSets[uvIndex]
+                uvs[uvIndex].append(
+                    TextureCoordinate(uvSet[start2], uvSet[start2 + 1])
+                )
             }
+        }
+        func attributeUVs(forTiangle index: Int) -> CollisionAttributeUVs {
+            var triangleUVs: [CollisionAttributeUVs.TriangleUVs] = []
+            for uvIndex in 0 ..< geometry.uvSets.count {
+                triangleUVs.append(
+                    CollisionAttributeUVs.TriangleUVs(
+                        uv1: uvs[uvIndex][index],
+                        uv2: uvs[uvIndex][index + 1],
+                        uv3: uvs[uvIndex][index + 2]
+                    )
+                )
+            }
+            return CollisionAttributeUVs(uvSets: triangleUVs)
         }
         
         for triangleIndex in transformedTriangles.indices {
-            var attributes: UInt32 = 0
-            for uvSetIndex in 0 ..< transformedUVs.count {
-                let uvSet = transformedUVs[uvSetIndex]
-                let uv = uvSet[triangleIndex * 3]
-                attributes |= CollisionTriangle.attributeParser(uv.x, uv.y, UInt32(uvSetIndex))
-            }
-            transformedTriangles[triangleIndex]._attributes = attributes
+            transformedTriangles[triangleIndex].setAttributes(Attributes(parsingUVs: attributeUVs(forTiangle: triangleIndex)))
         }
     }
     
@@ -138,7 +145,7 @@ public final class SkinCollider: Collider3D {
             triangleVertex += 1
             if triangleVertex == 3 {
                 // Recomupte the triangle once after all 3 verts have been updated
-                self.transformedTriangles[triangleIndex].recomputeAll()
+                self.transformedTriangles[triangleIndex].recompute()
                 
                 triangleIndex += 1
                 triangleVertex = 0
@@ -264,7 +271,7 @@ public final class SkinCollider: Collider3D {
     public var boundingBox: AxisAlignedBoundingBox3D = AxisAlignedBoundingBox3D()
     
     @MainActor
-    public init(entity: Entity, geometry: RawGeometry, skin: Skin, boundingBoxSize: Size3) {
+    public init<Attributes: CollisionAttributesGroup>(entity: Entity, geometry: RawGeometry, skin: Skin, boundingBoxSize: Size3, using attributesType: Attributes.Type) {
         self.entity = entity
         self.geometry = geometry
         self.skin = skin
@@ -274,7 +281,7 @@ public final class SkinCollider: Collider3D {
         
         self.forceRecompute = true
         
-        self.transformedTriangles = Array(repeating: CollisionTriangle(.zero, .zero, .zero, attributes: 0), count: Int(geometry.indices.count / 3))
-        self.populateAttributes()
+        self.transformedTriangles = Array(repeating: CollisionTriangle(p1: .zero, p2: .zero, p3: .zero, rawAttributes: 0), count: Int(geometry.indices.count / 3))
+        self.populateAttributes(using: attributesType)
     }
 }

@@ -11,20 +11,29 @@ import GameMath
     private var didSetup = false
     public private(set) lazy var backgroundTask = BackgroundTask(system: self)
 
-    required public init(context: ECSContext) {
-        self.context = context
+    @usableFromInline
+    internal weak var _context: ECSContext! = nil
+    @inlinable
+    public var context: ECSContext {
+        return _context.unsafelyUnwrapped
     }
-
-    public let context: ECSContext
-
-    internal final func willUpdate(input: HID, withTimePassed deltaTime: Float) async {
+    
+    public required init() { }
+    
+    internal final func willUpdate(input: HID, withTimePassed deltaTime: Float, context: ECSContext) async {
         if didSetup == false {
+            _context = context
             didSetup = true
             await setup(for: context, input: input)
         }
         if await shouldUpdate(context: context, input: input, withTimePassed: deltaTime) {
             await update(context: context, input: input, withTimePassed: deltaTime)
         }
+    }
+    internal func _teardown(context: ECSContext) {
+        self.teardown(context: context)
+        self._context = nil
+        self.didSetup = false
     }
     
     /**

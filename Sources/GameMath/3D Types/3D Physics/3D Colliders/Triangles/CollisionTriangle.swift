@@ -7,82 +7,74 @@
 
 public struct CollisionTriangle: Sendable {
     public var positions: [Position3]
-    public var colors: [Color]
     public var normal: Direction3
-    public var _attributes: UInt32
+    public var rawAttributes: UInt64
     
-    public var plane: Plane3D
+    public var plane: Plane3D {
+        return Plane3D(origin: center, normal: normal)
+    }
     public var center: Position3
     
-    @MainActor
-    public static var attributeParser = {(u: Float, v: Float, section: UInt32) -> UInt32 in
-        let range: Float = 3
-        let uidx: Float = floor(u * range)
-        let vidx: Float = floor(v * range)
-        
-        guard uidx >= 0 && uidx < range else {return 0}
-        guard vidx >= 0 && vidx < range else {return 0}
-        
-        let row = UInt32(vidx) * UInt32(range)
-        let shift = (UInt32(range * range) * section) + (row + UInt32(uidx) + 1)
-        return 1 << shift
-    }
-    
     public mutating func recomputeCenter() {
-        self.center = (p1 + p2 + p3) / Position3(3.0)
+        self.center = (p1 + p2 + p3) / 3
     }
     
     public mutating func recomputeNormal() {
         self.normal = Direction3((p2 - p1).cross(p3 - p1)).normalized
     }
     
-    public mutating func recomputePlane() {
-        self.plane = Plane3D(origin: center, normal: normal)
-    }
-    
-    public mutating func recomputeAll() {
+    public mutating func recompute() {
         self.recomputeCenter()
         self.recomputeNormal()
-        self.recomputePlane()
     }
     
-    public init(_ p1: Position3, _ p2: Position3, _ p3: Position3, _ c1: Color = .white, _ c2: Color = .white, _ c3: Color = .white, normal: Direction3? = nil, attributes: UInt32 = 0) {
+    public mutating func setAttributes<AttributesType: CollisionAttributesGroup>(_ attributes: AttributesType) {
+        self.rawAttributes = attributes.rawValue
+    }
+    
+    public func attributes<AttributesType: CollisionAttributesGroup>(as type: AttributesType.Type) -> AttributesType {
+        return AttributesType(rawValue: rawAttributes)
+    }
+    
+    public mutating func editAttributes<AttributesType: CollisionAttributesGroup, ResultType>(
+        as type: AttributesType.Type,
+        _ editAttributes: (_ attributes: inout AttributesType) -> ResultType
+    ) -> ResultType {
+        var attributes = AttributesType(rawValue: rawAttributes)
+        let result = editAttributes(&attributes)
+        self.rawAttributes = attributes.rawValue
+        return result
+    }
+    
+    public init<AttributesType: CollisionAttributesGroup>(p1: Position3, p2: Position3, p3: Position3, normal: Direction3? = nil, attributes: AttributesType) {
+        self.init(p1: p1, p2: p2, p3: p3, normal: normal, rawAttributes: attributes.rawValue)
+    }
+    
+    public init(p1: Position3, p2: Position3, p3: Position3, normal: Direction3? = nil, rawAttributes: UInt64) {
         self.positions = [p1, p2, p3]
-        self.colors = [c1, c2, c3]
-        let normal = normal ?? Direction3((p2 - p1).cross(p3 - p1)).normalized
-        let center = (p1 + p2 + p3) / Position3(3.0)
-        self.normal = normal
-        self._attributes = attributes
-        self.plane = Plane3D(origin: center, normal: normal)
-        self.center = (p1 + p2 + p3) / Position3(3.0)
+        self.normal = normal ?? Direction3((p2 - p1).cross(p3 - p1)).normalized
+        self.center = (p1 + p2 + p3) / 3
+        self.rawAttributes = rawAttributes
     }
 }
 
 public extension CollisionTriangle {
-    @MainActor
-    init(positions: [Position3], colors: [Color], offset: Position3 = .zero, attributeUV: [Position2]) {
-        var attributes: UInt32 = 0
-        for index in 0 ..< attributeUV.count {
-            let uv = attributeUV[index]
-            attributes |= Self.attributeParser(uv.x, uv.y, UInt32(index))
-        }
-        self.init(positions[0] + offset,
-                  positions[1] + offset,
-                  positions[2] + offset,
-                  colors[0],
-                  colors[1],
-                  colors[2],
-                  attributes: attributes)
+    init<AttributesType: CollisionAttributesGroup>(positions: [Position3], offset: Position3 = .zero, attributesType: AttributesType.Type, triangleUVs: CollisionAttributeUVs) {
+        self.init(
+            p1: positions[0] + offset,
+            p2: positions[1] + offset,
+            p3: positions[2] + offset,
+            attributes: AttributesType(parsingUVs: triangleUVs)
+        )
     }
     
-    init(positions: [Position3], colors: [Color], offset: Position3 = .zero, attributes: UInt32 = 0) {
-        self.init(positions[0] + offset,
-                  positions[1] + offset,
-                  positions[2] + offset,
-                  colors[0],
-                  colors[1],
-                  colors[2],
-                  attributes: attributes)
+    init(positions: [Position3], offset: Position3 = .zero, rawAttributes: UInt64 = 0) {
+        self.init(
+            p1: positions[0] + offset,
+            p2: positions[1] + offset,
+            p3: positions[2] + offset,
+            rawAttributes: rawAttributes
+        )
     }
 }
 
@@ -95,13 +87,6 @@ public extension CollisionTriangle {
     var p2: Position3 {return positions[1]}
     @inlinable
     var p3: Position3 {return positions[2]}
-    
-    @inlinable
-    var c1: Color {return colors[0]}
-    @inlinable
-    var c2: Color {return colors[1]}
-    @inlinable
-    var c3: Color {return colors[2]}
 }
 
 public extension CollisionTriangle {
@@ -112,13 +97,13 @@ public extension CollisionTriangle {
             normal = nil//Rebuild the normal if its broken
         }
         
-        return CollisionTriangle(p1.interpolated(to: rhs.p1, method),
-                                 p2.interpolated(to: rhs.p2,  method),
-                                 p3.interpolated(to: rhs.p3,  method),
-                                 c1.interpolated(to: rhs.c1,  method),
-                                 c2.interpolated(to: rhs.c2,  method),
-                                 c3.interpolated(to: rhs.c3,  method),
-                                 normal: normal, attributes: rhs._attributes)
+        return CollisionTriangle(
+            p1: p1.interpolated(to: rhs.p1, method),
+            p2: p2.interpolated(to: rhs.p2, method),
+            p3: p3.interpolated(to: rhs.p3, method),
+            normal: normal,
+            rawAttributes: rhs.rawAttributes
+        )
     }
 }
 
@@ -129,7 +114,7 @@ extension CollisionTriangle {
         let p2 = self.p2 / ellipsoidRadius
         let p3 = self.p3 / ellipsoidRadius
         let normal = (self.normal / ellipsoidRadius).normalized
-        return CollisionTriangle(p1, p2, p3, c1, c2, c3, normal: normal, attributes: _attributes)
+        return CollisionTriangle(p1: p1, p2: p2, p3: p3, normal: normal, rawAttributes: rawAttributes)
     }
     
     @inlinable
@@ -138,7 +123,7 @@ extension CollisionTriangle {
         let p2 = self.p2 * ellipsoidRadius
         let p3 = self.p3 * ellipsoidRadius
         let normal = (self.normal * ellipsoidRadius).normalized
-        return CollisionTriangle(p1, p2, p3, c1, c2, c3, normal: normal, attributes: _attributes)
+        return CollisionTriangle(p1: p1, p2: p2, p3: p3, normal: normal, rawAttributes: rawAttributes)
     }
 }
 
@@ -374,7 +359,7 @@ extension CollisionTriangle: Hashable {
 public extension CollisionTriangle {
     @inlinable
     static func +(lhs: CollisionTriangle, rhs: Position3) -> CollisionTriangle {
-        return CollisionTriangle(lhs.p1 + rhs, lhs.p2 + rhs, lhs.p3 + rhs, lhs.c1, lhs.c2, lhs.c3, normal: lhs.normal, attributes: lhs._attributes)
+        return CollisionTriangle(p1: lhs.p1 + rhs, p2: lhs.p2 + rhs, p3: lhs.p3 + rhs, normal: lhs.normal, rawAttributes: lhs.rawAttributes)
     }
     @inlinable
     static func +=(lhs: inout CollisionTriangle, rhs: Position3) {
@@ -383,7 +368,7 @@ public extension CollisionTriangle {
     
     @inlinable
     static func *(lhs: CollisionTriangle, rhs: Matrix4x4) -> CollisionTriangle {
-        return CollisionTriangle(lhs.p1 * rhs, lhs.p2 * rhs, lhs.p3 * rhs, lhs.c1, lhs.c2, lhs.c3, normal: nil, attributes: lhs._attributes)
+        return CollisionTriangle(p1: lhs.p1 * rhs, p2: lhs.p2 * rhs, p3: lhs.p3 * rhs, normal: nil, rawAttributes: lhs.rawAttributes)
     }
     @inlinable
     static func *=(lhs: inout CollisionTriangle, rhs: Matrix4x4) {
@@ -397,20 +382,16 @@ extension CollisionTriangle: Codable {
         try container.encode([positions[0].x, positions[0].y, positions[0].z,
                               positions[1].x, positions[1].y, positions[1].z,
                               positions[2].x, positions[2].y, positions[2].z])
-        try container.encode([colors[0].red, colors[0].green, colors[0].blue, colors[0].alpha,
-                              colors[1].red, colors[1].green, colors[1].blue, colors[1].alpha,
-                              colors[2].red, colors[2].green, colors[2].blue, colors[2].alpha])
-        try container.encode(_attributes)
+        try container.encode(rawAttributes)
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let floats: [Float] = try container.decode([Float].self)
-        let attributes = try container.decode(UInt32.self)
+        let attributes = try container.decode(UInt64.self)
 
         let positions = [Position3(floats[0], floats[1], floats[2]), Position3(floats[3], floats[4], floats[5]), Position3(floats[6], floats[7], floats[8])]
-        let colors = [Color(floats[8], floats[9], floats[10], floats[11]), Color(floats[12], floats[13], floats[14], floats[15]), Color(floats[16], floats[17], floats[18], floats[19])]
         let normal = Direction3((positions[1] - positions[0]).cross(positions[2] - positions[0])).normalized
-        self.init(positions[0], positions[1], positions[2], colors[0], colors[1], colors[2], normal: normal, attributes: attributes)
+        self.init(p1: positions[0], p2: positions[1], p3: positions[2], normal: normal, rawAttributes: attributes)
     }
 }

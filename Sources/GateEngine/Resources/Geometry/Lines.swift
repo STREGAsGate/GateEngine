@@ -45,10 +45,7 @@
     }
 
     deinit {
-        let cacheKey = self.cacheKey
-        Task.detached(priority: .low) { @MainActor in
-            Game.shared.resourceManager.decrementReference(cacheKey)
-        }
+        Game.unsafeShared.resourceManager.decrementReference(cacheKey)
     }
 }
 
@@ -87,7 +84,7 @@ extension RawLines {
 
 extension ResourceManager {
     @MainActor func linesCacheKey(path: String, options: GeometryImporterOptions) -> Cache.GeometryKey {
-        let key = Cache.GeometryKey(requestedPath: path, geometryOptions: options)
+        let key = Cache.GeometryKey(requestedPath: path, kind: .lines, geometryOptions: options)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
@@ -123,7 +120,7 @@ extension ResourceManager {
     
     @MainActor func linesCacheKey(rawLines lines: RawLines?) -> Cache.GeometryKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
-        let key = Cache.GeometryKey(requestedPath: path, geometryOptions: .none)
+        let key = Cache.GeometryKey(requestedPath: path, kind: .lines, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             if let lines = lines {

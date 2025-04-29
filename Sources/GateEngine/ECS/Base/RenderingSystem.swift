@@ -14,20 +14,29 @@
         return Game.shared
     }
     
-    public let context: ECSContext
-
-    required public init(context: ECSContext) {
-        self.context = context
+    @usableFromInline
+    internal weak var _context: ECSContext! = nil
+    @inlinable
+    public var context: ECSContext {
+        return _context.unsafelyUnwrapped
     }
+    
+    public required init() { }
 
-    internal final func willRender(into view: GameView, withTimePassed deltaTime: Float) {
+    internal final func willRender(into view: GameView, withTimePassed deltaTime: Float, context: ECSContext) {
         if didSetup == false {
+            self._context = context
             didSetup = true
             setup(context: context)
         }
         if shouldRender(context: context, into: view, withTimePassed: deltaTime) {
             render(context: context, into: view, withTimePassed: deltaTime)
         }
+    }
+    internal func _teardown(context: ECSContext) {
+        self.teardown(context: context)
+        didSetup = false
+        self._context = nil
     }
 
     /**

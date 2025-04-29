@@ -36,7 +36,7 @@ public struct TextureAtlas {
      
      Call this function to convert your geometry UVs to the new atlas texture.
      */
-    public func convertUV(_ inUV: Position2, forTexture path: String) -> Position2? {
+    public func convertUV(_ inUV: TextureCoordinate, forTexture path: String) -> TextureCoordinate? {
         guard let texture = textures.first(where: {$0.path == path}) else {
             return nil
         }

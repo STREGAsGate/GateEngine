@@ -8,8 +8,6 @@
 import Foundation
 import Gravity
 
-@MainActor 
-@preconcurrency
 internal func filenameCallback(
     fileID: UInt32,
     xData: UnsafeMutableRawPointer?
@@ -21,8 +19,6 @@ internal func filenameCallback(
     }
 }
 
-@MainActor
-@preconcurrency
 internal func loadFileCallback(
     file: UnsafePointer<CChar>!,
     size: UnsafeMutablePointer<Int>!,
@@ -103,7 +99,6 @@ extension Gravity {
         }
     }
 
-    @MainActor
     private func cacheIncludes(fromSource sourceCode: String) async throws {
         let includes = self.fileIncludesFromSource(sourceCode).filter({
             return self.hasSourceCacheForInclude($0) == false
@@ -121,7 +116,6 @@ extension Gravity {
      - parameter addDebug: `true` to add debug. nil to add debug only in DEBUG configurations.
      - throws: Gravity compilation errors such as syntax problems and file loading problems.
      */
-    @MainActor
     public func compile(file path: String, addDebug: Bool? = nil) async throws {
         let url = URL(fileURLWithPath: path)
         let baseURL = url.deletingLastPathComponent()

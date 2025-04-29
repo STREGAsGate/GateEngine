@@ -36,6 +36,11 @@ public struct Color: Vector4, Sendable {
     public init(_ red: Float, _ green: Float, _ blue: Float, _ alpha: Float = 1) {
         self.init(red: red, green: green, blue: blue, alpha: alpha)
     }
+    
+    @inlinable
+    public init(x: Float, y: Float, z: Float, w: Float) {
+        self.init(x, y, z, w)
+    }
 
     @inlinable
     public init(_ array: [Float]) {

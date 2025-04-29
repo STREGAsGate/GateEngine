@@ -161,6 +161,7 @@ extension Entity {
     }
 
     /// Allows changing a component, addind it first if needed.
+    @discardableResult
     @inlinable
     public func configure<T: Component, ResultType>(
         _ type: T.Type,
@@ -173,6 +174,7 @@ extension Entity {
     }
     
     /// Allows changing a component, addind it first if needed.
+    @discardableResult
     @inlinable
     public func configure<T: Component, ResultType>(
         _ type: T.Type,

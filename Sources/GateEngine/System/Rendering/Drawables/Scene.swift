@@ -93,7 +93,7 @@ import Shaders
             transforms: transforms,
             material: material,
             vsh: (material.channels.first?.texture != nil) ? .standard : material.channels.first?.color == .vertexColors ? .vertexColors : .standard,
-            fsh: (material.channels.first?.texture != nil) ? .textureSample : material.channels.first?.color == .vertexColors ? .vertexColor : .materialColor,
+            fsh: (material.channels.first?.texture != nil) ? .textureSampleTintColor : material.channels.first?.color == .vertexColors ? .vertexColor : .materialColor,
             flags: flags.drawCommandFlags(withPrimitive: .triangle, blendMode: blendMode)
         )
         self.insert(command)

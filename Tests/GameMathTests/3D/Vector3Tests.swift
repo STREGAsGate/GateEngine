@@ -8,7 +8,7 @@ final class Vector3Tests: XCTestCase {
         var x: T
         var y: T
         var z: T
-        init(_ x: T, _ y: T, _ z: T) {
+        init(x: T, y: T, z: T) {
             self.x = x
             self.y = y
             self.z = z

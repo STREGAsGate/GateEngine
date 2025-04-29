@@ -32,7 +32,7 @@ public enum MipMapping: Hashable, Sendable {
     var cache: any ResourceCache { 
         return Game.shared.resourceManager.textureCache(for: cacheKey)!
     }
-    internal var renderTarget: (any _RenderTargetProtocol)?
+    internal unowned var renderTarget: (any _RenderTargetProtocol)?
     private let sizeHint: Size2?
 
     /** The dimensions of the texture.
@@ -146,10 +146,7 @@ public enum MipMapping: Hashable, Sendable {
     }
 
     deinit {
-        let cacheKey = self.cacheKey
-        Task.detached(priority: .low) { @MainActor in
-            Game.shared.resourceManager.decrementReference(cacheKey)
-        }
+        Game.unsafeShared.resourceManager.decrementReference(cacheKey)
     }
 }
 
@@ -336,7 +333,7 @@ extension ResourceManager {
         guard let cache = self.textureCache(for: key) else {return}
         cache.referenceCount -= 1
         
-        if case .whileReferenced = cache.cacheHint {
+        if case .whileReferenced = cache.effectiveCacheHint {
             if cache.referenceCount == 0 {
                 self.cache.textures.removeValue(forKey: key)
                 Log.debug("Removing cache (no longer referenced), Texture: \(key)")

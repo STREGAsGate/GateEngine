@@ -80,19 +80,19 @@ public struct Triangle: Codable, Equatable, Hashable {
     }
     /// Positions as an element array
     public var vertices: [Float] {
-        return [v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, v3.x, v3.y, v3.z]
+        return [v1.position.x, v1.position.y, v1.position.z, v2.position.x, v2.position.y, v2.position.z, v3.position.x, v3.position.y, v3.position.z]
     }
     /// Texture coordinates as an element array
-    public var uvsFromSet1: [Float] {
-        return [v1.u1, v1.v1, v2.u1, v2.v1, v3.u1, v3.v1]
+    public var uvsFromSet1: [TextureCoordinate] {
+        return [v1.uv1, v2.uv1, v3.uv1]
     }
     /// Texture coordinates as an element array
-    public var uvsFromSet2: [Float] {
-        return [v1.u2, v1.v2, v2.u2, v2.v2, v3.u2, v3.v2]
+    public var uvsFromSet2: [TextureCoordinate] {
+        return [v1.uv2, v2.uv2, v3.uv2]
     }
     /// Vertex normals as an element array
-    public var normals: [Float] {
-        return [v1.nx, v1.ny, v1.nz, v2.nx, v2.ny, v2.nz, v3.nx, v3.ny, v3.nz]
+    public var normals: [Direction3] {
+        return [v1.normal, v2.normal, v3.normal]
     }
     /**
      Creates UVs, Normals, Tangents, and Bitangents if they are missing or incorrectly formatted.
@@ -108,18 +108,18 @@ public struct Triangle: Codable, Equatable, Hashable {
             v3.normal = faceNormal
         }
 
-        if v1.texturePosition1 == .zero && v2.texturePosition1 == .zero && v3.texturePosition1 == .zero {
+        if v1.uv1 == .zero && v2.uv1 == .zero && v3.uv1 == .zero {
             //Assign some UVs, no way to know what they should be...
-            v1.texturePosition1 = Position2(x: 0, y: 0)
-            v2.texturePosition1 = Position2(x: 1, y: 1)
-            v3.texturePosition1 = Position2(x: 0, y: 1)
+            v1.uv1 = TextureCoordinate(x: 0, y: 0)
+            v2.uv1 = TextureCoordinate(x: 1, y: 1)
+            v3.uv1 = TextureCoordinate(x: 0, y: 1)
         }
 
-        if v1.texturePosition2 == .zero && v2.texturePosition2 == .zero && v3.texturePosition2 == .zero {
+        if v1.uv2 == .zero && v2.uv2 == .zero && v3.uv2 == .zero {
             //Assign some UVs, no way to know what they should be...
-            v1.texturePosition2 = Position2(x: 0, y: 0)
-            v2.texturePosition2 = Position2(x: 1, y: 1)
-            v3.texturePosition2 = Position2(x: 0, y: 1)
+            v1.uv2 = TextureCoordinate(x: 0, y: 0)
+            v2.uv2 = TextureCoordinate(x: 1, y: 1)
+            v3.uv2 = TextureCoordinate(x: 0, y: 1)
         }
 
         if v1.tangent.length == 0 || v2.tangent.length == 0 || v3.tangent.length == 0 {
@@ -127,8 +127,8 @@ public struct Triangle: Codable, Equatable, Hashable {
             let deltaPos1 = v2.position - v1.position
             let deltaPos2 = v3.position - v1.position
 
-            let deltaUV1 = v2.texturePosition1 - v1.texturePosition1
-            let deltaUV2 = v3.texturePosition1 - v1.texturePosition1
+            let deltaUV1 = v2.uv1 - v1.uv1
+            let deltaUV2 = v3.uv1 - v1.uv1
 
             let r = 1.0 / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x)
             let tangent = Direction3((deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r)
