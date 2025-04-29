@@ -46,13 +46,24 @@ open class TileMapView: View {
         }
     }
     
-    public var layers: [Layer] = []
+    private var inProgressEdits: Set<Array<Layer>.Index> = []
+    public private(set) var layers: [Layer] = []
     
-    public func editLayer<ResultType>(named name: String, _ block: (inout Layer)->ResultType) -> ResultType {
+    public func layer<ResultType>(named name: String, _ block: (_ layer: Layer)->ResultType) -> ResultType {
         let index = self.layers.firstIndex(where: {$0.name == name})!
+        let layer = self.layers[index]
+        let result = block(layer)
+        return result
+    }
+    
+    public func editLayer<ResultType>(named name: String, _ block: (_ layer: inout Layer)->ResultType) -> ResultType {
+        let index = self.layers.firstIndex(where: {$0.name == name})!
+        assert(self.inProgressEdits.contains(index) == false, "Cannot modify the same layer multiple times simultaneously.")
+        self.inProgressEdits.insert(index)
         var layer = self.layers[index]
         let result = block(&layer)
         self.layers[index] = layer
+        self.inProgressEdits.remove(index)
         return result
     }
     
