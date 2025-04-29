@@ -169,7 +169,7 @@ import GameMath
             return Rect(position: position, size: tileSize)
         }
 
-        init(name: String?, size: Size2, tileSize: Size2, tiles: [[Tile]]) {
+        public init(name: String?, size: Size2, tileSize: Size2, tiles: [[Tile]]) {
             self.name = name
             self.size = size
             self.tileSize = tileSize
