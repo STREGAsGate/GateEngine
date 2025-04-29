@@ -56,9 +56,13 @@ open class TileMapView: View {
         return result
     }
     
-    public init(tileSetPath: String, tileMapPath: String, sampleFilter: SampleFilter = .nearest) {
-        self.tileSet = TileSet(path: tileSetPath)
-        self.tileMap = TileMap(path: tileMapPath)
+    public convenience init(tileSetPath: String, tileMapPath: String, sampleFilter: SampleFilter = .nearest) {
+        self.init(tileSet: TileSet(path: tileSetPath), tileMap: TileMap(path: tileMapPath), sampleFilter: sampleFilter)
+    }
+    
+    public init(tileSet: TileSet, tileMap: TileMap, sampleFilter: SampleFilter = .nearest) {
+        self.tileSet = tileSet
+        self.tileMap = tileMap
         super.init()
         self.sampleFilter = sampleFilter
     }
