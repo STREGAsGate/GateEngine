@@ -17,7 +17,7 @@ open class TileMapView: View {
     
     internal var material = Material()
     public var sampleFilter: SampleFilter {
-        get { 
+        get {
             return material.channel(0) { channel in
                 return channel.sampleFilter
             }
@@ -67,15 +67,16 @@ open class TileMapView: View {
         return result
     }
     
-    public convenience init(tileSetPath: String, tileMapPath: String, sampleFilter: SampleFilter = .nearest) {
-        self.init(tileSet: TileSet(path: tileSetPath), tileMap: TileMap(path: tileMapPath), sampleFilter: sampleFilter)
+    public convenience init(tileSetPath: String, tileMapPath: String, sampleFilter: SampleFilter = .nearest, delegate: (any TileMapViewDelegate)? = nil) {
+        self.init(tileSet: TileSet(path: tileSetPath), tileMap: TileMap(path: tileMapPath), sampleFilter: sampleFilter, delegate: delegate)
     }
     
-    public init(tileSet: TileSet, tileMap: TileMap, sampleFilter: SampleFilter = .nearest) {
+    public init(tileSet: TileSet, tileMap: TileMap, sampleFilter: SampleFilter = .nearest, delegate: (any TileMapViewDelegate)? = nil) {
         self.tileSet = tileSet
         self.tileMap = tileMap
         super.init()
         self.sampleFilter = sampleFilter
+        self.delegate = delegate
     }
     
     open override func update(withTimePassed deltaTime: Float) {
@@ -88,11 +89,8 @@ open class TileMapView: View {
                 channel.texture = self.tileSet.texture
             }
             self.needsSetup = false
-
             
-            if let delegate = self.delegate {
-                delegate.tileMapViewDidLoadLayers(self)
-            }
+            self._didLoadLayers()
             
             self.setNeedsLayout()
             self.setNeedsUpdateConstraints()
@@ -102,6 +100,73 @@ open class TileMapView: View {
         }
     }
     
+    private final func _didLoadLayers() {
+        self.didLoadLayers()
+        self.delegate?.tileMapViewDidLoadLayers(self)
+    }
+    open func didLoadLayers() {
+        self.delegate?.tileMapViewDidLoadLayers(self)
+    }
+    
+    public override func contentSize() -> Size2 {
+        if let layer0 = self.layers.first {
+            return layer0.size * layer0.tileSize
+        }
+        return super.contentSize()
+    }
+    
+    override func draw(_ rect: Rect, into canvas: inout UICanvas) {
+        super.draw(rect, into: &canvas)
+        
+        for layer in layers {
+            // Calculate scale to fill rect
+            let layerPointSize = layer.size * layer.tileSize
+            let layerScale = rect.size / layerPointSize
+            let layerScaledSize = layerPointSize * layerScale
+            
+            if layerScaledSize == rect.size {
+                canvas.insert(
+                    DrawCommand(
+                        resource: .geometry(layer.geometry),
+                        transforms: [
+                            Transform3(
+                                position: Position3(rect.x, rect.y, 0),
+                                scale: Size3(
+                                    layerScale.width,
+                                    layerScale.height,
+                                    1
+                                )
+                            )
+                        ],
+                        material: material,
+                        vsh: .standard,
+                        fsh: .textureSample,
+                        flags: .userInterface
+                    )
+                )
+            }else{
+                // If the layer is unrenderable, draw the placeholder texture
+                canvas.insert(
+                    DrawCommand(
+                        resource: .geometry(.rectOriginTopLeft),
+                        transforms: [
+                            Transform3(
+                                position: Position3(rect.x, rect.y, 0),
+                                scale: .one
+                            )
+                        ],
+                        material: .init(texture: Texture(as: .checkerPattern), tintColor: .magenta),
+                        vsh: .standard,
+                        fsh: .textureSampleTemplateTintColor,
+                        flags: .userInterface
+                    )
+                )
+            }
+        }
+    }
+}
+
+extension TileMapView {
     @MainActor public struct Layer {
         public let name: String?
         public let size: Size2
@@ -144,7 +209,7 @@ open class TileMapView: View {
             assert(containsCoordinate(coordinate), "Coordinate out of range")
             return tiles[coordinate.row][coordinate.column]
         }
-
+        
         public func tileAtPosition(_ position: Position2) -> TileMap.Tile? {
             guard let coordinate = coordinate(at: position) else {return nil}
             return tileAtCoordinate(coordinate)
@@ -157,21 +222,21 @@ open class TileMapView: View {
             let position = Position2(x, y) * tileSize
             return Rect(position: position, size: tileSize)
         }
-
-//        public func tileIndexAtCoordinate(column: Int, row: Int) -> Int {
-//            return tiles[row][column].id
-//        }
-//
-//        public func tileIndexAtPosition(_ position: Position2) -> Int {
-//            let column = position.x / tileSize.width
-//            let row = position.y / tileSize.height
-//            return tileIndexAtCoordinate(column: Int(column), row: Int(row))
-//        }
-//
-//        public func pixelCenterForTileAt(column: Int, row: Int) -> Position2 {
-//            return (Position2(Float(column), Float(row)) * tileSize)
-//        }
-
+        
+        //        public func tileIndexAtCoordinate(column: Int, row: Int) -> Int {
+        //            return tiles[row][column].id
+        //        }
+        //
+        //        public func tileIndexAtPosition(_ position: Position2) -> Int {
+        //            let column = position.x / tileSize.width
+        //            let row = position.y / tileSize.height
+        //            return tileIndexAtCoordinate(column: Int(column), row: Int(row))
+        //        }
+        //
+        //        public func pixelCenterForTileAt(column: Int, row: Int) -> Position2 {
+        //            return (Position2(Float(column), Float(row)) * tileSize)
+        //        }
+        
         internal init(layer: TileMap.Layer) {
             self.name = layer.name
             self.size = layer.size
@@ -234,7 +299,7 @@ open class TileMapView: View {
             }
         }
     }
-
+    
     func rebuild() {
         guard let tileSet else { return }
         guard let tileMap else { return }
@@ -242,7 +307,7 @@ open class TileMapView: View {
         for layerIndex in layers.indices {
             let layer = layers[layerIndex]
             guard layer.needsRebuild else { continue }
-           
+            
             layers[layerIndex].needsRebuild = false
             
             var triangles: [Triangle] = []
@@ -315,62 +380,4 @@ open class TileMapView: View {
             }
         }
     }
-    
-    public override func contentSize() -> Size2 {
-        if let layer0 = self.layers.first {
-            return layer0.size * layer0.tileSize
-        }
-        return super.contentSize()
-    }
-    
-    override func draw(_ rect: Rect, into canvas: inout UICanvas) {
-        super.draw(rect, into: &canvas)
-        
-        for layer in layers {
-            // Calculate scale to fill rect
-            let layerPointSize = layer.size * layer.tileSize
-            let layerScale = rect.size / layerPointSize
-            let layerScaledSize = layerPointSize * layerScale
-            
-            if layerScaledSize == rect.size {
-                canvas.insert(
-                    DrawCommand(
-                        resource: .geometry(layer.geometry),
-                        transforms: [
-                            Transform3(
-                                position: Position3(rect.x, rect.y, 0),
-                                scale: Size3(
-                                    layerScale.width,
-                                    layerScale.height,
-                                    1
-                                )
-                            )
-                        ],
-                        material: material,
-                        vsh: .standard,
-                        fsh: .textureSample,
-                        flags: .userInterface
-                    )
-                )
-            }else{
-                // If the layer is unrenderable, draw the placeholder texture
-                canvas.insert(
-                    DrawCommand(
-                        resource: .geometry(.rectOriginTopLeft),
-                        transforms: [
-                            Transform3(
-                                position: Position3(rect.x, rect.y, 0),
-                                scale: .one
-                            )
-                        ],
-                        material: .init(texture: Texture(as: .checkerPattern), tintColor: .magenta),
-                        vsh: .standard,
-                        fsh: .textureSampleTemplateTintColor,
-                        flags: .userInterface
-                    )
-                )
-            }
-        }
-    }
 }
-
