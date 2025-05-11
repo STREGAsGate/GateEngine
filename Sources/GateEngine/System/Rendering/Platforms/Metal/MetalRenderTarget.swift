@@ -107,27 +107,23 @@ final class MetalRenderTarget: RenderTargetBackend {
             )
         }
         
+        var mtlViewport = MTLViewport(
+            originX: 0,
+            originY: 0,
+            width: Double(self.size.width),
+            height: Double(self.size.height),
+            znear: 0,
+            zfar: 1
+        )
+        
         if let viewport {
-            let mtlViewport = MTLViewport(
-                originX: Double(viewport.position.x),
-                originY: Double(viewport.position.y),
-                width: Double(viewport.size.width),
-                height: Double(viewport.size.height),
-                znear: 0,
-                zfar: 1
-            )
-            self.commandEncoder.setViewport(mtlViewport)
-        }else{
-            let mtlViewport = MTLViewport(
-                originX: 0,
-                originY: 0,
-                width: Double(self.size.width),
-                height: Double(self.size.height),
-                znear: 0,
-                zfar: 1
-            )
-            self.commandEncoder.setViewport(mtlViewport)
+            mtlViewport.originX = Double(viewport.position.x)
+            mtlViewport.originY = Double(viewport.position.y)
+            mtlViewport.width = Double(viewport.size.width)
+            mtlViewport.height = Double(viewport.size.height)
         }
+
+        self.commandEncoder.setViewport(mtlViewport)
         
         if let scissorRect {
             let mtlScissorRect = MTLScissorRect(
