@@ -121,7 +121,7 @@ import GameMath
             return tiles.first?.count ?? 0
         }
         
-        public struct Coordinate: Hashable, ExpressibleByArrayLiteral {
+        public struct Coordinate: Hashable, ExpressibleByArrayLiteral, Sendable {
             public var column: Int
             public var row: Int
             
@@ -134,6 +134,19 @@ import GameMath
             public init(arrayLiteral elements: Int...) {
                 assert(elements.count == 2, "A Coordinate must have exactly 2 elements.")
                 self.init(column: elements[0], row: elements[1])
+            }
+            
+            static func + (lhs: Coordinate, rhs: Coordinate) -> Coordinate {
+                return Coordinate(column: lhs.column + rhs.column, row: lhs.row + rhs.row)
+            }
+            static func - (lhs: Coordinate, rhs: Coordinate) -> Coordinate {
+                return Coordinate(column: lhs.column - rhs.column, row: lhs.row - rhs.row)
+            }
+            static func * (lhs: Coordinate, rhs: Coordinate) -> Coordinate {
+                return Coordinate(column: lhs.column * rhs.column, row: lhs.row * rhs.row)
+            }
+            static func / (lhs: Coordinate, rhs: Coordinate) -> Coordinate {
+                return Coordinate(column: lhs.column / rhs.column, row: lhs.row / rhs.row)
             }
         }
 
