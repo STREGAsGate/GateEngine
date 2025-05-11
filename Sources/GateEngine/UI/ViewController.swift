@@ -78,14 +78,14 @@ open class ViewController {
     
     //MARK: Game Loop
     internal func _update(withTimePassed deltaTime: Float) async {
-        self.update(withTimePassed: deltaTime)
+        await self.update(withTimePassed: deltaTime)
         for child in children {
             await child._update(withTimePassed: deltaTime)
         }
     }
     
     /// Forwarded from this ViewController's view
-    open func update(withTimePassed deltaTime: Float) {
+    open func update(withTimePassed deltaTime: Float) async {
         
     }
     
