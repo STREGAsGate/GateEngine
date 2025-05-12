@@ -39,7 +39,11 @@ final public class PinchGestureRecognizer: GestureRecognizer {
     var touches: Set<Touch> = [] {
         didSet {
             if touches.isEmpty == false && touches.count <= touchCount {
-                self.phase = .recognizing
+                if phase == .recognized {
+                    self.invalidate()
+                }else{
+                    self.phase = .recognizing
+                }
             }else{
                 self.phase = .unrecognized
                 distance1 = nil
@@ -90,8 +94,12 @@ final public class PinchGestureRecognizer: GestureRecognizer {
     
     var surfaceTouches: Set<SurfaceTouch> = [] {
         didSet {
-            if surfaceTouches.count == touchCount {
-                self.phase = .recognizing
+            if surfaceTouches.isEmpty == false && surfaceTouches.count <= touchCount {
+                if phase == .recognized {
+                    self.invalidate()
+                }else{
+                    self.phase = .recognizing
+                }
             }else{
                 self.phase = .unrecognized
                 distance1 = nil
@@ -101,6 +109,7 @@ final public class PinchGestureRecognizer: GestureRecognizer {
     }
 
     func performSurfaceRecognition() {
+        guard surfaceTouches.count >= self.touchCount else {return}
         let touches = Array(surfaceTouches)
         
         if distance1 == nil {

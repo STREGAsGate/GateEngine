@@ -29,8 +29,12 @@ final public class TapGestureRecognizer: GestureRecognizer {
     
     var touches: Set<Touch> = [] {
         didSet {
-            if touches.count == touchCount {
-                self.phase = .recognizing
+            if touches.isEmpty == false && touches.count <= touchCount {
+                if phase == .recognized {
+                    self.invalidate()
+                }else{
+                    self.phase = .recognizing
+                }
             }else{
                 self.phase = .unrecognized
                 distance1 = nil

@@ -48,7 +48,11 @@ final public class PanGestureRecognizer: GestureRecognizer {
     var touches: Set<Touch> = [] {
         didSet {
             if touches.isEmpty == false && touches.count <= touchCount {
-                self.phase = .recognizing
+                if phase == .recognized {
+                    self.invalidate()
+                }else{
+                    self.phase = .recognizing
+                }
             }else{
                 self.phase = .unrecognized
                 position1 = nil
@@ -58,6 +62,7 @@ final public class PanGestureRecognizer: GestureRecognizer {
     }
     
     func performRecognition() {
+        guard self.touches.count == touchCount else {return}
         func avgTouchPosition() -> Position2 {
             var p: Position2 = .zero
             for touch in touches {
@@ -95,7 +100,12 @@ final public class PanGestureRecognizer: GestureRecognizer {
     public override func touchesBegan(_ touches: Set<Touch>) {
         for touch in touches {
             if touch.kind != .stylus {
-                self.touches.insert(touch)
+                if let view {
+                    let p = touch.locationInView(view)
+                    if view.bounds.contains(p) {
+                        self.touches.insert(touch)
+                    }
+                }
             }
         }
     }
@@ -117,8 +127,12 @@ final public class PanGestureRecognizer: GestureRecognizer {
     
     var surfaceTouches: Set<SurfaceTouch> = [] {
         didSet {
-            if surfaceTouches.count == touchCount {
-                self.phase = .recognizing
+            if surfaceTouches.isEmpty == false && surfaceTouches.count <= touchCount {
+                if phase == .recognized {
+                    self.invalidate()
+                }else{
+                    self.phase = .recognizing
+                }
             }else{
                 self.phase = .unrecognized
                 position1 = nil
@@ -128,14 +142,13 @@ final public class PanGestureRecognizer: GestureRecognizer {
     }
 
     func performSurfaceRecognition() {
-        let touches = surfaceTouches
-
+        guard self.surfaceTouches.count == touchCount else {return}
         func avgTouchPosition() -> Position2 {
             var p: Position2 = .zero
-            for touch in touches {
+            for touch in surfaceTouches {
                 p += touch.position
             }
-            p /= Float(touches.count)
+            p /= Float(surfaceTouches.count)
             return p
         }
         
@@ -175,6 +188,12 @@ final public class PanGestureRecognizer: GestureRecognizer {
         }
     }
     public override func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+//        guard let view, let p = mouse.locationInView(view), view.bounds.contains(p) else {
+//            if phase != .unrecognized {
+//                self.invalidate()
+//            }
+//            return
+//        }
         if self.phase == .recognizing || self.phase == .recognized {
             switch mouseButtons {
             case .none:
