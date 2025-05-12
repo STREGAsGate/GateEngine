@@ -5,6 +5,7 @@
 //  Created by Dustin Collins on 5/11/25.
 //
 
+@available(*, deprecated, message: "This GestureRecognizer is not yet implemented.")
 final public class RotateGestureRecognizer: GestureRecognizer {
     public struct Recognized {
         public enum Direction {
