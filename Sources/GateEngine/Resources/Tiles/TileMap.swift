@@ -83,6 +83,14 @@ import GameMath
              */
             @inlinable
             public static var flipY: Self {Self.flippedVertical}
+            
+            
+            @inlinable
+            public static var rotated90: Self {[.flippedHorizontal, .flippedDiagonal]}
+            @inlinable
+            public static var rotated180: Self {[.flippedVertical]}
+            @inlinable
+            public static var rotated270: Self {[.flippedVertical, .flippedDiagonal]}
         }
         
         public init(id: Int, options: Options) {
