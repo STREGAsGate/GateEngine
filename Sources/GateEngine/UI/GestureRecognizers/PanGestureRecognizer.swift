@@ -140,6 +140,41 @@ final public class PanGestureRecognizer: GestureRecognizer {
             }
         }
     }
+    
+    var mouseButtonsMatch: Bool = false {
+        didSet {
+            if mouseButtonsMatch == false {
+                self.phase = .unrecognized
+                position1 = nil
+                position2 = nil
+            }
+        }
+    }
+    var mouseButtonsDown: [GateEngine.MouseButton] = [] {
+        didSet {
+            switch mouseButtons {
+            case .none:
+                mouseButtonsMatch = mouseButtonsDown.isEmpty
+            case .any:
+                mouseButtonsMatch = mouseButtonsDown.isEmpty == false
+            case .exactly(let buttons):
+                for button in buttons {
+                    if mouseButtonsDown.contains(button) == false {
+                        mouseButtonsMatch = false
+                        return
+                    }
+                }
+                self.mouseButtonsMatch = true
+            case .anyOf(let buttons):
+                for button in buttons {
+                    if mouseButtonsDown.contains(button) == false {
+                        mouseButtonsMatch = true
+                        return
+                    }
+                }
+            }
+        }
+    }
 
     func performSurfaceRecognition() {
         guard self.surfaceTouches.count == touchCount else {return}
@@ -152,8 +187,14 @@ final public class PanGestureRecognizer: GestureRecognizer {
             return p
         }
         
+        guard mouseButtonsMatch else {
+            self.phase = .unrecognized
+            return
+        }
+        
         if position1 == nil {
             position1 = avgTouchPosition()
+            self.phase = .recognizing
         }else if position2 == nil {
             position2 = avgTouchPosition()
             
@@ -182,63 +223,21 @@ final public class PanGestureRecognizer: GestureRecognizer {
         }
     }
     
+    public override func cursorButtonDown(button: MouseButton, mouse: Mouse) {
+        mouseButtonsDown.append(button)
+    }
+    
+    public override func cursorButtonUp(button: MouseButton, mouse: Mouse) {
+        mouseButtonsDown.removeAll(where: {$0 == button})
+    }
+    
     public override func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         for touch in touches {
             surfaceTouches.insert(touch)
         }
     }
     public override func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
-//        guard let view, let p = mouse.locationInView(view), view.bounds.contains(p) else {
-//            if phase != .unrecognized {
-//                self.invalidate()
-//            }
-//            return
-//        }
-        if self.phase == .recognizing || self.phase == .recognized {
-            switch mouseButtons {
-            case .none:
-                break
-            case .any:
-                if mouse.buttons.values.first(where: {$0.isPressed == true}) == nil {
-                    if phase == .recognized {
-                        self.phase = .recognizing
-                    }
-                    position1 = nil
-                    position2 = nil
-                    return
-                }
-            case .exactly(let buttons):
-                for button in buttons {
-                    if mouse.buttons[button]?.isPressed == false {
-                        if phase == .recognized {
-                            self.phase = .recognizing
-                        }
-                        position1 = nil
-                        position2 = nil
-                        return
-                    }
-                }
-            case .anyOf(let buttons):
-                var hit = false
-                for button in buttons {
-                    if mouse.buttons[button]?.isPressed == true {
-                        hit = true
-                        break
-                    }
-                }
-                if buttons.isEmpty == false {
-                    if hit == false {
-                        if phase == .recognized {
-                            self.phase = .recognizing
-                        }
-                        position1 = nil
-                        position2 = nil
-                        return
-                    }
-                }
-            }
-            performSurfaceRecognition()
-        }
+        self.performSurfaceRecognition()
     }
     public override func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         for touch in touches {
