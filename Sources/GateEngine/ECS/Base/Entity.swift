@@ -38,6 +38,21 @@ public final class Entity: Identifiable {
     }
 }
 
+extension Entity: CustomStringConvertible, CustomDebugStringConvertible {
+    public var description: String {
+        if let name {
+            return name
+        }
+        return "Entity(\(self.id))"
+    }
+    public var debugDescription: String {
+        if let name {
+            return "Entity(\(name))"
+        }
+        return "Entity(\(self.id))"
+    }
+}
+
 extension Entity {
     @inlinable
     public convenience init(
