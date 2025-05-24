@@ -284,11 +284,13 @@ final class AppKitWindow: WindowBacking {
         #endif
     }
 
-    deinit {
+#if swift(>=6.1)
+    isolated deinit {
         if CVDisplayLinkIsRunning(self.displayLink) {
             CVDisplayLinkStop(self.displayLink)
         }
     }
+#endif
 }
 
 extension AppKitWindow {

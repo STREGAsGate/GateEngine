@@ -213,6 +213,9 @@ let package = Package(
                             .enableExperimentalFeature("StrictConcurrency=minimal"),
 //                            .enableExperimentalFeature("StrictConcurrency=complete"),
                         ])
+                        #if swift(>=6.2)
+                        settings.append(.enableExperimentalFeature("IsolatedDeinit"))
+                        #endif
                         #endif
                         
        
