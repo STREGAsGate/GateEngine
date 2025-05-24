@@ -6,6 +6,10 @@
  */
 
 public final class Entity: Identifiable {
+    /// A string to identify this Entity for the purpose of convenience and debugging.
+    ///
+    /// It is more performant and much safer to store the `entity.id`
+    ///- warning: `name` is not required to be unique. Giving many entites the same name will result in undefined look up behavior. It is strongly recommended to find entites based on their components or the `id` value.
     public var name: String? = nil
     public let priority: Priority
 
