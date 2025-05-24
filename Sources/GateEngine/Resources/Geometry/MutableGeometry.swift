@@ -25,7 +25,7 @@ public class MutableGeometry: Geometry {
             return
         }
         if let rawGeometry, rawGeometry.indices.isEmpty == false {
-            Task(priority: .high) {
+            Task.detached {
                 cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
                     from: rawGeometry
                 )

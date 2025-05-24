@@ -22,7 +22,7 @@ public class MutablePoints: Points {
             return
         }
         if let rawPoints, rawPoints.indices.isEmpty == false {
-            Task(priority: .high) {
+            Task.detached {
                 cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
                     from: rawPoints
                 )

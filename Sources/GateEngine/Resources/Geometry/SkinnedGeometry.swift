@@ -227,7 +227,7 @@ extension ResourceManager {
     func reloadSkinnedGeometryIfNeeded(key: Cache.SkinnedGeometryKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task.detached(priority: .high) {
+        Task.detached {
             guard self.skinnedGeometryNeedsReload(key: key) else { return }
             let geometry = try await RawGeometry(
                 path: key.requestedPath,

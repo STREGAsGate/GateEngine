@@ -342,7 +342,7 @@ extension ResourceManager {
     func reloadGeometryIfNeeded(key: Cache.GeometryKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task.detached(priority: .high) {
+        Task.detached {
             guard self.geometryNeedsReload(key: key) else { return }
             guard let cache = self.geometryCache(for: key) else { return }
             let geometry = try await RawGeometry(

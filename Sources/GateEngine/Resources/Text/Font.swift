@@ -46,7 +46,7 @@ public final class Font: OldResource {
         self._backend.configure(withOwner: self)
         #endif
         #if canImport(TrueType)
-        Task(priority: .utility) {
+        Task.detached {
             do {
                 let backend = try await TTFFont(regular: regular)
                 Task { @MainActor in

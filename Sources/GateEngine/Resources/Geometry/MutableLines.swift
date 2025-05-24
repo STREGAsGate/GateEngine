@@ -22,7 +22,7 @@ public class MutableLines: Lines {
             return
         }
         if let rawLines, rawLines.indices.isEmpty == false {
-            Task(priority: .high) {
+            Task.detached {
                 cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
                     from: rawLines
                 )
