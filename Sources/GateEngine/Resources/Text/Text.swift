@@ -39,7 +39,7 @@ public final class Text {
     public var size: Size2 {
         if needsUpdateGeometry, font.state == .ready {
             needsUpdateGeometry = false
-            Task(priority: .high) { @MainActor in
+            Task { @MainActor in
                 self.updateGeometry()
             }
         }

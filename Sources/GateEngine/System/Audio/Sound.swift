@@ -131,10 +131,8 @@ extension Entity {
 
      This will default to the active camera and will automatically reset to the active camera if the Entity being tracked disappears.
      */
-    public func becomeListener() {
-        Task(priority: .medium) { @MainActor in
-            Game.shared.system(ofType: AudioSystem.self).listenerID = self.id
-        }
+    @MainActor public func becomeListener() {
+        Game.shared.system(ofType: AudioSystem.self).listenerID = self.id
     }
 
     @MainActor

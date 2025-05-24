@@ -29,7 +29,7 @@ public class MutableGeometry: Geometry {
                 cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
                     from: rawGeometry
                 )
-                Task(priority: .high) { @MainActor in
+                Task { @MainActor in
                     cache.state = .ready
                 }
             }

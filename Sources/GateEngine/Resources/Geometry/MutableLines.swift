@@ -26,7 +26,7 @@ public class MutableLines: Lines {
                 cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
                     from: rawLines
                 )
-                Task(priority: .high) { @MainActor in
+                Task { @MainActor in
                     cache.state = .ready
                 }
             }

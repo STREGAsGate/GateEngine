@@ -26,7 +26,7 @@ public class MutablePoints: Points {
                 cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
                     from: rawPoints
                 )
-                Task(priority: .high) { @MainActor in
+                Task { @MainActor in
                     cache.state = .ready
                 }
             }

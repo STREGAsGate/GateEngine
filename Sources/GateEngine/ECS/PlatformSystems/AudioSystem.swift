@@ -203,7 +203,7 @@ extension AudioSystem {
         func update(_ deltaTime: Float) {
             guard buffer.state == .ready else { return }
             if accumulatedTime == 0 {
-                Task(priority: .medium) {
+                Task {
                     track.setBuffer(buffer)
                     track.play()
                 }
@@ -410,7 +410,7 @@ extension AudioSystem {
         @MainActor func update(_ deltaTime: Float, context: ECSContext) {
             guard buffer.state == .ready else { return }
             if accumulatedTime == 0 {
-                Task(priority: .medium) {
+                Task {
                     source.setBuffer(buffer)
                     source.play()
                 }

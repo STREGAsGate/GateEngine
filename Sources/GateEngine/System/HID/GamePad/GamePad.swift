@@ -292,7 +292,7 @@ extension GamePad {
     }
 }
 
-@MainActor public class GamePad {
+@MainActor public final class GamePad {
     internal let interpreter: any GamePadInterpreter
     internal var identifier: Any? = nil
 
@@ -331,9 +331,7 @@ extension GamePad {
         var _wrappedValue: T
         public var wrappedValue: T {
             get {
-                Task(priority: .high) {
-                    gamePad?.interpreter.hid.gamePads.pollIfNeeded()
-                }
+                gamePad?.interpreter.hid.gamePads.pollIfNeeded()
                 return _wrappedValue
             }
             set {

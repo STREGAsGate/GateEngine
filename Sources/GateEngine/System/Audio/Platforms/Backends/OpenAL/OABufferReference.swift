@@ -20,7 +20,7 @@ internal class OABufferReference: AudioBufferBackend {
 
     required init(path: String, context: AudioContext, audioBuffer: AudioBuffer) {
         self.audioBuffer = audioBuffer
-        Task(priority: .utility) {
+        Task.detached {
             do {
                 guard let path = await Game.shared.platform.locateResource(from: path) else {
                     throw GateEngineError.failedToLocate
