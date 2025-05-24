@@ -8,6 +8,9 @@
 #if canImport(Foundation)
 import class Foundation.Scanner
 #endif
+#if canImport(CoreGraphics)
+import CoreGraphics
+#endif
 
 public typealias Colour = Color
 
@@ -46,6 +49,15 @@ public struct Color: Vector4, Sendable {
     public init(_ array: [Float]) {
         self.init(array[0], array[1], array[2], array.count > 3 ? array[3] : 1)
     }
+    
+    #if canImport(CoreGraphics)
+    @inlinable
+    public init(_ cgColor: CGColor) {
+        let cgColor = cgColor.converted(to: CGColorSpace(name: CGColorSpace.sRGB)!, intent: .defaultIntent, options: nil)
+        let array = cgColor!.components!.map({Float($0)})
+        self.init(array[0], array[1], array[2], array.count > 3 ? array[3] : 1)
+    }
+    #endif
     
     @inlinable
     public init(eightBitRed red: UInt8, green: UInt8, blue: UInt8, alpha: UInt8 = .max) {
