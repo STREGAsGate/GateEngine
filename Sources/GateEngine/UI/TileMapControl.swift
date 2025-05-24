@@ -27,47 +27,60 @@ public enum TileMapControlSubControlType: Sendable {
 }
 
 public protocol TileControlSubControl: Equatable, Identifiable {
+    associatedtype Control: TileControl
     var type: TileMapControlSubControlType { get }
     /// The arangement of coordinates (relative to zero) for this control.
     /// The position of this control is determined by TileMapControlScheme
     var coordinates: [TileMap.Layer.Coordinate] { get }
     /// The `regular` state tile for the layer
-    func regularStateTile(at coordinateIndex: Int, forLayer layer: String?) -> TileMap.Tile
+    func regularStateTile(at coordinateIndex: Int, forLayer layer: String?, mode: any TileMapControlMode, userData: any TileMapControlUserData) -> TileMap.Tile
 }
 
-public protocol TileControl: Equatable, Identifiable where ID == String {
+public protocol TileControl<Scheme>: Equatable, Identifiable where ID == String {
+    associatedtype Scheme: TileMapControlScheme
     associatedtype SubControl: TileControlSubControl
     /// How this control behaves
     var type: TileMapControlType { get }
     var subControls: [SubControl] { get }
+    
+    func currentStateForSubControl(_ subControl: any TileControlSubControl, mode: any TileMapControlMode, userData: any TileMapControlUserData) -> TileMapControlState
+    func stateDidChangeForSubControl(_ subControl: any TileControlSubControl, state: TileMapControlState, mode: any TileMapControlMode, userData: inout any TileMapControlUserData)
 }
 
 public protocol TileMapControlScheme {
-    associatedtype Mode = AnyHashable
-    static var defaultMode: Mode { get }
-    static func control(at coordinate: TileMap.Layer.Coordinate, forMode mode: Mode) -> (any TileControl)?
+    associatedtype Mode: TileMapControlMode
+    associatedtype UserData: TileMapControlUserData
+    static func control(at coordinate: TileMap.Layer.Coordinate, forMode mode: Mode, userData: UserData) -> (any TileControl<Self>)?
+}
+
+public protocol TileMapControlUserData: Equatable, Hashable, Sendable {
+    init()
+}
+
+public protocol TileMapControlMode: Equatable, Hashable, CaseIterable, Sendable {
+    static var `default`: Self { get }
 }
 
 @MainActor
-public protocol TileMapControlViewDelegate<ControlScheme>: AnyObject {
-    associatedtype ControlScheme: TileMapControlScheme
-    func tileMapControlView(_ tileMapControl: TileMapControlView<ControlScheme>, currentStateforControl control: any TileControl, subControlIndex: Int) -> TileMapControlState
-    func tileMapControlView(_ tileMapControl: TileMapControlView<ControlScheme>, control: any TileControl, subControlIndex: Int, didChangeStateTo state: TileMapControlState)
-    func tileMapControlView(_ tileMapControl: TileMapControlView<ControlScheme>, didActivateControl control: any TileControl, subControlIndex: Int)
+public protocol TileMapControlViewDelegate<Scheme>: AnyObject {
+    associatedtype Scheme: TileMapControlScheme
+    func tileMapControlView(_ tileMapControl: TileMapControlView<Scheme>, didActivateControl control: any TileControl, subControlIndex: Int)
 }
 
-public final class TileMapControlView<ControlScheme: TileMapControlScheme>: TileMapView {
+public final class TileMapControlView<Scheme: TileMapControlScheme>: TileMapView {
     private func baseOffset(forState state: TileMapControlState) -> Int {
-        let count = tileSet.tiles.count / type(of: state).allCases.count
+        let count = tileSet.tiles.count / TileMapControlState.allCases.count
         return state.rawValue * count
     }
     
     var modeDidChange: Bool = true
-    public var mode: ControlScheme.Mode = ControlScheme.defaultMode {
+    public var mode: Scheme.Mode = Scheme.Mode.default {
         didSet {self.modeDidChange = true}
     }
-    public weak var controlDelegate: (any TileMapControlViewDelegate<ControlScheme>)? = nil 
+    public weak var controlDelegate: (any TileMapControlViewDelegate<Scheme>)? = nil
         
+    public var userData: any TileMapControlUserData = Scheme.UserData.init()
+    
     var controls: [any TileControl] = []
     var controlOrigins: [TileMap.Layer.Coordinate] = []
     var controlIndicies: [Int?] = []
@@ -78,13 +91,16 @@ public final class TileMapControlView<ControlScheme: TileMapControlScheme>: Tile
         self.controls.removeAll(keepingCapacity: true)
         self.controlOrigins.removeAll(keepingCapacity: true)
         self.controlStates.removeAll(keepingCapacity: true)
+        self.eraseAllLayers()
         
         guard let layer = tileMap.layers.first else {return}
         
+        let userData: Scheme.UserData = userData as! Scheme.UserData
+
         for column in 0 ..< layer.columns {
             for row in 0 ..< layer.rows {
                 let origin = TileMap.Layer.Coordinate(column: column, row: row)
-                if let control = ControlScheme.control(at: origin, forMode: mode) {
+                if let control = Scheme.control(at: origin, forMode: mode, userData: userData) {
                     let controlIndex = controls.endIndex
                     self.controls.append(control)
                     self.controlOrigins.append(origin)
@@ -92,7 +108,7 @@ public final class TileMapControlView<ControlScheme: TileMapControlScheme>: Tile
                     var controlOriginIsASubControl = false
                     for subControlIndex in control.subControls.indices {
                         let subControl = control.subControls[subControlIndex]
-                        states.append(controlDelegate?.tileMapControlView(self, currentStateforControl: control, subControlIndex: subControlIndex) ?? .regular)
+                        states.append(control.currentStateForSubControl(subControl, mode: mode, userData: userData))
                         for coordIndex in subControl.coordinates.indices {
                             let coord = subControl.coordinates[coordIndex]
                             if coord == .init(column: 0, row: 0) {
@@ -154,7 +170,20 @@ public final class TileMapControlView<ControlScheme: TileMapControlScheme>: Tile
         self.repaintControl(at: coord)
     }
     
-    func repaintControl(at coord: TileMap.Layer.Coordinate) {
+    func eraseAllLayers() {
+        for layer in self.layers {
+            self.editLayer(named: layer.name!) { layer in
+                for column in 0 ..< layer.columns {
+                    for row in 0 ..< layer.rows {
+                        layer.setTile(.empty, at: .init(column: column, row: row))
+                    }
+                }
+            }
+        }
+    }
+    
+    public func repaintControl(at coord: TileMap.Layer.Coordinate) {
+        guard modeDidChange == false else {return}
         guard let controlIndex = controlIndicies[coordIndex(of: coord)] else {return}
         let control = controls[controlIndex]
         let offset = controlOrigins[controlIndex]
@@ -165,7 +194,8 @@ public final class TileMapControlView<ControlScheme: TileMapControlScheme>: Tile
                 self.editLayer(named: layer.name!) { layer in
                     for coordIndex in subControl.coordinates.indices {
                         let coord = subControl.coordinates[coordIndex] + offset
-                        let tile = subControl.regularStateTile(at: coordIndex, forLayer: layer.name)
+                        let tile = subControl.regularStateTile(at: coordIndex, forLayer: layer.name, mode: mode, userData: userData)
+                        if tile == .empty {continue}
                         if subControl.type != .decorative && state != .disabled && state != .selected {
                             if let tempHighlighted = hid.activeHover {
                                 if subControl.coordinates.contains(where: {$0 + offset == tempHighlighted}) {
@@ -214,7 +244,9 @@ public final class TileMapControlView<ControlScheme: TileMapControlScheme>: Tile
             if momentary.duration < 0 {
                 self.momentaryToDeactivate.remove(at: index)
                 self.setState(.regular, forControl: momentary.pair.control, subControlIndex: momentary.pair.subControlIndex)
-                self.controlDelegate?.tileMapControlView(self, control: momentary.pair.control, subControlIndex: momentary.pair.subControlIndex, didChangeStateTo: .regular)
+                
+                let subControl = momentary.pair.control.subControls[momentary.pair.subControlIndex]
+                momentary.pair.control.stateDidChangeForSubControl(subControl, state: .regular, mode: mode, userData: &userData)
             }
         }
     }
@@ -223,25 +255,38 @@ public final class TileMapControlView<ControlScheme: TileMapControlScheme>: Tile
         guard let pair = control(at: coord) else {return}
         guard pair.control.subControls[pair.subControlIndex].type != .decorative else {return}
         
+        var activate: Bool = false
+        
         switch pair.control.type {
         case .momentary:
             let currentState = self.state(forControl: pair.control, subControlIndex: pair.subControlIndex)
             guard currentState != .selected && currentState != .disabled else { return }
             self.setState(.selected, forControl: pair.control, subControlIndex: pair.subControlIndex)
             self.momentaryToDeactivate.append((pair, 0.03))
-            self.controlDelegate?.tileMapControlView(self, control: pair.control, subControlIndex: pair.subControlIndex, didChangeStateTo: .selected)
+            pair.control.stateDidChangeForSubControl(pair.control.subControls[pair.subControlIndex], state: .selected, mode: mode, userData: &userData)
+            activate = true
         case .segmented:
             let currentState = self.state(forControl: pair.control, subControlIndex: pair.subControlIndex)
             guard currentState != .selected && currentState != .disabled else { return }
             for subControlIndex in pair.control.subControls.indices {
-                let state: TileMapControlState = if subControlIndex == pair.subControlIndex {
-                    .selected
+                let state: TileMapControlState
+                if subControlIndex == pair.subControlIndex {
+                    state = .selected
                 }else{
-                    .regular
+                    let currentState = self.state(forControl: pair.control, subControlIndex: subControlIndex)
+                    if currentState == .selected {
+                        // Deselect the old value
+                        state = .regular
+                    }else{
+                        state = currentState
+                    }
                 }
-                self.setState(state, forControl: pair.control, subControlIndex: subControlIndex)
+                
+                // Update the state if it's different
                 if self.state(forControl: pair.control, subControlIndex: subControlIndex) != state {
-                    self.controlDelegate?.tileMapControlView(self, control: pair.control, subControlIndex: subControlIndex, didChangeStateTo: state)
+                    self.setState(state, forControl: pair.control, subControlIndex: subControlIndex)
+                    pair.control.stateDidChangeForSubControl(pair.control.subControls[pair.subControlIndex], state: state, mode: mode, userData: &userData)
+                    activate = true
                 }
             }
         case .toggleable:
@@ -253,13 +298,14 @@ public final class TileMapControlView<ControlScheme: TileMapControlScheme>: Tile
                 .selected
             }
             self.setState(state, forControl: pair.control, subControlIndex: pair.subControlIndex)
-            self.controlDelegate?.tileMapControlView(self, control: pair.control, subControlIndex: pair.subControlIndex, didChangeStateTo: state)
+            pair.control.stateDidChangeForSubControl(pair.control.subControls[pair.subControlIndex], state: state, mode: mode, userData: &userData)
+            activate = true
         }
         
-        self.controlDelegate?.tileMapControlView(self, didActivateControl: pair.control, subControlIndex: pair.subControlIndex)
+        if activate {
+            self.controlDelegate?.tileMapControlView(self, didActivateControl: pair.control, subControlIndex: pair.subControlIndex)
+        }
     }
-    
-    
     
     private var _hidOld: HIDState = .init()
     private var hid: HIDState = .init()
