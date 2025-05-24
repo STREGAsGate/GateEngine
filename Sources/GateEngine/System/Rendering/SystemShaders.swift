@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import Shaders
+public import Shaders
 
 extension VertexShader {
     public static let positionOnly: VertexShader = {

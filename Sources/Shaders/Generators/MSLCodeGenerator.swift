@@ -8,7 +8,7 @@
 
 import Collections
 
-public final class MSLCodeGenerator: CodeGenerator {
+package final class MSLCodeGenerator: CodeGenerator {
     override func type(for valueType: ValueType) -> String {
         switch valueType {
         case .texture2D:

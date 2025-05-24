@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import Gravity
+public import Gravity
 
 internal func errorCallback(
     vm: OpaquePointer?,

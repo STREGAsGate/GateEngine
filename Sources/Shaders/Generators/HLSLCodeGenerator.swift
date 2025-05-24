@@ -8,7 +8,7 @@
 
 import Collections
 
-public final class HLSLCodeGenerator: CodeGenerator {
+package final class HLSLCodeGenerator: CodeGenerator {
     override func type(for valueType: ValueType) -> String {
         switch valueType {
         case .texture2D:

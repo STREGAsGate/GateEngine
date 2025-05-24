@@ -6,7 +6,7 @@
  */
 
 #if canImport(Atomics)
-import Atomics
+public import Atomics
 #elseif canImport(Foundation.NSLock)
 import class Foundation.NSLock
 #endif

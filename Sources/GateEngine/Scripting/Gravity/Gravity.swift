@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import Gravity
+public import Gravity
 import struct Foundation.URL
 
 extension Gravity {

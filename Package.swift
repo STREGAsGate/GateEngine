@@ -196,7 +196,7 @@ let package = Package(
                         // https://www.swift.org/swift-evolution/#?upcoming=true
                         settings.append(contentsOf: [
                             .enableUpcomingFeature("IsolatedDefaultValues"),
-//                            .enableUpcomingFeature("InternalImportsByDefault"),
+                            .enableUpcomingFeature("InternalImportsByDefault"),
                             .enableUpcomingFeature("DisableOutwardActorInference"),
                             .enableUpcomingFeature("ImportObjcForwardDeclarations"),
                             .enableUpcomingFeature("BareSlashRegexLiterals"),

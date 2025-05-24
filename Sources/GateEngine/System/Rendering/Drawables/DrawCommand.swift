@@ -5,8 +5,8 @@
  * http://stregasgate.com
  */
 
-import GameMath
-import Shaders
+public import GameMath
+public import Shaders
 
 public struct DrawCommand {
     public enum Resource {
