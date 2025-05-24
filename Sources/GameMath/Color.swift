@@ -11,6 +11,12 @@ import class Foundation.Scanner
 #if canImport(CoreGraphics)
 import CoreGraphics
 #endif
+#if canImport(AppKit)
+import AppKit
+#endif
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public typealias Colour = Color
 
@@ -275,6 +281,22 @@ public extension Color {
     static let defaultPointLightColor = Color(red: 1.0, green: 1.0, blue: 0.9, alpha: 1.0)
     static let defaultSpotLightColor = Color(red: 1.0, green: 1.0, blue: 0.8, alpha: 1.0)
     static let defaultDirectionalLightColor = Color(red: 0.7, green: 0.7, blue: 1.0, alpha: 1.0)
+    
+
+    /// Color instances associated with iOS, macOS, tvOS, etc...
+    /// These colors automatically adust to user setting such a dark mode
+    struct apple {
+        #if canImport(AppKit) /* macOS */
+        public static var text: Color { Color(NSColor.textColor.cgColor) }
+        public static var textBackground: Color { Color(NSColor.textBackgroundColor.cgColor) }
+        #elseif canImport(UIKit) /* iOS, tvOS */
+        public static var text: Color { Color(UIColor.textColor.cgColor) }
+        public static var textBackground: Color { Color(UIColor.textBackgroundColor.cgColor) }
+        #else /* Fallbacks allowing cross platform code to functions */
+        public static var text: Color { .black }
+        public static var textBackground: Color { .white }
+        #endif
+    }
 }
 
 extension Color: Equatable {}
