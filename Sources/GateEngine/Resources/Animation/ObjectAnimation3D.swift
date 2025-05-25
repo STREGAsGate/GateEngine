@@ -215,10 +215,7 @@ extension ObjectAnimation3D {
 
                         switch interpolation {
                         case .linear:
-                            return position1.interpolated(
-                                to: position2,
-                                .linear(factor, options: [.shortest])
-                            )
+                            return position1.interpolated(to: position2, .linear(factor))
                         case .step:
                             if factor < 0.5 {
                                 return position1
@@ -243,10 +240,7 @@ extension ObjectAnimation3D {
 
                     switch interpolation {
                     case .linear:
-                        return position1.interpolated(
-                            to: position2,
-                            .linear(factor, options: [.shortest])
-                        )
+                        return position1.interpolated(to: position2, .linear(factor))
                     case .step:
                         if factor < 0.5 {
                             return position1
@@ -293,10 +287,7 @@ extension ObjectAnimation3D {
 
                         switch interpolation {
                         case .linear:
-                            return rotation1.interpolated(
-                                to: rotation2,
-                                .linear(factor, options: [.shortest])
-                            )
+                            return rotation1.interpolated(to: rotation2, .linear(factor))
                         case .step:
                             if factor < 0.5 {
                                 return rotation1
@@ -321,10 +312,7 @@ extension ObjectAnimation3D {
 
                     switch interpolation {
                     case .linear:
-                        return rotation1.interpolated(
-                            to: rotation2,
-                            .linear(factor, options: [.shortest])
-                        )
+                        return rotation1.interpolated(to: rotation2, .linear(factor))
                     case .step:
                         if factor < 0.5 {
                             return rotation1
@@ -368,10 +356,7 @@ extension ObjectAnimation3D {
 
                         switch interpolation {
                         case .linear:
-                            return scale1.interpolated(
-                                to: scale2,
-                                .linear(factor, options: [.shortest])
-                            )
+                            return scale1.interpolated(to: scale2, .linear(factor))
                         case .step:
                             if factor < 0.5 {
                                 return scale1
@@ -396,10 +381,7 @@ extension ObjectAnimation3D {
 
                     switch interpolation {
                     case .linear:
-                        return scale1.interpolated(
-                            to: scale2,
-                            .linear(factor, options: [.shortest])
-                        )
+                        return scale1.interpolated(to: scale2, .linear(factor))
                     case .step:
                         if factor < 0.5 {
                             return scale1

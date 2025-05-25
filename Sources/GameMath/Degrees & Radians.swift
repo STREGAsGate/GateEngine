@@ -601,13 +601,13 @@ public struct Degrees: Angle, Hashable, Codable, Sendable {
 
 public extension Degrees {
     @inlinable
-    mutating func interpolate(to: Self, _ method: InterpolationMethod) {
+    mutating func interpolate(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
         self = self.interpolated(to: to, method)
     }
     
     @inlinable
-    func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
-        if case .linear(_, let options) = method, options.contains(.shortest) {
+    func interpolated(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
+        if options.contains(.shortest) {
             // Shortest distance
             let shortest = self.shortestAngle(to: to)
             return Self(self.rawValue.interpolated(to: (self + shortest).rawValue, method))
@@ -616,13 +616,13 @@ public extension Degrees {
     }
     
     @inlinable
-    mutating func interpolate(to: Radians, _ method: InterpolationMethod) {
-        self.interpolate(to: Self(to), method)
+    mutating func interpolate(to: Radians, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+        self.interpolate(to: Self(to), method, options: options)
     }
     
     @inlinable
-    func interpolated(to: Radians, _ method: InterpolationMethod) -> Self {
-        return self.interpolated(to: Self(to), method)
+    func interpolated(to: Radians, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
+        return self.interpolated(to: Self(to), method, options: options)
     }
     
     @inlinable

@@ -25,62 +25,58 @@ public enum InterpolationMethod {
      Interpolates at a constant rate
      
      - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
-     - parameter options: Options for processing the interpolation.
      */
-    case linear(_ factor: Float, options: InterpolationOptions = [.shortest])
+    case linear(_ factor: Float)
     
     /**
      Interpolates with acceleration increasing near the destinartion
 
      - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
-     - parameter options: Options for processing the interpolation.
      */
-    case easeIn(_ factor: Float, options: InterpolationOptions = [.shortest])
+    case easeIn(_ factor: Float)
     
     /**
      Interpolates with acceleration increasing near the beginning
 
      - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
-     - parameter options: Options for processing the interpolation.
      */
-    case easeOut(_ factor: Float, options: InterpolationOptions = [.shortest])
+    case easeOut(_ factor: Float)
     
     /**
      Interpolates with acceleration increasing near the beginning, and then again at the end
 
      - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
-     - parameter options: Options for processing the interpolation.
      */
-    case easeInOut(_ factor: Float, options: InterpolationOptions = [.shortest])
+    case easeInOut(_ factor: Float)
 }
 
 public extension Float {
     /// Interpolates toward `to` by using `method `
     @inlinable
-    func interpolated(to: Float, _ method: InterpolationMethod) -> Float {
+    func interpolated(to: Float, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Float {
         switch method {
-        case let .linear(factor, _):
+        case .linear(let factor):
             return self.lerped(to: to, factor: factor)
-        case let .easeIn(factor, _):
+        case .easeIn(let factor):
             return self.easedIn(to: to, factor: factor)
-        case let .easeOut(factor, _):
+        case .easeOut(let factor):
             return self.easedOut(to: to, factor: factor)
-        case let .easeInOut(factor, _):
+        case .easeInOut(let factor):
             return self.easedInOut(to: to, factor: factor)
         }
     }
     
     /// Interpolates toward `to` by using `method `
     @inlinable
-    mutating func interpolate(to: Float, _ method: InterpolationMethod) {
+    mutating func interpolate(to: Float, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
         switch method {
-        case let .linear(factor, _):
+        case .linear(let factor):
             return self.lerp(to: to, factor: factor)
-        case let .easeIn(factor, _):
+        case .easeIn(let factor):
             return self.easeIn(to: to, factor: factor)
-        case let .easeOut(factor, _):
+        case .easeOut(let factor):
             return self.easeOut(to: to, factor: factor)
-        case let .easeInOut(factor, _):
+        case .easeInOut(let factor):
             return self.easeInOut(to: to, factor: factor)
         }
     }

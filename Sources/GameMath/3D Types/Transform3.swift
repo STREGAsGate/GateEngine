@@ -128,17 +128,17 @@ public extension Transform3 {
 
 extension Transform3 {
     @inlinable
-    public func interpolated(to destination: Self, _ method: InterpolationMethod) -> Self {
+    public func interpolated(to destination: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
         var copy = self
-        copy.interpolate(to: destination, method)
+        copy.interpolate(to: destination, method, options: options)
         return copy
     }
     
     @inlinable
-    public mutating func interpolate(to: Self, _ method: InterpolationMethod) {
-        self.position.interpolate(to: to.position, method)
-        self.rotation.interpolate(to: to.rotation, method)
-        self.scale.interpolate(to: to.scale, method)
+    public mutating func interpolate(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+        self.position.interpolate(to: to.position, method, options: options)
+        self.rotation.interpolate(to: to.rotation, method, options: options)
+        self.scale.interpolate(to: to.scale, method, options: options)
     }
 }
 
