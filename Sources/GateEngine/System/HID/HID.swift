@@ -39,6 +39,8 @@ public enum InputMethod {
     /// The most recent input method used by the end user
     public private(set) var recentInputMethod: InputMethod = .mouseKeyboard
 
+    public var sharedReceipts: InputReceipts = InputReceipts()
+    
     func update(_ deltaTime: Float) {
         self.mouse.update()
         self.screen.update()
