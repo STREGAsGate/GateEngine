@@ -59,6 +59,9 @@ extension HID.GamePadManger {
         )
         gamePad.state = .disconnected
         all.removeAll(where: { $0 === gamePad })
+        if self.any === gamePad {
+            self.any = nullGamePad
+        }
     }
 }
 
