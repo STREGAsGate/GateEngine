@@ -23,18 +23,38 @@ public final class Physics3DComponent: Component {
 
     public private(set) var xzSpeed: Float = 0
 
-    public var xzAcceleration: Float? = nil
-    public var xzDeceleration: Float? = nil
+    public var xzAcceleration: Float? = nil {
+        didSet {
+            accelerationAccumulator = 0
+        }
+    }
+    public var xzDeceleration: Float? = nil {
+        didSet {
+            accelerationAccumulator = 0
+        }
+    }
+    var accelerationAccumulator: Float = 0
+    public private(set) var isAccelerating: Bool = false
     
     public func applyForce(_ force: Float, inDirection direction: Direction3) {
         self.velocity += direction.normalized * force
     }
 
     func update(_ deltaTime: Float) {
-        if let xzAcceleration = xzAcceleration, velocityXZMagnitude >= xzSpeed {
-            xzSpeed.interpolate(to: velocityXZMagnitude, .linear(deltaTime * xzAcceleration))
-        } else if let xzDeceleration = xzDeceleration, velocityXZMagnitude > xzSpeed {
-            xzSpeed.interpolate(to: velocityXZMagnitude, .linear(deltaTime * xzDeceleration))
+        let wasAccelerating = self.isAccelerating
+        self.isAccelerating = velocityXZMagnitude >= xzSpeed
+        if wasAccelerating != isAccelerating {
+            self.accelerationAccumulator = 0
+        }
+        self.accelerationAccumulator += deltaTime
+        
+        if let xzAcceleration = xzAcceleration, xzAcceleration > 0, self.isAccelerating {
+            xzSpeed.interpolate(to: velocityXZMagnitude, .easeIn(max(0, min(1, accelerationAccumulator / xzAcceleration))))
+        } else if let xzDeceleration = xzDeceleration, xzDeceleration > 0, self.isAccelerating == false {
+            xzSpeed.interpolate(to: velocityXZMagnitude, .easeOut(max(0, min(1, accelerationAccumulator / xzDeceleration))))
+            if xzSpeed < 0.1 {
+                xzSpeed = 0
+            }
         } else {
             xzSpeed = velocityXZMagnitude
         }
