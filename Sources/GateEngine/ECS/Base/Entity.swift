@@ -96,6 +96,21 @@ extension Entity {
             self.insert(newValue)
         }
     }
+    
+    @inlinable
+    @available(*, deprecated, message: "Accessing a ResourceConstrainedComponent directly is never safe. Use Entity.component(ofType:) instead.", renamed: "component(ofType:)")
+    public subscript<T: ResourceConstrainedComponent>(_ type: T.Type) -> T {
+        get {
+            let componentID = type.componentID.value
+            #if DEBUG
+            Log.assert(hasComponent(at: componentID), "Component \"\(type)\" is not a member of this entity.")
+            #endif
+            return self.getComponent(at: componentID) as! T
+        }
+        set {
+            self.insert(newValue)
+        }
+    }
 
     /// Obtain an existing component by it's ID.
     /// - returns The existing component or nil if it's not present.
