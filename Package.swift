@@ -209,9 +209,7 @@ let package = Package(
                             .enableUpcomingFeature("DeprecateApplicationMain"),
                             
                             .enableExperimentalFeature("AccessLevelOnImport"),
-//                            .enableExperimentalFeature("StrictConcurrency"),
-                            .enableExperimentalFeature("StrictConcurrency=minimal"),
-//                            .enableExperimentalFeature("StrictConcurrency=complete"),
+                            .enableExperimentalFeature("StrictConcurrency"),
                         ])
                         #if swift(>=6.2)
                         settings.append(.enableExperimentalFeature("IsolatedDeinit"))

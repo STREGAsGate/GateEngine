@@ -445,7 +445,7 @@ internal struct SceneDirectionalLight: Hashable {
     }
 }
 
-public struct SceneElementFlags: OptionSet, Hashable {
+public struct SceneElementFlags: OptionSet, Hashable, Sendable {
     public typealias RawValue = UInt32
     public let rawValue: RawValue
 

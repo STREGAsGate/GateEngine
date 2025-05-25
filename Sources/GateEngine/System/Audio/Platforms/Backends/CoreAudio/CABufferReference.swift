@@ -38,7 +38,7 @@ internal final class CABufferReference: AudioBufferBackend {
         self.audioBuffer = audioBuffer
         Task.detached {
             do {
-                guard let located = await Game.shared.platform.locateResource(from: path) else {
+                guard let located = await Platform.current.locateResource(from: path) else {
                     throw GateEngineError.failedToLocate
                 }
                 do {  // Allow CoreAudio an chance to load files the way it prefers
@@ -57,7 +57,7 @@ internal final class CABufferReference: AudioBufferBackend {
                     // If CoreAudio can't load the file fallback to manual below and don't throw any errors
                 }
 
-                let data = try await Game.shared.platform.loadResource(from: path)
+                let data = try await Platform.current.loadResource(from: path)
                 #if canImport(Vorbis)
                 let lowercasePath = path.lowercased()
                 if lowercasePath.hasSuffix("ogg") || lowercasePath.hasSuffix("oga") {

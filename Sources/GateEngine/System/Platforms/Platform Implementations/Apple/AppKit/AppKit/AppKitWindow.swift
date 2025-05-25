@@ -210,7 +210,7 @@ final class AppKitWindow: WindowBacking {
         }
     }
 
-    nonisolated lazy var displayLink: CVDisplayLink = {
+    lazy var displayLink: CVDisplayLink = {
         var displayLink: CVDisplayLink?
         // Create a display link capable of being used with all active displays
         CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
@@ -222,8 +222,8 @@ final class AppKitWindow: WindowBacking {
                                        _ flagsIn: CVOptionFlags,
                                        _ flagsOut: UnsafeMutablePointer<CVOptionFlags>,
                                        _ displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn {
-            let appKitWindow = unsafeBitCast(displayLinkContext, to: AppKitWindow.self)
             Task(priority: .high) { @MainActor in
+                let appKitWindow = unsafeBitCast(displayLinkContext, to: AppKitWindow.self)
                 if let view = appKitWindow.nsWindowController.window?.contentViewController?.view {
                     view.needsDisplay = true
                 }
