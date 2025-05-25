@@ -75,8 +75,15 @@
     }
 
     public var animationIsFinished: Bool {
-        guard skeleton.isReady && activeAnimation?.isReady == true else {return false}
-        return activeAnimation?.isFinished ?? true
+        guard skeleton.isReady else {return false}
+        if let activeAnimation {
+            if activeAnimation.isReady == false {
+                return false
+            }
+            return activeAnimation.isFinished
+        }
+        // When no animation is active, always be finished
+        return true
     }
 
     public var animationRepeats: Bool {
