@@ -786,7 +786,8 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
             addChildren(gltfNode: rootNode, parentJoint: rootJoint)
         }
 
-        var timeMax: Float = -1_000_000_000
+        var timeMax: Float = .nan
+        var timeMin: Float = .nan
 
         for channel in animation.channels {
             let jointAnimation = jointAnimation(forTarget: channel.target.node)
@@ -849,10 +850,20 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
                 break
             }
 
-            timeMax = .maximum(times.max()!, timeMax)
+            if let max = times.max() {
+                timeMax = .maximum(max, timeMax)
+            }
+            if let min = times.min() {
+                timeMin = .minimum(min, timeMin)
+            }
+        }
+        
+        var duration = timeMax - timeMin
+        if duration.isFinite == false {
+            duration = 0
         }
 
-        return SkeletalAnimationBackend(name: animation.name, duration: timeMax, animations: animations)
+        return SkeletalAnimationBackend(name: animation.name, duration: duration, animations: animations)
     }
 }
 
