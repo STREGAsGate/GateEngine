@@ -326,7 +326,7 @@ extension Game {
 
         /// Persist the current values which will be loaded next time the game is run
         @MainActor public func save() async throws {
-            try await Game.shared.platform.saveState(self, as: name)
+            try await Platform.current.saveState(self, as: name)
         }
     }
 }

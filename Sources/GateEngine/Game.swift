@@ -115,7 +115,7 @@ public final class Game {
     internal static func getNextDeltaTime(accumulator: inout Double, previous: inout Double) -> Double? {
         // 240fps
         let stepDuration: Double = /* 1/240 */ 0.004166666667
-        let now: Double = Game.shared.platform.systemTime()
+        let now: Double = Platform.current.systemTime()
         let newDeltaTimeAccumulator: Double = accumulator + (now - previous)
         if newDeltaTimeAccumulator < stepDuration {
             return nil

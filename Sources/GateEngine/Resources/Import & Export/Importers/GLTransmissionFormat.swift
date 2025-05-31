@@ -227,7 +227,7 @@ private class GLTF: Decodable {
             let base64String = uri[uri.index(after: index)...]
             buffer = Data(base64Encoded: String(base64String))
         } else {
-            buffer = try? await Game.shared.platform.loadResource(
+            buffer = try? await Platform.current.loadResource(
                 from: self.baseURL!.appendingPathComponent(uri).path
             )
         }
@@ -421,10 +421,10 @@ public final class GLTransmissionFormat: ResourceImporter {
         }
     }
     public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
-        guard let path = await Game.shared.platform.locateResource(from: path) else {throw .failedToLocate}
+        guard let path = await Platform.current.locateResource(from: path) else {throw .failedToLocate}
         let baseURL = URL(fileURLWithPath: path).deletingLastPathComponent()
         do {
-            let data = try await Game.shared.platform.loadResource(from: path)
+            let data = try await Platform.current.loadResource(from: path)
             self.gltf = try gltf(from: data, baseURL: baseURL)
         }catch{
             throw GateEngineError(error)
@@ -757,8 +757,7 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
             )
         }
         var animations: [Skeleton.Joint.ID: SkeletalAnimation.JointAnimation] = [:]
-        func jointAnimation(forTarget target: Skeleton.Joint.ID) -> SkeletalAnimation.JointAnimation
-        {
+        func jointAnimation(forTarget target: Skeleton.Joint.ID) -> SkeletalAnimation.JointAnimation {
             if let existing = animations[target] {
                 return existing
             }
@@ -777,10 +776,11 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
                 for index in gltf.nodes[gltfNode].children ?? [] {
                     let node = gltf.nodes[index]
 
-                    let jointAnimation = jointAnimation(forTarget: index)
+                    var jointAnimation = animations[index] ?? SkeletalAnimation.JointAnimation()
                     jointAnimation.positionOutput.bind = node.transform.position
                     jointAnimation.rotationOutput.bind = node.transform.rotation
                     jointAnimation.scaleOutput.bind = node.transform.scale
+                    animations[index] = jointAnimation
                 }
             }
             addChildren(gltfNode: rootNode, parentJoint: rootJoint)
@@ -790,7 +790,7 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
         var timeMin: Float = .nan
 
         for channel in animation.channels {
-            let jointAnimation = jointAnimation(forTarget: channel.target.node)
+            var jointAnimation = jointAnimation(forTarget: channel.target.node)
 
             let sampler = animation.samplers[channel.sampler]
 
@@ -856,6 +856,8 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
             if let min = times.min() {
                 timeMin = .minimum(min, timeMin)
             }
+            
+            animations[channel.target.node] = jointAnimation
         }
         
         var duration = timeMax - timeMin
@@ -877,7 +879,7 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
             )
         }
         
-        let objectAnimation = ObjectAnimation3D.Animation()
+        var objectAnimation = ObjectAnimation3D.Animation()
         
         var timeMax: Float = -1_000_000_000
 

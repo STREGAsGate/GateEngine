@@ -401,7 +401,7 @@ extension Win32Window {
         let WHEEL_DELTA = Float(WinSDK.WHEEL_DELTA)
         if abs(yDelta).truncatingRemainder(dividingBy: WHEEL_DELTA) == 0 {
             yDelta = yUIDelta / WHEEL_DELTA
-        } else if let direction: Int = Game.shared.platform.queryRegistry(
+        } else if let direction: Int = Platform.current.queryRegistry(
             forKey:
                 "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PrecisionTouchPad\\ScrollDirection"
         ) {
@@ -430,7 +430,7 @@ extension Win32Window {
         let WHEEL_DELTA = Float(WinSDK.WHEEL_DELTA)
         if abs(xDelta).truncatingRemainder(dividingBy: WHEEL_DELTA) == 0 {
             xDelta = xUIDelta / WHEEL_DELTA
-        } else if let direction: Int = Game.shared.platform.queryRegistry(
+        } else if let direction: Int = Platform.current.queryRegistry(
             forKey:
                 "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PrecisionTouchPad\\ScrollDirection"
         ) {

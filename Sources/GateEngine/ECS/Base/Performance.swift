@@ -99,40 +99,40 @@ extension ECSContext {
                 let type = type(of: system)
                 self.kind = .platform(type.phase)
                 self.system = "[P] \(type)"
-                self.startDate = Game.shared.platform.systemTime()
+                self.startDate = Platform.current.systemTime()
             }
             init(startWithSystem system: System) {
                 let type = type(of: system)
                 self.kind = .project(type.phase)
                 self.system = "[S] \(type)"
-                self.startDate = Game.shared.platform.systemTime()
+                self.startDate = Platform.current.systemTime()
             }
             init(startWithSystem system: RenderingSystem) {
                 let type = type(of: system)
                 self.kind = .rendering
                 self.system = "[R] \(type)"
-                self.startDate = Game.shared.platform.systemTime()
+                self.startDate = Platform.current.systemTime()
             }
 
             mutating func end() {
-                self.endDate = Game.shared.platform.systemTime()
+                self.endDate = Platform.current.systemTime()
             }
         }
         
         func startFrame() {
-            _frameTimeStart = Game.shared.platform.systemTime()
+            _frameTimeStart = Platform.current.systemTime()
         }
         
         func endFrame() {
-            frameTime = Game.shared.platform.systemTime() - _frameTimeStart
+            frameTime = Platform.current.systemTime() - _frameTimeStart
         }
         
         func startSystems() {
-            _systemsStart = Game.shared.platform.systemTime()
+            _systemsStart = Platform.current.systemTime()
         }
         
         func endSystems() {
-            _systemsFrameTime += Game.shared.platform.systemTime() - _systemsStart
+            _systemsFrameTime += Platform.current.systemTime() - _systemsStart
         }
         
         func finalizeSystemsFrameTime() {
@@ -142,11 +142,11 @@ extension ECSContext {
         
         
         func startRenderingSystems() {
-            _renderingSystemsStart = Game.shared.platform.systemTime()
+            _renderingSystemsStart = Platform.current.systemTime()
         }
         
         func endRenderingSystems() {
-            let now = Game.shared.platform.systemTime()
+            let now = Platform.current.systemTime()
             _renderingSystemsFrameTime += now - _renderingSystemsStart
             
             let duration = now - _fpsStart

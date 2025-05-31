@@ -13,13 +13,13 @@ import Foundation
     internal let cacheKey: ResourceManager.Cache.ObjectAnimation3DKey
     
     var cache: any ResourceCache {
-        return Game.shared.resourceManager.objectAnimation3DCache(for: cacheKey)!
+        return Game.unsafeShared.resourceManager.objectAnimation3DCache(for: cacheKey)!
     }
     
     @usableFromInline
     internal var backend: ObjectAnimation3DBackend {
         assert(state == .ready, "This resource is not ready to be used. Make sure it's state property is .ready before accessing!")
-        return Game.shared.resourceManager.objectAnimation3DCache(for: cacheKey)!.objectAnimation3DBackend!
+        return Game.unsafeShared.resourceManager.objectAnimation3DCache(for: cacheKey)!.objectAnimation3DBackend!
     }
     
     public var name: String {
@@ -82,7 +82,7 @@ import Foundation
         path: String,
         options: ObjectAnimation3DImporterOptions = .none
     ) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.objectAnimation3DCacheKey(
             path: path,
             options: options
@@ -94,7 +94,7 @@ import Foundation
     }
     
     public init(name: String, duration: Float, animation: ObjectAnimation3D.Animation) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.objectAnimation3DCacheKey(
             name: name,
             duration: duration, 
@@ -136,14 +136,14 @@ extension ObjectAnimation3D: Equatable, Hashable {
         return lhs.cacheKey == rhs.cacheKey
     }
     
-    public func hash(into hasher: inout Hasher) {
+    nonisolated public func hash(into hasher: inout Hasher) {
         hasher.combine(cacheKey)
     }
 }
 
 extension ObjectAnimation3D {
-    public final class Animation {
-        public enum Interpolation {
+    public nonisolated struct Animation: Sendable {
+        public enum Interpolation: Sendable {
             case step
             case linear
         }
@@ -152,7 +152,7 @@ extension ObjectAnimation3D {
 
         }
 
-        public func setPositions(
+        public mutating func setPositions(
             _ positions: [Position3],
             times: [Float],
             interpolation: Interpolation
@@ -162,7 +162,7 @@ extension ObjectAnimation3D {
             self.positionOutput.times = times
             self.positionOutput.interpolation = interpolation
         }
-        public func setRotations(
+        public mutating func setRotations(
             _ rotations: [Quaternion],
             times: [Float],
             interpolation: Interpolation
@@ -172,7 +172,7 @@ extension ObjectAnimation3D {
             self.rotationOutput.times = times
             self.rotationOutput.interpolation = interpolation
         }
-        public func setScales(_ scales: [Size3], times: [Float], interpolation: Interpolation) {
+        public mutating func setScales(_ scales: [Size3], times: [Float], interpolation: Interpolation) {
             assert(scales.count == times.count)
             self.scaleOutput.scales = scales
             self.scaleOutput.times = times
@@ -184,7 +184,7 @@ extension ObjectAnimation3D {
             interpolation: .linear,
             positions: []
         )
-        struct PositionOutput {
+        struct PositionOutput: Sendable {
             var times: [Float]
             var interpolation: Interpolation
             var positions: [Position3]
@@ -501,7 +501,7 @@ extension ResourceManager {
 
 extension ResourceManager.Cache {
     @usableFromInline
-    struct ObjectAnimation3DKey: Hashable, CustomStringConvertible {
+    struct ObjectAnimation3DKey: Hashable, CustomStringConvertible, Sendable {
         let requestedPath: String
         let options: ObjectAnimation3DImporterOptions
         
@@ -535,6 +535,8 @@ extension ResourceManager.Cache {
         }
     }
 }
+
+@MainActor
 extension ResourceManager {
     func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.ObjectAnimation3DKey) {
         if let tileSetCache = cache.objectAnimation3Ds[key] {
@@ -547,36 +549,35 @@ extension ResourceManager {
         let key = Cache.ObjectAnimation3DKey(requestedPath: path, options: options)
         if cache.objectAnimation3Ds[key] == nil {
             cache.objectAnimation3Ds[key] = Cache.ObjectAnimation3DCache()
-            Task { @MainActor in
-                self._reloadObjectAnimation3D(for: key, isFirstLoad: true)
-            }
+            self._reloadObjectAnimation3D(for: key, isFirstLoad: true)
         }
         return key
     }
     
-    @MainActor func objectAnimation3DCacheKey(
-        name: String, 
-        duration: Float, 
+    func objectAnimation3DCacheKey(
+        name: String,
+        duration: Float,
         animation: ObjectAnimation3D.Animation
     ) -> Cache.ObjectAnimation3DKey {
         let key = Cache.ObjectAnimation3DKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", options: .none)
+        let cache = self.cache
         if cache.objectAnimation3Ds[key] == nil {
             cache.objectAnimation3Ds[key] = Cache.ObjectAnimation3DCache()
-            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached(priority: .high) {
+            Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
+            Task.detached {
                 let backend = ObjectAnimation3DBackend(
                     name: name, 
                     duration: duration, 
                     animation: animation
                 )
                 Task { @MainActor in
-                    if let cache = self.cache.objectAnimation3Ds[key] {
+                    if let cache = cache.objectAnimation3Ds[key] {
                         cache.objectAnimation3DBackend = backend
                         cache.state = .ready
                     }else{
                         Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             }
         }
@@ -606,60 +607,56 @@ extension ResourceManager {
     func reloadObjectAniamtion3DIfNeeded(key: Cache.ObjectAnimation3DKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task.detached(priority: .high) {
-            guard self.objectAnimation3DNeedsReload(key: key) else { return }
-            await self._reloadObjectAnimation3D(for: key, isFirstLoad: false)
-        }
+        guard self.objectAnimation3DNeedsReload(key: key) else { return }
+        self._reloadObjectAnimation3D(for: key, isFirstLoad: false)
     }
     
-    @MainActor func _reloadObjectAnimation3D(for key: Cache.ObjectAnimation3DKey, isFirstLoad: Bool) {
-        Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-        Task.detached(priority: .high) {
+    func _reloadObjectAnimation3D(for key: Cache.ObjectAnimation3DKey, isFirstLoad: Bool) {
+        Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
+        let cache = self.cache
+        Task.detached {
             let path = key.requestedPath
             
             do {
                 guard let fileExtension = path.components(separatedBy: ".").last else {
                     throw GateEngineError.failedToLoad("Unknown file type.")
                 }
-                guard
-                    let importer: any ObjectAnimation3DImporter = await Game.shared.resourceManager
-                        .importerForFileType(fileExtension)
-                else {
+                guard let importer: any ObjectAnimation3DImporter = Game.unsafeShared.resourceManager.importerForFileType(fileExtension) else {
                     throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
                 }
-
-                let data = try await Game.shared.platform.loadResource(from: path)
+                
+                let data = try await Platform.current.loadResource(from: path)
                 let backend = try await importer.process(
                     data: data,
                     baseURL: URL(string: path)!.deletingLastPathComponent(),
                     options: key.options
                 )
-
+                
                 Task { @MainActor in
-                    if let cache = self.cache.objectAnimation3Ds[key] {
+                    if let cache = cache.objectAnimation3Ds[key] {
                         cache.objectAnimation3DBackend = backend
                         cache.state = .ready
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
                     Log.warn("Resource \"\(path)\"", error)
-                    if let cache = self.cache.objectAnimation3Ds[key] {
+                    if let cache = cache.objectAnimation3Ds[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as DecodingError {
                 let error = GateEngineError(error)
                 Task { @MainActor in
                     Log.warn("Resource \"\(path)\"", error)
-                    if let cache = self.cache.objectAnimation3Ds[key] {
+                    if let cache = cache.objectAnimation3Ds[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")
@@ -667,7 +664,7 @@ extension ResourceManager {
         }
     }
     
-    func objectAnimation3DNeedsReload(key: Cache.ObjectAnimation3DKey) -> Bool {
+    @MainActor func objectAnimation3DNeedsReload(key: Cache.ObjectAnimation3DKey) -> Bool {
         #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }

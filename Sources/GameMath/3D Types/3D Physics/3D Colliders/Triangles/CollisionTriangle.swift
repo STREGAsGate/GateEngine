@@ -150,7 +150,7 @@ extension CollisionTriangle: Collider3D {
     }
     
     @inlinable
-    public func isPotentiallyColliding(with collider: Collider3D) -> Bool {
+    public func isPotentiallyColliding(with collider: any Collider3D) -> Bool {
         var collider = collider.boundingBox
         // We grab all possible triangles to respond to in one phase.
         // To ensure we can respond to triangles after a position change from a response,
@@ -161,7 +161,7 @@ extension CollisionTriangle: Collider3D {
     }
     
     @inlinable
-    public func interpenetration(comparing collider: Collider3D) -> Interpenetration3D? {
+    public func interpenetration(comparing collider: any Collider3D) -> Interpenetration3D? {
         guard self.isPotentiallyColliding(with: collider) else {return nil}
 
         switch collider {
@@ -377,7 +377,7 @@ public extension CollisionTriangle {
 }
 
 extension CollisionTriangle: Codable {
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode([positions[0].x, positions[0].y, positions[0].z,
                               positions[1].x, positions[1].y, positions[1].z,
@@ -385,7 +385,7 @@ extension CollisionTriangle: Codable {
         try container.encode(rawAttributes)
     }
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let floats: [Float] = try container.decode([Float].self)
         let attributes = try container.decode(UInt64.self)

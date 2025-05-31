@@ -9,7 +9,6 @@ import GameMath
 
 @MainActor open class System {
     private var didSetup = false
-    public private(set) lazy var backgroundTask = BackgroundTask(system: self)
 
     @usableFromInline
     internal weak var _context: ECSContext! = nil
@@ -110,37 +109,6 @@ extension System {
         case userInterface
         /// Any system marked as deferred will update last, but before rendering.
         case deferred
-    }
-}
-
-extension System {
-    public final class BackgroundTask {
-        unowned let system: System
-        init(system: System) {
-            self.system = system
-        }
-        public enum State {
-            ///Not running and never finished
-            case initial
-            case running
-            case finished
-        }
-        public private(set) var state: State = .initial
-        nonisolated public var isRunning: Bool {
-            return state == .running
-        }
-
-        public func run(_ block: @escaping () async -> Void) {
-            assert(self.isRunning == false, "A Task cannot be run when it's running.")
-            self.state = .running
-            Task.detached(priority: .low) {
-                await block()
-                Task { @MainActor in
-                    //Update the state between simulation ticks
-                    self.state = .finished
-                }
-            }
-        }
     }
 }
 

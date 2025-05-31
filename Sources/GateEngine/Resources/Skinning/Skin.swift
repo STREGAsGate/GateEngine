@@ -72,7 +72,7 @@ extension ResourceManager {
 extension Skin {
     public init(path: String, options: SkinImporterOptions = .none) async throws {
         guard
-            let importer: any SkinImporter = try await Game.shared.resourceManager.importerForPath(path)
+            let importer: any SkinImporter = try await Game.unsafeShared.resourceManager.importerForPath(path)
         else {
             throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
         }

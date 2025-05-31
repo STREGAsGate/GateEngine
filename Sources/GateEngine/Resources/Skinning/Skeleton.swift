@@ -13,13 +13,13 @@ import Foundation
     internal let cacheKey: ResourceManager.Cache.SkeletonKey
     
     var cache: any ResourceCache {
-        return Game.shared.resourceManager.skeletonCache(for: cacheKey)!
+        return Game.unsafeShared.resourceManager.skeletonCache(for: cacheKey)!
     }
     
     @usableFromInline
     internal var backend: SkeletonBackend {
         assert(state == .ready, "This resource is not ready to be used. Make sure it's state property is .ready before accessing!")
-        return Game.shared.resourceManager.skeletonCache(for: cacheKey)!.skeletonBackend!
+        return Game.unsafeShared.resourceManager.skeletonCache(for: cacheKey)!.skeletonBackend!
     }
     
     var _rootJoint: Skeleton.Joint! = nil
@@ -78,7 +78,7 @@ import Foundation
         path: String,
         options: SkeletonImporterOptions = .none
     ) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.skeletonCacheKey(
             path: path,
             options: options
@@ -88,14 +88,17 @@ import Foundation
     }
     
     public init(rootjoint: Skeleton.Joint) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.skeletonCacheKey(rootJoint: rootjoint)
         self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
     
     deinit {
-        Game.unsafeShared.resourceManager.decrementReference(cacheKey)
+        let cacheKey = self.cacheKey
+        Task { @MainActor in
+            Game.unsafeShared.resourceManager.decrementReference(cacheKey)
+        }
     }
 }
 
@@ -104,7 +107,7 @@ extension Skeleton: Equatable, Hashable {
         return lhs.cacheKey == rhs.cacheKey
     }
     
-    public func hash(into hasher: inout Hasher) {
+    public nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(cacheKey)
     }
 }
@@ -552,6 +555,8 @@ extension ResourceManager.Cache {
         }
     }
 }
+
+@MainActor
 extension ResourceManager {
     func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.SkeletonKey) {
         if let tileSetCache = cache.skeletons[key] {
@@ -560,7 +565,7 @@ extension ResourceManager {
         }
     }
     
-    @MainActor func skeletonCacheKey(path: String, options: SkeletonImporterOptions) -> Cache.SkeletonKey {
+    func skeletonCacheKey(path: String, options: SkeletonImporterOptions) -> Cache.SkeletonKey {
         let key = Cache.SkeletonKey(requestedPath: path, options: options)
         if cache.skeletons[key] == nil {
             cache.skeletons[key] = Cache.SkeletonCache()
@@ -569,23 +574,20 @@ extension ResourceManager {
         return key
     }
     
-    @MainActor func skeletonCacheKey(rootJoint: Skeleton.Joint) -> Cache.SkeletonKey {
+    func skeletonCacheKey(rootJoint: Skeleton.Joint) -> Cache.SkeletonKey {
         let key = Cache.SkeletonKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", options: .none)
+        let cache = self.cache
         if cache.skeletons[key] == nil {
             cache.skeletons[key] = Cache.SkeletonCache()
-            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached(priority: .high) {
-                let backend = SkeletonBackend(rootJoint: rootJoint)
-                Task { @MainActor in
-                    if let cache = self.cache.skeletons[key] {
-                        cache.skeletonBackend = backend
-                        cache.state = .ready
-                    }else{
-                        Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
-                    }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
-                }
+            Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
+            
+            if let cache = cache.skeletons[key] {
+                cache.skeletonBackend = SkeletonBackend(rootJoint: rootJoint)
+                cache.state = .ready
+            }else{
+                Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
             }
+            Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
         }
         return key
     }
@@ -613,29 +615,25 @@ extension ResourceManager {
     func reloadSkeletonIfNeeded(key: Cache.SkeletonKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task {
-            guard self.skeletonNeedsReload(key: key) else { return }
-            await self._reloadSkeleton(for: key, isFirstLoad: false)
-        }
+        guard self.skeletonNeedsReload(key: key) else { return }
+        self._reloadSkeleton(for: key, isFirstLoad: false)
     }
     
-    @MainActor func _reloadSkeleton(for key: Cache.SkeletonKey, isFirstLoad: Bool) {
-        Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-        Task.detached(priority: .high) {
+    func _reloadSkeleton(for key: Cache.SkeletonKey, isFirstLoad: Bool) {
+        Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
+        let cache = self.cache
+        Task.detached {
             let path = key.requestedPath
             
             do {
                 guard let fileExtension = path.components(separatedBy: ".").last else {
                     throw GateEngineError.failedToLoad("Unknown file type.")
                 }
-                guard
-                    let importer: any SkeletonImporter = await Game.shared.resourceManager
-                        .importerForFileType(fileExtension)
-                else {
+                guard let importer: any SkeletonImporter = Game.unsafeShared.resourceManager.importerForFileType(fileExtension) else {
                     throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
                 }
 
-                let data = try await Game.shared.platform.loadResource(from: path)
+                let data = try await Platform.current.loadResource(from: path)
                 let rootJoint: Skeleton.Joint = try await importer.process(
                     data: data,
                     baseURL: URL(string: path)!.deletingLastPathComponent(),
@@ -643,30 +641,30 @@ extension ResourceManager {
                 )
 
                 Task { @MainActor in
-                    if let cache = self.cache.skeletons[key] {
+                    if let cache = cache.skeletons[key] {
                         cache.skeletonBackend = SkeletonBackend(rootJoint: rootJoint)
                         cache.state = .ready
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
                     Log.warn("Resource \"\(path)\"", error)
-                    if let cache = self.cache.skeletons[key] {
+                    if let cache = cache.skeletons[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as DecodingError {
                 let error = GateEngineError(error)
                 Task { @MainActor in
                     Log.warn("Resource \"\(path)\"", error)
-                    if let cache = self.cache.skeletons[key] {
+                    if let cache = cache.skeletons[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")

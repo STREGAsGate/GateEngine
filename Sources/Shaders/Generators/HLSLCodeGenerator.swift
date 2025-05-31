@@ -7,6 +7,7 @@
 #if DEBUG || canImport(Direct3D12)
 
 import Collections
+import Foundation
 
 package final class HLSLCodeGenerator: CodeGenerator {
     override func type(for valueType: ValueType) -> String {

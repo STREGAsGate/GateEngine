@@ -21,17 +21,17 @@ internal protocol SkinnedGeometryBackend: AnyObject {
     internal let cacheKey: ResourceManager.Cache.SkinnedGeometryKey
 
     var cache: any ResourceCache {
-        return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!
+        return Game.unsafeShared.resourceManager.skinnedGeometryCache(for: cacheKey)!
     }
     
     @usableFromInline
     internal var backend: (any GeometryBackend)? {
-        return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)?.geometryBackend
+        return Game.unsafeShared.resourceManager.skinnedGeometryCache(for: cacheKey)?.geometryBackend
     }
 
     public var skinJoints: [Skin.Joint] {
         assert(state == .ready, "The state must be ready before accessing this property.")
-        return Game.shared.resourceManager.skinnedGeometryCache(for: cacheKey)!.skinJoints!
+        return Game.unsafeShared.resourceManager.skinnedGeometryCache(for: cacheKey)!.skinJoints!
     }
 
     @inlinable @_disfavoredOverload
@@ -48,7 +48,7 @@ internal protocol SkinnedGeometryBackend: AnyObject {
         geometryOptions: GeometryImporterOptions = .none,
         skinOptions: SkinImporterOptions = .none
     ) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.skinnedGeometryCacheKey(
             path: path,
             geometryOptions: geometryOptions,
@@ -59,7 +59,7 @@ internal protocol SkinnedGeometryBackend: AnyObject {
     }
 
     public init(rawGeometry: RawGeometry, skin: Skin) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.skinnedGeometryCacheKey(
             rawGeometry: rawGeometry,
             skin: skin
@@ -69,7 +69,10 @@ internal protocol SkinnedGeometryBackend: AnyObject {
     }
 
     deinit {
-        Game.unsafeShared.resourceManager.decrementReference(cacheKey)
+        let cacheKey = self.cacheKey
+        Task {@MainActor in
+            Game.unsafeShared.resourceManager.decrementReference(cacheKey)
+        }
     }
 }
 extension SkinnedGeometry: Equatable, Hashable {
@@ -122,6 +125,8 @@ extension ResourceManager.Cache {
         }
     }
 }
+
+@MainActor
 extension ResourceManager {
     func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.SkinnedGeometryKey) {
         if let cache = self.cache.skinnedGeometries[key] {
@@ -130,7 +135,7 @@ extension ResourceManager {
         }
     }
 
-    @MainActor func skinnedGeometryCacheKey(
+    func skinnedGeometryCacheKey(
         path: String,
         geometryOptions: GeometryImporterOptions,
         skinOptions: SkinImporterOptions
@@ -140,31 +145,31 @@ extension ResourceManager {
             geometryOptions: geometryOptions,
             skinOptions: skinOptions
         )
+        let cache = self.cache
         if cache.skinnedGeometries[key] == nil {
             cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
-            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached(priority: .high) {
+            Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
+            Task.detached {
                 do {
                     let geometry = try await RawGeometry(path: path, options: geometryOptions)
                     let skin = try await Skin(path: key.requestedPath, options: skinOptions)
-                    let backend = await self.geometryBackend(from: geometry, skin: skin)
                     Task { @MainActor in
-                        if let cache = self.cache.skinnedGeometries[key] {
-                            cache.geometryBackend = backend
+                        if let cache = cache.skinnedGeometries[key] {
+                            cache.geometryBackend = ResourceManager.geometryBackend(from: geometry, skin: skin)
                             cache.skinJoints = skin.joints
                             cache.state = .ready
                         }else{
                             Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
                         }
-                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                        Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 } catch let error as GateEngineError {
                     Task { @MainActor in
                         Log.warn("Resource \"\(path)\"", error)
-                        if let cache = self.cache.skinnedGeometries[key] {
+                        if let cache = cache.skinnedGeometries[key] {
                             cache.state = .failed(error: error)
                         }
-                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                        Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 } catch {
                     Log.fatalError("error must be a GateEngineError")
@@ -174,9 +179,7 @@ extension ResourceManager {
         return key
     }
 
-    @MainActor func skinnedGeometryCacheKey(rawGeometry geometry: RawGeometry?, skin: Skin)
-        -> Cache.SkinnedGeometryKey
-    {
+    func skinnedGeometryCacheKey(rawGeometry geometry: RawGeometry?, skin: Skin) -> Cache.SkinnedGeometryKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.SkinnedGeometryKey(
             requestedPath: path,
@@ -185,21 +188,16 @@ extension ResourceManager {
         )
         if cache.skinnedGeometries[key] == nil {
             cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
-            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
+            Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
             if let geometry = geometry {
-                Task.detached(priority: .high) {
-                    let backend = await self.geometryBackend(from: geometry, skin: skin)
-                    Task { @MainActor in
-                        if let cache = self.cache.skinnedGeometries[key] {
-                            cache.geometryBackend = backend
-                            cache.skinJoints = skin.joints
-                            cache.state = .ready
-                        }else{
-                            Log.warn("Resource \"(Generated SkinnedGeometry)\" was deallocated before being loaded.")
-                        }
-                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
-                    }
+                if let cache = self.cache.skinnedGeometries[key] {
+                    cache.geometryBackend = ResourceManager.geometryBackend(from: geometry, skin: skin)
+                    cache.skinJoints = skin.joints
+                    cache.state = .ready
+                }else{
+                    Log.warn("Resource \"(Generated SkinnedGeometry)\" was deallocated before being loaded.")
                 }
+                Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
             }
         }
         return key
@@ -227,17 +225,17 @@ extension ResourceManager {
     func reloadSkinnedGeometryIfNeeded(key: Cache.SkinnedGeometryKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
+        guard self.skinnedGeometryNeedsReload(key: key) else { return }
+        let cache = self.cache
         Task.detached {
-            guard self.skinnedGeometryNeedsReload(key: key) else { return }
             let geometry = try await RawGeometry(
                 path: key.requestedPath,
                 options: key.geometryOptions
             )
             let skin = try await Skin(path: key.requestedPath, options: key.skinOptions)
-            let backend = await self.geometryBackend(from: geometry, skin: skin)
             Task { @MainActor in
-                if let cache = self.cache.skinnedGeometries[key] {
-                    cache.geometryBackend = backend
+                if let cache = cache.skinnedGeometries[key] {
+                    cache.geometryBackend = ResourceManager.geometryBackend(from: geometry, skin: skin)
                     cache.skinJoints = skin.joints
                 }else{
                     Log.warn("Resource \"\(key.requestedPath)\" was deallocated before being re-loaded.")
@@ -268,22 +266,22 @@ extension ResourceManager {
         #endif
     }
 
-    func geometryBackend(from raw: RawGeometry, skin: Skin) async -> any GeometryBackend {
+    static func geometryBackend(from raw: RawGeometry, skin: Skin) -> any GeometryBackend {
         #if GATEENGINE_FORCE_OPNEGL_APPLE
-        return await OpenGLGeometry(geometry: raw, skin: skin)
+        return OpenGLGeometry(geometry: raw, skin: skin)
         #elseif canImport(MetalKit)
         #if canImport(OpenGL_GateEngine)
-        if await MetalRenderer.isSupported == false {
-            return await OpenGLGeometry(geometry: raw, skin: skin)
+        if MetalRenderer.isSupported == false {
+            return OpenGLGeometry(geometry: raw, skin: skin)
         }
         #endif
-        return await MetalGeometry(geometry: raw, skin: skin)
+        return MetalGeometry(geometry: raw, skin: skin)
         #elseif canImport(WebGL2)
-        return await WebGL2Geometry(geometry: raw, skin: skin)
+        return WebGL2Geometry(geometry: raw, skin: skin)
         #elseif canImport(WinSDK)
-        return await DX12Geometry(geometry: raw, skin: skin)
+        return DX12Geometry(geometry: raw, skin: skin)
         #elseif canImport(OpenGL_GateEngine)
-        return await OpenGLGeometry(geometry: raw, skin: skin)
+        return OpenGLGeometry(geometry: raw, skin: skin)
         #else
         #error("Not implemented")
         #endif

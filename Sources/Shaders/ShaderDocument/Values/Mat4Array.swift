@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import GameMath
+public import GameMath
 
 public final class Mat4Array: ShaderValue {
     public let valueRepresentation: ValueRepresentation

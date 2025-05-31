@@ -10,7 +10,6 @@ import GameMath
 /// PlatformSystems are private and reserved for internal use by the engine.
 @MainActor internal class PlatformSystem {
     private var didSetup = false
-    private(set) lazy var backgroundTask = BackgroundTask(system: self)
 
     @usableFromInline
     internal weak var _context: ECSContext! = nil
@@ -101,38 +100,6 @@ extension PlatformSystem {
     enum Phase: UInt {
         case preUpdating
         case postDeferred
-    }
-}
-
-extension PlatformSystem {
-    final class BackgroundTask {
-        unowned let system: PlatformSystem
-        init(system: PlatformSystem) {
-            self.system = system
-        }
-        public enum State {
-            ///Not running and never finished
-            case initial
-            case running
-            case finished
-        }
-        public private(set) var state: State = .initial
-        @inlinable
-        nonisolated final public var isRunning: Bool {
-            return state == .running
-        }
-
-        @MainActor public func run(_ block: @escaping () async -> Void) {
-            assert(self.isRunning == false, "A Task cannot be run when it's running.")
-            self.state = .running
-            Task.detached(priority: .low) {
-                await block()
-                Task { @MainActor in
-                    //Update the state between simulation ticks
-                    self.state = .finished
-                }
-            }
-        }
     }
 }
 

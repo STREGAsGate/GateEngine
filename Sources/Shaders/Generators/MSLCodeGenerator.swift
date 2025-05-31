@@ -7,6 +7,7 @@
 #if DEBUG || canImport(MetalKit)
 
 import Collections
+import Foundation
 
 package final class MSLCodeGenerator: CodeGenerator {
     override func type(for valueType: ValueType) -> String {

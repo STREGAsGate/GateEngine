@@ -265,7 +265,7 @@ public extension Matrix3x3 {
 extension Matrix3x3: Equatable {}
 extension Matrix3x3: Hashable {}
 extension Matrix3x3: Codable {
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(a)
         try container.encode(b)
@@ -278,7 +278,7 @@ extension Matrix3x3: Codable {
         try container.encode(k)
     }
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         var container = try decoder.unkeyedContainer()
         self.a = try container.decode(Float.self)
         self.b = try container.decode(Float.self)

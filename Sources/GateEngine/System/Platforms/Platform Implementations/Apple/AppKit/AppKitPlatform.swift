@@ -149,8 +149,8 @@ extension AppKitPlatform {
 
 private class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Game.shared.resourceManager.addTextureImporter(ApplePlatformImageImporter.self, atEnd: true)
-        Game.shared.resourceManager.addGeometryImporter(
+        Game.unsafeShared.resourceManager.addTextureImporter(ApplePlatformImageImporter.self, atEnd: true)
+        Game.unsafeShared.resourceManager.addGeometryImporter(
             ApplePlatformModelImporter.self,
             atEnd: true
         )

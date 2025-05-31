@@ -164,7 +164,7 @@ extension GameDelegate {
         let delegate = Self()
         Game._shared = Game(delegate: delegate)
         if try await delegate.shouldFinishLaunching(game: Game.shared) == true {
-            Game.shared.platform.main()
+            Platform.current.main()
         }
     }
 }

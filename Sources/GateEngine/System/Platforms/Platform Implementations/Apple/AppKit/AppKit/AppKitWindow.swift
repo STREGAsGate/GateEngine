@@ -210,37 +210,6 @@ final class AppKitWindow: WindowBacking {
         }
     }
 
-    lazy var displayLink: CVDisplayLink = {
-        var displayLink: CVDisplayLink?
-        // Create a display link capable of being used with all active displays
-        CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
-
-        // swiftlint:disable:next function_parameter_count
-        func displayLinkOutputCallback(_ displayLink: CVDisplayLink,
-                                       _ inNow: UnsafePointer<CVTimeStamp>,
-                                       _ inOutputTime: UnsafePointer<CVTimeStamp>,
-                                       _ flagsIn: CVOptionFlags,
-                                       _ flagsOut: UnsafeMutablePointer<CVOptionFlags>,
-                                       _ displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn {
-            Task(priority: .high) { @MainActor in
-                let appKitWindow = unsafeBitCast(displayLinkContext, to: AppKitWindow.self)
-                if let view = appKitWindow.nsWindowController.window?.contentViewController?.view {
-                    view.needsDisplay = true
-                }
-            }
-            return kCVReturnSuccess
-        }
-
-        // Set the renderer output callback function
-        CVDisplayLinkSetOutputCallback(
-            displayLink!,
-            displayLinkOutputCallback,
-            UnsafeMutableRawPointer(mutating: Unmanaged.passUnretained(self).toOpaque())
-        )
-
-        return displayLink!
-    }()
-
     @MainActor func show() {
         self.restoreSizeAndPosition(ofWindow: self.nsWindowController.window!)
         if UserDefaults.standard.bool(forKey: "\(window.identifier)-WasFullScreen") {
@@ -253,18 +222,11 @@ final class AppKitWindow: WindowBacking {
             self.nsWindowController.window?.makeMain()
         }
         nsWindowController.showWindow(nil)
-        
-        if CVDisplayLinkIsRunning(self.displayLink) == false {
-            CVDisplayLinkStart(self.displayLink)
-        }
 
         self.state = .shown
     }
 
     @MainActor public func close() {
-        if CVDisplayLinkIsRunning(self.displayLink) {
-            CVDisplayLinkStop(self.displayLink)
-        }
         if window?.state != .closing && window?.state != .destroyed {
             nsWindowController.close()
         }
@@ -283,14 +245,6 @@ final class AppKitWindow: WindowBacking {
         return MetalRenderTarget(windowBacking: self)
         #endif
     }
-
-#if swift(>=6.1)
-    isolated deinit {
-        if CVDisplayLinkIsRunning(self.displayLink) {
-            CVDisplayLinkStop(self.displayLink)
-        }
-    }
-#endif
 }
 
 extension AppKitWindow {

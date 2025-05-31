@@ -203,10 +203,8 @@ extension AudioSystem {
         func update(_ deltaTime: Float) {
             guard buffer.state == .ready else { return }
             if accumulatedTime == 0 {
-                Task {
-                    track.setBuffer(buffer)
-                    track.play()
-                }
+                track.setBuffer(buffer)
+                track.play()
             }
             self.processAction(deltaTime: deltaTime)
             self.accumulatedTime += Double(deltaTime)

@@ -8,7 +8,7 @@
 /// Geometry represents a mangaed vertex buffer object.
 /// It's contents are stored within GPU accessible memory and this object represents a reference to that memory.
 /// When this object deinitializes it's contents will also be removed from GPU memory.
-public class MutableGeometry: Geometry {
+public final class MutableGeometry: Geometry {
     public var rawGeometry: RawGeometry? = nil {
         didSet {
             load()
@@ -17,7 +17,7 @@ public class MutableGeometry: Geometry {
 
     public init(rawGeometry: RawGeometry? = nil) {
         self.rawGeometry = rawGeometry
-        super.init(optionalRawGeometry: rawGeometry, immediate: true)
+        super.init(optionalRawGeometry: rawGeometry)
     }
 
     private func load() {        
@@ -25,14 +25,10 @@ public class MutableGeometry: Geometry {
             return
         }
         if let rawGeometry, rawGeometry.indices.isEmpty == false {
-            Task.detached {
-                cache.geometryBackend = await Game.shared.resourceManager.geometryBackend(
-                    from: rawGeometry
-                )
-                Task { @MainActor in
-                    cache.state = .ready
-                }
-            }
+            cache.geometryBackend = ResourceManager.geometryBackend(
+                from: rawGeometry
+            )
+            cache.state = .ready
         }else{
             cache.geometryBackend = nil
             cache.state = .pending

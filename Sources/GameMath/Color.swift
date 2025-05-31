@@ -9,7 +9,7 @@
 import class Foundation.Scanner
 #endif
 #if canImport(CoreGraphics)
-import CoreGraphics
+public import CoreGraphics
 #endif
 #if canImport(AppKit)
 import AppKit
@@ -290,8 +290,8 @@ public extension Color {
         public static var text: Color { Color(NSColor.textColor.cgColor) }
         public static var textBackground: Color { Color(NSColor.textBackgroundColor.cgColor) }
         #elseif canImport(UIKit) /* iOS, tvOS */
-        public static var text: Color { Color(UIColor.textColor.cgColor) }
-        public static var textBackground: Color { Color(UIColor.textBackgroundColor.cgColor) }
+        public static var text: Color { Color(UIColor.label.cgColor) }
+        public static var textBackground: Color { Color(UIColor.systemBackground.cgColor) }
         #else /* Fallbacks allowing cross platform code to functions */
         public static var text: Color { .black }
         public static var textBackground: Color { .white }
@@ -308,12 +308,12 @@ extension Color: Comparable {
 }
 extension Color: Hashable {}
 extension Color: Codable {
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([red, green, blue, alpha])
     }
 
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let values = try container.decode(Array<Float>.self)
         self.init(values[0], values[1], values[2], values[3])

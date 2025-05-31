@@ -152,12 +152,16 @@ public enum CacheHint {
 
 public final class ResourceManager {
     internal var importers: Importers = Importers()
-    internal let cache: Cache = Cache()
+    @MainActor internal let cache: Cache = Cache()
 
     let rawCacheIDGenerator = IDGenerator<UInt>()
 
-    var accumulatedSeconds: Float = 0
+    var accumulatedSeconds1: Float = 0
+    var accumulatedSeconds2: Float = 0
     
+    /// Automatically reloads cached resources when the source path file changes
+    /// - note: This feature is designed for development use and is not recommended for use in a release build
+    public var enableHotReloading: Bool = false
 
     @MainActor public var currentlyLoading: [String] {
         return paths.map({
@@ -177,16 +181,25 @@ public final class ResourceManager {
     }
 
     let game: Game
-    init(game: Game) {
+    @MainActor init(game: Game) {
         self.game = game
     }
 
+    @MainActor
     func update(withTimePassed deltaTime: Float) {
-        accumulatedSeconds += deltaTime
-        if accumulatedSeconds > 60 {
-            accumulatedSeconds -= 60
-            incrementMinutes()
-            importers.clean()
+        self.accumulatedSeconds1 += deltaTime
+        if self.accumulatedSeconds1 > 60 {
+            self.accumulatedSeconds1 -= 60
+            self.incrementMinutes()
+            self.importers.clean()
+        }
+        
+        if self.enableHotReloading {
+            self.accumulatedSeconds2 += deltaTime
+            if self.accumulatedSeconds2 > 5 {
+                self.accumulatedSeconds2 -= 5
+                self.performHotReloading()
+            }
         }
     }
     enum Phase {
@@ -195,6 +208,7 @@ public final class ResourceManager {
         case skinnedGeometry
         case skeleton
     }
+    @MainActor
     func incrementMinutes() {
         for key in cache.textures.keys {
             guard let cache = cache.textures[key] else { continue }
@@ -322,10 +336,41 @@ public final class ResourceManager {
             }
         }
     }
+    
+    @MainActor
+    func performHotReloading() {
+        for key in cache.textures.keys {
+            self.reloadTextureIfNeeded(key: key)
+        }
+
+        for key in cache.geometries.keys {
+            self.reloadGeometryIfNeeded(key: key)
+        }
+//        
+//        for key in cache.skinnedGeometries.keys {
+//            self.reloadSkinnedGeometryIfNeeded(key: key)
+//        }
+//        
+//        for key in cache.skeletons.keys {
+//            self.reloadSkeletonIfNeeded(key: key)
+//        }
+//        
+//        for key in cache.skeletalAnimations.keys {
+//            self.reloadSkeletalAniamtionIfNeeded(key: key)
+//        }
+//        
+//        for key in cache.tileSets.keys {
+//            self.reloadTileSetIfNeeded(key: key)
+//        }
+//        
+//        for key in cache.tileMaps.keys {
+//            self.reloadTileMapIfNeeded(key: key)
+//        }
+    }
 }
 
 extension ResourceManager {
-    @usableFromInline
+    @usableFromInline @MainActor
     final class Cache {
         var textures: [TextureKey: TextureCache] = [:]
         var geometries: [GeometryKey: GeometryCache] = [:]

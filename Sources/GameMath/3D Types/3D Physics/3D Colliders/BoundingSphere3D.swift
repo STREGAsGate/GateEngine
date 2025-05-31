@@ -110,7 +110,7 @@ public struct BoundingSphere3D: Collider3D, Sendable {
     }
     
     @inlinable
-    public func interpenetration(comparing collider: Collider3D) -> Interpenetration3D? {
+    public func interpenetration(comparing collider: any Collider3D) -> Interpenetration3D? {
         switch collider {
         case let collider as BoundingSphere3D:
             return self.interpenetration(comparing: collider)

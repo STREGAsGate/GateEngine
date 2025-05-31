@@ -51,7 +51,7 @@ public final class TiledTMJImporter: TileMapImporter {
     
     public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         do {
-            let data = try await Game.shared.platform.loadResource(from: path)
+            let data = try await Platform.current.loadResource(from: path)
             self.file = try JSONDecoder().decode(TMJFile.self, from: data)
         }catch{
             throw GateEngineError(error)

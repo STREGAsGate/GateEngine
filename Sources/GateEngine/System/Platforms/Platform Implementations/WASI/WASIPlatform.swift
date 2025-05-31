@@ -332,7 +332,7 @@ extension WASIPlatform {
         Log.info(
             "Notice: Browser resource errors are expected and normal. Ignore them. Only rely on the logs starting with \"[GateEngine]\"."
         )
-        Log.info("Detected Browser As:", Game.shared.platform.browser)
+        Log.info("Detected Browser As:", Platform.current.browser)
         Task(priority: .high) { @MainActor in
             await Game.shared.didFinishLaunching()
             Game.shared.insertSystem(WASIUserActivationRenderingSystem.self)

@@ -14,7 +14,7 @@ struct SDL2DatabaseError: Error, CustomStringConvertible {
     }
 }
 
-public struct SDL2ControllerGUID: Equatable, Hashable, CustomStringConvertible {
+public struct SDL2ControllerGUID: Equatable, Hashable, CustomStringConvertible, Sendable {
     public let guid: String
     public let vendor: Int
     public let product: Int
@@ -97,7 +97,7 @@ public struct SDL2ControllerGUID: Equatable, Hashable, CustomStringConvertible {
     }
 }
 
-struct SDL2ControllerMap {
+struct SDL2ControllerMap: Sendable {
     var id: SDL2ControllerGUID
     let name: String?
     let elements: [Element: Value]
@@ -230,7 +230,7 @@ struct SDL2ControllerMap {
     }
 }
 
-final class SDL2Database {
+struct SDL2Database: Sendable {
     var controllers: [SDL2ControllerGUID: SDL2ControllerMap] = [:]
 
     init() throws {
@@ -291,19 +291,6 @@ final class SDL2Database {
         #endif
 
         self.controllers = controllers
-    }
-    //
-    //    static let shared: SDL2Database? = {
-    //        do {
-    //            return try SDL2Database()
-    //        }catch{
-    //            print(error)
-    //            return nil
-    //        }
-    //    }()
-
-    deinit {
-
     }
 }
 #endif

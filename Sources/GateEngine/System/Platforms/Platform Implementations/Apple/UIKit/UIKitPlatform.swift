@@ -237,9 +237,9 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                 windowScene.title = window.title
                 persistSessionIdentifier(session, forWindow: window)
             } else {  // Platform requested a window, probably from a user action
-                Game.shared.platform.applicationRequestedWindow = true
+                Platform.current.applicationRequestedWindow = true
                 if session.role == .windowExternalDisplay {
-                    Game.shared.platform.overrideSupportsMultipleWindows = true
+                    Platform.current.overrideSupportsMultipleWindows = true
                     if let window = try Game.shared.delegate.createWindowForExternalScreen(
                         using: Game.shared.windowManager
                     ) {
@@ -248,9 +248,9 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                         windowScene.title = window.title
                         persistSessionIdentifier(session, forWindow: window)
                     }
-                    Game.shared.platform.overrideSupportsMultipleWindows = nil
+                    Platform.current.overrideSupportsMultipleWindows = nil
                 } else {
-                    Game.shared.platform.overrideSupportsMultipleWindows = true
+                    Platform.current.overrideSupportsMultipleWindows = true
                     if let window = try Game.shared.delegate.createUserRequestedWindow(
                         using: Game.shared.windowManager
                     ) {
@@ -261,7 +261,7 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                     } else {
                         UIApplication.shared.requestSceneSessionDestruction(session, options: nil)
                     }
-                    Game.shared.platform.overrideSupportsMultipleWindows = nil
+                    Platform.current.overrideSupportsMultipleWindows = nil
                 }
             }
             Game.shared.attributes.remove(.renderingIsPermitted)

@@ -60,11 +60,11 @@ public final class Physics3DComponent: Component {
         }
     }
 
-    static var universalGravity: Size3 = Size3(0, -9.807 * 2, 0)
+    static let standardGravity: Size3 = Size3(0, -9.807 * 2, 0)
     public var gravity: Size3? = nil
 
     public func effectiveGravity() -> Size3 {
-        return self.gravity ?? Self.universalGravity
+        return self.gravity ?? Self.standardGravity
     }
 
     public var shouldApplyGravity: Bool = true

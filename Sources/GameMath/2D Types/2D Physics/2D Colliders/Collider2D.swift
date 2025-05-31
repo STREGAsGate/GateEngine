@@ -16,7 +16,7 @@ public protocol Collider2D: Codable, Sendable {
     mutating func update(sizeAndOffsetUsingTransform transform: Transform2)
     
     func closestSurfacePoint(from point: Position2) -> Position2
-    func interpenetration(comparing collider: Collider2D) -> Interpenetration2D?
+    func interpenetration(comparing collider: any Collider2D) -> Interpenetration2D?
     
     func surfacePoint(for ray: Ray2D) -> Position2?
     func surfaceNormal(facing point: Position2) -> Direction2

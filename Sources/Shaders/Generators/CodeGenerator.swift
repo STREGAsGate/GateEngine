@@ -5,6 +5,8 @@
  * http://stregasgate.com
  */
 
+import GameMath
+
 package class CodeGenerator {
     struct Scope {
         var nextVarIndex: Int

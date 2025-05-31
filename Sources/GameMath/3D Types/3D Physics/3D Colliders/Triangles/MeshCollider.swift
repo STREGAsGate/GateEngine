@@ -78,7 +78,7 @@ public final class MeshCollider: Collider3D {
         return closestTriangle(to: point).closestSurfacePoint(from: point)
     }
     
-    public func interpenetration(comparing collider: Collider3D) -> Interpenetration3D? {
+    public func interpenetration(comparing collider: any Collider3D) -> Interpenetration3D? {
         return triangles().compactMap({$0.interpenetration(comparing: collider)}).sorted(by: {$0.isColiding && $1.isColiding && $0.depth < $1.depth}).first
     }
     

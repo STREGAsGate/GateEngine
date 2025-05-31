@@ -430,7 +430,7 @@ public struct WindowOptions: OptionSet {
     public var deltaTime: Double = 0
 
     internal func vSyncCalled() {
-        let now: Double = Game.shared.platform.systemTime()
+        let now: Double = Platform.current.systemTime()
         self.deltaTime = now - previousTime
         self.previousTime = now
         // Positive time change and minimum of 10 fps

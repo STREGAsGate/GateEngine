@@ -67,7 +67,7 @@ private func getBakedQuad(
     internal var characterDatas: [Font.Key: [CharData]] = [:]
 
     init(regular: String) async throws {
-        let regular = try await Game.shared.platform.loadResource(from: regular)
+        let regular = try await Platform.current.loadResource(from: regular)
         assert(regular.isEmpty == false, "ttf file cannot be empty.")
         let fontData: [Font.Style: Data] = [.regular: regular]
         //        fontData[.bold] = bold

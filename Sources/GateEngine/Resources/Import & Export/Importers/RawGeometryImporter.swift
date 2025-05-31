@@ -25,7 +25,7 @@ public final class RawGeometryImporter: GeometryImporter {
     }
     public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         do {
-            self.data = try await Game.shared.platform.loadResource(from: path)
+            self.data = try await Platform.current.loadResource(from: path)
         }catch{
             throw GateEngineError(error)
         }

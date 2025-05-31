@@ -26,7 +26,7 @@ import GameMath
     
     public var style: Style = .arrow {
         didSet {
-            Game.shared.platform.setCursorStyle(style)
+            Platform.current.setCursorStyle(style)
         }
     }
 
