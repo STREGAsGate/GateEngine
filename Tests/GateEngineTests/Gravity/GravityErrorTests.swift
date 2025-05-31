@@ -13,20 +13,26 @@ import XCTest
 final class GravityErrorTests: GateEngineXCTestCase {
     var gravity: Gravity! = nil
     var randomValue: Int = 0
+    
     override func setUp() {
-        gravity = Gravity()
-        randomValue = Int.random(in: -10000 ..< 10000)
+        self.gravity = Gravity()
+        self.randomValue = Int.random(in: -10000 ..< 10000)
     }
 
     // Make sure syntax errors throw
-    func testGravitySyntaxError() throws {
-        XCTAssertThrowsError(try gravity.compile(source: "vir myVar = 10; func main() {}"))
+    func testGravitySyntaxError() async throws {
+        do {
+            try await gravity.compile(source: "vir myVar = 10; func main() {}")
+            XCTFail()
+        }catch{
+            XCTAssertTrue(true)
+        }
     }
 
     // Make sure runtime errors throw
-    func testGravityRuntimeError() throws {
+    func testGravityRuntimeError() async throws {
         // runMain when there is no main
-        try gravity.compile(source: "var myVar = 10; func myFunc() {return 1}")
+        try await gravity.compile(source: "var myVar = 10; func myFunc() {return 1}")
         XCTAssertThrowsError(try gravity.runMain())
     }
 
@@ -36,10 +42,10 @@ final class GravityErrorTests: GateEngineXCTestCase {
     }
 
     // Is this legal? No idea
-    func testCompilingMultipleTimes() throws {
-        try gravity.compile(source: "var myVar = 10; func main() {return 100}")
+    func testCompilingMultipleTimes() async throws {
+        try await gravity.compile(source: "var myVar = 10; func main() {return 100}")
         XCTAssertEqual(try gravity.runMain(), 100)
-        try gravity.compile(source: "func main() {return 101}")
+        try await gravity.compile(source: "func main() {return 101}")
         XCTAssertEqual(try gravity.runMain(), 101)
         XCTAssertEqual(gravity.getVar("myVar"), 10)
     }

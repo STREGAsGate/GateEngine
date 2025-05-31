@@ -6,7 +6,7 @@
  */
 #if !DISABLE_GRAVITY_TESTS
 
-import XCTest
+public import XCTest
 @testable import GateEngine
 @testable import Gravity
 
@@ -18,7 +18,7 @@ open class GravityXCTestCase: XCTestCase {
     }
     
     func runGravity(at path: String) async {
-        let gravity = Gravity()
+        let gravity = await Gravity()
 
         do {
             try await gravity.compile(file: path)

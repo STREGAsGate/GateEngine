@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import XCTest
+public import XCTest
 
 @testable import GateEngine
 @testable import Gravity
