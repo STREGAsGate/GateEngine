@@ -7,10 +7,10 @@
 
 #if GameMathUseSIMD
 #if canImport(simd)
-import simd
+public import simd
 #endif
 #if canImport(Accelerate)
-import Accelerate
+public import Accelerate
 #endif
 
 public protocol Vector4: SIMD, Equatable, Sendable, ExpressibleByFloatLiteral where FloatLiteralType == Float, Scalar == Float, MaskStorage == SIMD4<Float>.MaskStorage, ArrayLiteralElement == Scalar {

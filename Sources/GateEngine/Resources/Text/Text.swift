@@ -36,7 +36,7 @@ public final class Text {
         return _geometry
     }
     private var _size: Size2 = .zero
-    public var size: Size2 {
+    @MainActor public var size: Size2 {
         if needsUpdateGeometry, font.state == .ready {
             needsUpdateGeometry = false
             Task { @MainActor in

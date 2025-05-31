@@ -667,7 +667,7 @@ extension Matrix4x4 {
 //MARK: - Operators
 #if GameMathUseSIMD
 #if canImport(simd)
-import simd
+public import simd
 #endif
 public extension Matrix4x4 {
     @inlinable

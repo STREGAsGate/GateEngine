@@ -6,7 +6,7 @@
  */
 
 #if GameMathUseSIMD && canImport(simd)
-import simd
+public import simd
 #endif
 
 public struct InterpolationOptions: OptionSet, Sendable {

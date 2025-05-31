@@ -6,11 +6,11 @@
  */
 
 #if GameMathUseSIMD && canImport(simd)
-import simd
+public import simd
 #endif
 
 #if GameMathUseSIMD && canImport(Accelerate)
-import Accelerate
+public import Accelerate
 #endif
 
 #if GameMathUseSIMD
