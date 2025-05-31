@@ -643,7 +643,7 @@ extension View {
 }
 
 extension View {
-    public struct CornerMask: OptionSet {
+    public struct CornerMask: OptionSet, Sendable {
         public var rawValue: UInt
         
         public static let topLeft: CornerMask = CornerMask(rawValue: 1 << 0)

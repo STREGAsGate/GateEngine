@@ -7,7 +7,7 @@
 
 import GameMath
 
-public enum RenderingAPI {
+public enum RenderingAPI: Sendable {
     case headless
     case metal
     case d3d12
@@ -15,7 +15,7 @@ public enum RenderingAPI {
     case openGLES
     case webGL2
     
-    public enum Origin {
+    public enum Origin: Sendable {
         case topLeft
         case bottomLeft
     }

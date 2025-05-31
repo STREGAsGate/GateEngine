@@ -14,7 +14,7 @@ public enum WindowStyle {
     case minimalSystemDecorations
 }
 
-public struct WindowOptions: OptionSet {
+public struct WindowOptions: OptionSet, Sendable {
     public typealias RawValue = UInt
     public var rawValue: RawValue
     public init(rawValue: RawValue) {
@@ -442,11 +442,11 @@ public struct WindowOptions: OptionSet {
         )
     }
 
-    @usableFromInline @inlinable
+    @inlinable
     func setMouseHidden(_ hidden: Bool) {
         self.windowBacking.setMouseHidden(hidden)
     }
-    @usableFromInline @inlinable
+    @inlinable
     func setMousePosition(_ position: Position2) {
         let windowFrame = Rect(size: self.size)
         let clampedToWindowFrame = position.clamped(within: windowFrame)

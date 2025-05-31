@@ -7,7 +7,7 @@
 #if canImport(OpenGL_GateEngine)
 import OpenGL_GateEngine
 
-class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
+final class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
     let primitive: DrawCommand.Flags.Primitive
     let attributes: ContiguousArray<GeometryAttribute>
     let buffers: [GLuint]

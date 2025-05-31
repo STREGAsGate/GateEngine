@@ -98,7 +98,6 @@ extension Entity {
     }
     
     @inlinable
-    @available(*, deprecated, message: "Accessing a ResourceConstrainedComponent directly is never safe. Use Entity.component(ofType:) instead.", renamed: "component(ofType:)")
     public subscript<T: ResourceConstrainedComponent>(_ type: T.Type) -> T {
         get {
             let componentID = type.componentID.value

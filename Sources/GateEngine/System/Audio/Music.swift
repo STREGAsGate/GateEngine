@@ -8,14 +8,14 @@
 import GameMath
 
 extension Music {
-    public enum Kind: Hashable {
+    public enum Kind: Hashable, Sendable {
         /// A foreground track
         case soundTrack
         /// A background track not requiring user attention.
         case ambiance
     }
 }
-public struct Music {
+public struct Music: Sendable {
     let path: String
     public init(path: String) {
         self.path = path
@@ -34,7 +34,7 @@ public struct Music {
             #if os(Windows) 
                 return
             #endif
-            Game.shared.system(ofType: AudioSystem.self).queueMusic(music, as: kind, handle: handle)
+            Game.unsafeShared.system(ofType: AudioSystem.self).queueMusic(music, as: kind, handle: handle)
         }
         return handle
     }

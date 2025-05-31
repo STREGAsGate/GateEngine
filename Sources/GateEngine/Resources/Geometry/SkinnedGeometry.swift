@@ -9,6 +9,7 @@
 import Foundation
 #endif
 
+@MainActor
 internal protocol SkinnedGeometryBackend: AnyObject {
     init(geometry: RawGeometry, skin: Skin)
 }

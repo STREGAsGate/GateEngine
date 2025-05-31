@@ -177,9 +177,7 @@ extension OctreeComponent {
 
         self.cleanEmptyNodes()
         
-        Task {@MainActor in
-            self.didLoad = true
-        }
+        self.didLoad = true
     }
 
     private func setup(size: Size3, offset: Position3, position: Position3) {

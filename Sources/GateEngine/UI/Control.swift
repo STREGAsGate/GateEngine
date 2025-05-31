@@ -10,7 +10,7 @@ open class Control: View {
         return true
     }
     
-    public struct Event: OptionSet, Hashable {
+    public struct Event: OptionSet, Hashable, Sendable {
         public var rawValue: RawValue
         
         public static let changed = Event(rawValue: 1 << 0)

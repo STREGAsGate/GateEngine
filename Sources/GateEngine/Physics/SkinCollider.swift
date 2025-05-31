@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public final class SkinCollider: Collider3D {
+public final class SkinCollider: @preconcurrency Collider3D {
     var transform: Transform3 = .default {
         didSet {
             if transform != oldValue {
@@ -52,9 +52,7 @@ public final class SkinCollider: Collider3D {
         }
         for vertexIndex in geometry.indices.indices {
             let index = Int(geometry.indices[vertexIndex])
-            let start3 = index * 3
             let start2 = index * 2
-            let start4 = index * 4
 
             for uvIndex in 0 ..< geometry.uvSets.count {
                 let uvSet = geometry.uvSets[uvIndex]

@@ -21,16 +21,16 @@ import Shaders
 }
 
 @usableFromInline
-internal struct GeometryAttribute: Hashable {
+internal struct GeometryAttribute: Hashable, Sendable {
     let type: AttributeType
     let componentLength: Int
     let shaderAttribute: InputAttribute
-    enum AttributeType {
+    enum AttributeType: Hashable, Sendable {
         case float
         case uInt16
         case uInt32
     }
-    enum InputAttribute: Hashable {
+    enum InputAttribute: Hashable, Sendable {
         case position
         case texCoord0
         case texCoord1

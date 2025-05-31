@@ -128,7 +128,7 @@ extension Gravity {
 
         self.sourceCodeBaseURL = baseURL
         self.loadedFilesByID[0] = url
-        try self.compile(source: sourceCode, addDebug: addDebug)
+        try await self.compile(source: sourceCode, addDebug: addDebug)
         self.clearFileIncludeSourceCode()
     }
 }

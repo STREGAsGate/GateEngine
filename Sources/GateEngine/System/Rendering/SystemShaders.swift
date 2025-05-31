@@ -7,6 +7,7 @@
 
 public import Shaders
 
+@MainActor
 extension VertexShader {
     public static let positionOnly: VertexShader = {
         let vsh = VertexShader()
@@ -83,6 +84,7 @@ extension VertexShader {
     }()
 }
 
+@MainActor
 extension FragmentShader {
     /// Uses material.channel(0).texture to shade objects
     public static let textureSample: FragmentShader = {

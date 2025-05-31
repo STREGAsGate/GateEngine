@@ -53,11 +53,11 @@ public struct ECSSystemMacro: MemberMacro, ExtensionMacro {
     ) throws -> [SwiftSyntax.ExtensionDeclSyntax] {
         guard protocols.contains(where: {$0 == "GateEngine.System"}) == false else { return [] }
         
-        guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
+        guard let /*classDecl*/_ = declaration.as(ClassDeclSyntax.self) else {
             throw SystemMacroError.notClass
         }
         
-        let className = classDecl.name.trimmed
+//        let className = classDecl.name.trimmed
 
 //        var protocols: [ExtensionDeclSyntax] = [try ProtocolDeclSyntax("GateEngine.System")] + protocols
 //        return protocols

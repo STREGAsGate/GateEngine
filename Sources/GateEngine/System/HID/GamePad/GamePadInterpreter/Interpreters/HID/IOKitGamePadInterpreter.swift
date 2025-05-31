@@ -300,19 +300,22 @@ private func gamepadWasRemoved(
     inSender: UnsafeMutableRawPointer?,
     device: IOHIDDevice
 ) {
+    let id = ObjectIdentifier(device)
     Task { @MainActor in
-        let interpreter =
-            Game.shared.hid.gamePads.interpreters.filter({ $0 is IOKitGamePadInterpreter }).first!
+        let interpreter = Game.unsafeShared.hid.gamePads.interpreters.filter({ $0 is IOKitGamePadInterpreter }).first!
             as! IOKitGamePadInterpreter
         if let controller = interpreter.hid.gamePads.all.first(where: {
-            ($0.identifier as? HIDController)?.device === device
+            if let device = ($0.identifier as? HIDController)?.device {
+                return ObjectIdentifier(device) == id
+            }
+            return false
         }) {
             interpreter.hid.gamePads.removedDisconnectedGamePad(controller)
         }
     }
 }
 
-private var ignoredElements: Set<IOHIDElement> = []
+nonisolated(unsafe) private var ignoredElements: Set<IOHIDElement> = []
 private let startIgnoring: Date = Date()
 private func gamepadAction(
     inContext: UnsafeMutableRawPointer?,

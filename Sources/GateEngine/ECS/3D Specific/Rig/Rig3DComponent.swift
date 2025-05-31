@@ -341,8 +341,9 @@ public class RigAttachmentComponent: Component {
 }
 
 extension Entity {
+    @MainActor
     @inlinable
-    public var rig3DComponent: Rig3DComponent {
-        return self[Rig3DComponent.self]
+    public var rig3DComponent: Rig3DComponent? {
+        return self.component(ofType: Rig3DComponent.self)
     }
 }

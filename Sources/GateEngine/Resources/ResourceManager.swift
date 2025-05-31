@@ -180,9 +180,9 @@ public final class ResourceManager {
         paths.remove(at: index)
     }
 
-    let game: Game
-    @MainActor init(game: Game) {
-        self.game = game
+
+    nonisolated init() {
+        
     }
 
     @MainActor
@@ -392,6 +392,10 @@ extension ResourceManager {
         }
         struct AudioBufferCache {
             weak var audioBuffer: (any AudioBufferBackend)? = nil
+        }
+        
+        nonisolated init() {
+            
         }
     }
 }

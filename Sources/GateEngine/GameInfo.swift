@@ -7,7 +7,7 @@
 
 public extension Game {
     struct Info: Sendable {
-        public let identifier: String = Game.unsafeShared.delegate.resolvedGameIdentifier()
+        public let identifier: String
         
         public var executableName: String {
             if let executableName = executableURL?.lastPathComponent {
@@ -28,5 +28,9 @@ public extension Game {
             }
             return nil
         }()
+        
+        init(gameDelegate delegate: any GameDelegate) {
+            self.identifier = delegate.resolvedGameIdentifier()
+        }
     }
 }

@@ -203,7 +203,7 @@ public extension DrawCommand {
         }
         public var stencilWrite: StencilWrite
         
-        public enum Primitive: Hashable {
+        public enum Primitive: Hashable, Sendable {
             case point
             case line
             case lineStrip

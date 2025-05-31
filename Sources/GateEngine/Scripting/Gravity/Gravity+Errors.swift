@@ -7,7 +7,7 @@
 
 public import Gravity
 
-internal func errorCallback(
+nonisolated internal func errorCallback(
     vm: OpaquePointer?,
     errorType: error_type_t,
     description: UnsafePointer<CChar>?,

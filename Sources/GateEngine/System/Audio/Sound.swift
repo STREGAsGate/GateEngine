@@ -8,7 +8,7 @@
 import GameMath
 
 extension Sound {
-    public enum Kind: Hashable {
+    public enum Kind: Hashable, Sendable {
         /// A sound that is clearly emitted from an object.
         case soundEffect
         /// A background sound not requiring user attention.
@@ -17,7 +17,7 @@ extension Sound {
         case audibleSpeech
     }
 }
-public struct Sound {
+public struct Sound: Sendable {
     let path: String
     public init(path: String) {
         self.path = path
@@ -107,7 +107,7 @@ extension Sound {
             #if os(Windows) 
                 return
             #endif
-            Game.shared.system(ofType: AudioSystem.self).queueSound(
+            Game.unsafeShared.system(ofType: AudioSystem.self).queueSound(
                 sound,
                 as: kind,
                 entity: entity,

@@ -269,6 +269,7 @@ let package = Package(
                     path: "Dependencies/miniz",
                     cSettings: [
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
+                        .unsafeFlags(["-Wno-conversion"]),
                     ]),
             
             // libspng
@@ -281,6 +282,7 @@ let package = Package(
                         // When public, the miniz.h header crashes Clang on Windows since Swift 5.8.0
                         .headerSearchPath("src/"),
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
+                        .unsafeFlags(["-Wno-conversion"]),
                     ]),
             
             // TrueType
@@ -290,6 +292,7 @@ let package = Package(
                         .define("STB_TRUETYPE_IMPLEMENTATION"), .define("STB_RECT_PACK_IMPLEMENTATION"),
                         .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows])),
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])), // Silence warnings
+                        .unsafeFlags(["-Wno-conversion"]),
                     ]),
             
             // Gravity

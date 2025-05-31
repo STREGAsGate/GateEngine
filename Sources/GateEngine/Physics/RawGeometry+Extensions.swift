@@ -18,7 +18,6 @@ extension RawGeometry {
             let index = Int(indices[vertexIndex])
             let start3 = index * 3
             let start2 = index * 2
-            let start4 = index * 4
 
             for uvIndex in 0 ..< uvSets.count {
                 let uvSet = uvSets[uvIndex]
