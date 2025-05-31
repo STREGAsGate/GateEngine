@@ -81,21 +81,6 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         self.radius = _radius
     }
     
-    @available(*, unavailable  /*0.0.8*/, message: "Use self.center = newValue instead.")
-    mutating public func update(center: Position3) {
-        self.center = center
-    }
-    @available(*, unavailable  /*0.0.8*/, message: "Use self.offset = newValue instead.")
-    mutating public func update(offset: Position3) {
-        self.offset = offset
-        self._offset = offset
-    }
-    @available(*, unavailable  /*0.0.8*/, message: "Use self.radius = newValue instead.")
-    mutating public func update(radius: Size3) {
-        self._radius = radius
-        self.radius = radius
-    }
-    
     mutating public func update(transform: Transform3) {
         center = transform.position
         offset = _offset * transform.scale
