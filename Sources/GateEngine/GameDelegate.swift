@@ -91,7 +91,7 @@ extension GameDelegate {
 
     public func willTerminate(game: Game) {}
     public func isHeadless() -> Bool { return false }
-    public func customResourceLocations() -> [String] { return [] }
+    public nonisolated func customResourceLocations() -> [String] { return [] }
     internal nonisolated func resolvedCustomResourceLocations() -> [URL] {
         return customResourceLocations().compactMap({ URL(string: $0) })
     }
