@@ -1,24 +1,21 @@
-
-#Swift
-.build
-Package.resolved
-
-#Apple
-.DS_Store
-.icloud
-
-#Xcode
+# Xcode
 *.xcuserdatad
-*.xcworkspace
+*/xcuserdata/
+DerivedData/
 
-#Visual Studio
-.vs
+# Apple
+*.DS_Store
+*.icloud
 
-#Visual Studio Code
-.vscode
+# Swift
+/.build
+/Package.resolved
+/.swiftpm/xcode/xcuserdata
+/.swiftpm/xcode/package.xcworkspace/xcuserdata
+/.swiftpm/configuration/registries.json
 
-#CLion
-.idea
+# Blender
+*.blend1
 
-#Blender
-.blend1
+# Linux
+.netrc
