@@ -6,7 +6,7 @@
  */
 
 /// An element array object formatted as Line primitives
-public struct RawLines {
+public struct RawLines: Sendable {
     var positions: [Float]
     var colors: [Float]
     var indices: [UInt16]

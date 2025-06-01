@@ -16,14 +16,12 @@ public final class Game {
     
     public let delegate: any GameDelegate
 
-    @MainActor public private(set) var state: State! = nil
-    @MainActor internal private(set) var internalState: State! = nil
-
-    nonisolated(unsafe) public internal(set) lazy var info: Game.Info = Game.Info()
+    nonisolated public let info: Game.Info
     
     nonisolated public let isHeadless: Bool
     @MainActor internal init(delegate: any GameDelegate) {
         self.delegate = delegate
+        self.info = Game.Info(gameDelegate: delegate)
         if delegate.isHeadless() {
             self.renderer = nil
             self.isHeadless = true
@@ -54,13 +52,9 @@ public final class Game {
     @usableFromInline
     @MainActor internal private(set) lazy var ecs: ECSContext = ECSContext()
     @MainActor public private(set) lazy var hid: HID = HID()
-    public private(set) lazy var resourceManager: ResourceManager = {
-        return ResourceManager(game: self)
-    }()
+    nonisolated public let resourceManager: ResourceManager = ResourceManager()
 
     @MainActor func didFinishLaunching() async {
-        self.state = await platform.loadState(named: "SaveState.json")
-        self.internalState = await platform.loadState(named: "GateEngine.json")
         #if !GATEENGINE_PLATFORM_CREATES_MAINWINDOW
         if isHeadless == false {
             do {
@@ -115,7 +109,7 @@ public final class Game {
     internal static func getNextDeltaTime(accumulator: inout Double, previous: inout Double) -> Double? {
         // 240fps
         let stepDuration: Double = /* 1/240 */ 0.004166666667
-        let now: Double = Game.shared.platform.systemTime()
+        let now: Double = Platform.current.systemTime()
         let newDeltaTimeAccumulator: Double = accumulator + (now - previous)
         if newDeltaTimeAccumulator < stepDuration {
             return nil

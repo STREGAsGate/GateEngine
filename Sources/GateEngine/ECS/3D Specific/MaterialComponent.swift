@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import Shaders
+public import Shaders
 
 @dynamicMemberLookup
 public final class MaterialComponent: Component {

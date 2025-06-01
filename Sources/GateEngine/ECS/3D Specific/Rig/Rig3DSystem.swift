@@ -5,9 +5,6 @@
  * http://stregasgate.com
  */
 
-@available(*, unavailable /* 0.1.3 */, renamed: "Rig3DSystem")
-public final class RigSystem {}
-
 public final class Rig3DSystem: System {
     var checkedIDs: Set<ObjectIdentifier> = []
     func getFarAway(from entities: Set<Entity>) -> Entity? {

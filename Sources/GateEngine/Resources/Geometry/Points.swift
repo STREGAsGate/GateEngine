@@ -13,12 +13,12 @@
     internal let cacheKey: ResourceManager.Cache.GeometryKey
 
     var cache: any ResourceCache {
-        return Game.shared.resourceManager.geometryCache(for: cacheKey)!
+        return Game.unsafeShared.resourceManager.geometryCache(for: cacheKey)!
     }
     
     @usableFromInline
     internal var backend: (any GeometryBackend)? {
-        return Game.shared.resourceManager.geometryCache(for: cacheKey)?.geometryBackend
+        return Game.unsafeShared.resourceManager.geometryCache(for: cacheKey)?.geometryBackend
     }
 
     @inlinable @_disfavoredOverload
@@ -27,14 +27,14 @@
     }
 
     public init(path: String, options: GeometryImporterOptions = .none) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.pointsCacheKey(path: path, options: options)
         self.defaultCacheHint = .until(minutes: 5)
         resourceManager.incrementReference(self.cacheKey)
     }
 
     internal init(optionalRawPoints rawPoints: RawPoints?) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.pointsCacheKey(rawPoints: rawPoints)
         self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
@@ -45,7 +45,10 @@
     }
 
     deinit {
-        Game.unsafeShared.resourceManager.decrementReference(cacheKey)
+        let cacheKey = self.cacheKey
+        Task {@MainActor in
+            Game.unsafeShared.resourceManager.decrementReference(cacheKey)
+        }
     }
 }
 
@@ -65,9 +68,7 @@ extension RawPoints {
         try await self.init(path: path.value, options: options)
     }
     public init(path: String, options: GeometryImporterOptions = .none) async throws {
-        guard
-            let importer: any GeometryImporter = try await Game.shared.resourceManager.geometryImporterForPath(path)
-        else {
+        guard let importer: any GeometryImporter = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path) else {
             throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
@@ -81,33 +82,34 @@ extension RawPoints {
 
 // MARK: - Resource Manager
 
+@MainActor
 extension ResourceManager {
-    @MainActor func pointsCacheKey(path: String, options: GeometryImporterOptions) -> Cache.GeometryKey {
+    func pointsCacheKey(path: String, options: GeometryImporterOptions) -> Cache.GeometryKey {
         let key = Cache.GeometryKey(requestedPath: path, kind: .points, geometryOptions: options)
+        let cache = self.cache
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
-            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached(priority: .high) {
+            Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
+            Task.detached {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
                     let points = RawPoints(pointCloudFrom: geometry.generateTriangles())
-                    let backend = await self.geometryBackend(from: points)
                     Task { @MainActor in
-                        if let cache = self.cache.geometries[key] {
-                            cache.geometryBackend = backend
+                        if let cache = cache.geometries[key] {
+                            cache.geometryBackend = ResourceManager.geometryBackend(from: points)
                             cache.state = .ready
                         }else{
                             Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
                         }
-                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                        Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 } catch let error as GateEngineError {
                     Task { @MainActor in
                         Log.warn("Resource \"\(path)\"", error)
-                        if let cache = self.cache.geometries[key] {
+                        if let cache = cache.geometries[key] {
                             cache.state = .failed(error: error)
                         }
-                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                        Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 } catch {
                     Log.fatalError("error must be a GateEngineError")
@@ -117,46 +119,41 @@ extension ResourceManager {
         return key
     }
     
-    @MainActor func pointsCacheKey(rawPoints points: RawPoints?) -> Cache.GeometryKey {
+    func pointsCacheKey(rawPoints points: RawPoints?) -> Cache.GeometryKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, kind: .points, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             if let points {
-                Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-                Task.detached(priority: .high) {
-                    let backend = await self.geometryBackend(from: points)
-                    Task { @MainActor in
-                        if let cache = self.cache.geometries[key] {
-                            cache.geometryBackend = backend
-                            cache.state = .ready
-                        }else{
-                            Log.warn("Resource \"(Generated Points)\" was deallocated before being loaded.")
-                        }
-                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
-                    }
+                Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
+                if let cache = self.cache.geometries[key] {
+                    cache.geometryBackend = ResourceManager.geometryBackend(from: points)
+                    cache.state = .ready
+                }else{
+                    Log.warn("Resource \"(Generated Points)\" was deallocated before being loaded.")
                 }
+                Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
             }
         }
         return key
     }
 
-    func geometryBackend(from raw: RawPoints) async -> any GeometryBackend {
+    static func geometryBackend(from raw: RawPoints) -> any GeometryBackend {
         #if GATEENGINE_FORCE_OPNEGL_APPLE
-        return await OpenGLGeometry(points: raw)
+        return OpenGLGeometry(points: raw)
         #elseif canImport(MetalKit)
         #if canImport(GLKit)
-        if await MetalRenderer.isSupported == false {
-            return await OpenGLGeometry(points: raw)
+        if MetalRenderer.isSupported == false {
+            return OpenGLGeometry(points: raw)
         }
         #endif
-        return await MetalGeometry(points: raw)
+        return MetalGeometry(points: raw)
         #elseif canImport(WebGL2)
-        return await WebGL2Geometry(points: raw)
+        return WebGL2Geometry(points: raw)
         #elseif canImport(WinSDK)
-        return await DX12Geometry(points: raw)
+        return DX12Geometry(points: raw)
         #elseif canImport(OpenGL_GateEngine)
-        return await OpenGLGeometry(points: raw)
+        return OpenGLGeometry(points: raw)
         #else
         #error("Not implemented")
         #endif

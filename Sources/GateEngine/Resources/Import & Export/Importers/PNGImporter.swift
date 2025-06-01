@@ -28,7 +28,7 @@ public final class PNGImporter: TextureImporter {
     }
     public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         do {
-            let data = try await Game.shared.platform.loadResource(from: path)
+            let data = try await Platform.current.loadResource(from: path)
             let png = try PNGDecoder().decode(data)
             self.data = png.data
             self.size = Size2(Float(png.width), Float(png.height))

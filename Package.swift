@@ -6,7 +6,7 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "GateEngine",
-    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13)],
+    platforms: [.macOS(.v14), .iOS(.v17), .tvOS(.v17)],
     products: [
         .library(name: "GateEngine", targets: ["GateEngine"]),
         .library(name: "GameMath", targets: ["GameMath"]),
@@ -147,9 +147,7 @@ let package = Package(
                         .define("GLES_SILENCE_DEPRECATION",
                             .when(platforms: [.iOS, .tvOS])),
                     ],
-                    swiftSettings: {
-                        var settings: [SwiftSetting] = []
-
+                    swiftSettings: .default(withCustomization: { settings in
                         settings.append(
                             .define("GATEENGINE_USE_OPENAL", .when(platforms: [.linux]))
                         )
@@ -189,32 +187,6 @@ let package = Package(
                             .define("GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER",
                                 .when(platforms: .any(except: .wasi))),
                         ])
-
-                        #if true // Experimental and upcomming language features.
-                        // These should be disabled for releases.
-                        // These are to get a headstart on the next Swift versions.
-                        // https://www.swift.org/swift-evolution/#?upcoming=true
-                        settings.append(contentsOf: [
-                            .enableUpcomingFeature("IsolatedDefaultValues"),
-//                            .enableUpcomingFeature("InternalImportsByDefault"),
-                            .enableUpcomingFeature("DisableOutwardActorInference"),
-                            .enableUpcomingFeature("ImportObjcForwardDeclarations"),
-                            .enableUpcomingFeature("BareSlashRegexLiterals"),
-                            .enableUpcomingFeature("ExistentialAny"),
-                            .enableUpcomingFeature("ForwardTrailingClosures"),
-                            .enableUpcomingFeature("ConciseMagicFile"),
-                            .enableUpcomingFeature("DynamicActorIsolation"),
-                            .enableUpcomingFeature("FullTypedThrows"),
-                            .enableUpcomingFeature("InferSendableFromCaptures"),
-                            .enableUpcomingFeature("DeprecateApplicationMain"),
-                            
-                            .enableExperimentalFeature("AccessLevelOnImport"),
-//                            .enableExperimentalFeature("StrictConcurrency"),
-                            .enableExperimentalFeature("StrictConcurrency=minimal"),
-//                            .enableExperimentalFeature("StrictConcurrency=complete"),
-                        ])
-                        #endif
-                        
        
                         #if HTML5
                         // Options for development of WASI platform
@@ -240,8 +212,7 @@ let package = Package(
                             //.define("GATEENGINE_FORCE_OPNEGL_APPLE", .when(platforms: [.macOS, /*.iOS, .tvOS*/])),
                         ])
                         #endif
-                        return settings
-                    }(),
+                    }),
                     plugins: [
                         //.plugin(name: "SwiftLintPlugin", package: "SwiftLint"),
                     ]),
@@ -251,27 +222,23 @@ let package = Package(
                         "GameMath",
                         .product(name: "Collections", package: "swift-collections")
                     ],
-                    swiftSettings: [
-                        .define("GATEENGINE_DEBUG_SHADERS", .when(configuration: .debug))
-                    ]),
+                    swiftSettings: .default(withCustomization: { settings in
+                        settings.append(.define("GATEENGINE_DEBUG_SHADERS", .when(configuration: .debug)))
+                    })),
             
-            .target(name: "GameMath", swiftSettings: {
-                var array: [SwiftSetting] = []
-                
+            .target(name: "GameMath", swiftSettings: .default(withCustomization: { settings in
                 #if false
                 // Possibly faster on old hardware, but less accurate.
                 // There is no reason to use this on modern hardware.
-                array.append(.define("GameMathUseFastInverseSquareRoot"))
+                settings.append(.define("GameMathUseFastInverseSquareRoot"))
                 #endif
                 
                 // These settings are faster only with optimization.
                 #if true
-                array.append(.define("GameMathUseSIMD", .when(configuration: .release, traits: ["SIMD"])))
-                array.append(.define("GameMathUseLoopVectorization", .when(configuration: .release)))
+                settings.append(.define("GameMathUseSIMD", .when(configuration: .release, traits: ["SIMD"])))
+                settings.append(.define("GameMathUseLoopVectorization", .when(configuration: .release)))
                 #endif
-                
-                return array.isEmpty ? nil : array
-            }()),
+            })),
         ])
         
         // MARK: - Macros
@@ -302,6 +269,7 @@ let package = Package(
                     path: "Dependencies/miniz",
                     cSettings: [
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
+                        .unsafeFlags(["-Wno-conversion"]),
                     ]),
             
             // libspng
@@ -314,6 +282,7 @@ let package = Package(
                         // When public, the miniz.h header crashes Clang on Windows since Swift 5.8.0
                         .headerSearchPath("src/"),
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])),
+                        .unsafeFlags(["-Wno-conversion"]),
                     ]),
             
             // TrueType
@@ -323,6 +292,7 @@ let package = Package(
                         .define("STB_TRUETYPE_IMPLEMENTATION"), .define("STB_RECT_PACK_IMPLEMENTATION"),
                         .define("extern", to: "__declspec(dllexport) extern", .when(platforms: [.windows])),
                         .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [.windows])), // Silence warnings
+                        .unsafeFlags(["-Wno-conversion"]),
                     ]),
             
             // Gravity
@@ -350,9 +320,9 @@ let package = Package(
             // Direct3D12
             .target(name: "Direct3D12",
                     path: "Dependencies/Direct3D12",
-                    swiftSettings: [
-                        .define("Direct3D12ExcludeOriginalStyleAPI", .when(configuration: .release)),
-                    ]),
+                    swiftSettings: .default(withCustomization: { settings in
+                        settings.append(.define("Direct3D12ExcludeOriginalStyleAPI", .when(configuration: .release)))
+                    })),
             // XAudio2
             .target(name: "XAudio2",
                     dependencies: ["XAudio2C"],
@@ -417,9 +387,9 @@ let package = Package(
             .testTarget(name: "GateEngineTests",
                         dependencies: ["GateEngine"],
                         resources: [.copy("Resources")],
-                        swiftSettings: [
-                            .define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])),
-                        ]),
+                        swiftSettings: .default(withCustomization: { settings in
+                            settings.append(.define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])))
+                        })),
             .testTarget(name: "GameMathTests",
                         dependencies: ["GameMath"]),
             .testTarget(name: "GravityTests",
@@ -430,19 +400,19 @@ let package = Package(
                             .copy("Resources/infiniteloop"),
                             .copy("Resources/unittest"),
                         ],
-                        swiftSettings: [
+                        swiftSettings: .default(withCustomization: { settings in
                             // https://github.com/STREGAsGate/GateEngine/issues/36
-                            .define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])),
-                        ]),
+                            settings.append(.define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])))
+                        })),
         ])
         #if !os(Windows)
         targets.append(contentsOf: [
             .testTarget(name: "GameMathSIMDTests",
                         dependencies: ["GameMath"],
-                        swiftSettings: [
-                            .define("GameMathUseSIMD"),
-                            .define("GameMathUseLoopVectorization")
-                        ]),
+                        swiftSettings: .default(withCustomization: { settings in
+                            settings.append(.define("GameMathUseSIMD"))
+                            settings.append(.define("GameMathUseLoopVectorization"))
+                        })),
         ])
         #endif
         
@@ -657,19 +627,138 @@ extension Array where Element == Platform {
         return array
     }
     
-    static var desktop: Self {[.windows, .linux, .macOS]}
+    static var desktop: Self {[.windows, .linux, .macOS, .macCatalyst, .openbsd]}
     static var mobile: Self {[.iOS, .android]}
     static var anyApple: Self {
-        return [.macOS, .iOS, .tvOS, .watchOS, .visionOS]
+        return [.macOS, .iOS, .tvOS, .watchOS, .visionOS, .macCatalyst]
     }
     
     static var any: Self {
         return [
-            .macOS, .iOS, .tvOS, .visionOS,
+            .macOS, .iOS, .tvOS, .watchOS, .visionOS, .macCatalyst,
             .linux, .android,
+            .openbsd,
             .windows,
-            .wasi
+            .wasi,
+            .driverKit,
         ]
     }
 }
 
+extension Array where Element == SwiftSetting {
+    static var `default`: Self? {
+        var settings: Self = []
+        if let upcommingFeatureFlags = Self.upcommingFeatureFlags {
+            settings.append(contentsOf: upcommingFeatureFlags)
+        }
+        if let exprimentalFeatureFlags = Self.exprimentalFeatureFlags {
+            settings.append(contentsOf: exprimentalFeatureFlags)
+        }
+        return settings.isEmpty ? nil : settings
+    }
+    
+    static func `default`(withCustomization block: (_ settings: inout Self)->()) -> Self? {
+        var settings: Self = .default ?? []
+        block(&settings)
+        return settings.isEmpty ? nil : settings
+    }
+    
+    static var upcommingFeatureFlags: Self? {
+        var settings: Self = []
+        
+#if compiler(>=6.2)
+    #if !hasFeature(InferIsolatedConformances)
+        enableFeature("InferIsolatedConformances")
+    #endif
+    #if !hasFeature(NonisolatedNonsendingByDefault)
+        enableFeature("NonisolatedNonsendingByDefault")
+    #endif
+    #if !hasFeature(NonescapableTypes)
+        enableFeature("NonescapableTypes")
+    #endif
+#endif
+#if compiler(>=6.1)
+    #if !hasFeature(MemberImportVisibility)
+        enableFeature("MemberImportVisibility")
+    #endif
+#endif
+#if compiler(>=6.0)
+    #if !hasFeature(GlobalActorIsolatedTypesUsability)
+        enableFeature("GlobalActorIsolatedTypesUsability")
+    #endif
+    #if !hasFeature(DynamicActorIsolation)
+        enableFeature("DynamicActorIsolation")
+    #endif
+    #if !hasFeature(InferSendableFromCaptures)
+        enableFeature("InferSendableFromCaptures")
+    #endif
+    #if !hasFeature(RegionBasedIsolation)
+        enableFeature("RegionBasedIsolation")
+    #endif
+    #if !hasFeature(InternalImportsByDefault)
+        enableFeature("InternalImportsByDefault")
+    #endif
+#endif
+#if compiler(>=5.10)
+    #if !hasFeature(GlobalConcurrency)
+        enableFeature("GlobalConcurrency")
+    #endif
+    #if !hasFeature(IsolatedDefaultValues)
+        enableFeature("IsolatedDefaultValues")
+    #endif
+    #if !hasFeature(DeprecateApplicationMain)
+        enableFeature("DeprecateApplicationMain")
+    #endif
+#endif
+#if compiler(>=5.9)
+    #if !hasFeature(DisableOutwardActorInference)
+        enableFeature("DisableOutwardActorInference")
+    #endif
+    #if !hasFeature(ImportObjcForwardDeclarations)
+        enableFeature("ImportObjcForwardDeclarations")
+    #endif
+#endif
+#if compiler(>=5.8)
+    #if !hasFeature(ConciseMagicFile)
+        enableFeature("ConciseMagicFile")
+    #endif
+#endif
+#if compiler(>=5.7)
+    #if !hasFeature(BareSlashRegexLiterals)
+        enableFeature("BareSlashRegexLiterals")
+    #endif
+    #if !hasFeature(ImplicitOpenExistentials)
+        enableFeature("ImplicitOpenExistentials")
+    #endif
+#endif
+#if compiler(>=5.6)
+    #if !hasFeature(StrictConcurrency)
+        enableFeature("StrictConcurrency=complete")
+    #endif
+    #if !hasFeature(ExistentialAny)
+        enableFeature("ExistentialAny")
+    #endif
+#endif
+#if compiler(>=5.3)
+    #if !hasFeature(ForwardTrailingClosures)
+        enableFeature("ForwardTrailingClosures")
+    #endif
+#endif
+        
+        func enableFeature(_ feature: String) {settings.append(.enableUpcomingFeature(feature))}
+        return settings.isEmpty ? nil : settings
+    }
+    
+    static var exprimentalFeatureFlags: Self? {
+        var settings: Self = []
+        
+#if compiler(>=6.2)
+    #if !hasFeature(IsolatedDeinit)
+        enableFeature("IsolatedDeinit")
+    #endif
+#endif
+        
+        func enableFeature(_ feature: String) {settings.append(.enableExperimentalFeature(feature))}
+        return settings.isEmpty ? nil : settings
+    }
+}

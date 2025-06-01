@@ -81,21 +81,6 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         self.radius = _radius
     }
     
-    @available(*, unavailable  /*0.0.8*/, message: "Use self.center = newValue instead.")
-    mutating public func update(center: Position3) {
-        self.center = center
-    }
-    @available(*, unavailable  /*0.0.8*/, message: "Use self.offset = newValue instead.")
-    mutating public func update(offset: Position3) {
-        self.offset = offset
-        self._offset = offset
-    }
-    @available(*, unavailable  /*0.0.8*/, message: "Use self.radius = newValue instead.")
-    mutating public func update(radius: Size3) {
-        self._radius = radius
-        self.radius = radius
-    }
-    
     mutating public func update(transform: Transform3) {
         center = transform.position
         offset = _offset * transform.scale
@@ -185,7 +170,7 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
     }
 
     @inlinable
-    public func interpenetration(comparing collider: Collider3D) -> Interpenetration3D? {
+    public func interpenetration(comparing collider: any Collider3D) -> Interpenetration3D? {
         switch collider {
         case let collider as BoundingSphere3D:
             return interpenetration(comparing: collider)
@@ -483,14 +468,14 @@ public extension AxisAlignedBoundingBox3D {
 }
 
 extension AxisAlignedBoundingBox3D: Codable {
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([center.x, center.y, center.z,
                               _offset.x, _offset.y, _offset.z,
                               _radius.x, _radius.y, radius.z])
     }
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let floats = try container.decode(Array<Float>.self)
         

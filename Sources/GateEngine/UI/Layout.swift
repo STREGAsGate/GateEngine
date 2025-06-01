@@ -472,7 +472,7 @@ public struct Layout {
         }
         guard window.needsLayout || window.needsUpdateConstraints else {return}
         
-        let layoutStart = Game.shared.platform.systemTime()
+        let layoutStart = Platform.current.systemTime()
         
         // Reset all view layout resolutions
         func prepareToLayout(_ view: View) {
@@ -602,7 +602,7 @@ public struct Layout {
         
         #if GATEENGINE_DEBUG_LAYOUT
         if hadError == false {
-            let layoutEnd = Game.shared.platform.systemTime()
+            let layoutEnd = Platform.current.systemTime()
             let duration = String(format: "%.3fms", (layoutEnd - layoutStart) * 1000)
             Log.debug("Layout updated \(viewsLayedOut) views in \(duration) using \(iteration) iterations.")
         }

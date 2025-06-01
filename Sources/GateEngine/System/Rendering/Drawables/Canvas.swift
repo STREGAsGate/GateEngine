@@ -541,7 +541,7 @@
     }
 }
 
-public struct CanvasElementSpriteFlags: OptionSet {
+public struct CanvasElementSpriteFlags: OptionSet, Sendable {
     public typealias RawValue = UInt32
     public let rawValue: RawValue
 
@@ -556,7 +556,7 @@ public struct CanvasElementSpriteFlags: OptionSet {
     }
 }
 
-public struct CanvasElementTextFlags: OptionSet {
+public struct CanvasElementTextFlags: OptionSet, Sendable {
     public typealias RawValue = UInt32
     public let rawValue: RawValue
 
@@ -571,7 +571,7 @@ public struct CanvasElementTextFlags: OptionSet {
     }
 }
 
-public struct CanvasElementPrimitiveFlags: OptionSet {
+public struct CanvasElementPrimitiveFlags: OptionSet, Sendable {
     public typealias RawValue = UInt32
     public let rawValue: RawValue
 

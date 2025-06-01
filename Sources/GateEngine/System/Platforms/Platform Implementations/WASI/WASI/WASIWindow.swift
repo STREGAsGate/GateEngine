@@ -659,7 +659,7 @@ final class WASIWindow: WindowBacking {
         case "F20":
             return .function(20)
         case "Help":
-            switch Game.shared.platform.browser {
+            switch Platform.current.browser {
             case .safari:
                 return .insert
             default:

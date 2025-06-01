@@ -27,7 +27,7 @@ public final class ApplePlatformImageImporter: TextureImporter {
     
     public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         do {
-            let data = try await Game.shared.platform.loadResource(from: path)
+            let data = try await Platform.current.loadResource(from: path)
             try self.populateFromData(data)
         }catch{
             throw GateEngineError(error)

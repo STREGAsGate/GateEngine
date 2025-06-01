@@ -78,7 +78,7 @@ extension Gravity {
         return try await withThrowingTaskGroup(of: (url: URL, sourceCode: String).self) { group in
             for url in includes {
                 group.addTask {
-                    let data = try await Game.shared.platform.loadResource(from: url.path)
+                    let data = try await Platform.current.loadResource(from: url.path)
                     guard let sourceCode = String(data: data, encoding: .utf8) else {
                         throw GateEngineError.failedToLoad(
                             "File is corrupt or in the wrong format."
@@ -119,7 +119,7 @@ extension Gravity {
     public func compile(file path: String, addDebug: Bool? = nil) async throws {
         let url = URL(fileURLWithPath: path)
         let baseURL = url.deletingLastPathComponent()
-        let data = try await Game.shared.platform.loadResource(from: path)
+        let data = try await Platform.current.loadResource(from: path)
         guard let sourceCode = String(data: data, encoding: .utf8) else {
             throw GateEngineError.scriptCompileError("File corrupted or in the wrong format.")
         }
@@ -128,7 +128,7 @@ extension Gravity {
 
         self.sourceCodeBaseURL = baseURL
         self.loadedFilesByID[0] = url
-        try self.compile(source: sourceCode, addDebug: addDebug)
+        try await self.compile(source: sourceCode, addDebug: addDebug)
         self.clearFileIncludeSourceCode()
     }
 }

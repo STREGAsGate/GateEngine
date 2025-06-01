@@ -77,7 +77,7 @@ public extension Geometry {
     internal let cacheKey: ResourceManager.Cache.GeometryKey
     
     var cache: any ResourceCache {
-        return Game.shared.resourceManager.geometryCache(for: cacheKey)!
+        return Game.unsafeShared.resourceManager.geometryCache(for: cacheKey)!
     }
 
     @usableFromInline
@@ -97,9 +97,9 @@ public extension Geometry {
         resourceManager.incrementReference(self.cacheKey)
     }
 
-    internal init(optionalRawGeometry rawGeometry: RawGeometry?, immediate: Bool = false) {
+    internal init(optionalRawGeometry rawGeometry: RawGeometry?) {
         let resourceManager = Game.unsafeShared.resourceManager
-        self.cacheKey = resourceManager.geometryCacheKey(rawGeometry: rawGeometry, kind: .geometry, immediate: immediate)
+        self.cacheKey = resourceManager.geometryCacheKey(rawGeometry: rawGeometry, kind: .geometry)
         self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
@@ -108,11 +108,14 @@ public extension Geometry {
     - parameter immediate: true will block the thread while uploading to the GPU. For smaller geometry this may be faster.
      */
     public convenience init(_ rawGeometry: RawGeometry, immediate: Bool = false) {
-        self.init(optionalRawGeometry: rawGeometry, immediate: immediate)
+        self.init(optionalRawGeometry: rawGeometry)
     }
 
     deinit {
-        Game.unsafeShared.resourceManager.decrementReference(cacheKey)
+        let cacheKey = self.cacheKey
+        Task { @MainActor in
+            Game.unsafeShared.resourceManager.decrementReference(cacheKey)
+        }
     }
 }
 extension Geometry: Equatable, Hashable {
@@ -187,7 +190,7 @@ extension RawGeometry {
     }
     public init(path: String, options: GeometryImporterOptions = .none) async throws {
         guard
-            let importer: any GeometryImporter = try await Game.shared.resourceManager.geometryImporterForPath(path)
+            let importer: any GeometryImporter = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path)
         else {
             throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
         }
@@ -243,6 +246,7 @@ extension ResourceManager.Cache {
     }
 }
 
+@MainActor
 extension ResourceManager {
     func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.GeometryKey) {
         if let cache = self.cache.geometries[key] {
@@ -251,31 +255,31 @@ extension ResourceManager {
         }
     }
 
-    @MainActor func geometryCacheKey(path: String, kind: Cache.GeometryKey.Kind, options: GeometryImporterOptions) -> Cache.GeometryKey {
+    func geometryCacheKey(path: String, kind: Cache.GeometryKey.Kind, options: GeometryImporterOptions) -> Cache.GeometryKey {
         let key = Cache.GeometryKey(requestedPath: path, kind: kind, geometryOptions: options)
+        let cache = self.cache
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached(priority: .high) {
+            Task.detached {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
-                    let backend = await self.geometryBackend(from: geometry)
                     Task { @MainActor in
-                        if let cache = self.cache.geometries[key] {
-                            cache.geometryBackend = backend
+                        if let cache = cache.geometries[key] {
+                            cache.geometryBackend = ResourceManager.geometryBackend(from: geometry)
                             cache.state = .ready
                         }else{
                             Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
                         }
-                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                        Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 } catch let error as GateEngineError {
                     Task { @MainActor in
                         Log.warn("Resource \"\(path)\"", error)
-                        if let cache = self.cache.geometries[key] {
+                        if let cache = cache.geometries[key] {
                             cache.state = .failed(error: error)
                         }
-                        Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                        Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
                 } catch {
                     Log.fatalError("error must be a GateEngineError")
@@ -285,34 +289,18 @@ extension ResourceManager {
         return key
     }
 
-    @MainActor func geometryCacheKey(rawGeometry geometry: RawGeometry?, kind: Cache.GeometryKey.Kind, immediate: Bool) -> Cache.GeometryKey {
+    func geometryCacheKey(rawGeometry geometry: RawGeometry?, kind: Cache.GeometryKey.Kind) -> Cache.GeometryKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, kind: kind, geometryOptions: .none)
+        let cache = self.cache
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             if let geometry = geometry {
-                if immediate {
-                    let backend = self.geometryBackendImmadiate(from: geometry)
-                    if let cache = self.cache.geometries[key] {
-                        cache.geometryBackend = backend
-                        cache.state = .ready
-                    }else{
-                        Log.warn("Resource \"(Generated Geometry)\" was deallocated before being loaded.")
-                    }
+                if let cache = cache.geometries[key] {
+                    cache.geometryBackend = ResourceManager.geometryBackend(from: geometry)
+                    cache.state = .ready
                 }else{
-                    Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-                    Task.detached(priority: .high) {
-                        let backend = await self.geometryBackend(from: geometry)
-                        Task { @MainActor in
-                            if let cache = self.cache.geometries[key] {
-                                cache.geometryBackend = backend
-                                cache.state = .ready
-                            }else{
-                                Log.warn("Resource \"(Generated Geometry)\" was deallocated before being loaded.")
-                            }
-                            Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
-                        }
-                    }
+                    Log.warn("Resource \"(Generated Geometry)\" was deallocated before being loaded.")
                 }
             }
         }
@@ -342,16 +330,17 @@ extension ResourceManager {
     func reloadGeometryIfNeeded(key: Cache.GeometryKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task.detached(priority: .high) {
-            guard self.geometryNeedsReload(key: key) else { return }
-            guard let cache = self.geometryCache(for: key) else { return }
+        guard self.geometryNeedsReload(key: key) else { return }
+        let cache = self.cache
+        Task.detached {
             let geometry = try await RawGeometry(
                 path: key.requestedPath,
                 options: key.geometryOptions
             )
-            let backend = await self.geometryBackend(from: geometry)
             Task { @MainActor in
-                cache.geometryBackend = backend
+                if let cache = cache.geometries[key] {
+                    cache.geometryBackend = ResourceManager.geometryBackend(from: geometry)
+                }
             }
         }
     }
@@ -361,10 +350,10 @@ extension ResourceManager {
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
         #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
         guard let cache = cache.geometries[key] else { return false }
+        guard let path = Platform.current.synchronousLocateResource(from: key.requestedPath) else {return false}
         do {
-            let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)
-            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date
-            {
+            let attributes = try FileManager.default.attributesOfItem(atPath: path)
+            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date {
                 return modified > cache.lastLoaded
             } else {
                 return false
@@ -378,22 +367,23 @@ extension ResourceManager {
         #endif
     }
 
-    func geometryBackend(from raw: RawGeometry) async -> any GeometryBackend {
+    @MainActor
+    static func geometryBackend(from raw: RawGeometry) -> any GeometryBackend {
         #if GATEENGINE_FORCE_OPNEGL_APPLE
-        return await OpenGLGeometry(geometry: raw)
+        return OpenGLGeometry(geometry: raw)
         #elseif canImport(MetalKit)
         #if canImport(OpenGL_GateEngine)
-        if await MetalRenderer.isSupported == false {
-            return await OpenGLGeometry(geometry: raw)
+        if MetalRenderer.isSupported == false {
+            return OpenGLGeometry(geometry: raw)
         }
         #endif
-        return await MetalGeometry(geometry: raw)
+        return MetalGeometry(geometry: raw)
         #elseif canImport(WebGL2)
-        return await WebGL2Geometry(geometry: raw)
+        return WebGL2Geometry(geometry: raw)
         #elseif canImport(WinSDK)
-        return await DX12Geometry(geometry: raw)
+        return DX12Geometry(geometry: raw)
         #elseif canImport(OpenGL_GateEngine)
-        return await OpenGLGeometry(geometry: raw)
+        return OpenGLGeometry(geometry: raw)
         #else
         #error("Not implemented")
         #endif

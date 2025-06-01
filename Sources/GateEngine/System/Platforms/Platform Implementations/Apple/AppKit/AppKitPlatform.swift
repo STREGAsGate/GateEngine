@@ -62,7 +62,7 @@ public struct AppKitPlatform: PlatformProtocol, InternalPlatformProtocol {
         if path.hasPrefix("/"), await fileSystem.itemExists(at: path) {
             return path
         }
-        let searchPaths = await Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
+        let searchPaths = Game.unsafeShared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             if await fileSystem.itemExists(at: file.path) {
@@ -149,8 +149,8 @@ extension AppKitPlatform {
 
 private class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Game.shared.resourceManager.addTextureImporter(ApplePlatformImageImporter.self, atEnd: true)
-        Game.shared.resourceManager.addGeometryImporter(
+        Game.unsafeShared.resourceManager.addTextureImporter(ApplePlatformImageImporter.self, atEnd: true)
+        Game.unsafeShared.resourceManager.addGeometryImporter(
             ApplePlatformModelImporter.self,
             atEnd: true
         )

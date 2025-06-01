@@ -8,6 +8,15 @@
 #if canImport(Foundation)
 import class Foundation.Scanner
 #endif
+#if canImport(CoreGraphics)
+public import CoreGraphics
+#endif
+#if canImport(AppKit)
+import AppKit
+#endif
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public typealias Colour = Color
 
@@ -46,6 +55,15 @@ public struct Color: Vector4, Sendable {
     public init(_ array: [Float]) {
         self.init(array[0], array[1], array[2], array.count > 3 ? array[3] : 1)
     }
+    
+    #if canImport(CoreGraphics)
+    @inlinable
+    public init(_ cgColor: CGColor) {
+        let cgColor = cgColor.converted(to: CGColorSpace(name: CGColorSpace.sRGB)!, intent: .defaultIntent, options: nil)
+        let array = cgColor!.components!.map({Float($0)})
+        self.init(array[0], array[1], array[2], array.count > 3 ? array[3] : 1)
+    }
+    #endif
     
     @inlinable
     public init(eightBitRed red: UInt8, green: UInt8, blue: UInt8, alpha: UInt8 = .max) {
@@ -263,6 +281,22 @@ public extension Color {
     static let defaultPointLightColor = Color(red: 1.0, green: 1.0, blue: 0.9, alpha: 1.0)
     static let defaultSpotLightColor = Color(red: 1.0, green: 1.0, blue: 0.8, alpha: 1.0)
     static let defaultDirectionalLightColor = Color(red: 0.7, green: 0.7, blue: 1.0, alpha: 1.0)
+    
+
+    /// Color instances associated with iOS, macOS, tvOS, etc...
+    /// These colors automatically adust to user setting such a dark mode
+    struct apple {
+        #if canImport(AppKit) /* macOS */
+        public static var text: Color { Color(NSColor.textColor.cgColor) }
+        public static var textBackground: Color { Color(NSColor.textBackgroundColor.cgColor) }
+        #elseif canImport(UIKit) /* iOS, tvOS */
+        public static var text: Color { Color(UIColor.label.cgColor) }
+        public static var textBackground: Color { Color(UIColor.systemBackground.cgColor) }
+        #else /* Fallbacks allowing cross platform code to functions */
+        public static var text: Color { .black }
+        public static var textBackground: Color { .white }
+        #endif
+    }
 }
 
 extension Color: Equatable {}
@@ -274,12 +308,12 @@ extension Color: Comparable {
 }
 extension Color: Hashable {}
 extension Color: Codable {
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([red, green, blue, alpha])
     }
 
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let values = try container.decode(Array<Float>.self)
         self.init(values[0], values[1], values[2], values[3])

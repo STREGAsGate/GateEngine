@@ -9,7 +9,7 @@
     public typealias SampleFilter = Material.Channel.SampleFilter
     
     public let texture: Texture
-    public var bounds: Rect
+    public let bounds: Rect
     public var sampleFilter: SampleFilter
     public var tintColor: Color
 
@@ -67,13 +67,13 @@
 }
 
 extension Sprite: Equatable {
-    public static func == (lhs: Sprite, rhs: Sprite) -> Bool {
+    public nonisolated static func == (lhs: Sprite, rhs: Sprite) -> Bool {
         return lhs.texture == rhs.texture && lhs.bounds == rhs.bounds
     }
 }
 
 extension Sprite: Hashable {
-    public func hash(into hasher: inout Hasher) {
+    public nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(texture)
         hasher.combine(bounds)
     }

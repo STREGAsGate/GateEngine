@@ -55,7 +55,7 @@ public struct ECSComponentMacro: MemberMacro, ExtensionMacro {
             return false
         })?.trimmedDescription ?? ""
         
-        var extensionBody = "\(access) static let componentID: GateEngine.ComponentID = .init()"
+        let extensionBody = "\(access) static let componentID: GateEngine.ComponentID = .init()"
         
 //        let find = try InitializerDeclSyntax("init()") {
 //            

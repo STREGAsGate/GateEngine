@@ -119,8 +119,9 @@ extension ObjectAnimation3DComponent {
 }
 
 extension Entity {
+    @MainActor
     @inlinable
-    public var objectAnimation3DComponent: ObjectAnimation3DComponent {
-        return self[ObjectAnimation3DComponent.self]
+    public var objectAnimation3DComponent: ObjectAnimation3DComponent? {
+        return self.component(ofType: ObjectAnimation3DComponent.self)
     }
 }

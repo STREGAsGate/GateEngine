@@ -13,13 +13,13 @@ import Foundation
     internal let cacheKey: ResourceManager.Cache.SkeletalAnimationKey
     
     var cache: any ResourceCache {
-        return Game.shared.resourceManager.skeletalAnimationCache(for: cacheKey)!
+        return Game.unsafeShared.resourceManager.skeletalAnimationCache(for: cacheKey)!
     }
     
     @usableFromInline
     internal var backend: SkeletalAnimationBackend {
         assert(state == .ready, "This resource is not ready to be used. Make sure it's state property is .ready before accessing!")
-        return Game.shared.resourceManager.skeletalAnimationCache(for: cacheKey)!.skeletalAnimationBackend!
+        return Game.unsafeShared.resourceManager.skeletalAnimationCache(for: cacheKey)!.skeletalAnimationBackend!
     }
     
     public var name: String {
@@ -36,7 +36,7 @@ import Foundation
         path: String,
         options: SkeletalAnimationImporterOptions = .none
     ) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.skeletalAnimationCacheKey(
             path: path,
             options: options
@@ -46,7 +46,7 @@ import Foundation
     }
     
     public init(name: String, duration: Float, animations: [Skeleton.Joint.ID: JointAnimation]) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.skeletalAnimationCacheKey(
             name: name,
             duration: duration, 
@@ -68,8 +68,8 @@ extension SkeletalAnimation: Equatable, Hashable {
 }
 
 extension SkeletalAnimation {
-    public final class JointAnimation {
-        public enum Interpolation {
+    public struct JointAnimation: Sendable {
+        public enum Interpolation: Sendable {
             case step
             case linear
         }
@@ -78,7 +78,7 @@ extension SkeletalAnimation {
 
         }
 
-        public func setPositions(
+        public mutating func setPositions(
             _ positions: [Position3],
             times: [Float],
             interpolation: Interpolation
@@ -88,7 +88,7 @@ extension SkeletalAnimation {
             self.positionOutput.times = times
             self.positionOutput.interpolation = interpolation
         }
-        public func setRotations(
+        public mutating func setRotations(
             _ rotations: [Quaternion],
             times: [Float],
             interpolation: Interpolation
@@ -98,7 +98,7 @@ extension SkeletalAnimation {
             self.rotationOutput.times = times
             self.rotationOutput.interpolation = interpolation
         }
-        public func setScales(_ scales: [Size3], times: [Float], interpolation: Interpolation) {
+        public mutating func setScales(_ scales: [Size3], times: [Float], interpolation: Interpolation) {
             assert(scales.count == times.count)
             self.scaleOutput.scales = scales
             self.scaleOutput.times = times
@@ -110,7 +110,7 @@ extension SkeletalAnimation {
             interpolation: .linear,
             positions: []
         )
-        struct PositionOutput {
+        struct PositionOutput: Sendable {
             var times: [Float]
             var interpolation: Interpolation
             var positions: [Position3]
@@ -147,7 +147,7 @@ extension SkeletalAnimation {
             interpolation: .linear,
             rotations: []
         )
-        struct RotationOutput {
+        struct RotationOutput: Sendable {
             var times: [Float]
             var interpolation: Interpolation
             var rotations: [Quaternion]
@@ -181,7 +181,7 @@ extension SkeletalAnimation {
         }
 
         var scaleOutput: ScaleOutput = ScaleOutput(times: [], interpolation: .linear, scales: [])
-        struct ScaleOutput {
+        struct ScaleOutput: Sendable {
             var times: [Float]
             var interpolation: Interpolation
             var scales: [Size3]
@@ -321,7 +321,7 @@ extension ResourceManager {
 
 extension ResourceManager.Cache {
     @usableFromInline
-    struct SkeletalAnimationKey: Hashable, CustomStringConvertible {
+    struct SkeletalAnimationKey: Hashable, CustomStringConvertible, Sendable {
         let requestedPath: String
         let options: SkeletalAnimationImporterOptions
         
@@ -355,6 +355,8 @@ extension ResourceManager.Cache {
         }
     }
 }
+
+@MainActor
 extension ResourceManager {
     func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.SkeletalAnimationKey) {
         if let tileSetCache = cache.skeletalAnimations[key] {
@@ -374,31 +376,27 @@ extension ResourceManager {
         return key
     }
     
-    @MainActor func skeletalAnimationCacheKey(
+    func skeletalAnimationCacheKey(
         name: String, 
         duration: Float, 
         animations: [Skeleton.Joint.ID: SkeletalAnimation.JointAnimation]
     ) -> Cache.SkeletalAnimationKey {
         let key = Cache.SkeletalAnimationKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", options: .none)
+        let cache = self.cache
         if cache.skeletalAnimations[key] == nil {
             cache.skeletalAnimations[key] = Cache.SkeletalAnimationCache()
-            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached(priority: .high) {
-                let backend = SkeletalAnimationBackend(
-                    name: name, 
-                    duration: duration, 
+            Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
+            if let cache = cache.skeletalAnimations[key] {
+                cache.skeletalAnimationBackend = SkeletalAnimationBackend(
+                    name: name,
+                    duration: duration,
                     animations: animations
                 )
-                Task { @MainActor in
-                    if let cache = self.cache.skeletalAnimations[key] {
-                        cache.skeletalAnimationBackend = backend
-                        cache.state = .ready
-                    }else{
-                        Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
-                    }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
-                }
+                cache.state = .ready
+            }else{
+                Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
             }
+            Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
         }
         return key
     }
@@ -426,29 +424,25 @@ extension ResourceManager {
     func reloadSkeletalAniamtionIfNeeded(key: Cache.SkeletalAnimationKey) {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
-        Task.detached(priority: .high) {
-            guard self.skeletalAnimationNeedsReload(key: key) else { return }
-            await self._reloadSkeletalAnimation(for: key, isFirstLoad: false)
-        }
+        guard self.skeletalAnimationNeedsReload(key: key) else { return }
+        self._reloadSkeletalAnimation(for: key, isFirstLoad: false)
     }
     
-    @MainActor func _reloadSkeletalAnimation(for key: Cache.SkeletalAnimationKey, isFirstLoad: Bool) {
-        Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-        Task.detached(priority: .high) {
+    func _reloadSkeletalAnimation(for key: Cache.SkeletalAnimationKey, isFirstLoad: Bool) {
+        Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
+        let cache = self.cache
+        Task.detached {
             let path = key.requestedPath
             
             do {
                 guard let fileExtension = path.components(separatedBy: ".").last else {
                     throw GateEngineError.failedToLoad("Unknown file type.")
                 }
-                guard
-                    let importer: any SkeletalAnimationImporter = await Game.shared.resourceManager
-                        .importerForFileType(fileExtension)
-                else {
+                guard let importer: any SkeletalAnimationImporter = Game.unsafeShared.resourceManager.importerForFileType(fileExtension) else {
                     throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
                 }
 
-                let data = try await Game.shared.platform.loadResource(from: path)
+                let data = try await Platform.current.loadResource(from: path)
                 let backend = try await importer.process(
                     data: data,
                     baseURL: URL(string: path)!.deletingLastPathComponent(),
@@ -456,30 +450,30 @@ extension ResourceManager {
                 )
 
                 Task { @MainActor in
-                    if let cache = self.cache.skeletalAnimations[key] {
+                    if let cache = cache.skeletalAnimations[key] {
                         cache.skeletalAnimationBackend = backend
                         cache.state = .ready
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
                     Log.warn("Resource \"\(path)\"", error)
-                    if let cache = self.cache.skeletalAnimations[key] {
+                    if let cache = cache.skeletalAnimations[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as DecodingError {
                 let error = GateEngineError(error)
                 Task { @MainActor in
                     Log.warn("Resource \"\(path)\"", error)
-                    if let cache = self.cache.skeletalAnimations[key] {
+                    if let cache = cache.skeletalAnimations[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")

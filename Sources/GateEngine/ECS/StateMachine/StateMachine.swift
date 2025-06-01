@@ -5,14 +5,15 @@
  * http://stregasgate.com
  */
 
-public final class StateMachine {
+public struct StateMachine {
     public private(set) var currentState: any State
     
     public init(initialState: any State.Type) {
         self.currentState = initialState.init()
     }
     
-    @MainActor internal func updateState(for entity: Entity, context: ECSContext, input: HID, deltaTime: Float) {
+    @MainActor
+    internal mutating func updateState(for entity: Entity, context: ECSContext, input: HID, deltaTime: Float) {
         currentState.update(for: entity, inContext: context, input: input, withTimePassed: deltaTime)
         guard currentState.canMoveToNextState(for: entity, context: context, input: input) else {return}
                 
@@ -29,7 +30,8 @@ public final class StateMachine {
     }
 }
 
-@MainActor public protocol State: AnyObject {
+@MainActor
+public protocol State {
     nonisolated init()
     
     func apply(to entity: Entity, previousState: some State, context: ECSContext, input: HID)

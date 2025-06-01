@@ -27,7 +27,7 @@ public final class WavefrontOBJImporter: GeometryImporter {
     }
     public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         do {
-            let data = try await Game.shared.platform.loadResource(from: path)
+            let data = try await Platform.current.loadResource(from: path)
             guard let obj = String(data: data, encoding: .utf8) else {
                 throw GateEngineError.failedToDecode("File is not UTF8 or is corrupt.")
             }

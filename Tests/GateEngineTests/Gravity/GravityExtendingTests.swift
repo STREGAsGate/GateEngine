@@ -18,24 +18,24 @@ final class GravityExtendingTests: GateEngineXCTestCase {
         randomValue = Int.random(in: -10000 ..< 10000)
     }
 
-    func testHostGetClientVar() throws {
-        try gravity.compile(source: "var randomValue = \(randomValue); func main() {}")
+    func testHostGetClientVar() async throws {
+        try await gravity.compile(source: "var randomValue = \(randomValue); func main() {}")
         try gravity.runMain()
         let value = gravity.getVar("randomValue")!
         XCTAssertEqual(value.getInt(), randomValue)
     }
 
-    func testHostSetClientVar() throws {
+    func testHostSetClientVar() async throws {
         gravity.setVar("randomValue", to: randomValue)
-        try gravity.compile(source: "extern var randomValue; func main() {}")
+        try await gravity.compile(source: "extern var randomValue; func main() {}")
         try gravity.runMain()
         let value = gravity.getVar("randomValue")!
         XCTAssertEqual(value.getInt(), randomValue)
     }
 
-    func testHostRunClientClosure() throws {
+    func testHostRunClientClosure() async throws {
         let gValue = gravity.createValue(randomValue)
-        try gravity.compile(
+        try await gravity.compile(
             source: "func myFunction(randomValue) {return randomValue}; func main() {}"
         )
         try gravity.runMain()
@@ -43,19 +43,19 @@ final class GravityExtendingTests: GateEngineXCTestCase {
         XCTAssertEqual(value.getInt(), randomValue)
     }
 
-    func testClientRunHostClosure() throws {
+    func testClientRunHostClosure() async throws {
         gravity.setFunc("myFunction") { gravity, args in
             return gravity.createValue(self.randomValue)
         }
-        try gravity.compile(
+        try await gravity.compile(
             source: "extern func myFunction() {}; func main() {return myFunction()}"
         )
         let result = try gravity.runMain()
         XCTAssertEqual(result.getInt(), randomValue)
     }
 
-    func testHostGetClientInstance() throws {
-        try gravity.compile(
+    func testHostGetClientInstance() async throws {
+        try await gravity.compile(
             source: "class TheThing {}; var theThing = TheThing(); func main() {}"
         )
         try gravity.runMain()
@@ -63,8 +63,8 @@ final class GravityExtendingTests: GateEngineXCTestCase {
         XCTAssertEqual(value.gravityClassName, "TheThing")
     }
 
-    func testHostGetClientInstanceVar() throws {
-        try gravity.compile(
+    func testHostGetClientInstanceVar() async throws {
+        try await gravity.compile(
             source:
                 "class TheThing {var myVar1; func myFunc(randomValue) { return randomValue}; var myVar2;}; var theThing = TheThing(); func main() {theThing.myVar2 = \(randomValue); theThing.myVar1 = 33}"
         )
@@ -74,9 +74,9 @@ final class GravityExtendingTests: GateEngineXCTestCase {
         XCTAssertEqual(instance.getVar("myVar1"), 33)
     }
 
-    func testHostRunClientInstanceClosure() throws {
+    func testHostRunClientInstanceClosure() async throws {
         let gValue = gravity.createValue(randomValue)
-        try gravity.compile(
+        try await gravity.compile(
             source:
                 "class TheThing {func myFunc(randomValue) {return randomValue}}; var theThing = TheThing(); func main() {}"
         )
@@ -88,13 +88,13 @@ final class GravityExtendingTests: GateEngineXCTestCase {
         XCTAssertEqual(value.getInt(), randomValue)
     }
 
-    func testHostCreateClientClass() throws {
+    func testHostCreateClientClass() async throws {
         let theThingClass = gravity.createClass("TheThing")
         theThingClass.addVar("myVar")
         theThingClass.addFunc("myFunc") { gravity, sender, args in
             return "success!"
         }
-        try gravity.compile(
+        try await gravity.compile(
             source: "extern class TheThing; var theThing = TheThing(); func main() {}"
         )
         try gravity.runMain()

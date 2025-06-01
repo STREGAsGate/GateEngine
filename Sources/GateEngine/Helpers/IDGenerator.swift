@@ -6,13 +6,13 @@
  */
 
 #if canImport(Atomics)
-import Atomics
+public import Atomics
 #elseif canImport(Foundation.NSLock)
 import class Foundation.NSLock
 #endif
 
 #if canImport(Atomics)
-public final class IDGenerator<T: AtomicInteger & Sendable> {
+nonisolated public final class IDGenerator<T: AtomicInteger & Sendable> {
     var value: ManagedAtomic<T>
 
     public init(startValue: T = 0) {
@@ -24,7 +24,7 @@ public final class IDGenerator<T: AtomicInteger & Sendable> {
     }
 }
 #elseif canImport(Foundation.NSLock)
-public final class IDGenerator<T: BinaryInteger> {
+nonisolated public final class IDGenerator<T: BinaryInteger & Sendable> {
     var value: T = 0
     let lock = NSLock()
 
@@ -43,7 +43,7 @@ public final class IDGenerator<T: BinaryInteger> {
     }
 }
 #else
-public final class IDGenerator<T: BinaryInteger> {
+nonisolated public final class IDGenerator<T: BinaryInteger & Sendable> {
     var value: T = 0
 
     public init(startValue: T = 0) {

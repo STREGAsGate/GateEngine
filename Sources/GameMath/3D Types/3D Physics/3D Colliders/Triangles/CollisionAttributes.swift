@@ -96,7 +96,7 @@ public struct BasicCollisionAttributes: CollisionAttributesGroup {
         get { group1 }
         set { group1 = newValue }
     }
-    public struct FlagAttributes: CollisionAttributesType, OptionSet {
+    public struct FlagAttributes: CollisionAttributesType, OptionSet, Sendable {
         public typealias RawValue = UInt32
         public var rawValue: RawValue
         public init(rawValue: RawValue) {

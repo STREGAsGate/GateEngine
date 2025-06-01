@@ -171,7 +171,7 @@ extension OrientedBoundingBox3D {
 
 extension OrientedBoundingBox3D {
     @inlinable
-    public func interpenetration(comparing collider: Collider3D) -> Interpenetration3D? {
+    public func interpenetration(comparing collider: any Collider3D) -> Interpenetration3D? {
         switch collider {
         case let collider as OrientedBoundingBox3D:
             guard self.isColliding(with: collider) else {return nil}

@@ -143,7 +143,7 @@ public final class ApplePlatformModelImporter: GeometryImporter {
         self.asset = MDLAsset(url: URL(fileURLWithPath: path))
     }
     public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
-        guard let path = await Game.shared.platform.locateResource(from: path) else {throw .failedToLocate}
+        guard let path = await Platform.current.locateResource(from: path) else {throw .failedToLocate}
         self.asset = await withCheckedContinuation { continuation in
             Task.detached {
                 let asset = MDLAsset(url: URL(fileURLWithPath: path))

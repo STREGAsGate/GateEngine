@@ -29,15 +29,13 @@ extension OctreeComponent {
     }
 }
 
-extension OctreeComponent {
-    @usableFromInline
+public extension OctreeComponent {
     func trianglesHit(by ray: Ray3D, filter: ((CollisionTriangle) -> Bool)? = nil) -> [(
         position: Position3, triangle: CollisionTriangle
     )] {
         return rootNode.trianglesHit(by: ray, filter: filter)
     }
 
-    @usableFromInline
     func trianglesNear(_ box: AxisAlignedBoundingBox3D) -> [CollisionTriangle] {
         var triangles: [CollisionTriangle] = []
         for node in self.nodesNear(box) {
@@ -179,9 +177,7 @@ extension OctreeComponent {
 
         self.cleanEmptyNodes()
         
-        Task {@MainActor in
-            self.didLoad = true
-        }
+        self.didLoad = true
     }
 
     private func setup(size: Size3, offset: Position3, position: Position3) {

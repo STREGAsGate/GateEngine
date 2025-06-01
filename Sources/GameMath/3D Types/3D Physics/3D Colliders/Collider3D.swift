@@ -16,7 +16,7 @@ public protocol Collider3D {
     mutating func update(sizeAndOffsetUsingTransform transform: Transform3)
     
     func closestSurfacePoint(from point: Position3) -> Position3
-    func interpenetration(comparing collider: Collider3D) -> Interpenetration3D?
+    func interpenetration(comparing collider: any Collider3D) -> Interpenetration3D?
     
     func surfacePoint(for ray: Ray3D) -> Position3?
     func surfaceNormal(facing point: Position3) -> Direction3

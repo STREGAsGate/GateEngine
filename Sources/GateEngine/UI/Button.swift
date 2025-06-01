@@ -40,12 +40,12 @@ open class Button: Control {
         return true
     }
     
-    public struct Event: OptionSet, Hashable {
+    public struct Event: OptionSet, Hashable, Sendable {
+        public typealias RawValue = UInt
         public var rawValue: RawValue
         
-        public static let pressed = Event(rawValue: 1 << 0)
+        public static let pressed = Self(rawValue: 1 << 0)
         
-        public typealias RawValue = UInt
         public init(rawValue: RawValue) {
             self.rawValue = rawValue
         }

@@ -14,7 +14,7 @@ public enum WindowStyle {
     case minimalSystemDecorations
 }
 
-public struct WindowOptions: OptionSet {
+public struct WindowOptions: OptionSet, Sendable {
     public typealias RawValue = UInt
     public var rawValue: RawValue
     public init(rawValue: RawValue) {
@@ -430,7 +430,7 @@ public struct WindowOptions: OptionSet {
     public var deltaTime: Double = 0
 
     internal func vSyncCalled() {
-        let now: Double = Game.shared.platform.systemTime()
+        let now: Double = Platform.current.systemTime()
         self.deltaTime = now - previousTime
         self.previousTime = now
         // Positive time change and minimum of 10 fps
@@ -442,11 +442,11 @@ public struct WindowOptions: OptionSet {
         )
     }
 
-    @usableFromInline @inlinable
+    @inlinable
     func setMouseHidden(_ hidden: Bool) {
         self.windowBacking.setMouseHidden(hidden)
     }
-    @usableFromInline @inlinable
+    @inlinable
     func setMousePosition(_ position: Position2) {
         let windowFrame = Rect(size: self.size)
         let clampedToWindowFrame = position.clamped(within: windowFrame)
@@ -587,7 +587,6 @@ public struct WindowOptions: OptionSet {
         pressure: Float,
         mouse: Mouse
     ) {
-        
         switch event {
         case .began:
             let touch = SurfaceTouch(
@@ -602,10 +601,36 @@ public struct WindowOptions: OptionSet {
                 }
             }
         case .moved:
-            if let touch = currentlyHitSurfaceTouchViews.keys.first(where: {$0.id == id}) {
-                touch.position = normalizedPosition
-                if let view = currentlyHitSurfaceTouchViews[touch] {
-                    view.surfaceTouchesMoved([touch], mouse: mouse)
+            // TODO: Touches should not be associated with a view, the mouse position should be.
+            // Perhaps create a new touch type where touches are stored in the mouse for known trackpad devices
+            // SurfaceTouch is still needed for touch pads like on PS4 controller or back of PSVita type of things
+            
+//            // Original implementation
+//            if let touch = currentlyHitSurfaceTouchViews.keys.first(where: {$0.id == id}) {
+//                touch.position = normalizedPosition
+//                if let view = currentlyHitSurfaceTouchViews[touch] {
+//                    view.surfaceTouchesMoved([touch], mouse: mouse)
+//                }
+//            }
+            
+            // A SurfaceTouch occurs when the mouse cursor is moved, though that action is never considered a gesture
+            // This hack allows semi-expected behavior when moving the mouse
+            // Note: This hack will disrupt GestureRecognizers from functioning across view boundaries
+            // For example a long pan or drag will cancel when the cursor moves out of the view
+            if let mousePosition = mouse.position {
+                if let hitView = self.hitTest(mousePosition, clipRect: Rect(size: self.size)) {
+                    if let touch = currentlyHitSurfaceTouchViews.keys.first(where: {$0.id == id}) {
+                        touch.position = normalizedPosition
+                        if let previouslyHitView = currentlyHitSurfaceTouchViews[touch] {
+                            if previouslyHitView === hitView {
+                                previouslyHitView.surfaceTouchesMoved([touch], mouse: mouse)
+                            }else{
+                                currentlyHitSurfaceTouchViews[touch] = hitView
+                                hitView.surfaceTouchesBegan([touch], mouse: mouse)
+                                previouslyHitView.surfaceTouchesCanceled([touch], mouse: mouse)
+                            }
+                        }
+                    }
                 }
             }
         case .ended:

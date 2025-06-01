@@ -263,29 +263,50 @@ open class View {
             gestureRecognizer.view = nil
         }
     }
+    private func updateGestureRecognizers() {
+        var active: [GestureRecognizer] = []
+        for gestureRecognizer in gestureRecognizers {
+            if gestureRecognizer.phase != .unrecognized {
+                active.append(gestureRecognizer)
+            }
+        }
+        guard active.count > 1 else {return}
+        guard let recognized = active.first(where: {$0.phase == .recognized}) else {return}
+        for recognizer in active {
+            if recognized !== recognizer {
+                if recognized.recognizesSimultaneously(with: recognizer) == false {
+                    recognizer.invalidate()
+                }
+            }
+        }
+    }
     
     open func touchesBegan(_ touches: Set<Touch>) {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.touchesBegan(touches)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.touchesBegan(touches)
     }
     open func touchesMoved(_ touches: Set<Touch>) {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.touchesMoved(touches)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.touchesMoved(touches)
     }
     open func touchesEnded(_ touches: Set<Touch>) {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.touchesEnded(touches)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.touchesEnded(touches)
     }
     open func touchesCanceled(_ touches: Set<Touch>) {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.touchesCanceled(touches)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.touchesCanceled(touches)
     }
     
@@ -293,24 +314,28 @@ open class View {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.surfaceTouchesBegan(touches, mouse: mouse)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.surfaceTouchesBegan(touches, mouse: mouse)
     }
     open func surfaceTouchesMoved(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.surfaceTouchesMoved(touches, mouse: mouse)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.surfaceTouchesMoved(touches, mouse: mouse)
     }
     open func surfaceTouchesEnded(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.surfaceTouchesEnded(touches, mouse: mouse)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.surfaceTouchesEnded(touches, mouse: mouse)
     }
     open func surfaceTouchesCanceled(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.surfaceTouchesCanceled(touches, mouse: mouse)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.surfaceTouchesCanceled(touches, mouse: mouse)
     }
     
@@ -318,18 +343,21 @@ open class View {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.cursorEntered(cursor)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.cursorEntered(cursor)
     }
     open func cursorMoved(_ cursor: Mouse) {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.cursorMoved(cursor)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.cursorMoved(cursor)
     }
     open func cursorExited(_ cursor: Mouse) {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.cursorExited(cursor)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.cursorExited(cursor)
     }
     
@@ -337,12 +365,14 @@ open class View {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.cursorButtonDown(button: button, mouse: mouse)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.cursorButtonDown(button: button, mouse: mouse)
     }
     open func cursorButtonUp(button: MouseButton, mouse: Mouse) {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.cursorButtonUp(button: button, mouse: mouse)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.cursorButtonUp(button: button, mouse: mouse)
     }
     
@@ -350,6 +380,7 @@ open class View {
         for gestureRecognizer in gestureRecognizers {
             gestureRecognizer.scrolled(delta, isPlatformGeneratedMomentum: isMomentum)
         }
+        self.updateGestureRecognizers()
         self.controllingViewController?.scrolled(delta, isPlatformGeneratedMomentum: isMomentum)
     }
     
@@ -612,7 +643,7 @@ extension View {
 }
 
 extension View {
-    public struct CornerMask: OptionSet {
+    public struct CornerMask: OptionSet, Sendable {
         public var rawValue: UInt
         
         public static let topLeft: CornerMask = CornerMask(rawValue: 1 << 0)

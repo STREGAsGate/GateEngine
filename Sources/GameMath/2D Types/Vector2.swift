@@ -173,16 +173,16 @@ extension Vector2 {
 
 extension Vector2 {
     @inlinable
-    public func interpolated<V: Vector2>(to: V, _ method: InterpolationMethod) -> Self {
+    public func interpolated<V: Vector2>(to: V, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
         var copy = self
-        copy.x.interpolate(to: to.x, method)
-        copy.y.interpolate(to: to.y, method)
+        copy.x.interpolate(to: to.x, method, options: options)
+        copy.y.interpolate(to: to.y, method, options: options)
         return copy
     }
     @inlinable
-    public mutating func interpolate<V: Vector2>(to: V, _ method: InterpolationMethod) {
-        self.x.interpolate(to: to.x, method)
-        self.y.interpolate(to: to.y, method)
+    public mutating func interpolate<V: Vector2>(to: V, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+        self.x.interpolate(to: to.x, method, options: options)
+        self.y.interpolate(to: to.y, method, options: options)
     }
 }
 
@@ -434,13 +434,13 @@ extension Vector2 {
 
 extension Vector2 {
     @inlinable
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([x, y])
     }
     
     @inlinable
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let values = try container.decode(Array<Float>.self)
         self.init(values[0], values[1])

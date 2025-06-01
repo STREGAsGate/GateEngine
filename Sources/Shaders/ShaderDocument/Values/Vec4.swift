@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import GameMath
+public import GameMath
 
 public final class Vec4: ShaderValue {
     public let valueRepresentation: ValueRepresentation

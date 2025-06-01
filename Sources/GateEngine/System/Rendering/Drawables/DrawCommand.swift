@@ -5,8 +5,8 @@
  * http://stregasgate.com
  */
 
-import GameMath
-import Shaders
+public import GameMath
+public import Shaders
 
 public struct DrawCommand {
     public enum Resource {
@@ -203,7 +203,7 @@ public extension DrawCommand {
         }
         public var stencilWrite: StencilWrite
         
-        public enum Primitive: Hashable {
+        public enum Primitive: Hashable, Sendable {
             case point
             case line
             case lineStrip

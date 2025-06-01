@@ -416,6 +416,7 @@ public extension ECSContext {
     func insertSystem(_ newSystem: System) {
         let systemType = type(of: newSystem)
         guard _systems.contains(where: { type(of: $0) == systemType }) == false else { return }
+        newSystem._context = self
         var systems = self._systems
         systems.append(newSystem)
         _systems = systems
@@ -426,6 +427,7 @@ public extension ECSContext {
         guard _renderingSystems.contains(where: { type(of: $0) == systemType }) == false else {
             return
         }
+        newSystem._context = self
         var renderingSystems = self._renderingSystems
         renderingSystems.append(newSystem)
         _renderingSystems = renderingSystems
@@ -436,6 +438,7 @@ public extension ECSContext {
         guard _platformSystems.contains(where: { type(of: $0) == systemType }) == false else {
             return
         }
+        newSystem._context = self
         var platformSystems = self._platformSystems
         platformSystems.append(newSystem)
         _platformSystems = platformSystems

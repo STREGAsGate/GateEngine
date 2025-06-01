@@ -20,13 +20,13 @@ internal class OABufferReference: AudioBufferBackend {
 
     required init(path: String, context: AudioContext, audioBuffer: AudioBuffer) {
         self.audioBuffer = audioBuffer
-        Task(priority: .utility) {
+        Task.detached {
             do {
-                guard let path = await Game.shared.platform.locateResource(from: path) else {
+                guard let path = await Platform.current.locateResource(from: path) else {
                     throw GateEngineError.failedToLocate
                 }
 
-                let data = try await Game.shared.platform.loadResource(from: path)
+                let data = try await Platform.current.loadResource(from: path)
                 #if canImport(Vorbis)
                 let lowercasePath = path.lowercased()
                 if lowercasePath.hasSuffix("ogg") || lowercasePath.hasSuffix("oga") {

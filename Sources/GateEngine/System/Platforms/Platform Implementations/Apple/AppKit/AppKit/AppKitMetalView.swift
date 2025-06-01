@@ -9,7 +9,7 @@ import QuartzCore
 import MetalKit
 
 @available(macOS 10.11, *)
-internal class MetalView: MTKView, MTKViewDelegate {
+internal final class MetalView: MTKView, MTKViewDelegate {
     unowned let viewController: AppKitViewController
 
     init(viewController: AppKitViewController, size: CGSize) {

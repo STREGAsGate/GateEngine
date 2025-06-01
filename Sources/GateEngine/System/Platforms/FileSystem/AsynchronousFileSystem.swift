@@ -13,7 +13,7 @@ import Foundation
  This allows users to use Unix paths exclusivley.
  */
 
-public protocol AsynchronousFileSystem {
+public protocol AsynchronousFileSystem: Sendable {
     func itemExists(at path: String) async -> Bool
     func itemType(at path: String) async -> FileSystemItemType?
 

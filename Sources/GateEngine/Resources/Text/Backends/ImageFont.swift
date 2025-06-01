@@ -13,7 +13,7 @@ struct ImageFont: FontBackend {
     internal var characterXAdvances: [Font.Style: [Float]] = [:]
 
     init(regular: String) async throws {
-        guard let importer = try await Game.shared.resourceManager.textureImporterForPath(regular) else {
+        guard let importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(regular) else {
             Log.debug("No TextureImporter for file \"\(regular)\"")
             throw GateEngineError.failedToDecode("No TextureImporter for file \"\(regular)\"")
         }

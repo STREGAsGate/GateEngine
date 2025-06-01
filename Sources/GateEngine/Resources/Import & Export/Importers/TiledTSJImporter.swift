@@ -81,7 +81,7 @@ public final class TiledTSJImporter: TileSetImporter {
     }
     public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         do {
-            let data = try await Game.shared.platform.loadResource(from: path)
+            let data = try await Platform.current.loadResource(from: path)
             self.file = try JSONDecoder().decode(TSJFile.self, from: data)
             
             var comps = path.components(separatedBy: "/")

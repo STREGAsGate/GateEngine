@@ -356,7 +356,7 @@ extension _RenderTargetProtocol {
 
     private func drawRenderTarget(_ container: RenderTargetFillContainer, frame: UInt, clipRect: Rect?, stencil: UInt8?) {
         container.renderTarget.draw(frame)
-                
+        
         renderTargetBackend.willBeginContent(matrices: nil, viewport: nil, scissorRect: clipRect, stencil: stencil)
         Game.shared.renderer.draw(
             container.renderTarget,
@@ -368,7 +368,7 @@ extension _RenderTargetProtocol {
     }
 }
 
-public struct RenderTargetFillOptions: OptionSet {
+public struct RenderTargetFillOptions: OptionSet, Sendable {
     public typealias RawValue = Int
     public let rawValue: RawValue
 
@@ -386,10 +386,16 @@ public enum RenderTargetFillSampleFilter {
     case nearest
     case linear
 }
-struct RenderTargetFillContainer {
+struct RenderTargetFillContainer: Drawable {
     let renderTarget: any _RenderTargetProtocol
     let options: RenderTargetFillOptions
-    let filter: RenderTargetFillSampleFilter    
+    let filter: RenderTargetFillSampleFilter
+    
+    let drawCommands: ContiguousArray<DrawCommand> = []
+    
+    func matrices(withSize size: GameMath.Size2) -> Matrices {
+        fatalError("Not implemented")
+    }
 }
 //extension RenderTargetProtocol {
 //    @inlinable

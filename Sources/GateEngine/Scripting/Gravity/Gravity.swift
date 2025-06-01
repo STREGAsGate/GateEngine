@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-import Gravity
+@preconcurrency public import Gravity
 import struct Foundation.URL
 
 extension Gravity {
@@ -17,6 +17,7 @@ extension Gravity {
     }
 }
 
+@MainActor
 internal var gravityDelegate: gravity_delegate_t = {
     var delegate: gravity_delegate_t = gravity_delegate_t()
     delegate.error_callback = errorCallback(vm:errorType:description:errorDesc:xdata:)
@@ -106,7 +107,7 @@ public final class Gravity {
     }
 
     #if DEBUG
-    internal static var unitTestExpected: Testing? = nil
+    nonisolated(unsafe) internal static var unitTestExpected: Testing? = nil
     internal var unitTestError: Error? = nil
     #endif
 
@@ -149,6 +150,7 @@ public final class Gravity {
     }
 
     /// Create a new gravity instance.
+    @MainActor
     public init() {
         self.vm = gravity_vm_new(&gravityDelegate)
         self.isManaged = true
@@ -173,7 +175,8 @@ public final class Gravity {
      - parameter addDebug: `true` to add debug. nil to add debug only in DEBUG configurations.
      - throws: Gravity compilation errors such as syntax problems.
      */
-    public func compile(source sourceCode: String, addDebug: Bool? = nil) throws {
+    @MainActor
+    public func compile(source sourceCode: String, addDebug: Bool? = nil) async throws {
         self.mainClosure = nil
         self.didRunMain = false
         try sourceCode.withCString { cString in
@@ -353,7 +356,7 @@ internal func _gravityHandleCFuncReturn(
 }
 
 extension Gravity {
-    internal static var storage: [Int: GravityStorage] = [:]
+    nonisolated(unsafe) internal static var storage: [Int: GravityStorage] = [:]
     internal struct GravityStorage {
         var mainClosure: UnsafeMutablePointer<gravity_closure_t>? = nil
         var didRunMain: Bool = false

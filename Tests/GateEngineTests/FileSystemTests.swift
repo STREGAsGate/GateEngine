@@ -11,7 +11,7 @@ import XCTest
 
 final class FileSystemTests: GateEngineXCTestCase {
     func testDirectoryCreateExistsMoveDelete() async throws {
-        let fileSystem = await Game.shared.platform.fileSystem
+        let fileSystem = await Platform.current.fileSystem
         var path = try await fileSystem.pathForSearchPath(.persistent, in: .currentUser)
         path += "/test-NewFolder"
         var result = await fileSystem.itemExists(at: path)
@@ -37,7 +37,7 @@ final class FileSystemTests: GateEngineXCTestCase {
     }
 
     func testFileWriteReadExistsMoveDelete() async throws {
-        let fileSystem = await Game.shared.platform.fileSystem
+        let fileSystem = await Platform.current.fileSystem
         let path = try await fileSystem.pathForSearchPath(.persistent, in: .currentUser) + "/test-NewFile"
         var result = await fileSystem.itemExists(at: path)
         XCTAssertFalse(result)
@@ -69,7 +69,7 @@ final class FileSystemTests: GateEngineXCTestCase {
     }
 
     func testItemType() async throws {
-        let fileSystem = await Game.shared.platform.fileSystem
+        let fileSystem = await Platform.current.fileSystem
         let path = try await fileSystem.pathForSearchPath(.persistent, in: .currentUser)
 
         let dirPath = path + "/test-HelloDir"

@@ -15,12 +15,12 @@ public struct LaunchOptions: OptionSet {
     }
 }
 
+@MainActor
 public protocol GameDelegate: AnyObject {
     /// Return false exit the program
     func shouldFinishLaunching(game: Game) async throws -> Bool
     
     /// Called when the app finishes loading.
-    @MainActor 
     func didFinishLaunching(game: Game, options: LaunchOptions) async
 
     /**
@@ -30,22 +30,18 @@ public protocol GameDelegate: AnyObject {
      - parameter game: The game to create the window from
      - parameter identifier: The identifier to give the window. You must use this identifier.
      */
-    @MainActor 
     func createMainWindow(using manager: WindowManager, with identifier: String) throws -> Window
 
     /// The end user has tried to open a window using the platforms mechanisms
-    @MainActor 
     func createUserRequestedWindow(using manager: WindowManager) throws -> Window?
 
     /**
      A display has been attached.
      - returns: A new window instance to put on the screen. Passing an existing window is undefined behaviour.
     */
-    @MainActor 
     func createWindowForExternalScreen(using manager: WindowManager) throws -> Window?
 
     /// Might be called immediately before the app closes.
-    @MainActor 
     func willTerminate(game: Game)
 
     /**
@@ -59,7 +55,6 @@ public protocol GameDelegate: AnyObject {
      - returns: true if the game doesn't draw anything.
      - note: RenderingSystem(s) do not receive updates in headless mode.
      */
-    @MainActor 
     func isHeadless() -> Bool
 
     /**
@@ -96,14 +91,14 @@ extension GameDelegate {
 
     public func willTerminate(game: Game) {}
     public func isHeadless() -> Bool { return false }
-    public func customResourceLocations() -> [String] { return [] }
-    internal func resolvedCustomResourceLocations() -> [URL] {
+    public nonisolated func customResourceLocations() -> [String] { return [] }
+    internal nonisolated func resolvedCustomResourceLocations() -> [URL] {
         return customResourceLocations().compactMap({ URL(string: $0) })
     }
 
-    public func gameIdentifier() -> StaticString? { return nil }
+    public nonisolated func gameIdentifier() -> StaticString? { return nil }
 
-    internal func resolvedGameIdentifier() -> String {
+    internal nonisolated func resolvedGameIdentifier() -> String {
         let charSet = CharacterSet(
             charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-."
         )
@@ -159,12 +154,13 @@ extension GameDelegate {
     }
 }
 
+@MainActor
 extension GameDelegate {
-    @MainActor public static func main() async throws {
+    public static func main() async throws {
         let delegate = Self()
         Game._shared = Game(delegate: delegate)
         if try await delegate.shouldFinishLaunching(game: Game.shared) == true {
-            Game.shared.platform.main()
+            Platform.current.main()
         }
     }
 }

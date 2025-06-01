@@ -80,7 +80,7 @@ public struct BoundingEllipsoid2D: Collider2D, Sendable {
         return interpenetration
     }
     
-    public func interpenetration(comparing collider: Collider2D) -> Interpenetration2D? {
+    public func interpenetration(comparing collider: any Collider2D) -> Interpenetration2D? {
         switch collider {
         case let collider as BoundingEllipsoid2D:
             return self.interpenetration(comparing: collider)

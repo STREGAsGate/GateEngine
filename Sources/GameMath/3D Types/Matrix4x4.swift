@@ -667,7 +667,7 @@ extension Matrix4x4 {
 //MARK: - Operators
 #if GameMathUseSIMD
 #if canImport(simd)
-import simd
+public import simd
 #endif
 public extension Matrix4x4 {
     @inlinable
@@ -785,12 +785,12 @@ public extension Matrix4x4 {
 extension Matrix4x4: Equatable {}
 extension Matrix4x4: Hashable {}
 extension Matrix4x4: Codable {
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p])
     }
 
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let storage = try container.decode(Array<Float>.self)
         self.init(storage)

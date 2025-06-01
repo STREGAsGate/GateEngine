@@ -100,26 +100,35 @@ public extension Direction3 {
 }
 
 public extension Direction3  {
+    @_disfavoredOverload
     @inlinable
-    func angle<T: Angle>(to rhs: Self) -> T {
+    func angle(to rhs: Self) -> Degrees {
         let v0 = self.normalized
         let v1 = rhs.normalized
         
         let dot = v0.dot(v1)
-        return T(rawValueAsRadians: acos(dot / (v0.magnitude * v1.magnitude)))
+        return Degrees(rawValueAsRadians: acos(dot / (v0.magnitude * v1.magnitude)))
     }
     @inlinable
-    var angleAroundX: some Angle {
+    func angle(to rhs: Self) -> Radians {
+        let v0 = self.normalized
+        let v1 = rhs.normalized
+        
+        let dot = v0.dot(v1)
+        return Radians(rawValueAsRadians: acos(dot / (v0.magnitude * v1.magnitude)))
+    }
+    @inlinable
+    var angleAroundX: Radians {
         assert(isFinite)
         return Radians(rawValueAsRadians: atan2(y, z))
     }
     @inlinable
-    var angleAroundY: some Angle {
+    var angleAroundY: Radians {
         assert(isFinite)
         return Radians(rawValueAsRadians: atan2(x, z))
     }
     @inlinable
-    var angleAroundZ: some Angle {
+    var angleAroundZ: Radians {
         assert(isFinite)
         return Radians(rawValueAsRadians: atan2(y, x))
     }
@@ -176,13 +185,13 @@ public extension Direction3 {
 extension Direction3: Hashable {}
 extension Direction3: Codable {
     @inlinable
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([x, y, z])
     }
 
     @inlinable
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let values = try container.decode(Array<Float>.self)
         self.init(values[0], values[1], values[2])

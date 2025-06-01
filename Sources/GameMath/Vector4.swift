@@ -7,10 +7,10 @@
 
 #if GameMathUseSIMD
 #if canImport(simd)
-import simd
+public import simd
 #endif
 #if canImport(Accelerate)
-import Accelerate
+public import Accelerate
 #endif
 
 public protocol Vector4: SIMD, Equatable, Sendable, ExpressibleByFloatLiteral where FloatLiteralType == Float, Scalar == Float, MaskStorage == SIMD4<Float>.MaskStorage, ArrayLiteralElement == Scalar {
@@ -279,18 +279,20 @@ extension Vector4 {
 
 extension Vector4 {
     @inlinable
-    public func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
-        return Self(self.x.interpolated(to: to.x, method),
-                    self.y.interpolated(to: to.y, method),
-                    self.z.interpolated(to: to.z, method),
-                    self.w.interpolated(to: to.w, method))
+    public func interpolated(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
+        return Self(
+            self.x.interpolated(to: to.x, method, options: options),
+            self.y.interpolated(to: to.y, method, options: options),
+            self.z.interpolated(to: to.z, method, options: options),
+            self.w.interpolated(to: to.w, method, options: options),
+        )
     }
     @inlinable
-    public mutating func interpolate(to: Self, _ method: InterpolationMethod) {
-        self.x.interpolate(to: to.x, method)
-        self.y.interpolate(to: to.y, method)
-        self.z.interpolate(to: to.z, method)
-        self.w.interpolate(to: to.w, method)
+    public mutating func interpolate(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+        self.x.interpolate(to: to.x, method, options: options)
+        self.y.interpolate(to: to.y, method, options: options)
+        self.z.interpolate(to: to.z, method, options: options)
+        self.w.interpolate(to: to.w, method, options: options)
     }
 }
 
@@ -635,13 +637,13 @@ public extension Vector4 {
 
 extension Vector4 where Self: Codable {
     @inlinable
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([x, y, z, w])
     }
     
     @inlinable
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let values = try container.decode(Array<Float>.self)
         self.init(values[0], values[1], values[2], values[3])

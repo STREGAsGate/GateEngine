@@ -419,29 +419,29 @@ public extension Quaternion {
 
 public extension Quaternion {
     @inlinable
-    func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
+    func interpolated(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
         switch method {
-        case let .linear(factor, options):
+        case .linear(let factor):
             if options.contains(.shortest) {
                 return self.slerped(to: to, factor: factor)
             }else{
                 return self.lerped(to: to, factor: factor)
             }
-        case let .easeIn(factor, options):
+        case .easeIn(let factor):
             let easeInFactor = 1 - cos((factor * .pi) / 2)
             if options.contains(.shortest) {
                 return self.slerped(to: to, factor: easeInFactor)
             }else{
                 return self.lerped(to: to, factor: easeInFactor)
             }
-        case let .easeOut(factor, options):
+        case .easeOut(let factor):
             let easeOutFactor = sin((factor * .pi) / 2)
             if options.contains(.shortest) {
                 return self.slerped(to: to, factor: easeOutFactor)
             }else{
                 return self.lerped(to: to, factor: easeOutFactor)
             }
-        case let .easeInOut(factor, options):
+        case .easeInOut(let factor):
             let easeInOutFactor = -(cos(.pi * factor) - 1) / 2
             if options.contains(.shortest) {
                 return self.slerped(to: to, factor: easeInOutFactor)
@@ -451,12 +451,9 @@ public extension Quaternion {
         }
     }
     
-    
-    //let easeInOutFactor = -(cos(.pi * factor) - 1) / 2
-    
     @inlinable
-    mutating func interpolate(to: Self, _ method: InterpolationMethod) {
-        self = self.interpolated(to: to, method)
+    mutating func interpolate(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+        self = self.interpolated(to: to, method, options: options)
     }
 }
 
@@ -617,12 +614,12 @@ extension Quaternion: Equatable {}
 extension Quaternion: Hashable {}
 
 extension Quaternion: Codable {
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([x, y, z, w])
     }
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let values = try container.decode(Array<Float>.self)
         

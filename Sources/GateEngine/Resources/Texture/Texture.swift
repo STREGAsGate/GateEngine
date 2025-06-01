@@ -30,7 +30,7 @@ public enum MipMapping: Hashable, Sendable {
 @MainActor public class Texture: Resource, _Resource {
     internal let cacheKey: ResourceManager.Cache.TextureKey
     var cache: any ResourceCache { 
-        return Game.shared.resourceManager.textureCache(for: cacheKey)!
+        return Game.unsafeShared.resourceManager.textureCache(for: cacheKey)!
     }
     internal unowned var renderTarget: (any _RenderTargetProtocol)?
     private let sizeHint: Size2?
@@ -68,7 +68,7 @@ public enum MipMapping: Hashable, Sendable {
 
     @usableFromInline
     internal var textureBackend: (any TextureBackend)? {
-        return Game.shared.resourceManager.textureCache(for: cacheKey)?.textureBackend
+        return Game.unsafeShared.resourceManager.textureCache(for: cacheKey)?.textureBackend
     }
     
     @inlinable
@@ -108,7 +108,7 @@ public enum MipMapping: Hashable, Sendable {
         mipMapping: MipMapping = .auto(),
         options: TextureImporterOptions = .none
     ) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.renderTarget = nil
         self.cacheKey = resourceManager.textureCacheKey(
             path: path,
@@ -121,7 +121,7 @@ public enum MipMapping: Hashable, Sendable {
     }
 
     public init(data: Data, size: Size2, mipMapping: MipMapping) {
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.renderTarget = nil
         self.cacheKey = resourceManager.textureCacheKey(
             data: data,
@@ -135,7 +135,7 @@ public enum MipMapping: Hashable, Sendable {
 
     init(renderTarget: any _RenderTargetProtocol) {
         renderTarget.reshapeIfNeeded()
-        let resourceManager = Game.shared.resourceManager
+        let resourceManager = Game.unsafeShared.resourceManager
         self.renderTarget = renderTarget
         self.cacheKey = resourceManager.textureCacheKey(
             renderTargetBackend: renderTarget.renderTargetBackend
@@ -146,7 +146,10 @@ public enum MipMapping: Hashable, Sendable {
     }
 
     deinit {
-        Game.unsafeShared.resourceManager.decrementReference(cacheKey)
+        let cacheKey = self.cacheKey
+        Task { @MainActor in
+            Game.unsafeShared.resourceManager.decrementReference(cacheKey)
+        }
     }
 }
 
@@ -220,7 +223,11 @@ extension ResourceManager.Cache {
             if let name = textureOptions.subobjectName {
                 string += ", Named: \(name)"
             }
-            string += ", MipMapping: \(mipMapping)"
+            if case .auto(.max) = mipMapping {
+                string += ", MipMapping: auto(levels: .max)"
+            }else{
+                string += ", MipMapping: \(mipMapping)"
+            }
             return string
         }
     }
@@ -247,6 +254,7 @@ extension ResourceManager.Cache {
     }
 }
 
+@MainActor
 extension ResourceManager {
     func changeCacheHint(_ cacheHint: CacheHint, for key: Cache.TextureKey) {
         if let cache = self.cache.textures[key] {
@@ -255,9 +263,7 @@ extension ResourceManager {
         }
     }
 
-    @MainActor func textureCacheKey(path: String, mipMapping: MipMapping, options: TextureImporterOptions)
-        -> Cache.TextureKey
-    {
+    func textureCacheKey(path: String, mipMapping: MipMapping, options: TextureImporterOptions) -> Cache.TextureKey {
         let key = Cache.TextureKey(
             requestedPath: path,
             mipMapping: mipMapping,
@@ -270,31 +276,33 @@ extension ResourceManager {
         return key
     }
 
-    @MainActor func textureCacheKey(data: Data, size: Size2, mipMapping: MipMapping) -> Cache.TextureKey {
+    func textureCacheKey(data: Data, size: Size2, mipMapping: MipMapping) -> Cache.TextureKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.TextureKey(
             requestedPath: path,
             mipMapping: mipMapping,
             textureOptions: .none
         )
+        let cache = self.cache
         if cache.textures[key] == nil {
             cache.textures[key] = Cache.TextureCache()
-            Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached(priority: .high) {
-                let backend = await self.textureBackend(
+            Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
+            Task.detached {
+                let backend = await ResourceManager.textureBackend(
                     data: data,
                     size: size,
                     mipMapping: mipMapping
                 )
                 Task { @MainActor in
-                    if let cache = self.cache.textures[key] {
+                    if let cache = cache.textures[key] {
                         cache.textureBackend = backend
                         cache.state = .ready
+                        
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
+                await Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
             }
         }
         return key
@@ -303,20 +311,18 @@ extension ResourceManager {
     func textureCacheKey(renderTargetBackend: any RenderTargetBackend) -> Cache.TextureKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.TextureKey(requestedPath: path, mipMapping: .none, textureOptions: .none)
+        let cache = self.cache
         if cache.textures[key] == nil {
             let newCache = Cache.TextureCache()
             newCache.isRenderTarget = true
             cache.textures[key] = newCache
-            Task.detached(priority: .high) {
-                let backend = await self.textureBackend(renderTargetBackend: renderTargetBackend)
-                Task { @MainActor in
-                    if let cache = self.cache.textures[key] {
-                        cache.textureBackend = backend
-                        cache.state = .ready
-                    }else{
-                        Log.warn("Resource \"(Generated Texture)\" was deallocated before being loaded.")
-                    }
-                }
+            
+            let backend = self.textureBackend(renderTargetBackend: renderTargetBackend)
+            if let cache = cache.textures[key] {
+                cache.textureBackend = backend
+                cache.state = .ready
+            }else{
+                Log.warn("Resource \"(Generated Texture)\" was deallocated before being loaded.")
             }
         }
         return key
@@ -344,18 +350,16 @@ extension ResourceManager {
     func reloadTextureIfNeeded(key: Cache.TextureKey) {
         // Skip if made from rawCacheID
         if key.requestedPath[key.requestedPath.startIndex] != "$" {
-            Task {
-                if self.textureNeedsReload(key: key) {
-                    await self._reloadTexture(key: key)
-                }
+            if self.textureNeedsReload(key: key) {
+                self._reloadTexture(key: key)
             }
         }
     }
 
-    @MainActor 
     private func _reloadTexture(key: Cache.TextureKey) {
-        Game.shared.resourceManager.incrementLoading(path: key.requestedPath)
-        Task.detached(priority: .high) {
+        Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
+        let cache = self.cache
+        Task.detached {
             do {
                 let path = key.requestedPath
                 let fileExtension = URL(fileURLWithPath: path).pathExtension
@@ -363,38 +367,37 @@ extension ResourceManager {
                     throw GateEngineError.failedToLoad("Unknown file type.")
                 }
                 
-                guard
-                    let importer = try await Game.shared.resourceManager.textureImporterForPath(path)
-                else {
+                guard let importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path) else {
                     throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
                 }
-
+                
                 let texture = try await importer.loadTexture(options: key.textureOptions)
                 guard texture.data.isEmpty == false else {
                     throw GateEngineError.failedToLoad("File is empty.")
                 }
-
-                let backend = await self.textureBackend(
+                
+                let backend = await ResourceManager.textureBackend(
                     data: texture.data,
                     size: texture.size,
                     mipMapping: key.mipMapping
                 )
                 Task { @MainActor in
-                    if let cache = self.cache.textures[key] {
+                    if let cache = cache.textures[key] {
                         cache.textureBackend = backend
+                        cache.lastLoaded = Date()
                         cache.state = .ready
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being re-loaded.")
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in
                     Log.warn("Resource \"\(key.requestedPath)\"", error)
-                    if let cache = self.cache.textures[key] {
+                    if let cache = cache.textures[key] {
                         cache.state = .failed(error: error)
                     }
-                    Game.shared.resourceManager.decrementLoading(path: key.requestedPath)
+                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch {
                 Log.fatalError("error must be a GateEngineError")
@@ -407,10 +410,10 @@ extension ResourceManager {
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
         #if GATEENGINE_ENABLE_HOTRELOADING
         guard let cache = cache.textures[key] else { return false }
+        guard let path = Platform.current.synchronousLocateResource(from: key.requestedPath) else {return false}
         do {
-            let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)
-            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date
-            {
+            let attributes = try FileManager.default.attributesOfItem(atPath: path)
+            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date {
                 return modified > cache.lastLoaded
             } else {
                 return false
@@ -424,8 +427,7 @@ extension ResourceManager {
         #endif
     }
 
-    func textureBackend(data: Data, size: Size2, mipMapping: MipMapping) async -> any TextureBackend
-    {
+    nonisolated static func textureBackend(data: Data, size: Size2, mipMapping: MipMapping) async -> any TextureBackend {
         #if GATEENGINE_FORCE_OPNEGL_APPLE
         return await OpenGLTexture(data: data, size: size, mipMapping: mipMapping)
         #elseif canImport(MetalKit)
@@ -445,22 +447,22 @@ extension ResourceManager {
         #error("Not implemented")
         #endif
     }
-    func textureBackend(renderTargetBackend: any RenderTargetBackend) async -> any TextureBackend {
+    func textureBackend(renderTargetBackend: any RenderTargetBackend) -> any TextureBackend {
         #if GATEENGINE_FORCE_OPNEGL_APPLE
-        return await OpenGLTexture(renderTargetBackend: renderTargetBackend)
+        return OpenGLTexture(renderTargetBackend: renderTargetBackend)
         #elseif canImport(MetalKit)
         #if canImport(GLKit)
-        if await MetalRenderer.isSupported == false {
-            return await OpenGLTexture(renderTargetBackend: renderTargetBackend)
+        if MetalRenderer.isSupported == false {
+            return OpenGLTexture(renderTargetBackend: renderTargetBackend)
         }
         #endif
-        return await MetalTexture(renderTargetBackend: renderTargetBackend)
+        return MetalTexture(renderTargetBackend: renderTargetBackend)
         #elseif canImport(WebGL2)
-        return await WebGL2Texture(renderTargetBackend: renderTargetBackend)
+        return WebGL2Texture(renderTargetBackend: renderTargetBackend)
         #elseif canImport(WinSDK)
-        return await DX12Texture(renderTargetBackend: renderTargetBackend)
+        return DX12Texture(renderTargetBackend: renderTargetBackend)
         #elseif canImport(OpenGL_GateEngine)
-        return await OpenGLTexture(renderTargetBackend: renderTargetBackend)
+        return OpenGLTexture(renderTargetBackend: renderTargetBackend)
         #else
         #error("Not implemented")
         #endif

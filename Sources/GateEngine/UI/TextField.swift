@@ -149,7 +149,7 @@ public final class TextField: View {
         self.needsUpdateTexture = true
         self.text = text
         self.font = font
-        self.fontSize = fontSize * 2
+        self.fontSize = fontSize
         self.style = style
         self.material = Material(color: textColor)
         super.init()

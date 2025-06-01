@@ -6,6 +6,10 @@
  */
 
 public final class Entity: Identifiable {
+    /// A string to identify this Entity for the purpose of convenience and debugging.
+    ///
+    /// It is more performant and much safer to store the `entity.id`
+    ///- warning: `name` is not required to be unique. Giving many entites the same name will result in undefined look up behavior. It is strongly recommended to find entites based on their components or the `id` value.
     public var name: String? = nil
     public let priority: Priority
 
@@ -31,6 +35,21 @@ public final class Entity: Identifiable {
                 self.insert(component)
             }
         }
+    }
+}
+
+extension Entity: CustomStringConvertible, CustomDebugStringConvertible {
+    public var description: String {
+        if let name {
+            return name
+        }
+        return "Entity(\(self.id))"
+    }
+    public var debugDescription: String {
+        if let name {
+            return "Entity(\(name))"
+        }
+        return "Entity(\(self.id))"
     }
 }
 
@@ -66,6 +85,20 @@ extension Entity {
     /// - returns The component, addind it to the entity if necessary
     @inlinable
     public subscript<T: Component>(_ type: T.Type) -> T {
+        get {
+            let componentID = type.componentID.value
+            #if DEBUG
+            Log.assert(hasComponent(at: componentID), "Component \"\(type)\" is not a member of this entity.")
+            #endif
+            return self.getComponent(at: componentID) as! T
+        }
+        set {
+            self.insert(newValue)
+        }
+    }
+    
+    @inlinable
+    public subscript<T: ResourceConstrainedComponent>(_ type: T.Type) -> T {
         get {
             let componentID = type.componentID.value
             #if DEBUG

@@ -75,8 +75,15 @@
     }
 
     public var animationIsFinished: Bool {
-        guard skeleton.isReady && activeAnimation?.isReady == true else {return false}
-        return activeAnimation?.isFinished ?? true
+        guard skeleton.isReady else {return false}
+        if let activeAnimation {
+            if activeAnimation.isReady == false {
+                return false
+            }
+            return activeAnimation.isFinished
+        }
+        // When no animation is active, always be finished
+        return true
     }
 
     public var animationRepeats: Bool {
@@ -334,8 +341,9 @@ public class RigAttachmentComponent: Component {
 }
 
 extension Entity {
+    @MainActor
     @inlinable
-    public var rig3DComponent: Rig3DComponent {
-        return self[Rig3DComponent.self]
+    public var rig3DComponent: Rig3DComponent? {
+        return self.component(ofType: Rig3DComponent.self)
     }
 }

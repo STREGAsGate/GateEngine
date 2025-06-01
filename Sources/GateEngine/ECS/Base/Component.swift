@@ -24,7 +24,7 @@ extension Component {
 }
 
 public struct ComponentID: Equatable, Hashable, Sendable {
-    static let idGenerator = IDGenerator<Int>(startValue: 0)
+    nonisolated(unsafe) private static let idGenerator = IDGenerator<Int>(startValue: 0)
     @usableFromInline
     internal let value: Int
     public init() {

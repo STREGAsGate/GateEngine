@@ -292,7 +292,7 @@ extension GamePad {
     }
 }
 
-@MainActor public class GamePad {
+@MainActor public final class GamePad {
     internal let interpreter: any GamePadInterpreter
     internal var identifier: Any? = nil
 
@@ -331,9 +331,7 @@ extension GamePad {
         var _wrappedValue: T
         public var wrappedValue: T {
             get {
-                Task(priority: .high) {
-                    gamePad?.interpreter.hid.gamePads.pollIfNeeded()
-                }
+                gamePad?.interpreter.hid.gamePads.pollIfNeeded()
                 return _wrappedValue
             }
             set {
@@ -487,16 +485,16 @@ extension GamePad {
         @Polled public internal(set) var xAxis: Float = 0
         @Polled public internal(set) var yAxis: Float = 0
 
-        public func xAxisWithDeadzone(_ deadzone: Float = 0.1) -> Float {
+        public func xAxisWithDeadzone(_ deadzone: Float = defaultDeadzone) -> Float {
             guard abs(xAxis) > deadzone else { return 0 }
             return xAxis
         }
-        public func yAxisWithDeadzone(_ deadzone: Float = 0.1) -> Float {
+        public func yAxisWithDeadzone(_ deadzone: Float = defaultDeadzone) -> Float {
             guard abs(yAxis) > deadzone else { return 0 }
             return yAxis
         }
 
-        public func isWithinDeadzone(_ deadzone: Float = 0.1) -> Bool {
+        public func isWithinDeadzone(_ deadzone: Float = defaultDeadzone) -> Bool {
             return abs(xAxis) < deadzone && abs(yAxis) < deadzone
         }
 
@@ -512,7 +510,7 @@ extension GamePad {
 
         /// The stick is angled in a direction
         public var isPushed: Bool {
-            return isWithinDeadzone(0.1) == false
+            return isWithinDeadzone(Self.defaultDeadzone) == false
         }
 
         /// The amount 0 ... 1 of the sticks pushed direction
@@ -525,6 +523,8 @@ extension GamePad {
             self.xAxis = 0
             self.yAxis = 0
         }
+        
+        nonisolated public static let defaultDeadzone: Float = 0.1
     }
 
     @MainActor public class DPad {

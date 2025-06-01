@@ -81,21 +81,6 @@ public struct AxisAlignedBoundingBox2D: Collider2D, Sendable {
         self.radius = _radius
     }
     
-    @available(*, unavailable  /*0.0.8*/, message: "Use self.center = newValue instead.")
-    mutating public func update(center: Position2) {
-        self.center = center
-    }
-    @available(*, unavailable  /*0.0.8*/, message: "Use self.offset = newValue instead.")
-    mutating public func update(offset: Position2) {
-        self.offset = offset
-        self._offset = offset
-    }
-    @available(*, unavailable  /*0.0.8*/, message: "Use self.radius = newValue instead.")
-    mutating public func update(radius: Size2) {
-        self._radius = radius
-        self.radius = radius
-    }
-    
     mutating public func update(transform: Transform2) {
         center = transform.position
         offset = _offset * transform.scale
@@ -203,7 +188,7 @@ public struct AxisAlignedBoundingBox2D: Collider2D, Sendable {
     }
 
     @_disfavoredOverload
-    public func interpenetration(comparing collider: Collider2D) -> Interpenetration2D? {
+    public func interpenetration(comparing collider: any Collider2D) -> Interpenetration2D? {
         switch collider {
         case let collider as BoundingCircle2D:
             return interpenetration(comparing: collider)
@@ -374,14 +359,14 @@ public extension AxisAlignedBoundingBox2D {
 }
 
 extension AxisAlignedBoundingBox2D: Codable {
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode([center.x, center.y,
                               _offset.x, _offset.y,
                               _radius.x, _radius.y])
     }
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let floats = try container.decode(Array<Float>.self)
         

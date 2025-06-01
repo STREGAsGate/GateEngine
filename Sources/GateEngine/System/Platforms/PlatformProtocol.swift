@@ -58,9 +58,6 @@ internal protocol InternalPlatformProtocol: PlatformProtocol {
     func systemTime() -> Double
     @MainActor func main()
 
-    func saveState(_ state: Game.State, as name: String) async throws
-    func loadState(named name: String) async -> Game.State
-
     #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
     func saveStatePath(forStateNamed name: String) throws -> String
     #endif
@@ -248,8 +245,7 @@ extension InternalPlatformProtocol {
 
 extension InternalPlatformProtocol {
     func saveStatePath(forStateNamed name: String) throws -> String {
-        return URL(fileURLWithPath: try fileSystem.pathForSearchPath(.persistent, in: .currentUser))
-            .appendingPathComponent(name).path
+        return URL(fileURLWithPath: try fileSystem.pathForSearchPath(.persistent, in: .currentUser)).appendingPathComponent(name).path
     }
 
     #if os(macOS) || os(iOS) || os(tvOS) || os(Windows) || os(Linux)
@@ -261,36 +257,6 @@ extension InternalPlatformProtocol {
         return Double(time.tv_sec) + (Double(time.tv_nsec) / 1e+9)
     }
     #endif
-}
-
-extension InternalPlatformProtocol {
-    func loadState(named name: String) async -> Game.State {
-        do {
-            let data = try await fileSystem.read(from: try saveStatePath(forStateNamed: name))
-            let state = try JSONDecoder().decode(Game.State.self, from: data)
-            state.name = name
-            return state
-        } catch let error as NSError {
-            if error.domain == NSCocoaErrorDomain && error.code == 260 {  // File not found
-                Log.debug("No Game State \"\(name)\" found. Creating new Game State.")
-            } else if error.domain == NSPOSIXErrorDomain && error.code == 2 {  // File not found
-                Log.debug("No Game State \"\(name)\" found. Creating new Game State.")
-            } else {
-                Log.error("Game State \"\(name)\" failed to restore:", error)
-            }
-            return Game.State(name: name)
-        }
-    }
-
-    func saveState(_ state: Game.State, as name: String) async throws {
-        let data = try JSONEncoder().encode(state)
-        let path = try self.saveStatePath(forStateNamed: name)
-        let dir = URL(fileURLWithPath: path).deletingLastPathComponent().path
-        if await fileSystem.itemExists(at: dir) == false {
-            try await fileSystem.createDirectory(at: dir)
-        }
-        try await fileSystem.write(data, to: path)
-    }
 }
 #endif
 

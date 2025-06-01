@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol SynchronousFileSystem {
+public protocol SynchronousFileSystem: Sendable {
     func itemExists(at path: String) -> Bool
     func itemType(at path: String) -> FileSystemItemType?
 

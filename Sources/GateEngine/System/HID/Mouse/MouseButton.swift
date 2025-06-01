@@ -111,7 +111,7 @@ extension Mouse {
             self.isPressed = pressed
 
             if pressed {  // On Down increment multi-click
-                let now: Double = Game.shared.platform.systemTime()
+                let now: Double = Platform.current.systemTime()
                 let delta: Double = now - multiClick.previousTime
                 var isMultiClick = delta <= multiClickTime
                 if isMultiClick {

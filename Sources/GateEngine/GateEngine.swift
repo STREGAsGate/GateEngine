@@ -6,9 +6,9 @@
  */
 
 import Foundation
+
 // Windows doesn't always link @_exported, so we import too.
-import GameMath
-@_exported import GameMath
+@_exported public import GameMath
 
 @_exported import struct Foundation.Data
 @_exported import struct Foundation.Date
@@ -150,7 +150,7 @@ extension CommandLine {
 @usableFromInline
 internal enum Log {
     @usableFromInline
-    static var onceHashes: Set<Int> = []
+    nonisolated(unsafe) static var onceHashes: Set<Int> = []
 
     @usableFromInline
     enum ANSIColors: String, CustomStringConvertible {
@@ -170,7 +170,7 @@ internal enum Log {
         case `default` = "\u{001B}[0;0m"
     }
 
-    @inlinable @usableFromInline
+    @inlinable
     static var supportsColor: Bool {
         #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
         if CommandLine.isDebuggingWithXcode {

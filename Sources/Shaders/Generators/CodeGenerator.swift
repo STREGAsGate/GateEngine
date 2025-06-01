@@ -5,7 +5,9 @@
  * http://stregasgate.com
  */
 
-public class CodeGenerator {
+import GameMath
+
+package class CodeGenerator {
     struct Scope {
         var nextVarIndex: Int
         var varNames: [ObjectIdentifier: String] = [:]
@@ -482,7 +484,7 @@ public class CodeGenerator {
 }
 
 
-public extension CodeGenerator {
+package extension CodeGenerator {
     static func addingLineNumbers(_ string: String) -> String {
         var string = string
         var count = 0

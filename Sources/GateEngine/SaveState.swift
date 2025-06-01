@@ -5,8 +5,7 @@
  * http://stregasgate.com
  */
 
-import class Foundation.JSONDecoder
-import class Foundation.JSONEncoder
+import Foundation
 
 /// Recommended values for game state storage conform to this protocol.
 ///
@@ -325,8 +324,32 @@ extension Game {
         internal var name: String! = nil
 
         /// Persist the current values which will be loaded next time the game is run
-        @MainActor public func save() async throws {
-            try await Game.shared.platform.saveState(self, as: name)
+        public func save() async throws {
+            let data = try JSONEncoder().encode(self)
+            let path = try Platform.current.saveStatePath(forStateNamed: name)
+            let dir = URL(fileURLWithPath: path).deletingLastPathComponent().path
+            if await Platform.current.fileSystem.itemExists(at: dir) == false {
+                try await Platform.current.fileSystem.createDirectory(at: dir)
+            }
+            try await Platform.current.fileSystem.write(data, to: path)
+        }
+        
+        public static func loadState(named name: String) async -> Game.State {
+            do {
+                let data = try await Platform.current.fileSystem.read(from: try Platform.current.saveStatePath(forStateNamed: name))
+                let state = try JSONDecoder().decode(Game.State.self, from: data)
+                state.name = name
+                return state
+            } catch let error as NSError {
+                if error.domain == NSCocoaErrorDomain && error.code == 260 {  // File not found
+                    Log.debug("No Game State \"\(name)\" found. Creating new Game State.")
+                } else if error.domain == NSPOSIXErrorDomain && error.code == 2 {  // File not found
+                    Log.debug("No Game State \"\(name)\" found. Creating new Game State.")
+                } else {
+                    Log.error("Game State \"\(name)\" failed to restore:", error)
+                }
+                return Game.State(name: name)
+            }
         }
     }
 }
