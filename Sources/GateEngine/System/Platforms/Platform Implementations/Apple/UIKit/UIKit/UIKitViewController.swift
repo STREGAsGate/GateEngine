@@ -72,6 +72,28 @@ internal class UIKitViewController: GCEventViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    private var touchesIDs: [ObjectIdentifier: UUID] = [:]
+    private var surfaceIDs: [ObjectIdentifier: UUID] = [:]
+    
+    func id(forTouch touch: UITouch) -> UUID {
+        let objectID = ObjectIdentifier(touch)
+        if let id = touchesIDs[objectID] {
+            return id
+        }
+        let id = UUID()
+        touchesIDs[objectID] = id
+        return id
+    }
+    func id(forSurface device: AnyObject) -> UUID {
+        let objectID = ObjectIdentifier(device)
+        if let id = surfaceIDs[objectID] {
+            return id
+        }
+        let id = UUID()
+        surfaceIDs[objectID] = id
+        return id
+    }
 
     private func type(for touch: UITouch) -> TouchKind {
         switch touch.type {
@@ -146,7 +168,7 @@ internal class UIKitViewController: GCEventViewController {
                 continue
             }
             #endif
-            let id = ObjectIdentifier(touch)
+            let id = self.id(forTouch: touch)
             switch touch.type {
             case .direct, .pencil:
                 Game.shared.hid.screenTouchChange(
@@ -162,7 +184,7 @@ internal class UIKitViewController: GCEventViewController {
                 Game.shared.hid.surfaceTouchChange(
                     id: id,
                     event: .began,
-                    surfaceID: ObjectIdentifier(UIDevice.current),
+                    surfaceID: self.id(forSurface: UIDevice.current),
                     normalizedPosition: location.position,
                     pressure: Float(touch.force / touch.maximumPossibleForce),
                     window: self.window.window
@@ -189,7 +211,7 @@ internal class UIKitViewController: GCEventViewController {
                 continue
             }
             #endif
-            let id = ObjectIdentifier(touch)
+            let id = self.id(forTouch: touch)
             switch touch.type {
             case .direct, .pencil:
                 Game.shared.hid.screenTouchChange(
@@ -205,7 +227,7 @@ internal class UIKitViewController: GCEventViewController {
                 Game.shared.hid.surfaceTouchChange(
                     id: id,
                     event: .moved,
-                    surfaceID: ObjectIdentifier(UIDevice.current),
+                    surfaceID: self.id(forSurface: UIDevice.current),
                     normalizedPosition: location.position,
                     pressure: Float(touch.force / touch.maximumPossibleForce),
                     window: self.window.window
@@ -232,7 +254,7 @@ internal class UIKitViewController: GCEventViewController {
                 continue
             }
             #endif
-            let id = ObjectIdentifier(touch)
+            let id = self.id(forTouch: touch)
             switch touch.type {
             case .direct, .pencil:
                 Game.shared.hid.screenTouchChange(
@@ -248,7 +270,7 @@ internal class UIKitViewController: GCEventViewController {
                 Game.shared.hid.surfaceTouchChange(
                     id: id,
                     event: .ended,
-                    surfaceID: ObjectIdentifier(UIDevice.current),
+                    surfaceID: self.id(forSurface: UIDevice.current),
                     normalizedPosition: location.position,
                     pressure: Float(touch.force / touch.maximumPossibleForce),
                     window: self.window.window
@@ -256,6 +278,7 @@ internal class UIKitViewController: GCEventViewController {
             default:
                 break
             }
+            self.touchesIDs.removeValue(forKey: ObjectIdentifier(touch))
         }
     }
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -275,7 +298,7 @@ internal class UIKitViewController: GCEventViewController {
                 continue
             }
             #endif
-            let id = ObjectIdentifier(touch)
+            let id = self.id(forTouch: touch)
             switch touch.type {
             case .direct, .pencil:
                 Game.shared.hid.screenTouchChange(
@@ -291,7 +314,7 @@ internal class UIKitViewController: GCEventViewController {
                 Game.shared.hid.surfaceTouchChange(
                     id: id,
                     event: .canceled,
-                    surfaceID: ObjectIdentifier(UIDevice.current),
+                    surfaceID: self.id(forSurface: UIDevice.current),
                     normalizedPosition: location.position,
                     pressure: Float(touch.force / touch.maximumPossibleForce),
                     window: self.window.window
@@ -299,6 +322,7 @@ internal class UIKitViewController: GCEventViewController {
             default:
                 break
             }
+            self.touchesIDs.removeValue(forKey: ObjectIdentifier(touch))
         }
     }
 

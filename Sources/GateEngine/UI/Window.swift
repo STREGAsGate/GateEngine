@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 
+import Foundation
 import GameMath
 
 public enum WindowStyle {
@@ -529,7 +530,7 @@ public struct WindowOptions: OptionSet, Sendable {
     var currentlyHitTouchViews: [Touch:View] = [:]
     
     internal func touchChange(
-        id: AnyHashable,
+        id: UUID,
         kind: TouchKind,
         event: TouchChangeEvent,
         position: Position2,
@@ -580,7 +581,7 @@ public struct WindowOptions: OptionSet, Sendable {
     var currentlyHitSurfaceTouchViews: [SurfaceTouch:View] = [:]
     
     internal func surfaceTouchChange(
-        id: AnyHashable,
+        id: UUID,
         kind: TouchKind,
         event: TouchChangeEvent,
         normalizedPosition: Position2,

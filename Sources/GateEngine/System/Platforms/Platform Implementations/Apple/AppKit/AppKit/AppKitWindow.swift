@@ -300,6 +300,26 @@ extension AppKitWindow {
 final class UGNSWindow: AppKit.NSWindow {
     weak var window: Window!
     private var touchesIDs: [ObjectIdentifier: UUID] = [:]
+    private var surfaceIDs: [ObjectIdentifier: UUID] = [:]
+    
+    func id(forTouch touch: NSTouch) -> UUID {
+        let objectID = ObjectIdentifier(touch.identity)
+        if let id = touchesIDs[objectID] {
+            return id
+        }
+        let id = UUID()
+        touchesIDs[objectID] = id
+        return id
+    }
+    func id(forSurface device: AnyObject) -> UUID {
+        let objectID = ObjectIdentifier(device)
+        if let id = surfaceIDs[objectID] {
+            return id
+        }
+        let id = UUID()
+        surfaceIDs[objectID] = id
+        return id
+    }
 
     init(window: Window,
          contentRect: NSRect,
@@ -544,8 +564,7 @@ extension UGNSWindow {
         let touches = event.touches(matching: .began, in: nil)
 
         for touch in touches {
-            let id = UUID()
-            touchesIDs[ObjectIdentifier(touch.identity)] = id
+            let id = self.id(forTouch: touch)
             let type = type(for: touch)
             if let position = locationOfTouch(touch, from: event) {
                 switch touch.type {
@@ -564,7 +583,7 @@ extension UGNSWindow {
                         Game.shared.hid.surfaceTouchChange(
                             id: id,
                             event: .began,
-                            surfaceID: ObjectIdentifier(device),
+                            surfaceID: self.id(forSurface: device),
                             normalizedPosition: position,
                             pressure: 0,
                             window: window
@@ -581,7 +600,7 @@ extension UGNSWindow {
         let touches = event.touches(matching: .moved, in: nil)
 
         for touch in touches {
-            guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else { continue }
+            let id = self.id(forTouch: touch)
             let type = type(for: touch)
             if let position = locationOfTouch(touch, from: event) {
                 switch touch.type {
@@ -600,7 +619,7 @@ extension UGNSWindow {
                         Game.shared.hid.surfaceTouchChange(
                             id: id,
                             event: .moved,
-                            surfaceID: ObjectIdentifier(device),
+                            surfaceID: self.id(forSurface: device),
                             normalizedPosition: position,
                             pressure: 0,
                             window: window
@@ -617,7 +636,7 @@ extension UGNSWindow {
         let touches = event.touches(matching: .ended, in: nil)
 
         for touch in touches {
-            guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else { continue }
+            let id = self.id(forTouch: touch)
             let type = type(for: touch)
             if let position = locationOfTouch(touch, from: event) {
                 switch touch.type {
@@ -636,7 +655,7 @@ extension UGNSWindow {
                         Game.shared.hid.surfaceTouchChange(
                             id: id,
                             event: .ended,
-                            surfaceID: ObjectIdentifier(device),
+                            surfaceID: self.id(forSurface: device),
                             normalizedPosition: position,
                             pressure: 0,
                             window: window
@@ -654,7 +673,7 @@ extension UGNSWindow {
         let touches = event.touches(matching: .cancelled, in: nil)
 
         for touch in touches {
-            guard let id = touchesIDs[ObjectIdentifier(touch.identity)] else { continue }
+            let id = self.id(forTouch: touch)
             let type = type(for: touch)
             if let position = locationOfTouch(touch, from: event) {
                 switch touch.type {
@@ -673,7 +692,7 @@ extension UGNSWindow {
                         Game.shared.hid.surfaceTouchChange(
                             id: id,
                             event: .canceled,
-                            surfaceID: ObjectIdentifier(device),
+                            surfaceID: self.id(forSurface: device),
                             normalizedPosition: position,
                             pressure: 0,
                             window: window

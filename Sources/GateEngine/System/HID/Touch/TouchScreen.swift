@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 
+import Foundation
 import GameMath
 
 extension HID {
@@ -28,12 +29,12 @@ extension HID {
             return touches.first(where: { $0.phase == phase })
         }
 
-        private func existingTouch(_ id: AnyHashable) -> Touch? {
+        private func existingTouch(_ id: UUID) -> Touch? {
             return touches.first(where: { $0.id == id })
         }
 
         internal func touchChange(
-            id: AnyHashable,
+            id: UUID,
             kind: TouchKind,
             event: TouchChangeEvent,
             position: Position2,

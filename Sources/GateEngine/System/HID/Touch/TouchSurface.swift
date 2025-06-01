@@ -5,13 +5,14 @@
  * http://stregasgate.com
  */
 
+import Foundation
 import GameMath
 
 extension HID {
     @MainActor public final class SurfaceDevices {
         public private(set) var surfaces: Set<TouchSurface> = []
 
-        internal func surfaceForID(_ surfaceID: AnyHashable) -> TouchSurface {
+        internal func surfaceForID(_ surfaceID: UUID) -> TouchSurface {
             if let existing = surfaces.first(where: { $0.id == surfaceID }) {
                 return existing
             }
@@ -21,9 +22,9 @@ extension HID {
         }
 
         func surfaceTouchChange(
-            id: AnyHashable,
+            id: UUID,
             event: TouchChangeEvent,
-            surfaceID: AnyHashable,
+            surfaceID: UUID,
             normalizedPosition: Position2
         ) {
             self.surfaceForID(surfaceID).touchChange(
@@ -45,11 +46,11 @@ extension HID {
     }
 
     @MainActor public final class TouchSurface {
-        nonisolated let id: AnyHashable
+        public let id: UUID
         public internal(set) var touches: Set<SurfaceTouch> = []
         internal var nextTouches: Set<SurfaceTouch> = []
 
-        internal init(id: AnyHashable) {
+        internal init(id: UUID) {
             self.id = id
         }
 
@@ -69,12 +70,12 @@ extension HID {
             return touches.first(where: { $0.phase == phase })
         }
 
-        private func existingTouch(_ id: AnyHashable) -> SurfaceTouch? {
+        private func existingTouch(_ id: UUID) -> SurfaceTouch? {
             return touches.first(where: { $0.id == id })
         }
 
         internal func touchChange(
-            id: AnyHashable,
+            id: UUID,
             event: TouchChangeEvent,
             normalizedPosition: Position2
         ) {
@@ -118,7 +119,7 @@ extension HID.TouchSurface: Hashable {
 }
 
 @MainActor public class SurfaceTouch {
-    public internal(set) var id: AnyHashable
+    public let id: UUID
     public internal(set) var position: Position2
     public internal(set) var phase: Phase
     public enum Phase {
@@ -127,7 +128,7 @@ extension HID.TouchSurface: Hashable {
         case cancelled
     }
 
-    init(id: AnyHashable, normalizedPosition: Position2, phase: Phase) {
+    init(id: UUID, normalizedPosition: Position2, phase: Phase) {
         self.id = id
         self.position = normalizedPosition
         self.phase = phase
@@ -136,13 +137,13 @@ extension HID.TouchSurface: Hashable {
 
 extension SurfaceTouch: Equatable {
     @inlinable
-    public static func == (lhs: SurfaceTouch, rhs: SurfaceTouch) -> Bool {
+    public nonisolated static func == (lhs: SurfaceTouch, rhs: SurfaceTouch) -> Bool {
         return lhs.id == rhs.id
     }
 }
 extension SurfaceTouch: Hashable {
     @inlinable
-    public func hash(into hasher: inout Hasher) {
+    public nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
 }

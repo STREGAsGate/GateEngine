@@ -5,10 +5,11 @@
  * http://stregasgate.com
  */
 
+import Foundation
 import GameMath
 
 @MainActor public class Touch {
-    public internal(set) var id: AnyHashable
+    public let id: UUID
     public internal(set) weak var window: Window?
     public internal(set) var position: Position2
     internal var _precisionPosition: Position2?
@@ -35,7 +36,7 @@ import GameMath
         return p
     }
 
-    init(id: AnyHashable, window: Window? = nil, position: Position2, precisionPosition: Position2?, pressure: Float, phase: Phase, kind: TouchKind) {
+    init(id: UUID, window: Window? = nil, position: Position2, precisionPosition: Position2?, pressure: Float, phase: Phase, kind: TouchKind) {
         self.id = id
         self.window = window
         self.position = position
@@ -56,13 +57,13 @@ import GameMath
 
 extension Touch: Equatable {
     @inlinable
-    public static func == (lhs: Touch, rhs: Touch) -> Bool {
+    public nonisolated static func == (lhs: Touch, rhs: Touch) -> Bool {
         return lhs.id == rhs.id
     }
 }
 extension Touch: Hashable {
     @inlinable
-    public func hash(into hasher: inout Hasher) {
+    public nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
 }

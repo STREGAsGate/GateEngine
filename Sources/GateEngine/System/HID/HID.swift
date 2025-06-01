@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 
+import Foundation
 import GameMath
 
 public struct InputReceipts {
@@ -113,7 +114,7 @@ extension HID {
     }
 
     internal func screenTouchChange(
-        id: AnyHashable,
+        id: UUID,
         kind: TouchKind,
         event: TouchChangeEvent,
         position: Position2,
@@ -127,9 +128,9 @@ extension HID {
     }
     
     internal func surfaceTouchChange(
-        id: AnyHashable,
+        id: UUID,
         event: TouchChangeEvent,
-        surfaceID: AnyHashable,
+        surfaceID: UUID,
         normalizedPosition: Position2,
         pressure: Float,
         window: Window?

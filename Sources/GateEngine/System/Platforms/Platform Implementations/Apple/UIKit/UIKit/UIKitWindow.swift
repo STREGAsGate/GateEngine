@@ -75,37 +75,7 @@ final class UIKitWindow: WindowBacking {
         Game.unsafeShared.unsafePlatform.applicationRequestedWindow = false
     }
 
-    @MainActor
-    lazy private(set) var displayLink: CADisplayLink = {
-        if let displayLink = self.uiWindow.screen.displayLink(
-            withTarget: self,
-            selector: #selector(self.getFrame(_:))
-        ) {
-            displayLink.add(to: .main, forMode: .default)
-            return displayLink
-        }
-        // Fallback
-        let displayLink = CADisplayLink(target: self, selector: #selector(self.getFrame(_:)))
-        displayLink.add(to: .main, forMode: .default)
-        if #available(iOS 15.0, tvOS 15.0, *) {
-            displayLink.preferredFrameRateRange = CAFrameRateRange(
-                minimum: 30,
-                maximum: Float(self.uiWindow.screen.maximumFramesPerSecond)
-            )
-        } else {
-            displayLink.preferredFramesPerSecond = self.uiWindow.screen.maximumFramesPerSecond
-        }
-        return displayLink
-    }()
-
-    @objc func getFrame(_ displayLink: CADisplayLink) {
-        self.uiWindow.rootViewController?.view.setNeedsDisplay()
-    }
-
     @MainActor func show() {
-        if Game.shared.renderingAPI == .openGL {
-            _ = displayLink
-        }
         uiWindow.makeKeyAndVisible()
         self.state = .shown
     }
@@ -125,14 +95,6 @@ final class UIKitWindow: WindowBacking {
         #endif
         return MetalRenderTarget(windowBacking: self)
         #endif
-    }
-
-    deinit {
-        Task { @MainActor in
-            if Game.shared.renderingAPI == .openGL {
-                self.displayLink.invalidate()
-            }
-        }
     }
 
     var title: String? {

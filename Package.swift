@@ -704,6 +704,9 @@ extension Array where Element == SwiftSetting {
     #endif
 #endif
 #if compiler(>=5.10)
+    #if hasFeature(StrictConcurrency)
+        enableFeature("StrictConcurrency=complete") // complete mode shows Swift v6 errors as warnings when in Swift v5
+    #endif
     #if !hasFeature(GlobalConcurrency)
         enableFeature("GlobalConcurrency")
     #endif
@@ -737,7 +740,7 @@ extension Array where Element == SwiftSetting {
 #endif
 #if compiler(>=5.6)
     #if !hasFeature(StrictConcurrency)
-        enableFeature("StrictConcurrency=complete")
+        enableFeature("StrictConcurrency")
     #endif
     #if !hasFeature(ExistentialAny)
         enableFeature("ExistentialAny")
