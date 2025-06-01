@@ -46,8 +46,7 @@ public struct UIKitPlatform: PlatformProtocol, InternalPlatformProtocol {
         if path.hasPrefix("/"), await fileSystem.itemExists(at: path) {
             return path
         }
-        let searchPaths =
-            Game.shared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
+        let searchPaths = Game.unsafeShared.delegate.resolvedCustomResourceLocations() + staticResourceLocations
         for searchPath in searchPaths {
             let file = searchPath.appendingPathComponent(path)
             if await fileSystem.itemExists(at: file.path) {
@@ -105,7 +104,7 @@ public struct UIKitPlatform: PlatformProtocol, InternalPlatformProtocol {
 internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
     func applicationDidFinishLaunching(_ application: UIApplication) {
         Task(priority: .high) {
-            await Game.shared.didFinishLaunching()
+            await Game.unsafeShared.didFinishLaunching()
         }
 
         do {  // The following will silence music if a user is already playing their own music
@@ -119,11 +118,11 @@ internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
             }
 
             if session.secondaryAudioShouldBeSilencedHint {
-                if let mixer = Game.shared.audio.musicMixers[.soundTrack] {
+                if let mixer = Game.unsafeShared.audio.musicMixers[.soundTrack] {
                     mixer.volume = 0
                 }
             } else {
-                if let mixer = Game.shared.audio.musicMixers[.soundTrack] {
+                if let mixer = Game.unsafeShared.audio.musicMixers[.soundTrack] {
                     mixer.volume = 1
                 }
             }
@@ -136,11 +135,11 @@ internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
                 let userInfo = notification.userInfo
                 let silenceSecondary = userInfo?[AVAudioSessionSilenceSecondaryAudioHintTypeKey] as? Int
                 if silenceSecondary == 1 {
-                    if let mixer = Game.shared.audio.musicMixers[.soundTrack] {
+                    if let mixer = Game.unsafeShared.audio.musicMixers[.soundTrack] {
                         mixer.volume = 0
                     }
                 } else {
-                    if let mixer = Game.shared.audio.musicMixers[.soundTrack] {
+                    if let mixer = Game.unsafeShared.audio.musicMixers[.soundTrack] {
                         mixer.volume = 1
                     }
                 }
@@ -169,7 +168,7 @@ internal final class UIKitApplicationDelegate: NSObject, UIApplicationDelegate {
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
-        Game.shared.willTerminate()
+        Game.unsafeShared.willTerminate()
         for session in application.openSessions {
             application.requestSceneSessionDestruction(session, options: nil)
         }
@@ -181,19 +180,11 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
         forSession session: UISceneSession,
         options connectionOptions: UIScene.ConnectionOptions
     ) -> UIKitWindow? {
-        if let userActivity =
-            (connectionOptions.userActivities.first(where: { $0.activityType == "GateEngineWindow" }
-            ) ?? session.stateRestorationActivity)
-        {
-            if let requestedWindowIdentifier = userActivity.userInfo?["WindowIdentifier"] as? String
-            {
-                if let createdWindow = Game.shared.windowManager.window(
-                    withIdentifier: requestedWindowIdentifier
-                ) {
+        if let userActivity = (connectionOptions.userActivities.first(where: { $0.activityType == "GateEngineWindow" }) ?? session.stateRestorationActivity) {
+            if let requestedWindowIdentifier = userActivity.userInfo?["WindowIdentifier"] as? String {
+                if let createdWindow = Game.unsafeShared.windowManager.window(withIdentifier: requestedWindowIdentifier) {
                     let uiKitWindow = createdWindow.windowBacking as? UIKitWindow
-                    if let title = UserDefaults.standard.string(
-                        forKey: "Windows/\(createdWindow.identifier)/title"
-                    ) {
+                    if let title = UserDefaults.standard.string(forKey: "Windows/\(createdWindow.identifier)/title") {
                         createdWindow.title = title
                     }
                     return uiKitWindow
@@ -215,21 +206,16 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
     ) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         do {
-            Game.shared.attributes.insert(.renderingIsPermitted)
-            if let restoredWindow = attachExistingWindow(
-                forSession: session,
-                options: connectionOptions
-            ) {
+            Game.unsafeShared.attributes.insert(.renderingIsPermitted)
+            if let restoredWindow = attachExistingWindow(forSession: session, options: connectionOptions) {
                 assert(restoredWindow.window.isMainWindow == false)
                 restoredWindow.uiWindow.windowScene = windowScene
                 windowScene.title = restoredWindow.title
             } else if session.stateRestorationActivity != nil {
                 UIApplication.shared.requestSceneSessionDestruction(session, options: nil)
-            } else if Game.shared.windowManager.mainWindow == nil
-                && session.role == .windowApplication
-            {
-                let window = try Game.shared.delegate.createMainWindow(
-                    using: Game.shared.windowManager, 
+            } else if Game.unsafeShared.windowManager.mainWindow == nil && session.role == .windowApplication {
+                let window = try Game.unsafeShared.delegate.createMainWindow(
+                    using: Game.unsafeShared.windowManager,
                     with: WindowManager.mainWindowIdentifier
                 )
                 let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
@@ -237,23 +223,19 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                 windowScene.title = window.title
                 persistSessionIdentifier(session, forWindow: window)
             } else {  // Platform requested a window, probably from a user action
-                Platform.current.applicationRequestedWindow = true
-                if session.role == .windowExternalDisplay {
-                    Platform.current.overrideSupportsMultipleWindows = true
-                    if let window = try Game.shared.delegate.createWindowForExternalScreen(
-                        using: Game.shared.windowManager
-                    ) {
+                Game.unsafeShared.unsafePlatform.applicationRequestedWindow = true
+                if session.role == .windowExternalDisplayNonInteractive {
+                    Game.unsafeShared.unsafePlatform.overrideSupportsMultipleWindows = true
+                    if let window = try Game.unsafeShared.delegate.createWindowForExternalScreen(using: Game.unsafeShared.windowManager) {
                         let uiKitWindow = (window.windowBacking as! UIKitWindow)
                         uiKitWindow.uiWindow.windowScene = windowScene
                         windowScene.title = window.title
                         persistSessionIdentifier(session, forWindow: window)
                     }
-                    Platform.current.overrideSupportsMultipleWindows = nil
+                    Game.unsafeShared.unsafePlatform.overrideSupportsMultipleWindows = nil
                 } else {
-                    Platform.current.overrideSupportsMultipleWindows = true
-                    if let window = try Game.shared.delegate.createUserRequestedWindow(
-                        using: Game.shared.windowManager
-                    ) {
+                    Game.unsafeShared.unsafePlatform.overrideSupportsMultipleWindows = true
+                    if let window = try Game.unsafeShared.delegate.createUserRequestedWindow(using: Game.unsafeShared.windowManager) {
                         let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
                         uiWindow.windowScene = windowScene
                         windowScene.title = window.title
@@ -261,10 +243,10 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
                     } else {
                         UIApplication.shared.requestSceneSessionDestruction(session, options: nil)
                     }
-                    Platform.current.overrideSupportsMultipleWindows = nil
+                    Game.unsafeShared.unsafePlatform.overrideSupportsMultipleWindows = nil
                 }
             }
-            Game.shared.attributes.remove(.renderingIsPermitted)
+            Game.unsafeShared.attributes.remove(.renderingIsPermitted)
         } catch {
             Log.error(error)
         }
@@ -272,12 +254,10 @@ internal final class UIKitWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
 
     func sceneDidDisconnect(_ scene: UIScene) {
         Log.info("Scene Disconnect:", scene.title ?? "[NoTitle]")
-        for window in Game.shared.windowManager.windows {
+        for window in Game.unsafeShared.windowManager.windows {
             let uiWindow = (window.windowBacking as! UIKitWindow).uiWindow
-            if uiWindow.windowScene?.session.persistentIdentifier
-                == scene.session.persistentIdentifier
-            {
-                Game.shared.windowManager.removeWindow(window.identifier)
+            if uiWindow.windowScene?.session.persistentIdentifier == scene.session.persistentIdentifier {
+                Game.unsafeShared.windowManager.removeWindow(window.identifier)
                 UserDefaults.standard.removeObject(forKey: "Windows/\(window.identifier)/title")
                 break
             }
