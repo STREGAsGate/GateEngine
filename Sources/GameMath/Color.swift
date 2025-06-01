@@ -289,7 +289,7 @@ public extension Color {
         #if canImport(AppKit) /* macOS */
         public static var text: Color { Color(NSColor.textColor.cgColor) }
         public static var textBackground: Color { Color(NSColor.textBackgroundColor.cgColor) }
-        #elseif canImport(UIKit) /* iOS, tvOS */
+        #elseif canImport(UIKit) && !os(tvOS) /* iOS */
         public static var text: Color { Color(UIColor.label.cgColor) }
         public static var textBackground: Color { Color(UIColor.systemBackground.cgColor) }
         #else /* Fallbacks allowing cross platform code to functions */
