@@ -627,18 +627,20 @@ extension Array where Element == Platform {
         return array
     }
     
-    static var desktop: Self {[.windows, .linux, .macOS]}
+    static var desktop: Self {[.windows, .linux, .macOS, .macCatalyst, .openbsd]}
     static var mobile: Self {[.iOS, .android]}
     static var anyApple: Self {
-        return [.macOS, .iOS, .tvOS, .watchOS, .visionOS]
+        return [.macOS, .iOS, .tvOS, .watchOS, .visionOS, .macCatalyst]
     }
     
     static var any: Self {
         return [
-            .macOS, .iOS, .tvOS, .visionOS,
+            .macOS, .iOS, .tvOS, .watchOS, .visionOS, .macCatalyst,
             .linux, .android,
+            .openbsd,
             .windows,
-            .wasi
+            .wasi,
+            .driverKit,
         ]
     }
 }
@@ -663,74 +665,100 @@ extension Array where Element == SwiftSetting {
     
     static var upcommingFeatureFlags: Self? {
         var settings: Self = []
-        #if compiler(>=6.2)
-        settings.append(contentsOf: [
-            .enableUpcomingFeature("InferIsolatedConformances"),
-            .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-            .enableUpcomingFeature("NonescapableTypes"),
-        ])
-        #endif
-        #if compiler(>=6.1)
-        settings.append(contentsOf: [
-            .enableUpcomingFeature("MemberImportVisibility"),
-        ])
-        #endif
-        #if compiler(>=6.0)
-        settings.append(contentsOf: [
-            .enableUpcomingFeature("GlobalActorIsolatedTypesUsability"),
-            .enableUpcomingFeature("DynamicActorIsolation"),
-            .enableUpcomingFeature("InferSendableFromCaptures"),
-            .enableUpcomingFeature("RegionBasedIsolation"),
-            .enableUpcomingFeature("InternalImportsByDefault"),
-        ])
-        #endif
-        #if compiler(>=5.10)
-        settings.append(contentsOf: [
-            .enableUpcomingFeature("GlobalConcurrency"),
-            .enableUpcomingFeature("IsolatedDefaultValues"),
-            .enableUpcomingFeature("DeprecateApplicationMain"),
-        ])
-        #endif
-        #if compiler(>=5.9)
-        settings.append(contentsOf: [
-            .enableUpcomingFeature("DisableOutwardActorInference"),
-            .enableUpcomingFeature("ImportObjcForwardDeclarations"),
-        ])
-        #endif
-        #if compiler(>=5.8)
-        settings.append(contentsOf: [
-            .enableUpcomingFeature("ConciseMagicFile"),
-        ])
-        #endif
-        #if compiler(>=5.7)
-        settings.append(contentsOf: [
-            .enableUpcomingFeature("BareSlashRegexLiterals"),
-            .enableUpcomingFeature("ImplicitOpenExistentials"),
-        ])
-        #endif
-        #if compiler(>=5.6)
-        settings.append(contentsOf: [
-            .enableUpcomingFeature("StrictConcurrency=complete"),
-            .enableUpcomingFeature("ExistentialAny"),
-        ])
-        #endif
-        #if compiler(>=5.3)
-        settings.append(contentsOf: [
-            .enableUpcomingFeature("ForwardTrailingClosures"),
-        ])
-        #endif
         
+#if compiler(>=6.2)
+    #if !hasFeature(InferIsolatedConformances)
+        enableFeature("InferIsolatedConformances")
+    #endif
+    #if !hasFeature(NonisolatedNonsendingByDefault)
+        enableFeature("NonisolatedNonsendingByDefault")
+    #endif
+    #if !hasFeature(NonescapableTypes)
+        enableFeature("NonescapableTypes")
+    #endif
+#endif
+#if compiler(>=6.1)
+    #if !hasFeature(MemberImportVisibility)
+        enableFeature("MemberImportVisibility")
+    #endif
+#endif
+#if compiler(>=6.0)
+    #if !hasFeature(GlobalActorIsolatedTypesUsability)
+        enableFeature("GlobalActorIsolatedTypesUsability")
+    #endif
+    #if !hasFeature(DynamicActorIsolation)
+        enableFeature("DynamicActorIsolation")
+    #endif
+    #if !hasFeature(InferSendableFromCaptures)
+        enableFeature("InferSendableFromCaptures")
+    #endif
+    #if !hasFeature(RegionBasedIsolation)
+        enableFeature("RegionBasedIsolation")
+    #endif
+    #if !hasFeature(InternalImportsByDefault)
+        enableFeature("InternalImportsByDefault")
+    #endif
+#endif
+#if compiler(>=5.10)
+    #if !hasFeature(GlobalConcurrency)
+        enableFeature("GlobalConcurrency")
+    #endif
+    #if !hasFeature(IsolatedDefaultValues)
+        enableFeature("IsolatedDefaultValues")
+    #endif
+    #if !hasFeature(DeprecateApplicationMain)
+        enableFeature("DeprecateApplicationMain")
+    #endif
+#endif
+#if compiler(>=5.9)
+    #if !hasFeature(DisableOutwardActorInference)
+        enableFeature("DisableOutwardActorInference")
+    #endif
+    #if !hasFeature(ImportObjcForwardDeclarations)
+        enableFeature("ImportObjcForwardDeclarations")
+    #endif
+#endif
+#if compiler(>=5.8)
+    #if !hasFeature(ConciseMagicFile)
+        enableFeature("ConciseMagicFile")
+    #endif
+#endif
+#if compiler(>=5.7)
+    #if !hasFeature(BareSlashRegexLiterals)
+        enableFeature("BareSlashRegexLiterals")
+    #endif
+    #if !hasFeature(ImplicitOpenExistentials)
+        enableFeature("ImplicitOpenExistentials")
+    #endif
+#endif
+#if compiler(>=5.6)
+    #if !hasFeature(StrictConcurrency)
+        enableFeature("StrictConcurrency=complete")
+    #endif
+    #if !hasFeature(ExistentialAny)
+        enableFeature("ExistentialAny")
+    #endif
+#endif
+#if compiler(>=5.3)
+    #if !hasFeature(ForwardTrailingClosures)
+        enableFeature("ForwardTrailingClosures")
+    #endif
+#endif
+        
+        func enableFeature(_ feature: String) {settings.append(.enableUpcomingFeature(feature))}
         return settings.isEmpty ? nil : settings
     }
     
     static var exprimentalFeatureFlags: Self? {
         var settings: Self = []
-        #if compiler(>=6.2)
-        settings.append(contentsOf: [
-            .enableExperimentalFeature("IsolatedDeinit"),
-        ])
-        #endif
         
+#if compiler(>=6.2)
+    #if !hasFeature(IsolatedDeinit)
+        enableFeature("IsolatedDeinit")
+    #endif
+#endif
+        
+        func enableFeature(_ feature: String) {settings.append(.enableExperimentalFeature(feature))}
         return settings.isEmpty ? nil : settings
     }
 }
