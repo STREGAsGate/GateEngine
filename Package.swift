@@ -6,7 +6,7 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "GateEngine",
-    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13)],
+    platforms: [.macOS(.v14), .iOS(.v17), .tvOS(.v17)],
     products: [
         .library(name: "GateEngine", targets: ["GateEngine"]),
         .library(name: "GameMath", targets: ["GameMath"]),
