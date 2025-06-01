@@ -15,47 +15,51 @@ let package = Package(
         .default(enabledTraits: ["SIMD"]),
         
         .trait(
-            name: "SIMD", 
-            description: "Enables SIMD acceleration when available. Note: Debug builds may skip SIMD, as without optimization SIMD hardware won't be used."
+            name: "SIMD",
+            description: "Enables SIMD acceleration when available."
         ),
         .trait(
-            name: "HTML5", 
-            description: "Configures GateEngine for WebAssembly builds using the SwiftWASM project. Note: Building works in IDE, for cenvenince. But running requires building for WASI."
+            name: "HTML5",
+            description: "Configures GateEngine for WebAssembly builds using the SwiftWASM project."
         ),
     ],
     dependencies: {
         var packageDependencies: [Package.Dependency] = []
 
         // Official
-        packageDependencies.append(contentsOf: {
-            var official: [Package.Dependency] = []
-            #if os(Windows)
-            // Windows requires 1.2.0+
-            official.append(.package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.2.0")))
-            #else
-            // swift-atomics must use extact 1.1.0 pending https://github.com/apple/swift/issues/69264
-            official.append(.package(url: "https://github.com/apple/swift-atomics.git", exact: "1.1.0"))
-            #endif
-            official.append(.package(url: "https://github.com/apple/swift-syntax", from: "509.0.0"))
-            return official
-        }())
-            
-            
-        packageDependencies.append(
-            .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0"))
-        )
-
-        // SwiftWASM
         packageDependencies.append(contentsOf: [
-            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", .upToNextMajor(from: "0.1.0")),
-            .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
+            .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.2.0")),
+            .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.2.0")),
+            .package(url: "https://github.com/apple/swift-syntax", from: "601.0.0"),
         ])
         
-        // Linting / Formating
+        #if false // Linting / Formating
         packageDependencies.append(contentsOf: [
-            //.package(url: "https://github.com/apple/swift-format", .upToNextMajor(from: "509.0.0")),
-            //.package(url: "https://github.com/realm/SwiftLint.git", .upToNextMajor(from: "0.52.0")),
+            .package(url: "https://github.com/apple/swift-format", from: "601.0.0"),
         ])
+        #endif
+        
+        #if HTML5 // SwiftWASM
+        // Replace swift-atomics with an explicit version pending:
+        // https://github.com/apple/swift/issues/69264
+        packageDependencies.removeAll(where: {
+            if case .sourceControl(name: let name, location: "https://github.com/apple/swift-atomics.git", requirement: _) = $0.kind {
+                return true
+            }
+            return false
+        })
+        packageDependencies.append(
+            .package(url: "https://github.com/apple/swift-atomics.git", exact: "1.1.0"),
+        )
+        packageDependencies.append(contentsOf: [
+            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", .upToNextMajor(from: "0.1.0"), traits: [
+                .trait(name: "HTML5", condition: .when(traits: ["HTML5"]))
+            ]),
+            .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0"), traits: [
+                .trait(name: "HTML5", condition: .when(traits: ["HTML5"]))
+            ]),
+        ])
+        #endif
         
         return packageDependencies
     }(),
@@ -115,26 +119,28 @@ let package = Package(
                                      package: "swift-collections")
                         ])
 
+                        #if HTML5
                         dependencies.append(contentsOf: [
                             .product(name: "JavaScriptEventLoop",
                                      package: "JavaScriptKit",
-                                     condition: .when(traits: ["HTML5"])),
+                                     condition: .whenHTML5),
                             .product(name: "DOM",
                                      package: "WebAPIKit",
-                                     condition: .when(traits: ["HTML5"])),
+                                     condition: .whenHTML5),
                             .product(name: "FileSystem",
                                      package: "WebAPIKit",
-                                     condition: .when(traits: ["HTML5"])),
+                                     condition: .whenHTML5),
                             .product(name: "WebAudio",
                                      package: "WebAPIKit",
-                                     condition: .when(traits: ["HTML5"])),
+                                     condition: .whenHTML5),
                             .product(name: "Gamepad",
                                      package: "WebAPIKit",
-                                     condition: .when(traits: ["HTML5"])),
+                                     condition: .whenHTML5),
                             .product(name: "WebGL2",
                                      package: "WebAPIKit",
-                                     condition: .when(traits: ["HTML5"])),
+                                     condition: .whenHTML5),
                         ])
+                        #endif
                         
                         return dependencies
                     }(),
@@ -188,12 +194,10 @@ let package = Package(
                                 .when(platforms: .any(except: .wasi))),
                         ])
        
-                        #if HTML5
                         // Options for development of WASI platform
                         settings.append(contentsOf: [
-                            .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(platforms: [.macOS, .linux, .wasi])),
+                            .define("GATEENGINE_PLATFORM_EVENT_DRIVEN", .when(traits: ["HTML5"])),
                         ])
-                        #endif
                         
                         #if false // Options for development of GateEngine. These should be disabled for tagged version releases.
                         #warning("GateEngine development options are enabled. These can cause strange build errors on some platforms.")
@@ -217,14 +221,16 @@ let package = Package(
                         //.plugin(name: "SwiftLintPlugin", package: "SwiftLint"),
                     ]),
             
-            .target(name: "Shaders",
-                    dependencies: [
-                        "GameMath",
-                        .product(name: "Collections", package: "swift-collections")
-                    ],
-                    swiftSettings: .default(withCustomization: { settings in
-                        settings.append(.define("GATEENGINE_DEBUG_SHADERS", .when(configuration: .debug)))
-                    })),
+            .target(
+                name: "Shaders",
+                dependencies: [
+                    "GameMath",
+                    .product(name: "Collections", package: "swift-collections")
+                ],
+                swiftSettings: .default(withCustomization: { settings in
+                    settings.append(.define("GATEENGINE_DEBUG_SHADERS", .when(configuration: .debug)))
+                })
+            ),
             
             .target(name: "GameMath", swiftSettings: .default(withCustomization: { settings in
                 #if false
@@ -234,10 +240,8 @@ let package = Package(
                 #endif
                 
                 // These settings are faster only with optimization.
-                #if true
                 settings.append(.define("GameMathUseSIMD", .when(configuration: .release, traits: ["SIMD"])))
-                settings.append(.define("GameMathUseLoopVectorization", .when(configuration: .release)))
-                #endif
+                settings.append(.define("GameMathUseLoopVectorization", .when(configuration: .release, traits: ["SIMD"])))
             })),
         ])
         
@@ -761,4 +765,8 @@ extension Array where Element == SwiftSetting {
         func enableFeature(_ feature: String) {settings.append(.enableExperimentalFeature(feature))}
         return settings.isEmpty ? nil : settings
     }
+}
+
+extension PackageDescription.TargetDependencyCondition {
+    static var whenHTML5: Self? {.when(platforms: [.wasi], traits: ["HTML5"])}
 }
