@@ -142,6 +142,6 @@ public final class Font: OldResource {
 
     public nonisolated static let tuffy: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy.ttf")
     public nonisolated static let tuffyBold: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy_Bold.ttf")
-    public nonisolated static let micro: Font = Font(pngRegular: "GateEngine/Fonts/Micro/Micro.png")
+    public nonisolated static let micro: Font = Font(pngRegular: "GateEngine/Fonts/Micro/micro.png")
     public nonisolated static let babel: Font = Font(pngRegular: "GateEngine/Fonts/Babel/Babel.png")
 }
