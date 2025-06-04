@@ -26,25 +26,36 @@ public enum TileMapControlSubControlType: Sendable {
     case interactable
 }
 
-public protocol TileControlSubControl: Equatable, Identifiable {
+public protocol TileControlSubControl<Scheme>: Equatable, Hashable, Identifiable where Control.Scheme == Scheme, ID == Int {
+    associatedtype Scheme: TileMapControlScheme
     associatedtype Control: TileControl
+    
     var type: TileMapControlSubControlType { get }
     /// The arangement of coordinates (relative to zero) for this control.
     /// The position of this control is determined by TileMapControlScheme
     var coordinates: [TileMap.Layer.Coordinate] { get }
     /// The `regular` state tile for the layer
-    func regularStateTile(at coordinateIndex: Int, forLayer layer: String?, mode: any TileMapControlMode, userData: any TileMapControlUserData) -> TileMap.Tile
+    func regularStateTile(at coordinateIndex: Int, forLayer layer: String?, mode: Scheme.Mode, userData: Scheme.UserData) -> TileMap.Tile
+}
+
+public extension TileControlSubControl {
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.id == rhs.id
+    }
+    nonisolated func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 public protocol TileControl<Scheme>: Equatable, Identifiable where ID == String {
     associatedtype Scheme: TileMapControlScheme
-    associatedtype SubControl: TileControlSubControl
+    associatedtype SubControl: TileControlSubControl<Scheme>
     /// How this control behaves
     var type: TileMapControlType { get }
     var subControls: [SubControl] { get }
     
-    func currentStateForSubControl(_ subControl: any TileControlSubControl, mode: any TileMapControlMode, userData: any TileMapControlUserData) -> TileMapControlState
-    func stateDidChangeForSubControl(_ subControl: any TileControlSubControl, state: TileMapControlState, mode: any TileMapControlMode, userData: inout any TileMapControlUserData)
+    func currentStateForSubControl(_ subControl: any TileControlSubControl<Scheme>, mode: Scheme.Mode, userData: Scheme.UserData) -> TileMapControlState
+    func stateDidChangeForSubControl(_ subControl: any TileControlSubControl<Scheme>, state: TileMapControlState, mode: Scheme.Mode, userData: inout Scheme.UserData)
 }
 
 public protocol TileMapControlScheme {
@@ -64,7 +75,7 @@ public protocol TileMapControlMode: Equatable, Hashable, CaseIterable, Sendable 
 @MainActor
 public protocol TileMapControlViewDelegate<Scheme>: AnyObject {
     associatedtype Scheme: TileMapControlScheme
-    func tileMapControlView(_ tileMapControl: TileMapControlView<Scheme>, didActivateControl control: any TileControl, subControlIndex: Int)
+    func tileMapControlView(_ tileMapControl: TileMapControlView<Scheme>, didActivateControl control: any TileControl<Scheme>, subControlIndex: Int)
 }
 
 public final class TileMapControlView<Scheme: TileMapControlScheme>: TileMapView {
@@ -79,9 +90,9 @@ public final class TileMapControlView<Scheme: TileMapControlScheme>: TileMapView
     }
     public weak var controlDelegate: (any TileMapControlViewDelegate<Scheme>)? = nil
         
-    public var userData: any TileMapControlUserData = Scheme.UserData.init()
+    public var userData: Scheme.UserData = .init()
     
-    var controls: [any TileControl] = []
+    var controls: [any TileControl<Scheme>] = []
     var controlOrigins: [TileMap.Layer.Coordinate] = []
     var controlIndicies: [Int?] = []
     var controlStates: [[TileMapControlState]] = []
@@ -95,8 +106,6 @@ public final class TileMapControlView<Scheme: TileMapControlScheme>: TileMapView
         
         guard let layer = tileMap.layers.first else {return}
         
-        let userData: Scheme.UserData = userData as! Scheme.UserData
-
         for column in 0 ..< layer.columns {
             for row in 0 ..< layer.rows {
                 let origin = TileMap.Layer.Coordinate(column: column, row: row)
@@ -139,7 +148,7 @@ public final class TileMapControlView<Scheme: TileMapControlScheme>: TileMapView
         return .init(column: column, row: row)
     }
     
-    func control(at coord: TileMap.Layer.Coordinate) -> (control: any TileControl, subControlIndex: Int)? {
+    func control(at coord: TileMap.Layer.Coordinate) -> (control: any TileControl<Scheme>, subControlIndex: Int)? {
         let coordIndex = coordIndex(of: coord)
         if let controlIndex = controlIndicies[coordIndex] {
             let control = controls[controlIndex]
@@ -236,7 +245,7 @@ public final class TileMapControlView<Scheme: TileMapControlScheme>: TileMapView
         
     }
     
-    var momentaryToDeactivate: [(pair: (control: any TileControl, subControlIndex: Int), duration: Float)] = []
+    var momentaryToDeactivate: [(pair: (control: any TileControl<Scheme>, subControlIndex: Int), duration: Float)] = []
     func updateMomentaryToDeactivate(withTimePassed deltaTime: Float) {
         for index in momentaryToDeactivate.indices.reversed() {
             momentaryToDeactivate[index].duration -= deltaTime
