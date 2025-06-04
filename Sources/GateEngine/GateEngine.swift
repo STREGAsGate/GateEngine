@@ -139,12 +139,19 @@ extension GateEngineError: ExpressibleByStringLiteral {
 }
 
 extension CommandLine {
-    #if os(macOS) || ((os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)) && targetEnvironment(simulator))
     @usableFromInline
-    static let isDebuggingWithXcode: Bool = ProcessInfo.processInfo.environment.keys.first(where: {
-        $0.lowercased().contains("xcode")
-    }) != nil
-    #endif
+    static let isDebuggingWithXcode: Bool = {
+        #if canImport(Darwin) || os(macOS) || os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+        let environment = ProcessInfo.processInfo.environment
+        if environment.keys.contains(where: {$0.lowercased().contains("xcode.app")}) {
+            return true
+        }
+        if environment.values.contains(where: {$0.lowercased().contains("xcode.app")}) {
+            return true
+        }
+        #endif
+        return false
+    }()
 }
 
 @usableFromInline
@@ -171,12 +178,10 @@ internal enum Log {
     }
 
     @inlinable
-    static var supportsColor: Bool {
-        #if os(macOS) || ((os(iOS) || os(tvOS)) && targetEnvironment(simulator))
+    static var supportsANSIColor: Bool {
         if CommandLine.isDebuggingWithXcode {
             return false
         }
-        #endif
         #if os(WASI) || os(Windows)
         return false
         #else
@@ -243,7 +248,7 @@ internal enum Log {
     @usableFromInline
     static func warn(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let resolvedMessage: String
-        if supportsColor {
+        if supportsANSIColor {
             resolvedMessage = _message(
                 prefix: "[GateEngine] \(ANSIColors.magenta)warning\(ANSIColors.default):",
                 items,
@@ -276,7 +281,7 @@ internal enum Log {
     @usableFromInline
     static func error(_ items: Any..., separator: String = " ", terminator: String = "\n") {
         let resolvedMessage: String
-        if supportsColor {
+        if supportsANSIColor {
             resolvedMessage = self._message(
                 prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):",
                 items,
@@ -310,7 +315,7 @@ internal enum Log {
         }
     }
 
-    @_transparent // Must be transparent to inline and function similar to a Swift.assert
+    @_transparent // Must be transparent to function similar to a Swift.assert
     @usableFromInline
     static func assert(
         _ condition: @autoclosure () -> Bool,
@@ -323,7 +328,7 @@ internal enum Log {
         guard condition == false else { return }
 
         let resolvedMessage: String
-        if supportsColor {
+        if supportsANSIColor {
             resolvedMessage = self._message(
                 prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):",
                 message(),
@@ -350,11 +355,9 @@ internal enum Log {
     }
 
     @usableFromInline
-    static func fatalError(_ message: String, file: StaticString = #file, line: UInt = #line)
-        -> Never
-    {
+    static func fatalError(_ message: String, file: StaticString = #file, line: UInt = #line) -> Never {
         let resolvedMessage: String
-        if supportsColor {
+        if supportsANSIColor {
             resolvedMessage = self._message(
                 prefix: "[GateEngine] \(ANSIColors.red)error\(ANSIColors.default):",
                 message,

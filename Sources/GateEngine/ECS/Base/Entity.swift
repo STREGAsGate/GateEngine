@@ -87,9 +87,7 @@ extension Entity {
     public subscript<T: Component>(_ type: T.Type) -> T {
         get {
             let componentID = type.componentID.value
-            #if DEBUG
             Log.assert(hasComponent(at: componentID), "Component \"\(type)\" is not a member of this entity.")
-            #endif
             return self.getComponent(at: componentID) as! T
         }
         set {
@@ -101,9 +99,7 @@ extension Entity {
     public subscript<T: ResourceConstrainedComponent>(_ type: T.Type) -> T {
         get {
             let componentID = type.componentID.value
-            #if DEBUG
             Log.assert(hasComponent(at: componentID), "Component \"\(type)\" is not a member of this entity.")
-            #endif
             return self.getComponent(at: componentID) as! T
         }
         set {
