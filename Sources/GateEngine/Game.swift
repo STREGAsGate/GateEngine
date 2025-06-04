@@ -101,43 +101,19 @@ public final class Game {
         self.insertSystem(CacheSystem.self)
         self.insertSystem(DeferredDelaySystem.self)
     }
-
-    private var deltaTimeAccumulator: Double = 0
-    private var previousTime: Double = 0
     
-    @MainActor
-    internal static func getNextDeltaTime(accumulator: inout Double, previous: inout Double) -> Double? {
-        // 240fps
-        let stepDuration: Double = /* 1/240 */ 0.004166666667
-        let now: Double = Platform.current.systemTime()
-        let newDeltaTimeAccumulator: Double = accumulator + (now - previous)
-        if newDeltaTimeAccumulator < stepDuration {
-            return nil
-        }
-
-        accumulator = newDeltaTimeAccumulator
-        previous = now
-        let deltaTime = stepDuration * (accumulator / stepDuration)
-        accumulator -= deltaTime
-        // Discard times larger then 12 fps. This will cause slow down but will also reduce
-        // of the chance of the simulation from breaking
-        if deltaTime > /* 1/12 */ 0.08333333333 {
-            return nil
-        }
-        
-        return deltaTime
-    }
+    private var deltaTimeHelper = DeltaTimeHelper(name: "System")
     
     #if GATEENGINE_PLATFORM_EVENT_DRIVEN
     @MainActor internal func eventLoop(completion: @escaping () -> Void) {
-        guard let deltaTime = Game.getNextDeltaTime(accumulator: &deltaTimeAccumulator, previous: &previousTime) else {
+        guard let highPrecisionDeltaTime = deltaTimeHelper.getDeltaTime() else {
             completion()
             return
         }
         
         // Add a high priority Task so we can jump the line if other Tasks were started
         Task(priority: .high) { @MainActor in
-            let deltaTime = Float(deltaTime)
+            let deltaTime = Float(highPrecisionDeltaTime)
             self.resourceManager.update(withTimePassed: deltaTime)
             await windowManager.updateWindows(deltaTime: deltaTime)
             self.windowManager.drawWindows()

@@ -79,8 +79,7 @@ public final class GameView: View {
     }
     var mode: Mode = .screen
     
-    private var deltaTimeAccumulator: Double = 0
-    private var previousTime: Double = 0
+    private var deltaTimeHelper = DeltaTimeHelper(name: "Rendering")
     
     override final func draw(_ rect: Rect, into canvas: inout UICanvas) {
         var frame = frame
@@ -91,14 +90,9 @@ public final class GameView: View {
         }
         
         if let gameViewController {
-            guard let _deltaTime = Game.getNextDeltaTime(
-                accumulator: &deltaTimeAccumulator, 
-                previous: &previousTime
-            ) else {
-                return
-            }
+            let highPrecisionDeltaTime = self.deltaTimeHelper.getDeltaTime() ?? .leastNonzeroMagnitude
             
-            let deltaTime = Float(_deltaTime)
+            let deltaTime = Float(highPrecisionDeltaTime)
             gameViewController.render(context: gameViewController.context, into: self, withTimePassed: deltaTime)
             gameViewController.context.updateRendering(into: self, deltaTime: deltaTime)
             
@@ -140,11 +134,19 @@ public final class GameView: View {
         return _renderTarget?.texture ?? self.window!.texture
     }
     
+    public override func didLayout() {
+        super.didLayout()
+        self.deltaTimeHelper.reset()
+    }
+    
     public override func didChangeSuperview() {
+        super.didChangeSuperview()
+        
         if self.superView == nil {
             _renderTarget = nil
             return
         }
+        
         if _viewController?.isRootViewController == true {
             self.mode = .screen
             _renderTarget = nil
@@ -159,6 +161,7 @@ public final class GameView: View {
             _renderTarget = RenderTarget(backgroundColor: self.backgroundColor ?? .clear)
             Game.shared.attributes.remove(.renderingIsPermitted)
         }
+        
         self.pendingBackgroundColor = nil
     }
 }

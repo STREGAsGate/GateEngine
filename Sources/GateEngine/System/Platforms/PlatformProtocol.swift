@@ -56,6 +56,7 @@ internal protocol InternalPlatformProtocol: PlatformProtocol {
     func setCursorStyle(_ style: Mouse.Style)
 
     func systemTime() -> Double
+    func prefferedFrameRate() -> Int
     @MainActor func main()
 
     #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
@@ -248,6 +249,10 @@ extension InternalPlatformProtocol {
         return URL(fileURLWithPath: try fileSystem.pathForSearchPath(.persistent, in: .currentUser)).appendingPathComponent(name).path
     }
 
+    func prefferedFrameRate() -> Int {
+        return 60
+    }
+    
     #if os(macOS) || os(iOS) || os(tvOS) || os(Windows) || os(Linux)
     func systemTime() -> Double {
         var time: timespec = timespec()
