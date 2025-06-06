@@ -40,39 +40,7 @@ public final class GameView: View {
     public override func canBeHit() -> Bool {
         return true
     }
-    
-    private var pendingBackgroundColor: Color? = nil
-    public override var backgroundColor: Color? {
-        get {
-            if let pendingBackgroundColor {
-                return pendingBackgroundColor
-            }
-            switch mode {
-            case .screen:
-                return window?.clearColor
-            case .offScreen:
-                return _renderTarget?.clearColor
-            }
-        }
-        set {
-            switch mode {
-            case .screen:
-                if let window {
-                    window.clearColor = newValue ?? .clear
-                }else{
-                    self.pendingBackgroundColor = newValue
-                }
-            case .offScreen:
-                if let _renderTarget {
-                    _renderTarget.clearColor = newValue ?? .clear
-                }else{
-                    self.pendingBackgroundColor = newValue
-                }
-            }
-            super.backgroundColor = newValue
-        }
-    }
-    
+   
     enum Mode {
         case screen
         case offScreen
@@ -150,19 +118,12 @@ public final class GameView: View {
         if _viewController?.isRootViewController == true {
             self.mode = .screen
             _renderTarget = nil
-            if let pendingBackgroundColor {
-                if window != nil {
-                    self.backgroundColor = pendingBackgroundColor
-                }
-            }
         }else{
             self.mode = .offScreen
             Game.shared.attributes.insert(.renderingIsPermitted)
-            _renderTarget = RenderTarget(backgroundColor: self.backgroundColor ?? .clear)
+            _renderTarget = RenderTarget(backgroundColor: .clear)
             Game.shared.attributes.remove(.renderingIsPermitted)
         }
-        
-        self.pendingBackgroundColor = nil
     }
 }
 extension GameView {
