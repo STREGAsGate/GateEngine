@@ -22,6 +22,10 @@ open class ImageView: View {
         }
     }
     
+    public var texture: Texture? {
+        return material.channels[0].texture
+    }
+    
     private var subRect: Rect? = nil
     
     public init(path: String, meta: (textureSize: Size2, subRect: Rect)? = nil, sampleFilter: SampleFilter = .linear) {
