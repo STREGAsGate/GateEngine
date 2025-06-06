@@ -84,13 +84,19 @@ public final class TileMapControlView<Scheme: TileMapControlScheme>: TileMapView
         return state.rawValue * count
     }
     
-    var modeDidChange: Bool = true
+    var needsDisplay: Bool = true
     public var mode: Scheme.Mode = Scheme.Mode.default {
-        didSet {self.modeDidChange = true}
+        didSet {self.setNeedsDisplay()}
     }
     public weak var controlDelegate: (any TileMapControlViewDelegate<Scheme>)? = nil
         
     public var userData: Scheme.UserData = .init()
+    
+    /// Manually causes the tiles to be updated
+    /// Use this when the contents of UserData are modified
+    public func setNeedsDisplay() {
+        self.needsDisplay = true
+    }
     
     var controls: [any TileControl<Scheme>] = []
     var controlOrigins: [TileMap.Layer.Coordinate] = []
@@ -192,7 +198,7 @@ public final class TileMapControlView<Scheme: TileMapControlScheme>: TileMapView
     }
     
     public func repaintControl(at coord: TileMap.Layer.Coordinate) {
-        guard modeDidChange == false else {return}
+        guard needsDisplay == false else {return}
         guard let controlIndex = controlIndicies[coordIndex(of: coord)] else {return}
         let control = controls[controlIndex]
         let offset = controlOrigins[controlIndex]
@@ -228,8 +234,8 @@ public final class TileMapControlView<Scheme: TileMapControlScheme>: TileMapView
     public override func update(withTimePassed deltaTime: Float) {
         super.update(withTimePassed: deltaTime)
         guard isReady else {return}
-        if self.modeDidChange {
-            self.modeDidChange = false
+        if self.needsDisplay {
+            self.needsDisplay = false
             self.rebuildForCurrentMode()
         }
         self.updateHID(withTimePassed: deltaTime)
