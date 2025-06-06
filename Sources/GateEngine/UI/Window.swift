@@ -702,7 +702,7 @@ public enum TouchChangeEvent {
     case canceled
 }
 
-public enum TouchKind {
+public enum TouchKind: Hashable, CaseIterable {
     /// The touch could be from anything.
     case unknown
     /// The touch was a finger or non-electronic stylus

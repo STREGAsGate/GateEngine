@@ -11,9 +11,10 @@ final public class TapGestureRecognizer: GestureRecognizer {
     var distance1: Float? = nil
     var distance2: Float? = nil
     
-    public init(touchCount: Int = 1, recognized: @escaping (_ position: Position2)->()) {
+    public init(recognizedSources: Sources = .all, touchCount: Int = 1, recognized: @escaping (_ position: Position2)->()) {
         self.touchCount = touchCount
         self.actions = [recognized]
+        super.init(recognizedSources: recognizedSources)
     }
     
     public override func invalidate() {
@@ -67,6 +68,7 @@ final public class TapGestureRecognizer: GestureRecognizer {
     }
     
     public override func touchesBegan(_ touches: Set<Touch>) {
+        guard recognizedSources.contains(.screen) else {return}
         for touch in touches {
             self.touches.insert(touch)
             startPositions[touch] = touch.position
@@ -100,21 +102,22 @@ final public class TapGestureRecognizer: GestureRecognizer {
     
     var downInside: Bool = false
     public override func cursorButtonDown(button: MouseButton, mouse: Mouse) {
+        guard recognizedSources.contains(.mouse) else {return}
         guard let view else {return}
         guard let position = mouse.locationInView(view) else {return}
         guard view.bounds.contains(position) else {return}
-        downInside = true
+        self.downInside = true
         self.phase = .recognizing
     }
     
     public override func cursorExited(_ cursor: Mouse) {
-        downInside = false
+        self.downInside = false
         self.phase = .unrecognized
     }
     
     public override func cursorButtonUp(button: MouseButton, mouse: Mouse) {
-        guard downInside else {
-            downInside = false
+        guard self.downInside else {
+            self.downInside = false
             return
         }
         guard let view else {return}

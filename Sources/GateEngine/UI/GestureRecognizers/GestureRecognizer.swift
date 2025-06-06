@@ -15,6 +15,20 @@ open class GestureRecognizer {
         case recognized
     }
     
+    public var recognizedSources: Sources
+    public struct Sources: OptionSet, Sendable {
+        public var rawValue: UInt8
+        public init(rawValue: UInt8) {
+            self.rawValue = rawValue
+        }
+        
+        public static let mouse: Sources = .init(rawValue: 1 << 0)
+        public static let screen: Sources = .init(rawValue: 1 << 1)
+        public static let surface: Sources = .init(rawValue: 1 << 2)
+        
+        public static let all: Sources = [.mouse, .screen, .surface]
+    }
+    
     open func invalidate() {
         
     }
@@ -23,8 +37,8 @@ open class GestureRecognizer {
         return false
     }
     
-    nonisolated public init() {
-        
+    nonisolated public init(recognizedSources: Sources) {
+        self.recognizedSources = recognizedSources
     }
     
     open func touchesBegan(_ touches: Set<Touch>) {

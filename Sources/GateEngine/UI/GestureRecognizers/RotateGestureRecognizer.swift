@@ -17,8 +17,8 @@ final public class RotateGestureRecognizer: GestureRecognizer {
     }
     private var oldTouches: Set<Touch> = []
     
-    public nonisolated override init() {
-        super.init()
+    public override init(recognizedSources: GestureRecognizer.Sources = .all) {
+        super.init(recognizedSources: recognizedSources)
     }
     
     public override func invalidate() {

@@ -7,8 +7,9 @@
 
 final public class PanGestureRecognizer: GestureRecognizer {
     public var touchCount: Int = 2
+    public var touchKinds: TouchKinds = .anyOf([.physical, .simulated])
     public var mouseButtons: MouseButtons = .none
-    private var actions: [(_ delta: Position2)->()] = []
+    private var actions: [(_ position: Position2, _ delta: Position2)->()] = []
     var position1: Position2? = nil
     var position2: Position2? = nil
     
@@ -18,11 +19,19 @@ final public class PanGestureRecognizer: GestureRecognizer {
         case exactly(_ buttons: [GateEngine.MouseButton])
         case anyOf(_ buttons: [GateEngine.MouseButton])
     }
+    public enum TouchKinds {
+        case none
+        case any
+        case exactly(_ touchKind: GateEngine.TouchKind)
+        case anyOf(_ touchKinds: Set<GateEngine.TouchKind>)
+    }
     
-    public init(touchCount: Int = 2, mouseButtons: MouseButtons = .none, recognized: @escaping (_ delta: Position2)->()) {
+    public init(recognizedSources: Sources = .all, touchCount: Int = 2, touchKinds: TouchKinds = .anyOf([.physical, .simulated]), mouseButtons: MouseButtons = .none, recognized: @escaping (_ position: Position2, _ delta: Position2)->()) {
         self.touchCount = touchCount
         self.mouseButtons = mouseButtons
+        self.touchKinds = touchKinds
         self.actions = [recognized]
+        super.init(recognizedSources: recognizedSources)
     }
     
     public override func invalidate() {
@@ -63,10 +72,11 @@ final public class PanGestureRecognizer: GestureRecognizer {
     
     func performRecognition() {
         guard self.touches.count == touchCount else {return}
+        guard let view else {return}
         func avgTouchPosition() -> Position2 {
             var p: Position2 = .zero
             for touch in touches {
-                p += touch.position
+                p += touch.locationInView(view)
             }
             p /= Float(touches.count)
             return p
@@ -90,7 +100,7 @@ final public class PanGestureRecognizer: GestureRecognizer {
             
             self.phase = .recognized
             for action in actions {
-                action(delta)
+                action(position2!, delta)
             }
             position1 = position2
             position2 = nil
@@ -98,14 +108,27 @@ final public class PanGestureRecognizer: GestureRecognizer {
     }
     
     public override func touchesBegan(_ touches: Set<Touch>) {
+        guard let view else {return}
+        guard recognizedSources.contains(.screen) else {return}
+        
         for touch in touches {
-            if touch.kind != .stylus {
-                if let view {
-                    let p = touch.locationInView(view)
-                    if view.bounds.contains(p) {
-                        self.touches.insert(touch)
-                    }
+            switch touchKinds {
+            case .none:
+                return
+            case .any:
+                break
+            case .exactly(let kind):
+                if kind != touch.kind {
+                    continue
                 }
+            case .anyOf(let kinds):
+                if kinds.contains(touch.kind) == false {
+                    continue
+                }
+            }
+            let p = touch.locationInView(view)
+            if view.bounds.contains(p) {
+                self.touches.insert(touch)
             }
         }
     }
@@ -177,6 +200,7 @@ final public class PanGestureRecognizer: GestureRecognizer {
     }
 
     func performSurfaceRecognition() {
+        guard recognizedSources.contains(.surface) else {return}
         guard self.surfaceTouches.count == touchCount else {return}
         func avgTouchPosition() -> Position2 {
             var p: Position2 = .zero
@@ -216,7 +240,7 @@ final public class PanGestureRecognizer: GestureRecognizer {
             
             self.phase = .recognized
             for action in actions {
-                action(delta)
+                action(position2!, delta)
             }
             position1 = position2
             position2 = nil
