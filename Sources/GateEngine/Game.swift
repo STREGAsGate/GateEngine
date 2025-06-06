@@ -106,32 +106,37 @@ public final class Game {
     
     #if GATEENGINE_PLATFORM_EVENT_DRIVEN
     @MainActor internal func eventLoop(completion: @escaping () -> Void) {
-        guard let highPrecisionDeltaTime = deltaTimeHelper.getDeltaTime() else {
+        guard let fixedStepDeltaTime = deltaTimeHelper.getFixedStepDeltaTime() else {
             completion()
             return
         }
         
         // Add a high priority Task so we can jump the line if other Tasks were started
         Task(priority: .high) { @MainActor in
-            let deltaTime = Float(highPrecisionDeltaTime)
-            self.resourceManager.update(withTimePassed: deltaTime)
-            await windowManager.updateWindows(deltaTime: deltaTime)
-            self.windowManager.drawWindows()
-            if await self.ecs.shouldRenderAfterUpdate(
-                withTimePassed: Float(deltaTime)
-            ) {
+            var shouldRender = false
+            for _ in 0 ..< fixedStepDeltaTime.steps {
+                let deltaTime = Float(fixedStepDeltaTime.deltaTime)
+                self.resourceManager.update(withTimePassed: deltaTime)
+                await windowManager.updateWindows(deltaTime: deltaTime)
+                if await self.ecs.shouldRenderAfterUpdate(withTimePassed: deltaTime) {
+                    shouldRender = true
+                }else{
+                    break
+                }
+            }
+            if shouldRender {
                 self.windowManager.drawWindows()
-                completion()
-            } else {
+            }else{
                 #if GATEENGINE_DEBUG_RENDERING
                 Log.warn("Frame Dropped", "DeltaTime:", deltaTime)
                 #endif
-                completion()
             }
+            completion()
         }
     }
     #else
     internal func gameLoop() {
+        #error("Needs to rewritten to match EventDriven!")
         guard let deltaTime = getNextDeltaTime() else {
             Task(priority: .high) { @MainActor in
                 self.gameLoop()
