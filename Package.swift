@@ -15,6 +15,10 @@ let package = Package(
         .default(enabledTraits: ["SIMD"]),
         
         .trait(
+            name: "DISTRIBUTE",
+            description: "Configures GateEngine for a distributable build. Disables some logging and enables optimizations that otherwise would inhibit development."
+        ),
+        .trait(
             name: "SIMD",
             description: "Enables SIMD acceleration when available."
         ),
@@ -652,6 +656,9 @@ extension Array where Element == Platform {
 extension Array where Element == SwiftSetting {
     static var `default`: Self? {
         var settings: Self = []
+        if let optionalFlags = Self.otherFlags {
+            settings.append(contentsOf: optionalFlags)
+        }
         if let upcommingFeatureFlags = Self.upcommingFeatureFlags {
             settings.append(contentsOf: upcommingFeatureFlags)
         }
@@ -752,7 +759,9 @@ extension Array where Element == SwiftSetting {
     #endif
 #endif
         
-        func enableFeature(_ feature: String) {settings.append(.enableUpcomingFeature(feature))}
+        func enableFeature(_ feature: String, _ condition: PackageDescription.BuildSettingCondition? = nil) {
+            settings.append(.enableUpcomingFeature(feature, condition))
+        }
         return settings.isEmpty ? nil : settings
     }
     
@@ -765,7 +774,31 @@ extension Array where Element == SwiftSetting {
     #endif
 #endif
         
-        func enableFeature(_ feature: String) {settings.append(.enableExperimentalFeature(feature))}
+        func enableFeature(_ feature: String, _ condition: PackageDescription.BuildSettingCondition? = nil) {
+            settings.append(.enableExperimentalFeature(feature, condition))
+        }
+        return settings.isEmpty ? nil : settings
+    }
+    
+    static var otherFlags: Self? {
+        var settings: Self = []
+
+// #if compiler(>=6.2)
+//         addFlag("-strict-memory-safety", .when(configuration: .debug))
+// #endif
+                
+        func enableFeature(_ feature: String, _ condition: PackageDescription.BuildSettingCondition? = nil) {
+            settings.append(.enableExperimentalFeature(feature, condition))
+        }
+        func addFlags(_ flags: String...) {
+            settings.append(.unsafeFlags(flags, nil))
+        }
+        func addFlags(_ flags: [String], _ condition: PackageDescription.BuildSettingCondition? = nil) {
+            settings.append(.unsafeFlags(flags, condition))
+        }
+        func addFlag(_ flags: String, _ condition: PackageDescription.BuildSettingCondition? = nil) {
+            settings.append(.unsafeFlags([flags], condition))
+        }
         return settings.isEmpty ? nil : settings
     }
 }
