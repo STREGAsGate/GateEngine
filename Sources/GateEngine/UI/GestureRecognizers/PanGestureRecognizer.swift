@@ -110,8 +110,8 @@ final public class PanGestureRecognizer: GestureRecognizer {
     }
     
     public override func touchesBegan(_ touches: Set<Touch>) {
-        guard let view else {return}
         guard recognizedSources.contains(.screen) else {return}
+        guard let view else {return}
         
         for touch in touches {
             switch touchKinds {
@@ -169,31 +169,29 @@ final public class PanGestureRecognizer: GestureRecognizer {
     var mouseButtonsMatch: Bool = false {
         didSet {
             if mouseButtonsMatch == false {
-                self.phase = .unrecognized
-                position1 = nil
-                position2 = nil
+                self.invalidate()
             }
         }
     }
     var mouseButtonsDown: [GateEngine.MouseButton] = [] {
         didSet {
-            switch mouseButtons {
+            switch self.mouseButtons {
             case .none:
-                mouseButtonsMatch = mouseButtonsDown.isEmpty
+                self.mouseButtonsMatch = mouseButtonsDown.isEmpty
             case .any:
-                mouseButtonsMatch = mouseButtonsDown.isEmpty == false
+                self.mouseButtonsMatch = mouseButtonsDown.isEmpty == false
             case .exactly(let buttons):
                 for button in buttons {
-                    if mouseButtonsDown.contains(button) == false {
-                        mouseButtonsMatch = false
+                    if self.mouseButtonsDown.contains(button) == false {
+                        self.mouseButtonsMatch = false
                         return
                     }
                 }
                 self.mouseButtonsMatch = true
             case .anyOf(let buttons):
                 for button in buttons {
-                    if mouseButtonsDown.contains(button) == false {
-                        mouseButtonsMatch = true
+                    if self.mouseButtonsDown.contains(button) == false {
+                        self.mouseButtonsMatch = true
                         return
                     }
                 }
@@ -202,7 +200,6 @@ final public class PanGestureRecognizer: GestureRecognizer {
     }
 
     func performSurfaceRecognition() {
-        guard recognizedSources.contains(.surface) else {return}
         guard self.surfaceTouches.count == touchCount else {return}
         func avgTouchPosition() -> Position2 {
             var p: Position2 = .zero
@@ -213,43 +210,44 @@ final public class PanGestureRecognizer: GestureRecognizer {
             return p
         }
         
-        guard mouseButtonsMatch else {
-            self.phase = .unrecognized
+        guard self.mouseButtonsMatch else {
+            //self.phase = .unrecognized
             return
         }
         
-        if position1 == nil {
-            position1 = avgTouchPosition()
+        if self.position1 == nil {
+            self.position1 = avgTouchPosition()
             self.phase = .recognizing
-        }else if position2 == nil {
-            position2 = avgTouchPosition()
+        }else if self.position2 == nil {
+            self.position2 = avgTouchPosition()
             
             #if os(macOS) || os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
             // Good for Magic Trackpad
-            let delta = (position1! - position2!) * 750
+            let delta = (self.position1! - self.position2!) * 750
             #else
-            let delta = (position1! - position2!)
+            let delta = (self.position1! - self.position2!)
             #endif
             
-            if phase != .recognized {
+            if self.phase != .recognized {
                 // Require the pan gesture to move before activating
                 // This allows other gestures to activate first
                 if abs(delta.length) <= 2 { 
-                    position2 = nil
+                    self.position2 = nil
                     return
                 }
             }
             
             self.phase = .recognized
-            for action in actions {
-                action(position2!, delta)
+            for action in self.actions {
+                action(self.position2!, delta)
             }
-            position1 = position2
-            position2 = nil
+            self.position1 = self.position2
+            self.position2 = nil
         }
     }
     
     public override func cursorButtonDown(button: MouseButton, mouse: Mouse) {
+        guard recognizedSources.contains(.mouse) else {return}
         mouseButtonsDown.append(button)
     }
     
@@ -258,6 +256,7 @@ final public class PanGestureRecognizer: GestureRecognizer {
     }
     
     public override func surfaceTouchesBegan(_ touches: Set<SurfaceTouch>, mouse: Mouse) {
+        guard recognizedSources.contains(.surface) else {return}
         for touch in touches {
             surfaceTouches.insert(touch)
         }
