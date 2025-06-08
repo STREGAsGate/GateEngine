@@ -1,10 +1,9 @@
-//
-//  PNGCoder.swift
-//  GateEngine
-//
-//  Created by Dustin Collins on 3/15/25.
-//
-
+/*
+ * Copyright © 2025 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
 
 public final class PNGDecoder {
     public func decode(_ data: Data) throws -> Image {

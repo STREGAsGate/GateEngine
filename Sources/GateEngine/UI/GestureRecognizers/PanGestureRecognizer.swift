@@ -1,9 +1,9 @@
-//
-//  PanGestureRecognizer.swift
-//  GateEngine
-//
-//  Created by Dustin Collins on 5/11/25.
-//
+/*
+ * Copyright © 2025 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
 
 final public class PanGestureRecognizer: GestureRecognizer {
     public var touchCount: Int = 2

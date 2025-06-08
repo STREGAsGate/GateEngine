@@ -1,9 +1,9 @@
-//
-//  GateEngineGeometry.swift
-//  GateEngine
-//
-//  Created by Dustin Collins on 3/14/25.
-//
+/*
+ * Copyright © 2025 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
 
 public final class RawGeometryEncoder {
     public func encode(_ value: RawGeometry) throws(EncodingError) -> Data {

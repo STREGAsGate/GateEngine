@@ -1,9 +1,9 @@
-//
-//  CollisionAttributes.swift
-//  GateEngine
-//
-//  Created by Dustin Collins on 4/7/25.
-//
+/*
+ * Copyright © 2025 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
 
 /// UVs from a piece of renderable geometry
 public struct CollisionAttributeUVs {

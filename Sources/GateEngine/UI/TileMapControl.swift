@@ -1,9 +1,9 @@
-//
-//  TileMapControl.swift
-//  GateEngine
-//
-//  Created by Dustin Collins on 5/1/25.
-//
+/*
+ * Copyright © 2025 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
 
 public enum TileMapControlState: Int, CaseIterable {
     case regular        = 0

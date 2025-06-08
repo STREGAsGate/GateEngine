@@ -1,9 +1,9 @@
-//
-//  CollisionTrianglesCoder.swift
-//  GateEngine
-//
-//  Created by Dustin Collins on 4/8/25.
-//
+/*
+ * Copyright © 2025 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
 
 import GameMath
 

@@ -1,9 +1,9 @@
-//
-//  RotateGestureRecognizer.swift
-//  GateEngine
-//
-//  Created by Dustin Collins on 5/11/25.
-//
+/*
+ * Copyright © 2025 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
 
 @available(*, deprecated, message: "This GestureRecognizer is not yet implemented.")
 final public class RotateGestureRecognizer: GestureRecognizer {
