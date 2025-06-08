@@ -10,9 +10,23 @@ public struct TextureCoordinate: Vector2, Equatable, Hashable, Codable, Sendable
     public var y: Float
     
     @inlinable
-    public var u: Float {get{x}set{x = newValue}}
+    public var u: Float {
+        get {
+            return x
+        }
+        set {
+            x = newValue
+        }
+    }
     @inlinable
-    public var v: Float {get{y}set{y = newValue}}
+    public var v: Float {
+        get {
+            return y
+        }
+        set {
+            y = newValue
+        }
+    }
     
     public init(x: Float, y: Float) {
         self.x = x
@@ -23,8 +37,8 @@ public struct TextureCoordinate: Vector2, Equatable, Hashable, Codable, Sendable
 public extension TextureCoordinate {
     @inlinable
     func distance(from: Self) -> Float {
-        let p1 = unsafeBitCast(self, to: Position2.self)
-        let p2 = unsafeBitCast(from, to: Position2.self)
+        let p1 = Position2(self.x, self.y)
+        let p2 = Position2(from.x, from.y)
         return p1.distance(from: p2)
     }
 }
