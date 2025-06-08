@@ -107,7 +107,7 @@ public extension Geometry {
     /**
     - parameter immediate: true will block the thread while uploading to the GPU. For smaller geometry this may be faster.
      */
-    public convenience init(_ rawGeometry: RawGeometry, immediate: Bool = false) {
+    public convenience init(_ rawGeometry: RawGeometry) {
         self.init(optionalRawGeometry: rawGeometry)
     }
 
