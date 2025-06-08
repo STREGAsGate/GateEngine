@@ -41,10 +41,12 @@ final public class PanGestureRecognizer: GestureRecognizer {
         self.surfaceTouches.removeAll(keepingCapacity: true)
         self.position1 = nil
         self.position2 = nil
-        Log.info("PanGestureRecognizer invalidated.")
     }
     
     public override func recognizesSimultaneously(with otherGestureRecognizer: some GestureRecognizer) -> Bool {
+        if otherGestureRecognizer is PanGestureRecognizer {
+            return true
+        }
         if otherGestureRecognizer is PinchGestureRecognizer {
             return true
         }

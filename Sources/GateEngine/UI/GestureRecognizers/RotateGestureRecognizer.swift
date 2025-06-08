@@ -28,10 +28,12 @@ final public class RotateGestureRecognizer: GestureRecognizer {
 //        self.surfaceTouches.removeAll(keepingCapacity: true)
 //        self.distance1 = nil
 //        self.distance2 = nil
-        Log.info("RotateGestureRecognizer invalidated.")
     }
     
     public override func recognizesSimultaneously(with otherGestureRecognizer: some GestureRecognizer) -> Bool {
+        if otherGestureRecognizer is RotateGestureRecognizer {
+            return true
+        }
         if otherGestureRecognizer is PanGestureRecognizer {
             return true
         }

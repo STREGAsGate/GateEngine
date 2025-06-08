@@ -5,27 +5,27 @@
  * http://stregasgate.com
  */
 
+/// Recognizes Touch and Click HID events
 final public class TapGestureRecognizer: GestureRecognizer {
     public var touchCount: Int = 1
     private var actions: [(_ position: Position2)->()] = []
-    var distance1: Float? = nil
-    var distance2: Float? = nil
     
     public init(recognizedSources: Sources = .all, touchCount: Int = 1, recognized: @escaping (_ position: Position2)->()) {
         self.touchCount = touchCount
         self.actions = [recognized]
         super.init(recognizedSources: recognizedSources)
     }
-    
+        
     public override func invalidate() {
         super.invalidate()
         self.phase = .unrecognized
         self.touches.removeAll(keepingCapacity: true)
-        self.distance1 = nil
-        self.distance2 = nil
         self.startPositions.removeAll(keepingCapacity: true)
         self.downInside = false
-        Log.info("TapGestureRecognizer invalidated.")
+    }
+    
+    public override func recognizesSimultaneously(with otherGestureRecognizer: some GestureRecognizer) -> Bool {
+        return false
     }
     
     var touches: Set<Touch> = [] {
@@ -38,8 +38,6 @@ final public class TapGestureRecognizer: GestureRecognizer {
                 }
             }else{
                 self.phase = .unrecognized
-                distance1 = nil
-                distance2 = nil
             }
         }
     }

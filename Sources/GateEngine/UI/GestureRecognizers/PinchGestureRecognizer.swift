@@ -24,10 +24,12 @@ final public class PinchGestureRecognizer: GestureRecognizer {
         self.surfaceTouches.removeAll(keepingCapacity: true)
         self.distance1 = nil
         self.distance2 = nil
-        Log.info("PinchGestureRecognizer invalidated.")
     }
     
     public override func recognizesSimultaneously(with otherGestureRecognizer: some GestureRecognizer) -> Bool {
+        if otherGestureRecognizer is PinchGestureRecognizer {
+            return true
+        }
         if otherGestureRecognizer is PanGestureRecognizer {
             return true
         }
