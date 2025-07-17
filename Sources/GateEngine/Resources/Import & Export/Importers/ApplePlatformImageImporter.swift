@@ -53,7 +53,7 @@ public final class ApplePlatformImageImporter: TextureImporter {
         }
     }
 
-    public func loadTexture(options: TextureImporterOptions) async throws -> (data: Data, size: Size2) {
+    public func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> (data: Data, size: Size2) {
         return (data, size)
     }
 

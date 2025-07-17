@@ -5,7 +5,8 @@
  * http://stregasgate.com
  */
 
-import GameMath
+public import Foundation
+public import GameMath
 
 public final class PNGImporter: TextureImporter {
     var data: Data! = nil
@@ -37,7 +38,7 @@ public final class PNGImporter: TextureImporter {
         }
     }
 
-    public func loadTexture(options: TextureImporterOptions) throws -> (data: Data, size: Size2) {
+    public func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> (data: Data, size: Size2) {
         return (self.data, self.size)
     }
 

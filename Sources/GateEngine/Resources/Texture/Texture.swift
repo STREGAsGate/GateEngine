@@ -5,9 +5,7 @@
  * http://stregasgate.com
  */
 
-#if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
 import Foundation
-#endif
 
 public enum MipMapping: Hashable, Sendable {
     /// No mipmapping
@@ -167,7 +165,7 @@ extension Texture: Equatable, Hashable {
 // MARK: - Resource Manager
 
 public protocol TextureImporter: ResourceImporter {
-    func loadTexture(options: TextureImporterOptions) async throws -> (data: Data, size: Size2)
+    func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> (data: Data, size: Size2)
 }
 
 public struct TextureImporterOptions: Equatable, Hashable, Sendable {
@@ -371,7 +369,7 @@ extension ResourceManager {
                     throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
                 }
                 
-                let texture = try await importer.loadTexture(options: key.textureOptions)
+                let texture = try importer.loadTexture(options: key.textureOptions)
                 guard texture.data.isEmpty == false else {
                     throw GateEngineError.failedToLoad("File is empty.")
                 }
