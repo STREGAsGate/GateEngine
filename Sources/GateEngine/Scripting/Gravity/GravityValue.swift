@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public import Gravity
+@preconcurrency public import Gravity
 
 public struct GravityValue: GravityValueEmitting {
     public var gValue: gravity_value_t

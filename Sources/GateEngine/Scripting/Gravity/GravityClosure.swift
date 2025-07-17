@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public import Gravity
+@preconcurrency public import Gravity
 
 public class GravityClosure: GravityValueEmitting, GravityClosureEmitting {
     let gravity: Gravity

@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public import Gravity
+@preconcurrency public import Gravity
 
 /// A gravity script class definition.
 public class GravityClass: GravityValueEmitting, GravityClassEmitting {

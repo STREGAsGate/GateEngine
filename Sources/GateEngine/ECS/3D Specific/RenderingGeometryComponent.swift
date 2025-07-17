@@ -5,27 +5,28 @@
  * http://stregasgate.com
  */
 
+@MainActor
 public struct RenderingGeometryComponent: ResourceConstrainedComponent {
     /// Rendering options applied to all `geometries`
     public var flags: SceneElementFlags = .default
 
     /// Geometry references to draw
-    @MainActor public var geometries: Set<Geometry> = [] {
+    public var geometries: Set<Geometry> = [] {
         didSet {
             resourcesState = .pending
         }
     }
-    @MainActor public var skinnedGeometries: Set<SkinnedGeometry> = [] {
+    public var skinnedGeometries: Set<SkinnedGeometry> = [] {
         didSet {
             resourcesState = .pending
         }
     }
 
-    @MainActor public mutating func insert(_ geomerty: Geometry) {
+    public mutating func insert(_ geomerty: Geometry) {
         self.geometries.insert(geomerty)
     }
 
-    @MainActor public mutating func insert(_ geomerty: SkinnedGeometry) {
+    public mutating func insert(_ geomerty: SkinnedGeometry) {
         self.skinnedGeometries.insert(geomerty)
     }
 

@@ -6,7 +6,7 @@
  */
 
 import Foundation
-import Gravity
+@preconcurrency import Gravity
 
 internal func filenameCallback(
     fileID: UInt32,

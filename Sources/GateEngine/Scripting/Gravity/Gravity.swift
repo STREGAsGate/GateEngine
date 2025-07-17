@@ -17,8 +17,7 @@ extension Gravity {
     }
 }
 
-@MainActor
-internal var gravityDelegate: gravity_delegate_t = {
+nonisolated(unsafe) internal var gravityDelegate: gravity_delegate_t = {
     var delegate: gravity_delegate_t = gravity_delegate_t()
     delegate.error_callback = errorCallback(vm:errorType:description:errorDesc:xdata:)
     delegate.filename_callback = filenameCallback(fileID:xData:)
@@ -175,7 +174,7 @@ public final class Gravity {
      - parameter addDebug: `true` to add debug. nil to add debug only in DEBUG configurations.
      - throws: Gravity compilation errors such as syntax problems.
      */
-    @MainActor
+//    @MainActor
     public func compile(source sourceCode: String, addDebug: Bool? = nil) async throws {
         self.mainClosure = nil
         self.didRunMain = false

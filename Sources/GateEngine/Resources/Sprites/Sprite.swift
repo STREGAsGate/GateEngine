@@ -74,7 +74,7 @@ extension Sprite: Equatable {
 
 extension Sprite: Hashable {
     public nonisolated func hash(into hasher: inout Hasher) {
-        hasher.combine(texture)
+        hasher.combine(texture.cacheKey)
         hasher.combine(bounds)
     }
 }

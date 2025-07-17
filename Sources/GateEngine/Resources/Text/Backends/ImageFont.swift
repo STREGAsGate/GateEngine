@@ -17,7 +17,7 @@ struct ImageFont: FontBackend {
             Log.debug("No TextureImporter for file \"\(regular)\"")
             throw GateEngineError.failedToDecode("No TextureImporter for file \"\(regular)\"")
         }
-        let regular = try await importer.loadTexture(options: .none)
+        let regular = try importer.loadTexture(options: .none)
 
         let fontData: [Font.Style: (data: Data, size: Size2, importer: any TextureImporter.Type)] =
             [.regular: (regular.data, regular.size, type(of: importer))]
