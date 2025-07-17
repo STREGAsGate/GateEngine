@@ -306,7 +306,7 @@ public final class TileMapControlView<Scheme: TileMapControlScheme>: TileMapView
             }
         case .toggleable:
             let currentState = self.state(forControl: pair.control, subControlIndex: pair.subControlIndex)
-            guard currentState != .selected && currentState != .disabled else { return }
+            guard currentState != .disabled else { return }
             let state: TileMapControlState = if currentState == .selected {
                 .regular
             }else{
