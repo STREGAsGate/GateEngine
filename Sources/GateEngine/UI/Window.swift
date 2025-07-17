@@ -37,7 +37,7 @@ public struct WindowOptions: OptionSet, Sendable {
     public static let `default`: WindowOptions = []
 }
 
-@MainActor public final class Window: View, RenderTargetProtocol, _RenderTargetProtocol {
+@MainActor public final class Window: View, @MainActor RenderTargetProtocol, @MainActor _RenderTargetProtocol {
     public var lastDrawnFrame: UInt = .max
     public let identifier: String
     public let style: WindowStyle
@@ -361,7 +361,7 @@ public struct WindowOptions: OptionSet, Sendable {
     }
     
     var accumulatedFrames: UInt = 0
-    func _draw(deltaTime: Float) {
+    func _draw(deltaTime: Double) {
         self.accumulatedFrames &+= 1
         self._willDraw()
         self.offScreenRendering.update()
@@ -434,12 +434,10 @@ public struct WindowOptions: OptionSet, Sendable {
         let now: Double = Platform.current.systemTime()
         self.deltaTime = now - previousTime
         self.previousTime = now
-        // Positive time change and minimum of 10 fps
-        guard deltaTime > 0 && deltaTime < 0.1 else { return }
 
         Game.shared.windowManager.window(
             self,
-            wantsUpdateForTimePassed: Float(deltaTime)
+            wantsUpdateForTimePassed: deltaTime
         )
     }
 

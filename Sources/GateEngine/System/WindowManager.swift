@@ -93,7 +93,7 @@ import GameMath
         return true
     }
 
-    internal var windowsThatRequestedDraw: [(window: Window, deltaTime: Float)] = []
+    internal var windowsThatRequestedDraw: [(window: Window, deltaTime: Double)] = []
 
     func updateWindows(deltaTime: Float) async {
         for window in windows {
@@ -103,7 +103,7 @@ import GameMath
     
     func drawWindows() {
         game.attributes.insert(.renderingIsPermitted)
-        for pair: (window: Window, deltaTime: Float) in windowsThatRequestedDraw {
+        for pair: (window: Window, deltaTime: Double) in windowsThatRequestedDraw {
             pair.window._draw(deltaTime: pair.deltaTime)
         }
         game.attributes.remove(.renderingIsPermitted)
@@ -113,7 +113,7 @@ import GameMath
 }
 
 extension WindowManager {
-    func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Float) {
+    func window(_ window: Window, wantsUpdateForTimePassed deltaTime: Double) {
         window.didDrawSomething = false
         if let index = windowsThatRequestedDraw.firstIndex(where: { $0.window == window }) {
             // If the window dropped a frame, add the next deltaTime
