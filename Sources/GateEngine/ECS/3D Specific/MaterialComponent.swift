@@ -7,8 +7,9 @@
 
 public import Shaders
 
+@MainActor
 @dynamicMemberLookup
-public final class MaterialComponent: Component {
+public final class MaterialComponent: ResourceConstrainedComponent {
     public var vertexShader: VertexShader? = nil
     public var fragmentShader: FragmentShader? = nil
     public var blendMode: DrawCommand.Flags.BlendMode = .normal
