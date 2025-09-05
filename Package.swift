@@ -47,7 +47,7 @@ let package = Package(
         // Replace swift-atomics with an explicit version pending:
         // https://github.com/apple/swift/issues/69264
         packageDependencies.removeAll(where: {
-            if case .sourceControl(name: let name, location: "https://github.com/apple/swift-atomics.git", requirement: _) = $0.kind {
+            if case .sourceControl(name: _, location: "https://github.com/apple/swift-atomics.git", requirement: _) = $0.kind {
                 return true
             }
             return false
@@ -56,12 +56,8 @@ let package = Package(
             .package(url: "https://github.com/apple/swift-atomics.git", exact: "1.1.0"),
         )
         packageDependencies.append(contentsOf: [
-            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", .upToNextMajor(from: "0.1.0"), traits: [
-                .trait(name: "HTML5", condition: .when(traits: ["HTML5"]))
-            ]),
-            .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0"), traits: [
-                .trait(name: "HTML5", condition: .when(traits: ["HTML5"]))
-            ]),
+            .package(url: "https://github.com/swiftwasm/WebAPIKit.git", .upToNextMajor(from: "0.1.0")),
+            .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", .upToNextMajor(from: "0.16.0")),
         ])
         #endif
         
@@ -158,6 +154,10 @@ let package = Package(
                             .when(platforms: [.iOS, .tvOS])),
                     ],
                     swiftSettings: .default(withCustomization: { settings in
+                        #if false
+                            settings.append(.defaultIsolation(MainActor.self))
+                        #endif
+                        
                         settings.append(
                             .define("GATEENGINE_USE_OPENAL", .when(platforms: [.linux]))
                         )
