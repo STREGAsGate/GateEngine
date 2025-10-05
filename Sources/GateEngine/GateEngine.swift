@@ -64,6 +64,7 @@ public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible
     case failedToLocate
     case failedToLoad(_ reason: String)
     case failedToDecode(_ reason: String)
+    case failedToEncode(_ reason: String)
 
     case scriptCompileError(_ reason: String)
     case scriptExecutionError(_ reason: String)
@@ -82,6 +83,8 @@ public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible
             return "failedToLoad:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .failedToDecode(let reason):
             return "failedToDecode:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+        case .failedToEncode(let reason):
+            return "failedToEncode:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .scriptCompileError(let reason):
             return "scriptCompileError:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .scriptExecutionError(let reason):
