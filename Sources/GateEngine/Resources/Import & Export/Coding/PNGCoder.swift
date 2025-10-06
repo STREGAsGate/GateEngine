@@ -45,11 +45,11 @@ public final class PNGEncoder {
      */
     public func encode(_ data: Data, width: Int, height: Int, sacrificePerformanceToShrinkData: Bool = false) throws(GateEngineError) -> Data {
 #if canImport(LibSPNG)
-        if sacrificePerformanceToShrinkData {
-            try LibSPNG.encodeSmallest(data: data, width: width, height: height)
-        }else{
+//        if sacrificePerformanceToShrinkData {
+//            try LibSPNG.encodeSmallest(data: data, width: width, height: height)
+//        }else{
             try LibSPNG.encodeRGBA(data: data, width: width, height: height, optimizeAlpha: false)
-        }
+//        }
 #else
         fatalError("PNGEncoder is not supported on this platform.")
 #endif
