@@ -33,7 +33,7 @@ private class GLTF: Decodable {
     let scenes: [Scene]
     struct Scene: Decodable {
         let name: String
-        let nodes: [Int]
+        let nodes: [Int]?
     }
 
     let nodes: [Node]
@@ -79,6 +79,14 @@ private class GLTF: Decodable {
             }
             return transform
         }
+    }
+    
+    let images: [Image]?
+    struct Image: Decodable {
+        let name: String
+        let mimeType: String
+        let uri: String?
+        let bufferView: Int?
     }
 
     let meshes: [Mesh]?
@@ -216,7 +224,9 @@ private class GLTF: Decodable {
     }
 
     lazy var cachedBuffers: [Data?] = Array(repeating: nil, count: buffers.count)
-    func buffer(at index: Int) async -> Data? {
+    func buffer(at index: Int) -> Data? {
+        // Buffer 0 is pre-cached for glb files
+        // So `existing` will always be present for index 0 of a glb file
         if let existing = cachedBuffers[index] {
             return existing
         }
@@ -227,7 +237,7 @@ private class GLTF: Decodable {
             let base64String = uri[uri.index(after: index)...]
             buffer = Data(base64Encoded: String(base64String))
         } else {
-            buffer = try? await Platform.current.loadResource(
+            buffer = try? Platform.current.synchronousLoadResource(
                 from: self.baseURL!.appendingPathComponent(uri).path
             )
         }
@@ -242,7 +252,7 @@ private class GLTF: Decodable {
         let bufferView = bufferViews[accessor.bufferView]
         let count = accessor.count * accessor.primitiveCount
 
-        return await buffer(at: bufferView.buffer)?.withUnsafeBytes {
+        return buffer(at: bufferView.buffer)?.withUnsafeBytes {
             switch accessor.componentType {
             case .uint8:
                 typealias Scalar = UInt8
@@ -326,7 +336,7 @@ private class GLTF: Decodable {
         let bufferView = bufferViews[accessor.bufferView]
         let count = accessor.count * accessor.primitiveCount
 
-        return await buffer(at: bufferView.buffer)?.withUnsafeBytes {
+        return buffer(at: bufferView.buffer)?.withUnsafeBytes {
             switch accessor.componentType {
             case .uint8:
                 typealias Scalar = UInt8
@@ -561,16 +571,16 @@ extension GLTransmissionFormat: GeometryImporter {
         }
         
         if geometries.count == 1 {
-            if options.applyRootTransform {
-                let transform = gltf.nodes[gltf.scenes[gltf.scene].nodes[0]].transform.createMatrix()
+            if options.applyRootTransform, let nodeIndex = gltf.scenes[gltf.scene].nodes?[0] {
+                let transform = gltf.nodes[nodeIndex].transform.createMatrix()
                 return geometries[0] * transform
             }else{
                 return geometries[0]
             }
         }else{
             var geometry = RawGeometry(geometries: geometries)
-            if options.applyRootTransform {
-                let transform = gltf.nodes[gltf.scenes[gltf.scene].nodes[0]].transform.createMatrix()
+            if options.applyRootTransform, let nodeIndex = gltf.scenes[gltf.scene].nodes?[0] {
+                let transform = gltf.nodes[nodeIndex].transform.createMatrix()
                 geometry = geometry * transform
             }
             return geometry
@@ -595,9 +605,11 @@ extension GLTransmissionFormat: SkinImporter {
             }
             return nil
         }
-        for index in gltf.scenes[gltf.scene].nodes {
-            if let value = findIn(index) {
-                return value
+        if let sceneNodes = gltf.scenes[gltf.scene].nodes {
+            for index in sceneNodes {
+                if let value = findIn(index) {
+                    return value
+                }
             }
         }
         return nil
@@ -608,7 +620,7 @@ extension GLTransmissionFormat: SkinImporter {
         in gltf: GLTF
     ) async -> [Matrix4x4]? {
         guard
-            let buffer = await gltf.buffer(at: bufferView.buffer)?.advanced(
+            let buffer = gltf.buffer(at: bufferView.buffer)?.advanced(
                 by: bufferView.byteOffset
             )
         else { return nil }
@@ -708,12 +720,14 @@ extension GLTransmissionFormat: SkeletonImporter {
             }
             return nil
         }
-        for index in gltf.scenes[gltf.scene].nodes {
-            if let value = findIn(index) {
-                return value
+        if let sceneNodes = gltf.scenes[gltf.scene].nodes {
+            for index in sceneNodes {
+                if let value = findIn(index) {
+                    return value
+                }
             }
         }
-        return gltf.scenes[gltf.scene].nodes.first
+        return gltf.scenes[gltf.scene].nodes?.first
     }
     
     public func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) async throws -> Skeleton.Joint {
@@ -881,7 +895,7 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
         
         var objectAnimation = ObjectAnimation3D.Animation()
         
-        var timeMax: Float = -1_000_000_000
+        var timeMax: Float = .nan
 
         for channel in animation.channels {
             let sampler = animation.samplers[channel.sampler]
@@ -946,5 +960,45 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
         }
 
         return ObjectAnimation3DBackend(name: animation.name, duration: timeMax, animation: objectAnimation)
+    }
+}
+
+extension GLTransmissionFormat: TextureImporter {
+    // TODO: Supports only PNG. Add other formats (JPEG, WebP, ...)
+    public func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> (data: Data, size: GameMath.Size2) {
+        let imageData: Data
+        func loadImageData(image: GLTF.Image) throws(GateEngineError) -> Data {
+            if let uri = image.uri {
+                return try Platform.current.synchronousLoadResource(
+                    from: self.gltf.baseURL!.appendingPathComponent(uri).path
+                )
+            }else if let bufferIndex = image.bufferView {
+                let view = self.gltf.bufferViews[bufferIndex]
+                
+                if let buffer = self.gltf.buffer(at: view.buffer) {
+                    return Data(buffer[view.byteOffset..<view.byteOffset+view.byteLength])
+                }else{
+                    throw .failedToDecode("The file does not contain a buffer with index: \(view.buffer)")
+                }
+            }else{
+                throw .failedToDecode("The gltf file is using an unsupported feature or may be corrupt.")
+            }
+        }
+        if let name = options.subobjectName {
+            if let image = self.gltf.images?.first(where: {$0.name.caseInsensitiveCompare(name) == .orderedSame}) {
+                imageData = try loadImageData(image: image)
+            }else{
+                throw .failedToLoad("No subobject found with name: \(name)")
+            }
+        }else{
+            if let image = self.gltf.images?.first {
+                imageData = try loadImageData(image: image)
+            }else{
+                throw .failedToLoad("No images found in file.")
+            }
+        }
+        
+        let image = try PNGDecoder().decode(imageData)
+        return (image.data, Size2(Float(image.width), Float(image.height)))
     }
 }

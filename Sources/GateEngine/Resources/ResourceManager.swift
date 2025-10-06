@@ -59,7 +59,8 @@ public extension ResourceImporter {
 extension ResourceManager {
     struct Importers {
         internal var textureImporters: [any TextureImporter.Type] = [
-            PNGImporter.self
+            PNGImporter.self,
+            GLTransmissionFormat.self,
         ]
 
         internal var geometryImporters: [any GeometryImporter.Type] = [
