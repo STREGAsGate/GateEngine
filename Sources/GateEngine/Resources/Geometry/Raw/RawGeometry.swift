@@ -9,14 +9,6 @@ import GameMath
 
 /// An element array object formatted as triangle primitives
 public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
-    public enum Attribute: Hashable {
-        case position(_ index: UInt8)
-        case textureCoordinate(_ index: UInt8)
-        case normal(_ index: UInt8)
-        case tangent(_ index: UInt8)
-        case color(_ index: UInt8)
-    }
-
     public var positions: [Float]
     public var uvSets: [[Float]]
     public var uvSet1: [Float] {
