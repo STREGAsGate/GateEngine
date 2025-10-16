@@ -88,6 +88,42 @@ private class GLTF: Decodable {
         let uri: String?
         let bufferView: Int?
     }
+    
+    let textures: [Texture]?
+    struct Texture: Decodable {
+        let sampler: Int
+        let source: Int
+    }
+    
+    let materials: [Material]?
+    struct Material: Decodable {
+        let name: String
+        let doubleSided: Bool
+        let emissiveTexture: Texture?
+        let normalTexture: Texture?
+        
+        struct Texture: Decodable {
+            let index: Int
+        }
+        
+        let pbrMetallicRoughness: PBRMetallicRoughness?
+        struct PBRMetallicRoughness: Decodable {
+            let baseColorTexture: Texture?
+            let metallicRoughnessTexture: Texture?
+        }
+        
+        let extensions: Extensions?
+        struct Extensions: Decodable {
+            enum CodingKeys: String, CodingKey {
+                case khrMaterialsSpecular = "KHR_materials_specular"
+            }
+            struct KHRMaterialsSpecular: Decodable {
+                let specularTexture: Texture?
+                let specularColorTexture: Texture?
+            }
+            let khrMaterialsSpecular: KHRMaterialsSpecular?
+        }
+    }
 
     let meshes: [Mesh]?
     struct Mesh: Decodable {
@@ -412,6 +448,78 @@ private class GLTF: Decodable {
                 }
                 return array.map({ T($0) })
             }
+        }
+    }
+}
+
+// Helpers for exploring the gltf document
+public extension GLTransmissionFormat {
+    var meshNames: [String] {self.gltf.meshes?.map(\.name) ?? []}
+    var materialNames: [String] {self.gltf.materials?.map(\.name) ?? []}
+    var imageNames: [String] {self.gltf.images?.map(\.name) ?? []}
+    
+    func meshNames(usingMaterialNamed materialName: String) -> [String] {
+        guard let materialIndex = self.gltf.materials?.firstIndex(where: {$0.name == materialName}) else {return []}
+        
+        var names: Set<String> = []
+        for mesh in gltf.meshes ?? [] {
+            for primitive in mesh.primitives {
+                if primitive.material == materialIndex {
+                    names.insert(mesh.name)
+                }
+            }
+        }
+        return Array(names)
+    }
+    
+    func meshNamesWithNoMaterial() -> [String] {
+        var names: Set<String> = []
+        for mesh in gltf.meshes ?? [] {
+            for primitive in mesh.primitives {
+                if primitive.material == nil {
+                    names.insert(mesh.name)
+                }
+            }
+        }
+        return Array(names)
+    }
+    
+    enum TextureType {
+        case pbrBaseColor
+        case pbrMetallicRoughness
+        case emissive
+        case normal
+        
+        /// The `KHR_materials_specular` extension's `specularTexture`
+        case khrMaterialsSpecular
+        /// The `KHR_materials_specular` extension's `specularColorTexture`
+        case khrMaterialsSpecularColor
+    }
+    /**
+         Obtain the name of the image that matches the textureType
+     */
+    func imageName(ofTextureType type: TextureType, inMaterialNamed materialName: String) -> String? {
+        guard let material = self.gltf.materials?.first(where: {$0.name == materialName}) else {return nil}
+        
+        func textureName(fromIndex index: Int?) -> String? {
+            guard let index else {return nil}
+            guard let imageIndex = gltf.textures?[index].source else {return nil}
+            return gltf.images?[imageIndex].name
+        }
+        
+        switch type {
+        case .pbrBaseColor:
+            return textureName(fromIndex: material.pbrMetallicRoughness?.baseColorTexture?.index)
+        case .pbrMetallicRoughness:
+            return textureName(fromIndex: material.pbrMetallicRoughness?.metallicRoughnessTexture?.index)
+        case .emissive:
+            return textureName(fromIndex: material.emissiveTexture?.index)
+        case .normal:
+            return textureName(fromIndex: material.normalTexture?.index)
+        case .khrMaterialsSpecular:
+            return textureName(fromIndex: material.extensions?.khrMaterialsSpecular?.specularTexture?.index)
+        case .khrMaterialsSpecularColor:
+            return textureName(fromIndex: material.extensions?.khrMaterialsSpecular?.specularColorTexture?.index)
         }
     }
 }
