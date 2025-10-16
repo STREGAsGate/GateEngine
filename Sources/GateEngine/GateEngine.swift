@@ -7,7 +7,7 @@
 
 import Foundation
 
-// Windows doesn't always link @_exported, so we import too.
+@_exported public import GateEngineShared
 @_exported public import GameMath
 
 @_exported import struct Foundation.Data

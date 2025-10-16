@@ -15,3 +15,5 @@ import Foundation
 @_exported import func Foundation.tan
 @_exported import func Foundation.acos
 @_exported import func Foundation.atan2
+
+@_exported import GateEngineShared

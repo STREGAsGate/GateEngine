@@ -75,6 +75,7 @@ let package = Package(
                         )
                         
                         dependencies.append(contentsOf: [
+                            "GateEngineShared",
                             "GameMath",
                             "Shaders",
                             "TrueType",
@@ -228,6 +229,7 @@ let package = Package(
             .target(
                 name: "Shaders",
                 dependencies: [
+                    "GateEngineShared",
                     "GameMath",
                     .product(name: "Collections", package: "swift-collections")
                 ],
@@ -236,17 +238,25 @@ let package = Package(
                 })
             ),
             
-            .target(name: "GameMath", swiftSettings: .default(withCustomization: { settings in
-                #if false
-                // Possibly faster on old hardware, but less accurate.
-                // There is no reason to use this on modern hardware.
-                settings.append(.define("GameMathUseFastInverseSquareRoot"))
-                #endif
-                
-                // These settings are faster only with optimization.
-                settings.append(.define("GameMathUseSIMD", .when(configuration: .release, traits: ["SIMD"])))
-                settings.append(.define("GameMathUseLoopVectorization", .when(configuration: .release, traits: ["SIMD"])))
-            })),
+                .target(
+                    name: "GameMath", 
+                    dependencies: [
+                        "GateEngineShared"
+                    ], 
+                    swiftSettings: .default(withCustomization: { settings in
+                        #if false
+                        // Possibly faster on old hardware, but less accurate.
+                        // There is no reason to use this on modern hardware.
+                        settings.append(.define("GameMathUseFastInverseSquareRoot"))
+                        #endif
+                        
+                        // These settings are faster only with optimization.
+                        settings.append(.define("GameMathUseSIMD", .when(configuration: .release, traits: ["SIMD"])))
+                        settings.append(.define("GameMathUseLoopVectorization", .when(configuration: .release, traits: ["SIMD"])))
+                    })
+                ),
+            
+            .target(name: "GateEngineShared", swiftSettings: .default),
         ])
         
         // MARK: - Macros
