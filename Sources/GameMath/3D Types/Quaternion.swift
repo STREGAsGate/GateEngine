@@ -629,3 +629,5 @@ extension Quaternion: Codable {
         self.w = values[3]
     }
 }
+
+extension Quaternion: BinaryCodable {}

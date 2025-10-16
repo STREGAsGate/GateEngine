@@ -650,6 +650,22 @@ extension Vector4 where Self: Codable {
     }
 }
 
+extension Vector4 where Self: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.x.encode(into: &data, version: version)
+        try self.y.encode(into: &data, version: version)
+        try self.z.encode(into: &data, version: version)
+        try self.w.encode(into: &data, version: version)
+    }
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        let x = try Float(decoding: data, at: &offset, version: version)
+        let y = try Float(decoding: data, at: &offset, version: version)
+        let z = try Float(decoding: data, at: &offset, version: version)
+        let w = try Float(decoding: data, at: &offset, version: version)
+        self.init(x, y, z, w)
+    }
+}
+
 extension Vector4 {
     @inlinable
     public func valuesArray() -> [Float] {return [x, y, z, w]}

@@ -45,6 +45,7 @@ extension Size2: Equatable {}
 extension Size2: Hashable {}
 extension Size2: Comparable {}
 extension Size2: Codable {}
+extension Size2: BinaryCodable {}
 
 //MARK: Vector2
 extension Size2 {

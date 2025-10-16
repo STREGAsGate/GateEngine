@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct TextureCoordinate: Vector2, Equatable, Hashable, Codable, Sendable {
+public struct TextureCoordinate: Vector2, Equatable, Hashable, Sendable {
     public var x: Float
     public var y: Float
     
@@ -42,3 +42,6 @@ public extension TextureCoordinate {
         return p1.distance(from: p2)
     }
 }
+
+extension TextureCoordinate: Codable {}
+extension TextureCoordinate: BinaryCodable {}

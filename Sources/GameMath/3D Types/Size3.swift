@@ -151,3 +151,4 @@ extension Size3: Codable {
         self.init(values[0], values[1], values[2])
     }
 }
+extension Size3: BinaryCodable {}

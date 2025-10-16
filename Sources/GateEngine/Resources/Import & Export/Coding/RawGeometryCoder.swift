@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public final class RawGeometryEncoder {
+public struct RawGeometryEncoder {
     public func encode(_ value: RawGeometry) throws(EncodingError) -> Data {
         return try RawGeometryEncodableRepresenation_v1.encode(value)
     }
@@ -20,7 +20,7 @@ public final class RawGeometryEncoder {
     }
 }
 
-public final class RawGeometryDecoder {
+public struct RawGeometryDecoder {
     public func decode(_ data: Data) throws(DecodingError) -> RawGeometry {
         guard data.isEmpty == false else { throw .decodingFailed }
         let header = data.withUnsafeBytes { data in

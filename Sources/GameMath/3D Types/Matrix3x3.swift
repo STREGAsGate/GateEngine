@@ -291,3 +291,30 @@ extension Matrix3x3: Codable {
         self.k = try container.decode(Float.self)
     }
 }
+
+extension Matrix3x3: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.a.encode(into: &data, version: version)
+        try self.b.encode(into: &data, version: version)
+        try self.c.encode(into: &data, version: version)
+        try self.e.encode(into: &data, version: version)
+        try self.f.encode(into: &data, version: version)
+        try self.g.encode(into: &data, version: version)
+        try self.i.encode(into: &data, version: version)
+        try self.j.encode(into: &data, version: version)
+        try self.k.encode(into: &data, version: version)
+    }
+    
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        let a = try Float(decoding: data, at: &offset, version: version)
+        let b = try Float(decoding: data, at: &offset, version: version)
+        let c = try Float(decoding: data, at: &offset, version: version)
+        let e = try Float(decoding: data, at: &offset, version: version)
+        let f = try Float(decoding: data, at: &offset, version: version)
+        let g = try Float(decoding: data, at: &offset, version: version)
+        let i = try Float(decoding: data, at: &offset, version: version)
+        let j = try Float(decoding: data, at: &offset, version: version)
+        let k = try Float(decoding: data, at: &offset, version: version)
+        self.init(a, b, c, e, f, g, i, j, k)
+    }
+}

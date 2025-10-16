@@ -51,6 +51,7 @@ public struct Position2: Vector2, Sendable {
 extension Position2: Equatable {}
 extension Position2: Hashable {}
 extension Position2: Codable {}
+extension Position2: BinaryCodable {}
 
 public extension Position2 {
     @inlinable

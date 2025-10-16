@@ -5,6 +5,8 @@
  * http://stregasgate.com
  */
 
+import GateEngineShared
+
 public protocol Angle: Sendable, RawRepresentable, Numeric, Comparable, FloatingPoint where RawValue == Float {
     var rawValue: RawValue {get set}
     
@@ -38,6 +40,27 @@ public extension Angle {
         var copy = self
         copy.interpolate(to: to, method)
         return copy
+    }
+}
+
+public extension Angle where Self: Codable {
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.rawValueAsRadians)
+    }
+    init(from decoder: any Decoder) throws {
+        let radians = try decoder.singleValueContainer().decode(RawValue.self)
+        self.init(rawValueAsRadians: radians)
+    }
+}
+
+public extension Angle where Self: BinaryCodable {
+    func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.rawValueAsRadians.encode(into: &data, version: version)
+    }
+    init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        let radians = try RawValue(decoding: data, at: &offset, version: version)
+        self.init(rawValueAsRadians: radians)
     }
 }
 
@@ -495,7 +518,7 @@ public extension Angle {
 }
 
 /// Represents an angle in radians
-public struct Radians: Angle, Hashable, Codable, Sendable {
+public struct Radians: Angle, Hashable, Sendable {
     public typealias RawValue = Float
     public typealias Magnitude = Self
     public typealias IntegerLiteralType = RawValue
@@ -547,7 +570,10 @@ public struct Radians: Angle, Hashable, Codable, Sendable {
     }
 }
 
-public struct Degrees: Angle, Hashable, Codable, Sendable {
+extension Radians: Codable {}
+extension Radians: BinaryCodable {}
+
+public struct Degrees: Angle, Hashable, Sendable {
     public typealias RawValue = Float
     public typealias Magnitude = Self
     public typealias IntegerLiteralType = RawValue
@@ -683,6 +709,9 @@ extension Degrees {
         return Self((left <= right) ? (left * -1) : right)
     }
 }
+
+extension Degrees: Codable {}
+extension Degrees: BinaryCodable {}
 
 postfix operator °
 @inlinable

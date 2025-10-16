@@ -45,6 +45,7 @@ public extension Direction2 {
 extension Direction2: Equatable {}
 extension Direction2: Hashable {}
 extension Direction2: Codable {}
+extension Direction2: BinaryCodable {}
 
 public extension Direction2 {
     @inlinable

@@ -176,3 +176,17 @@ extension Transform2: Codable {
         self.scale = Size2(width: values[3], height: values[4])
     }
 }
+
+extension Transform2: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.position.encode(into: &data, version: version)
+        try self.rotation.encode(into: &data, version: version)
+        try self.scale.encode(into: &data, version: version)
+    }
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        let position = try Position2(decoding: data, at: &offset, version: version)
+        let rotation = try Degrees(decoding: data, at: &offset, version: version)
+        let scale = try Size2(decoding: data, at: &offset, version: version)
+        self.init(position: position, rotation: rotation, scale: scale)
+    }
+}

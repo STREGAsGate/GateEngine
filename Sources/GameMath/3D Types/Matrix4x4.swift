@@ -796,3 +796,44 @@ extension Matrix4x4: Codable {
         self.init(storage)
     }
 }
+
+extension Matrix4x4: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.a.encode(into: &data, version: version)
+        try self.b.encode(into: &data, version: version)
+        try self.c.encode(into: &data, version: version)
+        try self.d.encode(into: &data, version: version)
+        try self.e.encode(into: &data, version: version)
+        try self.f.encode(into: &data, version: version)
+        try self.g.encode(into: &data, version: version)
+        try self.h.encode(into: &data, version: version)
+        try self.i.encode(into: &data, version: version)
+        try self.j.encode(into: &data, version: version)
+        try self.k.encode(into: &data, version: version)
+        try self.l.encode(into: &data, version: version)
+        try self.m.encode(into: &data, version: version)
+        try self.n.encode(into: &data, version: version)
+        try self.o.encode(into: &data, version: version)
+        try self.p.encode(into: &data, version: version)
+    }
+    
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        let a = try Float(decoding: data, at: &offset, version: version)
+        let b = try Float(decoding: data, at: &offset, version: version)
+        let c = try Float(decoding: data, at: &offset, version: version)
+        let d = try Float(decoding: data, at: &offset, version: version)
+        let e = try Float(decoding: data, at: &offset, version: version)
+        let f = try Float(decoding: data, at: &offset, version: version)
+        let g = try Float(decoding: data, at: &offset, version: version)
+        let h = try Float(decoding: data, at: &offset, version: version)
+        let i = try Float(decoding: data, at: &offset, version: version)
+        let j = try Float(decoding: data, at: &offset, version: version)
+        let k = try Float(decoding: data, at: &offset, version: version)
+        let l = try Float(decoding: data, at: &offset, version: version)
+        let m = try Float(decoding: data, at: &offset, version: version)
+        let n = try Float(decoding: data, at: &offset, version: version)
+        let o = try Float(decoding: data, at: &offset, version: version)
+        let p = try Float(decoding: data, at: &offset, version: version)
+        self.init(a: a, b: b, c: c, d: d, e: e, f: f, g: g, h: h, i: i, j: j, k: k, l: l, m: m, n: n, o: o, p: p)
+    }
+}

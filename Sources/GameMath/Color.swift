@@ -319,3 +319,4 @@ extension Color: Codable {
         self.init(values[0], values[1], values[2], values[3])
     }
 }
+extension Color: BinaryCodable {}

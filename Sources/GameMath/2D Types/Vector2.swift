@@ -432,7 +432,7 @@ extension Vector2 {
     }
 }
 
-extension Vector2 {
+extension Vector2 where Self: Codable {
     @inlinable
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
@@ -446,6 +446,19 @@ extension Vector2 {
         self.init(values[0], values[1])
     }
 }
+
+extension Vector2 where Self: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.x.encode(into: &data, version: version)
+        try self.y.encode(into: &data, version: version)
+    }
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        let x = try Float(decoding: data, at: &offset, version: version)
+        let y = try Float(decoding: data, at: &offset, version: version)
+        self.init(x, y)
+    }
+}
+
 
 extension Vector2 {
     @inlinable

@@ -197,3 +197,4 @@ extension Direction3: Codable {
         self.init(values[0], values[1], values[2])
     }
 }
+extension Direction3: BinaryCodable {}
