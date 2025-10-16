@@ -123,6 +123,26 @@ final class SkeletonBackend {
         self.rootJoint = joint
         self.bindPose = Skeleton.Pose(joint)
     }
+    
+    init(rawSkeleton: RawSkeleton) {
+        func createJoint(from rawJoint: RawSkeleton.RawJoint) -> Skeleton.Joint {
+            var joint = Skeleton.Joint(rawJoint: rawJoint)
+            joint.localTransform = rawJoint.localTransform
+            for rawJoint in rawSkeleton.joints {
+                if rawJoint.parent == joint.id {
+                    let child = createJoint(from: rawJoint)
+                    child.parent = joint
+                }
+            }
+            return joint
+        }
+        let rootJoint = createJoint(from: rawSkeleton.joints.first(where: {$0.parent == nil})!)
+        self.rootJoint = rootJoint
+        self.bindPose = Skeleton.Pose(rootJoint)
+    }
+}
+fileprivate extension Skeleton.Joint {
+
 }
 
 extension Skeleton {
@@ -328,6 +348,12 @@ extension Skeleton {
             self.id = id
             self.name = name
         }
+        
+        /// Convenince for constructing a Skeleton from a RawSkeleton
+        fileprivate convenience init(rawJoint: RawSkeleton.RawJoint) {
+            self.init(id: rawJoint.id, name: rawJoint.name)
+            self.localTransform = rawJoint.localTransform
+        }
     }
 }
 
@@ -473,12 +499,8 @@ extension Skeleton.Pose.Joint: Hashable {
 
 // MARK: - Resource Manager
 
-public protocol SkeletonImporter: AnyObject {
-    init()
-
-    func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) async throws -> Skeleton.Joint
-
-    static func supportedFileExtensions() -> [String]
+public protocol SkeletonImporter: ResourceImporter {
+    func loadSkeleton(options: SkeletonImporterOptions) async throws(GateEngineError) -> RawSkeleton
 }
 
 public struct SkeletonImporterOptions: Equatable, Hashable, Sendable {
@@ -498,13 +520,11 @@ extension ResourceManager {
         guard importers.skeletonImporters.contains(where: { $0 == type }) == false else { return }
         importers.skeletonImporters.insert(type, at: 0)
     }
-
-    fileprivate func importerForFileType(_ file: String) -> (any SkeletonImporter)? {
+    
+    func skeletonImporterForPath(_ path: String) async throws -> (any SkeletonImporter)? {
         for type in self.importers.skeletonImporters {
-            if type.supportedFileExtensions().contains(where: {
-                $0.caseInsensitiveCompare(file) == .orderedSame
-            }) {
-                return type.init()
+            if type.canProcessFile(path) {
+                return try await self.importers.getImporter(path: path, type: type)
             }
         }
         return nil
@@ -552,6 +572,22 @@ extension ResourceManager.Cache {
             self.minutesDead = 0
             self.cacheHint = nil
             self.defaultCacheHint = .until(minutes: 5)
+        }
+    }
+}
+
+extension RawSkeleton {
+    public init(path: String, options: SkeletonImporterOptions = .none) async throws {
+        guard
+            let importer: any SkeletonImporter = try await Game.unsafeShared.resourceManager.skeletonImporterForPath(path)
+        else {
+            throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
+        }
+
+        do {
+            self = try await importer.loadSkeleton(options: options)
+        } catch {
+            throw GateEngineError(error)
         }
     }
 }
@@ -626,23 +662,13 @@ extension ResourceManager {
             let path = key.requestedPath
             
             do {
-                guard let fileExtension = path.components(separatedBy: ".").last else {
-                    throw GateEngineError.failedToLoad("Unknown file type.")
-                }
-                guard let importer: any SkeletonImporter = Game.unsafeShared.resourceManager.importerForFileType(fileExtension) else {
-                    throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
-                }
-
-                let data = try await Platform.current.loadResource(from: path)
-                let rootJoint: Skeleton.Joint = try await importer.process(
-                    data: data,
-                    baseURL: URL(string: path)!.deletingLastPathComponent(),
+                let rawSkeleton = try await RawSkeleton(
+                    path: key.requestedPath,
                     options: key.options
                 )
-
                 Task { @MainActor in
                     if let cache = cache.skeletons[key] {
-                        cache.skeletonBackend = SkeletonBackend(rootJoint: rootJoint)
+                        cache.skeletonBackend = SkeletonBackend(rawSkeleton: rawSkeleton)
                         cache.state = .ready
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))

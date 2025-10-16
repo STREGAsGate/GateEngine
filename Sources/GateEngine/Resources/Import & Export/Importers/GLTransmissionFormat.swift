@@ -837,26 +837,27 @@ extension GLTransmissionFormat: SkeletonImporter {
         }
         return gltf.scenes[gltf.scene].nodes?.first
     }
-    
-    public func process(data: Data, baseURL: URL, options: SkeletonImporterOptions) async throws -> Skeleton.Joint {
-        let gltf = try gltf(from: data, baseURL: baseURL)
+
+    public func loadSkeleton(options: SkeletonImporterOptions) async throws(GateEngineError) -> RawSkeleton {
         guard let rootNode = skeletonNode(named: options.subobjectName, in: gltf) else {
             throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
         }
-        let rootJoint = Skeleton.Joint(id: rootNode, name: gltf.nodes[rootNode].name)
-        rootJoint.localTransform = gltf.nodes[rootNode].transform
+        var rawSkeleton: RawSkeleton = .init()
+        rawSkeleton.joints.append(
+            RawSkeleton.RawJoint(id: rootNode, parent: nil, name: gltf.nodes[rootNode].name, localTransform: gltf.nodes[rootNode].transform)
+        )
 
-        func addChildren(gltfNode: Int, parentJoint: Skeleton.Joint) {
-            for index in gltf.nodes[gltfNode].children ?? [] {
-                let node = gltf.nodes[index]
-                let joint = Skeleton.Joint(id: index, name: node.name)
-                joint.localTransform = node.transform
-                joint.parent = parentJoint
-                addChildren(gltfNode: index, parentJoint: joint)
+        func addChildren(of parentJointID: Int) {
+            for childJointID in gltf.nodes[parentJointID].children ?? [] {
+                let childNode = gltf.nodes[childJointID]
+                rawSkeleton.joints.append(
+                    RawSkeleton.RawJoint(id: childJointID, parent: parentJointID, name: childNode.name, localTransform: childNode.transform)
+                )
+                addChildren(of: childJointID)
             }
         }
-        addChildren(gltfNode: rootNode, parentJoint: rootJoint)
-        return rootJoint
+        addChildren(of: rootNode)
+        return rawSkeleton
     }
 }
 
