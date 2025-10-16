@@ -34,12 +34,12 @@ let package = Package(
         packageDependencies.append(contentsOf: [
             .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.2.0")),
             .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.2.0")),
-            .package(url: "https://github.com/apple/swift-syntax", from: "601.0.0"),
+            .package(url: "https://github.com/apple/swift-syntax.git", .upToNextMajor(from: "601.0.0")),
         ])
         
         #if false // Linting / Formating
         packageDependencies.append(contentsOf: [
-            .package(url: "https://github.com/apple/swift-format", from: "601.0.0"),
+            .package(url: "https://github.com/apple/swift-format.git", .upToNextMajor(from: "601.0.0")),
         ])
         #endif
         
