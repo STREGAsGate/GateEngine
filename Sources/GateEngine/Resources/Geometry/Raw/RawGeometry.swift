@@ -170,12 +170,12 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         var optimizedIndicies: [UInt16]
         switch optimization {
         case .dontOptimize:
-            assert(inVertices.count < UInt16.max, "Exceeded the maximum number of indices (\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
+            assert(inVertices.count < UInt16.max, "Exceeded the maximum number of indices (\(inVertices.count)\\\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
             optimizedIndicies = Array(0 ..< UInt16(inVertices.count))
         case .byEquality:
             optimizedIndicies = Array(repeating: 0, count: inVertices.count)
             for index in 0 ..< inVertices.count {
-                assert(index < UInt16.max, "Exceeded the maximum number of indices (\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
+                assert(index <= UInt16.max, "Exceeded the maximum number of indices (\(index)\\\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
                 let vertex = inVertices[index]
                 if let similarIndex = inVertices.firstIndex(where: {$0 == vertex}) {
                     optimizedIndicies[index] = UInt16(similarIndex)
@@ -186,7 +186,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         case .byThreshold(let threshold):
             optimizedIndicies = Array(repeating: 0, count: inVertices.count)
             for index in 0 ..< inVertices.count {
-                assert(index < UInt16.max, "Exceeded the maximum number of indices (\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
+                assert(index <= UInt16.max, "Exceeded the maximum number of indices (\(index)\\\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
                 let vertex = inVertices[index]
                 if let similarIndex = inVertices.firstIndex(where: {$0.isSimilar(to: vertex, threshold: threshold)}) {
                     optimizedIndicies[index] = UInt16(similarIndex)
@@ -197,7 +197,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         case .usingComparator(let comparator):
             optimizedIndicies = Array(repeating: 0, count: inVertices.count)
             for index in 0 ..< inVertices.count {
-                assert(index < UInt16.max, "Exceeded the maximum number of indices (\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
+                assert(index <= UInt16.max, "Exceeded the maximum number of indices (\(index)\\\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
                 let vertex = inVertices[index]
                 if let similarIndex = inVertices.firstIndex(where: { comparator($0, vertex)}) {
                     optimizedIndicies[index] = UInt16(similarIndex)
