@@ -686,7 +686,7 @@ extension GLTransmissionFormat: GeometryImporter {
                 return geometries[0]
             }
         }else{
-            var geometry = RawGeometry(geometries: geometries)
+            var geometry = RawGeometry(byCombining: geometries)
             if options.applyRootTransform, let nodeIndex = gltf.scenes[gltf.scene].nodes?[0] {
                 let transform = gltf.nodes[nodeIndex].transform.createMatrix()
                 geometry = geometry * transform
@@ -840,7 +840,7 @@ extension GLTransmissionFormat: SkeletonImporter {
         guard let rootNode = skeletonNode(named: options.subobjectName, in: gltf) else {
             throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
         }
-        var rawSkeleton: RawSkeleton = .init()
+        var rawSkeleton: RawSkeleton = .init(rawJoints: [])
         rawSkeleton.joints.append(
             RawSkeleton.RawJoint(id: rootNode, parent: nil, name: gltf.nodes[rootNode].name, localTransform: gltf.nodes[rootNode].transform)
         )

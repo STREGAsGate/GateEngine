@@ -257,33 +257,17 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         self.uvSets = [uvSet1, uvSet2]
     }
 
-    public init(byCombiningTrianglesFrom geometries: [RawGeometry]) {
-        var triangles: [Triangle] = []
-        for geom in geometries {
-            triangles.append(contentsOf: geom.generateTriangles())
-        }
-        self.init(triangles: triangles)
-    }
-
     /// Creates a new `Geometry` by merging multiple geometry. This is usful for loading files that store geometry speretly base don material if you intend to only use a single material for them all.
-    public init(geometries: [RawGeometry]) {
+    public init(byCombining geometries: [RawGeometry], withOptimization optimization: Optimization = .dontOptimize) {
         var triangles: [Triangle] = []
         for geometry in geometries {
             triangles.append(contentsOf: geometry.generateTriangles())
         }
-        self.init(triangles: triangles)
+        self.init(triangles: triangles, optimization: optimization)
     }
+}
 
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(positions)
-        hasher.combine(normals)
-        hasher.combine(uvSet1)
-        hasher.combine(uvSet2)
-        hasher.combine(tangents)
-        hasher.combine(colors)
-        hasher.combine(indices)
-    }
-
+extension RawGeometry {
     public static func * (lhs: Self, rhs: Matrix4x4) -> Self {
         let triangles = lhs.generateTriangles().map({ $0 * rhs })
         return RawGeometry(triangles: triangles)
@@ -297,5 +281,13 @@ extension Array where Element == RawGeometry {
             vertices.append(contentsOf: geometry.generateVertices())
         }
         return vertices
+    }
+    
+    public func generateTriangles() -> [Triangle] {
+        var triangles: [Triangle] = []
+        for geometry in self {
+            triangles.append(contentsOf: geometry.generateTriangles())
+        }
+        return triangles
     }
 }
