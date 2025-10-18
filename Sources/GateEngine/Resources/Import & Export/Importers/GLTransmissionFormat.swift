@@ -724,8 +724,7 @@ extension GLTransmissionFormat: SkinImporter {
     }
     private func inverseBindMatrices(
         from bufferView: GLTF.BufferView,
-        expecting count: Int,
-        in gltf: GLTF
+        expecting count: Int
     ) async -> [Matrix4x4]? {
         guard
             let buffer = gltf.buffer(at: bufferView.buffer)?.advanced(
@@ -771,8 +770,7 @@ extension GLTransmissionFormat: SkinImporter {
         guard
             let inverseBindMatrices = await inverseBindMatrices(
                 from: gltf.bufferViews[skin.inverseBindMatrices],
-                expecting: skin.joints.count,
-                in: gltf
+                expecting: skin.joints.count
             )
         else {
             throw GateEngineError.failedToDecode("Failed to parse skin.")
