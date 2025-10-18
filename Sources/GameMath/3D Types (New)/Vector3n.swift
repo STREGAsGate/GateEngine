@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-public import GameMath
-
 public protocol Vector3n<Scalar> {
     typealias ScalarType = Numeric & SIMDScalar
     associatedtype Scalar: ScalarType
