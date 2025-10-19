@@ -632,8 +632,23 @@ extension GLTransmissionFormat: GeometryImporter {
 
             var tangents: [Float]? = nil
             if let accessorIndex = primitive[.tangent] {
-                tangents = await gltf.values(forAccessor: accessorIndex)
-                #warning("Tangents not filtered to vec3")
+                let accessor = gltf.accessors[accessorIndex]
+                switch accessor.type {
+                case .vec3:
+                    tangents = await gltf.values(forAccessor: accessorIndex)
+                case .vec4:
+                    // the 4th scalar in each primitive is for generating a bitangent
+                    // Bitangent can be generated without this value, so we discard it.
+                    if var _tangents: [Float] = await gltf.values(forAccessor: accessorIndex) {
+                        for indexOfW in stride(from: 3, to: _tangents.count, by: 4) {
+                            _tangents.remove(at: indexOfW)
+                        }
+                        tangents = _tangents
+                    }
+                default:
+                    throw GateEngineError.failedToDecode("Unhandled accessor type for tangents: \(accessor.type)")
+                }
+                Log.assert(tangents == nil || tangents!.count == positions.count, "Tangent count doesn't match position count.")
             }
 
             var colors: [Float]? = nil
