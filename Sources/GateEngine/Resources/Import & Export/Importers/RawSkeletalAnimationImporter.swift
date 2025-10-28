@@ -8,11 +8,11 @@
 import Foundation
 
 /**
- Handles loading `RawGeometry` from a file as encoded by `RawGeometryEncoder`
+ Handles loading `RawSkeletalAnimation` from a file as encoded by `RawSkeletalAnimationEncoder`
  
- The file extension of the asset to load must match `RawGeometryImporter.fileExtension`
+ The file extension of the asset to load must match `RawSkeletalAnimationImporter.fileExtension`
  */
-public final class RawGeometryImporter: GeometryImporter, GateEngineNativeResourceImporter {
+public final class RawSkeletalAnimationImporter: SkeletalAnimationImporter, GateEngineNativeResourceImporter {
     var data: Data! = nil
     public required init() {}
 
@@ -31,15 +31,15 @@ public final class RawGeometryImporter: GeometryImporter, GateEngineNativeResour
         }
     }
     
-    public func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry {
+    public func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws -> RawSkeletalAnimation {
         do {
-            return try RawGeometryDecoder().decode(data)
+            return try RawSkeletalAnimationDecoder().decode(data)
         }catch{
             throw GateEngineError(error)
         }
     }
     
     /// The expected file extension
-    /// Write data created with `RawGeometryEncoder` to a file with this extension to be imported by this `GeometryImporter`
-    public static let fileExtension: String = "gategeom"
+    /// Write data created with `RawSkeletalAnimationEncoder` to a file with this extension to be imported by this `SkeletalAnimationImporter`
+    public static let fileExtension: String = "gatesani"
 }

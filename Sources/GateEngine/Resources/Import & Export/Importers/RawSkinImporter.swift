@@ -8,11 +8,11 @@
 import Foundation
 
 /**
- Handles loading `RawGeometry` from a file as encoded by `RawGeometryEncoder`
+ Handles loading `RawSkin` from a file as encoded by `RawSkinEncoder`
  
- The file extension of the asset to load must match `RawGeometryImporter.fileExtension`
+ The file extension of the asset to load must match `RawSkinImporter.fileExtension`
  */
-public final class RawGeometryImporter: GeometryImporter, GateEngineNativeResourceImporter {
+public final class RawSkinImporter: SkinImporter, GateEngineNativeResourceImporter {
     var data: Data! = nil
     public required init() {}
 
@@ -31,15 +31,15 @@ public final class RawGeometryImporter: GeometryImporter, GateEngineNativeResour
         }
     }
     
-    public func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry {
+    public func loadSkin(options: SkinImporterOptions) async throws(GateEngineError) -> RawSkin {
         do {
-            return try RawGeometryDecoder().decode(data)
+            return try RawSkinDecoder().decode(data)
         }catch{
             throw GateEngineError(error)
         }
     }
     
     /// The expected file extension
-    /// Write data created with `RawGeometryEncoder` to a file with this extension to be imported by this `GeometryImporter`
-    public static let fileExtension: String = "gategeom"
+    /// Write data created with `RawSkinEncoder` to a file with this extension to be imported by this `SkinImporter`
+    public static let fileExtension: String = "gateskin"
 }

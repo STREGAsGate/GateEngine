@@ -72,37 +72,36 @@ extension SkeletalAnimation {
         public enum Interpolation: Sendable {
             case step
             case linear
+            
+            init(_ raw: RawSkeletalAnimation.JointAnimation.Interpolation) {
+                switch raw {
+                case .linear:
+                    self = .linear
+                case .step:
+                    self = .step
+                }
+            }
         }
 
-        public init() {
-
-        }
-
-        public mutating func setPositions(
-            _ positions: [Position3],
-            times: [Float],
-            interpolation: Interpolation
-        ) {
-            assert(positions.count == times.count)
-            self.positionOutput.positions = positions
-            self.positionOutput.times = times
-            self.positionOutput.interpolation = interpolation
-        }
-        public mutating func setRotations(
-            _ rotations: [Quaternion],
-            times: [Float],
-            interpolation: Interpolation
-        ) {
-            assert(rotations.count == times.count)
-            self.rotationOutput.rotations = rotations
-            self.rotationOutput.times = times
-            self.rotationOutput.interpolation = interpolation
-        }
-        public mutating func setScales(_ scales: [Size3], times: [Float], interpolation: Interpolation) {
-            assert(scales.count == times.count)
-            self.scaleOutput.scales = scales
-            self.scaleOutput.times = times
-            self.scaleOutput.interpolation = interpolation
+        public init(_ rawJointAnimation: RawSkeletalAnimation.JointAnimation) {
+            self.positionOutput = PositionOutput(
+                times: rawJointAnimation.positionOutput.times, 
+                interpolation: .init(rawJointAnimation.positionOutput.interpolation), 
+                positions: rawJointAnimation.positionOutput.positions, 
+                bind: rawJointAnimation.positionOutput.bind
+            )
+            self.rotationOutput = RotationOutput(
+                times: rawJointAnimation.rotationOutput.times, 
+                interpolation: .init(rawJointAnimation.rotationOutput.interpolation), 
+                rotations: rawJointAnimation.rotationOutput.rotations, 
+                bind: rawJointAnimation.rotationOutput.bind
+            )
+            self.scaleOutput = ScaleOutput(
+                times: rawJointAnimation.scaleOutput.times, 
+                interpolation: .init(rawJointAnimation.rotationOutput.interpolation), 
+                scales: rawJointAnimation.scaleOutput.scales, 
+                bind: rawJointAnimation.scaleOutput.bind
+            )
         }
 
         var positionOutput: PositionOutput = PositionOutput(
@@ -275,16 +274,24 @@ public final class SkeletalAnimationBackend {
         self.duration = duration
         self.animations = animations
     }
+    
+    init(rawSkeletalAnimation: RawSkeletalAnimation) {
+        self.name = rawSkeletalAnimation.name
+        self.duration = rawSkeletalAnimation.duration
+        let keys = rawSkeletalAnimation.animations.keys
+        let values = keys.map({
+            let rawValue = rawSkeletalAnimation.animations[$0]!
+            return SkeletalAnimation.JointAnimation(rawValue)
+        })
+        
+        self.animations = .init(uniqueKeysWithValues: zip(keys, values))
+    }
 }
 
 // MARK: - Resource Manager
 
-public protocol SkeletalAnimationImporter: AnyObject {
-    init()
-
-    func process(data: Data, baseURL: URL, options: SkeletalAnimationImporterOptions) async throws -> SkeletalAnimationBackend
-
-    static func supportedFileExtensions() -> [String]
+public protocol SkeletalAnimationImporter: ResourceImporter {
+    func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws -> RawSkeletalAnimation
 }
 
 public struct SkeletalAnimationImporterOptions: Equatable, Hashable, Sendable {
@@ -306,13 +313,11 @@ extension ResourceManager {
         }
         importers.skeletalAnimationImporters.insert(type, at: 0)
     }
-
-    fileprivate func importerForFileType(_ file: String) -> (any SkeletalAnimationImporter)? {
+    
+    func skeletalAnimationImporterForPath(_ path: String) async throws -> (any SkeletalAnimationImporter)? {
         for type in self.importers.skeletalAnimationImporters {
-            if type.supportedFileExtensions().contains(where: {
-                $0.caseInsensitiveCompare(file) == .orderedSame
-            }) {
-                return type.init()
+            if type.canProcessFile(path) {
+                return try await self.importers.getImporter(path: path, type: type)
             }
         }
         return nil
@@ -352,6 +357,22 @@ extension ResourceManager.Cache {
             self.minutesDead = 0
             self.cacheHint = nil
             self.defaultCacheHint = .until(minutes: 5)
+        }
+    }
+}
+
+extension RawSkeletalAnimation {
+    public init(path: String, options: SkeletalAnimationImporterOptions = .none) async throws {
+        guard
+            let importer: any SkeletalAnimationImporter = try await Game.unsafeShared.resourceManager.skeletalAnimationImporterForPath(path)
+        else {
+            throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
+        }
+
+        do {
+            self = try await importer.loadSkeletalAnimation(options: options)
+        } catch {
+            throw GateEngineError(error)
         }
     }
 }
@@ -435,23 +456,13 @@ extension ResourceManager {
             let path = key.requestedPath
             
             do {
-                guard let fileExtension = path.components(separatedBy: ".").last else {
-                    throw GateEngineError.failedToLoad("Unknown file type.")
-                }
-                guard let importer: any SkeletalAnimationImporter = Game.unsafeShared.resourceManager.importerForFileType(fileExtension) else {
-                    throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
-                }
-
-                let data = try await Platform.current.loadResource(from: path)
-                let backend = try await importer.process(
-                    data: data,
-                    baseURL: URL(string: path)!.deletingLastPathComponent(),
+                let rawSkeletalAnimation = try await RawSkeletalAnimation(
+                    path: key.requestedPath,
                     options: key.options
                 )
-
                 Task { @MainActor in
                     if let cache = cache.skeletalAnimations[key] {
-                        cache.skeletalAnimationBackend = backend
+                        cache.skeletalAnimationBackend = SkeletalAnimationBackend(rawSkeletalAnimation: rawSkeletalAnimation)
                         cache.state = .ready
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))

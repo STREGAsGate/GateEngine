@@ -457,6 +457,30 @@ public extension GLTransmissionFormat {
     var meshNames: [String] {self.gltf.meshes?.map(\.name) ?? []}
     var materialNames: [String] {self.gltf.materials?.map(\.name) ?? []}
     var imageNames: [String] {self.gltf.images?.map(\.name) ?? []}
+    var skeletonNames: [String] {self.gltf.nodes.compactMap({
+        if $0.mesh != nil && $0.skin != nil {
+            return $0.name
+        }
+        return nil
+    })}
+    var skinNames: [String] {self.gltf.nodes.compactMap({
+        if $0.mesh != nil && $0.skin != nil {
+            return $0.name
+        }
+        return nil
+    })}
+    
+    /// Returns all names with annimations channels greater than 1
+    var skeletalAnimationNames: [String] {self.gltf.animations?.compactMap({
+        guard $0.channels.count > 1 else {return nil}
+        return $0.name
+    }) ?? []}
+    
+    /// Returns all names with annimations channels count of exactly 1
+    var objectAnimationNames: [String] {self.gltf.animations?.compactMap({
+        guard $0.channels.count == 1 else {return nil}
+        return $0.name
+    }) ?? []}
     
     func meshNames(usingMaterialNamed materialName: String) -> [String] {
         guard let materialIndex = self.gltf.materials?.firstIndex(where: {$0.name == materialName}) else {return []}
@@ -466,6 +490,7 @@ public extension GLTransmissionFormat {
             for primitive in mesh.primitives {
                 if primitive.material == materialIndex {
                     names.insert(mesh.name)
+                    continue
                 }
             }
         }
@@ -693,20 +718,30 @@ extension GLTransmissionFormat: GeometryImporter {
             throw GateEngineError.failedToDecode("Failed to decode geometry.")
         }
         
-        if geometries.count == 1 {
-            if options.applyRootTransform, let nodeIndex = gltf.scenes[gltf.scene].nodes?[0] {
-                let transform = gltf.nodes[nodeIndex].transform.createMatrix()
-                return geometries[0] * transform
-            }else{
-                return geometries[0]
+        let geometryBase = RawGeometry(byCombining: geometries, withOptimization: .dontOptimize)
+        
+        if options.applyRootTransform, let nodeIndex = gltf.scenes[gltf.scene].nodes?.first {
+            let transform = gltf.nodes[nodeIndex].transform.createMatrix()
+            return geometryBase * transform
+        }else if options.makeInstancesReal, let nodes = gltf.scenes[gltf.scene].nodes {
+            var transformedGeometries: [RawGeometry] = []
+            let meshIndex = gltf.meshes!.firstIndex(where: {$0.name == mesh.name})
+            for index in nodes {
+                guard gltf.nodes[index].mesh == meshIndex else {continue}
+                var transform: Matrix4x4 = .identity
+                
+                func applyNode(_ nodeIndex: Int) {
+                    transform *= gltf.nodes[nodeIndex].transform.createMatrix()
+                    if let parent = nodes.first(where: {gltf.nodes[$0].children?.contains(nodeIndex) == true}) {
+                        applyNode(parent)
+                    }
+                }
+                applyNode(index)
+                transformedGeometries.append(geometryBase * transform)
             }
+            return RawGeometry(byCombining: transformedGeometries, withOptimization: .byEquality)
         }else{
-            var geometry = RawGeometry(byCombining: geometries)
-            if options.applyRootTransform, let nodeIndex = gltf.scenes[gltf.scene].nodes?[0] {
-                let transform = gltf.nodes[nodeIndex].transform.createMatrix()
-                geometry = geometry * transform
-            }
-            return geometry
+            return geometryBase
         }
     }
 }
@@ -761,7 +796,7 @@ extension GLTransmissionFormat: SkinImporter {
         })
     }
     
-    public func loadSkin(options: SkinImporterOptions) async throws(GateEngineError) -> Skin {
+    public func loadSkin(options: SkinImporterOptions) async throws(GateEngineError) -> RawSkin {
         guard let skins = gltf.skins, skins.isEmpty == false else {
             throw GateEngineError.failedToDecode("File contains no skins.")
         }
@@ -807,15 +842,15 @@ extension GLTransmissionFormat: SkinImporter {
             throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
 
-        var joints: [Skin.Joint] = []
+        var joints: [RawSkin.RawJoint] = []
         joints.reserveCapacity(skin.joints.count)
         for index in skin.joints.indices {
             joints.append(
-                Skin.Joint(id: skin.joints[index], inverseBindMatrix: inverseBindMatrices[index])
+                RawSkin.RawJoint(id: skin.joints[index], inverseBindMatrix: inverseBindMatrices[index])
             )
         }
 
-        return Skin(joints: joints, indices: meshJoints, weights: meshWeights, bindShape: .identity)
+        return RawSkin(joints: joints, indices: meshJoints, weights: meshWeights, bindShape: .identity)
     }
 }
 
@@ -884,20 +919,18 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
         return gltf.animations?.first
     }
     
-    public func process(data: Data, baseURL: URL, options: SkeletalAnimationImporterOptions) async throws -> SkeletalAnimationBackend {
-        let gltf = try gltf(from: data, baseURL: baseURL)
-
+    public func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws -> RawSkeletalAnimation {
         guard let animation = animation(named: options.subobjectName, from: gltf) else {
             throw GateEngineError.failedToDecode(
                 "Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))"
             )
         }
-        var animations: [Skeleton.Joint.ID: SkeletalAnimation.JointAnimation] = [:]
-        func jointAnimation(forTarget target: Skeleton.Joint.ID) -> SkeletalAnimation.JointAnimation {
+        var animations: [Skeleton.Joint.ID: RawSkeletalAnimation.JointAnimation] = [:]
+        func jointAnimation(forTarget target: Skeleton.Joint.ID) -> RawSkeletalAnimation.JointAnimation {
             if let existing = animations[target] {
                 return existing
             }
-            let new = SkeletalAnimation.JointAnimation()
+            let new = RawSkeletalAnimation.JointAnimation()
             animations[target] = new
             return new
         }
@@ -905,14 +938,13 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
             guard let rootNode = skeletonNode(named: nil, in: gltf) else {
                 throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
             }
-            let rootJoint = Skeleton.Joint(id: rootNode, name: gltf.nodes[rootNode].name)
-            rootJoint.localTransform = gltf.nodes[rootNode].transform
+            let rootJoint = RawSkeleton.RawJoint(id: rootNode, name: gltf.nodes[rootNode].name, localTransform: gltf.nodes[rootNode].transform)
 
-            func addChildren(gltfNode: Int, parentJoint: Skeleton.Joint) {
+            func addChildren(gltfNode: Int, parentJoint: RawSkeleton.RawJoint) {
                 for index in gltf.nodes[gltfNode].children ?? [] {
                     let node = gltf.nodes[index]
 
-                    var jointAnimation = animations[index] ?? SkeletalAnimation.JointAnimation()
+                    var jointAnimation = animations[index] ?? RawSkeletalAnimation.JointAnimation()
                     jointAnimation.positionOutput.bind = node.transform.position
                     jointAnimation.rotationOutput.bind = node.transform.rotation
                     jointAnimation.scaleOutput.bind = node.transform.scale
@@ -1001,7 +1033,7 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
             duration = 0
         }
 
-        return SkeletalAnimationBackend(name: animation.name, duration: duration, animations: animations)
+        return RawSkeletalAnimation(name: animation.name, duration: duration, animations: animations)
     }
 }
 

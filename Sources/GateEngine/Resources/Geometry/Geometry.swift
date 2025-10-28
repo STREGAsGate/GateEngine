@@ -138,12 +138,17 @@ public protocol GeometryImporter: ResourceImporter {
 public struct GeometryImporterOptions: Equatable, Hashable, Sendable {
     public var subobjectName: String? = nil
     public var applyRootTransform: Bool = false
+    public var makeInstancesReal: Bool = false
 
     /// Unique to each importer
     public var option1: Bool = false
 
     public static func with(name: String? = nil, applyRootTransform: Bool = false) -> Self {
         return GeometryImporterOptions(subobjectName: name, applyRootTransform: applyRootTransform)
+    }
+    
+    public static func with(name: String? = nil, makeInstancesReal: Bool = false) -> Self {
+        return GeometryImporterOptions(subobjectName: name, makeInstancesReal: makeInstancesReal)
     }
 
     public static var applyRootTransform: GeometryImporterOptions {

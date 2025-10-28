@@ -291,3 +291,29 @@ extension Array where Element == RawGeometry {
         return triangles
     }
 }
+
+extension RawGeometry: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try Float.encodeArray(positions, into: &data, version: version)
+        try uvSets.count.encode(into: &data, version: version)
+        for uvSet in uvSets {
+            try Float.encodeArray(uvSet, into: &data, version: version)
+        }
+        try Float.encodeArray(normals, into: &data, version: version)
+        try Float.encodeArray(tangents, into: &data, version: version)
+        try Float.encodeArray(colors, into: &data, version: version)
+        try UInt16.encodeArray(indices, into: &data, version: version)
+    }
+    
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        self.positions = try Float.decodeArray(data, offset: &offset, version: version)
+        let uvSetsCount = try Int(decoding: data, at: &offset, version: version)
+        self.uvSets = try (0..<uvSetsCount).map({_ in 
+            try Float.decodeArray(data, offset: &offset, version: version)
+        })
+        self.normals = try Float.decodeArray(data, offset: &offset, version: version)
+        self.tangents = try Float.decodeArray(data, offset: &offset, version: version)
+        self.colors = try Float.decodeArray(data, offset: &offset, version: version)
+        self.indices = try UInt16.decodeArray(data, offset: &offset, version: version)
+    }
+}

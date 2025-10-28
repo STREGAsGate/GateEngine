@@ -5,10 +5,10 @@
  * http://stregasgate.com
  */
 
-fileprivate let magic: UInt32 = 0x53_4B_54_4E // "SKTN"
+fileprivate let magic: UInt32 = 0x53_41_4E_49 // "SANI"
 
-public struct RawSkeletonEncoder {
-    public func encode(_ rawSkeleton: RawSkeleton) throws(GateEngineError) -> Data {
+public struct RawSkeletalAnimationEncoder {
+    public func encode(_ rawSkeletalAnimation: RawSkeletalAnimation) throws(GateEngineError) -> Data {
         var header = BinaryCodableHeader(magic: magic)
         
         guard let version = header.version else { throw .failedToEncode("Malformed header.") }
@@ -19,7 +19,7 @@ public struct RawSkeletonEncoder {
         }
         
         do {
-            try rawSkeleton.encode(into: &data, version: version)
+            try rawSkeletalAnimation.encode(into: &data, version: version)
         }catch let error as GateEngineError {
             // rethrow any GateEngineError
             throw error
@@ -44,10 +44,10 @@ public struct RawSkeletonEncoder {
     }
 }
 
-public struct RawSkeletonDecoder {
-    public func decode(_ data: Data) throws(GateEngineError) -> RawSkeleton {
+public struct RawSkeletalAnimationDecoder {
+    public func decode(_ data: Data) throws(GateEngineError) -> RawSkeletalAnimation {
         do {
-            return try data.withUnsafeBytes({ (data: UnsafeRawBufferPointer) throws -> RawSkeleton in
+            return try data.withUnsafeBytes({ (data: UnsafeRawBufferPointer) throws -> RawSkeletalAnimation in
                 var offset: Int = 0
                 let header = data.load(fromByteOffset: offset, as: BinaryCodableHeader.self)
                 offset += MemoryLayout<BinaryCodableHeader>.size
@@ -56,7 +56,7 @@ public struct RawSkeletonDecoder {
                     throw GateEngineError.failedToDecode("Malformed header.")
                 }
                 
-                return try RawSkeleton(decoding: data, at: &offset, version: version)
+                return try RawSkeletalAnimation(decoding: data, at: &offset, version: version)
             })
         }catch let error as GateEngineError {
             // rethrow any GateEngineError

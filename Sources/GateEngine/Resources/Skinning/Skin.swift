@@ -31,6 +31,18 @@ public struct Skin: Hashable {
         public func hash(into hasher: inout Hasher) {
             hasher.combine(id)
         }
+        
+        init(rawJoint: RawSkin.RawJoint) {
+            self.id = rawJoint.id
+            self.inverseBindMatrix = rawJoint.inverseBindMatrix
+        }
+    }
+    
+    public init(rawSkin: RawSkin) {
+        self.joints = rawSkin.joints.map({Joint(rawJoint: $0)})
+        self.jointIndices = rawSkin.jointIndices
+        self.jointWeights = rawSkin.jointWeights
+        self.bindShape = rawSkin.bindShape
     }
 }
 
@@ -38,7 +50,7 @@ public struct Skin: Hashable {
 // MARK: - Resource Manager
 
 public protocol SkinImporter: ResourceImporter {
-    func loadSkin(options: SkinImporterOptions) async throws(GateEngineError) -> Skin
+    func loadSkin(options: SkinImporterOptions) async throws(GateEngineError) -> RawSkin
 }
 
 public struct SkinImporterOptions: Equatable, Hashable, Sendable {
@@ -59,7 +71,7 @@ extension ResourceManager {
         importers.skinImporters.insert(type, at: 0)
     }
 
-    fileprivate func importerForPath(_ path: String) async throws -> (any SkinImporter)? {
+    func skinImporterForPath(_ path: String) async throws -> (any SkinImporter)? {
         for type in self.importers.skinImporters {
             if type.canProcessFile(path) {
                 return try await self.importers.getImporter(path: path, type: type)
@@ -69,16 +81,27 @@ extension ResourceManager {
     }
 }
 
-extension Skin {
+extension RawSkin {
     public init(path: String, options: SkinImporterOptions = .none) async throws {
         guard
-            let importer: any SkinImporter = try await Game.unsafeShared.resourceManager.importerForPath(path)
+            let importer: any SkinImporter = try await Game.unsafeShared.resourceManager.skinImporterForPath(path)
         else {
             throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
         do {
             self = try await importer.loadSkin(options: options)
+        } catch {
+            throw GateEngineError(error)
+        }
+    }
+}
+
+extension Skin {
+    public init(path: String, options: SkinImporterOptions = .none) async throws {
+        do {
+            let rawSkin = try await RawSkin(path: path, options: options)
+            self.init(rawSkin: rawSkin)
         } catch {
             throw GateEngineError(error)
         }

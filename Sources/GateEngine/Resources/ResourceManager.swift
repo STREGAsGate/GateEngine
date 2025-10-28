@@ -33,6 +33,15 @@ public protocol ResourceImporter: AnyObject {
     func currentFileContainsMutipleResources() -> Bool
 }
 
+public protocol GateEngineNativeResourceImporter: ResourceImporter {
+    static var fileExtension: String { get }
+}
+extension GateEngineNativeResourceImporter {
+    public static func supportedFileExtensions() -> [String] {
+        return [Self.fileExtension]
+    }
+}
+
 public extension ResourceImporter {
     static func supportedFileExtensions() -> [String] {
         return []
@@ -70,12 +79,15 @@ extension ResourceManager {
         ]
         
         internal var skeletonImporters: [any SkeletonImporter.Type] = [
+            RawSkeletonImporter.self,
             GLTransmissionFormat.self,
         ]
         internal var skinImporters: [any SkinImporter.Type] = [
+            RawSkinImporter.self,
             GLTransmissionFormat.self,
         ]
         internal var skeletalAnimationImporters: [any SkeletalAnimationImporter.Type] = [
+            RawSkeletalAnimationImporter.self,
             GLTransmissionFormat.self,
         ]
         
