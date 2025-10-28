@@ -10,6 +10,7 @@ let package = Package(
     products: [
         .library(name: "GateEngine", targets: ["GateEngine"]),
         .library(name: "GameMath", targets: ["GameMath"]),
+        .library(name: "GateUtilities", targets: ["GateUtilities"]),
     ],
     traits: [
         .default(enabledTraits: ["SIMD"]),
@@ -75,7 +76,7 @@ let package = Package(
                         )
                         
                         dependencies.append(contentsOf: [
-                            "GateEngineShared",
+                            "GateUtilities",
                             "GameMath",
                             "Shaders",
                             "TrueType",
@@ -229,7 +230,7 @@ let package = Package(
             .target(
                 name: "Shaders",
                 dependencies: [
-                    "GateEngineShared",
+                    "GateUtilities",
                     "GameMath",
                     .product(name: "Collections", package: "swift-collections")
                 ],
@@ -241,7 +242,7 @@ let package = Package(
                 .target(
                     name: "GameMath", 
                     dependencies: [
-                        "GateEngineShared"
+                        "GateUtilities"
                     ], 
                     swiftSettings: .default(withCustomization: { settings in
                         #if false
@@ -256,7 +257,7 @@ let package = Package(
                     })
                 ),
             
-            .target(name: "GateEngineShared", swiftSettings: .default),
+            .target(name: "GateUtilities", swiftSettings: .default),
         ])
         
         // MARK: - Macros

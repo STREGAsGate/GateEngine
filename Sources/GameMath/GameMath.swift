@@ -5,7 +5,8 @@
  * http://stregasgate.com
  */
 
-import Foundation
+@_exported import GateUtilities
+
 @_exported import func Foundation.ceil
 @_exported import func Foundation.floor
 @_exported import func Foundation.round
@@ -15,5 +16,3 @@ import Foundation
 @_exported import func Foundation.tan
 @_exported import func Foundation.acos
 @_exported import func Foundation.atan2
-
-@_exported import GateEngineShared

@@ -34,6 +34,14 @@ public struct BinaryCodableHeader {
         self.magic2 = magic
         self._version = version.rawValue
     }
+    
+    /// Returns the BinaryCodableVersion if the header is valid and matches the criteria 
+    public func validatedVersionMatching(magic magic2: UInt32, documentLength: UInt32) -> BinaryCodableVersion? {
+        guard self.magic1 == Self.magic1 else {return nil}
+        guard self.magic2 == magic2 else {return nil}
+        guard self.documentLength == documentLength else {return nil}
+        return self.version
+    }
 }
 
 /// GateEngine standard binary codable format

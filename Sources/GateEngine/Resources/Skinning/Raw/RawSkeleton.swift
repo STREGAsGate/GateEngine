@@ -5,7 +5,8 @@
  * http://stregasgate.com
  */
 
-import GameMath
+public import GameMath
+public import GateUtilities
 
 public struct RawSkeleton: Equatable, Hashable, Codable, BinaryCodable {
     public var joints: [RawJoint] = []

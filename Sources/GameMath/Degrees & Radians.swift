@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import GateEngineShared
-
 public protocol Angle: Sendable, RawRepresentable, Numeric, Comparable, FloatingPoint where RawValue == Float {
     var rawValue: RawValue {get set}
     
