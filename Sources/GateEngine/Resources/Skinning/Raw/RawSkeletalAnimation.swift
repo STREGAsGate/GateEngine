@@ -22,20 +22,13 @@ public struct RawSkeletalAnimation: BinaryCodable {
     public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
         try self.name.encode(into: &data, version: version)
         try self.duration.encode(into: &data, version: version)
-
-        let keys = Array(self.animations.keys)
-        let values = keys.map({animations[$0]!})
-        try RawSkeleton.RawJoint.ID.encodeArray(keys, into: &data, version: version)
-        try Self.JointAnimation.encodeArray(values, into: &data, version: version)
+        try self.animations.encode(into: &data, version: version)
     }
     
     public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
         self.name = try String(decoding: data, at: &offset, version: version)
         self.duration = try Float(decoding: data, at: &offset, version: version)
-        
-        let keys = try RawSkeleton.RawJoint.ID.decodeArray(data, offset: &offset, version: version)
-        let values = try Self.JointAnimation.decodeArray(data, offset: &offset, version: version)
-        self.animations = Dictionary(uniqueKeysWithValues: zip(keys, values))
+        self.animations = try .init(decoding: data, at: &offset, version: version)
     }
 }
 
@@ -120,16 +113,16 @@ public extension RawSkeletalAnimation {
             }
             
             func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
-                try Float.encodeArray(times, into: &data, version: version)
+                try times.encode(into: &data, version: version)
                 try interpolation.encode(into: &data, version: version)
-                try Position3.encodeArray(positions, into: &data, version: version)
+                try positions.encode(into: &data, version: version)
                 try bind.encode(into: &data, version: version)
             }
             
             init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
-                self.times = try Float.decodeArray(data, offset: &offset, version: version)
+                self.times = try Array<Float>(decoding: data, at: &offset, version: version)
                 self.interpolation = try Interpolation(decoding: data, at: &offset, version: version)
-                self.positions = try Position3.decodeArray(data, offset: &offset, version: version)
+                self.positions = try Array<Position3>(decoding: data, at: &offset, version: version)
                 self.bind = try Position3(decoding: data, at: &offset, version: version)
             }
         }
@@ -151,16 +144,16 @@ public extension RawSkeletalAnimation {
             }
             
             func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
-                try Float.encodeArray(times, into: &data, version: version)
+                try times.encode(into: &data, version: version)
                 try interpolation.encode(into: &data, version: version)
-                try Quaternion.encodeArray(rotations, into: &data, version: version)
+                try rotations.encode(into: &data, version: version)
                 try bind.encode(into: &data, version: version)
             }
             
             init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
-                self.times = try Float.decodeArray(data, offset: &offset, version: version)
+                self.times = try Array<Float>(decoding: data, at: &offset, version: version)
                 self.interpolation = try Interpolation(decoding: data, at: &offset, version: version)
-                self.rotations = try Quaternion.decodeArray(data, offset: &offset, version: version)
+                self.rotations = try Array<Quaternion>(decoding: data, at: &offset, version: version)
                 self.bind = try Quaternion(decoding: data, at: &offset, version: version)
             }
         }
@@ -179,21 +172,19 @@ public extension RawSkeletalAnimation {
             }
             
             func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
-                try Float.encodeArray(times, into: &data, version: version)
+                try times.encode(into: &data, version: version)
                 try interpolation.encode(into: &data, version: version)
-                try Size3.encodeArray(scales, into: &data, version: version)
+                try scales.encode(into: &data, version: version)
                 try bind.encode(into: &data, version: version)
             }
             
             init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
-                self.times = try Float.decodeArray(data, offset: &offset, version: version)
+                self.times = try Array<Float>(decoding: data, at: &offset, version: version)
                 self.interpolation = try Interpolation(decoding: data, at: &offset, version: version)
-                self.scales = try Size3.decodeArray(data, offset: &offset, version: version)
+                self.scales = try Array<Size3>(decoding: data, at: &offset, version: version)
                 self.bind = try Size3(decoding: data, at: &offset, version: version)
             }
         }
-        
-        
         
         public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
             try self.positionOutput.encode(into: &data, version: version)

@@ -60,53 +60,81 @@ public extension BinaryCodable {
             data.append(contentsOf: bytes)
         }
     }
+    
     init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
         offset += MemoryLayout<Self>.alignment - (offset % MemoryLayout<Self>.alignment)
         
         self = data.load(fromByteOffset: offset, as: Self.self)
         offset += MemoryLayout<Self>.size
     }
-    
-    static func encodeArray(_ collection: Array<Self>, into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
-        try collection.count.encode(into: &data, version: version)
-        for element in collection {
+}
+
+extension Array: BinaryCodable where Element: BinaryCodable {}
+public extension Array where Element: BinaryCodable {
+    func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.count.encode(into: &data, version: version)
+        for element in self {
             try element.encode(into: &data, version: version)
         }
     }
-    static func decodeArray(_ data: UnsafeRawBufferPointer, offset: inout Int, version: BinaryCodableVersion) throws -> Array<Self> {
+    
+    init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
         let count = try Int(decoding: data, at: &offset, version: version)
         
-        var collection: Array<Self> = []
+        var collection: Array<Element> = []
         collection.reserveCapacity(count)
         for _ in 0 ..< count {
-            let element = try Self(decoding: data, at: &offset, version: version)
+            let element = try Element(decoding: data, at: &offset, version: version)
             collection.append(element)
         }
         
-        return collection
+        self = collection
     }
-    
-    static func encodeSet(_ collection: Set<Self>, into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws where Self: Hashable {
-        try collection.count.encode(into: &data, version: version)
-        for element in collection {
+}
+
+extension Set: BinaryCodable where Element: BinaryCodable {}
+public extension Set where Element: BinaryCodable {
+    func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.count.encode(into: &data, version: version)
+        for element in self {
             try element.encode(into: &data, version: version)
         }
     }
-    static func decodeSet(
-        _ data: UnsafeRawBufferPointer,
-        offset: inout Int,
-        version: BinaryCodableVersion
-    ) throws -> Set<Self> where Self: Hashable {
+    
+    init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
         let count = try Int(decoding: data, at: &offset, version: version)
         
-        var collection: Set<Self> = []
+        var collection: Set<Element> = []
         collection.reserveCapacity(count)
         for _ in 0 ..< count {
-            let element = try Self(decoding: data, at: &offset, version: version)
+            let element = try Element(decoding: data, at: &offset, version: version)
             collection.insert(element)
         }
         
-        return collection
+        self = collection
+    }
+}
+
+extension Dictionary: BinaryCodable where Key: BinaryCodable, Value: BinaryCodable {}
+public extension Dictionary where Key: BinaryCodable, Value: BinaryCodable {
+    func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.count.encode(into: &data, version: version)
+        for (key, value) in self {
+            try key.encode(into: &data, version: version)
+            try value.encode(into: &data, version: version)
+        }
+    }
+    
+    init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        let count = try Int(decoding: data, at: &offset, version: version)
+        var uniqueKeysWithValues: [(Key, Value)] = []
+        uniqueKeysWithValues.reserveCapacity(count)
+        for _ in 0 ..< count {
+            let key = try Key(decoding: data, at: &offset, version: version)
+            let value = try Value(decoding: data, at: &offset, version: version)
+            uniqueKeysWithValues.append((key, value))
+        }
+        self.init(uniqueKeysWithValues: uniqueKeysWithValues)
     }
 }
 
@@ -145,10 +173,11 @@ extension UInt: BinaryCodable {
 extension String: BinaryCodable {
     public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
         let cString = self.cString(using: .utf8)!
-        try Int8.encodeArray(cString, into: &data, version: version)
+        try cString.encode(into: &data, version: version)
     }
+    
     public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
-        let buffer = try Int8.decodeArray(data, offset: &offset, version: version)
+        let buffer = try Array<Int8>(decoding: data, at: &offset, version: version)
         self.init(utf8String: buffer)!
     }
 }
@@ -157,6 +186,7 @@ public extension RawRepresentable where Self: BinaryCodable, RawValue: BinaryCod
     func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
         try self.rawValue.encode(into: &data, version: version)
     }
+    
     init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
         let rawValue = try RawValue(decoding: data, at: &offset, version: version)
         self = .init(rawValue: rawValue)!

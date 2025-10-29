@@ -37,16 +37,16 @@ public struct RawSkin: Hashable, BinaryCodable {
 
 extension RawSkin {
     public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
-        try RawJoint.encodeArray(joints, into: &data, version: version)
-        try UInt32.encodeArray(jointIndices, into: &data, version: version)
-        try Float32.encodeArray(jointWeights, into: &data, version: version)
+        try joints.encode(into: &data, version: version)
+        try jointIndices.encode(into: &data, version: version)
+        try jointWeights.encode(into: &data, version: version)
         try self.bindShape.encode(into: &data, version: version)
     }
     
     public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
-        self.joints = try RawJoint.decodeArray(data, offset: &offset, version: version)
-        self.jointIndices = try UInt32.decodeArray(data, offset: &offset, version: version)
-        self.jointWeights = try Float32.decodeArray(data, offset: &offset, version: version)
+        self.joints = try .init(decoding: data, at: &offset, version: version)
+        self.jointIndices = try .init(decoding: data, at: &offset, version: version)
+        self.jointWeights = try .init(decoding: data, at: &offset, version: version)
         self.bindShape = try Matrix4x4(decoding: data, at: &offset, version: version)
     }
 }
