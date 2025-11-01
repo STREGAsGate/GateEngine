@@ -51,6 +51,8 @@ public struct Size3n<Scalar: Vector3n.ScalarType>: Vector3n {
         self.y = y
         self.z = z
     }
+    
+    public static var one: Self { .init(x: 1, y: 1, z: 1) }
 }
 extension Size3n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
 extension Size3n: Equatable where Scalar: Equatable { }
