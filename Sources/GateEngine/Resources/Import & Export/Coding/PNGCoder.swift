@@ -45,11 +45,11 @@ public final class PNGEncoder {
      */
     public func encode(_ data: Data, width: Int, height: Int, sacrificePerformanceToShrinkData: Bool = false) throws(GateEngineError) -> Data {
 #if canImport(LibSPNG)
-//        if sacrificePerformanceToShrinkData {
-//            try LibSPNG.encodeSmallest(data: data, width: width, height: height)
-//        }else{
+        if sacrificePerformanceToShrinkData {
+            try LibSPNG.encodeSmallest(data: data, width: width, height: height)
+        }else{
             try LibSPNG.encodeRGBA(data: data, width: width, height: height, optimizeAlpha: false)
-//        }
+        }
 #else
         fatalError("PNGEncoder is not supported on this platform.")
 #endif
@@ -71,19 +71,44 @@ enum LibSPNG {
     // TODO: Give users more customizability to allow for more predictability for runtime use.
     @inlinable
     static func encodeSmallest(data: Data, width: Int, height: Int) throws(GateEngineError) -> Data {
-        let indexed = try encodeIndexed(data: data, width: width, height: height)
         let rgba: Data = try encodeRGBA(data: data, width: width, height: height, optimizeAlpha: true)
-        
-        if rgba.count <= indexed.count {
-            return rgba
+        if let indexed = try encodeIndexed(data: data, width: width, height: height) {
+            if indexed.count < rgba.count {
+                return indexed
+            }
         }
-        return indexed
+        return rgba
     }
     
     /// Makes a PNG with full color data. This creates efficient PNG data representing photos or images with many unique colors.
     @inlinable
     static func encodeRGBA(data: Data, width: Int, height: Int, optimizeAlpha: Bool) throws(GateEngineError) -> Data {
         do {
+            var data: Data = data
+            
+            let colorType: UInt8
+            if optimizeAlpha {
+                var hasAlpha: Bool = false
+                for index in stride(from: 3, to: data.count, by: 4) {
+                    if data[index] < .max {
+                        // If any alpha value is less then 100% we need to store the alpha
+                        hasAlpha = true
+                        break
+                    }
+                }
+                if hasAlpha {
+                    colorType = UInt8(SPNG_COLOR_TYPE_TRUECOLOR_ALPHA.rawValue)
+                }else{
+                    colorType = UInt8(SPNG_COLOR_TYPE_TRUECOLOR.rawValue)
+                    // Remove the alpha values since they are all 100%
+                    for index in stride(from: 3, to: data.count, by: 4).reversed() {
+                        data.remove(at: index)
+                    }
+                }
+            }else{
+                colorType = UInt8(SPNG_COLOR_TYPE_TRUECOLOR_ALPHA.rawValue)
+            }
+            
             return try data.withUnsafeBytes({ (bytes: UnsafeRawBufferPointer) throws -> Data in
                 /* Create a context */
                 let ctx: OpaquePointer? = spng_ctx_new(Int32(SPNG_CTX_ENCODER.rawValue))
@@ -93,25 +118,6 @@ enum LibSPNG {
                 }
                 
                 spng_set_option(ctx, SPNG_ENCODE_TO_BUFFER, 1)
-                
-                let colorType: UInt8
-                if optimizeAlpha {
-                    var hasAlpha: Bool = false
-                    for index in stride(from: 3, to: data.count, by: 4) {
-                        if data[index] < .max {
-                            // If any alpha value is less then 100% we need to store the alpha
-                            hasAlpha = true
-                            break
-                        }
-                    }
-                    if hasAlpha {
-                        colorType = UInt8(SPNG_COLOR_TYPE_TRUECOLOR_ALPHA.rawValue)
-                    }else{
-                        colorType = UInt8(SPNG_COLOR_TYPE_TRUECOLOR.rawValue)
-                    }
-                }else{
-                    colorType = UInt8(SPNG_COLOR_TYPE_TRUECOLOR_ALPHA.rawValue)
-                }
                 
                 var ihdr = spng_ihdr(
                     width: UInt32(width),
@@ -145,9 +151,42 @@ enum LibSPNG {
     
     /// Makes a PNG with an color table backend. This creates efficient PNG data representing pixel art or other images with few unique colors.
     @inlinable
-    static func encodeIndexed(data: Data, width: Int, height: Int) throws(GateEngineError) -> Data {
+    static func encodeIndexed(data: Data, width: Int, height: Int) throws(GateEngineError) -> Data? {
         do {
-            return try data.withUnsafeBytes({ (bytes: UnsafeRawBufferPointer) throws -> Data in
+            struct Color: Equatable, Hashable {
+                let red: UInt8
+                let green: UInt8
+                let blue: UInt8
+                let alpha: UInt8
+            }
+            var colors: [(Color)] = []
+            colors.reserveCapacity(width * height)
+            for index in stride(from: 0, to: data.count, by: 4) {
+                colors.append(
+                    Color(
+                        red: data[index + 0], 
+                        green: data[index + 1], 
+                        blue: data[index + 2], 
+                        alpha: data[index + 3]
+                    )
+                )
+            }
+            
+            let colorTable = Array(Set(colors))
+            guard colorTable.count <= 256 else {return nil}
+            
+            let indexedData = colors.map({UInt8(colorTable.firstIndex(of: $0)!)})
+            
+            var plte: spng_plte = .init()
+            plte.n_entries = UInt32(colorTable.count)
+            withUnsafeMutableBytes(of: &plte) { plte in
+                let entires = colorTable.map({spng_plte_entry(red: $0.red, green: $0.green, blue: $0.blue, alpha: $0.alpha)})
+                entires.withUnsafeBytes { entriesBytes in
+                    plte.baseAddress!.advanced(by: MemoryLayout<UInt32>.size).copyMemory(from: entriesBytes.baseAddress!, byteCount: entriesBytes.count)
+                }
+            }
+            
+            return try indexedData.withUnsafeBytes({ (bytes: UnsafeRawBufferPointer) throws -> Data in
                 /* Create a context */
                 let ctx: OpaquePointer? = spng_ctx_new(Int32(SPNG_CTX_ENCODER.rawValue))
                 defer {
@@ -156,7 +195,7 @@ enum LibSPNG {
                 }
                 
                 spng_set_option(ctx, SPNG_ENCODE_TO_BUFFER, 1)
-                
+   
                 var ihdr = spng_ihdr(
                     width: UInt32(width),
                     height: UInt32(height),
@@ -166,9 +205,17 @@ enum LibSPNG {
                     filter_method: UInt8(SPNG_FILTER_NONE.rawValue),
                     interlace_method: UInt8(SPNG_INTERLACE_NONE.rawValue)
                 )
-                spng_set_ihdr(ctx, &ihdr)
+                if spng_set_ihdr(ctx, &ihdr) != SPNG_OK.rawValue {
+                    throw GateEngineError.failedToEncode("spng_set_ihdr")
+                }
                 
-                spng_encode_image(ctx, bytes.baseAddress, data.count, Int32(SPNG_FMT_PNG.rawValue), Int32(SPNG_ENCODE_FINALIZE.rawValue))
+                if spng_set_plte(ctx, &plte) != SPNG_OK.rawValue {
+                    throw GateEngineError.failedToEncode("spng_set_plte")
+                }
+                
+                if spng_encode_image(ctx, bytes.baseAddress!, colors.count, Int32(SPNG_FMT_PNG.rawValue), Int32(SPNG_ENCODE_FINALIZE.rawValue)) != SPNG_OK.rawValue {
+                    throw GateEngineError.failedToEncode("spng_encode_image")
+                }
                 
                 var length: Int = 0
                 var error: Int32 = 0
@@ -178,7 +225,7 @@ enum LibSPNG {
                     return data
                 }
                 
-                throw GateEngineError.failedToEncode(String(cString: spng_strerror(error)))
+                throw GateEngineError.failedToEncode("spng_get_png_buffer \(String(cString: spng_strerror(error)))")
             })
         }catch let error as GateEngineError {
             throw error // Typed throws not supported by closures as of Swift 6.2
