@@ -74,16 +74,29 @@ public struct TextureAtlas {
 extension TextureAtlasBuilder {
     struct Texture: Equatable, Hashable, Sendable {
         let resourcePath: String
-        let width: Int
-        let height: Int
-        let imageData: Data
-        let coordinate: (x: Int, y: Int)
-
+        var dataIndex: Array<Data>.Index
+        
         nonisolated static func == (lhs: Texture, rhs: Texture) -> Bool {
             return lhs.resourcePath == rhs.resourcePath
         }
         nonisolated func hash(into hasher: inout Hasher) {
             hasher.combine(resourcePath)
+        }
+    }
+    struct TextureData: Equatable, Hashable, Sendable {
+        let width: Int
+        let height: Int
+        let imageData: Data
+        var coordinate: (x: Int, y: Int)
+        
+        nonisolated static func == (lhs: TextureData, rhs: TextureData) -> Bool {
+            guard lhs.width == rhs.width && lhs.height == rhs.height else {return false}
+            return lhs.imageData.elementsEqual(rhs.imageData)
+        }
+        nonisolated func hash(into hasher: inout Hasher) {
+            hasher.combine(width)
+            hasher.combine(height)
+            hasher.combine(imageData)
         }
     }
     
@@ -98,6 +111,7 @@ extension TextureAtlasBuilder {
 
 public final class TextureAtlasBuilder {
     var textures: [TextureAtlasBuilder.Texture] = []
+    var textureDatas: [TextureAtlasBuilder.TextureData] = []
     
     /// true if this builder has changed since a TextureAtlas was generated
     public private(set) var needsGenerate: Bool = true
@@ -110,31 +124,50 @@ public final class TextureAtlasBuilder {
     var searchGrid: SearchGrid = SearchGrid()
     
     public init(blockSize: Int) {
-        assert(blockSize > 0, "blockSize must be positive.")
+        assert(blockSize >= 0, "blockSize must be positive.")
         assert(blockSize <= 1024, "blockSize cannot be greater than 1024.")
         self.blockSize = blockSize
     }
     
+    /// - returns: `true` if the atlas already has the texture in question
     public func containsTexture(withPath unresolvedPath: String) -> Bool {
         return textures.contains(where: {$0.resourcePath == unresolvedPath})
     }
     
-    public func insertTexture(withPath unresolvedPath: String) throws {
+    /**
+     Adds a new texture, or updates an existing texture.
+     
+     - parameter unresolvedPath: The resource path to the texture data.
+     - parameter sacrificePerformanceForSize: When `true` additional checks are performed to merge textures that are the same but with different paths. Resulting in a smaller atlas, at the cost of performance.
+     */
+    public func insertTexture(withPath unresolvedPath: String, sacrificePerformanceForSize: Bool = false) throws {
+        if containsTexture(withPath: unresolvedPath) {
+            // Cleanup old values
+            // If the texture has changed on disk we want to replace it
+            removeTexture(withPath: unresolvedPath)
+        }
+        
         let importer = PNGImporter()
         try importer.synchronousPrepareToImportResourceFrom(path: unresolvedPath)
         let png = try importer.loadTexture(options: .none)
         let width = Int(png.size.width)
         let height = Int(png.size.height)
-        let coord = searchGrid.firstUnoccupiedFor(
-            width: textureBlocksWide(texturePixelWidth: png.size.width),
-            height: textureBlocksTall(texturePixelHeight: png.size.height),
-            markOccupied: true
-        )
-        let texture = Texture(resourcePath: unresolvedPath, width: width, height: height, imageData: png.data, coordinate: coord)
+
+        var textureData = TextureData(width: width, height: height, imageData: png.data, coordinate: (0,0))
+        var dataIndex = self.textureDatas.endIndex
+        if sacrificePerformanceForSize, let existingIndex = self.textureDatas.firstIndex(where: {$0 == textureData}) {
+            dataIndex = existingIndex
+        }else{
+            let coord = searchGrid.firstUnoccupiedFor(
+                width: textureBlocksWide(texturePixelWidth: png.size.width),
+                height: textureBlocksTall(texturePixelHeight: png.size.height),
+                markOccupied: true
+            )
+            textureData.coordinate = coord
+            textureDatas.append(textureData)
+        }
         
-        // Cleanup old values
-        // If the texture has changed on disk we want to replace it
-        removeTexture(withPath: unresolvedPath)
+        let texture = Texture(resourcePath: unresolvedPath, dataIndex: dataIndex)
         
         // Append new value
         self.textures.append(texture)
@@ -146,13 +179,33 @@ public final class TextureAtlasBuilder {
     @discardableResult
     public func removeTexture(withPath unresolvedPath: String) -> Bool {
         if let existing = textures.firstIndex(where: {$0.resourcePath == unresolvedPath}) {
+            // Remove the texture
             let texture = self.textures.remove(at: existing)
-            searchGrid.markAsOccupied(false,
-                                      x: texture.coordinate.x,
-                                      y: texture.coordinate.y,
-                                      width: textureBlocksWide(texturePixelWidth: Float(texture.width)),
-                                      height: textureBlocksTall(texturePixelHeight: Float(texture.height))
-            )
+            let textureData = self.textureDatas[texture.dataIndex]
+            
+            // If the TextureData is no longer referenced, remove it
+            if self.textures.contains(where: {$0.dataIndex == texture.dataIndex}) == false {
+                // Free the grid area
+                searchGrid.markAsOccupied(
+                    false,
+                    x: textureData.coordinate.x,
+                    y: textureData.coordinate.y,
+                    width: textureBlocksWide(texturePixelWidth: Float(textureData.width)),
+                    height: textureBlocksTall(texturePixelHeight: Float(textureData.height))
+                )
+                
+                // Reindex the Texture dataIndex values
+                self.textures = self.textures.map({ texture in
+                    var texture = texture
+                    if texture.dataIndex > texture.dataIndex {
+                        texture.dataIndex -= 1
+                    }
+                    return texture
+                })
+                
+                // Remove the data
+                self.textureDatas.remove(at: texture.dataIndex)
+            }
             
             self.needsGenerate = true
             
@@ -169,12 +222,14 @@ public final class TextureAtlasBuilder {
         var imageData: Data = Data(repeating: 0, count: Int(textureSize.width * textureSize.height) * 4)
         imageData.withUnsafeMutableBytes { (bytes: UnsafeMutableRawBufferPointer) in
             for texture in textures {
-                var coord = texture.coordinate
+                let textureData = self.textureDatas[texture.dataIndex]
+                
+                var coord = textureData.coordinate
                 coord.x *= blockSize
                 coord.y *= blockSize
-                let srcWidth = texture.width * 4
+                let srcWidth = textureData.width * 4
                 let x = (coord.x * 4)
-                for row in 0 ..< texture.height {
+                for row in 0 ..< textureData.height {
                     let srcStart = srcWidth * row
                     let srcRange = srcStart ..< (srcStart + srcWidth)
 
@@ -185,7 +240,7 @@ public final class TextureAtlasBuilder {
                         let dstIndex = dstRange[i + dstRange.lowerBound]
                         let srcIndex = srcRange[i + srcRange.lowerBound]
 
-                        bytes[dstIndex] = texture.imageData[srcIndex]
+                        bytes[dstIndex] = textureData.imageData[srcIndex]
                     }
                 }
             }
@@ -198,10 +253,11 @@ public final class TextureAtlasBuilder {
             blockSize: blockSize,
             textures: textures.indices.map({
                 let texture = textures[$0]
+                let textureData = textureDatas[texture.dataIndex]
                 return TextureAtlas.Texture(
                     path: texture.resourcePath,
-                    size: Size2(Float(texture.width), Float(texture.height)),
-                    coordinate: texture.coordinate
+                    size: Size2(Float(textureData.width), Float(textureData.height)),
+                    coordinate: textureData.coordinate
                 )
             })
         )
