@@ -86,7 +86,7 @@ public struct UIKitPlatform: PlatformProtocol, InternalPlatformProtocol {
         return nil
     }
 
-    public func synchronousLoadResource(from path: String) throws -> Data {
+    public func synchronousLoadResource(from path: String) throws(GateEngineError) -> Data {
         if let resolvedPath = synchronousLocateResource(from: path) {
             do {
                 return try synchronousFileSystem.read(from: resolvedPath)
