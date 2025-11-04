@@ -142,9 +142,11 @@ extension Bool: BinaryCodable {}
 extension Int8: BinaryCodable {}
 extension Int16: BinaryCodable {}
 extension Int32: BinaryCodable {}
+extension Int64: BinaryCodable {}
 extension UInt8: BinaryCodable {}
 extension UInt16: BinaryCodable {}
 extension UInt32: BinaryCodable {}
+extension UInt64: BinaryCodable {}
 extension Float32: BinaryCodable {}
 extension Float64: BinaryCodable {}
 
