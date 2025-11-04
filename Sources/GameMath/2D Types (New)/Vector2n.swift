@@ -1,0 +1,250 @@
+/*
+ * Copyright © 2025 Dustin Collins (Strega's Gate)
+ * All Rights Reserved.
+ *
+ * http://stregasgate.com
+ */
+
+public protocol Vector2n<Scalar> {
+    typealias ScalarType = Numeric & SIMDScalar
+    associatedtype Scalar: ScalarType
+    associatedtype Vector2Counterpart: GameMath.Vector2
+    
+    var x: Scalar {get set}
+    var y: Scalar {get set}
+    init(x: Scalar, y: Scalar)
+}
+
+public typealias Position2i = Position2n<Int32>
+public typealias Position2f = Position2n<Float32>
+public struct Position2n<Scalar: Vector2n.ScalarType>: Vector2n {
+    public typealias Vector2Counterpart = Position2
+    public var x: Scalar
+    public var y: Scalar
+    
+    public init(x: Scalar, y: Scalar) {
+        self.x = x
+        self.y = y
+    }
+}
+extension Position2n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
+extension Position2n: Equatable where Scalar: Equatable { }
+extension Position2n: Hashable where Scalar: Hashable { }
+extension Position2n: Comparable where Scalar: Comparable { }
+extension Position2n: Sendable where Scalar: Sendable { }
+extension Position2n: Codable where Scalar: Codable { }
+extension Position2n: BinaryCodable { }
+
+public typealias Size2i = Size2n<Int32>
+public typealias Size2f = Size2n<Float32>
+public struct Size2n<Scalar: Vector2n.ScalarType>: Vector2n {
+    public typealias Vector2Counterpart = Size2
+    public var x: Scalar
+    public var y: Scalar
+    
+    public init(x: Scalar, y: Scalar) {
+        self.x = x
+        self.y = y
+    }
+    
+    public static var one: Self { .init(x: 1, y: 1) }
+}
+extension Size2n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
+extension Size2n: Equatable where Scalar: Equatable { }
+extension Size2n: Hashable where Scalar: Hashable { }
+extension Size2n: Comparable where Scalar: Comparable { }
+extension Size2n: Sendable where Scalar: Sendable { }
+extension Size2n: Codable where Scalar: Codable { }
+extension Size2n: BinaryCodable { }
+public extension Size2n {
+    @inlinable var width: Scalar { get{self.x} set{self.x = newValue} }
+    @inlinable var height: Scalar { get{self.y} set{self.y = newValue} }
+    
+    @inlinable init(width: Scalar, height: Scalar) {
+        self.init(x: width, y: height)
+    }
+}
+
+public extension Vector2n where Scalar: BinaryInteger {
+    @inlinable
+    @_disfavoredOverload
+    static func castInit<T1: BinaryInteger, T2: BinaryInteger>(width: T1, height: T2) -> Self {
+        return .init(x: Scalar(width), y: Scalar(height))
+    }
+    
+    @inlinable
+    @_disfavoredOverload
+    static func castInit<T1: BinaryFloatingPoint, T2: BinaryFloatingPoint>(width: T1, height: T2) -> Self {
+        return .init(x: Scalar(width), y: Scalar(height))
+    }
+    
+    @inlinable
+    @_disfavoredOverload
+    static func castInit<T1: BinaryInteger, T2: BinaryFloatingPoint>(width: T1, height: T2) -> Self {
+        return .init(x: Scalar(width), y: Scalar(height))
+    }
+    
+    @inlinable
+    @_disfavoredOverload
+    static func castInit<T1: BinaryFloatingPoint, T2: BinaryInteger>(width: T1, height: T2) -> Self {
+        return .init(x: Scalar(width), y: Scalar(height))
+    }
+}
+
+public extension Vector2n where Scalar: BinaryFloatingPoint {
+    @inlinable
+    @_disfavoredOverload
+    static func castInit<T1: BinaryInteger, T2: BinaryInteger>(width: T1, height: T2) -> Self {
+        return .init(x: Scalar(width), y: Scalar(height))
+    }
+    
+    @inlinable
+    @_disfavoredOverload
+    static func castInit<T1: BinaryFloatingPoint, T2: BinaryFloatingPoint>(width: T1, height: T2) -> Self {
+        return .init(x: Scalar(width), y: Scalar(height))
+    }
+    
+    @inlinable
+    @_disfavoredOverload
+    static func castInit<T1: BinaryInteger, T2: BinaryFloatingPoint>(width: T1, height: T2) -> Self {
+        return .init(x: Scalar(width), y: Scalar(height))
+    }
+    
+    @inlinable
+    @_disfavoredOverload
+    static func castInit<T1: BinaryFloatingPoint, T2: BinaryInteger>(width: T1, height: T2) -> Self {
+        return .init(x: Scalar(width), y: Scalar(height))
+    }
+}
+
+extension Vector2n where Scalar: BinaryInteger {
+    @inlinable
+    public init(_ vector2n: some Vector2n<Scalar>) {
+        self.init(
+            x: vector2n.x,
+            y: vector2n.y
+        )
+    }
+    
+    @inlinable
+    public init(_ vector2: Vector2Counterpart) {
+        self.init(
+            x: Scalar(vector2.x),
+            y: Scalar(vector2.y)
+        )
+    }
+    
+    @inlinable
+    public init(_ vector2: Vector2Counterpart, roundingRule: FloatingPointRoundingRule) {
+        self.init(
+            x: Scalar(vector2.x.rounded(roundingRule)),
+            y: Scalar(vector2.y.rounded(roundingRule))
+        )
+    }
+    
+    @inlinable
+    public var vector2: Vector2Counterpart {
+        return Vector2Counterpart(Float(x), Float(y))
+    }
+}
+
+extension Vector2n where Scalar: BinaryFloatingPoint {
+    @inlinable
+    public init(_ vector2n: some Vector2n<Scalar>) {
+        self.init(
+            x: vector2n.x,
+            y: vector2n.y
+        )
+    }
+    
+    @inlinable
+    public init(_ vector2: Vector2Counterpart) {
+        self.init(
+            x: Scalar(vector2.x),
+            y: Scalar(vector2.y)
+        )
+    }
+    
+    @inlinable
+    public init(_ vector2: Vector2Counterpart, roundingRule: FloatingPointRoundingRule) {
+        self.init(
+            x: Scalar(vector2.x.rounded(roundingRule)),
+            y: Scalar(vector2.y.rounded(roundingRule)),
+        )
+    }
+
+    @inlinable
+    public var vector2: Vector2Counterpart {
+        return Vector2Counterpart(Float(x), Float(y))
+    }
+}
+
+public extension Vector2n where Scalar: AdditiveArithmetic {
+    @inlinable
+    static func - (lhs: Self, rhs: some Vector2n<Scalar>) -> Self {
+        return Self(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
+    }
+    
+    @inlinable
+    static func + (lhs: Self, rhs: some Vector2n<Scalar>) -> Self {
+        return Self(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
+    }
+    
+    @inlinable
+    static var zero: Self {Self(x: .zero, y: .zero)}
+}
+
+public extension Vector2n where Scalar: Numeric {
+    @inlinable
+    static func * (lhs: Self, rhs: some Vector2n<Scalar>) -> Self {
+        return Self(x: lhs.x * rhs.x, y: lhs.y * rhs.y)
+    }
+    
+    @inlinable
+    static func *= (lhs: inout Self, rhs: some Vector2n<Scalar>) {
+        lhs = lhs * rhs
+    }
+}
+
+extension Vector2n where Scalar: Comparable {
+    public static func < (lhs: Self, rhs: some Vector2n<Scalar>) -> Bool {
+        return lhs.x < rhs.x && lhs.y < rhs.y
+    }
+}
+
+extension Vector2n where Scalar: Equatable {
+    public static func == (lhs: Self, rhs: some Vector2n<Scalar>) -> Bool {
+        return lhs.x == rhs.x && lhs.y == rhs.y
+    }
+}
+
+extension Vector2n where Scalar: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(x)
+        hasher.combine(y)
+    }
+}
+
+public extension Vector2n where Scalar: FloatingPoint {
+    @inlinable
+    static func / (lhs: Self, rhs: some Vector2n<Scalar>) -> Self {
+        return Self(x: lhs.x / rhs.x, y: lhs.y / rhs.y)
+    }
+    
+    @inlinable
+    static func /= (lhs: inout Self, rhs: some Vector2n<Scalar>) {
+        lhs = lhs / rhs
+    }
+}
+
+public extension Vector2n where Scalar: FixedWidthInteger {
+    @inlinable
+    static func / (lhs: Self, rhs: some Vector2n<Scalar>) -> Self {
+        return Self(x: lhs.x / rhs.x, y: lhs.y / rhs.y)
+    }
+    
+    @inlinable
+    static func /= (lhs: inout Self, rhs: some Vector2n<Scalar>) {
+        lhs = lhs / rhs
+    }
+}
