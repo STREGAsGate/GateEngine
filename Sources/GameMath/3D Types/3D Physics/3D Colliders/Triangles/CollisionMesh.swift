@@ -58,6 +58,11 @@ public final class CollisionMesh {
     public var triangleCount: Int {
         return indices.count
     }
+    
+    private init(components: Components, indices: [TriangleIndices]) {
+        self.components = components
+        self.indices = indices
+    }
         
     public init(collisionTriangles triangles: [CollisionTriangle]) {
             assert(triangles.isEmpty == false)
@@ -321,5 +326,56 @@ extension CollisionMesh {
         let triangle = MutableTriangle<A>(mesh: self, triangleIndex: index)
         let result = editTriangle(triangle)
         return result
+    }
+}
+
+extension CollisionMesh.Components: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.positions.encode(into: &data, version: version)
+        try self.normals.encode(into: &data, version: version)
+        try self.attributes.encode(into: &data, version: version)
+    }
+    
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        self.positions = try .init(decoding: data, at: &offset, version: version)
+        self.normals = try .init(decoding: data, at: &offset, version: version)
+        self.attributes = try .init(decoding: data, at: &offset, version: version)
+    }
+}
+
+
+extension CollisionMesh.TriangleIndices: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try UInt16(self.p1).encode(into: &data, version: version)
+        try UInt16(self.p2).encode(into: &data, version: version)
+        try UInt16(self.p3).encode(into: &data, version: version)
+        try UInt16(self.center).encode(into: &data, version: version)
+        try UInt16(self.normal).encode(into: &data, version: version)
+        try UInt16(self.faceNormal).encode(into: &data, version: version)
+        try UInt16(self.attributes).encode(into: &data, version: version)
+    }
+    
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        self.p1 = Int(try UInt16(decoding: data, at: &offset, version: version))
+        self.p2 = Int(try UInt16(decoding: data, at: &offset, version: version))
+        self.p3 = Int(try UInt16(decoding: data, at: &offset, version: version))
+        self.center = Int(try UInt16(decoding: data, at: &offset, version: version))
+        self.normal = Int(try UInt16(decoding: data, at: &offset, version: version))
+        self.faceNormal = Int(try UInt16(decoding: data, at: &offset, version: version))
+        self.attributes = Int(try UInt16(decoding: data, at: &offset, version: version))
+    }
+}
+
+extension CollisionMesh: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.components.encode(into: &data, version: version)
+        try self.indices.encode(into: &data, version: version)
+    }
+    
+    public convenience init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        self.init(
+            components: try .init(decoding: data, at: &offset, version: version), 
+            indices: try .init(decoding: data, at: &offset, version: version)
+        )
     }
 }
