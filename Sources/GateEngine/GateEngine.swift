@@ -52,40 +52,50 @@ extension Color {
 }
 
 public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible {
-    case failedToLocate
-    case failedToLoad(_ reason: String)
+    /// An error to represent any kind of error
+    case custom(_ errorName: String, _ description: String)
+    
+    case failedToLocate(resource: String, _ reason: String?)
+    case failedToLoad(resource: String, _ reason: String?)
     case failedToDecode(_ reason: String)
     case failedToEncode(_ reason: String)
-
+    
     case scriptCompileError(_ reason: String)
     case scriptExecutionError(_ reason: String)
 
-    case generic(_ description: String)
-    
-    case layoutFailed(_ description: String)
+    case uiLayoutFailed(_ description: String)
 
     case failedToCreateWindow(_ reason: String)
 
     public var description: String {
         switch self {
-        case .failedToLocate:
-            return "failedToLocate"
-        case .failedToLoad(let reason):
-            return "failedToLoad:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+        case .custom(let errorName, let reason):
+            return "\(errorName):\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+            
+        case .failedToLocate(let resource, let reason):
+            var error = "FailedToLocate: \(resource)"
+            if let reason {
+                error += "\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+            }
+            return error
+        case .failedToLoad(let resource, let reason):
+            var error = "FailedToLoad: \(resource)"
+            if let reason {
+                error += "\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+            }
+            return error
         case .failedToDecode(let reason):
-            return "failedToDecode:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+            return "FailedToDecode:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .failedToEncode(let reason):
-            return "failedToEncode:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+            return "FailedToEncode:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .scriptCompileError(let reason):
-            return "scriptCompileError:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+            return "ScriptCompileError:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .scriptExecutionError(let reason):
-            return "scriptExecutionError:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
-        case .generic(let reason):
-            return reason 
-        case .layoutFailed(let reason):
-            return "layoutFailed:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+            return "ScriptExecutionError:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+        case .uiLayoutFailed(let reason):
+            return "UILayoutFailed:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .failedToCreateWindow(let reason):
-            return "failedToCreateWindow:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+            return "FailedToCreateWindow:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         }
     }
     
@@ -128,7 +138,7 @@ public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible
 
 extension GateEngineError: ExpressibleByStringLiteral {
     public init(stringLiteral value: StringLiteralType) {
-        self = .generic(value)
+        self = .custom("error", value)
     }
 }
 
