@@ -183,8 +183,24 @@ extension String: BinaryCodable {
         offset += self.utf8.count
     }
 }
+
+#if canImport(Foundation)
+public import struct Foundation.Data
+extension Data: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try data.withUnsafeBytes { bytes in
+            try bytes.count.encode(into: &data, version: version)
+            data.append(contentsOf: bytes)
+        }
+    }
+    
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        let count = try Int(decoding: data, at: &offset, version: version)
+        self.init(bytes: data.baseAddress!.advanced(by: offset), count: count)
+        offset += count
     }
 }
+#endif
 
 public extension RawRepresentable where Self: BinaryCodable, RawValue: BinaryCodable {
     func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
