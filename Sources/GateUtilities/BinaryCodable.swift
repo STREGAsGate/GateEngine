@@ -172,13 +172,17 @@ extension UInt: BinaryCodable {
 
 extension String: BinaryCodable {
     public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
-        let cString = self.cString(using: .utf8)!
-        try cString.encode(into: &data, version: version)
+        self.cString(using: .utf8)!.withUnsafeBytes { utf8Bytes in
+            data.append(contentsOf: utf8Bytes)
+        }
     }
     
     public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
-        let buffer = try Array<Int8>(decoding: data, at: &offset, version: version)
-        self.init(utf8String: buffer)!
+        let pointer = data.baseAddress!.advanced(by: offset).assumingMemoryBound(to: CChar.self)
+        self.init(cString: pointer)
+        offset += self.utf8.count
+    }
+}
     }
 }
 
