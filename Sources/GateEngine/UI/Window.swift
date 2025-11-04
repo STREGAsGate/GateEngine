@@ -87,7 +87,7 @@ public struct WindowOptions: OptionSet, Sendable {
     
     var offScreenRendering = OffScreenRendering()
     @MainActor struct OffScreenRendering {
-        let renderTarget: RenderTarget = RenderTarget(size: Size2(width: 2048, height: 2048), backgroundColor: .clear)
+        let renderTarget: RenderTarget = RenderTarget(size: Size2i(width: 2048, height: 2048), backgroundColor: .clear)
         
         #if DEBUG
         static let blockSize: Int = 64
@@ -333,8 +333,8 @@ public struct WindowOptions: OptionSet, Sendable {
     }
 
     internal func reshapeIfNeeded() {
-        if self.newPixelSize != renderTargetBackend.size || renderTargetBackend.wantsReshape {
-            renderTargetBackend.size = self.newPixelSize
+        if self.newPixelSize != renderTargetBackend.size.vector2 || renderTargetBackend.wantsReshape {
+            renderTargetBackend.size = Size2i(self.newPixelSize)
             renderTargetBackend.reshape()
         }
     }

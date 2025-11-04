@@ -132,7 +132,7 @@ extension Geometry: Equatable, Hashable {
 // MARK: - Resource Manager
 
 public protocol GeometryImporter: ResourceImporter {
-    func loadGeometry(options: GeometryImporterOptions) async throws -> RawGeometry
+    func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry
 }
 
 public struct GeometryImporterOptions: Equatable, Hashable, Sendable {
@@ -197,7 +197,7 @@ extension RawGeometry {
         guard
             let importer: any GeometryImporter = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path)
         else {
-            throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
+            throw GateEngineError.failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
         do {

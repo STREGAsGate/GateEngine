@@ -7,21 +7,19 @@
 #if GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
 import Foundation
 
-public struct TextureAtlas {
-    public let imageSize: Size2
-    public let imageData: Data
+public struct TextureAtlas: Sendable {
+    public let rawTexture: RawTexture
     private let blockSize: Int
     private let textures: [Texture]
 
     internal struct Texture {
         let path: String
-        let size: Size2
+        let size: Size2i
         let coordinate: (x: Int, y: Int)
     }
     
-    internal init(size: Size2, data: Data, blockSize: Int, textures: [Texture]) {
-        self.imageSize = size
-        self.imageData = data
+    internal init(rawTexture: RawTexture, blockSize: Int, textures: [Texture]) {
+        self.rawTexture = rawTexture
         self.blockSize = blockSize
         self.textures = textures
     }
@@ -44,12 +42,12 @@ public struct TextureAtlas {
         var uv = inUV
 
         //Scale
-        uv.x *= texture.size.width / imageSize.width
-        uv.y *= texture.size.height / imageSize.height
+        uv.x *= Float(texture.size.width) / Float(rawTexture.imageSize.width)
+        uv.y *= Float(texture.size.height) / Float(rawTexture.imageSize.height)
         
         //Offset
-        uv.x += Float(texture.coordinate.x * blockSize) * (1 / imageSize.width)
-        uv.y += Float(texture.coordinate.y * blockSize) * (1 / imageSize.height)
+        uv.x += Float(texture.coordinate.x * blockSize) * (1 / Float(rawTexture.imageSize.width))
+        uv.y += Float(texture.coordinate.y * blockSize) * (1 / Float(rawTexture.imageSize.height))
 
         return uv
     }
@@ -60,14 +58,17 @@ public struct TextureAtlas {
         return Rect(
             x: Float(texture.coordinate.x * blockSize),
             y: Float(texture.coordinate.y * blockSize),
-            width: texture.size.width,
-            height: texture.size.height
+            width: Float(texture.size.width),
+            height: Float(texture.size.height)
         )
     }
     
     @MainActor
     public func createTexture(withMipMapping mipMapping: MipMapping = .auto(levels: .max)) -> GateEngine.Texture {
-        return GateEngine.Texture(data: imageData, size: imageSize, mipMapping: mipMapping)
+        return GateEngine.Texture(
+            rawTexture: rawTexture, 
+            mipMapping: mipMapping
+        )
     }
 }
 
@@ -84,28 +85,26 @@ extension TextureAtlasBuilder {
         }
     }
     struct TextureData: Equatable, Hashable, Sendable {
-        let width: Int
-        let height: Int
+        let size: Size2i
         let imageData: Data
         var coordinate: (x: Int, y: Int)
         
         nonisolated static func == (lhs: TextureData, rhs: TextureData) -> Bool {
-            guard lhs.width == rhs.width && lhs.height == rhs.height else {return false}
+            guard lhs.size == rhs.size else {return false}
             return lhs.imageData.elementsEqual(rhs.imageData)
         }
         nonisolated func hash(into hasher: inout Hasher) {
-            hasher.combine(width)
-            hasher.combine(height)
+            hasher.combine(size)
             hasher.combine(imageData)
         }
     }
     
-    func textureBlocksWide(texturePixelWidth: Float) -> Int {
-        return Int(ceil(texturePixelWidth / Float(blockSize)))
+    func textureBlocksWide(texturePixelWidth: Int) -> Int {
+        return texturePixelWidth / blockSize
     }
 
-    func textureBlocksTall(texturePixelHeight: Float) -> Int {
-        return Int(ceil(texturePixelHeight / Float(blockSize)))
+    func textureBlocksTall(texturePixelHeight: Int) -> Int {
+        return texturePixelHeight / blockSize
     }
 }
 
@@ -149,18 +148,16 @@ public final class TextureAtlasBuilder {
         
         let importer = PNGImporter()
         try importer.synchronousPrepareToImportResourceFrom(path: unresolvedPath)
-        let png = try importer.loadTexture(options: .none)
-        let width = Int(png.size.width)
-        let height = Int(png.size.height)
+        let rawTexture = try importer.loadTexture(options: .none)
 
-        var textureData = TextureData(width: width, height: height, imageData: png.data, coordinate: (0,0))
+        var textureData = TextureData(size: rawTexture.imageSize, imageData: rawTexture.imageData, coordinate: (0,0))
         var dataIndex = self.textureDatas.endIndex
         if sacrificePerformanceForSize, let existingIndex = self.textureDatas.firstIndex(where: {$0 == textureData}) {
             dataIndex = existingIndex
         }else{
             let coord = searchGrid.firstUnoccupiedFor(
-                width: textureBlocksWide(texturePixelWidth: png.size.width),
-                height: textureBlocksTall(texturePixelHeight: png.size.height),
+                width: textureBlocksWide(texturePixelWidth: Int(rawTexture.imageSize.width)),
+                height: textureBlocksTall(texturePixelHeight: Int(rawTexture.imageSize.height)),
                 markOccupied: true
             )
             textureData.coordinate = coord
@@ -190,8 +187,8 @@ public final class TextureAtlasBuilder {
                     false,
                     x: textureData.coordinate.x,
                     y: textureData.coordinate.y,
-                    width: textureBlocksWide(texturePixelWidth: Float(textureData.width)),
-                    height: textureBlocksTall(texturePixelHeight: Float(textureData.height))
+                    width: textureBlocksWide(texturePixelWidth: Int(textureData.size.width)),
+                    height: textureBlocksTall(texturePixelHeight: Int(textureData.size.height))
                 )
                 
                 // Reindex the Texture dataIndex values
@@ -215,7 +212,7 @@ public final class TextureAtlasBuilder {
     }
     
     public func generateAtlas() -> TextureAtlas {
-        let textureSize: Size2 = Size2(Float(self.searchGrid.width * blockSize), Float(self.searchGrid.height * blockSize))
+        let textureSize: Size2i = .castInit(width: self.searchGrid.width * blockSize, height: self.searchGrid.height * blockSize)
         
         let dstWidth = Int(textureSize.width * 4)
 
@@ -227,9 +224,9 @@ public final class TextureAtlasBuilder {
                 var coord = textureData.coordinate
                 coord.x *= blockSize
                 coord.y *= blockSize
-                let srcWidth = textureData.width * 4
+                let srcWidth = Int(textureData.size.width) * 4
                 let x = (coord.x * 4)
-                for row in 0 ..< textureData.height {
+                for row in 0 ..< Int(textureData.size.height) {
                     let srcStart = srcWidth * row
                     let srcRange = srcStart ..< (srcStart + srcWidth)
 
@@ -248,15 +245,14 @@ public final class TextureAtlasBuilder {
         
         
         let atlas = TextureAtlas(
-            size: textureSize,
-            data: imageData,
+            rawTexture: RawTexture(imageSize: textureSize, imageData: imageData),
             blockSize: blockSize,
             textures: textures.indices.map({
                 let texture = textures[$0]
                 let textureData = textureDatas[texture.dataIndex]
                 return TextureAtlas.Texture(
                     path: texture.resourcePath,
-                    size: Size2(Float(textureData.width), Float(textureData.height)),
+                    size: textureData.size,
                     coordinate: textureData.coordinate
                 )
             })

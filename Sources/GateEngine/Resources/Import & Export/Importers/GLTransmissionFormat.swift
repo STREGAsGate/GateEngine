@@ -554,7 +554,7 @@ public final class GLTransmissionFormat: ResourceImporter {
     required public init() {}
     
     public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
-        guard let path = Platform.current.synchronousLocateResource(from: path) else {throw .failedToLocate}
+        guard let path = Platform.current.synchronousLocateResource(from: path) else { throw .failedToLocate(resource: path, nil) }
         let baseURL = URL(fileURLWithPath: path).deletingLastPathComponent()
         do {
             let data = try Platform.current.synchronousLoadResource(from: path)
@@ -564,7 +564,7 @@ public final class GLTransmissionFormat: ResourceImporter {
         }
     }
     public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
-        guard let path = await Platform.current.locateResource(from: path) else {throw .failedToLocate}
+        guard let path = await Platform.current.locateResource(from: path) else { throw .failedToLocate(resource: path, nil) }
         let baseURL = URL(fileURLWithPath: path).deletingLastPathComponent()
         do {
             let data = try await Platform.current.loadResource(from: path)
@@ -591,7 +591,7 @@ public final class GLTransmissionFormat: ResourceImporter {
     }
     
     public static func supportedFileExtensions() -> [String] {
-        return ["gltf", "glb"]
+        return ["glb", "gltf"]
     }
     
     public func currentFileContainsMutipleResources() -> Bool {
@@ -599,13 +599,13 @@ public final class GLTransmissionFormat: ResourceImporter {
             gltf.meshes?.count,
             gltf.animations?.count,
             gltf.skins?.count,
+            gltf.images?.count
         ].compactMap({$0}).reduce(0, +) > 1
     }
-    
 }
 
 extension GLTransmissionFormat: GeometryImporter {
-    public func loadGeometry(options: GeometryImporterOptions) async throws -> RawGeometry {
+    public func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry {
         guard gltf.meshes != nil else {throw GateEngineError.failedToDecode("File contains no geometry.")}
         
         var mesh: GLTF.Mesh? = nil
@@ -919,7 +919,7 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
         return gltf.animations?.first
     }
     
-    public func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws -> RawSkeletalAnimation {
+    public func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws(GateEngineError) -> RawSkeletalAnimation {
         guard let animation = animation(named: options.subobjectName, from: gltf) else {
             throw GateEngineError.failedToDecode(
                 "Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))"
@@ -1119,7 +1119,7 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
 
 extension GLTransmissionFormat: TextureImporter {
     // TODO: Supports only PNG. Add other formats (JPEG, WebP, ...)
-    public func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> (data: Data, size: GameMath.Size2) {
+    public func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
         let imageData: Data
         func loadImageData(image: GLTF.Image) throws(GateEngineError) -> Data {
             if let uri = image.uri {
@@ -1142,17 +1142,16 @@ extension GLTransmissionFormat: TextureImporter {
             if let image = self.gltf.images?.first(where: {$0.name.caseInsensitiveCompare(name) == .orderedSame}) {
                 imageData = try loadImageData(image: image)
             }else{
-                throw .failedToLoad("No subobject found with name: \(name)")
+                throw .failedToLoad(resource: "GLTF Content", "No subobject found with name: \(name)")
             }
         }else{
             if let image = self.gltf.images?.first {
                 imageData = try loadImageData(image: image)
             }else{
-                throw .failedToLoad("No images found in file.")
+                throw .failedToLoad(resource:  "GLTF Content", "No images found in file.")
             }
         }
         
-        let image = try PNGDecoder().decode(imageData)
-        return (image.data, Size2(Float(image.width), Float(image.height)))
+        return try PNGDecoder().decode(imageData)
     }
 }

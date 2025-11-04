@@ -209,7 +209,7 @@ class OpenGLRenderer: Renderer {
             set {}
         }
         func reshapeIfNeeded() {}
-        var size: Size2 = .zero
+        var size: Size2i = .zero
         init() {}
     }
     let sizeOnlyRenderTarget = OpenGLSizeOnlyRenderTarget()

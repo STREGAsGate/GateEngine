@@ -11,7 +11,7 @@ import OpenGL_GateEngine
 class OpenGLTexture: TextureBackend {
     let renderTarget: OpenGLRenderTarget?
     let _textureId: GLuint?
-    var _size: Size2?
+    var _size: Size2i?
     let managed: Bool
 
     var textureId: GLuint {
@@ -21,7 +21,7 @@ class OpenGLTexture: TextureBackend {
         return _textureId!
     }
 
-    var size: Size2 {
+    var size: Size2i {
         if let renderTarget {
             return renderTarget.size
         }
@@ -35,15 +35,15 @@ class OpenGLTexture: TextureBackend {
         self.managed = false
     }
 
-    required init(data: Data, size: Size2, mipMapping: MipMapping) {
+    required init(rawTexture: RawTexture, mipMapping: MipMapping) {
         self.renderTarget = nil
         self.managed = true
-        self._size = size
+        self._size = rawTexture.imageSize
         self._textureId = glGenTextures(count: 1)[0]
-        self.replaceData(with: data, size: size, mipMapping: mipMapping)
+        self.replaceData(with: rawTexture, mipMapping: mipMapping)
     }
 
-    func replaceData(with data: Data, size: Size2, mipMapping: MipMapping) {
+    func replaceData(with rawTexture: RawTexture, mipMapping: MipMapping) {
         glBindTexture(textureId)
 
         // Set parameters.
@@ -56,18 +56,18 @@ class OpenGLTexture: TextureBackend {
         // Set the texture data.
         glPixelStorei(parameter: .unpack, value: 1)
 
-        let width = Int(size.width)
-        let height = Int(size.height)
+        let width = Int(rawTexture.imageSize.width)
+        let height = Int(rawTexture.imageSize.height)
         glTexImage2D(
             internalFormat: .rgba,
             width: width,
             height: height,
             format: .rgba,
             type: .uint8,
-            pixels: data
+            pixels: rawTexture.imageData
         )
         if case let .auto(levels) = mipMapping, levels > 1 {
-            data.withUnsafeBytes { (pointer) -> Void in
+            rawTexture.imageData.withUnsafeBytes { (pointer) -> Void in
                 glGenerateMipmap(target: .texture2D)
             }
         }

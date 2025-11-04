@@ -32,7 +32,7 @@ import GameMath
     public var columns: Int {
         return backend.columns
     }
-    public var tileSize: Size2 {
+    public var tileSize: Size2i {
         return backend.tileSize
     }
 
@@ -57,7 +57,7 @@ import GameMath
         texture: Texture,
         count: Int,
         columns: Int,
-        tileSize: Size2,
+        tileSize: Size2i,
         tiles: [TileSet.Tile]
     ) {
         let resourceManager = Game.unsafeShared.resourceManager
@@ -73,9 +73,9 @@ import GameMath
     public func rectForTile(_ tile: TileMap.Tile) -> Rect {
         let row = tile.id / columns
         let column = tile.id % columns
-        let position = Position2(tileSize.width * Float(column), tileSize.height * Float(row))
+        let position = Position2i(x: tileSize.width * Int32(column), y: tileSize.height * Int32(row))
         let size = Size2(Float(tileSize.width), Float(tileSize.height))
-        return Rect(position: position, size: size)
+        return Rect(position: position.vector2, size: size)
     }
     
     deinit {
@@ -134,7 +134,7 @@ public final class TileSetBackend {
 
     var count: Int
     var columns: Int
-    var tileSize: Size2
+    var tileSize: Size2i
 
     var tiles: [TileSet.Tile]
 
@@ -144,7 +144,7 @@ public final class TileSetBackend {
         texture: Texture,
         count: Int,
         columns: Int,
-        tileSize: Size2,
+        tileSize: Size2i,
         tiles: [TileSet.Tile]
     ) {
         self.texture = texture
@@ -239,7 +239,7 @@ extension ResourceManager {
     @MainActor func tileSetCacheKey(texture: Texture,
                          count: Int,
                          columns: Int,
-                         tileSize: Size2,
+                         tileSize: Size2i,
                          tiles: [TileSet.Tile]) -> Cache.TileSetKey {
         let key = Cache.TileSetKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", tileSetOptions: .none)
         let cache = self.cache
@@ -296,7 +296,7 @@ extension ResourceManager {
             
             do {
                 guard let importer: any TileSetImporter = try await Game.unsafeShared.resourceManager.importerForFileType(path) else {
-                    throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
+                    throw GateEngineError.failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
                 }
 
                 let backend = try await importer.loadTileSet(options: key.tileSetOptions)

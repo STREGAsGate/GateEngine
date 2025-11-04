@@ -20,7 +20,7 @@ public final class StandardRenderingSystem: RenderingSystem {
         if let verticalResolution = verticalResolution {
             var width = verticalResolution * view.frame.size.aspectRatio
             width -= width.truncatingRemainder(dividingBy: 2)
-            renderTarget.size = Size2(width: width, height: verticalResolution)
+            renderTarget.size = Size2i(width: Int32(width), height: Int32(verticalResolution))
         }
 
         do {  // 3D

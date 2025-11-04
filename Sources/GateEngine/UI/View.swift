@@ -491,7 +491,7 @@ open class View {
         var material = self.offScreenRepresentationMaterial
         material.channel(0) { channel in
             channel.texture = offScreenRendering.renderTarget.texture
-            channel.setSubRect(offscreenFrame)
+            channel.setSubRect(.init(position: .init(offscreenFrame.position), size: .init(offscreenFrame.size)))
         }
         #if DEBUG
         material.channel(1) { channel in

@@ -105,14 +105,14 @@ public final class SpriteComponent: Component {
            let texture = spriteSheet?.texture,
            texture.state == .ready
         {
-            let columns = texture.size.width / spriteSize.width
-            let rows = texture.size.height / spriteSize.height
+            let columns = Float(texture.size.width / Int32(spriteSize.width))
+            let rows = Float(texture.size.height / Int32(spriteSize.height))
             let startFrame = (animation.spriteSheetStart.y * columns) + animation.spriteSheetStart.x
             let endFrame = {
                 if let frameCount = animation.frameCount {
                     return startFrame + (frameCount - 1)
                 }
-                let framesInAnimation = (columns * rows) - startFrame
+                let framesInAnimation = Float(columns * rows) - startFrame
                 return framesInAnimation
             }()
             let currentFrame = floor(

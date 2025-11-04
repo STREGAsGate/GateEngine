@@ -69,7 +69,7 @@ extension RawLines {
     }
     public init(path: String, options: GeometryImporterOptions = .none) async throws {
         guard let importer: any GeometryImporter = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path) else {
-            throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
+            throw GateEngineError.failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
         do {

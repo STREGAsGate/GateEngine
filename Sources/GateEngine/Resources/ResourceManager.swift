@@ -8,7 +8,6 @@
 #if GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
 import class Foundation.FileManager
 #endif
-import Atomics
 
 public protocol ResourceImporter: AnyObject {
     init()
@@ -110,7 +109,7 @@ extension ResourceManager {
             let importer: any ResourceImporter
             var lastAccessed: Date = Date()
         }
-        internal mutating func getImporter<I: ResourceImporter>(path: String, type: I.Type) async throws -> I? {
+        internal mutating func getImporter<I: ResourceImporter>(path: String, type: I.Type) async throws(GateEngineError) -> I? {
             let key = ActiveImporterKey(path: path)
             if let existing = activeImporters[key] {
                 // Make sure the importer can be the type requested

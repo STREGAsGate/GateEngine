@@ -71,7 +71,7 @@ extension ResourceManager {
         importers.skinImporters.insert(type, at: 0)
     }
 
-    func skinImporterForPath(_ path: String) async throws -> (any SkinImporter)? {
+    func skinImporterForPath(_ path: String) async throws(GateEngineError) -> (any SkinImporter)? {
         for type in self.importers.skinImporters {
             if type.canProcessFile(path) {
                 return try await self.importers.getImporter(path: path, type: type)
@@ -82,11 +82,9 @@ extension ResourceManager {
 }
 
 extension RawSkin {
-    public init(path: String, options: SkinImporterOptions = .none) async throws {
-        guard
-            let importer: any SkinImporter = try await Game.unsafeShared.resourceManager.skinImporterForPath(path)
-        else {
-            throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
+    public init(path: String, options: SkinImporterOptions = .none) async throws(GateEngineError) {
+        guard let importer: any SkinImporter = try await Game.unsafeShared.resourceManager.skinImporterForPath(path) else {
+            throw .failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
         do {

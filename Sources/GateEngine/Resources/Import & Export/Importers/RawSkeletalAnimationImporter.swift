@@ -31,7 +31,7 @@ public final class RawSkeletalAnimationImporter: SkeletalAnimationImporter, Gate
         }
     }
     
-    public func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws -> RawSkeletalAnimation {
+    public func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws(GateEngineError) -> RawSkeletalAnimation {
         do {
             return try RawSkeletalAnimationDecoder().decode(data)
         }catch{

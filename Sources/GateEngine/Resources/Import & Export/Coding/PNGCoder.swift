@@ -5,21 +5,15 @@
  * http://stregasgate.com
  */
 
-public final class PNGDecoder {
-    public func decode(_ data: Data) throws(GateEngineError) -> Image {
+public struct PNGDecoder {
+    public func decode(_ data: Data) throws(GateEngineError) -> RawTexture {
 #if canImport(LibSPNG)
         try LibSPNG.decode(data: data)
 #else
         fatalError("PNGDecoder is not supported on this platform.")
 #endif
     }
-    
-    public struct Image {
-        let width: Int
-        let height: Int
-        let data: Data
-    }
-    
+
     public init() {
         
     }
@@ -36,19 +30,19 @@ public final class PNGDecoder {
 /**
  Encodes raw pixel data as PNG formatted data.
  */
-public final class PNGEncoder {
+public struct PNGEncoder {
     /**
      - parameter data: RGBA8 formatted image data
      - parameter width: The count of pixel columns for `data`
      - parameter height: The count of pixel rows for `data`
      - parameter sacrificePerformanceToShrinkData: `true` if extra processingshould be done to produce smaller PNG data.
      */
-    public func encode(_ data: Data, width: Int, height: Int, sacrificePerformanceToShrinkData: Bool = false) throws(GateEngineError) -> Data {
+    public func encode(_ rawTexture: RawTexture, sacrificePerformanceToShrinkData: Bool = false) throws(GateEngineError) -> Data {
 #if canImport(LibSPNG)
         if sacrificePerformanceToShrinkData {
-            try LibSPNG.encodeSmallest(data: data, width: width, height: height)
+            try LibSPNG.encodeSmallest(data: rawTexture.imageData, width: Int(rawTexture.imageSize.width), height: Int(rawTexture.imageSize.height))
         }else{
-            try LibSPNG.encodeRGBA(data: data, width: width, height: height, optimizeAlpha: false)
+            try LibSPNG.encodeRGBA(data: rawTexture.imageData, width: Int(rawTexture.imageSize.width), height: Int(rawTexture.imageSize.height), optimizeAlpha: false)
         }
 #else
         fatalError("PNGEncoder is not supported on this platform.")
@@ -235,7 +229,7 @@ enum LibSPNG {
     }
     
     @inlinable
-    static func decode(data: Data) throws(GateEngineError) -> PNGDecoder.Image {
+    static func decode(data: Data) throws(GateEngineError) -> RawTexture {
         do {
             return try data.withUnsafeBytes { data in
                 /* Create a context */
@@ -283,7 +277,7 @@ enum LibSPNG {
                     throw GateEngineError.failedToDecode(String(cString: spng_strerror(header_err)))
                 }
                 
-                return PNGDecoder.Image(width: Int(header.width), height: Int(header.height), data: out)
+                return RawTexture(imageSize: .castInit(width: header.width, height: header.height), imageData: out)
             }
         }catch let error as GateEngineError {
             throw error // Typed throws not supported by closures as of Swift 6.2

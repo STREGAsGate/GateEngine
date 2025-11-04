@@ -14,19 +14,20 @@ public extension Platform {
 }
 
 public protocol PlatformProtocol: Sendable {
-    func locateResource(from path: String) async -> String?
-    func loadResource(from path: String) async throws -> Data
-
     var supportsMultipleWindows: Bool { get }
 
     #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
     #if GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
     associatedtype AsyncFileSystem: AsynchronousFileSystem
+    func locateResource(from path: String) async -> String?
+    func loadResource(from path: String) async throws(GateEngineError) -> Data
     static var fileSystem: AsyncFileSystem { get }
     var fileSystem: AsyncFileSystem { get }
     #endif
     #if GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem
     associatedtype SyncFileSystem: SynchronousFileSystem
+    func synchronousLocateResource(from path: String) async -> String?
+    func synchronousLoadResource(from path: String) async throws(GateEngineError) -> Data
     static var synchronousFileSystem: SyncFileSystem { get }
     var synchronousFileSystem: SyncFileSystem { get }
     #endif

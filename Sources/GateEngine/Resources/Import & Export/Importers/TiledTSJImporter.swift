@@ -115,10 +115,10 @@ public final class TiledTSJImporter: TileSetImporter {
         let texturePath = basePath + "/" + file.image
         
         return await TileSetBackend(
-            texture: Texture(path: texturePath, sizeHint: Size2(Float(file.imagewidth), Float(file.imageheight))),
+            texture: Texture(path: texturePath, sizeHint: .castInit(width: file.imagewidth, height: file.imageheight)),
             count: file.tilecount,
             columns: file.columns,
-            tileSize: Size2(Float(file.tilewidth), Float(file.tileheight)),
+            tileSize: .castInit(width: file.tilewidth, height: file.tileheight),
             tiles: tiles
         )
     }

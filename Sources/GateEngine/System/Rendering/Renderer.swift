@@ -86,12 +86,12 @@ extension Renderer {
         }
         let size = destinationRenderTarget.size
 
-        let scale = Size3(width: size.width, height: size.height, depth: 1)
+        let scale = Size3(width: Float(size.width), height: Float(size.height), depth: 1)
         let transform = Transform3(
-            position: Position3(size.width / 2, size.height / 2, 0),
+            position: Position3(Float(size.width) / 2, Float(size.height) / 2, 0),
             scale: scale
         )
-        let matrices = matrices(withSize: size)
+        let matrices = matrices(withSize: size.vector2)
         let flags = DrawCommand.Flags(depthTest: .always, depthWrite: .disabled, winding: .clockwise)
 
         let command = DrawCommand(

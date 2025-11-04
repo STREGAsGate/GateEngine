@@ -13,7 +13,7 @@ final class OpenGLRenderTarget: RenderTargetBackend {
     let colorTexture: GLuint
     let depthTexture: GLuint
 
-    var size: Size2 = Size2(2, 2)
+    var size: Size2i = Size2i(width: 2, height: 2)
 
     var clearColor: Color = .clear
 
@@ -121,7 +121,7 @@ extension OpenGLRenderTarget {
         if let viewport {
             glViewport(
                 x: GLint(viewport.position.x),
-                y: GLint(self.size.height - viewport.size.height - viewport.position.y), // flipped
+                y: GLint(Float(self.size.height) - viewport.size.height - viewport.position.y), // flipped
                 width: GLsizei(viewport.size.width),
                 height: GLsizei(viewport.size.height)
             )
@@ -132,7 +132,7 @@ extension OpenGLRenderTarget {
         if let scissorRect {
             glScissor(
                 x: GLint(scissorRect.x), 
-                y: GLint(self.size.height - scissorRect.height - scissorRect.y), // flipped
+                y: GLint(Float(self.size.height) - scissorRect.height - scissorRect.y), // flipped
                 width: GLsizei(scissorRect.width),
                 height: GLsizei(scissorRect.height)
             )

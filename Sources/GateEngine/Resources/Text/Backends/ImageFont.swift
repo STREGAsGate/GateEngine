@@ -7,7 +7,7 @@
 
 struct ImageFont: FontBackend {
     private let fontData:
-        [Font.Style: (data: Data, size: Size2, importer: any TextureImporter.Type)]
+    [Font.Style: (rawTexture: RawTexture, importer: any TextureImporter.Type)]
     internal var nativePointSizes: [Font.Style: UInt] = [:]
     internal var textures: [Font.Style: Texture] = [:]
     internal var characterXAdvances: [Font.Style: [Float]] = [:]
@@ -17,30 +17,29 @@ struct ImageFont: FontBackend {
             Log.debug("No TextureImporter for file \"\(regular)\"")
             throw GateEngineError.failedToDecode("No TextureImporter for file \"\(regular)\"")
         }
-        let regular = try importer.loadTexture(options: .none)
+        let rawTexture = try importer.loadTexture(options: .none)
 
-        let fontData: [Font.Style: (data: Data, size: Size2, importer: any TextureImporter.Type)] =
-            [.regular: (regular.data, regular.size, type(of: importer))]
+        let fontData: [Font.Style: (rawTexture: RawTexture, importer: any TextureImporter.Type)] =
+            [.regular: (rawTexture, type(of: importer))]
         //        fontData[.bold] = bold
         //        fontData[.italic] = italic
         //        fontData[.boldItalic] = boldItalic
         self.fontData = fontData
     }
 
-    @MainActor mutating func characterData(forKey key: Font.Key, character: Character)
-        -> CharacterData
-    {
+    @MainActor 
+    mutating func characterData(forKey key: Font.Key, character: Character) -> CharacterData {
         let textureSize = textures[key.style]!.size
-        let pixelsHigh = textureSize.width / 16
-        let pixelsWide = textureSize.height / 16
+        let pixelsHigh = Float(textureSize.width) / 16
+        let pixelsWide = Float(textureSize.height) / 16
 
         let utf8Decimal = Int(character.utf8.first!)
         let codepoint: Float = Float(utf8Decimal)
         let row: Float = Float(UInt(codepoint / 16))
         let column: Float = 16 + (Float(codepoint) - ((row + 1) * 16))
 
-        let nPixelX = 1 / textureSize.width
-        let nPixelY = 1 / textureSize.height
+        let nPixelX = 1 / Float(textureSize.width)
+        let nPixelY = 1 / Float(textureSize.height)
 
         let minX: Float = nPixelX * (column * pixelsWide)
         let maxX: Float = minX + (nPixelX * pixelsWide)
@@ -95,8 +94,8 @@ struct ImageFont: FontBackend {
 
     @MainActor private mutating func populate(style: Font.Style) {
         let fontData = fontData[style]!
-        let data = fontData.data
-        let size = fontData.size
+        let data = fontData.rawTexture.imageData
+        let size = fontData.rawTexture.imageSize
 
         let width: Int = Int(size.width)
         let height: Int = Int(size.height)
@@ -149,7 +148,10 @@ struct ImageFont: FontBackend {
         self.characterXAdvances[style] = xAdvances
         assert(image.count == data.count)
 
-        let texture = Texture(data: Data(image), size: size, mipMapping: .none)
+        let texture = Texture(
+            rawTexture: RawTexture(imageSize: size, imageData: Data(image)),
+            mipMapping: .none
+        )
 
         self.textures[style] = texture
         self.nativePointSizes[style] = UInt(pointSize)

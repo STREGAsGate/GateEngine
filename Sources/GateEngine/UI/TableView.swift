@@ -22,9 +22,9 @@ open class TableView: View {
         }
     }
     
-    private var subRect: Rect? = nil
+    private var subRect: Rect2i? = nil
     
-    public init(path: String, meta: (textureSize: Size2, subRect: Rect)? = nil, sampleFilter: SampleFilter = .linear) {
+    public init(path: String, meta: (textureSize: Size2i, subRect: Rect2i)? = nil, sampleFilter: SampleFilter = .linear) {
         self.subRect = meta?.subRect
         self.material.channel(0) { channel in
             channel.texture = Texture(path: path, sizeHint: meta?.textureSize, mipMapping: .none)
@@ -47,10 +47,10 @@ open class TableView: View {
     
     public override func contentSize() -> Size2 {
         if let subRect {
-            return subRect.size
+            return subRect.size.vector2
         }
         if let texture = material.channels[0].texture, texture.sizeIsAvailable {
-            return texture.size
+            return texture.size.vector2
         }
         return super.contentSize()
     }

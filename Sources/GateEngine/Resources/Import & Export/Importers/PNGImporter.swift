@@ -5,12 +5,11 @@
  * http://stregasgate.com
  */
 
-public import Foundation
-public import GameMath
+import Foundation
+import GameMath
 
 public final class PNGImporter: TextureImporter {
     var data: Data! = nil
-    var size: Size2! = nil
     public required init() {}
     
     public func currentFileContainsMutipleResources() -> Bool {
@@ -18,28 +17,15 @@ public final class PNGImporter: TextureImporter {
     }
     
     public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
-        do {
-            let data = try Platform.current.synchronousLoadResource(from: path)
-            let png = try PNGDecoder().decode(data)
-            self.data = png.data
-            self.size = Size2(Float(png.width), Float(png.height))
-        }catch{
-            throw GateEngineError(error)
-        }
+        self.data = try Platform.current.synchronousLoadResource(from: path)
     }
     public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
-        do {
-            let data = try await Platform.current.loadResource(from: path)
-            let png = try PNGDecoder().decode(data)
-            self.data = png.data
-            self.size = Size2(Float(png.width), Float(png.height))
-        }catch{
-            throw GateEngineError(error)
-        }
+        self.data = try await Platform.current.loadResource(from: path)
     }
 
-    public func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> (data: Data, size: Size2) {
-        return (self.data, self.size)
+    public func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
+        return try PNGDecoder().decode(data)
+
     }
 
     public static func supportedFileExtensions() -> [String] {

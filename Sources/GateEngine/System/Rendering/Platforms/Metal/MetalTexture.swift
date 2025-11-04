@@ -20,8 +20,8 @@ final class MetalTexture: TextureBackend {
         return renderTarget!.colorTexture!
     }
 
-    var size: Size2 {
-        return Size2(Float(mtlTexture.width), Float(mtlTexture.height))
+    var size: Size2i {
+        return Size2i(width: Int32(mtlTexture.width), height: Int32(mtlTexture.height))
     }
 
     required init(renderTargetBackend: any RenderTargetBackend) {
@@ -29,20 +29,20 @@ final class MetalTexture: TextureBackend {
         _mtlTexture = nil
     }
 
-    required init(data: Data, size: Size2, mipMapping: MipMapping) {
+    required init(rawTexture: RawTexture, mipMapping: MipMapping) {
         let device = Game.shared.renderer.device
 
         let descriptor = MTLTextureDescriptor()
         descriptor.pixelFormat = .rgba8Unorm
-        descriptor.width = Int(size.width)
-        descriptor.height = Int(size.height)
+        descriptor.width = Int(rawTexture.imageSize.width)
+        descriptor.height = Int(rawTexture.imageSize.height)
 
         switch mipMapping {
         case .none:
             descriptor.mipmapLevelCount = 1
         case let .auto(levels):
-            var width = Int(size.width / 2)
-            var height = Int(size.width / 2)
+            var width = Int(rawTexture.imageSize.width / 2)
+            var height = Int(rawTexture.imageSize.width / 2)
             while width > 8 && height > 8 && descriptor.mipmapLevelCount <= levels {
                 width /= 2
                 height /= 2
@@ -53,17 +53,17 @@ final class MetalTexture: TextureBackend {
         self.renderTarget = nil
         self._mtlTexture = device.makeTexture(descriptor: descriptor)!
 
-        self.replaceData(with: data, size: size, mipMapping: mipMapping)
+        self.replaceData(with: rawTexture, mipMapping: mipMapping)
     }
 
-    func replaceData(with data: Data, size: Size2, mipMapping: MipMapping) {
-        let region = MTLRegionMake2D(0, 0, Int(size.width), Int(size.height))
-        data.withUnsafeBytes { (pointer) -> Void in
+    func replaceData(with rawTexture: RawTexture, mipMapping: MipMapping) {
+        let region = MTLRegionMake2D(0, 0, Int(rawTexture.imageSize.width), Int(rawTexture.imageSize.height))
+        rawTexture.imageData.withUnsafeBytes { (pointer) -> Void in
             mtlTexture.replace(
                 region: region,
                 mipmapLevel: 0,
                 withBytes: pointer.baseAddress!,
-                bytesPerRow: 4 * Int(size.width)
+                bytesPerRow: 4 * Int(rawTexture.imageSize.width)
             )
         }
         

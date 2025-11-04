@@ -12,7 +12,7 @@ import ModelIO
 public final class ApplePlatformModelImporter: GeometryImporter {
     public required init() {}
 
-    private func positions(from mesh: MDLMesh) throws -> [Float] {
+    private func positions(from mesh: MDLMesh) throws(GateEngineError) -> [Float] {
         guard let attributeData = mesh.vertexAttributeData(
             forAttributeNamed: MDLVertexAttributePosition,
             as: .float3
@@ -102,7 +102,7 @@ public final class ApplePlatformModelImporter: GeometryImporter {
         return values
     }
 
-    func indices(from submeshes: [MDLSubmesh]) throws -> [UInt16] {
+    func indices(from submeshes: [MDLSubmesh]) throws(GateEngineError) -> [UInt16] {
         var indices: [UInt16] = []
         for submesh in submeshes {
             let indexBuffer = submesh.indexBuffer
@@ -139,11 +139,11 @@ public final class ApplePlatformModelImporter: GeometryImporter {
     
     var asset: MDLAsset! = nil
     public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
-        guard let path = Platform.current.synchronousLocateResource(from: path) else {throw .failedToLocate}
+        guard let path = Platform.current.synchronousLocateResource(from: path) else {throw .failedToLocate(resource: path, nil) }
         self.asset = MDLAsset(url: URL(fileURLWithPath: path))
     }
     public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
-        guard let path = await Platform.current.locateResource(from: path) else {throw .failedToLocate}
+        guard let path = await Platform.current.locateResource(from: path) else {throw .failedToLocate(resource: path, nil) }
         self.asset = await withCheckedContinuation { continuation in
             Task.detached {
                 let asset = MDLAsset(url: URL(fileURLWithPath: path))
@@ -152,7 +152,7 @@ public final class ApplePlatformModelImporter: GeometryImporter {
         }
     }
     
-    public func loadGeometry(options: GeometryImporterOptions) async throws -> RawGeometry {
+    public func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry {
         for meshIndex in 0 ..< asset.count {
             guard let mesh = asset.object(at: meshIndex) as? MDLMesh else {
                 throw GateEngineError.failedToDecode("mesh[\(meshIndex)] is not a MDLMesh instance.")

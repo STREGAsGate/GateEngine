@@ -16,10 +16,10 @@ public enum MipMapping: Hashable, Sendable {
 
 @usableFromInline
 @MainActor internal protocol TextureBackend: AnyObject {
-    var size: Size2 { get }
-    init(data: Data, size: Size2, mipMapping: MipMapping)
+    var size: Size2i { get }
+    init(rawTexture: RawTexture, mipMapping: MipMapping)
     init(renderTargetBackend: any RenderTargetBackend)
-    func replaceData(with data: Data, size: Size2, mipMapping: MipMapping)
+    func replaceData(with rawTexture: RawTexture, mipMapping: MipMapping)
 }
 
 /// Texture represents a managed bitmap buffer object.
@@ -31,16 +31,16 @@ public enum MipMapping: Hashable, Sendable {
         return Game.unsafeShared.resourceManager.textureCache(for: cacheKey)!
     }
     internal unowned var renderTarget: (any _RenderTargetProtocol)?
-    private let sizeHint: Size2?
+    private let sizeHint: Size2i?
 
     /** The dimensions of the texture.
      Guaranteed accurate when state is .ready, otherwise fails or returns the provided hint placeholder.
      */
-    public var size: Size2 {
+    public var size: Size2i {
         if state == .ready {
             return textureBackend!.size
         }
-        if let sizeHint: Size2 = sizeHint {
+        if let sizeHint: Size2i = sizeHint {
             return sizeHint
         }
         fatalError(
@@ -70,8 +70,8 @@ public enum MipMapping: Hashable, Sendable {
     }
     
     @inlinable
-    public func replaceData(with data: Data, size: Size2, mipMapping: MipMapping) {
-        textureBackend?.replaceData(with: data, size: size, mipMapping: mipMapping)
+    public func replaceData(with rawTexture: RawTexture, mipMapping: MipMapping) {
+        textureBackend?.replaceData(with: rawTexture, mipMapping: mipMapping)
     }
 
     /**
@@ -85,7 +85,7 @@ public enum MipMapping: Hashable, Sendable {
     @inlinable @_disfavoredOverload
     public convenience init(
         as path: TexturePath,
-        sizeHint: Size2? = nil,
+        sizeHint: Size2i? = nil,
         mipMapping: MipMapping = .auto(),
         options: TextureImporterOptions = .none
     ) {
@@ -102,7 +102,7 @@ public enum MipMapping: Hashable, Sendable {
      */
     public init(
         path: String,
-        sizeHint: Size2? = nil,
+        sizeHint: Size2i? = nil,
         mipMapping: MipMapping = .auto(),
         options: TextureImporterOptions = .none
     ) {
@@ -118,15 +118,14 @@ public enum MipMapping: Hashable, Sendable {
         resourceManager.incrementReference(self.cacheKey)
     }
 
-    public init(data: Data, size: Size2, mipMapping: MipMapping) {
+    public init(rawTexture: RawTexture, mipMapping: MipMapping) {
         let resourceManager = Game.unsafeShared.resourceManager
         self.renderTarget = nil
         self.cacheKey = resourceManager.textureCacheKey(
-            data: data,
-            size: size,
+            rawTexture: rawTexture,
             mipMapping: mipMapping
         )
-        self.sizeHint = size
+        self.sizeHint = rawTexture.imageSize
         self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
@@ -165,7 +164,7 @@ extension Texture: Equatable, Hashable {
 // MARK: - Resource Manager
 
 public protocol TextureImporter: ResourceImporter {
-    func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> (data: Data, size: Size2)
+    func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture
 }
 
 public struct TextureImporterOptions: Equatable, Hashable, Sendable {
@@ -274,7 +273,7 @@ extension ResourceManager {
         return key
     }
 
-    func textureCacheKey(data: Data, size: Size2, mipMapping: MipMapping) -> Cache.TextureKey {
+    func textureCacheKey(rawTexture: RawTexture, mipMapping: MipMapping) -> Cache.TextureKey {
         let path = "$\(rawCacheIDGenerator.generateID())"
         let key = Cache.TextureKey(
             requestedPath: path,
@@ -287,8 +286,7 @@ extension ResourceManager {
             Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
             Task.detached {
                 let backend = await ResourceManager.textureBackend(
-                    data: data,
-                    size: size,
+                    rawTexture: rawTexture,
                     mipMapping: mipMapping
                 )
                 Task { @MainActor in
@@ -362,21 +360,20 @@ extension ResourceManager {
                 let path = key.requestedPath
                 let fileExtension = URL(fileURLWithPath: path).pathExtension
                 if fileExtension.isEmpty {
-                    throw GateEngineError.failedToLoad("Unknown file type.")
+                    throw GateEngineError.failedToLoad(resource: path, "Unknown file type.")
                 }
                 
                 guard let importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path) else {
-                    throw GateEngineError.failedToLoad("No importer for \(fileExtension).")
+                    throw GateEngineError.failedToLoad(resource: path, "No importer for \(fileExtension).")
                 }
                 
-                let texture = try importer.loadTexture(options: key.textureOptions)
-                guard texture.data.isEmpty == false else {
-                    throw GateEngineError.failedToLoad("File is empty.")
+                let rawTexture = try importer.loadTexture(options: key.textureOptions)
+                guard rawTexture.imageData.isEmpty == false else {
+                    throw GateEngineError.failedToLoad(resource: path, "File is empty.")
                 }
                 
                 let backend = await ResourceManager.textureBackend(
-                    data: texture.data,
-                    size: texture.size,
+                    rawTexture: rawTexture,
                     mipMapping: key.mipMapping
                 )
                 Task { @MainActor in
@@ -425,22 +422,22 @@ extension ResourceManager {
         #endif
     }
 
-    nonisolated static func textureBackend(data: Data, size: Size2, mipMapping: MipMapping) async -> any TextureBackend {
+    nonisolated static func textureBackend(rawTexture: RawTexture, mipMapping: MipMapping) async -> any TextureBackend {
         #if GATEENGINE_FORCE_OPNEGL_APPLE
         return await OpenGLTexture(data: data, size: size, mipMapping: mipMapping)
         #elseif canImport(MetalKit)
         #if canImport(GLKit)
         if await MetalRenderer.isSupported == false {
-            return await OpenGLTexture(data: data, size: size, mipMapping: mipMapping)
+            return await OpenGLTexture(rawTexture: rawTexture, mipMapping: mipMapping)
         }
         #endif
-        return await MetalTexture(data: data, size: size, mipMapping: mipMapping)
+        return await MetalTexture(rawTexture: rawTexture, mipMapping: mipMapping)
         #elseif canImport(WebGL2)
-        return await WebGL2Texture(data: data, size: size, mipMapping: mipMapping)
+        return await WebGL2Texture(rawTexture: rawTexture, mipMapping: mipMapping)
         #elseif canImport(WinSDK)
-        return await DX12Texture(data: data, size: size, mipMapping: mipMapping)
+        return await DX12Texture(rawTexture: rawTexture, mipMapping: mipMapping)
         #elseif canImport(OpenGL_GateEngine)
-        return await OpenGLTexture(data: data, size: size, mipMapping: mipMapping)
+        return await OpenGLTexture(rawTexture: rawTexture, mipMapping: mipMapping)
         #else
         #error("Not implemented")
         #endif

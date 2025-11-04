@@ -8,7 +8,7 @@
 import GameMath
 
 @MainActor public protocol RenderTargetProtocol: AnyObject, Equatable, Hashable {
-    var size: Size2 { get }
+    var size: Size2i { get }
     var clearColor: Color { get set }
     var rootViewController: ViewController? {get set}
     func insert(_ scene: Scene)
@@ -25,7 +25,7 @@ import GameMath
     var texture: Texture { get }
     var renderTargetBackend: any RenderTargetBackend { get set }
     var drawables: [any Drawable] { get set }
-    var size: Size2 { get set }
+    var size: Size2i { get set }
 
     func reshapeIfNeeded()
     func draw(_ frame: UInt)
@@ -65,7 +65,7 @@ extension _RenderTargetProtocol {
             "Rendering can only be changed from a RenderingSystem."
         )
         precondition(
-            canvas.size == nil || canvas.size!.aspectRatio == self.size.aspectRatio,
+            canvas.size == nil || canvas.size!.aspectRatio == self.size.vector2.aspectRatio,
             "Canvas.size.aspectRatio must equal RenderTarget.size.aspectRatio to insert."
         )
         self.drawables.append(canvas)
@@ -102,7 +102,7 @@ extension _RenderTargetProtocol {
 @MainActor public final class RenderTarget: View, RenderTargetProtocol, _RenderTargetProtocol {
     @usableFromInline
     var renderTargetBackend: any RenderTargetBackend
-    var previousSize: Size2? = nil
+    var previousSize: Size2i? = nil
     var lastDrawnFrame: UInt = .max
     var drawables: [any Drawable] = []
     
@@ -118,7 +118,7 @@ extension _RenderTargetProtocol {
     }
 
     @inlinable
-    public var size: Size2 {
+    public var size: Size2i {
         get {
             return renderTargetBackend.size
         }
@@ -138,7 +138,7 @@ extension _RenderTargetProtocol {
         }
     }
 
-    public init(size: Size2? = nil, backgroundColor: Color = .black, rootViewController: ViewController? = nil) {
+    public init(size: Size2i? = nil, backgroundColor: Color = .black, rootViewController: ViewController? = nil) {
         precondition(
             Game.shared.attributes.contains(.renderingIsPermitted),
             "RenderTarget can only be created from a RenderingSystem."
@@ -161,7 +161,7 @@ extension _RenderTargetProtocol {
 
 extension _RenderTargetProtocol {
     @inlinable
-    public var size: Size2 {
+    public var size: Size2i {
         get {
             return renderTargetBackend.size
         }
@@ -188,8 +188,8 @@ extension _RenderTargetProtocol {
         let ortho = Matrix4x4(
             orthographicWithTop: 0,
             left: 0,
-            bottom: self.size.height,
-            right: self.size.width,
+            bottom: Float(self.size.height),
+            right: Float(self.size.width),
             near: 0,
             far: Float(Int32.max)
         )
@@ -204,7 +204,7 @@ extension _RenderTargetProtocol {
 
         if let view = self as? View {
             var canvas = UICanvas(estimatedCommandCount: 10)
-            self.drawView(view, into: &canvas, forOffScreen: false, frameNumber: frame, superClip: Rect(size: size))
+            self.drawView(view, into: &canvas, forOffScreen: false, frameNumber: frame, superClip: Rect(size: size.vector2))
             if canvas.hasContent {
                 self.drawables.append(canvas)
                 if let window = self as? Window {
@@ -230,7 +230,7 @@ extension _RenderTargetProtocol {
                 case let uiCanvas as UICanvas:
                     drawUICanvas(uiCanvas, clipRect: nil, stencil: nil)
                 case let scene as Scene:
-                    drawScene(scene, viewportSize: self.size, clipRect: nil, stencil: nil)
+                    drawScene(scene, viewportSize: self.size.vector2, clipRect: nil, stencil: nil)
                 case let canvas as Canvas:
                     drawCanvas(canvas, clipRect: nil, stencil: nil)
                 case let container as RenderTargetFillContainer:
@@ -286,7 +286,7 @@ extension _RenderTargetProtocol {
     
     private func drawUICanvas(_ canvas: UICanvas, clipRect: Rect?, stencil: UInt8?) {
         assert(canvas.hasContent)
-        let matrices = canvas.matrices(withSize: self.size)
+        let matrices = canvas.matrices(withSize: self.size.vector2)
         
         let scissorRect: Rect? = clipRect
         
@@ -329,7 +329,7 @@ extension _RenderTargetProtocol {
     }
 
     private func drawCanvas(_ canvas: Canvas, clipRect: Rect?, stencil: UInt8?) {
-        let matrices = canvas.matrices(withSize: self.size)
+        let matrices = canvas.matrices(withSize: self.size.vector2)
         
         var scissorRect: Rect? = nil
         if let canvasScissor = canvas.scissorRect {
@@ -433,7 +433,7 @@ extension RenderTargetProtocol {
 
 @usableFromInline
 @MainActor internal protocol RenderTargetBackend: AnyObject {
-    var size: Size2 { get set }
+    var size: Size2i { get set }
     var clearColor: Color { get set }
     var wantsReshape: Bool { get }
     func reshape()

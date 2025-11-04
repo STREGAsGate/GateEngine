@@ -10,7 +10,7 @@ import MetalKit
 import GameMath
 
 final class MetalRenderTarget: RenderTargetBackend {
-    var size: Size2 = Size2(2)
+    var size: Size2i = Size2i(width: 2, height: 2)
     var isFirstPass = true
 
     internal var commandBuffer: (any MTLCommandBuffer)! = nil

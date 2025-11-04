@@ -291,7 +291,7 @@ public final class SkeletalAnimationBackend {
 // MARK: - Resource Manager
 
 public protocol SkeletalAnimationImporter: ResourceImporter {
-    func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws -> RawSkeletalAnimation
+    func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws(GateEngineError) -> RawSkeletalAnimation
 }
 
 public struct SkeletalAnimationImporterOptions: Equatable, Hashable, Sendable {
@@ -366,7 +366,7 @@ extension RawSkeletalAnimation {
         guard
             let importer: any SkeletalAnimationImporter = try await Game.unsafeShared.resourceManager.skeletalAnimationImporterForPath(path)
         else {
-            throw GateEngineError.failedToLoad("No importer for \(URL(fileURLWithPath: path).pathExtension).")
+            throw GateEngineError.failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
         do {

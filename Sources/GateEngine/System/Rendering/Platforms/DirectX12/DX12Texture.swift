@@ -12,8 +12,8 @@ final class DX12Texture: TextureBackend {
     let renderTarget: DX12RenderTarget?
     var _dxTexture: D3DResource?
 
-    var _size: Size2?
-    var size: Size2 {
+    var _size: Size2i?
+    var size: Size2i {
         if let renderTarget {
             return renderTarget.size
         }
@@ -39,11 +39,11 @@ final class DX12Texture: TextureBackend {
         _size = nil
     }
 
-    required init(data: Data, size: Size2, mipMapping: MipMapping) {
+    required init(rawTexture: RawTexture, mipMapping: MipMapping) {
         let device: D3DDevice = Game.shared.renderer.device
         do {
             let textureResourceDesc: D3DResourceDescription = Self.textureResourceDesc(
-                size: size,
+                size: rawTexture.imageSize,
                 mipMapping: mipMapping
             )
             self._dxTexture = try device.createCommittedResource(
@@ -51,11 +51,10 @@ final class DX12Texture: TextureBackend {
                 properties: .forTexture,
                 state: .copyDestination
             )
-            self._size = size
+            self._size = rawTexture.imageSize
             self.renderTarget = nil
             try self.processTexture(
-                data: data,
-                size: size,
+                rawTexture: rawTexture,
                 textureResourceDesc: textureResourceDesc
             )
         } catch {
@@ -63,7 +62,7 @@ final class DX12Texture: TextureBackend {
         }
     }
 
-    func replaceData(with data: Data, size: Size2, mipMapping: MipMapping) {
+    func replaceData(with rawTexture: RawTexture, mipMapping: MipMapping) {
         assert(
             renderTarget == nil,
             "Cannot manipulate a renderTarget through a texture. You must draw to the renderTarget."
@@ -71,7 +70,7 @@ final class DX12Texture: TextureBackend {
         let device: D3DDevice = Game.shared.renderer.device
         do {
             let textureResourceDesc: D3DResourceDescription = Self.textureResourceDesc(
-                size: size,
+                size: rawTexture.imageSize,
                 mipMapping: mipMapping
             )
             self._dxTexture = try device.createCommittedResource(
@@ -79,10 +78,9 @@ final class DX12Texture: TextureBackend {
                 properties: .forTexture,
                 state: .copyDestination
             )
-            self._size = size
+            self._size = rawTexture.imageSize
             try self.processTexture(
-                data: data,
-                size: size,
+                rawTexture: rawTexture,
                 textureResourceDesc: textureResourceDesc
             )
         } catch {
@@ -90,7 +88,7 @@ final class DX12Texture: TextureBackend {
         }
     }
     @inlinable
-    static func textureResourceDesc(size: Size2, mipMapping: MipMapping) -> D3DResourceDescription {
+    static func textureResourceDesc(size: Size2i, mipMapping: MipMapping) -> D3DResourceDescription {
         var textureResourceDesc: D3DResourceDescription = D3DResourceDescription()
         textureResourceDesc.mipLevels = 1
         textureResourceDesc.format = .r8g8b8a8Unorm
@@ -105,7 +103,7 @@ final class DX12Texture: TextureBackend {
         case .none:
             textureResourceDesc.mipLevels = 1
         case let .auto(levels):
-            var size: Int = Int(size.width / 2)
+            var size: Int = Int(size.width) / 2
             while size > 32 && textureResourceDesc.mipLevels <= levels {
                 size /= 2
                 textureResourceDesc.mipLevels += 1
@@ -115,11 +113,14 @@ final class DX12Texture: TextureBackend {
     }
 
     private func processTexture(
-        data: Data,
-        size: Size2,
+        rawTexture: RawTexture,
         textureResourceDesc: D3DResourceDescription
     ) throws {
         guard let dxTexture: D3DResource = _dxTexture else { return }
+        
+        let data = rawTexture.imageData
+        let size = rawTexture.imageSize
+        
         let renderer: DX12Renderer = Game.shared.renderer.backend
         let device: D3DDevice = renderer.device
         let fence: D3DFence = try device.createFence()

@@ -43,7 +43,7 @@ public final class WavefrontOBJImporter: GeometryImporter {
         return lines.count(where: {$0.hasPrefix("o ")}) > 1
     }
     
-    public func loadGeometry(options: GeometryImporterOptions) async throws -> RawGeometry {
+    public func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry {
         do {
             var prefix = "o "
             if let name = options.subobjectName {

@@ -78,9 +78,11 @@ extension Gravity {
         return try await withThrowingTaskGroup(of: (url: URL, sourceCode: String).self) { group in
             for url in includes {
                 group.addTask {
-                    let data = try await Platform.current.loadResource(from: url.path)
+                    let path = url.path(percentEncoded: false)
+                    let data = try await Platform.current.loadResource(from: path)
                     guard let sourceCode = String(data: data, encoding: .utf8) else {
                         throw GateEngineError.failedToLoad(
+                            resource: path,
                             "File is corrupt or in the wrong format."
                         )
                     }

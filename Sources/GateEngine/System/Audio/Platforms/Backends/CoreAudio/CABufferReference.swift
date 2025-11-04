@@ -39,7 +39,7 @@ internal final class CABufferReference: AudioBufferBackend {
         Task.detached {
             do {
                 guard let located = await Platform.current.locateResource(from: path) else {
-                    throw GateEngineError.failedToLocate
+                    throw GateEngineError.failedToLocate(resource: path, nil)
                 }
                 do {  // Allow CoreAudio an chance to load files the way it prefers
                     let file = try AVAudioFile(forReading: URL(fileURLWithPath: located))

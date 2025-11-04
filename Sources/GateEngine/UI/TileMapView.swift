@@ -313,10 +313,10 @@ extension TileMapView {
             var triangles: [Triangle] = []
             triangles.reserveCapacity(Int(layer.size.width * layer.size.height) * 2)
             
-            let tileSize = tileSet.tileSize
+            let tileSize = tileSet.tileSize.vector2
             
-            let wM: Float = 1 / tileSet.texture.size.width
-            let hM: Float = 1 / tileSet.texture.size.height
+            let wM: Float = 1 / Float(tileSet.texture.size.width)
+            let hM: Float = 1 / Float(tileSet.texture.size.height)
             for hIndex in 0 ..< Int(tileMap.size.height) {
                 for wIndex in 0 ..< Int(tileMap.size.width) {
                     let tile = layer.tileAtCoordinate(TileMap.Layer.Coordinate(column: wIndex, row: hIndex))

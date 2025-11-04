@@ -804,16 +804,16 @@ extension Layout {
             @MainActor
             func getResolvedFrame(for view: View) throws -> Rect {
                 guard let x = self.x.computed?.value else {
-                    throw GateEngineError.layoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find horizontal position.") 
+                    throw GateEngineError.uiLayoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find horizontal position.") 
                 }
                 guard let y = self.y.computed?.value else {
-                    throw GateEngineError.layoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find vertical position.")
+                    throw GateEngineError.uiLayoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find vertical position.")
                 }
                 guard let width = self.width.computed?.value else {
-                    throw GateEngineError.layoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find horizontal size.")
+                    throw GateEngineError.uiLayoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find horizontal size.")
                 }
                 guard let height = self.height.computed?.value else {
-                    throw GateEngineError.layoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find vertical size.")
+                    throw GateEngineError.uiLayoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find vertical size.")
                 }
                 
                 // Allow fractions but make sure we always land on a pixel

@@ -41,7 +41,7 @@ import GameMath
 
     public convenience init(
         path: String,
-        sizeHint: Size2? = nil,
+        sizeHint: Size2i? = nil,
         mipMapping: MipMapping = .none,
         options: TextureImporterOptions = .none,
         sampleFilter: Sprite.SampleFilter = .nearest,

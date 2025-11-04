@@ -52,18 +52,18 @@ public final class TileMapSystem: System {
             
             let tileSize = tileSet.tileSize
             
-            let wM: Float = 1 / tileSet.texture.size.width
-            let hM: Float = 1 / tileSet.texture.size.height
+            let wM: Float = 1 / Float(tileSet.texture.size.width)
+            let hM: Float = 1 / Float(tileSet.texture.size.height)
             for hIndex in 0 ..< Int(tileMap.size.height) {
                 for wIndex in 0 ..< Int(tileMap.size.width) {
                     let tile = layer.tileAtCoordinate(TileMap.Layer.Coordinate(column: wIndex, row: hIndex))
                     guard tile.id > -1 else {continue}
                     let tileRect = tileSet.rectForTile(tile)
                     let position = Position2(
-                        x: Float(wIndex) * tileSize.width,
-                        y: Float(hIndex) * tileSize.height
+                        x: Float(wIndex) * Float(tileSize.width),
+                        y: Float(hIndex) * Float(tileSize.height)
                     )
-                    let rect = Rect(position: position, size: tileSize)
+                    let rect = Rect(position: position, size: tileSize.vector2)
                     var v1 = Vertex(
                         px: rect.x,
                         py: rect.y,

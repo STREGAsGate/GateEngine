@@ -54,7 +54,7 @@ public final class GameView: View {
         if mode == .offScreen {
             super.draw(rect, into: &canvas)
             frame = rect
-            self._renderTarget?.size = frame.size
+            self._renderTarget?.size = Size2i(frame.size)
         }
         
         if let gameViewController {

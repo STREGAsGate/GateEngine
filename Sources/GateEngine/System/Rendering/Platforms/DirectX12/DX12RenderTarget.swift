@@ -11,7 +11,7 @@ import GameMath
 import struct Foundation.Date
 
 class DX12RenderTarget: RenderTargetBackend {
-    var size: Size2 = Size2(2)
+    var size: Size2i = Size2i(width: 2, height: 2)
     var isFirstPass: Bool = true
 
     var colorTexture: D3DResource? = nil

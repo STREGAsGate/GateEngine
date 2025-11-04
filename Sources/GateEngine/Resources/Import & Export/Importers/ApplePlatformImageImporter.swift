@@ -14,7 +14,7 @@ import UniformTypeIdentifiers
 
 public final class ApplePlatformImageImporter: TextureImporter {
     var data: Data! = nil
-    var size: Size2! = nil
+    var size: Size2i! = nil
     public required init() {}
     
     public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
@@ -38,14 +38,14 @@ public final class ApplePlatformImageImporter: TextureImporter {
     func populateFromData(_ data: Data) throws(GateEngineError) {
         do {
             guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil) else {
-                throw GateEngineError.generic("Failed to decode image source.")
+                throw GateEngineError.failedToDecode("Failed to decode image source.")
             }
             guard let image = CGImageSourceCreateImageAtIndex(imageSource, 0, nil) else {
-                throw GateEngineError.generic("Failed to decode subimage zero.")
+                throw GateEngineError.failedToDecode("Failed to decode subimage zero.")
             }
-            self.size = Size2(Float(image.width), Float(image.height))
+            self.size = .castInit(width: image.width, height: image.height)
             guard let data = image.dataProvider?.data as? Data else {
-                throw GateEngineError.generic("Failed to decode data.")
+                throw GateEngineError.failedToDecode("Failed to decode data.")
             }
             self.data = data
         }catch{
@@ -53,8 +53,8 @@ public final class ApplePlatformImageImporter: TextureImporter {
         }
     }
 
-    public func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> (data: Data, size: Size2) {
-        return (data, size)
+    public func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
+        return RawTexture(imageSize: size, imageData: data)
     }
 
     public static func canProcessFile(_ path: String) -> Bool {

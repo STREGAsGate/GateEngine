@@ -177,7 +177,10 @@ private func getBakedQuad(
             image.append(pixel)
         }
 
-        let texture = Texture(data: Data(image), size: size, mipMapping: .none)
+        let texture = Texture(
+            rawTexture: RawTexture(imageSize: .init(size), imageData: Data(image)),
+            mipMapping: .none
+        )
 
         let key = Font.Key(style: style, pointSize: pointSize)
         self.textures[key] = texture
