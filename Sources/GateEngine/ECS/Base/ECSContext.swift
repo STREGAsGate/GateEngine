@@ -256,19 +256,19 @@ extension ECSContext {
             performance.startFrame()
             performance.startSystems()
         }
-//        for system in self.platformSystems {
-//            guard type(of: system).phase == .preUpdating else { continue }
-//            self.performance?.beginStatForSystem(system)
-//            await system.willUpdate(game: game, input: input, withTimePassed: deltaTime)
-//            self.performance?.endCurrentStatistic()
-//        }
+        for system in self.platformSystems {
+            guard type(of: system).phase == .preUpdating else { continue }
+            self.performance?.beginStatForSystem(system)
+            await system.willUpdate(input: input, withTimePassed: deltaTime, context: self)
+            self.performance?.endCurrentStatistic()
+        }
         for system in self.systems {
             self.performance?.beginStatForSystem(system)
             await system.willUpdate(input: input, withTimePassed: deltaTime, context: self)
             self.performance?.endCurrentStatistic()
         }
         for system in self.platformSystems {
-//            guard type(of: system).phase == .postDeferred else { continue }
+            guard type(of: system).phase == .postDeferred else { continue }
             self.performance?.beginStatForSystem(system)
             await system.willUpdate(input: input, withTimePassed: deltaTime, context: self)
             self.performance?.endCurrentStatistic()
