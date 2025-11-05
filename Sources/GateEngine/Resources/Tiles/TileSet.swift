@@ -341,9 +341,8 @@ extension ResourceManager {
         guard let path = Platform.current.synchronousLocateResource(from: key.requestedPath) else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: path)
-            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date
-            {
-                return modified > cache.lastLoaded
+            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date {
+                return Calendar.current.compare(modified, to: cache.lastLoaded, toGranularity: .second) == .orderedDescending
             } else {
                 return false
             }
