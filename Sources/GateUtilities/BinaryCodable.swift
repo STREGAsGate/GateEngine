@@ -174,15 +174,17 @@ extension UInt: BinaryCodable {
 
 extension String: BinaryCodable {
     public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
-        self.cString(using: .utf8)!.withUnsafeBytes { utf8Bytes in
-            data.append(contentsOf: utf8Bytes)
+        try self.utf8.withContiguousStorageIfAvailable { buffer in
+            try buffer.count.encode(into: &data, version: version)
+            data.append(contentsOf: buffer)
         }
     }
     
     public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
-        let pointer = data.baseAddress!.advanced(by: offset).assumingMemoryBound(to: CChar.self)
+        let count = try Int(decoding: data, at: &offset, version: version)
+        let pointer = data.baseAddress!.advanced(by: offset).assumingMemoryBound(to: UInt8.self)
+        offset += count
         self.init(cString: pointer)
-        offset += self.utf8.count
     }
 }
 
@@ -190,16 +192,17 @@ extension String: BinaryCodable {
 public import struct Foundation.Data
 extension Data: BinaryCodable {
     public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
-        try data.withUnsafeBytes { bytes in
-            try bytes.count.encode(into: &data, version: version)
+        try self.count.encode(into: &data, version: version)
+        self.withUnsafeBytes { bytes in
             data.append(contentsOf: bytes)
         }
     }
     
     public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
         let count = try Int(decoding: data, at: &offset, version: version)
-        self.init(bytes: data.baseAddress!.advanced(by: offset), count: count)
+        let pointer = data.baseAddress!.advanced(by: offset)
         offset += count
+        self.init(bytes: pointer, count: count)
     }
 }
 #endif
