@@ -400,8 +400,9 @@ extension ResourceManager {
         // Skip if made from RawGeometry
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
         guard let cache = cache.tileMaps[key] else { return false }
+        guard let path = Platform.current.synchronousLocateResource(from: key.requestedPath) else {return false}
         do {
-            let attributes = try FileManager.default.attributesOfItem(atPath: key.requestedPath)
+            let attributes = try FileManager.default.attributesOfItem(atPath: path)
             if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date
             {
                 return modified > cache.lastLoaded

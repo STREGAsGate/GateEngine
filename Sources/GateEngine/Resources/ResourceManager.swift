@@ -112,21 +112,23 @@ extension ResourceManager {
         }
         private struct ActiveImporter {
             let importer: any ResourceImporter
-            var lastAccessed: Date = Date()
+            var lastAccessed: Date = .now
         }
+        
+        @MainActor
         internal mutating func getImporter<I: ResourceImporter>(path: String, type: I.Type) async throws(GateEngineError) -> I? {
             let key = ActiveImporterKey(path: path)
             if let existing = activeImporters[key] {
                 // Make sure the importer can be the type requested
                 if let importer = existing.importer as? I {
-                    activeImporters[key]?.lastAccessed = Date()
+                    activeImporters[key]?.lastAccessed = .now
                     return importer
                 }
             }
             let importer = type.init()
             try await importer.prepareToImportResourceFrom(path: path)
             if importer.currentFileContainsMutipleResources() {
-                let active = ActiveImporter(importer: importer, lastAccessed: Date())
+                let active = ActiveImporter(importer: importer, lastAccessed: .now)
                 activeImporters[key] = active
             }
             return importer
@@ -352,6 +354,24 @@ public final class ResourceManager {
                 }
             }
         }
+        
+        for key in cache.collisionMeshes.keys {
+            guard let cache = cache.collisionMeshes[key] else { continue }
+            switch cache.effectiveCacheHint {
+            case .forever, .whileReferenced:
+                continue
+            case .until(let minutes):
+                if cache.referenceCount == 0 {
+                    cache.minutesDead += 1
+                    if cache.minutesDead == minutes {
+                        self.cache.collisionMeshes.removeValue(forKey: key)
+                        Log.debug("Removing cache (unused for \(cache.minutesDead) min), CollisionMesh: \(key)")
+                    }
+                } else {
+                    cache.minutesDead = 0
+                }
+            }
+        }
     }
     
     @MainActor
@@ -363,26 +383,34 @@ public final class ResourceManager {
         for key in cache.geometries.keys {
             self.reloadGeometryIfNeeded(key: key)
         }
-//        
-//        for key in cache.skinnedGeometries.keys {
-//            self.reloadSkinnedGeometryIfNeeded(key: key)
-//        }
-//        
-//        for key in cache.skeletons.keys {
-//            self.reloadSkeletonIfNeeded(key: key)
-//        }
-//        
-//        for key in cache.skeletalAnimations.keys {
-//            self.reloadSkeletalAniamtionIfNeeded(key: key)
-//        }
-//        
-//        for key in cache.tileSets.keys {
-//            self.reloadTileSetIfNeeded(key: key)
-//        }
-//        
-//        for key in cache.tileMaps.keys {
-//            self.reloadTileMapIfNeeded(key: key)
-//        }
+        
+        for key in cache.skinnedGeometries.keys {
+            self.reloadSkinnedGeometryIfNeeded(key: key)
+        }
+        
+        for key in cache.skeletons.keys {
+            self.reloadSkeletonIfNeeded(key: key)
+        }
+        
+        for key in cache.skeletalAnimations.keys {
+            self.reloadSkeletalAniamtionIfNeeded(key: key)
+        }
+        
+        for key in cache.objectAnimation3Ds.keys {
+            self.reloadObjectAniamtion3DIfNeeded(key: key)
+        }
+        
+        for key in cache.tileSets.keys {
+            self.reloadTileSetIfNeeded(key: key)
+        }
+        
+        for key in cache.tileMaps.keys {
+            self.reloadTileMapIfNeeded(key: key)
+        }
+        
+        for key in cache.collisionMeshes.keys {
+            self.reloadCollisionMeshIfNeeded(key: key)
+        }
     }
 }
 
