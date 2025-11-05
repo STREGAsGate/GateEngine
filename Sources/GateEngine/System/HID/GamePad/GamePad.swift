@@ -326,26 +326,6 @@ extension GamePad {
         self.menu.resetInputStates()
     }
 
-    @MainActor @propertyWrapper public struct Polled<T> {
-        weak var gamePad: GamePad? = nil
-        var _wrappedValue: T
-        public var wrappedValue: T {
-            get {
-                gamePad?.interpreter.hid.gamePads.pollIfNeeded()
-                return _wrappedValue
-            }
-            set {
-                _wrappedValue = newValue
-            }
-        }
-        public init(wrappedValue: T) {
-            _wrappedValue = wrappedValue
-        }
-        mutating func configureWith(gamePad: GamePad?) {
-            self.gamePad = gamePad
-        }
-    }
-
     @MainActor @propertyWrapper public struct AnalogUpdatingPolled {
         weak var gamePad: GamePad? = nil
         weak var button: ButtonState? = nil
@@ -405,17 +385,23 @@ extension GamePad {
         }
     }
 
-    @MainActor public class ButtonState {
+    @MainActor public final class ButtonState {
         weak var gamePad: GamePad?
         let id: InternalID
         var currentReceipt: UInt8 = 0
-
+        var _isPressed: Bool = false
+        
         /// `true` if the button is considered down.
-        @Polled public internal(set) var isPressed: Bool = false {
-            didSet {
-                if isPressed != oldValue {
+        public var isPressed: Bool {
+            get {
+                gamePad?.interpreter.hid.gamePads.pollIfNeeded()
+                return _isPressed
+            }
+            set {
+                if _isPressed != newValue {
                     currentReceipt &+= 1
                 }
+                _isPressed = newValue
             }
         }
 
@@ -466,25 +452,40 @@ extension GamePad {
             self.gamePad = gamePad
             self.id = id
 
-            self._isPressed.configureWith(gamePad: gamePad)
             self._value.configureWith(gamePad: gamePad, button: self)
         }
     }
 
-    @MainActor public class StickState {
+    @MainActor public final class StickState {
         weak var gamePad: GamePad?
         let id: InternalID
         init(gamePad: GamePad?, id: InternalID) {
             self.gamePad = gamePad
             self.id = id
-
-            self._xAxis.configureWith(gamePad: gamePad)
-            self._yAxis.configureWith(gamePad: gamePad)
         }
 
-        @Polled public internal(set) var xAxis: Float = 0
-        @Polled public internal(set) var yAxis: Float = 0
-
+        var _xAxis: Float = 0
+        public var xAxis: Float {
+            get {
+                gamePad?.interpreter.hid.gamePads.pollIfNeeded()
+                return _xAxis
+            }
+            set {
+                _xAxis = newValue
+            }
+        }
+        
+        var _yAxis: Float = 0
+        public var yAxis: Float {
+            get {
+                gamePad?.interpreter.hid.gamePads.pollIfNeeded()
+                return _yAxis
+            }
+            set {
+                _yAxis = newValue
+            }
+        }
+        
         public func xAxisWithDeadzone(_ deadzone: Float = defaultDeadzone) -> Float {
             guard abs(xAxis) > deadzone else { return 0 }
             return xAxis
@@ -527,7 +528,7 @@ extension GamePad {
         nonisolated public static let defaultDeadzone: Float = 0.1
     }
 
-    @MainActor public class DPad {
+    @MainActor public final class DPad {
         weak var gamePad: GamePad?
         init(gamePad: GamePad?) {
             self.gamePad = gamePad
@@ -550,7 +551,7 @@ extension GamePad {
         }
     }
 
-    @MainActor public class Buttons {
+    @MainActor public final class Buttons {
         weak var gamePad: GamePad?
         init(gamePad: GamePad?) {
             self.gamePad = gamePad
@@ -587,7 +588,7 @@ extension GamePad {
         }
     }
 
-    @MainActor public class Shoulders {
+    @MainActor public final class Shoulders {
         weak var gamePad: GamePad?
         init(gamePad: GamePad?) {
             self.gamePad = gamePad
@@ -612,7 +613,7 @@ extension GamePad {
         }
     }
 
-    @MainActor public class Triggers {
+    @MainActor public final class Triggers {
         weak var gamePad: GamePad?
         init(gamePad: GamePad?) {
             self.gamePad = gamePad
@@ -637,7 +638,7 @@ extension GamePad {
         }
     }
 
-    @MainActor public class Sticks {
+    @MainActor public final class Sticks {
         weak var gamePad: GamePad?
         init(gamePad: GamePad?) {
             self.gamePad = gamePad
@@ -660,7 +661,7 @@ extension GamePad {
         }
     }
 
-    @MainActor public class Menu {
+    @MainActor public final class Menu {
         weak var gamePad: GamePad?
         init(gamePad: GamePad?) {
             self.gamePad = gamePad
