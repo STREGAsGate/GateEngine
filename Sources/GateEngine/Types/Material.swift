@@ -39,7 +39,7 @@ public struct Material {
     }
     
     @usableFromInline
-    internal var channels: [Channel] = [Channel(color: .defaultDiffuseMapColor)]
+    internal var channels: [Channel] = [Channel(color: .white)]
     @discardableResult
     public mutating func channel<ResultType>(_ index: UInt8, _ block: (_ channel: inout Channel) -> ResultType) -> ResultType {
         precondition(
@@ -65,7 +65,7 @@ public struct Material {
     }
     
     public init(texture: Texture) {
-        self.channels[0] = Channel(color: .defaultDiffuseMapColor, texture: texture)
+        self.channels[0] = Channel(color: .white, texture: texture)
     }
 
     public init(_ config: (_ material: inout Self) -> Void) {
