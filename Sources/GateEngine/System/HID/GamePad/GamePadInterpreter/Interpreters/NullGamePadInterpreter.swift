@@ -6,7 +6,7 @@
  */
 
 internal final class NullGamePadInterpreter: GamePadInterpreter {
-    let hid: HID = Game.shared.hid
+    var hid: HID { Game.shared.hid }
     init() {}
     func beginInterpreting() {}
     func update() {}

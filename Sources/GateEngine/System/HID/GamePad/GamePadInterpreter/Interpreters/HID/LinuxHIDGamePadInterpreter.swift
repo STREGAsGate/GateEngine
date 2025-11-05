@@ -38,7 +38,7 @@ private func test_bit(_ bit: Int, _ array: [UInt32]) -> Bool {
 }
 
 internal final class LinuxHIDGamePadInterpreter: GamePadInterpreter {
-    let hid: HID = Game.shared.hid
+    var hid: HID { Game.shared.hid }
     let sdl2Database: SDL2Database
     required init() {
         self.sdl2Database = try! SDL2Database()

@@ -35,7 +35,7 @@ public enum InputMethod {
     public let mouse: Mouse = Mouse()
     public let screen: TouchScreen = TouchScreen()
     public let surfaces: SurfaceDevices = SurfaceDevices()
-    public private(set) lazy var gamePads: GamePadManger = GamePadManger()
+    public let gamePads: GamePadManger = GamePadManger()
 
     /// The most recent input method used by the end user
     public private(set) var recentInputMethod: InputMethod = .mouseKeyboard

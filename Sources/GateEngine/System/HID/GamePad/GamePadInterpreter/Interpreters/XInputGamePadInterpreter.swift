@@ -8,7 +8,7 @@
 import WinSDK.DirectX.XInput14
 
 internal final class XInputGamePadInterpreter: GamePadInterpreter {
-    let hid: HID = Game.shared.hid
+    var hid: HID { Game.shared.hid }
     init() {}
 
     func beginInterpreting() {

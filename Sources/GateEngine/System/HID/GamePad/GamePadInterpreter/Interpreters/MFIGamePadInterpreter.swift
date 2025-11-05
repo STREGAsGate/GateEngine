@@ -8,7 +8,7 @@
 import GameController
 
 internal final class MFIGamePadInterpreter: GamePadInterpreter {
-    let hid: HID = Game.shared.hid
+    var hid: HID { Game.shared.hid }
     init?() {
         guard Self.isSupported else { return nil }
         if #available(macOS 11.3, macCatalyst 14.5, iOS 14.5, tvOS 14.5, *) {
