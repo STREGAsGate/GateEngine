@@ -1155,3 +1155,150 @@ extension GLTransmissionFormat: TextureImporter {
         return try PNGDecoder().decode(imageData)
     }
 }
+
+extension GLTransmissionFormat: CollisionMeshImporter {
+    public func loadCollisionMesh(options: CollisionMeshImporterOptions) async throws(GateEngineError) -> RawCollisionMesh {
+        guard gltf.meshes != nil else {throw GateEngineError.failedToDecode("File contains no geometry.")}
+        
+        var mesh: GLTF.Mesh? = nil
+        if let name = options.subobjectName {
+            if let meshID = gltf.nodes.first(where: { $0.name == name })?.mesh {
+                mesh = gltf.meshes![meshID]
+            } else if let _mesh = gltf.meshes!.first(where: { $0.name == name }) {
+                mesh = _mesh
+            } else {
+                let meshNames = gltf.meshes!.map({ $0.name })
+                let nodeNames = gltf.nodes.filter({ $0.mesh != nil }).map({ $0.name })
+                throw GateEngineError.failedToDecode(
+                    "Couldn't find geometry named \(name).\nAvailable mesh names: \(meshNames)\nAvaliable node names: \(nodeNames)"
+                )
+            }
+        } else {
+            mesh = gltf.meshes!.first
+        }
+        guard let mesh = mesh else {
+            throw GateEngineError.failedToDecode("No geometry.")
+        }
+
+        var geometries: [RawGeometry] = []
+
+        for primitive in mesh.primitives {
+            guard let indices: [UInt16] = await gltf.values(forAccessor: primitive.indices) else {
+                continue
+            }
+
+            guard let positionsAccessorIndex = primitive[.position] else { continue }
+            guard let positions: [Float] = await gltf.values(forAccessor: positionsAccessorIndex)
+            else { continue }
+
+            var uvSets: [[Float]] = []
+            for setID in GLTF.Mesh.Primitive.AttributeName.textureCoordinates {
+                if let uvsAccessorIndex = primitive[setID] {
+                    if let uvs: [Float] = await gltf.values(forAccessor: uvsAccessorIndex) {
+                        uvSets.append(uvs)
+                    }
+                } else {
+                    break
+                }
+            }
+
+            var normals: [Float]? = nil
+            if let normalsAccessorIndex = primitive[.normal] {
+                normals = await gltf.values(forAccessor: normalsAccessorIndex)
+            }
+
+            var tangents: [Float]? = nil
+            if let accessorIndex = primitive[.tangent] {
+                let accessor = gltf.accessors[accessorIndex]
+                switch accessor.type {
+                case .vec3:
+                    tangents = await gltf.values(forAccessor: accessorIndex)
+                case .vec4:
+                    // the 4th scalar in each primitive is for generating a bitangent
+                    // Bitangent can be generated without this value, so we discard it.
+                    if var _tangents: [Float] = await gltf.values(forAccessor: accessorIndex) {
+                        for indexOfW in stride(from: 3, to: _tangents.count, by: 4) {
+                            _tangents.remove(at: indexOfW)
+                        }
+                        tangents = _tangents
+                    }
+                default:
+                    throw GateEngineError.failedToDecode("Unhandled accessor type for tangents: \(accessor.type)")
+                }
+                Log.assert(tangents == nil || tangents!.count == positions.count, "Tangent count doesn't match position count.")
+            }
+
+            var colors: [Float]? = nil
+            if let accessorIndex = primitive[.vertexColor] {
+                switch gltf.accessors[accessorIndex].componentType {
+                case .uint8:
+                    if let eightBit: [UInt8] = await gltf.values(forAccessor: accessorIndex) {
+                        colors = eightBit.map({ Float($0) / Float(UInt8.max) })
+                    }
+                case .uint16:
+                    if let eightBit: [UInt16] = await gltf.values(forAccessor: accessorIndex) {
+                        colors = eightBit.map({ Float($0) / Float(UInt16.max) })
+                    }
+                case .float32:
+                    colors = await gltf.values(forAccessor: accessorIndex)
+                default:
+                    fatalError()
+                }
+                // Add alpha component if needed
+                if let _colors = colors, gltf.accessors[accessorIndex].type == .vec3 {
+                    var colors: [Float] = []
+                    colors.reserveCapacity((_colors.count / 3) * 4)
+                    for index in stride(from: 0, to: colors.count, by: 3) {
+                        colors.append(contentsOf: _colors[index ..< index + 3])
+                        colors.append(1)
+                    }
+                }
+            }
+
+            let geometry = RawGeometry(
+                positions: positions,
+                uvSets: uvSets,
+                normals: normals,
+                tangents: tangents,
+                colors: colors,
+                indices: indices
+            )
+            geometries.append(geometry)
+        }
+
+        guard geometries.isEmpty == false else {
+            throw GateEngineError.failedToDecode("Failed to decode geometry.")
+        }
+        
+        let geometryBase = RawGeometry(byCombining: geometries, withOptimization: .dontOptimize)
+        
+        if options.applyRootTransform, let nodeIndex = gltf.scenes[gltf.scene].nodes?.first {
+            let transform = gltf.nodes[nodeIndex].transform.createMatrix()
+            let geometryBase = geometryBase * transform
+            let triangles = geometryBase.generateCollisionTriangles(using: options.collisionAttributes)
+            return RawCollisionMesh(collisionTriangles: triangles) 
+        }else if options.makeInstancesReal, let nodes = gltf.scenes[gltf.scene].nodes {
+            var transformedGeometries: [RawGeometry] = []
+            let meshIndex = gltf.meshes!.firstIndex(where: {$0.name == mesh.name})
+            for index in nodes {
+                guard gltf.nodes[index].mesh == meshIndex else {continue}
+                var transform: Matrix4x4 = .identity
+                
+                func applyNode(_ nodeIndex: Int) {
+                    transform *= gltf.nodes[nodeIndex].transform.createMatrix()
+                    if let parent = nodes.first(where: {gltf.nodes[$0].children?.contains(nodeIndex) == true}) {
+                        applyNode(parent)
+                    }
+                }
+                applyNode(index)
+                transformedGeometries.append(geometryBase * transform)
+            }
+            let geometryBase = RawGeometry(byCombining: transformedGeometries, withOptimization: .byEquality)
+            let triangles = geometryBase.generateCollisionTriangles(using: options.collisionAttributes)
+            return RawCollisionMesh(collisionTriangles: triangles) 
+        }else{
+            let triangles = geometryBase.generateCollisionTriangles(using: options.collisionAttributes)
+            return RawCollisionMesh(collisionTriangles: triangles) 
+        }
+    }
+}

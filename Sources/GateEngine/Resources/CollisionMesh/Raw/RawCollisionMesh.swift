@@ -6,9 +6,9 @@
  */
 
 /// An optimized container for CollisionTriangles
-public final class CollisionMesh {
+public struct RawCollisionMesh: Sendable {
     @usableFromInline
-    package struct Components {
+    package struct Components: Sendable {
         @usableFromInline
         package var positions: [Float]
         @usableFromInline
@@ -23,7 +23,7 @@ public final class CollisionMesh {
         }
     }
     @usableFromInline
-    package struct TriangleIndices {
+    package struct TriangleIndices: Sendable {
         @usableFromInline
         package let p1: Int
         @usableFromInline
@@ -38,7 +38,7 @@ public final class CollisionMesh {
         package let faceNormal: Int
         @usableFromInline
         package let attributes: Int
-
+        
         package init(p1: Int, p2: Int, p3: Int, center: Int, normal: Int, faceNormal: Int, attributes: Int) {
             self.p1 = p1
             self.p2 = p2
@@ -53,7 +53,7 @@ public final class CollisionMesh {
     package var components: Components
     @usableFromInline
     package var indices: [TriangleIndices]
-
+    
     @inlinable
     public var triangleCount: Int {
         return indices.count
@@ -63,10 +63,10 @@ public final class CollisionMesh {
         self.components = components
         self.indices = indices
     }
-        
+    
     public init(collisionTriangles triangles: [CollisionTriangle]) {
-            assert(triangles.isEmpty == false)
-
+        assert(triangles.isEmpty == false, "triangles must not be empty.")
+        
         var positions: [Position3] = []
         var normals: [Direction3] = []
         var attributes: [UInt64] = []
@@ -132,10 +132,10 @@ public final class CollisionMesh {
     }
 }
 
-public extension CollisionMesh {
+public extension RawCollisionMesh {
     struct Triangle<CollisionAttributes: CollisionAttributesGroup>: ~Copyable {
         @usableFromInline
-        internal var mesh: CollisionMesh
+        internal let mesh: RawCollisionMesh
         @usableFromInline
         internal let indices: TriangleIndices
         
@@ -188,7 +188,7 @@ public extension CollisionMesh {
             let z = mesh.components.normals[baseIndex + 2]
             return Direction3(x, y, z)
         }
-                
+        
         @inlinable
         public var attributes: CollisionAttributes {
             let rawValue = mesh.components.attributes[indices.attributes]
@@ -206,7 +206,7 @@ public extension CollisionMesh {
         }
         
         @usableFromInline
-        internal init(mesh: CollisionMesh, triangleIndex: Int) {
+        internal init(mesh: RawCollisionMesh, triangleIndex: Int) {
             self.mesh = mesh
             self.indices = mesh.indices[triangleIndex]
         }
@@ -214,21 +214,21 @@ public extension CollisionMesh {
     
     struct MutableTriangle<CollisionAttributes: CollisionAttributesGroup>: ~Copyable {
         @usableFromInline
-        internal var mesh: CollisionMesh
+        internal var mesh: RawCollisionMesh
         @usableFromInline
         internal let indices: TriangleIndices
         
         @inlinable
         public var p1: Position3 {
             get {
-                let baseIndex = Int(indices.p1)
+                let baseIndex = indices.p1
                 let x = mesh.components.positions[baseIndex]
                 let y = mesh.components.positions[baseIndex + 1]
                 let z = mesh.components.positions[baseIndex + 2]
                 return Position3(x, y, z)
             }
-            nonmutating set {
-                let baseIndex = Int(indices.p1)
+            set {
+                let baseIndex = indices.p1
                 mesh.components.positions[baseIndex] = newValue.x
                 mesh.components.positions[baseIndex + 1] = newValue.y
                 mesh.components.positions[baseIndex + 2] = newValue.z
@@ -238,31 +238,31 @@ public extension CollisionMesh {
         @inlinable
         public var p2: Position3 {
             get {
-                let baseIndex = Int(indices.p2)
+                let baseIndex = indices.p2
                 let x = mesh.components.positions[baseIndex]
                 let y = mesh.components.positions[baseIndex + 1]
                 let z = mesh.components.positions[baseIndex + 2]
                 return Position3(x, y, z)
             }
-            nonmutating set {
-                let baseIndex = Int(indices.p2)
+            set {
+                let baseIndex = indices.p2
                 mesh.components.positions[baseIndex] = newValue.x
                 mesh.components.positions[baseIndex + 1] = newValue.y
                 mesh.components.positions[baseIndex + 2] = newValue.z
             }
         }
-
+        
         @inlinable
         public var p3: Position3 {
             get {
-                let baseIndex = Int(indices.p3)
+                let baseIndex = indices.p3
                 let x = mesh.components.positions[baseIndex]
                 let y = mesh.components.positions[baseIndex + 1]
                 let z = mesh.components.positions[baseIndex + 2]
                 return Position3(x, y, z)
             }
-            nonmutating set {
-                let baseIndex = Int(indices.p3)
+            set {
+                let baseIndex = indices.p3
                 mesh.components.positions[baseIndex] = newValue.x
                 mesh.components.positions[baseIndex + 1] = newValue.y
                 mesh.components.positions[baseIndex + 2] = newValue.z
@@ -272,40 +272,40 @@ public extension CollisionMesh {
         @inlinable
         public var normal: Direction3 {
             get {
-                let baseIndex = Int(indices.normal)
+                let baseIndex = indices.normal
                 let x = mesh.components.normals[baseIndex]
                 let y = mesh.components.normals[baseIndex + 1]
                 let z = mesh.components.normals[baseIndex + 2]
                 return Direction3(x, y, z)
             }
-            nonmutating set {
-                let baseIndex = Int(indices.normal)
+            set {
+                let baseIndex = indices.normal
                 mesh.components.normals[baseIndex] = newValue.x
                 mesh.components.normals[baseIndex + 1] = newValue.y
                 mesh.components.normals[baseIndex + 2] = newValue.z
             }
         }
-
+        
         @inlinable
         public var attributes: CollisionAttributes {
             get {
-                let rawValue = mesh.components.attributes[Int(indices.attributes)]
+                let rawValue = mesh.components.attributes[indices.attributes]
                 return CollisionAttributes(rawValue: rawValue)
             }
-            nonmutating set {
-                mesh.components.attributes[Int(indices.attributes)] = newValue.rawValue
+            set {
+                mesh.components.attributes[indices.attributes] = newValue.rawValue
             }
         }
         
         @usableFromInline
-        internal init(mesh: CollisionMesh, triangleIndex: Int) {
+        internal init(mesh: RawCollisionMesh, triangleIndex: Int) {
             self.mesh = mesh
             self.indices = mesh.indices[triangleIndex]
         }
     }
 }
 
-extension CollisionMesh {
+extension RawCollisionMesh {
     @inlinable
     public func withTriangle<A: CollisionAttributesGroup, ResultType>(
         atIndex index: Int,
@@ -316,20 +316,9 @@ extension CollisionMesh {
         let result = provideTriangle(triangle)
         return result
     }
-    
-    @inlinable
-    public func editTriangle<A: CollisionAttributesGroup, ResultType>(
-        atIndex index: Int,
-        with attributesType: A.Type = BasicCollisionAttributes.self,
-        _ editTriangle: (_ triangle: borrowing MutableTriangle<A>) -> ResultType
-    ) -> ResultType {
-        let triangle = MutableTriangle<A>(mesh: self, triangleIndex: index)
-        let result = editTriangle(triangle)
-        return result
-    }
 }
 
-extension CollisionMesh.Components: BinaryCodable {
+extension RawCollisionMesh.Components: BinaryCodable {
     public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
         try self.positions.encode(into: &data, version: version)
         try self.normals.encode(into: &data, version: version)
@@ -344,7 +333,7 @@ extension CollisionMesh.Components: BinaryCodable {
 }
 
 
-extension CollisionMesh.TriangleIndices: BinaryCodable {
+extension RawCollisionMesh.TriangleIndices: BinaryCodable {
     public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
         try UInt16(self.p1).encode(into: &data, version: version)
         try UInt16(self.p2).encode(into: &data, version: version)
@@ -366,13 +355,13 @@ extension CollisionMesh.TriangleIndices: BinaryCodable {
     }
 }
 
-extension CollisionMesh: BinaryCodable {
+extension RawCollisionMesh: BinaryCodable {
     public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
         try self.components.encode(into: &data, version: version)
         try self.indices.encode(into: &data, version: version)
     }
     
-    public convenience init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
         self.init(
             components: try .init(decoding: data, at: &offset, version: version), 
             indices: try .init(decoding: data, at: &offset, version: version)

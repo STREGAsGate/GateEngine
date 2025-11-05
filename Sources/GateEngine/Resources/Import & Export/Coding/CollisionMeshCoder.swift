@@ -9,8 +9,8 @@ import GameMath
 
 fileprivate let magic: UInt32 = 0x43_4D_53_48 // "CMSH"
 
-public struct CollisionMeshEncoder {
-    public func encode(_ collisionMesh: CollisionMesh) throws(GateEngineError) -> Data {
+public struct RawCollisionMeshEncoder {
+    public func encode(_ rawCollisionMesh: RawCollisionMesh) throws(GateEngineError) -> Data {
         var header = BinaryCodableHeader(magic: magic)
         
         guard let version = header.version else { throw .failedToEncode("Malformed header.") }
@@ -21,7 +21,7 @@ public struct CollisionMeshEncoder {
         }
         
         do {
-            try collisionMesh.encode(into: &data, version: version)
+            try rawCollisionMesh.encode(into: &data, version: version)
         }catch let error as GateEngineError {
             // rethrow any GateEngineError
             throw error
@@ -46,10 +46,10 @@ public struct CollisionMeshEncoder {
     }
 }
 
-public final class CollisionMeshDecoder {
-    public func decode(_ data: Data) throws(GateEngineError) -> CollisionMesh {
+public final class RawCollisionMeshDecoder {
+    public func decode(_ data: Data) throws(GateEngineError) -> RawCollisionMesh {
         do {
-            return try data.withUnsafeBytes({ (data: UnsafeRawBufferPointer) throws -> CollisionMesh in
+            return try data.withUnsafeBytes({ (data: UnsafeRawBufferPointer) throws -> RawCollisionMesh in
                 var offset: Int = 0
                 let header = data.load(fromByteOffset: offset, as: BinaryCodableHeader.self)
                 offset += MemoryLayout<BinaryCodableHeader>.size
@@ -58,7 +58,7 @@ public final class CollisionMeshDecoder {
                     throw GateEngineError.failedToDecode("Malformed header.")
                 }
                 
-                return try CollisionMesh(decoding: data, at: &offset, version: version)
+                return try RawCollisionMesh(decoding: data, at: &offset, version: version)
             })
         }catch let error as GateEngineError {
             // rethrow any GateEngineError

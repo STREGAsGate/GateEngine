@@ -77,6 +77,11 @@ extension ResourceManager {
             WavefrontOBJImporter.self,
         ]
         
+        internal var collisionMeshImporters: [any CollisionMeshImporter.Type] = [
+            RawCollisionMeshImporter.self,
+            GLTransmissionFormat.self,
+        ]
+        
         internal var skeletonImporters: [any SkeletonImporter.Type] = [
             RawSkeletonImporter.self,
             GLTransmissionFormat.self,
@@ -382,11 +387,13 @@ public final class ResourceManager {
 }
 
 extension ResourceManager {
-    @usableFromInline @MainActor
+    @MainActor
+    @usableFromInline
     final class Cache {
         var textures: [TextureKey: TextureCache] = [:]
         var geometries: [GeometryKey: GeometryCache] = [:]
         var skinnedGeometries: [SkinnedGeometryKey: SkinnedGeometryCache] = [:]
+        var collisionMeshes: [CollisionMeshKey: CollisionMeshCache] = [:]
 
         var skeletons: [SkeletonKey: SkeletonCache] = [:]
         var skeletalAnimations: [SkeletalAnimationKey: SkeletalAnimationCache] = [:]

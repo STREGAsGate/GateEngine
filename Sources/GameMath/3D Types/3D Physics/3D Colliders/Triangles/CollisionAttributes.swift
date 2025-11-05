@@ -30,7 +30,7 @@ public struct CollisionAttributeUVs {
     }
 }
 
-public protocol CollisionAttributesType: RawRepresentable where RawValue == UInt32 {
+public protocol CollisionAttributesType: RawRepresentable, Equatable, Sendable where RawValue == UInt32 {
     var rawValue: RawValue { get }
     init(rawValue: RawValue)
     
@@ -57,7 +57,7 @@ public extension CollisionAttributesType {
     }
 }
 
-public protocol CollisionAttributesGroup: RawRepresentable where RawValue == UInt64 {
+public protocol CollisionAttributesGroup: RawRepresentable, Equatable, Sendable where RawValue == UInt64 {
     associatedtype Group1: CollisionAttributesType
     associatedtype Group2: CollisionAttributesType
     var group1: Group1 {get set}

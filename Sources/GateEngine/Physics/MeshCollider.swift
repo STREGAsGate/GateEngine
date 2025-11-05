@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 
+@MainActor
 public final class MeshCollider: Collider3D {
     public var center: Position3 {
         return transform.position
@@ -17,11 +18,11 @@ public final class MeshCollider: Collider3D {
         }
     }
     
-    private let originalTriangles: [CollisionTriangle]
+    private let collisionMesh: CollisionMesh
     /// Triangles as they were provided to the collider
     /// These triangles are not moved, rotated, or scaled to match its entity
     public func untransformedTriangles() -> [CollisionTriangle] {
-        return originalTriangles
+        return collisionMesh.generateCollisionTriangles()
     }
     private var transformedTriangles: [CollisionTriangle]
     /// Triangles as they were provided to the collider
@@ -35,16 +36,10 @@ public final class MeshCollider: Collider3D {
     }
     
     private func update() {
-        needsUpdate = false
-        let matrix = transform.matrix()
-        transformedTriangles = originalTriangles.map({$0 * matrix})
-        var positions: [Position3] = []
-        positions.reserveCapacity(transformedTriangles.count * 3)
-        for triangle in transformedTriangles {
-            positions.append(contentsOf: triangle.positions)
-        }
-        
-        _boundingBox = AxisAlignedBoundingBox3D(positions)
+        self.needsUpdate = false
+        let matrix = self.transform.matrix()
+        transformedTriangles = self.untransformedTriangles().map({$0 * matrix})
+        _boundingBox = transformedTriangles.generateBoundingBox()
     }
     
     private var transform: Transform3 = .default {
@@ -55,7 +50,22 @@ public final class MeshCollider: Collider3D {
         }
     }
         
-    private var needsUpdate: Bool = true
+    private var _needsUpdate: Bool = true
+    private var previousReadyStateReceipt: UInt8 = 0
+    private var needsUpdate: Bool {
+        get {
+            guard self.collisionMesh.isReady else { return false }
+            let receipt = self.collisionMesh.receipt
+            if receipt != self.previousReadyStateReceipt {
+                previousReadyStateReceipt = receipt
+                _needsUpdate = true
+            }
+            return _needsUpdate
+        }
+        set {
+            _needsUpdate = newValue
+        }
+    }
     
     private var _boundingBox: AxisAlignedBoundingBox3D = AxisAlignedBoundingBox3D()
     public var boundingBox: AxisAlignedBoundingBox3D {
@@ -122,10 +132,11 @@ public final class MeshCollider: Collider3D {
         return hits
     }
     
-    public init(transform: Transform3, offset: Position3, triangles: [CollisionTriangle]) {
-        self.originalTriangles = triangles
-        self.transformedTriangles = triangles
+    public init(offset: Position3, transform: Transform3, collisionMesh: CollisionMesh) {
+        self.collisionMesh = collisionMesh
+        self.transformedTriangles = []
         self.offset = offset
         self.transform = transform
+        self.needsUpdate = true
     }
 }

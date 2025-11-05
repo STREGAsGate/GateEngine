@@ -395,3 +395,13 @@ extension CollisionTriangle: Codable {
         self.init(p1: positions[0], p2: positions[1], p3: positions[2], normal: normal, rawAttributes: attributes)
     }
 }
+
+extension Array where Element == CollisionTriangle {
+    public func generatePositions() -> [Position3] {
+        return self.map(\.positions).flatMap(\.self)
+    }
+    
+    public func generateBoundingBox() -> AxisAlignedBoundingBox3D {
+        return AxisAlignedBoundingBox3D(generatePositions())
+    }
+}
