@@ -47,7 +47,7 @@ public struct Material {
             "index must be an existing channel or the next channel."
         )
         if index == channels.count {
-            channels.append(Channel(color: .clear))
+            channels.append(Channel(color: .white))
         }
         return block(&channels[Int(index)])
     }
