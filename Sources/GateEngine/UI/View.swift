@@ -699,7 +699,7 @@ extension View {
         guard userInteractionEnabled else {return nil}
         let frame = self.computedWindowSpaceFrame.clamped(within: clipRect)
         if frame.contains(position) {
-            for subview in subviews {
+            for subview in subviews.reversed() {
                 if let hit = subview.hitTest(position, clipRect: frame) {
                     return hit
                 }
