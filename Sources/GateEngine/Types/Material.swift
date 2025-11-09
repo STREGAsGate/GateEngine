@@ -8,7 +8,7 @@
 import GameMath
 import Shaders
 
-public protocol CustomUniformType {}
+public protocol CustomUniformType: Sendable {}
 extension Int: CustomUniformType {}
 extension Bool: CustomUniformType {}
 extension Float: CustomUniformType {}
@@ -28,10 +28,11 @@ public struct Material {
         return customUniformValues.sorted(by: { $0.key.compare($1.key) == .orderedAscending })
     }
     public mutating func setCustomUniformValue(
-        _ value: (any CustomUniformType)?,
+        _ value: (some CustomUniformType)?,
         forUniform name: String
     ) {
-        customUniformValues[name] = value
+        let copy = value
+        customUniformValues[name] = copy
     }
 
     public func hasCustomUniformValue(named key: String) -> Bool {
