@@ -817,7 +817,7 @@ extension View {
         && (pos.x < radius && pos.y > viewSize.height - radius)
         && (radius - pos.distance(from: Vec2(radius, viewSize.height - radius)) < 0)
         
-        fsh.output.color = Vec4(backgroundColor.rgb, fsh.uniforms["opacity"]).discard(if: (radius > 0) && (topLeft || topRight || bottomRight || bottomLeft))
+        fsh.output.color = Vec4(backgroundColor.rgb, backgroundColor.a * fsh.uniforms["opacity"]).discard(if: (radius > 0) && (topLeft || topRight || bottomRight || bottomLeft))
   
         return fsh
     }()
