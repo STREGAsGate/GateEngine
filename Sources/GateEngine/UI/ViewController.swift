@@ -67,11 +67,32 @@ open class ViewController {
     public private(set) var children: [ViewController] = []
     public func addChildViewController(_ viewController: ViewController) {
         assert(children.contains(where: {$0 === viewController}) == false, "\(viewController) is already a child.")
+        if let parent = viewController.parent {
+            parent.removeChildViewController(viewController)
+        }
         self.children.append(viewController)
         viewController.parent = self
     }
     
+    public func present(viewController: ViewController, animated: Bool = true) {
+        // TODO: Animate
+        self.addChildViewController(viewController)
+        viewController.view.fill(self.view)
+    }
+    
+    @discardableResult
+    public func dismiss(childViewController viewController: ViewController, animated: Bool = true) -> Bool {
+        // TODO: Animate
+        if viewController.parent === self {
+            viewController.view.removeFromSuperview()
+            self.removeChildViewController(viewController)
+            return true
+        }
+        return false
+    }
+    
     public func removeChildViewController(_ viewController: ViewController) {
+        assert(viewController.parent === self)
         self.children.removeAll(where: {$0 === viewController})
         viewController.parent = nil
     }
