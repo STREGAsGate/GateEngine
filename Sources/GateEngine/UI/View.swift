@@ -55,7 +55,23 @@ open class View {
     
     public var userInteractionEnabled: Bool = true
     
-    internal var needsLayout: Bool = true
+    internal var _needsLayout: Bool = true
+    var needsLayout: Bool {
+        get {
+            if _needsLayout { return true }
+            for subview in subviews {
+                if subview.needsLayout {
+                    return true
+                }
+            }
+            return false
+        }
+        set {
+            if newValue {
+                self.setNeedsLayout()
+            }
+        }
+    }
     internal var needsUpdateConstraints: Bool = true
     public private(set) var superView: View? = nil {
         didSet {
@@ -110,7 +126,16 @@ open class View {
     //MARK: Layout
     
     open func contentSize() -> Size2 {
-        return _viewController?.preferredContentSize() ?? .zero
+        if let viewController = _viewController {
+            return viewController.preferredContentSize()
+        }
+        var size: Size2 = .zero
+        for subview in self.subviews {
+            let frame = subview.representationFrame()
+            size.width = .maximum(size.width, frame.maxX)
+            size.height = .maximum(size.height, frame.maxY)
+        }
+        return size
     }
     
     var _computedWindowSpaceFrame: Rect? = nil
@@ -238,11 +263,23 @@ open class View {
         self._viewController?.viewDidUpdateLayoutConstraints()
     }
     
-    internal func willLayout() {
-        
+    public final func layoutIfNeeded() {
+        Layout.layoutViewIfNeeded(self)
+    }
+    
+    internal func _willLayout() {
+        self.willLayout()
+    }
+    
+    internal func _didLayout() {
+        self.didLayout()
     }
     
     open func updateLayoutConstraints() {
+        
+    }
+    
+    open func willLayout() {
         
     }
     
@@ -621,10 +658,10 @@ extension View {
     
     public func setNeedsLayout() {
         // Prevent recursion explosion
-        guard needsLayout == false else {return}
+        guard _needsLayout == false else {return}
         
         // Mark this view for layout
-        self.needsLayout = true
+        self._needsLayout = true
         
         // forward setNeedsLayout to all views this view is constrained by
         for view in self.layoutConstraints.allTargets {

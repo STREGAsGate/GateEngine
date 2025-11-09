@@ -17,7 +17,7 @@ public struct Layout {
     
     typealias Value = Constraints.LayoutResolutionRect.Value
     
-    private func resolveX(for view: View) -> Value<Layout.Horizontal, Layout.Location>.Computed? {
+    private static func resolveX(for view: View) -> Value<Layout.Horizontal, Layout.Location>.Computed? {
         if let resolved = view.layoutConstraints.resolvedFrame.x.computed {
             return resolved
         }
@@ -124,7 +124,7 @@ public struct Layout {
         return computed
     }
         
-    private func resolveY(for view: View) -> Value<Layout.Vertical, Layout.Location>.Computed? {
+    private static func resolveY(for view: View) -> Value<Layout.Vertical, Layout.Location>.Computed? {
         if let resolved = view.layoutConstraints.resolvedFrame.y.computed {
             return resolved
         }
@@ -234,7 +234,7 @@ public struct Layout {
         return computed
     }
     
-    private func resolveWidth(for view: View) -> Value<Layout.Horizontal, Layout.Size>.Computed? {
+    private static func resolveWidth(for view: View) -> Value<Layout.Horizontal, Layout.Size>.Computed? {
         if let resolved = view.layoutConstraints.resolvedFrame.width.computed {
             return resolved
         }
@@ -361,7 +361,7 @@ public struct Layout {
         return computed
     }
     
-    private func resolveHeight(for view: View) -> Value<Layout.Vertical, Layout.Size>.Computed? {
+    private static func resolveHeight(for view: View) -> Value<Layout.Vertical, Layout.Size>.Computed? {
         if let resolved = view.layoutConstraints.resolvedFrame.height.computed {
             return resolved
         }
@@ -464,45 +464,58 @@ public struct Layout {
         return computed
     }
     
+    @discardableResult
+    private static func prepareToLayout(_ view: View) -> Bool {
+        guard view.needsLayout || view.needsUpdateConstraints else {return false}
+        view._willLayout()
+        view.layoutConstraints.sortIfNeeded()
+        view.layoutConstraints.resolvedFrame = Layout.Constraints.LayoutResolutionRect()
+        if view.needsUpdateConstraints {
+            view._updateLayoutConstraints()
+        }
+        for subview in view.subviews {
+            Self.prepareToLayout(subview)
+        }
+        return true
+    }
+        
     internal func process() {
         let windowPointSize = window.windowBacking.pointSize
         if window.frame.size != windowPointSize {
             window.frame.size = windowPointSize
             window.setNeedsLayout()
         }
-        guard window.needsLayout || window.needsUpdateConstraints else {return}
         
-        let layoutStart = Platform.current.systemTime()
-        
-        // Reset all view layout resolutions
-        func prepareToLayout(_ view: View) {
-            guard view.needsLayout else {return}
-            view.willLayout()
-            view.layoutConstraints.sortIfNeeded()
-            view.layoutConstraints.resolvedFrame = Layout.Constraints.LayoutResolutionRect()
-            if view.needsUpdateConstraints {
-                view._updateLayoutConstraints()
-            }
-            for subview in view.subviews {
-                prepareToLayout(subview)
-            }
-        }
-        prepareToLayout(window)
+        guard Self.prepareToLayout(window) else {return}
         
         // Update the window so it's anchors are resolved with the correct values
-        self.window.layoutConstraints.resolvedFrame.x.computed = Value.Computed(
+        window.layoutConstraints.resolvedFrame.x.computed = Value.Computed(
             value: window.bounds.x
         )
-        self.window.layoutConstraints.resolvedFrame.y.computed = Value.Computed(
+        window.layoutConstraints.resolvedFrame.y.computed = Value.Computed(
             value: window.bounds.y
         )
-        self.window.layoutConstraints.resolvedFrame.width.computed = Value.Computed(
+        window.layoutConstraints.resolvedFrame.width.computed = Value.Computed(
             value: window.bounds.width
         )
-        self.window.layoutConstraints.resolvedFrame.height.computed = Value.Computed(
+        window.layoutConstraints.resolvedFrame.height.computed = Value.Computed(
             value: window.bounds.height
         )
-                    
+        
+        Self.layoutViewIfNeeded(window)
+    }
+    
+
+    
+    internal static func layoutViewIfNeeded(_ view: View) {
+        #if GATEENGINE_DEBUG_LAYOUT
+        let layoutStart = Platform.current.systemTime()
+        #endif
+        
+        // Reset all view layout resolutions
+
+        guard Self.prepareToLayout(view) else {return}
+          
         enum FailedResolutions {
             case horizontalPosition
             case verticalPosition
@@ -527,7 +540,7 @@ public struct Layout {
         
         var iteration = 1
         var lastLayoutError: (failure: FailedResolutions, view: View)? = nil
-        while let failed = resolve(window) {
+        while let failed = resolve(view) {
             if iteration == 1000 {
                 lastLayoutError = failed
                 break
@@ -575,9 +588,7 @@ public struct Layout {
         var hadError: Bool = false
         #endif
         
-        func finishLayout(for view: View) {
-            guard view.needsLayout else {return}
-            
+        func finishLayout(for view: View) {            
             do {
                 view.frame = try view.layoutConstraints.resolvedFrame.getResolvedFrame(for: view)
             }catch{
@@ -591,14 +602,14 @@ public struct Layout {
                 finishLayout(for: subview)
             }
             
-            view.needsLayout = false
-            view.didLayout()
+            view._needsLayout = false
+            view._didLayout()
             
             #if GATEENGINE_DEBUG_LAYOUT
             viewsLayedOut += 1
             #endif
         }
-        finishLayout(for: window)
+        finishLayout(for: view)
         
         #if GATEENGINE_DEBUG_LAYOUT
         if hadError == false {
@@ -681,62 +692,50 @@ extension Layout {
         internal var horizontalPositions: [Constraint<Layout.Horizontal, Layout.Location>] = [] {
             didSet {
                 needsSorting = true
-                _allTargets = nil
             }
         }
         @usableFromInline
         internal var verticalPositions: [Constraint<Layout.Vertical, Layout.Location>] = [] {
             didSet {
                 needsSorting = true
-                _allTargets = nil
             }
         }
         @usableFromInline
         internal var horizontalSizes: [Constraint<Layout.Horizontal, Layout.Size>] = [] {
             didSet {
                 needsSorting = true
-                _allTargets = nil
             }
         }
         @usableFromInline
         internal var verticalSizes: [Constraint<Layout.Vertical, Layout.Size>] = [] {
             didSet {
                 needsSorting = true
-                _allTargets = nil
             }
         }
         
-        private var _allTargets: [View]? = nil
         var allTargets: [View] {
-            mutating get {
-                if let _allTargets {
-                    return _allTargets
+            var views: [View] = []
+            for constraint in horizontalPositions {
+                if let target = constraint.target?.view {
+                    views.append(target)
                 }
-                
-                var views: [View] = []
-                for constraint in horizontalPositions {
-                    if let target = constraint.target?.view {
-                        views.append(target)
-                    }
-                }
-                for constraint in verticalPositions {
-                    if let target = constraint.target?.view {
-                        views.append(target)
-                    }
-                }
-                for constraint in horizontalSizes {
-                    if let target = constraint.target?.view {
-                        views.append(target)
-                    }
-                }
-                for constraint in verticalSizes {
-                    if let target = constraint.target?.view {
-                        views.append(target)
-                    }
-                }
-                _allTargets = views
-                return views
             }
+            for constraint in verticalPositions {
+                if let target = constraint.target?.view {
+                    views.append(target)
+                }
+            }
+            for constraint in horizontalSizes {
+                if let target = constraint.target?.view {
+                    views.append(target)
+                }
+            }
+            for constraint in verticalSizes {
+                if let target = constraint.target?.view {
+                    views.append(target)
+                }
+            }
+            return views
         }
         
         public mutating func removeAllConstraints() {
