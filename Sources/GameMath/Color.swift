@@ -248,7 +248,9 @@ extension Color: _ExpressibleByColorLiteral {
 }
 
 public extension Color {
-    static let clear: Color         = #colorLiteral(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.0)
+    static var clear: Color { .transparentBlack }
+    static let transparentWhite: Color = Color(1, 1, 1, 0)
+    static let transparentBlack: Color = Color(0, 0, 0, 0)
     
     static let white: Color         = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
     static let lightGray: Color     = #colorLiteral(red: 0.75, green: 0.75, blue: 0.75, alpha: 1)
