@@ -50,26 +50,26 @@ public final class StackView: View {
     }
     
     public override func contentSize() -> Size2 {
+        for subview in self.subviews {
+            subview.layoutIfNeeded()
+        }
+        let spacingSize: Float = spacing * Float(subviews.count - 1)
         switch axis {
         case .horizontal:
             return Size2(
-                width: subviews.last?.frame.maxX ?? 0,
-                height: (subviews.sorted(by: {$0.bounds.height > $1.bounds.height}).first?.bounds.height ?? 0) + (spacing * Float(subviews.count - 1))
+                width: subviews.sorted(by: {$0.frame.maxX < $1.frame.maxX}).last?.frame.maxX ?? 0,
+                height: (subviews.sorted(by: {$0.frame.height < $1.frame.height}).last?.frame.height ?? 0) + spacingSize
             )
         case .vertical:
             return Size2(
-                width: (subviews.sorted(by: {$0.bounds.width > $1.bounds.width}).first?.bounds.width ?? 0) + (spacing * Float(subviews.count - 1)),
-                height: subviews.last?.frame.maxY ?? 0
+                width: (subviews.sorted(by: {$0.frame.width < $1.frame.width}).last?.frame.width ?? 0) + spacingSize,
+                height: subviews.sorted(by: {$0.frame.maxY < $1.frame.maxY}).last?.frame.maxY ?? 0
             )
         }
     }
     
     public override func updateLayoutConstraints() {
-        if subviews.isEmpty {
-            self.widthAnchor.constrain(to: 0)
-            self.heightAnchor.constrain(to: 0)
-            return
-        }
+        if subviews.isEmpty {return}
         switch axis {
         case .horizontal:
             switch distribution {
