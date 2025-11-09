@@ -73,7 +73,7 @@ open class View {
         }
     }
     internal var needsUpdateConstraints: Bool = true
-    public private(set) var superView: View? = nil {
+    public private(set) weak var superView: View? = nil {
         didSet {
             self._window = nil
             self.setNeedsLayout()
@@ -91,7 +91,7 @@ open class View {
     @usableFromInline
     internal final weak var _viewController: ViewController? = nil
     
-    public private(set) var _window: Window? = nil
+    public private(set) weak var _window: Window? = nil
     public var window: Window? {
         if let _window {
             return _window
@@ -437,11 +437,11 @@ open class View {
     }
     internal final var offScreenRepresentationMaterialNeedsUpdate: Bool = true
     private func updateoffScreenRepresentationMaterial() {
-        self._offScreenRepresentationMaterial.channel(0) { channel in
-            channel.color = backgroundColor ?? .clear
+        self._offScreenRepresentationMaterial.channel(0) { [weak self] channel in
+            channel.color = self?.backgroundColor ?? .clear
         }
 
-        self._offScreenRepresentationMaterial.setCustomUniformValue(self.opacity, forUniform: "opacity")
+        self._offScreenRepresentationMaterial.setCustomUniformValue(opacity, forUniform: "opacity")
         self._offScreenRepresentationMaterial.setCustomUniformValue(cornerRadius * interfaceScale, forUniform: "Radius")
         
         self._offScreenRepresentationMaterial.setCustomUniformValue(cornerMask.contains(.topLeft), forUniform: "TopLeft")

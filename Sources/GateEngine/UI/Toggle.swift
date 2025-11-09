@@ -5,7 +5,19 @@
  * http://stregasgate.com
  */
 
-open class Button: Control {
+open class Toggle: Control {
+    public var value: Bool = false {
+        didSet {
+            if self.state != .highlighted {
+                if value {
+                    self.state = .selected
+                }else{
+                    self.state = .normal
+                }
+            }
+        }
+    }
+    
     private var backgroundColors: [State: Color] = [
         .highlighted:.lightBlue,
         .normal:.blue,
@@ -44,28 +56,28 @@ open class Button: Control {
         public typealias RawValue = UInt
         public var rawValue: RawValue
         
-        public static let pressed = Self(rawValue: 1 << 0)
+        public static let changed = Self(rawValue: 1 << 0)
         
         public init(rawValue: RawValue) {
             self.rawValue = rawValue
         }
     }
     
-    private var eventActionStorage: [Event: [(Button)->()]] = [:]
+    private var eventActionStorage: [Event: [(Toggle)->()]] = [:]
     
-    public final func sendActions(forEvent event: Event) {
+    public final func sendActions(forEvent event: Toggle.Event) {
         if let eventActionStorage = eventActionStorage[event] {
-            weak let unownedSelf: Button! = self
+            unowned let unownedSelf = self
             for block in eventActionStorage {
                 block(unownedSelf)
             }
         }
     }
     
-    public final func action(completion: @escaping (Button)->()) {
-        var array = eventActionStorage[.pressed] ?? []
+    public final func action(completion: @escaping (Toggle)->()) {
+        var array = eventActionStorage[.changed] ?? []
         array.append(completion)
-        eventActionStorage[.pressed] = array
+        eventActionStorage[.changed] = array
     }
     
     public enum State {
@@ -98,13 +110,18 @@ open class Button: Control {
     }
     
     open override func cursorExited(_ cursor: Mouse) {
-        self.state = .normal
+        if value {
+            self.state = .selected
+        }else{
+            self.state = .normal
+        }
     }
     
     open override func cursorButtonDown(button: MouseButton, mouse: Mouse) {
         if let mouseLocation = mouse.locationInView(self) {
             if self.bounds.contains(mouseLocation) {
-                self.sendActions(forEvent: .pressed)
+                self.value.toggle()
+                self.sendActions(forEvent: Self.Event.changed)
             }
         }
         self.state = .selected
@@ -113,6 +130,8 @@ open class Button: Control {
     open override func cursorButtonUp(button: MouseButton, mouse: Mouse) {
         if mouse.isInsideView(self) {
             self.state = .highlighted
+        }else if value {
+            self.state = .selected
         }else{
             self.state = .normal
         }
@@ -123,7 +142,11 @@ open class Button: Control {
     }
     
     open override func touchesMoved(_ touches: Set<Touch>) {
-        self.state = .normal
+        if value {
+            self.state = .selected
+        }else{
+            self.state = .normal
+        }
         for touch in touches {
             if touch.isInsideView(self) {
                 self.state = .selected
@@ -132,20 +155,29 @@ open class Button: Control {
     }
     
     open override func touchesEnded(_ touches: Set<Touch>) {
-        self.state = .normal
+        if value {
+            self.state = .selected
+        }else{
+            self.state = .normal
+        }
         for touch in touches {
             if touch.isInsideView(self) {
-                self.sendActions(forEvent: .pressed)
+                self.value.toggle()
+                self.sendActions(forEvent: Self.Event.changed)
                 break
             }
         }
     }
     
     open override func touchesCanceled(_ touches: Set<Touch>) {
-        self.state = .normal
+        if value {
+            self.state = .selected
+        }else{
+            self.state = .normal
+        }
     }
     
-    public init(size: Size2? = nil, label: String? = nil, textColor: Color = .white, backgroundColor: Color = .blue, cornorRadius: Float? = nil, action: ((Button)->())? = nil) {
+    public init(size: Size2? = nil, label: String? = nil, textColor: Color = .white, backgroundColor: Color = .blue, cornorRadius: Float? = nil, action: ((Toggle)->())? = nil) {
         super.init()
         
         self.clipToBounds = true
@@ -166,7 +198,7 @@ open class Button: Control {
             self.label.textColor = textColor
         }
         if let action {
-            self.eventActionStorage[.pressed] = [action]
+            self.eventActionStorage[.changed] = [action]
         }
         
         if let cornorRadius {
@@ -177,23 +209,16 @@ open class Button: Control {
     }
     
     private var labelCreated: Bool = false
-    weak var _label: Label! = nil
-    func createLabel() {
-        let label = Label(text: "Button", font: .babel, fontSize: 14, style: .regular, textColor: self.textColors[.normal] ?? .white)
+    public private(set) lazy var label: Label = {
+        let label = Label(text: "Toggle", font: .babel, fontSize: 14, style: .regular, textColor: self.textColors[.normal] ?? .white)
         label.centerXAnchor.constrain(to: self.centerXAnchor)
         label.centerYAnchor.constrain(to: self.centerYAnchor)
         label.widthAnchor.constrain(to: self.widthAnchor)
         label.heightAnchor.constrain(to: self.heightAnchor)
         self.addSubview(label)
         self.labelCreated = true
-        _label = label
-    }
-    public var label: Label {
-        if labelCreated == false {
-            createLabel()
-        }
-        return _label
-    }
+        return label
+    }()
 }
 
 
