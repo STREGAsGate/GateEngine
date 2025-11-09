@@ -210,7 +210,7 @@ open class Toggle: Control {
     
     private var labelCreated: Bool = false
     public private(set) lazy var label: Label = {
-        let label = Label(text: "Toggle", font: .babel, fontSize: 14, style: .regular, textColor: self.textColors[.normal] ?? .white)
+        let label = Label(text: "Toggle", font: .default, fontSize: 18, style: .bold, textColor: self.textColors[.normal] ?? .white)
         label.centerXAnchor.constrain(to: self.centerXAnchor)
         label.centerYAnchor.constrain(to: self.centerYAnchor)
         label.widthAnchor.constrain(to: self.widthAnchor)

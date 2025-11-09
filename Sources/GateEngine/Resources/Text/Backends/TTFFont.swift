@@ -66,14 +66,24 @@ private func getBakedQuad(
     internal var textureSizes: [Font.Key: Size2] = [:]
     internal var characterDatas: [Font.Key: [CharData]] = [:]
 
-    init(regular: String) async throws {
+    init(regular: String, bold: String?, italic: String?, boldItalic: String?) async throws {
         let regular = try await Platform.current.loadResource(from: regular)
         assert(regular.isEmpty == false, "ttf file cannot be empty.")
-        let fontData: [Font.Style: Data] = [.regular: regular]
-        //        fontData[.bold] = bold
-        //        fontData[.italic] = italic
-        //        fontData[.boldItalic] = boldItalic
+        var fontData: [Font.Style: Data] = [.regular: regular]
+        if let bold, let bold = try? await Platform.current.loadResource(from: bold) {
+            fontData[.bold] = bold
+        }
+        if let italic, let italic = try? await Platform.current.loadResource(from: italic) {
+            fontData[.italic] = italic
+        }
+        if let boldItalic, let boldItalic = try? await Platform.current.loadResource(from: boldItalic) {
+            fontData[.boldItalic] = boldItalic
+        }
         self.fontData = fontData
+    }
+    
+    func supportsStyle(_ style: Font.Style) -> Bool {
+        return self.fontData.keys.contains(style)
     }
 
     mutating func characterData(forKey key: Font.Key, character: Character) -> CharacterData {
@@ -144,7 +154,7 @@ private func getBakedQuad(
     }
 
     private func textureSize(forPointSize pointSize: UInt, style: Font.Style) -> Size2 {
-        let size = Float((pointSize + 1) * 10)
+        let size = Float((pointSize * 2) * 10)
         return Size2(size, size)
     }
 
@@ -179,7 +189,7 @@ private func getBakedQuad(
 
         let texture = Texture(
             rawTexture: RawTexture(imageSize: .init(size), imageData: Data(image)),
-            mipMapping: .none
+            mipMapping: .auto(levels: .max)
         )
 
         let key = Font.Key(style: style, pointSize: pointSize)
@@ -188,7 +198,7 @@ private func getBakedQuad(
         self.characterDatas[key] = charData
     }
 
-    nonisolated var preferredSampleFilter: Text.SampleFilter { .nearest }
+    nonisolated var preferredSampleFilter: Text.SampleFilter { .linear }
 }
 
 #endif

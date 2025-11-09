@@ -26,6 +26,10 @@ struct ImageFont: FontBackend {
         //        fontData[.boldItalic] = boldItalic
         self.fontData = fontData
     }
+    
+    func supportsStyle(_ style: Font.Style) -> Bool {
+        return self.fontData.keys.contains(style)
+    }
 
     @MainActor 
     mutating func characterData(forKey key: Font.Key, character: Character) -> CharacterData {
@@ -64,7 +68,6 @@ struct ImageFont: FontBackend {
         origin: GameMath.Position2,
         xAdvance: inout Float
     ) -> AlignedCharacter {
-
         let nativePointSize = nativePointSizes[key.style]!
         let scaledPointSize = Float(key.pointSize - (key.pointSize % nativePointSize))
 
@@ -88,12 +91,15 @@ struct ImageFont: FontBackend {
         if let existing = textures[key.style] {
             return existing
         }
-        populate(style: key.style)
-        return textures[key.style]!
+        if populate(style: key.style) {
+            return textures[key.style]!
+        }
+        // return regular font as a fallback
+        return texture(forKey: Font.Key(style: .regular, pointSize: key.pointSize))
     }
 
-    @MainActor private mutating func populate(style: Font.Style) {
-        let fontData = fontData[style]!
+    @MainActor private mutating func populate(style: Font.Style) -> Bool {
+        guard let fontData = fontData[style] else {return false}
         let data = fontData.rawTexture.imageData
         let size = fontData.rawTexture.imageSize
 
@@ -155,6 +161,7 @@ struct ImageFont: FontBackend {
 
         self.textures[style] = texture
         self.nativePointSizes[style] = UInt(pointSize)
+        return true
     }
 
     var preferredSampleFilter: Text.SampleFilter { .nearest }

@@ -15,6 +15,8 @@ public extension Platform {
 
 public protocol PlatformProtocol: Sendable {
     var supportsMultipleWindows: Bool { get }
+    
+    func font(named name: String) -> Font
 
     #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
     #if GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
@@ -32,6 +34,13 @@ public protocol PlatformProtocol: Sendable {
     var synchronousFileSystem: SyncFileSystem { get }
     #endif
     #endif
+}
+
+extension PlatformProtocol {
+    func font(named name: String) -> Font {
+        Log.infoOnce("Current platform does not support system fonts. Using default font.")
+        return .default
+    }
 }
 
 #if GATEENGINE_PLATFORM_HAS_FILESYSTEM

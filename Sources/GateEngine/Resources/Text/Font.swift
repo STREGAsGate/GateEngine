@@ -21,6 +21,7 @@ struct AlignedCharacter {
 
 protocol FontBackend {
     nonisolated var preferredSampleFilter: Text.SampleFilter { get }
+    func supportsStyle(_ style: Font.Style) -> Bool
     @MainActor mutating func texture(forKey key: Font.Key) -> Texture
     @MainActor mutating func characterData(forKey key: Font.Key, character: Character)
         -> CharacterData
@@ -39,8 +40,15 @@ public final class Font: OldResource {
     internal var preferredSampleFilter: Text.SampleFilter {
         return backend.preferredSampleFilter
     }
+    
+    func effectiveStyle(for requestedStyle: Style) -> Style {
+        if backend.supportsStyle(requestedStyle) {
+            return requestedStyle
+        }
+        return .regular
+    }
 
-    public init(ttfRegular regular: String) {
+    public init(ttfRegular regular: String, bold: String? = nil, italic: String? = nil, boldItalic: String? = nil) {
         super.init()
         #if DEBUG
         self._backend.configure(withOwner: self)
@@ -48,7 +56,7 @@ public final class Font: OldResource {
         #if canImport(TrueType)
         Task.detached {
             do {
-                let backend = try await TTFFont(regular: regular)
+                let backend = try await TTFFont(regular: regular, bold: bold, italic: italic, boldItalic: boldItalic)
                 Task { @MainActor in
                     self.backend = backend
                     self.state = .ready
@@ -140,8 +148,16 @@ public final class Font: OldResource {
     @inlinable
     public nonisolated static var `default`: Font { .tuffy }
 
-    public nonisolated static let tuffy: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy.ttf")
-    public nonisolated static let tuffyBold: Font = Font(ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy_Bold.ttf")
+    public nonisolated static let tuffy: Font = Font(
+        ttfRegular: "GateEngine/Fonts/Tuffy/Tuffy.ttf",
+        bold: "GateEngine/Fonts/Tuffy/Tuffy_Bold.ttf",
+        italic: "GateEngine/Fonts/Tuffy/Tuffy_Italic.ttf",
+        boldItalic: "GateEngine/Fonts/Tuffy/Tuffy_Bold_Italic.ttf"
+    )
     public nonisolated static let micro: Font = Font(pngRegular: "GateEngine/Fonts/Micro/micro.png")
     public nonisolated static let babel: Font = Font(pngRegular: "GateEngine/Fonts/Babel/Babel.png")
+    
+    public static func named(_ name: String) -> Font {
+        return Platform.current.font(named: name)
+    }
 }

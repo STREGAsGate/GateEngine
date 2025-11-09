@@ -179,7 +179,7 @@ open class Button: Control {
     private var labelCreated: Bool = false
     weak var _label: Label! = nil
     func createLabel() {
-        let label = Label(text: "Button", font: .babel, fontSize: 14, style: .regular, textColor: self.textColors[.normal] ?? .white)
+        let label = Label(text: "Button", font: .default, fontSize: 18, style: .bold, textColor: self.textColors[.normal] ?? .white)
         label.centerXAnchor.constrain(to: self.centerXAnchor)
         label.centerYAnchor.constrain(to: self.centerYAnchor)
         label.widthAnchor.constrain(to: self.widthAnchor)

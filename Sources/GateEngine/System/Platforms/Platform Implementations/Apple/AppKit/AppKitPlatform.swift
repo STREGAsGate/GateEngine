@@ -118,6 +118,37 @@ public struct AppKitPlatform: PlatformProtocol, InternalPlatformProtocol {
 }
 
 extension AppKitPlatform {
+    public func font(named name: String) -> Font {
+        var fonts: [URL] = []
+        do {
+            let userFonts = try self.synchronousFileSystem.contentsOfDirectory(at: "~/Library/Fonts")
+            fonts.append(contentsOf: userFonts.map({"~/Library/Fonts/" + $0}).map({URL(fileURLWithPath: $0).resolvingSymlinksInPath().absoluteURL}).filter({$0.pathExtension.caseInsensitiveCompare("ttf") == .orderedSame}))
+        }catch{
+            Log.debug(error)
+        }
+        do {
+            let systemFonts = try self.synchronousFileSystem.contentsOfDirectory(at: "/Library/Fonts")
+            fonts.append(contentsOf: systemFonts.map({"/Library/Fonts/" + $0}).map({URL(fileURLWithPath: $0).resolvingSymlinksInPath().absoluteURL}).filter({$0.pathExtension.caseInsensitiveCompare("ttf") == .orderedSame}))
+        }catch{
+            Log.debug(error)
+        }
+        do {
+            let systemFonts2 = try self.synchronousFileSystem.contentsOfDirectory(at: "/System/Library/Fonts")
+            fonts.append(contentsOf: systemFonts2.map({"/System/Library/Fonts/" + $0}).map({URL(fileURLWithPath: $0).resolvingSymlinksInPath().absoluteURL}).filter({$0.pathExtension.caseInsensitiveCompare("ttf") == .orderedSame}))
+        }catch{
+            Log.debug(error)
+        }
+        for font in fonts {
+            if font.deletingPathExtension().lastPathComponent.caseInsensitiveCompare(name) == .orderedSame {
+                return Font(ttfRegular: font.path(percentEncoded: false))
+            }
+        }
+        Log.warnOnce("No system font named \(name). Using default font instead.")
+        return .default
+    }
+}
+
+extension AppKitPlatform {
     @MainActor func setupStatusBarMenu() {
         let appBundleOrCommandLineName =
             (Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String)

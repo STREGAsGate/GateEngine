@@ -35,7 +35,7 @@ public final class Label: View {
     internal var texture: Texture {
         if needsUpdateTexture {
             needsUpdateTexture = false
-            _texture = font.texture(forPointSize: UInt(actualPointSize.rounded()), style: style)
+            _texture = font.texture(forPointSize: actualPointSize, style: style)
         }
         return _texture
     }
@@ -76,7 +76,7 @@ public final class Label: View {
             fromString: text,
             font: font,
             pointSize: actualPointSize,
-            style: style,
+            style: font.effectiveStyle(for: style),
             paragraphWidth: paragraphWidth
         )
         _geometry.rawGeometry = values.0
@@ -110,8 +110,8 @@ public final class Label: View {
             }
         }
     }
-    internal var actualPointSize: Float {
-        return Float(fontSize) * interfaceScale
+    internal var actualPointSize: UInt {
+        return UInt((Float(fontSize) * interfaceScale).rounded(.awayFromZero))
     }
     public var style: Font.Style {
         didSet {
@@ -161,14 +161,14 @@ public final class Label: View {
         let yOffset: Float
         switch textAlignment {
         case .leading:
-            xOffset = 4
-            yOffset = 4
+            xOffset = 4 * self.interfaceScale
+            yOffset = (rect.height / 2) - ((size.height / 2) * self.interfaceScale)
         case .centered:
             xOffset = (rect.width / 2) - ((size.width / 2) * self.interfaceScale)
             yOffset = (rect.height / 2) - ((size.height / 2) * self.interfaceScale)
         case .trailing:
-            xOffset = rect.width - (size.width * self.interfaceScale) - 4
-            yOffset = rect.height - (size.height * self.interfaceScale) - 4
+            xOffset = rect.width - (size.width * self.interfaceScale) - (4 * self.interfaceScale)
+            yOffset = rect.height - (size.height * self.interfaceScale) - (4 * self.interfaceScale)
         }
         
         canvas.insert(
@@ -187,7 +187,7 @@ public final class Label: View {
     private static func rawGeometry(
         fromString string: String,
         font: Font,
-        pointSize: Float,
+        pointSize: UInt,
         style: Font.Style,
         paragraphWidth: Float?
     ) -> (RawGeometry, Size2) {
@@ -197,8 +197,6 @@ public final class Label: View {
             case newLine
             case wordComponent
         }
-
-        let roundedPointSize = UInt(pointSize.rounded())
 
         var triangles: [Triangle] = []
         triangles.reserveCapacity(string.count)
@@ -213,7 +211,7 @@ public final class Label: View {
         var currentWord: [Triangle] = []
 
         func newLine() {
-            yPosition += pointSize
+            yPosition += Float(pointSize)
             lineCount += 1
         }
 
@@ -261,7 +259,7 @@ public final class Label: View {
             func processCharacter(_ char: Character) {
                 let quad = font.alignedCharacter(
                     forCharacter: char,
-                    pointSize: roundedPointSize,
+                    pointSize: pointSize,
                     style: style,
                     origin: Position2(xPosition, yPosition),
                     xAdvance: &xAdvance
@@ -292,7 +290,7 @@ public final class Label: View {
             var xAdvance: Float = .nan
             let quad = font.alignedCharacter(
                 forCharacter: char,
-                pointSize: roundedPointSize,
+                pointSize: pointSize,
                 style: style,
                 origin: Position2(xPosition, yPosition),
                 xAdvance: &xAdvance
