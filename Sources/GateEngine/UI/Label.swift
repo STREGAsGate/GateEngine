@@ -161,15 +161,13 @@ public final class Label: View {
         let yOffset: Float
         switch textAlignment {
         case .leading:
-            xOffset = 4 * self.interfaceScale
-            yOffset = (rect.height / 2) - ((size.height / 2) * self.interfaceScale)
+            xOffset = self.marginInsets.leading * self.interfaceScale
         case .centered:
             xOffset = (rect.width / 2) - ((size.width / 2) * self.interfaceScale)
-            yOffset = (rect.height / 2) - ((size.height / 2) * self.interfaceScale)
         case .trailing:
-            xOffset = rect.width - (size.width * self.interfaceScale) - (4 * self.interfaceScale)
-            yOffset = rect.height - (size.height * self.interfaceScale) - (4 * self.interfaceScale)
+            xOffset = .maximum(0, rect.width - (size.width * self.interfaceScale) - (self.marginInsets.trailing * self.interfaceScale))
         }
+        yOffset = (rect.height / 2) - ((size.height / 2) * self.interfaceScale)
         
         canvas.insert(
             DrawCommand(

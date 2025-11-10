@@ -313,13 +313,13 @@ public struct Layout {
             if let sourceX = resolveX(for: view) {
                 if let trailing = view.layoutConstraints.horizontalPositions.first(where: {$0.source == view.trailingAnchor}) {
                     if let targetView = trailing.target?.view {
-                        if trailing.target === targetView.trailingAnchor {
-                            if let targetTrailing = relativeResolvedTrailing(forTarget: targetView) {
-                                computed = Value.Computed(value: targetTrailing - sourceX.value + trailing.constant)
-                            }
-                        }else if trailing.target === targetView.leadingAnchor {
+                        if trailing.target === targetView.leadingAnchor {
                             if let targetLeading = relativeResolvedLeading(forTarget: targetView) {
                                 computed = Value.Computed(value: targetLeading - sourceX.value + trailing.constant)
+                            }
+                        }else if trailing.target === targetView.trailingAnchor {
+                            if let targetTrailing = relativeResolvedTrailing(forTarget: targetView) {
+                                computed = Value.Computed(value: targetTrailing - sourceX.value + trailing.constant)
                             }
                         }
                     }
@@ -371,6 +371,25 @@ public struct Layout {
         view.layoutConstraints.resolvedFrame.height.currentlyBeingResolved = true
         
         // Determine the local bottom offset between the view and the target coordinate spaces
+        func relativeResolvedTop(forTarget targetView: View) -> Float? {
+            if view.superView === targetView {// Target is the supreview
+                return 0
+            }else if targetView.superView === view {// Target is a subview
+                if let targetY = resolveY(for: targetView) {
+                    return targetY.value
+                }
+            }else if view.superView === targetView.superView {// Target is a sibling
+                if let targetY = resolveY(for: targetView) {
+                    return targetY.value
+                }
+            }else{
+                //TODO: The view is in another coordinate space
+                fatalError("Layout cannot yet constrain views between coordinate spaces.")
+            }
+            return nil
+        }
+        
+        // Determine the local bottom offset between the view and the target coordinate spaces
         func relativeResolvedBottom(forTarget targetView: View) -> Float? {
             if view.superView === targetView {// Target is the supreview
                 if let targetHeight = resolveHeight(for: targetView) {
@@ -419,7 +438,11 @@ public struct Layout {
             if let sourceY = resolveY(for: view) {
                 if let bottom = view.layoutConstraints.verticalPositions.first(where: {$0.source == view.bottomAnchor}) {
                     if let targetView = bottom.target?.view {
-                        if bottom.target === targetView.bottomAnchor {
+                        if bottom.target === targetView.topAnchor {
+                            if let targetTop = relativeResolvedTop(forTarget: targetView) {
+                                computed = Value.Computed(value: targetTop + bottom.constant)
+                            }
+                        }else if bottom.target === targetView.bottomAnchor {
                             if let targetBottom = relativeResolvedBottom(forTarget: targetView) {
                                 computed = Value.Computed(value: targetBottom - sourceY.value + bottom.constant)
                             }
@@ -688,26 +711,22 @@ extension Layout {
     }
     
     public struct Constraints {
-        @usableFromInline
-        internal var horizontalPositions: [Constraint<Layout.Horizontal, Layout.Location>] = [] {
+        public internal(set) var horizontalPositions: [Constraint<Layout.Horizontal, Layout.Location>] = [] {
             didSet {
                 needsSorting = true
             }
         }
-        @usableFromInline
-        internal var verticalPositions: [Constraint<Layout.Vertical, Layout.Location>] = [] {
+        public internal(set) var verticalPositions: [Constraint<Layout.Vertical, Layout.Location>] = [] {
             didSet {
                 needsSorting = true
             }
         }
-        @usableFromInline
-        internal var horizontalSizes: [Constraint<Layout.Horizontal, Layout.Size>] = [] {
+        public internal(set) var horizontalSizes: [Constraint<Layout.Horizontal, Layout.Size>] = [] {
             didSet {
                 needsSorting = true
             }
         }
-        @usableFromInline
-        internal var verticalSizes: [Constraint<Layout.Vertical, Layout.Size>] = [] {
+        public internal(set) var verticalSizes: [Constraint<Layout.Vertical, Layout.Size>] = [] {
             didSet {
                 needsSorting = true
             }
@@ -835,11 +854,9 @@ extension Layout {
 
 @MainActor
 extension Layout.Anchor where D == Layout.Horizontal, A == Layout.Location {
-    @inlinable
     public func constrain(to target: Layout.Anchor<Layout.Horizontal, Layout.Location>, priority: Layout.Priority = .default) {
         self.constrain(0, from: target, priority: priority)
     }
-    @inlinable
     public func constrain(_ constant: Float, from target: Layout.Anchor<Layout.Horizontal, Layout.Location>, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.horizontalPositions.append(
             Layout.Constraint(source: self, target: target, constant: constant, multiplier: 1, priority: priority)
@@ -849,11 +866,9 @@ extension Layout.Anchor where D == Layout.Horizontal, A == Layout.Location {
 
 @MainActor
 extension Layout.Anchor where D == Layout.Vertical, A == Layout.Location {
-    @inlinable
     public func constrain(to target: Layout.Anchor<Layout.Vertical, Layout.Location>, priority: Layout.Priority = .default) {
         self.constrain(0, from: target, priority: priority)
     }
-    @inlinable
     public func constrain(_ constant: Float, from target: Layout.Anchor<Layout.Vertical, Layout.Location>, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.verticalPositions.append(
             Layout.Constraint(source: self, target: target, constant: constant, multiplier: 1, priority: priority)
@@ -863,13 +878,11 @@ extension Layout.Anchor where D == Layout.Vertical, A == Layout.Location {
 
 @MainActor
 extension Layout.Anchor where D == Layout.Horizontal, A == Layout.Size {
-    @inlinable
     public func constrain(to target: Layout.Anchor<Layout.Horizontal, Layout.Size>, multiplier: Float = 1, adding constant: Float = 0, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.horizontalSizes.append(
             Layout.Constraint(source: self, target: target, constant: constant, multiplier: multiplier, priority: priority)
         )
     }
-    @inlinable
     public func constrain(to constant: Float, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.horizontalSizes.append(
             Layout.Constraint(source: self, target: nil, constant: constant, multiplier: 1, priority: priority)
@@ -879,13 +892,11 @@ extension Layout.Anchor where D == Layout.Horizontal, A == Layout.Size {
 
 @MainActor
 extension Layout.Anchor where D == Layout.Vertical, A == Layout.Size {
-    @inlinable
     public func constrain(to target: Layout.Anchor<Layout.Vertical, Layout.Size>, multiplier: Float = 1, adding constant: Float = 0, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.verticalSizes.append(
             Layout.Constraint(source: self, target: target, constant: constant, multiplier: multiplier, priority: priority)
         )
     }
-    @inlinable
     public func constrain(to constant: Float, priority: Layout.Priority = .default) {
         self.view.layoutConstraints.verticalSizes.append(
             Layout.Constraint(source: self, target: nil, constant: constant, multiplier: 1, priority: priority)
