@@ -36,7 +36,7 @@ extension Position3n: Hashable where Scalar: Hashable { }
 extension Position3n: Comparable where Scalar: Comparable { }
 extension Position3n: Sendable where Scalar: Sendable { }
 extension Position3n: Codable where Scalar: Codable { }
-extension Position3n: BinaryCodable { }
+extension Position3n: BinaryCodable where Scalar: BinaryCodable { }
 
 public typealias Size3i = Size3n<Int32>
 public typealias Size3f = Size3n<Float32>
@@ -60,7 +60,7 @@ extension Size3n: Hashable where Scalar: Hashable { }
 extension Size3n: Comparable where Scalar: Comparable { }
 extension Size3n: Sendable where Scalar: Sendable { }
 extension Size3n: Codable where Scalar: Codable { }
-extension Size3n: BinaryCodable { }
+extension Size3n: BinaryCodable where Scalar: BinaryCodable { }
 public extension Size3n {
     @inlinable var width: Scalar { get{self.x} set{self.x = newValue} }
     @inlinable var height: Scalar { get{self.y} set{self.y = newValue} }
@@ -185,5 +185,20 @@ public extension Vector3n where Scalar: FixedWidthInteger {
     @inlinable
     static func /= (lhs: inout Self, rhs: Self) {
         lhs = lhs / rhs
+    }
+}
+
+extension Vector3n where Scalar: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        try self.x.encode(into: &data, version: version)
+        try self.y.encode(into: &data, version: version)
+        try self.z.encode(into: &data, version: version)
+    }
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        self.init(
+            x: try .init(decoding: data, at: &offset, version: version),
+            y: try .init(decoding: data, at: &offset, version: version),
+            z: try .init(decoding: data, at: &offset, version: version)
+        )
     }
 }
