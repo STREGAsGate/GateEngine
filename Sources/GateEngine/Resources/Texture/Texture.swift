@@ -198,13 +198,14 @@ extension ResourceManager {
         }
     }
 
-    internal func textureImporterForPath(_ path: String) async throws -> (any TextureImporter)? {
+    @MainActor
+    internal func textureImporterForPath(_ path: String) async throws(GateEngineError) -> any TextureImporter {
         for type in self.importers.textureImporters {
             if type.canProcessFile(path) {
                 return try await self.importers.getImporter(path: path, type: type)
             }
         }
-        return nil
+        throw .custom("ResourceManager", "No TextureImporter could be found for \(path)")
     }
 }
 
@@ -355,7 +356,7 @@ extension ResourceManager {
     private func _reloadTexture(key: Cache.TextureKey) {
         Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
         let cache = self.cache
-        Task.detached {
+        Task { @MainActor in
             do {
                 let path = key.requestedPath
                 let fileExtension = URL(fileURLWithPath: path).pathExtension
@@ -363,28 +364,27 @@ extension ResourceManager {
                     throw GateEngineError.failedToLoad(resource: path, "Unknown file type.")
                 }
                 
-                guard let importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path) else {
-                    throw GateEngineError.failedToLoad(resource: path, "No importer for \(fileExtension).")
-                }
+                let importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path)
                 
                 let rawTexture = try importer.loadTexture(options: key.textureOptions)
                 guard rawTexture.imageData.isEmpty == false else {
                     throw GateEngineError.failedToLoad(resource: path, "File is empty.")
                 }
-                
-                let backend = await ResourceManager.textureBackend(
-                    rawTexture: rawTexture,
-                    mipMapping: key.mipMapping
-                )
-                Task { @MainActor in
-                    if let cache = cache.textures[key] {
-                        cache.textureBackend = backend
-                        cache.lastLoaded = Date()
-                        cache.state = .ready
-                    }else{
-                        Log.warn("Resource \"\(path)\" was deallocated before being re-loaded.")
+                Task.detached {
+                    let backend = await ResourceManager.textureBackend(
+                        rawTexture: rawTexture,
+                        mipMapping: key.mipMapping
+                    )
+                    Task { @MainActor in
+                        if let cache = cache.textures[key] {
+                            cache.textureBackend = backend
+                            cache.lastLoaded = Date()
+                            cache.state = .ready
+                        }else{
+                            Log.warn("Resource \"\(path)\" was deallocated before being re-loaded.")
+                        }
+                        Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                     }
-                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
                 }
             } catch let error as GateEngineError {
                 Task { @MainActor in

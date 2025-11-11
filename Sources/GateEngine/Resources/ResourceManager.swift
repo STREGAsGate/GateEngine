@@ -116,7 +116,7 @@ extension ResourceManager {
         }
         
         @MainActor
-        internal mutating func getImporter<I: ResourceImporter>(path: String, type: I.Type) async throws(GateEngineError) -> I? {
+        internal mutating func getImporter<I: ResourceImporter>(path: String, type: I.Type) async throws(GateEngineError) -> I {
             let key = ActiveImporterKey(path: path)
             if let existing = activeImporters[key] {
                 // Make sure the importer can be the type requested
