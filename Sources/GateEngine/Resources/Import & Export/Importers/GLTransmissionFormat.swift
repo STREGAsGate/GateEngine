@@ -360,7 +360,7 @@ private class GLTF: Decodable {
                     let pattern = UInt32(
                         littleEndian: $0.load(fromByteOffset: offset, as: UInt32.self)
                     )
-                    array.append(Float(bitPattern: pattern))
+                    array.append(Scalar(bitPattern: pattern))
                 }
                 return array.map({ T($0) })
             }
@@ -444,7 +444,7 @@ private class GLTF: Decodable {
                     let pattern = UInt32(
                         littleEndian: $0.load(fromByteOffset: offset, as: UInt32.self)
                     )
-                    array.append(Float(bitPattern: pattern))
+                    array.append(Scalar(bitPattern: pattern))
                 }
                 return array.map({ T($0) })
             }
@@ -718,8 +718,13 @@ extension GLTransmissionFormat: GeometryImporter {
             throw GateEngineError.failedToDecode("Failed to decode geometry.")
         }
         
-        let geometryBase = RawGeometry(byCombining: geometries, withOptimization: .dontOptimize)
-        
+        let geometryBase: RawGeometry = {
+            if geometries.count == 1 {
+                return geometries[0]
+            }
+            return RawGeometry(byCombining: geometries, withOptimization: .dontOptimize)
+        }()
+
         if options.applyRootTransform, let nodeIndex = gltf.scenes[gltf.scene].nodes?.first {
             let transform = gltf.nodes[nodeIndex].transform.createMatrix()
             return geometryBase * transform
@@ -817,12 +822,10 @@ extension GLTransmissionFormat: SkinImporter {
         }
 
         let skin = skins[skinIndex]
-        guard
-            let inverseBindMatrices = await inverseBindMatrices(
-                from: gltf.bufferViews[skin.inverseBindMatrices],
-                expecting: skin.joints.count
-            )
-        else {
+        guard let inverseBindMatrices = await inverseBindMatrices(
+            from: gltf.bufferViews[gltf.accessors[skin.inverseBindMatrices].bufferView],
+            expecting: gltf.accessors[skin.inverseBindMatrices].count
+        ) else {
             throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
 
@@ -831,14 +834,10 @@ extension GLTransmissionFormat: SkinImporter {
         }
         let mesh = gltf.meshes![meshID]
 
-        guard
-            let meshJoints: [UInt32] = await gltf.values(forAccessor: mesh.primitives[0][.joints]!)
-        else {
+        guard let meshJoints: [UInt32] = await gltf.values(forAccessor: mesh.primitives[0][.joints]!) else {
             throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
-        guard
-            let meshWeights: [Float] = await gltf.values(forAccessor: mesh.primitives[0][.weights]!)
-        else {
+        guard let meshWeights: [Float] = await gltf.values(forAccessor: mesh.primitives[0][.weights]!) else {
             throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
 
