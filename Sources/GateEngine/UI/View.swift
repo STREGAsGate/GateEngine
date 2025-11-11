@@ -679,6 +679,55 @@ extension View {
     }
 }
 
+public extension View {
+    enum ConstrainStyleHorizontal {
+        case fill
+        case pinLeading
+        case pinTrailing
+        case center
+    }
+    enum ConstrainStyleVertical {
+        case fill
+        case pinTop
+        case pinBottom
+        case center
+    }
+    
+    @inlinable
+    func addSubview(
+        _ view: View, 
+        constrainHorizontal: ConstrainStyleHorizontal, 
+        constrainVertical: ConstrainStyleVertical, 
+        insets: Insets = .zero
+    ) {
+        self.addSubview(view)
+        
+        switch constrainHorizontal {
+        case .fill:
+            view.leadingAnchor.constrain(insets.leading, from: self.leadingAnchor)
+            view.trailingAnchor.constrain(-insets.trailing, from: self.trailingAnchor)
+        case .pinLeading:
+            view.leadingAnchor.constrain(insets.leading, from: self.leadingAnchor)
+        case .pinTrailing:
+            view.trailingAnchor.constrain(-insets.trailing, from: self.trailingAnchor)
+        case .center:
+            view.centerXAnchor.constrain(to: self.centerXAnchor)
+        }
+        
+        switch constrainVertical {
+        case .fill:
+            view.topAnchor.constrain(insets.top, from: self.topAnchor)
+            view.bottomAnchor.constrain(-insets.bottom, from: self.bottomAnchor)
+        case .pinTop:
+            view.topAnchor.constrain(insets.top, from: self.topAnchor)
+        case .pinBottom:
+            view.bottomAnchor.constrain(-insets.bottom, from: self.bottomAnchor)
+        case .center:
+            view.centerYAnchor.constrain(to: self.centerYAnchor)
+        }
+    }
+}
+
 extension View {
     public struct CornerMask: OptionSet, Sendable {
         public var rawValue: UInt
