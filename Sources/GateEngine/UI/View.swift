@@ -233,6 +233,9 @@ open class View {
     public var marginInsets: Insets = .zero
     public private(set) lazy var margin: Layout.Guide = Layout.Guide(view: self)
     
+    public var additionalSafeAreaInsets: Insets = .zero
+    public private(set) lazy var safeArea: Layout.Guide = Layout.Guide(view: self)
+    
     internal lazy var layoutGuide: Layout.Guide = Layout.Guide(view: self)
     
     public var topAnchor: Layout.Anchor<Layout.Vertical, Layout.Location> {self.layoutGuide.topAnchor}
