@@ -233,10 +233,12 @@ open class View {
     public var marginInsets: Insets = .zero
     public private(set) lazy var margin: Layout.Guide = Layout.Guide(view: self)
     
-    public private(set) lazy var topAnchor: Layout.Anchor<Layout.Vertical, Layout.Location> = Layout.Anchor(view: self)
-    public private(set) lazy var leadingAnchor: Layout.Anchor<Layout.Horizontal, Layout.Location> = Layout.Anchor(view: self)
-    public private(set) lazy var bottomAnchor: Layout.Anchor<Layout.Vertical, Layout.Location> = Layout.Anchor(view: self)
-    public private(set) lazy var trailingAnchor: Layout.Anchor<Layout.Horizontal, Layout.Location> = Layout.Anchor(view: self)
+    internal lazy var layoutGuide: Layout.Guide = Layout.Guide(view: self)
+    
+    public var topAnchor: Layout.Anchor<Layout.Vertical, Layout.Location> {self.layoutGuide.topAnchor}
+    public var leadingAnchor: Layout.Anchor<Layout.Horizontal, Layout.Location> {self.layoutGuide.leadingAnchor}
+    public var bottomAnchor: Layout.Anchor<Layout.Vertical, Layout.Location> {self.layoutGuide.bottomAnchor}
+    public var trailingAnchor: Layout.Anchor<Layout.Horizontal, Layout.Location> {self.layoutGuide.trailingAnchor}
     
     public private(set) lazy var centerXAnchor: Layout.Anchor<Layout.Horizontal, Layout.Location> = Layout.Anchor(view: self)
     public private(set) lazy var centerYAnchor: Layout.Anchor<Layout.Vertical, Layout.Location> = Layout.Anchor(view: self)
