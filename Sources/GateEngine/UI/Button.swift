@@ -293,11 +293,7 @@ open class Button: Control {
     weak var _label: Label! = nil
     func createLabel() {
         let label = Label(text: kind == .momentaryPush ? "Button" : "Toggle", font: .default, fontSize: 18, style: .bold, textColor: self.textColors[.normal] ?? .white)
-        label.centerXAnchor.constrain(to: self.centerXAnchor)
-        label.centerYAnchor.constrain(to: self.centerYAnchor)
-        label.widthAnchor.constrain(to: self.widthAnchor, adding: -8) // Inset by 4
-        label.heightAnchor.constrain(to: self.heightAnchor, adding: -8) // Inset by 4
-        self.addSubview(label)
+        self.addSubview(label, constrainHorizontal: .fill, constrainVertical: .fill, insets: Insets(4))
         self.labelCreated = true
         _label = label
     }
