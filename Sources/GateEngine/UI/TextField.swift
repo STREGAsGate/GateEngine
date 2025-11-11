@@ -45,7 +45,7 @@ public final class TextField: View {
     }
     
     @MainActor
-    private var _geometry: MutableGeometry = MutableGeometry()
+    private var _geometry: MutableGeometry = MutableGeometry(isText: true)
     @MainActor 
     @usableFromInline
     internal var geometry: Geometry {

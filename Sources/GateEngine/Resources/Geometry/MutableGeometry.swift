@@ -17,7 +17,12 @@ public final class MutableGeometry: Geometry {
 
     public init(rawGeometry: RawGeometry? = nil) {
         self.rawGeometry = rawGeometry
-        super.init(optionalRawGeometry: rawGeometry)
+        super.init(optionalRawGeometry: rawGeometry, isText: false)
+    }
+    
+    internal init(rawGeometry: RawGeometry? = nil, isText: Bool) {
+        self.rawGeometry = rawGeometry
+        super.init(optionalRawGeometry: rawGeometry, isText: isText)
     }
 
     private func load() {        

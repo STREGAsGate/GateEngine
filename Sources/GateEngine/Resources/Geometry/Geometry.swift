@@ -97,9 +97,9 @@ public extension Geometry {
         resourceManager.incrementReference(self.cacheKey)
     }
 
-    internal init(optionalRawGeometry rawGeometry: RawGeometry?) {
+    internal init(optionalRawGeometry rawGeometry: RawGeometry?, isText: Bool) {
         let resourceManager = Game.unsafeShared.resourceManager
-        self.cacheKey = resourceManager.geometryCacheKey(rawGeometry: rawGeometry, kind: .geometry)
+        self.cacheKey = resourceManager.geometryCacheKey(rawGeometry: rawGeometry, kind: .geometry, isText: isText)
         self.defaultCacheHint = .whileReferenced
         resourceManager.incrementReference(self.cacheKey)
     }
@@ -108,7 +108,7 @@ public extension Geometry {
     - parameter immediate: true will block the thread while uploading to the GPU. For smaller geometry this may be faster.
      */
     public convenience init(_ rawGeometry: RawGeometry) {
-        self.init(optionalRawGeometry: rawGeometry)
+        self.init(optionalRawGeometry: rawGeometry, isText: false)
     }
 
     deinit {
@@ -177,7 +177,7 @@ extension ResourceManager {
             importers.geometryImporters.insert(type, at: 0)
         }
     }
-
+    
     func geometryImporterForPath(_ path: String) async throws -> (any GeometryImporter)? {
         for type in self.importers.geometryImporters {
             if type.canProcessFile(path) {
@@ -222,7 +222,14 @@ extension ResourceManager.Cache {
         
         @usableFromInline
         var description: String {
-            var string = requestedPath.first == "$" ? "(Generated)" : requestedPath
+            var string = switch requestedPath.first {
+            case "$":
+                "(Generated)"
+            case "@":
+                "(Text)"
+            default:
+                requestedPath
+            }
             if let name = geometryOptions.subobjectName {
                 string += ", Named: \(name)"
             }
@@ -294,8 +301,8 @@ extension ResourceManager {
         return key
     }
 
-    func geometryCacheKey(rawGeometry geometry: RawGeometry?, kind: Cache.GeometryKey.Kind) -> Cache.GeometryKey {
-        let path = "$\(rawCacheIDGenerator.generateID())"
+    func geometryCacheKey(rawGeometry geometry: RawGeometry?, kind: Cache.GeometryKey.Kind, isText: Bool) -> Cache.GeometryKey {
+        let path = "\(isText ? "@" : "$")\(rawCacheIDGenerator.generateID())"
         let key = Cache.GeometryKey(requestedPath: path, kind: kind, geometryOptions: .none)
         let cache = self.cache
         if cache.geometries[key] == nil {
@@ -334,7 +341,7 @@ extension ResourceManager {
 
     func reloadGeometryIfNeeded(key: Cache.GeometryKey) {
         // Skip if made from RawGeometry
-        guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
+        guard key.requestedPath.first != "$" && key.requestedPath.first != "@" else { return }
         guard self.geometryNeedsReload(key: key) else { return }
         let cache = self.cache
         Task.detached {
@@ -352,7 +359,7 @@ extension ResourceManager {
 
     func geometryNeedsReload(key: Cache.GeometryKey) -> Bool {
         // Skip if made from RawGeometry
-        guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
+        guard key.requestedPath.first != "$" && key.requestedPath.first != "@" else { return false }
         #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
         guard let cache = cache.geometries[key] else { return false }
         guard let path = Platform.current.synchronousLocateResource(from: key.requestedPath) else {return false}
