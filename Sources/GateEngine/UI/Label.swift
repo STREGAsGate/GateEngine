@@ -369,3 +369,8 @@ public final class Label: View {
     }
 }
 
+extension Label: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "\(type(of: self))(text: \"\(text)\")"
+    }
+}

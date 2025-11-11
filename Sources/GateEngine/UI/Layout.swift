@@ -571,32 +571,38 @@ public struct Layout {
             iteration += 1
         }
         if let lastLayoutError {
+            lazy var description: String = {
+                if let debugDescription = (view as? (any CustomDebugStringConvertible))?.debugDescription {
+                    return debugDescription
+                }
+                return "\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque()))"
+            }()
             func genericError() {
-                Log.errorOnce("Layout failed after \(iteration) iterations.\n\t\(type(of: lastLayoutError.view))(\(Unmanaged.passUnretained(lastLayoutError.view).toOpaque())) failed to resolve \(lastLayoutError.failure).")
+                Log.errorOnce("Layout failed after \(iteration) iterations.\n\t\(description) failed to resolve \(lastLayoutError.failure).")
             }
             #if GATEENGINE_DEBUG_LAYOUT
             switch lastLayoutError.failure {
             case .horizontalPosition:
                 if lastLayoutError.view.layoutConstraints.horizontalPositions.isEmpty {
-                    Log.errorOnce("Layout failed after \(iteration) iterations.\n\t\(type(of: lastLayoutError.view))(\(Unmanaged.passUnretained(lastLayoutError.view).toOpaque())) has 0 horizontal position constraints.")
+                    Log.errorOnce("Layout failed after \(iteration) iterations.\n\t\(description) has 0 horizontal position constraints.")
                 }else{
                     genericError()
                 }
             case .verticalPosition:
                 if lastLayoutError.view.layoutConstraints.verticalPositions.isEmpty {
-                    Log.errorOnce("Layout failed after \(iteration) iterations.\n\t\(type(of: lastLayoutError.view))(\(Unmanaged.passUnretained(lastLayoutError.view).toOpaque())) has 0 vertical position constraints.")
+                    Log.errorOnce("Layout failed after \(iteration) iterations.\n\t\(description) has 0 vertical position constraints.")
                 }else{
                     genericError()
                 }
             case .horizontalSize:
                 if lastLayoutError.view.layoutConstraints.horizontalSizes.isEmpty {
-                    Log.errorOnce("Layout failed after \(iteration) iterations.\n\t\(type(of: lastLayoutError.view))(\(Unmanaged.passUnretained(lastLayoutError.view).toOpaque())) has 0 horizontal size constraints.")
+                    Log.errorOnce("Layout failed after \(iteration) iterations.\n\t\(description) has 0 horizontal size constraints.")
                 }else{
                     genericError()
                 }
             case .verticalSize:
                 if lastLayoutError.view.layoutConstraints.verticalSizes.isEmpty {
-                    Log.errorOnce("Layout failed after \(iteration) iterations.\n\t\(type(of: lastLayoutError.view))(\(Unmanaged.passUnretained(lastLayoutError.view).toOpaque())) has 0 vertical size constraints.")
+                    Log.errorOnce("Layout failed after \(iteration) iterations.\n\t\(description) has 0 vertical size constraints.")
                 }else{
                     genericError()
                 }
@@ -618,7 +624,7 @@ public struct Layout {
                 #if GATEENGINE_DEBUG_LAYOUT
                 hadError = true
                 #endif
-                Log.errorOnce("\(error)")
+                Log.errorOnce(error)
             }
             
             for subview in view.subviews {
@@ -697,7 +703,7 @@ extension Layout {
         public var priority: Priority
         
         @usableFromInline
-        internal init(source: Layout.Anchor<D,A>, target: Layout.Anchor<D,A>?, constant: Float, multiplier: Float, priority: Priority) {
+        internal init(source: Layout.Anchor<D,A>, target: Layout.Anchor<D, A>?, constant: Float, multiplier: Float, priority: Priority) {
             self.source = source
             self.target = target
             self.multiplier = multiplier
@@ -705,7 +711,7 @@ extension Layout {
             self.priority = priority
         }
         
-        public static func ==(lhs: Layout.Constraint<D,A>, rhs: Layout.Constraint<D,A>) -> Bool {
+        public static func == (lhs: Layout.Constraint<D,A>, rhs: Layout.Constraint<D, A>) -> Bool {
             return lhs.source === rhs.source && lhs.target === rhs.target && lhs.constant == rhs.constant && lhs.multiplier == rhs.multiplier
         }
     }
@@ -820,18 +826,24 @@ extension Layout {
             var height: Value<Layout.Vertical, Layout.Size> = Value()
             
             @MainActor
-            func getResolvedFrame(for view: View) throws -> Rect {
+            func getResolvedFrame(for view: View) throws(GateEngineError) -> Rect {
+                lazy var description: String = {
+                    if let debugDescription = (view as? (any CustomDebugStringConvertible))?.debugDescription {
+                        return debugDescription
+                    }
+                    return "\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque()))"
+                }()
                 guard let x = self.x.computed?.value else {
-                    throw GateEngineError.uiLayoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find horizontal position.") 
+                    throw GateEngineError.uiLayoutFailed("\(description) failed to find horizontal position.") 
                 }
                 guard let y = self.y.computed?.value else {
-                    throw GateEngineError.uiLayoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find vertical position.")
+                    throw GateEngineError.uiLayoutFailed("\(description) failed to find vertical position.")
                 }
                 guard let width = self.width.computed?.value else {
-                    throw GateEngineError.uiLayoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find horizontal size.")
+                    throw GateEngineError.uiLayoutFailed("\(description) failed to find horizontal size.")
                 }
                 guard let height = self.height.computed?.value else {
-                    throw GateEngineError.uiLayoutFailed("\(type(of: view))(\(Unmanaged.passUnretained(view).toOpaque())) failed to find vertical size.")
+                    throw GateEngineError.uiLayoutFailed("\(description) failed to find vertical size.")
                 }
                 
                 // Allow fractions but make sure we always land on a pixel

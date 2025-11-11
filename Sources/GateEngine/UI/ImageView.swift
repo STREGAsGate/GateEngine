@@ -72,3 +72,8 @@ open class ImageView: View {
     }
 }
 
+extension ImageView: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "\(type(of: self))(image: \"\(texture?.cacheKey.requestedPath ?? "<unavailable>")\")"
+    }
+}
