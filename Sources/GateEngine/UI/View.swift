@@ -231,9 +231,11 @@ open class View {
     }
     
     public var marginInsets: Insets = .zero
+    @available(*, deprecated, message: "margin guide not implemented. Will crash if used.")
     public private(set) lazy var margin: Layout.Guide = Layout.Guide(view: self)
     
     public var additionalSafeAreaInsets: Insets = .zero
+    @available(*, deprecated, message: "safeArea guide not implemented. Will crash if used.")
     public private(set) lazy var safeArea: Layout.Guide = Layout.Guide(view: self)
     
     internal lazy var layoutGuide: Layout.Guide = Layout.Guide(view: self)
