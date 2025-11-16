@@ -1118,7 +1118,7 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
 
 extension GLTransmissionFormat: TextureImporter {
     // TODO: Supports only PNG. Add other formats (JPEG, WebP, ...)
-    public func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
+    public func synchronousLoadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
         let imageData: Data
         func loadImageData(image: GLTF.Image) throws(GateEngineError) -> Data {
             if let uri = image.uri {
@@ -1152,6 +1152,10 @@ extension GLTransmissionFormat: TextureImporter {
         }
         
         return try PNGDecoder().decode(imageData)
+    }
+    
+    public func loadTexture(options: TextureImporterOptions) async throws(GateEngineError) -> RawTexture {
+        return try synchronousLoadTexture(options: options)
     }
 }
 

@@ -52,9 +52,13 @@ public final class ApplePlatformImageImporter: TextureImporter {
             throw GateEngineError(error)
         }
     }
-
-    public func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
+    
+    public func synchronousLoadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
         return RawTexture(imageSize: size, imageData: data)
+    }
+
+    public func loadTexture(options: TextureImporterOptions) async throws(GateEngineError) -> RawTexture {
+        return try synchronousLoadTexture(options: options)
     }
 
     public static func canProcessFile(_ path: String) -> Bool {

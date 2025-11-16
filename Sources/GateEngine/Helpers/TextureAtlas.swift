@@ -148,7 +148,7 @@ public final class TextureAtlasBuilder {
         
         let importer = PNGImporter()
         try importer.synchronousPrepareToImportResourceFrom(path: unresolvedPath)
-        let rawTexture = try importer.loadTexture(options: .none)
+        let rawTexture = try importer.synchronousLoadTexture(options: .none)
 
         var textureData = TextureData(size: rawTexture.imageSize, imageData: rawTexture.imageData, coordinate: (0,0))
         var dataIndex = self.textureDatas.endIndex

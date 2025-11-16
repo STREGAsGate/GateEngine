@@ -16,7 +16,7 @@ struct ImageFont: FontBackend {
     init(regular: String) async throws {
         let importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(regular)
 
-        let rawTexture = try importer.loadTexture(options: .none)
+        let rawTexture = try await importer.loadTexture(options: .none)
 
         let fontData: [Font.Style: (rawTexture: RawTexture, importer: any TextureImporter.Type)] =
             [.regular: (rawTexture, type(of: importer))]

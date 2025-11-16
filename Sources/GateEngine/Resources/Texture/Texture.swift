@@ -164,7 +164,8 @@ extension Texture: Equatable, Hashable {
 // MARK: - Resource Manager
 
 public protocol TextureImporter: ResourceImporter {
-    func loadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture
+    func synchronousLoadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture
+    func loadTexture(options: TextureImporterOptions) async throws(GateEngineError) -> RawTexture
 }
 
 public struct TextureImporterOptions: Equatable, Hashable, Sendable {
@@ -366,7 +367,7 @@ extension ResourceManager {
                 
                 let importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path)
                 
-                let rawTexture = try importer.loadTexture(options: key.textureOptions)
+                let rawTexture = try await importer.loadTexture(options: key.textureOptions)
                 guard rawTexture.imageData.isEmpty == false else {
                     throw GateEngineError.failedToLoad(resource: path, "File is empty.")
                 }
