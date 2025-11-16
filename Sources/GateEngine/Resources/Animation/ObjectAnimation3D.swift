@@ -505,10 +505,14 @@ extension ResourceManager.Cache {
         let requestedPath: String
         let options: ObjectAnimation3DImporterOptions
         
+        var isGenerated: Bool {
+            return self.requestedPath[self.requestedPath.startIndex] == "$"
+        }
+        
         @usableFromInline
         var description: String {
-            var string = requestedPath.first == "$" ? "(Generated)" : requestedPath
-            if let name = options.subobjectName {
+            var string = self.isGenerated ? "(Generated)" : self.requestedPath
+            if let name = self.options.subobjectName {
                 string += "named: \(name)"
             }
             return string
@@ -665,16 +669,15 @@ extension ResourceManager {
     }
     
     @MainActor func objectAnimation3DNeedsReload(key: Cache.ObjectAnimation3DKey) -> Bool {
-        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
-        // Skip if made from RawGeometry
-        guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
-        guard let cache = cache.objectAnimation3Ds[key] else { return false }
+        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
+        // Skip if generated
+        guard key.isGenerated == false else { return false }
+        guard let cache = cache.objectAnimation3Ds[key], cache.referenceCount > 0 else { return false }
         guard let path = Platform.current.synchronousLocateResource(from: key.requestedPath) else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: path)
-            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date
-            {
-                return modified > cache.lastLoaded
+            if let modified = (attributes[.modificationDate] ?? attributes[.creationDate]) as? Date {
+                return Calendar.current.compare(modified, to: cache.lastLoaded, toGranularity: .second) == .orderedDescending
             } else {
                 return false
             }

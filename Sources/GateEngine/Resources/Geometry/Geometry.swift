@@ -217,6 +217,12 @@ extension ResourceManager.Cache {
         let geometryOptions: GeometryImporterOptions
         
         @usableFromInline
+        var isGenerated: Bool {
+            let firstChar = self.requestedPath[self.requestedPath.startIndex]
+            return firstChar == "$" || firstChar == "@"
+        }
+        
+        @usableFromInline
         var description: String {
             var string = switch requestedPath.first {
             case "$":
@@ -354,10 +360,9 @@ extension ResourceManager {
     }
 
     func geometryNeedsReload(key: Cache.GeometryKey) -> Bool {
-        // Skip if made from RawGeometry
-        guard key.requestedPath.first != "$" && key.requestedPath.first != "@" else { return false }
-        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
-        guard let cache = cache.geometries[key] else { return false }
+        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
+        guard key.isGenerated == false else { return false }
+        guard let cache = cache.geometries[key], cache.referenceCount > 0 else { return false }
         guard let path = Platform.current.synchronousLocateResource(from: key.requestedPath) else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: path)

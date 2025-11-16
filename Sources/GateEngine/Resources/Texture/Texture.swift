@@ -233,15 +233,20 @@ extension ResourceManager.Cache {
         let textureOptions: TextureImporterOptions
         
         @usableFromInline
+        var isGenerated: Bool {
+            return self.requestedPath[self.requestedPath.startIndex] == "$"
+        }
+        
+        @usableFromInline
         var description: String {
-            var string = requestedPath.first == "$" ? "(Generated)" : requestedPath
-            if let name = textureOptions.subobjectName {
+            var string = self.isGenerated ? "(Generated)" : self.requestedPath
+            if let name = self.textureOptions.subobjectName {
                 string += ", Named: \(name)"
             }
-            if case .auto(.max) = mipMapping {
+            if case .auto(.max) = self.mipMapping {
                 string += ", MipMapping: auto(levels: .max)"
             }else{
-                string += ", MipMapping: \(mipMapping)"
+                string += ", MipMapping: \(self.mipMapping)"
             }
             return string
         }
@@ -418,10 +423,9 @@ extension ResourceManager {
     }
 
     func textureNeedsReload(key: Cache.TextureKey) -> Bool {
-        // Skip if made from rawCacheID
-        guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
-        #if GATEENGINE_ENABLE_HOTRELOADING
-        guard let cache = cache.textures[key] else { return false }
+        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
+        guard key.isGenerated == false else { return false }
+        guard let cache = cache.textures[key], cache.referenceCount > 0 else { return false }
         guard let path = Platform.current.synchronousLocateResource(from: key.requestedPath) else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: path)

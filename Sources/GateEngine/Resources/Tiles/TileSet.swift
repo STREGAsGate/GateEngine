@@ -192,8 +192,13 @@ extension ResourceManager.Cache {
         let tileSetOptions: TileSetImporterOptions
         
         @usableFromInline
+        var isGenerated: Bool {
+            return self.requestedPath[self.requestedPath.startIndex] == "$"
+        }
+        
+        @usableFromInline
         var description: String {
-            return requestedPath.first == "$" ? "(Generated)" : requestedPath
+            return self.isGenerated ? "(Generated)" : self.requestedPath
         }
     }
 
@@ -334,10 +339,9 @@ extension ResourceManager {
     }
     
     func tileSetNeedsReload(key: Cache.TileSetKey) -> Bool {
-        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
-        // Skip if made from RawGeometry
-        guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
-        guard let cache = cache.tileSets[key] else { return false }
+        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
+        guard key.isGenerated == false else { return false }
+        guard let cache = cache.tileSets[key], cache.referenceCount > 0 else { return false }
         guard let path = Platform.current.synchronousLocateResource(from: key.requestedPath) else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: path)

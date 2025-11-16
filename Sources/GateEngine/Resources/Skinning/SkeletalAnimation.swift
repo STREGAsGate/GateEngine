@@ -331,9 +331,14 @@ extension ResourceManager.Cache {
         let options: SkeletalAnimationImporterOptions
         
         @usableFromInline
+        var isGenerated: Bool {
+            return self.requestedPath[self.requestedPath.startIndex] == "$"
+        }
+
+        @usableFromInline
         var description: String {
-            var string = requestedPath.first == "$" ? "(Generated)" : requestedPath
-            if let name = options.subobjectName {
+            var string = self.isGenerated ? "(Generated)" : self.requestedPath
+            if let name = self.options.subobjectName {
                 string += ", Named: \(name)"
             }
             return string
@@ -493,10 +498,9 @@ extension ResourceManager {
     }
     
     func skeletalAnimationNeedsReload(key: Cache.SkeletalAnimationKey) -> Bool {
-        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_SUPPORTS_FOUNDATION_FILEMANAGER
-        // Skip if made from RawGeometry
-        guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return false }
-        guard let cache = cache.skeletalAnimations[key] else { return false }
+        #if GATEENGINE_ENABLE_HOTRELOADING && GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
+        guard key.isGenerated == false else { return false }
+        guard let cache = cache.skeletalAnimations[key], cache.referenceCount > 0 else { return false }
         guard let path = Platform.current.synchronousLocateResource(from: key.requestedPath) else {return false}
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: path)
