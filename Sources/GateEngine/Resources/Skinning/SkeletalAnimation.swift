@@ -366,7 +366,7 @@ extension RawSkeletalAnimation {
         guard
             let importer: any SkeletalAnimationImporter = try await Game.unsafeShared.resourceManager.skeletalAnimationImporterForPath(path)
         else {
-            throw GateEngineError.failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
+            throw GateEngineError.failedToLoad(resource: path, "No SkeletalAnimationImporter for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
         do {

@@ -296,7 +296,7 @@ extension ResourceManager {
             
             do {
                 guard let importer: any TileSetImporter = try await Game.unsafeShared.resourceManager.importerForFileType(path) else {
-                    throw GateEngineError.failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
+                    throw GateEngineError.failedToLoad(resource: path, "No TileSetImporter for \(URL(fileURLWithPath: path).pathExtension).")
                 }
 
                 let backend = try await importer.loadTileSet(options: key.tileSetOptions)

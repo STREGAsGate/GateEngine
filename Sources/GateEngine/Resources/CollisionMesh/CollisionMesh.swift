@@ -283,7 +283,7 @@ extension ResourceManager {
             
             do {
                 guard let importer: any CollisionMeshImporter = try await Game.unsafeShared.resourceManager.importerForFileType(path) else {
-                    throw GateEngineError.failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
+                    throw GateEngineError.failedToLoad(resource: path, "No CollisionMeshImporter for \(URL(fileURLWithPath: path).pathExtension).")
                 }
 
                 let rawCollisionMesh = try await importer.loadCollisionMesh(options: key.collisionMeshOptions)

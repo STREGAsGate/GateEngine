@@ -64,19 +64,18 @@ extension Points: Equatable, Hashable {
 
 extension RawPoints {
     @inlinable @_disfavoredOverload
-    public init(_ path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws {
+    public init(_ path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
         try await self.init(path: path.value, options: options)
     }
-    public init(path: String, options: GeometryImporterOptions = .none) async throws {
-        guard let importer: any GeometryImporter = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path) else {
-            throw GateEngineError.failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
-        }
-
+    public init(path: String, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
+        let importer: any GeometryImporter
         do {
-            self = RawPoints(pointCloudFrom: try await importer.loadGeometry(options: options).generateTriangles())
-        } catch {
-            throw GateEngineError(error)
+            importer = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path)
+        }catch{
+            throw .failedToLoad(resource: path, "No GeometryImporter for \(URL(fileURLWithPath: path).pathExtension).")
         }
+        let rawGeometry = try await importer.loadGeometry(options: options)
+        self.init(pointCloudFrom: rawGeometry.generateTriangles())
     }
 }
 

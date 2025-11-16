@@ -622,7 +622,7 @@ extension ResourceManager {
                     throw GateEngineError.failedToLoad(resource: path, "Unknown file type.")
                 }
                 guard let importer: any ObjectAnimation3DImporter = Game.unsafeShared.resourceManager.importerForFileType(fileExtension) else {
-                    throw GateEngineError.failedToLoad(resource: path, "No importer for \(fileExtension).")
+                    throw GateEngineError.failedToLoad(resource: path, "No ObjectAnimation3DImporter for \(fileExtension).")
                 }
                 
                 let data = try await Platform.current.loadResource(from: path)

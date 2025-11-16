@@ -206,7 +206,23 @@ extension ResourceManager {
                 return try await self.importers.getImporter(path: path, type: type)
             }
         }
-        throw .custom("ResourceManager", "No TextureImporter could be found for \(path)")
+        throw .custom(category: "\(Self.self)", message: "No TextureImporter could be found for \(path)")
+    }
+}
+
+extension RawTexture {
+    @inlinable @_disfavoredOverload
+    public init(_ path: TexturePath, options: TextureImporterOptions = .none) async throws {
+        try await self.init(path: path.value, options: options)
+    }
+    public init(path: String, options: TextureImporterOptions = .none) async throws {
+        let importer: any TextureImporter
+        do {
+            importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path)
+        }catch{
+            throw GateEngineError.failedToLoad(resource: path, "No TextureImporter for \(URL(fileURLWithPath: path).pathExtension).")
+        }
+        self = try await importer.loadTexture(options: options)
     }
 }
 

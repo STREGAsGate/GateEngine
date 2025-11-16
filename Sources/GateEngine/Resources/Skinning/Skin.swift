@@ -84,7 +84,7 @@ extension ResourceManager {
 extension RawSkin {
     public init(path: String, options: SkinImporterOptions = .none) async throws(GateEngineError) {
         guard let importer: any SkinImporter = try await Game.unsafeShared.resourceManager.skinImporterForPath(path) else {
-            throw .failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
+            throw .failedToLoad(resource: path, "No SkinImporter for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
         do {

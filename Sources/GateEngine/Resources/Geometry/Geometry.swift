@@ -178,33 +178,29 @@ extension ResourceManager {
         }
     }
     
-    func geometryImporterForPath(_ path: String) async throws -> (any GeometryImporter)? {
+    func geometryImporterForPath(_ path: String) async throws(GateEngineError) -> any GeometryImporter {
         for type in self.importers.geometryImporters {
             if type.canProcessFile(path) {
                 return try await self.importers.getImporter(path: path, type: type)
             }
         }
-        return nil
+        throw .custom(category: "\(Self.self)", message: "No GeometryImporter could be found for \(path)")
     }
 }
 
 extension RawGeometry {
     @inlinable @_disfavoredOverload
-    public init(_ path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws {
+    public init(_ path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
         try await self.init(path: path.value, options: options)
     }
-    public init(path: String, options: GeometryImporterOptions = .none) async throws {
-        guard
-            let importer: any GeometryImporter = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path)
-        else {
-            throw GateEngineError.failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
-        }
-
+    public init(path: String, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
+        let importer: any GeometryImporter
         do {
-            self = try await importer.loadGeometry(options: options)
-        } catch {
-            throw GateEngineError(error)
+            importer = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path)
+        }catch{
+            throw .failedToLoad(resource: path, "No GeometryImporter for \(URL(fileURLWithPath: path).pathExtension).")
         }
+        self = try await importer.loadGeometry(options: options)
     }
 }
 

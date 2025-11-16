@@ -126,7 +126,7 @@ final class SkeletonBackend {
     
     init(rawSkeleton: RawSkeleton) {
         func createJoint(from rawJoint: RawSkeleton.RawJoint) -> Skeleton.Joint {
-            var joint = Skeleton.Joint(rawJoint: rawJoint)
+            let joint = Skeleton.Joint(rawJoint: rawJoint)
             joint.localTransform = rawJoint.localTransform
             for rawJoint in rawSkeleton.joints {
                 if rawJoint.parent == joint.id {
@@ -581,7 +581,7 @@ extension RawSkeleton {
         guard
             let importer: any SkeletonImporter = try await Game.unsafeShared.resourceManager.skeletonImporterForPath(path)
         else {
-            throw GateEngineError.failedToLoad(resource: path, "No importer for \(URL(fileURLWithPath: path).pathExtension).")
+            throw GateEngineError.failedToLoad(resource: path, "No SkeletonImporter for \(URL(fileURLWithPath: path).pathExtension).")
         }
 
         do {

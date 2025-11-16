@@ -53,7 +53,7 @@ extension Color {
 
 public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible {
     /// An error to represent any kind of error
-    case custom(_ errorName: String, _ description: String)
+    case custom(category: String, message: String)
     
     case failedToLocate(resource: String, _ reason: String?)
     case failedToLoad(resource: String, _ reason: String?)
@@ -69,8 +69,8 @@ public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible
 
     public var description: String {
         switch self {
-        case .custom(let errorName, let reason):
-            return "\(errorName):\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+        case .custom(let category, let message):
+            return "\(category):\n\t" + message.replacingOccurrences(of: "\n", with: "\n\t")
             
         case .failedToLocate(let resource, let reason):
             var error = "FailedToLocate: \(resource)"
@@ -138,7 +138,7 @@ public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible
 
 extension GateEngineError: ExpressibleByStringLiteral {
     public init(stringLiteral value: StringLiteralType) {
-        self = .custom("error", value)
+        self = .custom(category: "error", message: value)
     }
 }
 
