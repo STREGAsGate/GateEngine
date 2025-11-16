@@ -459,12 +459,10 @@ public final class ObjectAnimation3DBackend {
 
 // MARK: - Resource Manager
 
-public protocol ObjectAnimation3DImporter: AnyObject {
+public protocol ObjectAnimation3DImporter: ResourceImporter {
     init()
 
     func process(data: Data, baseURL: URL, options: ObjectAnimation3DImporterOptions) async throws -> ObjectAnimation3DBackend
-
-    static func supportedFileExtensions() -> [String]
 }
 
 public struct ObjectAnimation3DImporterOptions: Equatable, Hashable, Sendable {
@@ -486,16 +484,14 @@ extension ResourceManager {
         }
         importers.objectAnimation3DImporters.insert(type, at: 0)
     }
-
-    fileprivate func importerForFileType(_ file: String) -> (any ObjectAnimation3DImporter)? {
+    
+    func objectAnimation3DImporterForPath(_ path: String) async throws(GateEngineError) -> any ObjectAnimation3DImporter {
         for type in self.importers.objectAnimation3DImporters {
-            if type.supportedFileExtensions().contains(where: {
-                $0.caseInsensitiveCompare(file) == .orderedSame
-            }) {
-                return type.init()
+            if type.canProcessFile(path) {
+                return try await self.importers.getImporter(path: path, type: type)
             }
         }
-        return nil
+        throw .custom(category: "\(Self.self)", message: "No ObjectAnimation3DImporter could be found for \(path)")
     }
 }
 
@@ -622,12 +618,7 @@ extension ResourceManager {
             let path = key.requestedPath
             
             do {
-                guard let fileExtension = path.components(separatedBy: ".").last else {
-                    throw GateEngineError.failedToLoad(resource: path, "Unknown file type.")
-                }
-                guard let importer: any ObjectAnimation3DImporter = Game.unsafeShared.resourceManager.importerForFileType(fileExtension) else {
-                    throw GateEngineError.failedToLoad(resource: path, "No ObjectAnimation3DImporter for \(fileExtension).")
-                }
+                let importer: any ObjectAnimation3DImporter = try await Game.unsafeShared.resourceManager.objectAnimation3DImporterForPath(path)
                 
                 let data = try await Platform.current.loadResource(from: path)
                 let backend = try await importer.process(

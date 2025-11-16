@@ -175,13 +175,13 @@ extension ResourceManager {
         importers.tileSetImporters.insert(type, at: 0)
     }
 
-    fileprivate func importerForFileType(_ file: String) async throws -> (any TileSetImporter)? {
+    func tileSetImporterForPath(_ path: String) async throws(GateEngineError) -> any TileSetImporter {
         for type in self.importers.tileSetImporters {
-            if type.canProcessFile(file) {
-                return try await self.importers.getImporter(path: file, type: type)
+            if type.canProcessFile(path) {
+                return try await self.importers.getImporter(path: path, type: type)
             }
         }
-        return nil
+        throw .custom(category: "\(Self.self)", message: "No TileSetImporter could be found for \(path)")
     }
 }
 
@@ -300,10 +300,7 @@ extension ResourceManager {
             let path = key.requestedPath
             
             do {
-                guard let importer: any TileSetImporter = try await Game.unsafeShared.resourceManager.importerForFileType(path) else {
-                    throw GateEngineError.failedToLoad(resource: path, "No TileSetImporter for \(URL(fileURLWithPath: path).pathExtension).")
-                }
-
+                let importer: any TileSetImporter = try await Game.unsafeShared.resourceManager.tileSetImporterForPath(path)
                 let backend = try await importer.loadTileSet(options: key.tileSetOptions)
 
                 Task { @MainActor in

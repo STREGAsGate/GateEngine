@@ -165,13 +165,13 @@ extension ResourceManager {
         importers.collisionMeshImporters.insert(type, at: 0)
     }
 
-    fileprivate func importerForFileType(_ file: String) async throws -> (any CollisionMeshImporter)? {
+    func collisionMeshImporterForPath(_ path: String) async throws(GateEngineError) -> any CollisionMeshImporter {
         for type in self.importers.collisionMeshImporters {
-            if type.canProcessFile(file) {
-                return try await self.importers.getImporter(path: file, type: type)
+            if type.canProcessFile(path) {
+                return try await self.importers.getImporter(path: path, type: type)
             }
         }
-        return nil
+        throw .custom(category: "\(Self.self)", message: "No CollisionMeshImporter could be found for \(path)")
     }
 }
 
@@ -287,12 +287,9 @@ extension ResourceManager {
             let path = key.requestedPath
             
             do {
-                guard let importer: any CollisionMeshImporter = try await Game.unsafeShared.resourceManager.importerForFileType(path) else {
-                    throw GateEngineError.failedToLoad(resource: path, "No CollisionMeshImporter for \(URL(fileURLWithPath: path).pathExtension).")
-                }
-
+                let importer: any CollisionMeshImporter = try await Game.unsafeShared.resourceManager.collisionMeshImporterForPath(path)
                 let rawCollisionMesh = try await importer.loadCollisionMesh(options: key.collisionMeshOptions)
-
+                
                 Task { @MainActor in
                     if let cache = cache.collisionMeshes[key] {
                         cache.collisionMeshBackend = CollisionMeshBackend(rawCollisionMesh: rawCollisionMesh)
