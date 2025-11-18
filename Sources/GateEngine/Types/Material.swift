@@ -82,6 +82,7 @@ public struct Material {
         public enum SampleFilter: Equatable {
             case linear
             case nearest
+            case minLinearMaxNearest
         }
         
         /**

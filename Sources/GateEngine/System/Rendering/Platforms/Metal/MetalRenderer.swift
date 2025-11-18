@@ -110,8 +110,10 @@ final class MetalRenderer: Renderer {
 
         encoder.setVertexSamplerState(linearSamplerState, index: 0)
         encoder.setVertexSamplerState(nearestSamplerState, index: 1)
+        encoder.setVertexSamplerState(linearMinNearestMaxSamplerState, index: 2)
         encoder.setFragmentSamplerState(linearSamplerState, index: 0)
         encoder.setFragmentSamplerState(nearestSamplerState, index: 1)
+        encoder.setFragmentSamplerState(linearMinNearestMaxSamplerState, index: 2)
 
         let firstGeometry = geometries[0]
         let indicesCount: Int = firstGeometry.indicesCount
@@ -142,8 +144,20 @@ final class MetalRenderer: Renderer {
         samplerDescriptor.sAddressMode = .clampToEdge
         samplerDescriptor.tAddressMode = .clampToEdge
 
-        samplerDescriptor.mipFilter = .linear
+        samplerDescriptor.mipFilter = .nearest
         samplerDescriptor.minFilter = .nearest
+        samplerDescriptor.magFilter = .nearest
+
+        return device.makeSamplerState(descriptor: samplerDescriptor).unsafelyUnwrapped
+    }()
+    
+    lazy private(set) var linearMinNearestMaxSamplerState: any MTLSamplerState = {
+        let samplerDescriptor = MTLSamplerDescriptor()
+        samplerDescriptor.sAddressMode = .clampToEdge
+        samplerDescriptor.tAddressMode = .clampToEdge
+
+        samplerDescriptor.mipFilter = .linear
+        samplerDescriptor.minFilter = .linear
         samplerDescriptor.magFilter = .nearest
 
         return device.makeSamplerState(descriptor: samplerDescriptor).unsafelyUnwrapped
@@ -386,6 +400,7 @@ extension MetalRenderer {
         enum SampleFilter: UInt32 {
             case linear = 1
             case nearest = 2
+            case minLinearMaxNearest = 3
         }
 
         let scale: SIMD2<Float>
@@ -623,6 +638,8 @@ extension MetalRenderer {
                 sampleFilter = .linear
             case .nearest:
                 sampleFilter = .nearest
+            case .minLinearMaxNearest:
+                sampleFilter = .minLinearMaxNearest
             }
 
             materials.append(

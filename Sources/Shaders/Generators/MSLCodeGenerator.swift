@@ -135,7 +135,7 @@ package final class MSLCodeGenerator: CodeGenerator {
         case .switch(cases: _):
             fatalError()
         case .sampler2D:
-            return "\(variable(for: operation.value1)).sample(materials[\(materialIndex(for: operation.value1))].sampleFilter == 2 ? nearestSampler : linearSampler,\(variable(for: operation.value2)))"
+            return "\(variable(for: operation.value1)).sample(samplerForMaterial(materials[\(materialIndex(for: operation.value1))]),\(variable(for: operation.value2)))"
         case .sampler2DSize:
             return """
                    \(scopeIndentation)\(variable(for: value)).x = \(variable(for: operation.value1)).get_width();
@@ -242,12 +242,29 @@ typedef struct {
 \(vertexOut)    int iid [[flat]];
 } Fragment;
 
+inline sampler samplerForMaterial(Material material) {
+    constexpr sampler linear(filter::linear, mip_filter::linear);
+    constexpr sampler nearest(filter::nearest, mip_filter::nearest);
+    constexpr sampler linearMinNearestMax(mag_filter::nearest, min_filter::linear, mip_filter::linear);
+
+    switch (material.sampleFilter) {
+        case 1:
+            return linear;
+        case 2:
+            return nearest;
+        case 3:
+            return linearMinNearestMax;
+    }
+    return linear;
+}
+
 vertex Fragment vertex\(UInt(bitPattern: vertexShader.id.hashValue))(Vertex in [[stage_in]],
                                           constant Uniforms & uniforms [[buffer(\(attributes.count + 0))]],
                                           constant InstanceUniforms *instances [[buffer(\(attributes.count + 1))]],
                                           constant Material *materials [[buffer(\(attributes.count + 2))]],
                                           sampler linearSampler [[sampler(0)]],
                                           sampler nearestSampler [[sampler(1)]],
+                                          sampler linearMinNearestMaxSamplerState [[sampler(2)]],
                                           ushort uiid [[instance_id]]) {
     \(type(for: .int)) iid = uiid;
     Fragment out;
@@ -259,7 +276,8 @@ fragment \(type(for: .float4)) fragment\(UInt(bitPattern: fragmentShader.id.hash
                                             constant Uniforms & uniforms [[buffer(0)]],
                                             constant Material *materials [[buffer(1)]],
                                             sampler linearSampler [[sampler(0)]],
-                                            sampler nearestSampler [[sampler(1)]]\(fragmentTextureList)) {
+                                            sampler nearestSampler [[sampler(1)]],
+                                            sampler linearMinNearestMaxSamplerState [[sampler(2)]]\(fragmentTextureList)) {
     \(type(for: .float4)) \(variable(for: .fragmentOutColor));
 \(fragmentMain)
     return \(variable(for: .fragmentOutColor));

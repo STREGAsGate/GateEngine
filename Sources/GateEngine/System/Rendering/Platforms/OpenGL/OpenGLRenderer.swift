@@ -397,6 +397,9 @@ extension OpenGLRenderer {
                         case .nearest:
                             glTexParameter(filtering: .minimize, by: .nearest)
                             glTexParameter(filtering: .magnify, by: .nearest)
+                        case .minLinearMaxNearest:
+                            glTexParameter(filtering: .minimize, by: .linear)
+                            glTexParameter(filtering: .magnify, by: .nearest)
                         }
                         
                         try glUniform1i(location: location, value1: GLint(index))
