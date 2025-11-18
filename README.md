@@ -2,24 +2,17 @@
 A cross platform game engine for Swift that allows you to build 2D and 3D games.</br>
 GateEngine includes intuitive APIs for loading resources, handling user inputs, and rendering content.
 
+## About
+GateEngine is designed to give game developers access to approachable and intuitive APIs to code a game using Swift.
+
 ## Platform Support:
 | Platform | CI | Graphics | Audio | Keyboard | Mouse | Touch | Gamepad |
 |---------:|:---|:---------|:------|:---------|:------|:------|:--------|
-| [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) 14.0+ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=Swift%206.0)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
-| [**Windows**](https://www.swift.org/getting-started/#on-windows) 10,11 | ⚠️ | ✔︎ | ⛌ | ✔︎ | ✔︎ | ⛌ | ✔︎ |
-| [**Linux**](https://www.swift.org/getting-started/#on-linux) | ⚠️ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ⛌ | ✔︎
-| [**iOS**](https://apps.apple.com/us/app/xcode/id497799835) 17.0+</br>[**iPadOS**](https://apps.apple.com/us/app/xcode/id497799835) 17.0+</br>[**tvOS**](https://apps.apple.com/us/app/xcode/id497799835) 17.0+ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=Swift%206.0)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | ✔︎</br>✔︎</br>✔︎ | ✔︎</br>✔︎</br>✔︎ | ✔︎</br>✔︎</br>✔︎ | ⛌</br>✔︎</br>⛌ | ✔︎</br>✔︎</br>⛌ | ✔︎</br>✔︎</br>✔︎
-| **Android**¹ | ⚠️ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
-| [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html) | ⚠️ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
-
-Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
-<sub>
-</br>¹Pending a community made cross compile SDK.
-</br>⚠️ Development of this platform is slowed while the core engine is completed.
-</sub>
-
-## About
-GateEngine is designed to give game developers access to approachable and intuitive APIs to code a game using Swift.
+| [**macOS**](https://apps.apple.com/us/app/xcode/id497799835) 14.0+ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/macOS.yml?label=Swift%206.2)](https://github.com/STREGAsGate/GateEngine/actions/workflows/macOS.yml) | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | ✔︎ | 
+| [**iOS**](https://apps.apple.com/us/app/xcode/id497799835) iPhone 17.0+</br>[**iOS**](https://apps.apple.com/us/app/xcode/id497799835) iPad 17.0+</br>[**tvOS**](https://apps.apple.com/us/app/xcode/id497799835) 17.0+ | [![](https://img.shields.io/github/actions/workflow/status/STREGAsGate/GateEngine/iOS-tvOS.yml?label=Swift%206.2)](https://github.com/STREGAsGate/GateEngine/actions/workflows/iOS-tvOS.yml) | ✔︎</br>✔︎</br>✔︎ | ✔︎</br>✔︎</br>✔︎ | ✔︎</br>✔︎</br>✔︎ | ⛌</br>✔︎</br>⛌ | ✔︎</br>✔︎</br>⛌ | ✔︎</br>✔︎</br>✔︎
+| [**Linux**](https://www.swift.org/getting-started/#on-linux) | ⚠️ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
+| [**Windows**](https://www.swift.org/getting-started/#on-windows) 10,11 | ⚠️ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ |
+| [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html) | ⚠️ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | 
 
 ### Math
 GateEngine has a custom math library completely coded in Swift. 
@@ -138,6 +131,11 @@ sudo apt-get install libopenal-dev
 # Examples
 A suite of example projects is available at [GateEngine Demos](https://github.com/STREGAsGate/GateEngineDemos).</br>
 These examples cover a variety of topics including Rendering, User Input and Scripting.
+
+Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
+<sub>
+</br>⚠️ Development of this platform is slowed while the core engine is completed.
+</sub>
 
 # Support GateEngine!
 GateEngine relies on community funding.
