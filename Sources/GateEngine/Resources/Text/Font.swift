@@ -106,7 +106,7 @@ public final class Font: OldResource {
         pointSize: UInt,
         style: Font.Style
     ) -> CharacterData {
-        let key = Key(style: style, pointSize: pointSize)
+        let key = Key(style: effectiveStyle(for: style), pointSize: pointSize)
         return backend.characterData(forKey: key, character: character)
     }
 
@@ -117,7 +117,7 @@ public final class Font: OldResource {
         origin: Position2,
         xAdvance: inout Float
     ) -> AlignedCharacter {
-        let key = Key(style: style, pointSize: pointSize)
+        let key = Key(style: effectiveStyle(for: style), pointSize: pointSize)
         return backend.alignedCharacter(
             forKey: key,
             character: character,
