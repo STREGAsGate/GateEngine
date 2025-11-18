@@ -49,7 +49,7 @@ public final class Rig3DSystem: System {
             {
                 if let animation = component.activeAnimation, animation.isReady {
                     component.update(
-                        deltaTime: deltaTime + component.deltaAccumulator,
+                        deltaTime: deltaTime,
                         objectScale: entity.component(ofType: Transform3Component.self)?.scale ?? .one
                     )
                     if component.playbackState != .pause {

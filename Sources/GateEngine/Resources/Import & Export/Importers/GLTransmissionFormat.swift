@@ -450,6 +450,90 @@ private class GLTF: Decodable {
             }
         }
     }
+    
+    func animationValues<T: BinaryFloatingPoint>(forAccessor accessorIndex: Int) async -> [T]? {
+        let accessor = accessors[accessorIndex]
+        let bufferView = bufferViews[accessor.bufferView]
+        let count = accessor.count * accessor.primitiveCount
+
+        return buffer(at: bufferView.buffer)?.withUnsafeBytes {
+            switch accessor.componentType {
+            case .uint8:
+                typealias Scalar = UInt8
+                let size = MemoryLayout<Scalar>.size
+                var array: [Scalar] = []
+                array.reserveCapacity(count)
+                for index in 0 ..< count {
+                    let offset = (index * size) + bufferView.byteOffset
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
+                }
+                return array.map({ T($0) / 255.0 })
+            case .uint16:
+                typealias Scalar = UInt16
+                let size = MemoryLayout<Scalar>.size
+                var array: [Scalar] = []
+                array.reserveCapacity(count)
+                for index in 0 ..< count {
+                    let offset = (index * size) + bufferView.byteOffset
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
+                }
+                return array.map({ T($0) / 65535.0 })
+            case .uint32:
+                typealias Scalar = UInt32
+                let size = MemoryLayout<Scalar>.size
+                var array: [Scalar] = []
+                array.reserveCapacity(count)
+                for index in 0 ..< count {
+                    let offset = (index * size) + bufferView.byteOffset
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
+                }
+                return array.map({ T($0) })
+            case .int8:
+                typealias Scalar = Int8
+                let size = MemoryLayout<Scalar>.size
+                var array: [Scalar] = []
+                array.reserveCapacity(count)
+                for index in 0 ..< count {
+                    let offset = (index * size) + bufferView.byteOffset
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
+                }
+                return array.map({ .maximum(T($0) / 127.0, -1.0) })
+            case .int16:
+                typealias Scalar = Int16
+                let size = MemoryLayout<Scalar>.size
+                var array: [Scalar] = []
+                array.reserveCapacity(count)
+                for index in 0 ..< count {
+                    let offset = (index * size) + bufferView.byteOffset
+                    array.append(
+                        Scalar(littleEndian: $0.load(fromByteOffset: offset, as: Scalar.self))
+                    )
+                }
+                return array.map({ .maximum(T($0) / 32767.0, -1.0) })
+            case .float32:
+                typealias Scalar = Float
+                let size = MemoryLayout<Scalar>.size
+                var array: [Scalar] = []
+                array.reserveCapacity(count)
+                for index in 0 ..< count {
+                    let offset = (index * size) + bufferView.byteOffset
+                    let pattern = UInt32(
+                        littleEndian: $0.load(fromByteOffset: offset, as: UInt32.self)
+                    )
+                    array.append(Scalar(bitPattern: pattern))
+                }
+                return array.map({ T($0) })
+            }
+        }
+    }
 }
 
 // Helpers for exploring the gltf document
@@ -961,10 +1045,10 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
 
             let sampler = animation.samplers[channel.sampler]
 
-            guard let times: [Float] = await gltf.values(forAccessor: sampler.input) else {
+            guard let times: [Float] = await gltf.animationValues(forAccessor: sampler.input) else {
                 continue
             }
-            guard let values: [Float] = await gltf.values(forAccessor: sampler.output) else {
+            guard let values: [Float] = await gltf.animationValues(forAccessor: sampler.output) else {
                 continue
             }
 
@@ -978,8 +1062,10 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
                 switch sampler.interpolation {
                 case .step:
                     jointAnimation.positionOutput.interpolation = .step
-                default:
+                case .linear:
                     jointAnimation.positionOutput.interpolation = .linear
+                default:
+                    throw GateEngineError.failedToDecode("Unhandled animation interpolation: \(sampler.interpolation)")
                 }
             case .rotation:
                 jointAnimation.rotationOutput.times = times
@@ -995,8 +1081,11 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
                 switch sampler.interpolation {
                 case .step:
                     jointAnimation.rotationOutput.interpolation = .step
-                default:
+                case .linear:
                     jointAnimation.rotationOutput.interpolation = .linear
+                default:
+                    throw GateEngineError.failedToDecode("Unhandled animation interpolation: \(sampler.interpolation)")
+                    
                 }
             case .scale:
                 jointAnimation.scaleOutput.times = times
@@ -1010,8 +1099,10 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
                 switch sampler.interpolation {
                 case .step:
                     jointAnimation.scaleOutput.interpolation = .step
-                default:
+                case .linear:
                     jointAnimation.scaleOutput.interpolation = .linear
+                default:
+                    throw GateEngineError.failedToDecode("Unhandled animation interpolation: \(sampler.interpolation)")
                 }
             case .weight:
                 break
@@ -1030,6 +1121,13 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
         var duration = timeMax - timeMin
         if duration.isFinite == false {
             duration = 0
+        }
+        
+        // Slide animations to start at time zero
+        for animationKey in animations.keys {
+            animations[animationKey]!.positionOutput.times = animations[animationKey]!.positionOutput.times.map({$0 - timeMin})
+            animations[animationKey]!.rotationOutput.times = animations[animationKey]!.rotationOutput.times.map({$0 - timeMin})
+            animations[animationKey]!.scaleOutput.times = animations[animationKey]!.scaleOutput.times.map({$0 - timeMin})
         }
 
         return RawSkeletalAnimation(name: animation.name, duration: duration, animations: animations)
@@ -1070,8 +1168,10 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
                 switch sampler.interpolation {
                 case .step:
                     objectAnimation.positionOutput.interpolation = .step
-                default:
+                case .linear:
                     objectAnimation.positionOutput.interpolation = .linear
+                default:
+                    throw GateEngineError.failedToDecode("Unhandled animation interpolation: \(sampler.interpolation)")
                 }
             case .rotation:
                 objectAnimation.rotationOutput.times = times
@@ -1087,8 +1187,10 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
                 switch sampler.interpolation {
                 case .step:
                     objectAnimation.rotationOutput.interpolation = .step
-                default:
+                case .linear:
                     objectAnimation.rotationOutput.interpolation = .linear
+                default:
+                    throw GateEngineError.failedToDecode("Unhandled animation interpolation: \(sampler.interpolation)")
                 }
             case .scale:
                 objectAnimation.scaleOutput.times = times
@@ -1102,8 +1204,10 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
                 switch sampler.interpolation {
                 case .step:
                     objectAnimation.scaleOutput.interpolation = .step
-                default:
+                case .linear:
                     objectAnimation.scaleOutput.interpolation = .linear
+                default:
+                    throw GateEngineError.failedToDecode("Unhandled animation interpolation: \(sampler.interpolation)")
                 }
             case .weight:
                 break

@@ -122,7 +122,8 @@ extension SkeletalAnimation {
                 switch interpolation {
                 case .linear:
                     let plus1 = currentIndex + 1
-                    let nextIndex: Int = times.indices.contains(plus1) ? plus1 : times.endIndex - 1
+                    guard times.indices.contains(plus1) else {fallthrough}
+                    let nextIndex: Int = plus1
                     
                     let time1 = times[currentIndex]
                     let time2 = times[nextIndex]
@@ -131,7 +132,7 @@ extension SkeletalAnimation {
                     let position2 = positions[nextIndex]
 
                     let currentTime: Float = time - time1
-                    let currentDuration: Float = time2 - time1
+                    let currentDuration: Float = time1.distance(to: time2)
                     let factor: Float = currentTime / currentDuration
                     
                     guard factor.isFinite else { return position1 }
@@ -159,7 +160,8 @@ extension SkeletalAnimation {
                 switch interpolation {
                 case .linear:
                     let plus1 = currentIndex + 1
-                    let nextIndex: Int = times.indices.contains(plus1) ? plus1 : times.endIndex - 1
+                    guard times.indices.contains(plus1) else {fallthrough}
+                    let nextIndex: Int = plus1
                     
                     let time1 = times[currentIndex]
                     let time2 = times[nextIndex]
@@ -168,7 +170,7 @@ extension SkeletalAnimation {
                     let rotation2 = rotations[nextIndex]
 
                     let currentTime: Float = time - time1
-                    let currentDuration: Float = time2 - time1
+                    let currentDuration: Float = time1.distance(to: time2)
                     let factor: Float = currentTime / currentDuration
                     
                     guard factor.isFinite else { return rotation1 }
@@ -193,7 +195,8 @@ extension SkeletalAnimation {
                 switch interpolation {
                 case .linear:
                     let plus1 = currentIndex + 1
-                    let nextIndex: Int = times.indices.contains(plus1) ? plus1 : times.endIndex - 1
+                    guard times.indices.contains(plus1) else {fallthrough}
+                    let nextIndex: Int = plus1
                     
                     let time1 = times[currentIndex]
                     let time2 = times[nextIndex]
@@ -202,7 +205,7 @@ extension SkeletalAnimation {
                     let scale2 = scales[nextIndex]
 
                     let currentTime: Float = time - time1
-                    let currentDuration: Float = time2 - time1
+                    let currentDuration: Float = time1.distance(to: time2)
                     let factor: Float = currentTime / currentDuration
                     
                     guard factor.isFinite else { return scale1 }

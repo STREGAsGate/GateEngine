@@ -201,13 +201,15 @@ extension Skeleton {
         skipJoints: [Skeleton.SkipJoint],
         interpolateProgress: Float
     ) {
-        let interpolate = interpolateProgress < 1
-
         let time: Float
-        if repeating {
-            time = _time.truncatingRemainder(dividingBy: duration)
+        if _time < 0 {
+            time = 0
         }else if _time > duration {
-            time = duration
+            if repeating {
+                time = _time.truncatingRemainder(dividingBy: duration)
+            }else{
+                time = duration
+            }
         }else{
             time = _time
         }
@@ -255,7 +257,7 @@ extension Skeleton {
             }
 
             if skip == false {
-                if interpolate {
+                if interpolateProgress < 1 {
                     joint.localTransform.interpolate(to: transform, .linear(interpolateProgress))
                 } else {
                     joint.localTransform = transform
