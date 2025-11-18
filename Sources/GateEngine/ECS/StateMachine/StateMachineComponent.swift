@@ -14,7 +14,7 @@ public final class StateMachineComponent: Component {
         return stateMachine.currentState
     }
     
-    final class NoState: State {
+    struct NoState: State {
         init() { }
         func apply(to entity: Entity, previousState: some State, context: ECSContext, input: HID) { }
         func update(for entity: Entity, inContext context: ECSContext, input: HID, withTimePassed deltaTime: Float) { }
