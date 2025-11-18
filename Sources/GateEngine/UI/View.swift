@@ -711,25 +711,35 @@ public extension View {
         
         switch constrainHorizontal {
         case .fill:
+            view.layoutConstraints.removeAllHorizontalPositionConstraints()
+            view.layoutConstraints.removeAllHorizontalSizeConstraints()
             view.leadingAnchor.constrain(insets.leading, from: self.leadingAnchor)
             view.trailingAnchor.constrain(-insets.trailing, from: self.trailingAnchor)
         case .pinLeading:
+            view.layoutConstraints.removeAllHorizontalPositionConstraints()
             view.leadingAnchor.constrain(insets.leading, from: self.leadingAnchor)
         case .pinTrailing:
+            view.layoutConstraints.removeAllHorizontalPositionConstraints()
             view.trailingAnchor.constrain(-insets.trailing, from: self.trailingAnchor)
         case .center:
+            view.layoutConstraints.removeAllHorizontalPositionConstraints()
             view.centerXAnchor.constrain(to: self.centerXAnchor)
         }
         
         switch constrainVertical {
         case .fill:
+            view.layoutConstraints.removeAllVerticalPositionConstraints()
+            view.layoutConstraints.removeAllVerticalSizeConstraints()
             view.topAnchor.constrain(insets.top, from: self.topAnchor)
             view.bottomAnchor.constrain(-insets.bottom, from: self.bottomAnchor)
         case .pinTop:
+            view.layoutConstraints.removeAllVerticalPositionConstraints()
             view.topAnchor.constrain(insets.top, from: self.topAnchor)
         case .pinBottom:
+            view.layoutConstraints.removeAllVerticalPositionConstraints()
             view.bottomAnchor.constrain(-insets.bottom, from: self.bottomAnchor)
         case .center:
+            view.layoutConstraints.removeAllVerticalPositionConstraints()
             view.centerYAnchor.constrain(to: self.centerYAnchor)
         }
     }
