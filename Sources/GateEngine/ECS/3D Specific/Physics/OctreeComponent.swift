@@ -14,17 +14,15 @@ extension OctreeComponent {
     @_disfavoredOverload
     public func load(
         path: GeoemetryPath,
-        options: GeometryImporterOptions = .none,
+        options: CollisionMeshImporterOptions = .none,
         center: Position3
     ) async throws {
         try await self.load(path: path.value, options: options, center: center)
     }
-    public func load(path: String, options: GeometryImporterOptions = .none, center: Position3)
-        async throws
-    {
+    public func load(path: String, options: CollisionMeshImporterOptions = .none, center: Position3) async throws {
         self.load(
             withCenter: center,
-            triangles: try await RawGeometry(path: path).generateCollisionTriangles()
+            triangles: try await RawCollisionMesh(path: path, options: options).generateCollisionTriangles()
         )
     }
 }
