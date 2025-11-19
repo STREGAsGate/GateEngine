@@ -21,6 +21,7 @@ extension VertexShader {
             vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
         vsh.output["texCoord0"] =
             vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
+        vsh.output["color"] = vsh.input.geometry(0).color
         return vsh
     }()
 
