@@ -13,6 +13,10 @@ GateEngine is designed to give game developers access to approachable and intuit
 | [**Linux**](https://www.swift.org/getting-started/#on-linux) | ⚠️ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌
 | [**Windows**](https://www.swift.org/getting-started/#on-windows) 10,11 | ⚠️ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ |
 | [**HTML5**](https://book.swiftwasm.org/getting-started/setup.html) | ⚠️ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | ⛌ | 
+Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
+<sub>
+</br>⚠️ Development of this platform is slowed while the core engine is completed.
+</sub>
 
 ### Math
 GateEngine has a custom math library completely coded in Swift. 
@@ -131,11 +135,6 @@ sudo apt-get install libopenal-dev
 # Examples
 A suite of example projects is available at [GateEngine Demos](https://github.com/STREGAsGate/GateEngineDemos).</br>
 These examples cover a variety of topics including Rendering, User Input and Scripting.
-
-Complete: ✔︎ | Incomplete: ⛌ | Partial: ◑
-<sub>
-</br>⚠️ Development of this platform is slowed while the core engine is completed.
-</sub>
 
 # Support GateEngine!
 GateEngine relies on community funding.
