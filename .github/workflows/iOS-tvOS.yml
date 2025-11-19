@@ -21,7 +21,7 @@ jobs:
 
     - name: Swift Version
       run: swift --version
-    
+
     # Install before building, so we don't downloadthe in case of previous failure 
     - name: Install iOS Xcode Component
       run: sudo xcodebuild -downloadPlatform iOS
