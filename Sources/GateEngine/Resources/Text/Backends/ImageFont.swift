@@ -6,8 +6,7 @@
  */
 
 struct ImageFont: FontBackend {
-    private let fontData:
-    [Font.Style: (rawTexture: RawTexture, importer: any TextureImporter.Type)]
+    private let fontData: [Font.Style: (rawTexture: RawTexture, importer: any TextureImporter.Type)]
     internal var nativePointSizes: [Font.Style: UInt] = [:]
     internal var textures: [Font.Style: Texture] = [:]
     internal var characterXAdvances: [Font.Style: [Float]] = [:]
@@ -67,6 +66,11 @@ struct ImageFont: FontBackend {
         origin: GameMath.Position2,
         xAdvance: inout Float
     ) -> AlignedCharacter {
+        if nativePointSizes[key.style] == nil {
+            // We need to know the native font point size, and we need to load it's texture to know
+            // So populate the style if needed
+            _ = populate(style: key.style)
+        }
         let nativePointSize = nativePointSizes[key.style]!
         let scaledPointSize = Float(key.pointSize - (key.pointSize % nativePointSize))
 
