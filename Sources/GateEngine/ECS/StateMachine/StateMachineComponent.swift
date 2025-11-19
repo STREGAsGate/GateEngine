@@ -14,11 +14,11 @@ public final class StateMachineComponent: Component {
         return stateMachine.currentState
     }
     
-    struct NoState: State {
-        init() { }
-        func apply(to entity: Entity, previousState: some State, context: ECSContext, input: HID) { }
-        func update(for entity: Entity, inContext context: ECSContext, input: HID, withTimePassed deltaTime: Float) { }
-        func possibleNextStates(for entity: Entity, context: ECSContext, input: HID) -> [any State.Type] {
+    public struct NoState: State {
+        public init() { }
+        public func apply(to entity: Entity, previousState: some State, context: ECSContext, input: HID) { }
+        public func update(for entity: Entity, inContext context: ECSContext, input: HID, withTimePassed deltaTime: Float) { }
+        public func possibleNextStates(for entity: Entity, context: ECSContext, input: HID) -> [any State.Type] {
             return []
         }
     }
