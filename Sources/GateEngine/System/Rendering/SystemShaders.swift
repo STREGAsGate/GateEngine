@@ -124,6 +124,17 @@ extension FragmentShader {
         fsh.output.color = color.discard(if: color.a <= 0)
         return fsh
     }()
+    /// Uses material.channel(0).texture to shade objects
+    public static let textureSample_TintVertexColor_DiscardZeroAlpha: FragmentShader = {
+        let fsh = FragmentShader()
+        let sample = fsh.channel(0).texture.sample(
+            at: fsh.input["texCoord0"]
+        )
+        let vertexColor: Vec4 = fsh.input["color"]
+        let color = Vec4(sample.rgb * vertexColor.rgb, sample.a * vertexColor.a)
+        fsh.output.color = color.discard(if: color.a <= 0)
+        return fsh
+    }()
     /// Uses material.channel(0).color to shade objects
     public static let materialColor: FragmentShader = {
         let fsh = FragmentShader()
