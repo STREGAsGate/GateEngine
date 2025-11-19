@@ -16,11 +16,20 @@ jobs:
     
     - name: Select Xcode version
       run: sudo xcode-select -s '/Applications/Xcode_26.1.app/Contents/Developer'
-    
+    - name: Clear Xcode Simulators List
+      run: sudo xcrun simctl list > /dev/null
+
     - name: Swift Version
       run: swift --version
     
+    # Install before building, so we don't downloadthe in case of previous failure 
+    - name: Install iOS Xcode Component
+      run: sudo xcodebuild -downloadPlatform iOS
     - name: Build iOS using Xcode
       run: xcodebuild -scheme GateEngine -destination generic/platform=iOS
+    
+    # Install before building, so we don't downloadthe in case of previous failure 
+    - name: Install tvOS Xcode Component
+      run: sudo xcodebuild -downloadPlatform tvOS
     - name: Build tvOS using Xcode
       run: xcodebuild -scheme GateEngine -destination generic/platform=tvOS
