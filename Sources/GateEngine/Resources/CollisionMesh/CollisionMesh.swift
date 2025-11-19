@@ -175,6 +175,13 @@ extension ResourceManager {
     }
 }
 
+public extension RawCollisionMesh {
+    init(path: String, options: CollisionMeshImporterOptions = .none) async throws {
+        let importer: any CollisionMeshImporter = try await Game.unsafeShared.resourceManager.collisionMeshImporterForPath(path)
+        self = try await importer.loadCollisionMesh(options: options)
+    }
+}
+
 extension ResourceManager.Cache {
     @usableFromInline
     struct CollisionMeshKey: Hashable, Sendable, CustomStringConvertible {
@@ -287,8 +294,7 @@ extension ResourceManager {
             let path = key.requestedPath
             
             do {
-                let importer: any CollisionMeshImporter = try await Game.unsafeShared.resourceManager.collisionMeshImporterForPath(path)
-                let rawCollisionMesh = try await importer.loadCollisionMesh(options: key.collisionMeshOptions)
+                let rawCollisionMesh = try await RawCollisionMesh(path: path, options: key.collisionMeshOptions)
                 
                 Task { @MainActor in
                     if let cache = cache.collisionMeshes[key] {
