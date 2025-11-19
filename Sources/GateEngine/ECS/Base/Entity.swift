@@ -194,12 +194,12 @@ extension Entity {
     @inlinable
     public func configure<T: Component, ResultType>(
         _ type: T.Type,
-        _ config: (_ component: inout T) async -> ResultType
-    ) async -> ResultType {
+        _ config: (_ component: inout T) async throws -> ResultType
+    ) async rethrows -> ResultType {
         if self.hasComponent(type) == false {
             self.insert(type.init())
         }
-        return await config(&self[T.self])
+        return try await config(&self[T.self])
     }
     
     /// Allows changing a component, addind it first if needed.
