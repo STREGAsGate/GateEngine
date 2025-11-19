@@ -24,11 +24,15 @@ jobs:
     # Install before building, so we don't downloadthe in case of previous failure 
     - name: Install iOS Xcode Component
       run: sudo xcodebuild -downloadPlatform iOS
+    - name: Clear Xcode Simulators List
+      run: sudo xcrun simctl list > /dev/null
     - name: Build iOS using Xcode
       run: xcodebuild -scheme GateEngine -destination generic/platform=iOS
     
     # Install before building, so we don't downloadthe in case of previous failure 
     - name: Install tvOS Xcode Component
       run: sudo xcodebuild -downloadPlatform tvOS
+    - name: Clear Xcode Simulators List
+      run: sudo xcrun simctl list > /dev/null
     - name: Build tvOS using Xcode
       run: xcodebuild -scheme GateEngine -destination generic/platform=tvOS
