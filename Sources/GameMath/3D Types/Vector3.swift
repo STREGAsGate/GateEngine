@@ -285,7 +285,7 @@ extension Vector3 {
 
 extension Vector3 {
     @inlinable
-    public func interpolated<V: Vector3>(to: V, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
+    public func interpolated(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
         var copy = self
         copy.x.interpolate(to: to.x, method, options: options)
         copy.y.interpolate(to: to.y, method, options: options)
@@ -293,7 +293,7 @@ extension Vector3 {
         return copy
     }
     @inlinable
-    public mutating func interpolate<V: Vector3>(to: V, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+    public mutating func interpolate(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
         self.x.interpolate(to: to.x, method, options: options)
         self.y.interpolate(to: to.y, method, options: options)
         self.z.interpolate(to: to.z, method, options: options)

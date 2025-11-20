@@ -173,14 +173,14 @@ extension Vector2 {
 
 extension Vector2 {
     @inlinable
-    public func interpolated<V: Vector2>(to: V, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
+    public func interpolated(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
         var copy = self
         copy.x.interpolate(to: to.x, method, options: options)
         copy.y.interpolate(to: to.y, method, options: options)
         return copy
     }
     @inlinable
-    public mutating func interpolate<V: Vector2>(to: V, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+    public mutating func interpolate(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
         self.x.interpolate(to: to.x, method, options: options)
         self.y.interpolate(to: to.y, method, options: options)
     }
