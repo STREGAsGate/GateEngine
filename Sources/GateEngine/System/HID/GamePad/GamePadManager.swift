@@ -36,6 +36,9 @@ extension HID {
                 gamePad.interpreter.updateState(of: gamePad)
             }
             any = all.first(where: { $0.hasInput }) ?? nullGamePad
+            if any.hasInput {
+                hid.recentInputMethod = .gamePad
+            }
         }
 
         func update() {

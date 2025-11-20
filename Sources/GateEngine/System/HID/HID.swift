@@ -38,7 +38,7 @@ public enum InputMethod {
     public let gamePads: GamePadManger = GamePadManger()
 
     /// The most recent input method used by the end user
-    public private(set) var recentInputMethod: InputMethod = .mouseKeyboard
+    public internal(set) var recentInputMethod: InputMethod = .mouseKeyboard
 
     public var sharedReceipts: InputReceipts = InputReceipts()
     
