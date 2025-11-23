@@ -1147,14 +1147,15 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
         var objectAnimation = ObjectAnimation3D.Animation()
         
         var timeMax: Float = .nan
+        var timeMin: Float = .nan
 
         for channel in animation.channels {
             let sampler = animation.samplers[channel.sampler]
 
-            guard let times: [Float] = await gltf.values(forAccessor: sampler.input) else {
+            guard let times: [Float] = await gltf.animationValues(forAccessor: sampler.input) else {
                 continue
             }
-            guard let values: [Float] = await gltf.values(forAccessor: sampler.output) else {
+            guard let values: [Float] = await gltf.animationValues(forAccessor: sampler.output) else {
                 continue
             }
 
@@ -1213,8 +1214,23 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
                 break
             }
 
-            timeMax = .maximum(times.max()!, timeMax)
+            if let max = times.max() {
+                timeMax = .maximum(max, timeMax)
+            }
+            if let min = times.min() {
+                timeMin = .minimum(min, timeMin)
+            }
         }
+        
+        var duration = timeMax - timeMin
+        if duration.isFinite == false {
+            duration = 0
+        }
+        
+        // Slide animation to start at time zero
+        objectAnimation.positionOutput.times = objectAnimation.positionOutput.times.map({$0 - timeMin})
+        objectAnimation.rotationOutput.times = objectAnimation.rotationOutput.times.map({$0 - timeMin})
+        objectAnimation.scaleOutput.times = objectAnimation.scaleOutput.times.map({$0 - timeMin})
 
         return ObjectAnimation3DBackend(name: animation.name, duration: timeMax, animation: objectAnimation)
     }
