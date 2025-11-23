@@ -1134,10 +1134,8 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
     }
 }
 
-extension GLTransmissionFormat: ObjectAnimation3DImporter {   
-    public func process(data: Data, baseURL: URL, options: ObjectAnimation3DImporterOptions) async throws -> ObjectAnimation3DBackend {
-        let gltf = try gltf(from: data, baseURL: baseURL)
-        
+extension GLTransmissionFormat: ObjectAnimation3DImporter {
+    public func loadObjectAnimation(options: ObjectAnimation3DImporterOptions) async throws(GateEngineError) -> RawObjectAnimation3D {
         guard let animation = animation(named: options.subobjectName, from: gltf) else {
             throw GateEngineError.failedToDecode(
                 "Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))"
@@ -1232,7 +1230,7 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
         objectAnimation.rotationOutput.times = objectAnimation.rotationOutput.times.map({$0 - timeMin})
         objectAnimation.scaleOutput.times = objectAnimation.scaleOutput.times.map({$0 - timeMin})
 
-        return ObjectAnimation3DBackend(name: animation.name, duration: timeMax, animation: objectAnimation)
+        return RawObjectAnimation3D(name: animation.name, duration: timeMax, animation: objectAnimation)
     }
 }
 

@@ -17,7 +17,7 @@ import Foundation
     }
     
     @usableFromInline
-    internal var backend: ObjectAnimation3DBackend {
+    internal var backend: RawObjectAnimation3D {
         assert(state == .ready, "This resource is not ready to be used. Make sure it's state property is .ready before accessing!")
         return Game.unsafeShared.resourceManager.objectAnimation3DCache(for: cacheKey)!.objectAnimation3DBackend!
     }
@@ -445,7 +445,7 @@ extension ObjectAnimation3D {
     }
 }
 
-public final class ObjectAnimation3DBackend {
+public struct RawObjectAnimation3D {
     let name: String
     let duration: Float
     let animation: ObjectAnimation3D.Animation
@@ -460,9 +460,7 @@ public final class ObjectAnimation3DBackend {
 // MARK: - Resource Manager
 
 public protocol ObjectAnimation3DImporter: ResourceImporter {
-    init()
-
-    func process(data: Data, baseURL: URL, options: ObjectAnimation3DImporterOptions) async throws -> ObjectAnimation3DBackend
+    func loadObjectAnimation(options: ObjectAnimation3DImporterOptions) async throws(GateEngineError) -> RawObjectAnimation3D
 }
 
 public struct ObjectAnimation3DImporterOptions: Equatable, Hashable, Sendable {
@@ -495,6 +493,13 @@ extension ResourceManager {
     }
 }
 
+extension RawObjectAnimation3D {
+    init(path: String, options: ObjectAnimation3DImporterOptions = .none) async throws {
+        let importer: any ObjectAnimation3DImporter = try await Game.unsafeShared.resourceManager.objectAnimation3DImporterForPath(path)
+        self = try await importer.loadObjectAnimation(options: options)
+    }
+}
+
 extension ResourceManager.Cache {
     @usableFromInline
     struct ObjectAnimation3DKey: Hashable, CustomStringConvertible, Sendable {
@@ -517,7 +522,7 @@ extension ResourceManager.Cache {
 
     @usableFromInline
     final class ObjectAnimation3DCache: ResourceCache {
-        @usableFromInline var objectAnimation3DBackend: ObjectAnimation3DBackend?
+        @usableFromInline var objectAnimation3DBackend: RawObjectAnimation3D?
         var lastLoaded: Date
         var state: ResourceState
         var referenceCount: UInt
@@ -565,7 +570,7 @@ extension ResourceManager {
             cache.objectAnimation3Ds[key] = Cache.ObjectAnimation3DCache()
             Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
             Task.detached {
-                let backend = ObjectAnimation3DBackend(
+                let backend = RawObjectAnimation3D(
                     name: name, 
                     duration: duration, 
                     animation: animation
@@ -618,18 +623,11 @@ extension ResourceManager {
             let path = key.requestedPath
             
             do {
-                let importer: any ObjectAnimation3DImporter = try await Game.unsafeShared.resourceManager.objectAnimation3DImporterForPath(path)
-                
-                let data = try await Platform.current.loadResource(from: path)
-                let backend = try await importer.process(
-                    data: data,
-                    baseURL: URL(string: path)!.deletingLastPathComponent(),
-                    options: key.options
-                )
+                let rawObjectAnimation = try await RawObjectAnimation3D(path: key.requestedPath, options: key.options)
                 
                 Task { @MainActor in
                     if let cache = cache.objectAnimation3Ds[key] {
-                        cache.objectAnimation3DBackend = backend
+                        cache.objectAnimation3DBackend = rawObjectAnimation
                         cache.state = .ready
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))
