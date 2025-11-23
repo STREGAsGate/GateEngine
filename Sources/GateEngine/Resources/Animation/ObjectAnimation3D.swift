@@ -10,6 +10,7 @@ import Foundation
 #endif
 
 @MainActor public final class ObjectAnimation3D: Resource, _Resource {
+    public typealias NodeAnimation = SkeletalAnimation.JointAnimation
     internal let cacheKey: ResourceManager.Cache.ObjectAnimation3DKey
     
     var cache: any ResourceCache {
@@ -17,7 +18,7 @@ import Foundation
     }
     
     @usableFromInline
-    internal var backend: RawObjectAnimation3D {
+    internal var backend: ObjectAnimation3DBackend {
         assert(state == .ready, "This resource is not ready to be used. Make sure it's state property is .ready before accessing!")
         return Game.unsafeShared.resourceManager.objectAnimation3DCache(for: cacheKey)!.objectAnimation3DBackend!
     }
@@ -28,7 +29,7 @@ import Foundation
     public var duration: Float {
         return backend.duration
     }
-    public var animation: ObjectAnimation3D.Animation {
+    public var animation: ObjectAnimation3D.NodeAnimation {
         return backend.animation
     }
     
@@ -93,12 +94,10 @@ import Foundation
         resourceManager.incrementReference(self.cacheKey)
     }
     
-    public init(name: String, duration: Float, animation: ObjectAnimation3D.Animation) {
+    public init(name: String, duration: Float, animation: RawObjectAnimation3D.NodeAnimation) {
         let resourceManager = Game.unsafeShared.resourceManager
         self.cacheKey = resourceManager.objectAnimation3DCacheKey(
-            name: name,
-            duration: duration, 
-            animation: animation
+            RawObjectAnimation3D(name: name, duration: duration, animation: animation)
         )
         if cachHintIsDefault {
             self.cacheHint = .until(minutes: 5)
@@ -116,7 +115,7 @@ import Foundation
         let interpolate = interpolateProgress < 1
         var newTransform = transform
         
-        animation.updateTransform(
+        _ = animation.updateTransform(
             &newTransform,
             withTime: time,
             duration: duration,
@@ -141,319 +140,49 @@ extension ObjectAnimation3D: Equatable, Hashable {
     }
 }
 
-extension ObjectAnimation3D {
-    public nonisolated struct Animation: Sendable {
-        public enum Interpolation: Sendable {
-            case step
-            case linear
-        }
-
-        public init() {
-
-        }
-
-        public mutating func setPositions(
-            _ positions: [Position3],
-            times: [Float],
-            interpolation: Interpolation
-        ) {
-            assert(positions.count == times.count)
-            self.positionOutput.positions = positions
-            self.positionOutput.times = times
-            self.positionOutput.interpolation = interpolation
-        }
-        public mutating func setRotations(
-            _ rotations: [Quaternion],
-            times: [Float],
-            interpolation: Interpolation
-        ) {
-            assert(rotations.count == times.count)
-            self.rotationOutput.rotations = rotations
-            self.rotationOutput.times = times
-            self.rotationOutput.interpolation = interpolation
-        }
-        public mutating func setScales(_ scales: [Size3], times: [Float], interpolation: Interpolation) {
-            assert(scales.count == times.count)
-            self.scaleOutput.scales = scales
-            self.scaleOutput.times = times
-            self.scaleOutput.interpolation = interpolation
-        }
-
-        var positionOutput: PositionOutput = PositionOutput(
-            times: [],
-            interpolation: .linear,
-            positions: []
-        )
-        struct PositionOutput: Sendable {
-            var times: [Float]
-            var interpolation: Interpolation
-            var positions: [Position3]
-
-            func position(forTime time: Float, duration: Float, repeating: Bool) -> Position3? {
-                guard positions.isEmpty == false else { return nil }
-                if let index = times.firstIndex(where: { $0 == time }) {
-                    // perfect frame time
-                    return positions[index]
-                }
-                if times.count == 1, times[0] < time {
-                    return positions[0]
-                }
-
-                if let firstIndex = times.lastIndex(where: { $0 < time }) {
-                    if let lastIndex = times.firstIndex(where: { $0 > time }) {
-                        let time1 = times[firstIndex]
-                        let time2 = times[lastIndex]
-
-                        let position1 = positions[firstIndex]
-                        let position2 = positions[lastIndex]
-
-                        let currentTime = Float(time2 - time)
-                        let currentDuration = Float(time2 - time1)
-
-                        let factor: Float = 1 - (currentTime / currentDuration)
-                        guard factor.isFinite else { return position2 }
-
-                        switch interpolation {
-                        case .linear:
-                            return position1.interpolated(to: position2, .linear(factor))
-                        case .step:
-                            if factor < 0.5 {
-                                return position1
-                            }
-                            return position2
-                        }
-                    }
-                    return positions[firstIndex]
-                }
-                if repeating {
-                    let time1: Float = 0
-                    let time2: Float = times[0]
-
-                    let position1 = positions.last!
-                    let position2 = positions[0]
-
-                    let currentTime = Float(time2 - time)
-                    let currentDuration = Float(time2 - time1)
-
-                    let factor: Float = 1 - (currentTime / currentDuration)
-                    guard factor.isFinite else { return position2 }
-
-                    switch interpolation {
-                    case .linear:
-                        return position1.interpolated(to: position2, .linear(factor))
-                    case .step:
-                        if factor < 0.5 {
-                            return position1
-                        }
-                        return position2
-                    }
-                }
-                return positions.first
-            }
-        }
-        var rotationOutput: RotationOutput = RotationOutput(
-            times: [],
-            interpolation: .linear,
-            rotations: []
-        )
-        struct RotationOutput {
-            var times: [Float]
-            var interpolation: Interpolation
-            var rotations: [Quaternion]
-
-            func rotation(forTime time: Float, duration: Float, repeating: Bool) -> Quaternion? {
-                guard rotations.isEmpty == false else { return nil }
-                if let index = times.firstIndex(where: { $0 == time }) {
-                    // perfect frame time
-                    return rotations[index]
-                }
-                if times.count == 1, times[0] < time {
-                    return rotations[0]
-                }
-
-                if let firstIndex = times.lastIndex(where: { $0 < time }) {
-                    if let lastIndex = times.firstIndex(where: { $0 > time }) {
-                        let time1 = times[firstIndex]
-                        let time2 = times[lastIndex]
-
-                        let rotation1 = rotations[firstIndex]
-                        let rotation2 = rotations[lastIndex]
-
-                        let currentTime = Float(time2 - time)
-                        let currentDuration = Float(time2 - time1)
-
-                        let factor: Float = 1 - (currentTime / currentDuration)
-                        guard factor.isFinite else { return rotation2 }
-
-                        switch interpolation {
-                        case .linear:
-                            return rotation1.interpolated(to: rotation2, .linear(factor))
-                        case .step:
-                            if factor < 0.5 {
-                                return rotation1
-                            }
-                            return rotation2
-                        }
-                    }
-                    return rotations[firstIndex]
-                }
-                if repeating {
-                    let time1: Float = 0
-                    let time2: Float = times[0]
-
-                    let rotation1 = rotations.last!
-                    let rotation2 = rotations[0]
-
-                    let currentTime = Float(time2 - time)
-                    let currentDuration = Float(time2 - time1)
-
-                    let factor: Float = 1 - (currentTime / currentDuration)
-                    guard factor.isFinite else { return rotation2 }
-
-                    switch interpolation {
-                    case .linear:
-                        return rotation1.interpolated(to: rotation2, .linear(factor))
-                    case .step:
-                        if factor < 0.5 {
-                            return rotation1
-                        }
-                        return rotation2
-                    }
-                }
-                return rotations.first
-            }
-        }
-
-        var scaleOutput: ScaleOutput = ScaleOutput(times: [], interpolation: .linear, scales: [])
-        struct ScaleOutput {
-            var times: [Float]
-            var interpolation: Interpolation
-            var scales: [Size3]
-
-            func scale(forTime time: Float, duration: Float, repeating: Bool) -> Size3? {
-                guard scales.isEmpty == false else { return nil }
-                if let index = times.firstIndex(where: { $0 == time }) {
-                    // perfect frame time
-                    return scales[index]
-                }
-                if times.count == 1, times[0] < time {
-                    return scales[0]
-                }
-
-                if let firstIndex = times.lastIndex(where: { $0 < time }) {
-                    if let lastIndex = times.firstIndex(where: { $0 > time }) {
-                        let time1 = times[firstIndex]
-                        let time2 = times[lastIndex]
-
-                        let scale1 = scales[firstIndex]
-                        let scale2 = scales[lastIndex]
-
-                        let currentTime = Float(time2 - time)
-                        let currentDuration = Float(time2 - time1)
-
-                        let factor: Float = 1 - (currentTime / currentDuration)
-                        guard factor.isFinite else { return scale2 }
-
-                        switch interpolation {
-                        case .linear:
-                            return scale1.interpolated(to: scale2, .linear(factor))
-                        case .step:
-                            if factor < 0.5 {
-                                return scale1
-                            }
-                            return scale2
-                        }
-                    }
-                    return scales[firstIndex]
-                }
-                if repeating {
-                    let time1: Float = 0
-                    let time2: Float = times[0]
-
-                    let scale1 = scales.last!
-                    let scale2 = scales[0]
-
-                    let currentTime = Float(time2 - time)
-                    let currentDuration = Float(time2 - time1)
-
-                    let factor: Float = 1 - (currentTime / currentDuration)
-                    guard factor.isFinite else { return scale2 }
-
-                    switch interpolation {
-                    case .linear:
-                        return scale1.interpolated(to: scale2, .linear(factor))
-                    case .step:
-                        if factor < 0.5 {
-                            return scale1
-                        }
-                        return scale2
-                    }
-                }
-                return scales.first
-            }
-        }
-
-        @discardableResult
-        func updateTransform(
-            _ transform: inout Transform3,
-            withTime time: Float,
-            duration: Float,
-            repeating: Bool
-        ) -> KeyedComponents {
-            var keyedComponents: KeyedComponents = []
-            if let position = positionOutput.position(
-                forTime: time,
-                duration: duration,
-                repeating: repeating
-            ) {
-                assert(position.isFinite)
-                transform.position = position
-                keyedComponents.insert(.position)
-            }
-            if let rotation = rotationOutput.rotation(
-                forTime: time,
-                duration: duration,
-                repeating: repeating
-            ) {
-                assert(rotation.isFinite)
-                transform.rotation = rotation
-                keyedComponents.insert(.rotation)
-            }
-            if let scale = scaleOutput.scale(
-                forTime: time,
-                duration: duration,
-                repeating: repeating
-            ) {
-                assert(scale.isFinite)
-                transform.scale = scale
-                keyedComponents.insert(.scale)
-            }
-            return keyedComponents
-        }
-    }
-
-    struct KeyedComponents: OptionSet {
-        typealias RawValue = UInt8
-        let rawValue: RawValue
-        static let position = KeyedComponents(rawValue: 1 << 1)
-        static let rotation = KeyedComponents(rawValue: 1 << 2)
-        static let scale = KeyedComponents(rawValue: 1 << 3)
-
-        var isFull: Bool {
-            return self == [.position, .rotation, .scale]
-        }
-    }
-}
-
 public struct RawObjectAnimation3D {
-    let name: String
-    let duration: Float
-    let animation: ObjectAnimation3D.Animation
-
-    init(name: String, duration: Float, animation: ObjectAnimation3D.Animation) {
+    public typealias NodeAnimation = RawSkeletalAnimation.JointAnimation
+    var name: String
+    var duration: Float
+    var animation: NodeAnimation
+    
+    public init(name: String, duration: Float, animation: RawObjectAnimation3D.NodeAnimation) {
         self.name = name
         self.duration = duration
         self.animation = animation
+    }
+}
+
+@usableFromInline
+internal struct ObjectAnimation3DBackend {
+    let name: String
+    let duration: Float
+    let animation: ObjectAnimation3D.NodeAnimation
+    
+    init(_ rawObjectAnimation3D: RawObjectAnimation3D) {
+        self.name = rawObjectAnimation3D.name
+        self.duration = rawObjectAnimation3D.duration
+        self.animation = .init(rawObjectAnimation3D.animation)
+    }
+}
+
+extension RawObjectAnimation3D: BinaryCodable {
+    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+        switch version {
+        case .v1:
+            try self.name.encode(into: &data, version: version)
+            try self.duration.encode(into: &data, version: version)
+            try self.animation.encode(into: &data, version: version)
+        }
+    }
+    
+    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+        switch version {
+        case .v1:
+            self.name = try .init(decoding: data, at: &offset, version: version)
+            self.duration = try .init(decoding: data, at: &offset, version: version)
+            self.animation = try .init(decoding: data, at: &offset, version: version)
+        }
     }
 }
 
@@ -522,7 +251,7 @@ extension ResourceManager.Cache {
 
     @usableFromInline
     final class ObjectAnimation3DCache: ResourceCache {
-        @usableFromInline var objectAnimation3DBackend: RawObjectAnimation3D?
+        @usableFromInline var objectAnimation3DBackend: ObjectAnimation3DBackend?
         var lastLoaded: Date
         var state: ResourceState
         var referenceCount: UInt
@@ -559,31 +288,20 @@ extension ResourceManager {
         return key
     }
     
-    func objectAnimation3DCacheKey(
-        name: String,
-        duration: Float,
-        animation: ObjectAnimation3D.Animation
-    ) -> Cache.ObjectAnimation3DKey {
+    func objectAnimation3DCacheKey(_ rawObjectAnimation3D: RawObjectAnimation3D) -> Cache.ObjectAnimation3DKey {
         let key = Cache.ObjectAnimation3DKey(requestedPath: "$\(rawCacheIDGenerator.generateID())", options: .none)
         let cache = self.cache
         if cache.objectAnimation3Ds[key] == nil {
             cache.objectAnimation3Ds[key] = Cache.ObjectAnimation3DCache()
             Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached {
-                let backend = RawObjectAnimation3D(
-                    name: name, 
-                    duration: duration, 
-                    animation: animation
-                )
-                Task { @MainActor in
-                    if let cache = cache.objectAnimation3Ds[key] {
-                        cache.objectAnimation3DBackend = backend
-                        cache.state = .ready
-                    }else{
-                        Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
-                    }
-                    Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
+            Task { @MainActor in
+                if let cache = cache.objectAnimation3Ds[key] {
+                    cache.objectAnimation3DBackend = .init(rawObjectAnimation3D)
+                    cache.state = .ready
+                }else{
+                    Log.warn("Resource \"(Generated TileSet)\" was deallocated before being loaded.")
                 }
+                Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
             }
         }
         return key
@@ -623,11 +341,11 @@ extension ResourceManager {
             let path = key.requestedPath
             
             do {
-                let rawObjectAnimation = try await RawObjectAnimation3D(path: key.requestedPath, options: key.options)
+                let rawObjectAnimation = try await RawObjectAnimation3D(path: path, options: key.options)
                 
                 Task { @MainActor in
                     if let cache = cache.objectAnimation3Ds[key] {
-                        cache.objectAnimation3DBackend = rawObjectAnimation
+                        cache.objectAnimation3DBackend = .init(rawObjectAnimation)
                         cache.state = .ready
                     }else{
                         Log.warn("Resource \"\(path)\" was deallocated before being " + (isFirstLoad ? "loaded." : "re-loaded."))

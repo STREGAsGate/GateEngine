@@ -42,7 +42,6 @@ private class GLTF: Decodable {
         let children: [Int]?
         let mesh: Int?
         let skin: Int?
-        let skeleton: Int?
         let rotation: [Float]?
         let scale: [Float]?
         let translation: [Float]?
@@ -555,16 +554,50 @@ public extension GLTransmissionFormat {
     })}
     
     /// Returns all names with annimations channels greater than 1
-    var skeletalAnimationNames: [String] {self.gltf.animations?.compactMap({
-        guard $0.channels.count > 1 else {return nil}
-        return $0.name
-    }) ?? []}
+    var skeletalAnimationNames: [String] {
+        self.gltf.animations?.compactMap({
+            func nodeHasParentWithChildSkin(nodeIndex: Int) -> Bool {
+                for gltfNodeIndex in gltf.nodes.indices {
+                    let node = gltf.nodes[gltfNodeIndex]
+                    // If the node is the parent
+                    if let children = node.children, children.contains(nodeIndex) {
+                        // If the parent has a child with a skin
+                        if children.contains(where: {gltf.nodes[$0].skin != nil}) {
+                            return true
+                        }
+                        break
+                    }
+                }
+                return false
+            }
+            // If any node has a parent with a child with a skin, this is a skeletal animation
+            if $0.channels.contains(where: {
+                return nodeHasParentWithChildSkin(nodeIndex: $0.target.node)
+            }) {
+                return $0.name
+            }
+            return nil
+        }) ?? []
+    }
+        
     
     /// Returns all names with annimations channels count of exactly 1
-    var objectAnimationNames: [String] {self.gltf.animations?.compactMap({
-        guard $0.channels.count == 1 else {return nil}
-        return $0.name
-    }) ?? []}
+    var objectAnimationNames: [String] {
+        self.gltf.animations?.compactMap({
+            // If any nodeIndex has no parent, it's a root object
+            // and can be interpretted as an object animation
+            if $0.channels.contains(where: {
+                let nodeIndex = $0.target.node
+                if gltf.nodes.contains(where: {$0.children?.contains(nodeIndex) == true}) == false {
+                    return true
+                }
+                return false
+            }) {
+                return $0.name
+            }
+            return nil
+        }) ?? []
+    }
     
     func meshNames(usingMaterialNamed materialName: String) -> [String] {
         guard let materialIndex = self.gltf.materials?.firstIndex(where: {$0.name == materialName}) else {return []}
@@ -836,7 +869,7 @@ extension GLTransmissionFormat: GeometryImporter {
 }
 
 extension GLTransmissionFormat: SkinImporter {
-    private func meshForSkin(skinID: Int, in gltf: GLTF) -> Int? {
+    private func meshForSkin(skinID: Int) -> Int? {
         func findIn(_ parent: Int) -> Int? {
             let node = gltf.nodes[parent]
             for index in node.children ?? [] {
@@ -913,7 +946,7 @@ extension GLTransmissionFormat: SkinImporter {
             throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
 
-        guard let meshID = meshForSkin(skinID: skinIndex, in: gltf) else {
+        guard let meshID = meshForSkin(skinID: skinIndex) else {
             throw GateEngineError.failedToDecode("Couldn't locate skin geometry.")
         }
         let mesh = gltf.meshes![meshID]
@@ -937,21 +970,30 @@ extension GLTransmissionFormat: SkinImporter {
     }
 }
 
-extension GLTransmissionFormat: SkeletonImporter {    
-    private func skeletonNode(named name: String?, in gltf: GLTF) -> Int? {
-        func findIn(_ parent: Int) -> Int? {
-            let node = gltf.nodes[parent]
-            for index in node.children ?? [] {
-                let node = gltf.nodes[index]
-                if let skeleton = node.skeleton {
-                    if let name = name {
-                        guard node.name.caseInsensitiveCompare(name) == .orderedSame else {
-                            continue
-                        }
+extension GLTransmissionFormat: SkeletonImporter {
+    private func skeletonRootNode(fromChild nodeIndex: Int) -> Int? {
+        func parentWithChildSkin(nodeIndex: Int) -> Int? {
+            for gltfNodeIndex in gltf.nodes.indices {
+                let node = gltf.nodes[gltfNodeIndex]
+                // If the node is the parent
+                if let children = node.children, children.contains(nodeIndex) {
+                    // If the parent has a child with a skin
+                    if children.contains(where: {gltf.nodes[$0].skin != nil}) {
+                        return gltfNodeIndex
                     }
-                    return skeleton
+                    if let parent = parentWithChildSkin(nodeIndex: gltfNodeIndex) {
+                        return parent
+                    }
+                    break
                 }
             }
+            return nil
+        }
+        return parentWithChildSkin(nodeIndex: nodeIndex)
+    }
+    private func skeletonNode(named name: String?) -> Int? {
+        func findIn(_ parent: Int) -> Int? {
+            let node = gltf.nodes[parent]
             for index in node.children ?? [] {
                 if let value = findIn(index) {
                     return value
@@ -970,15 +1012,22 @@ extension GLTransmissionFormat: SkeletonImporter {
     }
 
     public func loadSkeleton(options: SkeletonImporterOptions) async throws(GateEngineError) -> RawSkeleton {
-        guard let rootNode = skeletonNode(named: options.subobjectName, in: gltf) else {
+        guard let rootNode = skeletonNode(named: options.subobjectName) else {
             throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
         }
         var rawSkeleton: RawSkeleton = .init(rawJoints: [])
         rawSkeleton.joints.append(
-            RawSkeleton.RawJoint(id: rootNode, parent: nil, name: gltf.nodes[rootNode].name, localTransform: gltf.nodes[rootNode].transform)
+            RawSkeleton.RawJoint(id: rootNode, parent: nil, name: gltf.nodes[rootNode].name, localTransform: .default)
         )
 
         func addChildren(of parentJointID: Int) {
+            if parentJointID != rootNode {
+                for childJointID in gltf.nodes[parentJointID].children ?? [] {
+                    let childNode = gltf.nodes[childJointID]
+                    if childNode.skin != nil {return}
+                    if childNode.mesh != nil {return}
+                }
+            }
             for childJointID in gltf.nodes[parentJointID].children ?? [] {
                 let childNode = gltf.nodes[childJointID]
                 rawSkeleton.joints.append(
@@ -993,7 +1042,7 @@ extension GLTransmissionFormat: SkeletonImporter {
 }
 
 extension GLTransmissionFormat: SkeletalAnimationImporter {
-    fileprivate func animation(named name: String?, from gltf: GLTF) -> GLTF.Animation? {
+    fileprivate func animation(named name: String?) -> GLTF.Animation? {
         if let name = name {
             return gltf.animations?.first(where: {
                 $0.name.caseInsensitiveCompare(name) == .orderedSame
@@ -1003,35 +1052,42 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
     }
     
     public func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws(GateEngineError) -> RawSkeletalAnimation {
-        guard let animation = animation(named: options.subobjectName, from: gltf) else {
+        guard let animation = animation(named: options.subobjectName) else {
             throw GateEngineError.failedToDecode(
                 "Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))"
             )
         }
         var animations: [Skeleton.Joint.ID: RawSkeletalAnimation.JointAnimation] = [:]
-        func jointAnimation(forTarget target: Skeleton.Joint.ID) -> RawSkeletalAnimation.JointAnimation {
+        func jointAnimation(forTarget target: Skeleton.Joint.ID, createIfNeeded: Bool) -> RawSkeletalAnimation.JointAnimation? {
             if let existing = animations[target] {
                 return existing
             }
-            let new = RawSkeletalAnimation.JointAnimation()
-            animations[target] = new
-            return new
+            if createIfNeeded {
+                let new = RawSkeletalAnimation.JointAnimation()
+                animations[target] = new
+                return new
+            }
+            return nil
         }
+        let rootJoint: RawSkeleton.RawJoint
         do {  // Add bind pose
-            guard let rootNode = skeletonNode(named: nil, in: gltf) else {
+            guard let rootNode = skeletonRootNode(fromChild: animation.channels[0].target.node) else {
                 throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
             }
-            let rootJoint = RawSkeleton.RawJoint(id: rootNode, name: gltf.nodes[rootNode].name, localTransform: gltf.nodes[rootNode].transform)
+            rootJoint = RawSkeleton.RawJoint(id: rootNode, name: gltf.nodes[rootNode].name, localTransform: .default)
 
             func addChildren(gltfNode: Int, parentJoint: RawSkeleton.RawJoint) {
                 for index in gltf.nodes[gltfNode].children ?? [] {
                     let node = gltf.nodes[index]
-
-                    var jointAnimation = animations[index] ?? RawSkeletalAnimation.JointAnimation()
+                    
+                    let joint = RawSkeleton.RawJoint(id: index, name: node.name, localTransform: node.transform)
+                    var jointAnimation = jointAnimation(forTarget: joint.id, createIfNeeded: true)!
                     jointAnimation.positionOutput.bind = node.transform.position
                     jointAnimation.rotationOutput.bind = node.transform.rotation
                     jointAnimation.scaleOutput.bind = node.transform.scale
                     animations[index] = jointAnimation
+                    
+                    addChildren(gltfNode: index, parentJoint: joint)
                 }
             }
             addChildren(gltfNode: rootNode, parentJoint: rootJoint)
@@ -1041,7 +1097,10 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
         var timeMin: Float = .nan
 
         for channel in animation.channels {
-            var jointAnimation = jointAnimation(forTarget: channel.target.node)
+            // Don't animate the root joint
+            guard channel.target.node != rootJoint.id else {continue}
+            // Only animate nodes that descendants of the root joint
+            guard var jointAnimation = jointAnimation(forTarget: channel.target.node, createIfNeeded: false) else {continue}
 
             let sampler = animation.samplers[channel.sampler]
 
@@ -1136,13 +1195,13 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
 
 extension GLTransmissionFormat: ObjectAnimation3DImporter {
     public func loadObjectAnimation(options: ObjectAnimation3DImporterOptions) async throws(GateEngineError) -> RawObjectAnimation3D {
-        guard let animation = animation(named: options.subobjectName, from: gltf) else {
+        guard let animation = animation(named: options.subobjectName) else {
             throw GateEngineError.failedToDecode(
                 "Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))"
             )
         }
         
-        var objectAnimation = ObjectAnimation3D.Animation()
+        var objectAnimation = RawObjectAnimation3D.NodeAnimation()
         
         var timeMax: Float = .nan
         var timeMin: Float = .nan
