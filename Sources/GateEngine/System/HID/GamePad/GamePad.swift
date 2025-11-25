@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public enum GamePadSymbolMap {
+public enum GamePadSymbolMap: Equatable, Hashable, Sendable {
     case unknown
 
     case appleMFI
@@ -20,7 +20,7 @@ public enum GamePadSymbolMap {
     case sonyPlaystation
 }
 
-public struct GamePadSymbol: CustomStringConvertible {
+public struct GamePadSymbol: CustomStringConvertible, Equatable, Hashable, Sendable {
     /// The mapping used to determine all other values
     public let map: GamePadSymbolMap
     internal let _id: GamePad.InternalID
@@ -179,7 +179,7 @@ public struct GamePadSymbol: CustomStringConvertible {
         }
     }
 
-    public enum Identifier {
+    public enum Identifier: Equatable, Hashable, Sendable {
         case unknown
 
         case up
@@ -232,7 +232,7 @@ public struct GamePadSymbol: CustomStringConvertible {
         case menu
     }
 
-    public enum Color {
+    public enum Color: Equatable, Hashable, Sendable {
         case monochrome
         case red
         case green
@@ -269,7 +269,7 @@ extension GamePad {
         case disconnected
     }
 
-    public enum InternalID {
+    public enum InternalID: Equatable, Hashable, Sendable {
         case north
         case south
         case east
