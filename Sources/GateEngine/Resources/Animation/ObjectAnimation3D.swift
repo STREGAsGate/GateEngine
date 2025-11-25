@@ -142,9 +142,9 @@ extension ObjectAnimation3D: Equatable, Hashable {
 
 public struct RawObjectAnimation3D {
     public typealias NodeAnimation = RawSkeletalAnimation.JointAnimation
-    var name: String
-    var duration: Float
-    var animation: NodeAnimation
+    public var name: String
+    public var duration: Float
+    public var animation: NodeAnimation
     
     public init(name: String, duration: Float, animation: RawObjectAnimation3D.NodeAnimation) {
         self.name = name

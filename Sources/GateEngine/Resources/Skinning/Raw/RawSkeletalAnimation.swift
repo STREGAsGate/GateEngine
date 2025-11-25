@@ -95,16 +95,16 @@ public extension RawSkeletalAnimation {
             self.scaleOutput.interpolation = interpolation
         }
 
-        var positionOutput: PositionOutput = PositionOutput(
+        public var positionOutput: PositionOutput = PositionOutput(
             times: [],
             interpolation: .linear,
             positions: []
         )
-        struct PositionOutput: BinaryCodable, Sendable {
-            var times: [Float]
-            var interpolation: Interpolation
-            var positions: [Position3]
-            var bind: Position3 = .zero
+        public struct PositionOutput: BinaryCodable, Sendable {
+            public var times: [Float]
+            public var interpolation: Interpolation
+            public var positions: [Position3]
+            public var bind: Position3 = .zero
             
             init(times: [Float], interpolation: Interpolation, positions: [Position3]) {
                 self.times = times
@@ -112,30 +112,30 @@ public extension RawSkeletalAnimation {
                 self.positions = positions
             }
             
-            func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+            public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
                 try times.encode(into: &data, version: version)
                 try interpolation.encode(into: &data, version: version)
                 try positions.encode(into: &data, version: version)
                 try bind.encode(into: &data, version: version)
             }
             
-            init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+            public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
                 self.times = try Array<Float>(decoding: data, at: &offset, version: version)
                 self.interpolation = try Interpolation(decoding: data, at: &offset, version: version)
                 self.positions = try Array<Position3>(decoding: data, at: &offset, version: version)
                 self.bind = try Position3(decoding: data, at: &offset, version: version)
             }
         }
-        var rotationOutput: RotationOutput = RotationOutput(
+        public var rotationOutput: RotationOutput = RotationOutput(
             times: [],
             interpolation: .linear,
             rotations: []
         )
-        struct RotationOutput: Sendable {
-            var times: [Float]
-            var interpolation: Interpolation
-            var rotations: [Quaternion]
-            var bind: Quaternion = .zero
+        public struct RotationOutput: BinaryCodable, Sendable {
+            public var times: [Float]
+            public var interpolation: Interpolation
+            public var rotations: [Quaternion]
+            public var bind: Quaternion = .zero
             
             init(times: [Float], interpolation: Interpolation, rotations: [Quaternion]) {
                 self.times = times
@@ -143,14 +143,14 @@ public extension RawSkeletalAnimation {
                 self.rotations = rotations
             }
             
-            func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+            public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
                 try times.encode(into: &data, version: version)
                 try interpolation.encode(into: &data, version: version)
                 try rotations.encode(into: &data, version: version)
                 try bind.encode(into: &data, version: version)
             }
             
-            init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+            public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
                 self.times = try Array<Float>(decoding: data, at: &offset, version: version)
                 self.interpolation = try Interpolation(decoding: data, at: &offset, version: version)
                 self.rotations = try Array<Quaternion>(decoding: data, at: &offset, version: version)
@@ -158,12 +158,12 @@ public extension RawSkeletalAnimation {
             }
         }
 
-        var scaleOutput: ScaleOutput = ScaleOutput(times: [], interpolation: .linear, scales: [])
-        struct ScaleOutput: Sendable {
-            var times: [Float]
-            var interpolation: Interpolation
-            var scales: [Size3]
-            var bind: Size3 = .one
+        public var scaleOutput: ScaleOutput = ScaleOutput(times: [], interpolation: .linear, scales: [])
+        public struct ScaleOutput: BinaryCodable, Sendable {
+            public var times: [Float]
+            public var interpolation: Interpolation
+            public var scales: [Size3]
+            public var bind: Size3 = .one
             
             init(times: [Float], interpolation: Interpolation, scales: [Size3]) {
                 self.times = times
@@ -171,14 +171,14 @@ public extension RawSkeletalAnimation {
                 self.scales = scales
             }
             
-            func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
+            public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
                 try times.encode(into: &data, version: version)
                 try interpolation.encode(into: &data, version: version)
                 try scales.encode(into: &data, version: version)
                 try bind.encode(into: &data, version: version)
             }
             
-            init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
+            public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
                 self.times = try Array<Float>(decoding: data, at: &offset, version: version)
                 self.interpolation = try Interpolation(decoding: data, at: &offset, version: version)
                 self.scales = try Array<Size3>(decoding: data, at: &offset, version: version)
