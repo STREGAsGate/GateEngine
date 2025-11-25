@@ -96,6 +96,7 @@ extension ResourceManager {
         ]
         
         internal var objectAnimation3DImporters: [any ObjectAnimation3DImporter.Type] = [
+            RawObjectAnimation3DImporter.self,
             GLTransmissionFormat.self,
         ]
 
