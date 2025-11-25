@@ -276,17 +276,19 @@
         public var scale: Float
         public var repeats: Bool
 
-        public func currentFrame(assumingFrameRate fps: UInt) -> UInt {
-            let totalFrames = Float(fps) * duration
-            guard accumulatedTime <= duration else {return UInt(totalFrames)}            
-            return UInt(accumulatedTime * totalFrames)
+        public func currentFrame(assumingFrameRate fps: Int) -> Int {
+            assert(fps > 0, "Invalid frame rate: \(fps)")
+            return Int(Float(fps) * accumulatedTime)
         }
 
         public var accumulatedTime: Float {
             didSet {
-                guard repeats else { return }
-                if accumulatedTime > duration {
-                    accumulatedTime -= duration
+                if repeats {
+                    while accumulatedTime > duration {
+                        accumulatedTime -= duration
+                    }
+                }else if accumulatedTime > duration {
+                    accumulatedTime = duration
                 }
             }
         }
@@ -294,18 +296,9 @@
         @inlinable
         public var progress: Float {
             get {
-                return .maximum(
-                    0,
-                    .minimum(1, (Float(accumulatedTime) * scale) / Float(duration))
-                )
+                return .maximum(0, .minimum(1, accumulatedTime / duration))
             }
             set {
-                var newValue = newValue
-                if repeats && newValue > 1 {
-                    while newValue > 1 {
-                        newValue -= 1
-                    }
-                }
                 accumulatedTime = duration * newValue
             }
         }
