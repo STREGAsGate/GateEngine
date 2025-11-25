@@ -87,7 +87,7 @@ internal final class MFIGamePadInterpreter: GamePadInterpreter {
             gcController = gcController.capture()
         }
 
-        if let gcGamePad = gcController.microGamepad {
+        if let gcGamePad = gcController.extendedGamepad {
             gamePad.dpad.up.isPressed = gcGamePad.dpad.up.isPressed
             gamePad.dpad.up.value = gcGamePad.dpad.up.value
 
@@ -99,24 +99,18 @@ internal final class MFIGamePadInterpreter: GamePadInterpreter {
 
             gamePad.dpad.right.isPressed = gcGamePad.dpad.right.isPressed
             gamePad.dpad.right.value = gcGamePad.dpad.right.value
-
+            
+            gamePad.button.north.isPressed = gcGamePad.buttonY.isPressed
+            gamePad.button.north.value = gcGamePad.buttonY.value
+            
+            gamePad.button.east.isPressed = gcGamePad.buttonB.isPressed
+            gamePad.button.east.value = gcGamePad.buttonB.value
+            
             gamePad.button.south.isPressed = gcGamePad.buttonA.isPressed
             gamePad.button.south.value = gcGamePad.buttonA.value
 
             gamePad.button.west.isPressed = gcGamePad.buttonX.isPressed
             gamePad.button.west.value = gcGamePad.buttonX.value
-
-            if #available(macOS 10.15, iOS 13, tvOS 13, *) {
-                gamePad.menu.primary.isPressed = gcGamePad.buttonMenu.isPressed
-                gamePad.menu.primary.value = gcGamePad.buttonMenu.value
-            }
-        }
-        if let gcGamePad = gcController.extendedGamepad {
-            gamePad.button.east.isPressed = gcGamePad.buttonB.isPressed
-            gamePad.button.east.value = gcGamePad.buttonB.value
-
-            gamePad.button.north.isPressed = gcGamePad.buttonY.isPressed
-            gamePad.button.north.value = gcGamePad.buttonY.value
 
             gamePad.shoulder.left.isPressed = gcGamePad.leftShoulder.isPressed
             gamePad.shoulder.left.value = gcGamePad.leftShoulder.value
@@ -145,6 +139,11 @@ internal final class MFIGamePadInterpreter: GamePadInterpreter {
                     gamePad.stick.right.button.value = button.value
                 }
             }
+            
+            if #available(macOS 10.15, iOS 13, tvOS 13, *) {
+                gamePad.menu.primary.isPressed = gcGamePad.buttonMenu.isPressed
+                gamePad.menu.primary.value = gcGamePad.buttonMenu.value
+            }
 
             if #available(macOS 10.15, iOS 13, tvOS 13, *) {
                 if let button = gcGamePad.buttonOptions {
@@ -158,6 +157,29 @@ internal final class MFIGamePadInterpreter: GamePadInterpreter {
                     gamePad.menu.tertiary.isPressed = button.isPressed
                     gamePad.menu.tertiary.value = button.value
                 }
+            }
+        }else if let gcGamePad = gcController.microGamepad {
+            gamePad.dpad.up.isPressed = gcGamePad.dpad.up.isPressed
+            gamePad.dpad.up.value = gcGamePad.dpad.up.value
+
+            gamePad.dpad.down.isPressed = gcGamePad.dpad.down.isPressed
+            gamePad.dpad.down.value = gcGamePad.dpad.down.value
+
+            gamePad.dpad.left.isPressed = gcGamePad.dpad.left.isPressed
+            gamePad.dpad.left.value = gcGamePad.dpad.left.value
+
+            gamePad.dpad.right.isPressed = gcGamePad.dpad.right.isPressed
+            gamePad.dpad.right.value = gcGamePad.dpad.right.value
+
+            gamePad.button.south.isPressed = gcGamePad.buttonA.isPressed
+            gamePad.button.south.value = gcGamePad.buttonA.value
+
+            gamePad.button.west.isPressed = gcGamePad.buttonX.isPressed
+            gamePad.button.west.value = gcGamePad.buttonX.value
+
+            if #available(macOS 10.15, iOS 13, tvOS 13, *) {
+                gamePad.menu.primary.isPressed = gcGamePad.buttonMenu.isPressed
+                gamePad.menu.primary.value = gcGamePad.buttonMenu.value
             }
         }
     }
