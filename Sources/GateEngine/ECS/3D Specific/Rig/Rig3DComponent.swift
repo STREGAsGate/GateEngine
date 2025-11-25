@@ -280,6 +280,15 @@
             assert(fps > 0, "Invalid frame rate: \(fps)")
             return Int(Float(fps) * accumulatedTime)
         }
+        
+        public func progress(forFrames range: ClosedRange<Int>, assumingFrameRate fps: Int) -> Float {
+            assert(fps > 0, "Invalid frame rate: \(fps)")
+            let startTime = Float(range.lowerBound) / Float(fps)
+            guard accumulatedTime >= startTime else {return 0}
+            let endTime = Float(range.upperBound) / Float(fps)
+            guard accumulatedTime <= endTime else {return 1}
+            return .maximum(0, .minimum(1, (accumulatedTime - startTime) / (endTime - startTime)))
+        }
 
         public var accumulatedTime: Float {
             didSet {
