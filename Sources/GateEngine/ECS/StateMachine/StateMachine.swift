@@ -6,25 +6,40 @@
  */
 
 public struct StateMachine {
-    public private(set) var currentState: any State
+    public internal(set) var currentState: any State
     
     public init(initialState: any State.Type) {
-        self.currentState = initialState.init()
+        self.currentState = InitState(initialState: initialState)
+    }
+    
+    private struct InitState: State {
+        nonisolated(unsafe) let initialState: any State.Type
+        nonisolated init(initialState: any State.Type) {
+            self.initialState = initialState
+        }
+        func possibleNextStates(for entity: Entity, context: ECSContext, input: HID) -> [any State.Type] {
+            return [initialState]
+        }
+        init() {fatalError()}
     }
     
     @MainActor
     internal mutating func updateState(for entity: Entity, context: ECSContext, input: HID, deltaTime: Float) {
         currentState.update(for: entity, inContext: context, input: input, withTimePassed: deltaTime)
-        guard currentState.canMoveToNextState(for: entity, context: context, input: input) else {return}
-                
+        guard currentState.canChangeState(for: entity, context: context, input: input) else {return}
+        
+        let previousState = currentState
         for state in currentState.possibleNextStates(for: entity, context: context, input: input) {
-            if state.canBecomeCurrentState(for: entity, from: currentState, context: context, input: input) {
-                currentState.willMoveToNextState(for: entity, nextState: state, context: context, input: input)
-                let previousState = currentState
-                currentState = state.init()
-                currentState.apply(to: entity, previousState: previousState, context: context, input: input)
-                currentState.update(for: entity, inContext: context, input: input, withTimePassed: deltaTime)
-                return
+            if var new = state.constructNew(ifSwitchingFrom: previousState, for: entity, context: context, input: input) {
+                if currentState.canMoveToNextState(new, for: entity, context: context, input: input) {
+                    if new.canBecomeCurrent(from: currentState, for: entity, context: context, input: input) {
+                        currentState.willMoveToNextState(new, for: entity, context: context, input: input)
+                        currentState = new
+                        currentState.didBecomeCurrent(from: previousState, for: entity, context: context, input: input)
+                        currentState.update(for: entity, inContext: context, input: input, withTimePassed: deltaTime)
+                        return
+                    }
+                }
             }
         }
     }
@@ -34,27 +49,50 @@ public struct StateMachine {
 public protocol State {
     nonisolated init()
     
-    func apply(to entity: Entity, previousState: some State, context: ECSContext, input: HID)
-    func update(for entity: Entity, inContext context: ECSContext, input: HID, withTimePassed deltaTime: Float)
+    mutating func canBecomeCurrent(from currentState: some State, for entity: Entity, context: ECSContext, input: HID) -> Bool
+    mutating func didBecomeCurrent(from previousState: some State, for entity: Entity, context: ECSContext, input: HID)
     
-    func canMoveToNextState(for entity: Entity, context: ECSContext, input: HID) -> Bool
-    func possibleNextStates(for entity: Entity, context: ECSContext, input: HID) -> [any State.Type]
+    mutating func update(for entity: Entity, inContext context: ECSContext, input: HID, withTimePassed deltaTime: Float)
     
-    func willMoveToNextState(for entity: Entity, nextState: any State.Type, context: ECSContext, input: HID)
+    mutating func canChangeState(for entity: Entity, context: ECSContext, input: HID) -> Bool
+    mutating func possibleNextStates(for entity: Entity, context: ECSContext, input: HID) -> [any State.Type]
     
-    static func canBecomeCurrentState(for entity: Entity, from currentState: some State, context: ECSContext, input: HID) -> Bool
+    mutating func canMoveToNextState(_ nextState: some State, for entity: Entity, context: ECSContext, input: HID) -> Bool
+    mutating func willMoveToNextState(_ nextState: some State, for entity: Entity, context: ECSContext, input: HID)
+    
+    static func constructNew(ifSwitchingFrom currentState: some State, for entity: Entity, context: ECSContext, input: HID) -> Self?
 }
 
 public extension State {
-    func canMoveToNextState(for entity: Entity, context: ECSContext, input: HID) -> Bool {
+    func canBecomeCurrent(from currentState: some State, for entity: Entity, context: ECSContext, input: HID) -> Bool {
         return true
     }
     
-    func willMoveToNextState(for entity: Entity, nextState: any State.Type, context: ECSContext, input: HID) {
+    func didBecomeCurrent(from previousState: some State, for entity: Entity, context: ECSContext, input: HID) {
         
     }
     
-    static func canBecomeCurrentState(for entity: Entity, from currentState: some State, context: ECSContext, input: HID) -> Bool {
+    func update(for entity: Entity, inContext context: ECSContext, input: HID, withTimePassed deltaTime: Float) {
+        
+    }
+    
+    func canChangeState(for entity: Entity, context: ECSContext, input: HID) -> Bool {
         return true
+    }
+    
+    func canMoveToNextState(_ nextState: some State, for entity: Entity, context: ECSContext, input: HID) -> Bool {
+        return true
+    }
+    
+    func willMoveToNextState(_ nextState: some State, for entity: Entity, context: ECSContext, input: HID) {
+        
+    }
+    
+    static func constructNew(ifSwitchingFrom currentState: some State, for entity: Entity, context: ECSContext, input: HID) -> Self? {
+        var new = self.init()
+        if new.canBecomeCurrent(from: currentState, for: entity, context: context, input: input) {
+            return new
+        }
+        return nil
     }
 }

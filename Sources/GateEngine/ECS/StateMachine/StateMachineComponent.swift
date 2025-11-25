@@ -6,29 +6,27 @@
  */
 
 public final class StateMachineComponent: Component {
-    public var stateMachine: StateMachine
-    internal var shouldApplyInitialState: Bool = true
-
+    public var stateMachines: [StateMachine]
+    
     @inlinable
     public var currentState: any State {
-        return stateMachine.currentState
+        return stateMachines[0].currentState
     }
     
-    public struct NoState: State {
+    /// A blank state that does nothing
+    internal struct NoState: State {
         public init() { }
-        public func apply(to entity: Entity, previousState: some State, context: ECSContext, input: HID) { }
-        public func update(for entity: Entity, inContext context: ECSContext, input: HID, withTimePassed deltaTime: Float) { }
         public func possibleNextStates(for entity: Entity, context: ECSContext, input: HID) -> [any State.Type] {
             return []
         }
     }
     
     public init() {
-        self.stateMachine = StateMachine(initialState: NoState.self)
+        self.stateMachines = [StateMachine(initialState: NoState.self)]
     }
     
     public init(initialState: any State.Type) {
-        self.stateMachine = StateMachine(initialState: initialState)
+        self.stateMachines = [StateMachine(initialState: initialState)]
     }
     
     public static let componentID: ComponentID = ComponentID()
