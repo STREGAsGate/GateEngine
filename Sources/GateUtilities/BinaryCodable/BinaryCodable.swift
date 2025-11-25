@@ -184,14 +184,27 @@ public extension Dictionary where Key: BinaryCodable, Value: BinaryCodable {
 }
 
 extension Bool: BinaryCodable {}
+
 extension Int8: BinaryCodable {}
 extension Int16: BinaryCodable {}
 extension Int32: BinaryCodable {}
 extension Int64: BinaryCodable {}
+@available(macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
+extension Int128: BinaryCodable {}
+
 extension UInt8: BinaryCodable {}
 extension UInt16: BinaryCodable {}
 extension UInt32: BinaryCodable {}
 extension UInt64: BinaryCodable {}
+@available(macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
+extension UInt128: BinaryCodable {}
+
+// Float16 works fine on all platforms, except x86 macOS.
+// Apple promised to support Float16 on x86 macOS, but later decided to make it a planned obsolescence feature
+#if !((os(macOS) || targetEnvironment(macCatalyst)) && arch(x86_64))
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+extension Float16: BinaryCodable {}
+#endif
 extension Float32: BinaryCodable {}
 extension Float64: BinaryCodable {}
 
@@ -250,31 +263,6 @@ extension String: BinaryCodable {
         }
     }
 }
-
-#if canImport(Foundation)
-public import struct Foundation.Data
-extension Data: BinaryCodable {
-    public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
-        switch version {
-        case .v1:
-            try self.count.encode(into: &data, version: version)
-            self.withUnsafeBytes { bytes in
-                data.append(contentsOf: bytes)
-            }
-        }
-    }
-    
-    public init(decoding data: UnsafeRawBufferPointer, at offset: inout Int, version: BinaryCodableVersion) throws {
-        switch version {
-        case .v1:
-            let count = try Int(decoding: data, at: &offset, version: version)
-            let pointer = data.baseAddress!.advanced(by: offset)
-            offset += count
-            self.init(bytes: pointer, count: count)
-        }
-    }
-}
-#endif
 
 public extension RawRepresentable where Self: BinaryCodable, RawValue: BinaryCodable {
     func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
