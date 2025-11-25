@@ -223,7 +223,7 @@ extension ResourceManager {
 }
 
 extension RawObjectAnimation3D {
-    init(path: String, options: ObjectAnimation3DImporterOptions = .none) async throws {
+    public init(path: String, options: ObjectAnimation3DImporterOptions = .none) async throws {
         let importer: any ObjectAnimation3DImporter = try await Game.unsafeShared.resourceManager.objectAnimation3DImporterForPath(path)
         self = try await importer.loadObjectAnimation(options: options)
     }
