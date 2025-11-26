@@ -68,13 +68,13 @@ internal final class MFIGamePadInterpreter: GamePadInterpreter {
         guard let gcController = gamePad.identifier as? GCController else { return }
 
         switch gcController.productCategory {
-        case "DualShock 4", "DualSense":
+        case GCProductCategoryDualShock4, GCProductCategoryDualSense:
             gamePad.symbols = .sonyPlaystation
-        case "Xbox One":
+        case GCProductCategoryXboxOne:
             gamePad.symbols = .microsoftXbox
         case "Switch Pro Controller":
             gamePad.symbols = .nintendoSwitch
-        case "MFi":
+        case GCProductCategoryMFi:
             gamePad.symbols = .appleMFI
         default:
             gamePad.symbols = .unknown
@@ -99,18 +99,45 @@ internal final class MFIGamePadInterpreter: GamePadInterpreter {
 
             gamePad.dpad.right.isPressed = gcGamePad.dpad.right.isPressed
             gamePad.dpad.right.value = gcGamePad.dpad.right.value
-            
-            gamePad.button.north.isPressed = gcGamePad.buttonY.isPressed
-            gamePad.button.north.value = gcGamePad.buttonY.value
-            
-            gamePad.button.east.isPressed = gcGamePad.buttonB.isPressed
-            gamePad.button.east.value = gcGamePad.buttonB.value
-            
-            gamePad.button.south.isPressed = gcGamePad.buttonA.isPressed
-            gamePad.button.south.value = gcGamePad.buttonA.value
 
-            gamePad.button.west.isPressed = gcGamePad.buttonX.isPressed
-            gamePad.button.west.value = gcGamePad.buttonX.value
+            switch gamePad.symbols {
+            case .nintendoSwitch:
+                // At some point the nintendo gamepad face button layout changed. 
+                // This could be becuase of Apple meddling, 
+                // or a firmware change from Nintendo
+                // or Nintendo meddling with Apple.
+                // It's unclear exactly when this change was made. But it's fucking stupid...
+                // We'll just assume the change happened in 2024.
+                if #available(macOS 15, iOS 18, tvOS 18, macCatalyst 18, *) {
+                    // Nintendo has buttons in different spots
+                    gamePad.button.north.isPressed = gcGamePad.buttonX.isPressed
+                    gamePad.button.north.value = gcGamePad.buttonX.value
+                    
+                    gamePad.button.east.isPressed = gcGamePad.buttonA.isPressed
+                    gamePad.button.east.value = gcGamePad.buttonA.value
+                    
+                    gamePad.button.south.isPressed = gcGamePad.buttonB.isPressed
+                    gamePad.button.south.value = gcGamePad.buttonB.value
+                    
+                    gamePad.button.west.isPressed = gcGamePad.buttonY.isPressed
+                    gamePad.button.west.value = gcGamePad.buttonY.value
+                }else{
+                    // Use the default layout if the OS is older
+                    fallthrough
+                }
+            default: // Only Nintendo fucks up the layout, every other gamepad is physically identical
+                gamePad.button.north.isPressed = gcGamePad.buttonY.isPressed
+                gamePad.button.north.value = gcGamePad.buttonY.value
+                
+                gamePad.button.east.isPressed = gcGamePad.buttonB.isPressed
+                gamePad.button.east.value = gcGamePad.buttonB.value
+                
+                gamePad.button.south.isPressed = gcGamePad.buttonA.isPressed
+                gamePad.button.south.value = gcGamePad.buttonA.value
+
+                gamePad.button.west.isPressed = gcGamePad.buttonX.isPressed
+                gamePad.button.west.value = gcGamePad.buttonX.value
+            }
 
             gamePad.shoulder.left.isPressed = gcGamePad.leftShoulder.isPressed
             gamePad.shoulder.left.value = gcGamePad.leftShoulder.value
