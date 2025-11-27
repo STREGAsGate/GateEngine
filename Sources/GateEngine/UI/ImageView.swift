@@ -28,13 +28,12 @@ open class ImageView: View {
     
     private var subRect: Rect2i? = nil
     
-    public init(path: String, meta: (textureSize: Size2i, subRect: Rect2i)? = nil, sampleFilter: SampleFilter = .linear) {
-        self.subRect = meta?.subRect
+    public init(path: String, sizeHint textureSize: Size2i? = nil, subRect: Rect2i? = nil, sampleFilter: SampleFilter = .linear, options: TextureImporterOptions = .none) {
+        self.subRect = subRect
         self.material.channel(0) { channel in
-            channel.texture = Texture(path: path, sizeHint: meta?.textureSize, mipMapping: .none)
+            channel.texture = Texture(path: path, sizeHint: textureSize, mipMapping: .none, options: options)
             channel.sampleFilter = sampleFilter
-            if let subRect = meta?.subRect {
-                
+            if let subRect = subRect {
                 channel.setSubRect(subRect)
             }
         }
