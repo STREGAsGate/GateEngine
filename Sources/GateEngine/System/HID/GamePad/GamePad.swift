@@ -387,7 +387,7 @@ extension GamePad {
 
     @MainActor public final class ButtonState {
         weak var gamePad: GamePad?
-        let id: InternalID
+        public let id: InternalID
         var currentReceipt: UInt8 = 0
         var _isPressed: Bool = false
         
