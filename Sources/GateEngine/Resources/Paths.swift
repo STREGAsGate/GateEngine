@@ -5,7 +5,7 @@
  * http://stregasgate.com
  */
 
-public struct TexturePath: ExpressibleByStringLiteral, CustomStringConvertible {
+public struct TexturePath: Equatable, Hashable, Sendable, ExpressibleByStringLiteral, CustomStringConvertible {
     public typealias StringLiteralType = String
     public var value: String
     public var description: String { value }
@@ -18,7 +18,7 @@ public struct TexturePath: ExpressibleByStringLiteral, CustomStringConvertible {
     public static var checkerPattern: TexturePath { "GateEngine/Textures/CheckerPattern.png" }
 }
 
-public struct GeoemetryPath: ExpressibleByStringLiteral, CustomStringConvertible {
+public struct GeoemetryPath: Equatable, Hashable, Sendable, ExpressibleByStringLiteral, CustomStringConvertible {
     public typealias StringLiteralType = String
     public var value: String
     public var description: String { value }
