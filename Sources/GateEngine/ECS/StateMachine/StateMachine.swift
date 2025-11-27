@@ -30,15 +30,13 @@ public struct StateMachine {
         
         let previousState = currentState
         for state in currentState.possibleNextStates(for: entity, context: context, input: input) {
-            if var new = state.constructNew(ifSwitchingFrom: previousState, for: entity, context: context, input: input) {
+            if let new = state.constructNew(ifSwitchingFrom: previousState, for: entity, context: context, input: input) {
                 if currentState.canMoveToNextState(new, for: entity, context: context, input: input) {
-                    if new.canBecomeCurrent(from: currentState, for: entity, context: context, input: input) {
-                        currentState.willMoveToNextState(new, for: entity, context: context, input: input)
-                        currentState = new
-                        currentState.didBecomeCurrent(from: previousState, for: entity, context: context, input: input)
-                        currentState.update(for: entity, inContext: context, input: input, withTimePassed: deltaTime)
-                        return
-                    }
+                    currentState.willMoveToNextState(new, for: entity, context: context, input: input)
+                    currentState = new
+                    currentState.didBecomeCurrent(from: previousState, for: entity, context: context, input: input)
+                    currentState.update(for: entity, inContext: context, input: input, withTimePassed: deltaTime)
+                    return
                 }
             }
         }
