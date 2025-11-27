@@ -61,8 +61,9 @@ public final class GameView: View {
             let highPrecisionDeltaTime = self.deltaTimeHelper.getDeltaTime() ?? .leastNonzeroMagnitude
             
             let deltaTime = Float(highPrecisionDeltaTime)
-            gameViewController.render(context: gameViewController.context, into: self, withTimePassed: deltaTime)
+            
             gameViewController.context.updateRendering(into: self, deltaTime: deltaTime)
+            gameViewController.render(context: gameViewController.context, into: self, withTimePassed: deltaTime)
             
             if mode == .offScreen {
                 canvas.insert(
