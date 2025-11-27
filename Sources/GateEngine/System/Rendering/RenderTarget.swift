@@ -64,6 +64,7 @@ extension _RenderTargetProtocol {
             Game.shared.attributes.contains(.renderingIsPermitted),
             "Rendering can only be changed from a RenderingSystem."
         )
+        self.reshapeIfNeeded()
         precondition(
             canvas.size == nil || canvas.size!.aspectRatio == self.size.vector2.aspectRatio,
             "Canvas.size.aspectRatio must equal RenderTarget.size.aspectRatio to insert."
