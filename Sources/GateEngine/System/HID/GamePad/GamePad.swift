@@ -405,7 +405,7 @@ extension GamePad {
             }
         }
 
-        // Returns a receipt for the current press or nil if not pressed
+        /// Returns true if newly pressed for given `receipt`. If button is held down this returns true only the first time and then false until newly pressed again
         public func isPressed(ifDifferent receipt: inout InputReceipts) -> Bool {
             guard self.isPressed else { return false }
             let key = ObjectIdentifier(self)
@@ -414,6 +414,17 @@ extension GamePad {
             }
             receipt.values[key] = currentReceipt
             return true
+        }
+        
+        /// Returns true if the button was already pressed for given `receipt` using the `isPressed(ifDifferent:_)` varient. If button is still held down this returns true
+        public func isPressed(ifUnchanged receipt: inout InputReceipts) -> Bool {
+            guard self.isPressed else { return false }
+            let key = ObjectIdentifier(self)
+            if let receipt = receipt.values[key], receipt == currentReceipt {
+                return true
+            }
+            receipt.values[key] = currentReceipt
+            return false
         }
 
         /**

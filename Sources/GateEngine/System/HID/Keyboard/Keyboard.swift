@@ -317,6 +317,75 @@ extension Keyboard {
             }
             return false
         }
+        
+        /**
+         Returns a receipt for the current press or nil if not pressed.
+         - parameter receipt: An existing receipt from a previous call to compare to the current pressed state.
+         - parameter modifiers: Key modifiers required for a press to be considered valid.
+         - returns: A receipt if the key is currently pressed and the was released since the provided receipt.
+         - note: This function does **not** store `block` for later execution. If the function fails the block is discarded.
+         */
+        public func isPressed(
+            ifUnchanged receipt: inout InputReceipts,
+            andUsing modifiers: KeyboardModifierMask = []
+        ) -> Bool {
+            guard isPressed, keyboard.modifiers.contains(modifiers) else { return false }
+            let key = ObjectIdentifier(self)
+            if isKeyVirtual == false {
+                if let receipt = receipt.values[key], receipt == currentReceipt {
+                    return true
+                }
+                receipt.values[key] = currentReceipt
+                return false
+            }
+            switch self.key {
+            case .shift(.anyVariation):
+                if keyboard.button(.shift(.leftSide)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.shift(.rightSide)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            case .alt(.anyVariation):
+                if keyboard.button(.alt(.leftSide)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.alt(.rightSide)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            case .host(.anyVariation):
+                if keyboard.button(.host(.leftSide)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.host(.rightSide)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            case .control(.anyVariation):
+                if keyboard.button(.control(.leftSide)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.control(.rightSide)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            case .enter(.anyVariation):
+                if keyboard.button(.enter(.standard)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.enter(.numberPad)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            case .character(let character, .anyVariation):
+                if keyboard.button(.character(character, .standard)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+                if keyboard.button(.character(character, .numberPad)).isPressed(ifUnchanged: &receipt, andUsing: modifiers) {
+                    return true
+                }
+            default:
+                break
+            }
+            return false
+        }
 
         /**
          Returns a receipt for the current press or nil if not pressed.
