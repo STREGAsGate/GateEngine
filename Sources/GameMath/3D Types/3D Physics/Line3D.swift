@@ -19,6 +19,11 @@ public struct Line3D: Sendable {
 
 public extension Line3D {
     @inlinable
+    var direction: Direction3 {
+        return Direction3(from: p1, to: p2)
+    }
+    
+    @inlinable
     func pointNear(_ p: Position3) -> Position3 {
         let ab = p2 - p1
         let ap = p - p1

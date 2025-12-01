@@ -16,6 +16,11 @@ public struct Line2D: Sendable {
 }
 
 public extension Line2D {
+    @inlinable
+    var direction: Direction2 {
+        return Direction2(from: p1, to: p2)
+    }
+    
     func pointNear(_ p: Position2) -> Position2 {
         let ab = p2 - p1
         let ap = p - p1

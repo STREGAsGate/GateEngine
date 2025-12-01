@@ -94,6 +94,18 @@ public extension Size3 {
             self.y = newValue.y
         }
     }
+    
+    
+    @inlinable
+    var xz: Size2 {
+        get {
+            return Size2(x, z)
+        }
+        set {
+            self.x = newValue.x
+            self.z = newValue.y
+        }
+    }
 }
 
 public extension Size3 {
