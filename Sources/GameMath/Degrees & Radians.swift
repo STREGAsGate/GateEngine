@@ -20,6 +20,7 @@ public protocol Angle: Sendable, RawRepresentable, FloatingPoint, Comparable whe
     init(_ rawValue: RawValue)
     init(rawValue: RawValue)
     init(rawValueAsRadians: RawValue)
+    init(rawValueAsDegrees: RawValue)
 }
 
 public extension Angle {
