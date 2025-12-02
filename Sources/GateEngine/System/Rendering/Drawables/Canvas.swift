@@ -416,15 +416,13 @@
      This function requires you to first call `setCamera(_:size:)`.
      - returns: A 2D position representing the location of a 3D object.
      */
-    public func convertFrom3DSpace(_ position: Position3) -> Position2 {
-        guard let camera = camera else {
-            preconditionFailure("Must set camera during `Canvas.init` to use \(#function).")
-        }
+    public mutating func convertFrom3DSpace(_ position: Position3) -> Position2 {
+        precondition(camera != nil, "Must set camera during `Canvas.init` to use \(#function).")
         guard let size = size else {
             preconditionFailure("Must set size during `Canvas.init` to use \(#function).")
         }
 
-        let matricies = camera.matricies(withViewportSize: size)
+        let matricies = camera!.matricies(withViewportSize: size)
         var position = position * matricies.viewProjection()
         position.x /= position.z
         position.y /= position.z
@@ -438,23 +436,21 @@
         return Position2(position.x, position.y)
     }
 
-    public func convertTo3DSpace(_ position: Position2) -> Ray3D {
-        guard let camera = camera else {
-            preconditionFailure("Must set camera during `Canvas.init` to use \(#function).")
-        }
+    public mutating func convertTo3DSpace(_ position: Position2) -> Ray3D {
+        precondition(camera != nil, "Must set camera during `Canvas.init` to use \(#function).")
         guard let size = size else {
             preconditionFailure("Must set size during `Canvas.init` to use \(#function).")
         }
 
-        switch camera.fieldOfView {
+        switch camera!.fieldOfView {
         case .perspective(let fov):
             let halfSize = size / 2
             let aspectRatio = size.aspectRatio
 
-            let inverseView = camera.matricies(withViewportSize: size).view.inverse
+            let inverseView = camera!.matricies(withViewportSize: size).view.inverse
             let halfFOV = tan(fov.rawValueAsRadians * 0.5)
-            let near = camera.clippingPlane.near
-            let far = camera.clippingPlane.far
+            let near = camera!.clippingPlane.near
+            let far = camera!.clippingPlane.far
 
             let dx = halfFOV * (position.x / halfSize.width - 1.0) * aspectRatio
             let dy = halfFOV * (1.0 - position.y / halfSize.height)
@@ -476,10 +472,10 @@
             let x = position.x
             let y = position.y
 
-            let inverseView = camera.matricies(withViewportSize: size).view.inverse
+            let inverseView = camera!.matricies(withViewportSize: size).view.inverse
             let start = Position3(x, y, -1) * inverseView
 
-            return Ray3D(from: start, toward: camera.transform.rotation.forward)
+            return Ray3D(from: start, toward: camera!.transform.rotation.forward)
         }
     }
 

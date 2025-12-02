@@ -230,8 +230,8 @@ extension _RenderTargetProtocol {
                 switch drawable {
                 case let uiCanvas as UICanvas:
                     drawUICanvas(uiCanvas, clipRect: nil, stencil: nil)
-                case let scene as Scene:
-                    drawScene(scene, viewportSize: self.size.vector2, clipRect: nil, stencil: nil)
+                case var scene as Scene:
+                    drawScene(&scene, viewportSize: self.size.vector2, clipRect: nil, stencil: nil)
                 case let canvas as Canvas:
                     drawCanvas(canvas, clipRect: nil, stencil: nil)
                 case let container as RenderTargetFillContainer:
@@ -303,7 +303,7 @@ extension _RenderTargetProtocol {
         renderTargetBackend.didEndContent()
     }
 
-    private func drawScene(_ scene: Scene, viewportSize size: Size2, clipRect: Rect?, stencil: UInt8?) {
+    private func drawScene(_ scene: inout Scene, viewportSize size: Size2, clipRect: Rect?, stencil: UInt8?) {
         let matrices = scene.camera.matricies(withViewportSize: size)
 
         var scissorRect: Rect? = nil

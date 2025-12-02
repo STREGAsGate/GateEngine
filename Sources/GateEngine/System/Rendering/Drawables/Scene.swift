@@ -362,7 +362,7 @@ import Shaders
     }
     
     @inlinable
-    public func matrices(withSize size: GameMath.Size2) -> Matrices {
+    public mutating func matrices(withSize size: GameMath.Size2) -> Matrices {
         self.camera.matricies(withViewportSize: size)
     }
 }

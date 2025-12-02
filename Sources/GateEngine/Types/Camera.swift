@@ -7,7 +7,7 @@
 
 import GameMath
 
-public class Camera {
+public struct Camera {
     public var transform: Transform3 {
         didSet {
             needsUpdateTransform = true
@@ -36,7 +36,7 @@ public class Camera {
         self.clippingPlane = clippingPlane
     }
 
-    public convenience init?(_ entity: Entity?) {
+    public init?(_ entity: Entity?) {
         guard let entity = entity else { return nil }
         guard let cameraComponent = entity.component(ofType: CameraComponent.self) else {
             return nil
@@ -59,7 +59,7 @@ public class Camera {
     private static let viewScale = Matrix4x4(scale: Size3(width: 1.0, height: 1.0, depth: -1.0))
     private var matrices: Matrices = Matrices(projection: .identity)
 
-    public func matricies(withViewportSize size: Size2) -> Matrices {
+    public mutating func matricies(withViewportSize size: Size2) -> Matrices {
         guard self.needsUpdateTransform || self.needsUpdateProjection else { return matrices }
 
         if needsUpdateProjection || self.size != size {

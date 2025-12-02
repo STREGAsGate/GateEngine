@@ -189,7 +189,7 @@ extension GameView {
      
      - returns: A 2D position representing the location of a 3D object in this view's bounds.
      */
-    public func convert(_ position: Position3, from camera: Camera) -> Position2 {
+    public func convert(_ position: Position3, from camera: inout Camera) -> Position2 {
         let size = self.bounds.size
         let matricies = camera.matricies(withViewportSize: size * self.interfaceScale)
         var position = position * matricies.viewProjection()
@@ -210,7 +210,7 @@ extension GameView {
      
      - returns: A Ray3D representing the location of a 2D point located on the view. The ray's direction is toward the 3D space accounting for perspective distortion.
      */
-    public func convert(_ position: Position2, to camera: Camera) -> Ray3D {
+    public func convert(_ position: Position2, to camera: inout Camera) -> Ray3D {
         switch camera.fieldOfView {
         case .perspective(let fieldOfView):
             let size = self.bounds.size
