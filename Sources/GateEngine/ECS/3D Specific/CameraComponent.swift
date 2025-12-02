@@ -36,9 +36,15 @@ public final class CameraComponent: Component {
 
 @MainActor 
 extension ECSContext {
+    /// Returns the first entity with ``CameraComponent`` that has `isActive` set to true
     public var cameraEntity: Entity? {
         return self.entities.first(where: {
             return $0.component(ofType: CameraComponent.self)?.isActive == true
         })
+    }
+    
+    /// Returns a ``Camera`` constructed using the contexts `cameraEntity`, or nil if no cameraEntity is found
+    public var camera: Camera? {
+        return Camera(cameraEntity)
     }
 }
