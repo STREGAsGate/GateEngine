@@ -174,6 +174,11 @@ extension Quaternion {
         self.init(Radians(degrees), axis: axis)
     }
     
+    /**
+     - parameter pitch: The angle around the X axis
+     - parameter yaw: The angle around the Y axis
+     - parameter roll: The angle around the Z axis
+     */
     @inlinable
     public init(pitch: Degrees, yaw: Degrees, roll: Degrees) {
         let _pitch: Radians = Radians(pitch)
@@ -361,6 +366,21 @@ public extension Quaternion {
             self.y = newValue.y
             self.z = newValue.z
         }
+    }
+    
+    @inlinable
+    var pitch: Radians {
+        return direction.angleAroundX
+    }
+    
+    @inlinable
+    var yaw: Radians {
+        return direction.angleAroundY
+    }
+    
+    @inlinable
+    var roll: Radians {
+        return direction.angleAroundZ
     }
     
     @inlinable
