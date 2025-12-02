@@ -712,10 +712,10 @@ extension Degrees {
     /// Returns an angle equivalent to the current angle if it rolled over when exceeding 360, or rolled back to 360 when less then zero. The value is always within 0 ... 360
     @inlinable
     public var normalized: Self {
-            return degrees + 360°
         let scaler: RawValue = 1000000.0
         let degrees: RawValue = (self.rawValueAsDegrees * scaler).truncatingRemainder(dividingBy: 360.0 * scaler) / scaler
         if self < 0.0 {
+            return Self(360.0 - degrees)
         }
         return Self(degrees)
     }
