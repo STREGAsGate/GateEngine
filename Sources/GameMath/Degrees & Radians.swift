@@ -5,11 +5,11 @@
  * http://stregasgate.com
  */
 
-public protocol Angle: Sendable, RawRepresentable, Numeric, Comparable, FloatingPoint where RawValue == Float {
+public protocol Angle: Sendable, RawRepresentable, FloatingPoint, Comparable where RawValue == Float {
     var rawValue: RawValue {get set}
     
-    var rawValueAsDegrees: RawValue {get}
-    var rawValueAsRadians: RawValue {get}
+    var rawValueAsDegrees: RawValue {get set}
+    var rawValueAsRadians: RawValue {get set}
     
     var asDegrees: Degrees {get}
     var asRadians: Radians {get}
@@ -29,11 +29,13 @@ public extension Angle {
     }
     
     @inlinable
+    @_disfavoredOverload
     mutating func interpolate(to: some Angle, _ method: InterpolationMethod) {
-        self.rawValue.interpolate(to: to.rawValue, method)
+        self.rawValueAsRadians.interpolate(to: to.rawValueAsRadians, method)
     }
     
     @inlinable
+    @_disfavoredOverload
     func interpolated(to: some Angle, _ method: InterpolationMethod) -> Self {
         var copy = self
         copy.interpolate(to: to, method)
@@ -70,14 +72,19 @@ public extension Angle {
     
     @inlinable
     static func +(_ lhs: Self, _ rhs: Self) -> Self {
-        assert(type(of: lhs) == type(of: rhs))
         return Self(rawValue: lhs.rawValue + rhs.rawValue)
     }
     @inlinable
+    @_disfavoredOverload
     static func +(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians + rhs.rawValueAsRadians)
     }
     @inlinable
+    static func +=(_ lhs: inout Self, _ rhs: Self) {
+        lhs = lhs + rhs
+    }
+    @inlinable
+    @_disfavoredOverload
     static func +=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs = lhs + rhs
     }
@@ -92,14 +99,19 @@ public extension Angle {
     
     @inlinable
     static func -(_ lhs: Self, _ rhs: Self) -> Self {
-        assert(type(of: lhs) == type(of: rhs))
         return Self(rawValue: lhs.rawValue - rhs.rawValue)
     }
     @inlinable
+    @_disfavoredOverload
     static func -(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians - rhs.rawValueAsRadians)
     }
     @inlinable
+    static func -=(_ lhs: inout Self, _ rhs: Self) {
+        lhs = lhs - rhs
+    }
+    @inlinable
+    @_disfavoredOverload
     static func -=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs = lhs - rhs
     }
@@ -126,10 +138,10 @@ public extension Angle {
 extension Angle {
     @inlinable
     public static func *(_ lhs: Self, _ rhs: Self) -> Self {
-        assert(type(of: lhs) == type(of: rhs))
         return Self(rawValue: lhs.rawValue * rhs.rawValue)
     }
     @inlinable
+    @_disfavoredOverload
     public static func *(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians * rhs.rawValueAsRadians)
     }
@@ -144,10 +156,10 @@ extension Angle {
     
     @inlinable
     public static func *=(_ lhs: inout Self, _ rhs: Self) {
-        assert(type(of: lhs) == type(of: rhs))
         lhs.rawValue *= rhs.rawValue
     }
     @inlinable
+    @_disfavoredOverload
     public static func *=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs.rawValue = Self(rawValueAsRadians: lhs.rawValueAsRadians * rhs.rawValueAsRadians).rawValue
     }
@@ -165,10 +177,10 @@ extension Angle {
 extension Angle {
     @inlinable
     public static func /(_ lhs: Self, _ rhs: Self) -> Self {
-        assert(type(of: lhs) == type(of: rhs))
         return Self(rawValue: lhs.rawValue / rhs.rawValue)
     }
     @inlinable
+    @_disfavoredOverload
     public static func /(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: lhs.rawValueAsRadians / rhs.rawValueAsRadians)
     }
@@ -183,10 +195,10 @@ extension Angle {
     
     @inlinable
     public static func /=(_ lhs: inout Self, _ rhs: Self) {
-        assert(type(of: lhs) == type(of: rhs))
         lhs.rawValue /= rhs.rawValue
     }
     @inlinable
+    @_disfavoredOverload
     public static func /=(_ lhs: inout Self, _ rhs: some Angle) {
         lhs.rawValue = Self(rawValueAsRadians: lhs.rawValueAsRadians / rhs.rawValueAsRadians).rawValue
     }
@@ -206,7 +218,8 @@ public extension Angle {
         return Self(.minimum(lhs.rawValue, rhs.rawValue))
     }
     @inlinable
-    static func minimum(_ lhs: some Angle, _ rhs: some Angle) -> Self {
+    @_disfavoredOverload
+    static func minimum(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: .minimum(lhs.rawValueAsRadians, rhs.rawValueAsRadians))
     }
     @inlinable
@@ -223,7 +236,8 @@ public extension Angle {
         return Self(.maximum(lhs.rawValue, rhs.rawValue))
     }
     @inlinable
-    static func maximum(_ lhs: some Angle, _ rhs: some Angle) -> Self {
+    @_disfavoredOverload
+    static func maximum(_ lhs: Self, _ rhs: some Angle) -> Self {
         return Self(rawValueAsRadians: .maximum(lhs.rawValueAsRadians, rhs.rawValueAsRadians))
     }
     @inlinable
@@ -262,6 +276,7 @@ extension Angle {
         return lhs.rawValue < rhs.rawValue
     }
     @inlinable
+    @_disfavoredOverload
     public static func <(lhs: Self, rhs: some Angle) -> Bool {
         return lhs.rawValueAsRadians < rhs.rawValueAsRadians
     }
@@ -279,6 +294,7 @@ extension Angle {
         return lhs.rawValue > rhs.rawValue
     }
     @inlinable
+    @_disfavoredOverload
     public static func >(lhs: Self, rhs: some Angle) -> Bool {
         return lhs.rawValueAsRadians > rhs.rawValueAsRadians
     }
@@ -298,6 +314,7 @@ extension Angle {
         return lhs.rawValue <= rhs.rawValue
     }
     @inlinable
+    @_disfavoredOverload
     public static func <=(lhs: Self, rhs: some Angle) -> Bool {
         return lhs.rawValueAsRadians <= rhs.rawValueAsRadians
     }
@@ -315,6 +332,7 @@ extension Angle {
         return lhs.rawValue >= rhs.rawValue
     }
     @inlinable
+    @_disfavoredOverload
     public static func >=(lhs: Self, rhs: some Angle) -> Bool {
         return lhs.rawValueAsRadians >= rhs.rawValueAsRadians
     }
@@ -333,6 +351,13 @@ extension Angle {
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         assert(type(of: lhs) == type(of: rhs))
         return lhs.rawValue == rhs.rawValue
+    }
+    
+    @inlinable
+    @_disfavoredOverload
+    public static func ==(lhs: Self, rhs: some Angle) -> Bool {
+        assert(type(of: lhs) == type(of: rhs))
+        return lhs.rawValueAsRadians == rhs.rawValueAsRadians
     }
     
     @inlinable
@@ -538,12 +563,17 @@ public struct Radians: Angle, Hashable, Sendable {
         self.init(RawValue(source))
     }
     @inlinable
+    @_disfavoredOverload
     public init(integerLiteral value: RawValue) {
         self.init(rawValue: value)
     }
     @inlinable
-    public init(rawValueAsRadians: Float) {
+    public init(rawValueAsRadians: RawValue) {
         self.init(rawValue: rawValueAsRadians)
+    }
+    @inlinable
+    public init(rawValueAsDegrees: RawValue) {
+        self.init(rawValue: rawValueAsDegrees * (RawValue.pi / 180.0))
     }
     @inlinable
     public init(_ value: some Angle) {
@@ -551,12 +581,22 @@ public struct Radians: Angle, Hashable, Sendable {
     }
     
     @inlinable
-    public var rawValueAsRadians: Float {
-        return rawValue
+    public var rawValueAsRadians: RawValue {
+        get {
+            return rawValue
+        }
+        set {
+            self.rawValue = newValue
+        }
     }
     @inlinable
-    public var rawValueAsDegrees: Float {
-        return rawValue * (180 / RawValue.pi)
+    public var rawValueAsDegrees: RawValue {
+        get {
+            return rawValue * (180.0 / RawValue.pi)
+        }
+        set {
+            self.rawValue = newValue * (RawValue.pi / 180.0)
+        }
     }
     @inlinable
     public var asDegrees: Degrees {
@@ -597,8 +637,12 @@ public struct Degrees: Angle, Hashable, Sendable {
         self.init(rawValue: value)
     }
     @inlinable
-    public init(rawValueAsRadians: Float) {
-        self.init(rawValue: rawValueAsRadians * (180 / RawValue.pi))
+    public init(rawValueAsRadians: RawValue) {
+        self.init(rawValue: rawValueAsRadians * (180.0 / RawValue.pi))
+    }
+    @inlinable
+    public init(rawValueAsDegrees: RawValue) {
+        self.init(rawValue: rawValueAsDegrees)
     }
     @inlinable
     public init(_ value: some Angle) {
@@ -606,12 +650,22 @@ public struct Degrees: Angle, Hashable, Sendable {
     }
     
     @inlinable
-    public var rawValueAsRadians: Float {
-        return rawValue * (RawValue.pi / 180)
+    public var rawValueAsRadians: RawValue {
+        get {
+            return rawValue * (RawValue.pi / 180.0)
+        }
+        set {
+            self.rawValue = newValue * (180.0 / RawValue.pi)
+        }
     }
     @inlinable
-    public var rawValueAsDegrees: Float {
-        return rawValue
+    public var rawValueAsDegrees: RawValue {
+        get {
+            return rawValue
+        }
+        set {
+            self.rawValue = newValue
+        }
     }
     @inlinable
     public var asDegrees: Degrees {
@@ -628,7 +682,6 @@ public extension Degrees {
     mutating func interpolate(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
         self = self.interpolated(to: to, method)
     }
-    
     @inlinable
     func interpolated(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
         if options.contains(.shortest) {
@@ -639,19 +692,19 @@ public extension Degrees {
         return Self(self.rawValue.interpolated(to: to.rawValue, method))
     }
     
+    // Concrete override of Angle provided extension to allow for "shortest" option
     @inlinable
-    mutating func interpolate(to: Radians, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
-        self.interpolate(to: Self(to), method, options: options)
+    mutating func interpolate(to: some Angle, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+        self.interpolate(to: Self(rawValueAsRadians: to.rawValueAsRadians), method, options: options)
     }
-    
     @inlinable
-    func interpolated(to: Radians, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
-        return self.interpolated(to: Self(to), method, options: options)
+    func interpolated(to: some Angle, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
+        return self.interpolated(to: Self(rawValueAsRadians: to.rawValueAsRadians), method, options: options)
     }
     
     @inlinable
     static func random() -> Self {
-        return .random(in: 0 ..< 360)
+        return .random(in: 0.0 ..< 360.0)
     }
 }
 
@@ -659,12 +712,12 @@ extension Degrees {
     /// Returns an angle equivalent to the current angle if it rolled over when exceeding 360, or rolled back to 360 when less then zero. The value is always within 0 ... 360
     @inlinable
     public var normalized: Self {
-        let scaler: RawValue = 1000000
-        let degrees = (self * scaler).truncatingRemainder(dividingBy: 360 * scaler) / scaler
-        if self < 0 {
             return degrees + 360°
+        let scaler: RawValue = 1000000.0
+        let degrees: RawValue = (self.rawValueAsDegrees * scaler).truncatingRemainder(dividingBy: 360.0 * scaler) / scaler
+        if self < 0.0 {
         }
-        return degrees
+        return Self(degrees)
     }
     
     /// Makes the angle equivalent to the current angle if it rolled over when exceeding 360, or rolled back to 360 when less then zero. The value is always within 0 ... 360
@@ -681,30 +734,30 @@ extension Degrees {
         
         // If from or to is a negative, we have to recalculate them.
         // For an example, if from = -45 then from(-45) + 360 = 315.
-        if dst < 0 || dst >= 360 {
+        if dst < 0.0 || dst >= 360.0 {
             dst = destination.normalized.rawValue
         }
         
-        if src < 0 || src >= 360 {
+        if src < 0.0 || src >= 360.0 {
             src = self.normalized.rawValue
         }
         
         // Do not rotate if from == to.
         if dst == src {
-            return Self(0)
+            return .zero
         }
         
         // Pre-calculate left and right.
-        var left = (360 - dst) + src
+        var left = (360.0 - dst) + src
         var right = dst - src
         // If from < to, re-calculate left and right.
-        if dst < src && src > 0 {
+        if dst < src && src > 0.0 {
             left = src - dst
-            right = (360 - src) + dst
+            right = (360.0 - src) + dst
         }
         
         // Determine the shortest direction.
-        return Self((left <= right) ? (left * -1) : right)
+        return Self((left <= right) ? (left * -1.0) : right)
     }
 }
 
@@ -715,10 +768,4 @@ postfix operator °
 @inlinable
 public postfix func °(lhs: Degrees.RawValue) -> Degrees {
     return Degrees(rawValue: lhs)
-}
-
-@inlinable 
-@_disfavoredOverload
-public postfix func °(lhs: Degrees.RawValue) -> Radians {
-    return Degrees(rawValue: lhs).asRadians
 }
