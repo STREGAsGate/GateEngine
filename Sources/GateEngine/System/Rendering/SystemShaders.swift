@@ -154,7 +154,7 @@ extension FragmentShader {
         let sample = fsh.channel(0).texture.sample(
             at: fsh.input["texCoord0"]
         )
-        fsh.output.color = Vec4(sample.rgb * fsh.channel(0).color.rgb, sample.a)
+        fsh.output.color = Vec4(sample.rgb * fsh.channel(0).color.rgb, fsh.channel(0).color.a * sample.a)
         return fsh
     }()
     /// Uses material.channel(0).texture to shade objects
