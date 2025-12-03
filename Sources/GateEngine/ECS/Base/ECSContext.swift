@@ -285,8 +285,8 @@ extension ECSContext {
             }
         }
 
-        // Drop frame if less then 12fps
-        let dropFrame: Bool = deltaTime > /* 1/12 */ 0.08333333333
+        // Drop frame if less then minimumFrameRate
+        let dropFrame: Bool = deltaTime > 1 / Float(Platform.current.minimumFrameRate())
         // Only drop 1 frame before requiring a frame
         let shouldRender: Bool = Game.shared.isHeadless ? false : (previousFrameWasDropped ? true : !dropFrame)
 
