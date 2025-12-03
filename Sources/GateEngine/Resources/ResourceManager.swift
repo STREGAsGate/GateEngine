@@ -188,6 +188,9 @@ public final class ResourceManager {
             if $0.hasPrefix("$") {
                 return "Generated(\($0))"
             }
+            if $0.hasPrefix("@") {
+                return "Text(\($0))"
+            }
             return $0
         })
     }
