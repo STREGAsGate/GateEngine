@@ -103,6 +103,10 @@ public final class Game {
     }
     
     private var deltaTimeHelper = DeltaTimeHelper(name: "System")
+    /// Restricts FPS to the Platform minimum. Useful for debugging slow fps
+    public func setUseMinimumFPS(_ limitFPS: Bool) {
+        deltaTimeHelper.limitFPS = limitFPS
+    }
     
     #if GATEENGINE_PLATFORM_EVENT_DRIVEN
     @MainActor internal func eventLoop(completion: @escaping () -> Void) {

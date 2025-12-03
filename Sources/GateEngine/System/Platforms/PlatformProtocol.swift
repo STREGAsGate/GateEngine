@@ -67,6 +67,7 @@ internal protocol InternalPlatformProtocol: PlatformProtocol {
 
     func systemTime() -> Double
     func prefferedFrameRate() -> Int
+    func minimumFrameRate() -> Int
     @MainActor func main()
 
     #if GATEENGINE_PLATFORM_HAS_FILESYSTEM
@@ -259,6 +260,9 @@ extension InternalPlatformProtocol {
         return URL(fileURLWithPath: try fileSystem.pathForSearchPath(.persistent, in: .currentUser)).appendingPathComponent(name).path
     }
 
+    func minimumFrameRate() -> Int {
+        return 12
+    }
     func prefferedFrameRate() -> Int {
         return 60
     }
