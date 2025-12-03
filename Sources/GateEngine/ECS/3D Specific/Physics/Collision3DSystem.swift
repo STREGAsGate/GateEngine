@@ -246,25 +246,21 @@ extension Collision3DSystem {
         previousPosition += collider.offset
         
         let point = previousPosition.moved(
-            -collider.boundingBox.size.max,
-            toward: directionTraveled
+            collider.boundingBox.size.max,
+            toward: -directionTraveled
         )
         
         let ray = Ray3D(from: point, toward: directionTraveled)
         let filter = collisionComponent.triangleFilter
-        guard let hit = trianglesHit(by: ray, triangleFilter: filter).first else { 
-            return 
-        }
-        guard hit.position.distance(from: previousPosition) < distanceTraveled else {
-            return
-        }
+        guard let hit = trianglesHit(by: ray, triangleFilter: filter).first else { return }
+        guard hit.position.distance(from: previousPosition) < distanceTraveled else { return }
 
         // Move the collider back in front of the triangle. 
         // Collision response will act on it later.
         transformComponent.position = hit.position.moved(
-            -0.1,
-            toward: directionTraveled
-        )
+            0.1,
+            toward: -directionTraveled
+        ) - collisionComponent.collider.offset
     }
 
     @inlinable
