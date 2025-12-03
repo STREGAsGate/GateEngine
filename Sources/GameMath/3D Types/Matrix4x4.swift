@@ -587,12 +587,12 @@ public extension Matrix4x4 {
                   0,           0,          0,          1)
     }
     
-    enum OrthoMatrixCenter {
+    enum OrthographicCenter {
         case center
         case topLeft
     }
     @inlinable
-    init(orthographicWithSize size: Size2, center: OrthoMatrixCenter, near: Float, far: Float) {
+    init(orthographicWithSize size: Size2, center: OrthographicCenter, near: Float, far: Float) {
         switch center {
         case .center:
             let width = size.width / 2

@@ -104,7 +104,7 @@ public struct Camera {
 
 public enum FieldOfView {
     case perspective(_ angle: any Angle)
-    case orthographic(_ origin: Matrix4x4.OrthoMatrixCenter)
+    case orthographic(_ origin: Matrix4x4.OrthographicCenter)
 }
 
 public struct ClippingPlane {
