@@ -232,6 +232,7 @@ extension Collision3DSystem {
         guard collisionComponent.options.contains(.robustProtection) else { return }
         
         let distanceTraveled = transformComponent.distanceTraveled()
+        guard distanceTraveled > 0 else { return }
         let directionTraveled = transformComponent.directionTraveled()
         var previousPosition = transformComponent.previousTransform.position
         
