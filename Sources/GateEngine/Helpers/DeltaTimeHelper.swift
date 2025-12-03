@@ -62,6 +62,10 @@ internal struct DeltaTimeHelper {
     @MainActor
     @inlinable mutating func getFixedStepDeltaTime() -> (steps: Int, deltaTime: Double)? {
         let currentTime = Platform.current.systemTime()
+        if self.previousTime.isFinite == false {
+            self.previousTime = currentTime
+            return nil
+        }
         
         // Determine the new accumulator value
         var literalDeltaTime: Double = (currentTime - self.previousTime) + self.accumulator
