@@ -226,9 +226,13 @@
     }
 
     internal private(set) var performance: Performance? = nil
-    func recordPerformance() {
-        precondition(performance == nil, "Performance recording was already started!")
-        self.performance = Performance()
+    func setRecordPerformance(_ recordPerformance: Bool = true) {
+        if recordPerformance {
+            precondition(performance == nil, "Performance recording was already started!")
+            self.performance = Performance()
+        }else{
+            self.performance = nil
+        }
     }
 
     public init() {
