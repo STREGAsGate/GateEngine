@@ -112,15 +112,17 @@ public final class Collision3DSystem: System {
                     )
                 }
 
+                if let filter = collisionComponent.triangleFilter {
+                    triangles = triangles.filter(filter)
+                }
+                
                 triangles = sortedTrianglesProbablyHitting(
                     entity: dynamicEntity,
                     triangles: triangles
                 )
-                if let filter = collisionComponent.triangleFilter {
-                    triangles = triangles.filter(filter)
-                }
 
                 updateCollider()
+                
                 for triangle in triangles {
                     if respondToCollision(dynamicEntity: dynamicEntity, triangle: triangle) {
                         updateCollider()
