@@ -57,7 +57,7 @@
      - parameter deltaTime: The duration since the last time this window was rendered.
      - returns: `true` if you want to render, otherwise `false`.
      **/
-    open func shouldRender(context: ECSContext, into view: View, withTimePassed deltaTime: Float) -> Bool {
+    open func shouldRender(context: ECSContext, into view: GameView, withTimePassed deltaTime: Float) -> Bool {
         return true
     }
 
