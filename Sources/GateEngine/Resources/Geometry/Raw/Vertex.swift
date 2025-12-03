@@ -128,14 +128,17 @@ public struct Vertex: Codable, Equatable, Hashable {
         self.storage = [px, py, pz, nx, ny, nz, tu1, tv1, tu2, tv2, 0, 0, 0, cr, cg, cb, ca]
     }
 
-    /// - returns: `true` if `self` is within `threshold` of `v`.
-    internal func isSimilar(to vertex: Vertex, threshold: Float = 0.001) -> Bool {
+    internal func isPositionSimilar(to vertex: Vertex, threshold: Float = 0.001) -> Bool {
         guard threshold > 0 else { return self.storage == vertex.storage }
         guard self.position.distance(from: vertex.position) <= threshold else { return false }
+        return true
+    }
+
+    /// - returns: `true` if `self` is within `threshold` of `v`.
+    internal func isSimilar(to vertex: Vertex, threshold: Float = 0.001) -> Bool {
+        guard isPositionSimilar(to: vertex, threshold: threshold) else {return false}
         guard self.normal.angle(to: vertex.normal) <= Radians(threshold) else { return false }
-        guard self.uv1.distance(from: vertex.uv1) <= threshold else {
-            return false
-        }
+        guard self.uv1.distance(from: vertex.uv1) <= threshold else {return false}
         return true
     }
 

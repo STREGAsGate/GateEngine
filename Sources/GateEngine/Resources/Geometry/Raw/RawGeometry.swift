@@ -165,7 +165,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         self.indices = []
         indices.reserveCapacity(triangles.count * 3)
 
-        let inVertices: [Vertex] = triangles.vertices
+        var inVertices: [Vertex] = triangles.vertices
 
         var optimizedIndicies: [UInt16]
         switch optimization {
@@ -191,6 +191,10 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
                 if let similarIndex = inVertices.firstIndex(where: {$0.isSimilar(to: vertex, threshold: threshold)}) {
                     optimizedIndicies[index] = UInt16(similarIndex)
                 }else{
+                    if let similarIndex = inVertices.firstIndex(where: {$0.isPositionSimilar(to: vertex, threshold: threshold)}) {
+                        // If a vertex has a similar position, move this vertex to that position
+                        inVertices[index].position = inVertices[similarIndex].position
+                    }
                     optimizedIndicies[index] = UInt16(index)
                 }
             }
