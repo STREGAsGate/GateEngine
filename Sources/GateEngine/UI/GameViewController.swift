@@ -58,7 +58,7 @@ public final class GameView: View {
         }
         
         if let gameViewController {
-            let highPrecisionDeltaTime = self.deltaTimeHelper.getDeltaTime() ?? .leastNonzeroMagnitude
+            let highPrecisionDeltaTime = self.deltaTimeHelper.getDeltaTime()
             
             let deltaTime = Float(highPrecisionDeltaTime)
             

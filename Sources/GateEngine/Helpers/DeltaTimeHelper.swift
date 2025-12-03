@@ -137,8 +137,12 @@ internal struct DeltaTimeHelper {
      - returns A fixed step deltaTime, or nil if the number of steps was zero.
      */
     @MainActor
-    @inlinable mutating func getDeltaTime() -> Double? {
-        guard let fixedStepDeltaTime = self.getFixedStepDeltaTime() else {return nil}
-        return fixedStepDeltaTime.deltaTime * Double(fixedStepDeltaTime.steps)
+    @inlinable mutating func getDeltaTime() -> Double {
+        guard let fixedStepDeltaTime = self.getFixedStepDeltaTime() else {return 1 / Double(Self.preferredFrameRate)}
+        let deltaTime = fixedStepDeltaTime.deltaTime * Double(fixedStepDeltaTime.steps)
+        if deltaTime.isFinite == false {
+            return 1 / Double(Self.preferredFrameRate)
+        }
+        return deltaTime
     }
 }
