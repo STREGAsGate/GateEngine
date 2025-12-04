@@ -716,7 +716,7 @@ extension Degrees {
         let scaler: RawValue = 1000000.0
         let degrees: RawValue = (self.rawValueAsDegrees * scaler).truncatingRemainder(dividingBy: 360.0 * scaler) / scaler
         if self < 0.0 {
-            return Self(360.0 - degrees)
+            return Self(degrees + 360.0)
         }
         return Self(degrees)
     }
