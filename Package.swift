@@ -257,7 +257,13 @@ let package = Package(
                     })
                 ),
             
-            .target(name: "GateUtilities", swiftSettings: .default),
+            .target(
+                name: "GateUtilities",
+                dependencies: [
+                    .product(name: "Collections", package: "swift-collections")
+                ],
+                swiftSettings: .default
+            ),
         ])
         
         // MARK: - Macros
