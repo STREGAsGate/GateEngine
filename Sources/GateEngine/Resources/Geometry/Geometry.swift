@@ -194,12 +194,7 @@ extension RawGeometry {
         try await self.init(path: path.value, options: options)
     }
     public init(path: String, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
-        let importer: any GeometryImporter
-        do {
-            importer = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path)
-        }catch{
-            throw .failedToLoad(resource: path, "No GeometryImporter for \(URL(fileURLWithPath: path).pathExtension).")
-        }
+        let importer = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path)
         self = try await importer.loadGeometry(options: options)
     }
 }

@@ -523,13 +523,13 @@ extension ResourceManager {
         importers.skeletonImporters.insert(type, at: 0)
     }
     
-    func skeletonImporterForPath(_ path: String) async throws -> (any SkeletonImporter)? {
+    func skeletonImporterForPath(_ path: String) async throws(GateEngineError) -> any SkeletonImporter {
         for type in self.importers.skeletonImporters {
             if type.canProcessFile(path) {
                 return try await self.importers.getImporter(path: path, type: type)
             }
         }
-        return nil
+        throw .custom(category: "\(Self.self)", message: "No SkeletonImporter could be found for \(path)")
     }
 }
 
@@ -586,17 +586,8 @@ extension ResourceManager.Cache {
 
 extension RawSkeleton {
     public init(path: String, options: SkeletonImporterOptions = .none) async throws {
-        guard
-            let importer: any SkeletonImporter = try await Game.unsafeShared.resourceManager.skeletonImporterForPath(path)
-        else {
-            throw GateEngineError.failedToLoad(resource: path, "No SkeletonImporter for \(URL(fileURLWithPath: path).pathExtension).")
-        }
-
-        do {
-            self = try await importer.loadSkeleton(options: options)
-        } catch {
-            throw GateEngineError(error)
-        }
+        let importer: any SkeletonImporter = try await Game.unsafeShared.resourceManager.skeletonImporterForPath(path)
+        self = try await importer.loadSkeleton(options: options)
     }
 }
 

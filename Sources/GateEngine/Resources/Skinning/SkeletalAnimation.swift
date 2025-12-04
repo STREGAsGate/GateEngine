@@ -317,13 +317,13 @@ extension ResourceManager {
         importers.skeletalAnimationImporters.insert(type, at: 0)
     }
     
-    func skeletalAnimationImporterForPath(_ path: String) async throws -> (any SkeletalAnimationImporter)? {
+    func skeletalAnimationImporterForPath(_ path: String) async throws(GateEngineError) -> any SkeletalAnimationImporter {
         for type in self.importers.skeletalAnimationImporters {
             if type.canProcessFile(path) {
                 return try await self.importers.getImporter(path: path, type: type)
             }
         }
-        return nil
+        throw .custom(category: "\(Self.self)", message: "No SkeletalAnimationImporter could be found for \(path)")
     }
 }
 
@@ -371,17 +371,8 @@ extension ResourceManager.Cache {
 
 extension RawSkeletalAnimation {
     public init(path: String, options: SkeletalAnimationImporterOptions = .none) async throws {
-        guard
-            let importer: any SkeletalAnimationImporter = try await Game.unsafeShared.resourceManager.skeletalAnimationImporterForPath(path)
-        else {
-            throw GateEngineError.failedToLoad(resource: path, "No SkeletalAnimationImporter for \(URL(fileURLWithPath: path).pathExtension).")
-        }
-
-        do {
-            self = try await importer.loadSkeletalAnimation(options: options)
-        } catch {
-            throw GateEngineError(error)
-        }
+        let importer: any SkeletalAnimationImporter = try await Game.unsafeShared.resourceManager.skeletalAnimationImporterForPath(path)
+        self = try await importer.loadSkeletalAnimation(options: options)
     }
 }
 

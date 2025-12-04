@@ -216,12 +216,7 @@ extension RawTexture {
         try await self.init(path: path.value, options: options)
     }
     public init(path: String, options: TextureImporterOptions = .none) async throws {
-        let importer: any TextureImporter
-        do {
-            importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path)
-        }catch{
-            throw GateEngineError.failedToLoad(resource: path, "No TextureImporter for \(URL(fileURLWithPath: path).pathExtension).")
-        }
+        let importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path)
         self = try await importer.loadTexture(options: options)
     }
 }
