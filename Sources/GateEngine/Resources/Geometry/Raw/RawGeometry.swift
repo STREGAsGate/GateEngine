@@ -62,12 +62,12 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         indexes: [UInt16]
     ) {
         self.vertices = .init(
-            positions: positions,
-            uvSets: uvSets,
-            normals: normals,
-            tangents: tangents,
-            colors: colors,
-            indexes: indexes
+            positions: Deque(positions),
+            uvSets: uvSets.map({Deque($0)}),
+            normals: normals != nil ? Deque(normals.unsafelyUnwrapped) : nil,
+            tangents: tangents != nil ? Deque(tangents.unsafelyUnwrapped) : nil,
+            colors: colors != nil ? Deque(colors.unsafelyUnwrapped) : nil,
+            indexes: Deque(indexes)
         )
     }
     
@@ -208,44 +208,44 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
 
 extension RawGeometry {
     var positions: [Float] {
-        get {vertices.positions}
-        set {vertices.positions = newValue}
+        get {Array(vertices.positions)}
+        set {vertices.positions = Deque(newValue)}
     }
     var uvSets: [[Float]] {
-        get {vertices.uvSets}
-        set {vertices.uvSets = newValue}
+        get {vertices.uvSets.map({Array($0)})}
+        set {vertices.uvSets = newValue.map({Deque($0)})}
     }
     var uvSet1: [Float] {
-        get {vertices.uvSet1}
-        set {vertices.uvSet1 = newValue}
+        get {Array(vertices.uvSet1)}
+        set {vertices.uvSet1 = Deque(newValue)}
     }
     var uvSet2: [Float] {
-        get {vertices.uvSet2}
-        set {vertices.uvSet2 = newValue}
+        get {Array(vertices.uvSet2)}
+        set {vertices.uvSet2 = Deque(newValue)}
     }
     var normals: [Float] {
-        get {vertices.normals}
-        set {vertices.normals = newValue}
+        get {Array(vertices.normals)}
+        set {vertices.normals = Deque(newValue)}
     }
     var tangents: [Float] {
-        get {vertices.tangents}
-        set {vertices.tangents = newValue}
+        get {Array(vertices.tangents)}
+        set {vertices.tangents = Deque(newValue)}
     }
     var colors: [Float] {
-        get {vertices.colors}
-        set {vertices.colors = newValue}
+        get {Array(vertices.colors)}
+        set {vertices.colors = Deque(newValue)}
     }
     var vertexIndicies: [UInt16] {
-        get {vertices.vertexIndicies}
-        set {vertices.vertexIndicies = newValue}
+        get {Array(vertices.vertexIndicies)}
+        set {vertices.vertexIndicies = Deque(newValue)}
     }
 }
 
 extension RawGeometry {
     public struct VertexView: Codable, Sendable, Equatable, Hashable {
-        internal var positions: [Float]
-        internal var uvSets: [[Float]]
-        internal var uvSet1: [Float] {
+        internal var positions: Deque<Float>
+        internal var uvSets: [Deque<Float>]
+        internal var uvSet1: Deque<Float> {
             get {
                 assert(self.uvSets.indices.contains(0), "Index \(0) out of range \(self.uvSets.indices)")
                 return uvSets[0]
@@ -255,7 +255,7 @@ extension RawGeometry {
                 uvSets[0] = newValue
             }
         }
-        internal var uvSet2: [Float] {
+        internal var uvSet2: Deque<Float> {
             get {
                 assert(self.uvSets.indices.contains(1), "Index \(1) out of range \(self.uvSets.indices)")
                 return uvSets[1]
@@ -265,12 +265,12 @@ extension RawGeometry {
                 uvSets[1] = newValue
             }
         }
-        internal var normals: [Float]
-        internal var tangents: [Float]
-        internal var colors: [Float]
-        internal var vertexIndicies: [UInt16]
+        internal var normals: Deque<Float>
+        internal var tangents: Deque<Float>
+        internal var colors: Deque<Float>
+        internal var vertexIndicies: Deque<UInt16>
 
-        func uvSet(_ index: Int) -> [Float]? {
+        func uvSet(_ index: Int) -> Deque<Float>? {
             guard index < uvSets.count else { return nil }
             return uvSets[index]
         }
@@ -359,27 +359,27 @@ extension RawGeometry {
         }
         
         public init(
-            positions: [Float],
-            uvSets: [[Float]],
-            normals: [Float]?,
-            tangents: [Float]?,
-            colors: [Float]?,
-            indexes: [UInt16]
+            positions: Deque<Float>,
+            uvSets: [Deque<Float>],
+            normals: Deque<Float>?,
+            tangents: Deque<Float>?,
+            colors: Deque<Float>?,
+            indexes: Deque<UInt16>
         ) {
             self.positions = positions
             self.uvSets = uvSets
             if self.uvSets.count < 2 {
-                let filler = [Float](repeating: 0, count: indexes.count * 2)
+                let filler = Deque<Float>(repeating: 0, count: indexes.count * 2)
                 for _ in uvSets.count ..< 2 {
                     self.uvSets.append(filler)
                 }
             }
-            self.normals = normals ?? Array(repeating: 0, count: indexes.count * 3)
-            self.tangents = tangents ?? Array(repeating: 0, count: indexes.count * 3)
+            self.normals = normals ?? Deque(repeating: 0, count: indexes.count * 3)
+            self.tangents = tangents ?? Deque(repeating: 0, count: indexes.count * 3)
             
-            var colors: [Float]! = colors
+            var colors: Deque<Float>! = colors
             if colors == nil {
-                colors = Array(repeating: 0.5, count: indexes.count * 4)
+                colors = Deque(repeating: 0.5, count: indexes.count * 4)
                 for index in stride(from: 3, to: colors.count, by: 4) {
                     colors[index] = 1
                 }
@@ -455,7 +455,11 @@ extension RawGeometry.VertexView: RandomAccessCollection, MutableCollection, Ran
             self.vertexIndicies.remove(at: i)
             
             // Decrement every index above the removed index
-            self.vertexIndicies = self.vertexIndicies.map({$0 > index ? $0 - 1 : $0})
+            for vIndex in self.vertexIndicies.indices {
+                if self.vertexIndicies[vIndex] > index {
+                    self.vertexIndicies[vIndex] -= 1
+                }
+            }
         }
         return vertex
     }

@@ -10,6 +10,8 @@ import Foundation
 @_exported public import GateUtilities
 @_exported public import GameMath
 
+@_exported public import Collections
+
 @_exported import struct Foundation.Data
 @_exported import struct Foundation.Date
 @_exported import struct Foundation.URL
