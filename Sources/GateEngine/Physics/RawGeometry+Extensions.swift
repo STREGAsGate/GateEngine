@@ -8,14 +8,14 @@
 extension RawGeometry {
     public func generateCollisionTriangles<Attributes: CollisionAttributesGroup>(using attributesType: Attributes.Type = BasicCollisionAttributes.self) -> [CollisionTriangle] {
         var positions: [Position3] = []
-        positions.reserveCapacity(indices.count * 3)
+        positions.reserveCapacity(self.vertices.count)
         var uvs: [[Position2]] = Array(repeating: [], count: uvSets.count)
         for uvSet in uvs.indices {
             uvs[uvSet].reserveCapacity(positions.capacity)
         }
 
-        for vertexIndex in indices.indices {
-            let index = Int(indices[vertexIndex])
+        for vertexIndex in self.vertices.indices {
+            let index = Int(vertexIndicies[vertexIndex])
             let start3 = index * 3
             let start2 = index * 2
 
@@ -38,17 +38,16 @@ extension RawGeometry {
             for uvIndex in 0 ..< uvSets.count {
                 triangleUVs.append(
                     CollisionAttributeUVs.TriangleUVs(
-                        uv1: unsafeBitCast(uvs[uvIndex][index], to: TextureCoordinate.self),
-                        uv2: unsafeBitCast(uvs[uvIndex][index + 1], to: TextureCoordinate.self),
-                        uv3: unsafeBitCast(uvs[uvIndex][index + 2], to: TextureCoordinate.self)
+                        uv1: .init(uvs[uvIndex][index + 0]),
+                        uv2: .init(uvs[uvIndex][index + 1]),
+                        uv3: .init(uvs[uvIndex][index + 2])
                     )
                 )
             }
             return CollisionAttributeUVs(uvSets: triangleUVs)
         }
 
-        let stride = stride(from: 0, to: positions.count, by: 3)
-        return stride.map({
+        return stride(from: 0, to: positions.count, by: 3).map({
             CollisionTriangle(
                 p1: positions[$0 + 0],
                 p2: positions[$0 + 1],

@@ -34,8 +34,8 @@ public extension Geometry {
             normals: nil,
             tangents: nil,
             colors: nil,
-            indices: indices
-        )
+            indexes: indices
+        ).optimized()
         return Geometry(raw)
     }()
 
@@ -63,8 +63,8 @@ public extension Geometry {
             normals: nil,
             tangents: nil,
             colors: nil,
-            indices: indices
-        )
+            indexes: indices
+        ).optimized()
         return Geometry(raw)
     }()
 }

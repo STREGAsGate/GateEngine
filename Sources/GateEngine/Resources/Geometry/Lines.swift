@@ -75,7 +75,7 @@ extension RawLines {
             throw .failedToLoad(resource: path, "No GeometryImporter for \(URL(fileURLWithPath: path).pathExtension).")
         }
         let rawGeometry = try await importer.loadGeometry(options: options)
-        self.init(wireframeFrom: rawGeometry.generateTriangles())
+        self.init(wireframeFrom: rawGeometry)
     }
 }
 
@@ -92,7 +92,7 @@ extension ResourceManager {
             Task.detached {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
-                    let lines = RawLines(wireframeFrom: geometry.generateTriangles())
+                    let lines = RawLines(wireframeFrom: geometry)
                     Task { @MainActor in
                         if let cache = cache.geometries[key] {
                             cache.geometryBackend = ResourceManager.geometryBackend(from: lines)

@@ -97,10 +97,10 @@ final class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
         glBufferData(geometry.colors, withUsage: .static, as: .array)
 
         glBindBuffer(buffers.last!, as: .elementArray)
-        glBufferData(geometry.indices, withUsage: .static, as: .elementArray)
+        glBufferData(geometry.vertexIndicies, withUsage: .static, as: .elementArray)
 
         self.buffers = buffers
-        self.indicesCount = GLsizei(geometry.indices.count)
+        self.indicesCount = GLsizei(geometry.vertexIndicies.count)
 
         #if GATEENGINE_DEBUG_RENDERING
         Game.shared.renderer.openGLCheckError()
@@ -147,10 +147,10 @@ final class OpenGLGeometry: GeometryBackend, SkinnedGeometryBackend {
         glBufferData(skin.jointWeights, withUsage: .static, as: .array)
 
         glBindBuffer(buffers.last!, as: .elementArray)
-        glBufferData(geometry.indices, withUsage: .static, as: .elementArray)
+        glBufferData(geometry.vertexIndicies, withUsage: .static, as: .elementArray)
 
         self.buffers = buffers
-        self.indicesCount = GLsizei(geometry.indices.count)
+        self.indicesCount = GLsizei(geometry.vertexIndicies.count)
 
         #if GATEENGINE_DEBUG_RENDERING
         Game.shared.renderer.openGLCheckError()

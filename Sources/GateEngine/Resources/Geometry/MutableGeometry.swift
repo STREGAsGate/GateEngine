@@ -29,7 +29,7 @@ public final class MutableGeometry: Geometry {
         guard let cache = Game.unsafeShared.resourceManager.geometryCache(for: cacheKey) else {
             return
         }
-        if let rawGeometry, rawGeometry.indices.isEmpty == false {
+        if let rawGeometry, rawGeometry.vertexIndicies.isEmpty == false {
             cache.geometryBackend = ResourceManager.geometryBackend(
                 from: rawGeometry
             )

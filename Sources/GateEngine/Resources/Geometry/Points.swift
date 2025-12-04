@@ -75,7 +75,7 @@ extension RawPoints {
             throw .failedToLoad(resource: path, "No GeometryImporter for \(URL(fileURLWithPath: path).pathExtension).")
         }
         let rawGeometry = try await importer.loadGeometry(options: options)
-        self.init(pointCloudFrom: rawGeometry.generateTriangles())
+        self.init(pointCloudFrom: rawGeometry)
     }
 }
 
@@ -92,7 +92,7 @@ extension ResourceManager {
             Task.detached {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
-                    let points = RawPoints(pointCloudFrom: geometry.generateTriangles())
+                    let points = RawPoints(pointCloudFrom: geometry)
                     Task { @MainActor in
                         if let cache = cache.geometries[key] {
                             cache.geometryBackend = ResourceManager.geometryBackend(from: points)

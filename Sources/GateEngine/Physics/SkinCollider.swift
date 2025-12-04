@@ -50,8 +50,8 @@ public final class SkinCollider: @preconcurrency Collider3D {
         for uvSet in uvs.indices {
             uvs[uvSet].reserveCapacity(geometry.positions.count)
         }
-        for vertexIndex in geometry.indices.indices {
-            let index = Int(geometry.indices[vertexIndex])
+        for vertexIndex in geometry.vertexIndicies.indices {
+            let index = Int(geometry.vertexIndicies[vertexIndex])
             let start2 = index * 2
 
             for uvIndex in 0 ..< geometry.uvSets.count {
@@ -92,7 +92,7 @@ public final class SkinCollider: @preconcurrency Collider3D {
         
         let matrix = self.transform.matrix()
         
-        let indicies = self.geometry.indices.map({Int($0)})
+        let indicies = self.geometry.vertexIndicies.map({Int($0)})
         let positions = self.geometry.positions
         
         let boneMatricies = rigComponent.skeleton.getPose().shaderMatrixArray(orderedFromSkinJoints: self.skin.joints).map({$0.transposed()})
@@ -279,7 +279,7 @@ public final class SkinCollider: @preconcurrency Collider3D {
         
         self.forceRecompute = true
         
-        self.transformedTriangles = Array(repeating: CollisionTriangle(p1: .zero, p2: .zero, p3: .zero, rawAttributes: 0), count: Int(geometry.indices.count / 3))
+        self.transformedTriangles = Array(repeating: CollisionTriangle(p1: .zero, p2: .zero, p3: .zero, rawAttributes: 0), count: geometry.count)
         self.populateAttributes(using: attributesType)
     }
 }

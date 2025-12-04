@@ -826,7 +826,7 @@ extension GLTransmissionFormat: GeometryImporter {
                 normals: normals,
                 tangents: tangents,
                 colors: colors,
-                indices: indices
+                indexes: indices
             )
             geometries.append(geometry)
         }
@@ -1441,7 +1441,7 @@ extension GLTransmissionFormat: CollisionMeshImporter {
                 normals: normals,
                 tangents: tangents,
                 colors: colors,
-                indices: indices
+                indexes: indices
             )
             geometries.append(geometry)
         }

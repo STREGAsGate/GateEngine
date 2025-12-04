@@ -11,102 +11,38 @@ import GameMath
 
 /// A 3D point and associated values. This is used to construct `Triangle`s.
 public struct Vertex: Codable, Equatable, Hashable {
-    internal var storage: [Float] = Array(repeating: 0, count: 17)
-
     /// The x component of the position
-    public var position: Position3 {
-        get {
-            return Position3(storage[0 ..< 3])
-        }
-        set {
-            storage[0] = newValue.x
-            storage[1] = newValue.y
-            storage[2] = newValue.z
-        }
-    }
+    public var position: Position3
     
     /// The x component of the normal
-    public var normal: Direction3 {
-        get {
-            return Direction3(storage[3 ..< 6])
-        }
-        set {
-            storage[3] = newValue.x
-            storage[4] = newValue.y
-            storage[5] = newValue.z
-        }
-    }
-
-    /// The TextureCoordinate for UV set #1 (index 0)
-    public var uv1: TextureCoordinate {
-        get {
-            return TextureCoordinate(storage[6 ..< 8])
-        }
-        set {
-            storage[6] = newValue.u
-            storage[7] = newValue.v
-        }
-    }
-    
-    /// The TextureCoordinate for UV set #2 (index 1)
-    public var uv2: TextureCoordinate {
-        get {
-            return TextureCoordinate(storage[8 ..< 10])
-        }
-        set {
-            storage[8] = newValue.u
-            storage[9] = newValue.v
-        }
-    }
+    public var normal: Direction3
     
     /// The tangent. Used to compute tangent space normals of a `Triangle`.
-    var tangent: Direction3 {
-        get {
-            return Direction3(storage[10 ..< 13])
-        }
-        set {
-            storage[10] = newValue.x
-            storage[11] = newValue.y
-            storage[12] = newValue.z
-        }
-    }
+    public var tangent: Direction3
+    
+    /// The TextureCoordinate for UV set #1 (index 0)
+    public var uv1: TextureCoordinate
+    
+    /// The TextureCoordinate for UV set #2 (index 1)
+    public var uv2: TextureCoordinate
     
     /// The vertex color.
-    public var color: Color {
-        get {
-            return Color(storage[13 ..< 17])
-        }
-        set {
-            storage[13] = newValue.red
-            storage[14] = newValue.green
-            storage[15] = newValue.blue
-            storage[16] = newValue.alpha
-        }
-    }
+    public var color: Color
 
     public init(
-        _ position: Position3 = .zero,
-        _ normal: Direction3 = .zero,
-        _ uvSet1: TextureCoordinate = .zero,
-        _ uvSet2: TextureCoordinate = .zero,
-        color: SIMD4<Float> = SIMD4(0.5, 0.5, 0.5, 1)
+        position: Position3 = .zero,
+        normal: Direction3 = .zero,
+        tangent: Direction3 = .zero,
+        uvSet1: TextureCoordinate = .zero,
+        uvSet2: TextureCoordinate = .zero,
+        color: Color = .gray
     ) {
-        self.init(
-            px: position.x,
-            py: position.y,
-            pz: position.z,
-            nx: normal.x,
-            ny: normal.y,
-            nz: normal.z,
-            tu1: uvSet1.x,
-            tv1: uvSet1.y,
-            tu2: uvSet2.x,
-            tv2: uvSet2.y,
-            cr: color[0],
-            cg: color[1],
-            cb: color[2],
-            ca: color[3]
-        )
+        self.position = position
+        self.normal = normal
+        self.tangent = tangent
+        self.uv1 = uvSet1
+        self.uv2 = uvSet2
+        self.color = color
     }
 
     public init(
@@ -116,6 +52,9 @@ public struct Vertex: Codable, Equatable, Hashable {
         nx: Float = 0,
         ny: Float = 0,
         nz: Float = 0,
+        tanX: Float = 0,
+        tanY: Float = 0,
+        tanZ: Float = 0,
         tu1: Float = 0,
         tv1: Float = 0,
         tu2: Float = 0,
@@ -125,11 +64,18 @@ public struct Vertex: Codable, Equatable, Hashable {
         cb: Float = 0.5,
         ca: Float = 1
     ) {
-        self.storage = [px, py, pz, nx, ny, nz, tu1, tv1, tu2, tv2, 0, 0, 0, cr, cg, cb, ca]
+        self.init(
+            position: Position3(px, py, pz),
+            normal: Direction3(nx, ny, nz),
+            tangent: Direction3(tanX, tanY, tanZ),
+            uvSet1: TextureCoordinate(tu1, tv1),
+            uvSet2: TextureCoordinate(tu2, tv2),
+            color: Color(cr, cg, cb, ca)
+        )
     }
 
     internal func isPositionSimilar(to vertex: Vertex, threshold: Float = 0.001) -> Bool {
-        guard threshold > 0 else { return self.storage == vertex.storage }
+        guard threshold > 0 else { return self == vertex }
         guard self.position.distance(from: vertex.position) <= threshold else { return false }
         return true
     }
@@ -143,27 +89,37 @@ public struct Vertex: Codable, Equatable, Hashable {
     }
 
     public static func * (lhs: Self, rhs: Matrix4x4) -> Self {
-        var lhs = lhs
-        lhs.position = lhs.position * rhs
+        var copy = lhs
+        copy.position = copy.position * rhs
         let m3 = Matrix3x3(rhs)
-        lhs.normal = lhs.normal * m3
-        lhs.tangent = lhs.tangent * m3
-        return lhs
+        copy.normal = copy.normal * m3
+        copy.tangent = copy.tangent * m3
+        return copy
     }
 }
 extension Vertex {
-    public static func *= (lhs: inout Vertex, rhs: Float) {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        guard lhs.position == rhs.position else {return false}
+        guard lhs.normal == rhs.normal else {return false}
+        guard lhs.tangent == rhs.tangent else {return false}
+        guard lhs.uv1 == rhs.uv1 else {return false}
+        guard lhs.uv2 == rhs.uv2 else {return false}
+        guard lhs.color == rhs.color else {return false}
+        return true
+    }
+    
+    public static func *= (lhs: inout Self, rhs: Float) {
         lhs = lhs * rhs
     }
-    public static func * (lhs: Vertex, rhs: Float) -> Vertex {
-        return Vertex(lhs.position * rhs, lhs.normal * rhs, lhs.uv1, lhs.uv2, color: lhs.color.simd)
+    public static func * (lhs: Self, rhs: Float) -> Self {
+        return Vertex(position: lhs.position * rhs, normal: lhs.normal * rhs, tangent: lhs.tangent * rhs, uvSet1: lhs.uv1, uvSet2: lhs.uv2, color: lhs.color)
     }
 
-    public static func /= (lhs: inout Vertex, rhs: Float) {
+    public static func /= (lhs: inout Self, rhs: Float) {
         lhs = lhs * rhs
     }
-    public static func / (lhs: Vertex, rhs: Float) -> Vertex {
-        return Vertex(lhs.position / rhs, lhs.normal / rhs, lhs.uv1, lhs.uv2, color: lhs.color.simd)
+    public static func / (lhs: Self, rhs: Float) -> Self {
+        return Vertex(position: lhs.position / rhs, normal: lhs.normal / rhs, tangent: lhs.tangent / rhs, uvSet1: lhs.uv1, uvSet2: lhs.uv2, color: lhs.color)
     }
 }
 

@@ -25,12 +25,12 @@ public struct RawLines: Sendable {
     /** Creates a Line primitive element array object from triangles.
     - parameter boxEdgesOnly when true only the outermost vertices are kept. If the triangles make up a cube the result would be the cube's edges as lines.
      */
-    public init(wireframeFrom triangles: [Triangle]) {
+    public init(wireframeFrom rawGeometry: RawGeometry) {
         func getSimilarVertex(to vertext: Vertex, from vertices: [Vertex]) -> Array<Vertex>.Index? {
             return vertices.firstIndex(where: { $0.isSimilar(to: vertext) })
         }
 
-        let inVertices: [Vertex] = triangles.vertices
+        let inVertices = rawGeometry.vertices
         var outVertices: [Vertex] = []
 
         var positions: [Position3] = []
@@ -39,7 +39,7 @@ public struct RawLines: Sendable {
 
         var pairs: [(v1: Vertex, v2: Vertex)] = []
 
-        for triangle in triangles {
+        for triangle in rawGeometry {
             func optimizedInsert(_ v1: Vertex) {
                 if let index = getSimilarVertex(to: v1, from: outVertices) {
                     indices.append(UInt16(index))
@@ -99,12 +99,12 @@ public struct RawLines: Sendable {
         self.indices = indices
     }
 
-    public init(boundingBoxFrom triangles: [Triangle], color prefferedColor: Color? = nil) {
+    public init(boundingBoxFrom rawGeoemtry: RawGeometry, color prefferedColor: Color? = nil) {
         func getSimilarVertex(to vertext: Vertex, from vertices: [Vertex]) -> Array<Vertex>.Index? {
             return vertices.firstIndex(where: { $0.isSimilar(to: vertext) })
         }
 
-        let inVertices: [Vertex] = triangles.vertices
+        let inVertices = rawGeoemtry.vertices
         var outVertices: [Vertex] = []
 
         var positions: [Position3] = []
@@ -113,7 +113,7 @@ public struct RawLines: Sendable {
 
         var pairs: [(v1: Vertex, v2: Vertex)] = []
 
-        for triangle in triangles {
+        for triangle in rawGeoemtry {
             func optimizedInsert(_ v1: Vertex) {
                 if let index = getSimilarVertex(to: v1, from: outVertices) {
                     indices.append(UInt16(index))

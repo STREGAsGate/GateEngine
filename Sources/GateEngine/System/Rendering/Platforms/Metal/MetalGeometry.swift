@@ -42,7 +42,7 @@ final class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
         let clrOffset = nmlOffset + nmlSize + (nmlSize % 16)
         let clrSize = geometry.colors.count * MemoryLayout<Float>.size
         let indOffset = clrOffset + clrSize + (clrSize % 16)
-        let indSize = geometry.indices.count * MemoryLayout<UInt16>.size
+        let indSize = geometry.vertexIndicies.count * MemoryLayout<UInt16>.size
         let totalBytes: Int = indOffset + indSize + (indSize % 16)
         
         self.bufferOffsets = [posOffset, uv1Offset, uv2Offset, tanOffset, nmlOffset, clrOffset, indOffset]
@@ -71,7 +71,7 @@ final class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
         geometry.colors.withUnsafeBytes { pointer in
             bytes.advanced(by: clrOffset).copyMemory(from: pointer.baseAddress!, byteCount: clrSize)
         }
-        geometry.indices.withUnsafeBytes { pointer in
+        geometry.vertexIndicies.withUnsafeBytes { pointer in
             bytes.advanced(by: indOffset).copyMemory(from: pointer.baseAddress!, byteCount: indSize)
         }
         
@@ -80,7 +80,7 @@ final class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             options: .storageModePrivate
         )!
         
-        self.indicesCount = geometry.indices.count
+        self.indicesCount = geometry.vertexIndicies.count
 
         self.blit(sharedBuffer, self.buffer)
     }
@@ -117,7 +117,7 @@ final class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
         let swtOffset = sinOffset + sinSize + (sinSize % 16)
         let swtSize = skin.jointWeights.count * MemoryLayout<Float>.size
         let indOffset = swtOffset + swtSize + (swtSize % 16)
-        let indSize = geometry.indices.count * MemoryLayout<UInt16>.size
+        let indSize = geometry.vertexIndicies.count * MemoryLayout<UInt16>.size
         let totalBytes: Int = indOffset + indSize + (indSize % 16)
         
         self.bufferOffsets = [posOffset, uv1Offset, uv2Offset, tanOffset, nmlOffset, clrOffset, sinOffset, swtOffset, indOffset]
@@ -152,7 +152,7 @@ final class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
         skin.jointWeights.withUnsafeBytes { pointer in
             bytes.advanced(by: swtOffset).copyMemory(from: pointer.baseAddress!, byteCount: swtSize)
         }
-        geometry.indices.withUnsafeBytes { pointer in
+        geometry.vertexIndicies.withUnsafeBytes { pointer in
             bytes.advanced(by: indOffset).copyMemory(from: pointer.baseAddress!, byteCount: indSize)
         }
 
@@ -161,7 +161,7 @@ final class MetalGeometry: GeometryBackend, SkinnedGeometryBackend {
             options: .storageModePrivate
         )!
         
-        self.indicesCount = geometry.indices.count
+        self.indicesCount = geometry.vertexIndicies.count
 
         self.blit(sharedBuffer, self.buffer)
     }

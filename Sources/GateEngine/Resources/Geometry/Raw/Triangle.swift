@@ -9,32 +9,9 @@ import GameMath
 
 /// A three point polygon primitive.
 public struct Triangle: Codable, Equatable, Hashable {
-    private var storage: [Vertex]
-
-    public var v1: Vertex {
-        get {
-            return storage[0]
-        }
-        set {
-            storage[0] = newValue
-        }
-    }
-    public var v2: Vertex {
-        get {
-            return storage[1]
-        }
-        set {
-            storage[1] = newValue
-        }
-    }
-    public var v3: Vertex {
-        get {
-            return storage[2]
-        }
-        set {
-            storage[2] = newValue
-        }
-    }
+    public var v1: Vertex
+    public var v2: Vertex
+    public var v3: Vertex
 
     public var center: Position3 {
         return (v1.position + v2.position + v3.position) / 3
@@ -46,7 +23,9 @@ public struct Triangle: Codable, Equatable, Hashable {
 
     /// Vertices are expected to be counter-clockwise wound at all times
     public init(v1: Vertex, v2: Vertex, v3: Vertex, repairIfNeeded: Bool) {
-        self.storage = [v1, v2, v3]
+        self.v1 = v1
+        self.v2 = v2
+        self.v3 = v3
         if repairIfNeeded {
             self.repairIfNeeded()
         }
@@ -54,7 +33,9 @@ public struct Triangle: Codable, Equatable, Hashable {
 
     /// Vertices are expected to be counter-clockwise wound at all times
     public init(p1: Position3, p2: Position3, p3: Position3) {
-        self.storage = [Vertex(p1), Vertex(p2), Vertex(p3)]
+        self.v1 = Vertex(position: p1)
+        self.v2 = Vertex(position: p2)
+        self.v3 = Vertex(position: p3)
         self.repairIfNeeded()
     }
 
@@ -72,7 +53,7 @@ public struct Triangle: Codable, Equatable, Hashable {
             return [v1.color, v2.color, v3.color]
         }
         set {
-            assert(newValue.count == 3, "1 Color is required for ever vertex")
+            assert(newValue.count == 3, "1 Color is required for ever vertex (3)")
             v1.color = newValue[0]
             v2.color = newValue[1]
             v3.color = newValue[2]

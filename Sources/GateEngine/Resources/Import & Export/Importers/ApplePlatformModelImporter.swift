@@ -170,7 +170,7 @@ public final class ApplePlatformModelImporter: GeometryImporter {
                                normals: normals(from: mesh),
                                tangents: tangents(from: mesh),
                                colors: colors(from: mesh),
-                               indices: try indices(from: submeshes))
+                               indexes: try indices(from: submeshes))
         }
         if let name = options.subobjectName {
             throw GateEngineError.failedToDecode("Failed to locate model named \(name).")

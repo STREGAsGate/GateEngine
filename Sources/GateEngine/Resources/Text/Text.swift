@@ -160,8 +160,8 @@ public final class Text {
 
         let roundedPointSize = UInt(pointSize.rounded())
 
-        var triangles: [Triangle] = []
-        triangles.reserveCapacity(string.count)
+        var rawGeometry: RawGeometry = []
+        rawGeometry.reserveCapacity(string.count * 2)
 
         var lineCount = 1
         var xPosition: Float = 0
@@ -171,6 +171,7 @@ public final class Text {
         var heightMax: Float = -.greatestFiniteMagnitude
 
         var currentWord: [Triangle] = []
+        currentWord.reserveCapacity(2)
 
         func newLine() {
             yPosition += pointSize
@@ -178,7 +179,7 @@ public final class Text {
         }
 
         func processWord() {
-            triangles.append(contentsOf: currentWord)
+            rawGeometry.append(contentsOf: currentWord)
             currentWord.removeAll(keepingCapacity: true)
         }
 
@@ -329,7 +330,7 @@ public final class Text {
         processWord()
 
         let height = heightMax - heightMin
-        return (RawGeometry(triangles: triangles), Size2(width: width, height: height))
+        return (rawGeometry, Size2(width: width, height: height))
     }
 }
 
