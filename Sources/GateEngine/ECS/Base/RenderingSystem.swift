@@ -83,6 +83,16 @@
 
     }
 
+    
+    /**
+     The major sort order for rendering systems.
+
+     The phase value decides what layer this systems content will be drawn relative to it's owning GameView
+     */
+    open class var phase: Phase {
+        return .afterGameView
+    }
+    
     /**
      Provide a sorting order to ensure this system is processed at the right time.
 
@@ -96,6 +106,13 @@
         return .dontCare
     }
 }
+
+extension RenderingSystem {
+    public enum Phase: UInt {
+        /// Draws before the GameView, resulting in content below
+        case beforeGameView
+        /// Draws after the GameView, resulting in content ontop
+        case afterGameView
     }
 }
 

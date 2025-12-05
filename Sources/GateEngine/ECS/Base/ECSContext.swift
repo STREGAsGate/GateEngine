@@ -321,17 +321,22 @@ extension ECSContext {
         return shouldRender
     }
 
-    func updateRendering(into view: GameView, deltaTime: Float) {
+    func beginRendering() {
         if let performance = performance {
             performance.startRenderingSystems()
         }
-
+    }
+    
+    func updateRendering(into view: GameView, deltaTime: Float, for phase: RenderingSystem.Phase) {
         for system in self.renderingSystems {
+            guard type(of: system).phase == phase else {continue}
             self.performance?.beginStatForSystem(system)
             system.willRender(into: view, withTimePassed: deltaTime, context: self)
             self.performance?.endCurrentStatistic()
         }
-        
+    }
+    
+    func endRendering() {
         if let performance = performance {
             performance.endRenderingSystems()
             performance.finalizeRenderingSystemsFrameTime()
