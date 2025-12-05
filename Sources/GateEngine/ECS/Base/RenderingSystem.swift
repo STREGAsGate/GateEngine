@@ -93,7 +93,9 @@
      - returns: A ``RenderingSystemSortOrder`` describing this systems position.
      **/
     nonisolated open class func sortOrder() -> RenderingSystemSortOrder? {
-        return nil
+        return .dontCare
+    }
+}
     }
 }
 

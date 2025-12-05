@@ -31,8 +31,18 @@ public struct SystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral, Se
     }
     
     @inlinable
+    public static var first: Self {
+        return Self(rawValue: .min)
+    }
+    
+    @inlinable
     public static var last: Self {
         return Self(rawValue: .max)
+    }
+    
+    @inlinable
+    public static var dontCare: Optional<Self> {
+        return nil
     }
 }
 
@@ -62,8 +72,18 @@ public struct RenderingSystemSortOrder: RawRepresentable, ExpressibleByIntegerLi
     }
     
     @inlinable
+    public static var first: Self {
+        return Self(rawValue: .min)
+    }
+    
+    @inlinable
     public static var last: Self {
         return Self(rawValue: .max)
+    }
+    
+    @inlinable
+    public static var dontCare: Optional<Self> {
+        return nil
     }
 }
 
@@ -92,14 +112,14 @@ extension RenderingSystemSortOrder {
 
 extension PlatformSystemSortOrder {
     // Run before everything
-    public static let delaySystem: Self = 0
+    public static let delaySystem: Self = PlatformSystemSortOrder(rawValue: .min)
     
     public static let hidSystem: Self   = 1_001
     public static let audioSystem: Self = 1_002
     public static let cacheSystem: Self = 1_003
    
     // Run after everything
-    public static let deferredSystem: Self = 100_000
+    public static let deferredSystem: Self = PlatformSystemSortOrder(rawValue: .max)
 }
 
 public struct PlatformSystemSortOrder: RawRepresentable, ExpressibleByIntegerLiteral, Sendable {
@@ -128,7 +148,17 @@ public struct PlatformSystemSortOrder: RawRepresentable, ExpressibleByIntegerLit
     }
     
     @inlinable
+    public static var first: Self {
+        return Self(rawValue: .min)
+    }
+    
+    @inlinable
     public static var last: Self {
         return Self(rawValue: .max)
+    }
+    
+    @inlinable
+    public static var dontCare: Optional<Self> {
+        return nil
     }
 }

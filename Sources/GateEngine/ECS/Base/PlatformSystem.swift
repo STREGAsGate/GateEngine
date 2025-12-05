@@ -92,7 +92,7 @@ import GameMath
     }
     /// The minor sort order for systems
     open class func sortOrder() -> PlatformSystemSortOrder? {
-        return nil
+        return .dontCare
     }
 }
 

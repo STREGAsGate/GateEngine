@@ -91,7 +91,7 @@ import GameMath
     }
     /// The minor sort order for systems
     nonisolated open class func sortOrder() -> SystemSortOrder? {
-        return nil
+        return .dontCare
     }
 }
 
