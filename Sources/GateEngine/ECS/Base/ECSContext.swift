@@ -131,17 +131,17 @@
             let rhs = type(of: rhs)
             let lhsSO = lhs.sortOrder()?.rawValue
             let rhsSO = rhs.sortOrder()?.rawValue
-            if lhsSO != nil || rhsSO != nil {
-                if let lhsSO = lhsSO, let rhsSO = rhsSO {
-                    return lhsSO < rhsSO
-                }
-                if lhsSO != nil {
-                    return true
-                }
-                if rhsSO != nil {
-                    return true
-                }
+            
+            if let lhsSO = lhsSO, let rhsSO = rhsSO {
+                return lhsSO < rhsSO
             }
+            if let lhsSO {
+                return lhsSO <= 0
+            }
+            if let rhsSO {
+                return rhsSO > 0
+            }
+            
             return false
         })
     }
@@ -165,12 +165,17 @@
         _systems.sort(by: { (lhs, rhs) -> Bool in
             let lhsSO = type(of: lhs).sortOrder()?.rawValue
             let rhsSO = type(of: rhs).sortOrder()?.rawValue
+            
             if let lhsSO = lhsSO, let rhsSO = rhsSO {
                 return lhsSO < rhsSO
             }
-            if lhsSO == nil && rhsSO != nil {
-                return true
+            if let lhsSO {
+                return lhsSO <= 0
             }
+            if let rhsSO {
+                return rhsSO > 0
+            }
+            
             return false
         })
     }
@@ -189,12 +194,17 @@
         _renderingSystems.sort(by: { (lhs, rhs) -> Bool in
             let lhsSO = type(of: lhs).sortOrder()?.rawValue
             let rhsSO = type(of: rhs).sortOrder()?.rawValue
+            
             if let lhsSO = lhsSO, let rhsSO = rhsSO {
                 return lhsSO < rhsSO
             }
-            if lhsSO == nil && rhsSO != nil {
-                return true
+            if let lhsSO {
+                return lhsSO <= 0
             }
+            if let rhsSO {
+                return rhsSO > 0
+            }
+            
             return false
         })
     }
