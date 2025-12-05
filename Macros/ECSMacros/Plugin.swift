@@ -12,6 +12,7 @@ import SwiftSyntaxMacros
 struct ECSMacros: CompilerPlugin {
     var providingMacros: [Macro.Type] = [
         ECSSystemMacro.self,
+        ECSRenderingSystemMacro.self,
         ECSComponentMacro.self
     ]
 }

@@ -5,6 +5,7 @@
  * http://stregasgate.com
  */
 
+@RenderingSystem(drawing: .afterGameView)
 public final class PerformanceRenderingSystem: RenderingSystem {
     let improveLegibility: Bool
     

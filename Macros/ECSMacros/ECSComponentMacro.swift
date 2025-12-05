@@ -9,7 +9,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-public enum ComponentMacroError: Error, CustomStringConvertible {
+public enum ComponentMacroError: Swift.Error, CustomStringConvertible {
     case notStructOrClass
     case mustBeFinalClass
     

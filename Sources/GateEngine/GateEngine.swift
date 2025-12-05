@@ -19,6 +19,9 @@ import Foundation
 @attached(member, names: named(phase), named(macroPhase))
 public macro System(_ macroPhase: GateEngine.System.Phase) = #externalMacro(module: "ECSMacros", type: "ECSSystemMacro")
 
+@attached(member, names: named(phase), named(macroPhase))
+public macro RenderingSystem(drawing macroPhase: GateEngine.RenderingSystem.Phase) = #externalMacro(module: "ECSMacros", type: "ECSRenderingSystemMacro")
+
 @attached(extension, conformances: Component, names: named(componentID), named(init))
 public macro Component() = #externalMacro(module: "ECSMacros", type: "ECSComponentMacro")
 

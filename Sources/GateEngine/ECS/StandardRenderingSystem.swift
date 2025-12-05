@@ -7,6 +7,7 @@
 
 import GameMath
 
+@RenderingSystem(drawing: .afterGameView)
 public final class StandardRenderingSystem: RenderingSystem {
     internal var verticalResolution: Float? = nil
     internal lazy var renderTarget: RenderTarget = RenderTarget()
