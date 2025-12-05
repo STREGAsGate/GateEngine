@@ -9,13 +9,16 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-public enum SystemMacroError: Error, CustomStringConvertible {
+public enum SystemMacroError: Swift.Error, CustomStringConvertible {
     case notClass
+    case invalidSortOrder
     
     public var description: String {
         switch self {
         case .notClass:
             "@System(phase) can only be attached to a class."
+        case .invalidSortOrder:
+            "Invalid SystemSortOrder."
         }
     }
 }
@@ -32,7 +35,21 @@ public struct ECSSystemMacro: MemberMacro, ExtensionMacro {
             throw SystemMacroError.notClass
         }
         
-        var syntax = "override class var phase: System.Phase { \(node.arguments!.formatted()) }"
+        func getSystemSortOrder() throws -> TokenSyntax {
+            switch node.arguments {
+            case .argumentList(let labeledExprListSyntax):
+                if let token = labeledExprListSyntax.lastToken(viewMode: .sourceAccurate) {
+                    return "\(token.formatted())"
+                }
+            default:
+                break
+            }
+            throw SystemMacroError.invalidSortOrder
+        }
+        
+        let argument: String = try getSystemSortOrder().formatted().description
+        
+        var syntax = "override class var phase: System.Phase { .\(argument)}"
         
         if let access = classDecl.modifiers.first(where: {
             let syntax = $0.trimmed.description
