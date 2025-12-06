@@ -24,3 +24,42 @@ public struct Rect2n<Scalar: Vector2n.ScalarType> {
         self.size = size
     }
 }
+
+extension Rect2n {
+    @_transparent
+    public var x: Scalar {
+        get {
+            return position.x
+        }
+        mutating set {
+            position.x = newValue
+        }
+    }
+    @_transparent
+    public var y: Scalar {
+        get {
+            return position.y
+        }
+        mutating set {
+            position.y = newValue
+        }
+    }
+    @_transparent
+    public var width: Scalar {
+        get {
+            return size.width
+        }
+        mutating set {
+            size.width = newValue
+        }
+    }
+    @_transparent
+    public var height: Scalar {
+        get {
+            return size.height
+        }
+        mutating set {
+            size.height = newValue
+        }
+    }
+}

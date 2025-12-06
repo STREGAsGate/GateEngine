@@ -24,6 +24,11 @@ public extension Line3D {
     }
     
     @inlinable
+    var center: Position3 {
+        return (p1 + p2) / 2
+    }
+    
+    @inlinable
     func pointNear(_ p: Position3) -> Position3 {
         let ab = p2 - p1
         let ap = p - p1

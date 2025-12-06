@@ -164,6 +164,12 @@ public extension Vector2n where Scalar: FloatingPoint {
     static func /= (lhs: inout Self, rhs: some Vector2n<Scalar>) {
         lhs = lhs / rhs
     }
+    
+    @inlinable
+    static var nan: Self {Self(x: .nan, y: .nan)}
+    
+    @inlinable
+    static var infinity: Self {Self(x: .infinity, y: .infinity)}
 }
 
 public extension Vector2n where Scalar: FixedWidthInteger {
@@ -179,6 +185,16 @@ public extension Vector2n where Scalar: FixedWidthInteger {
 }
 
 public extension Vector2n where Scalar: Comparable {
+    @inlinable
+    var min: Scalar {
+        return Swift.min(x, y)
+    }
+    
+    @inlinable
+    var max: Scalar {
+        return Swift.max(x, y)
+    }
+    
     @inlinable
     static func < (lhs: Self, rhs: some Vector2n<Scalar>) -> Bool {
         return lhs.x < rhs.x && lhs.y < rhs.y
