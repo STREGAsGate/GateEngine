@@ -9,19 +9,19 @@ import GameMath
 
 @RenderingSystem(drawing: .afterGameView)
 public final class StandardRenderingSystem: RenderingSystem {
-    internal var verticalResolution: Float? = nil
+    internal var verticalResolution: UInt? = nil
     internal lazy var renderTarget: RenderTarget = RenderTarget()
 
     public convenience init(verticalResolution: UInt) {
         self.init()
-        self.verticalResolution = Float(verticalResolution)
+        self.verticalResolution = verticalResolution
     }
     
     public override func render(context: ECSContext, into view: GameView, withTimePassed deltaTime: Float) {
         if let verticalResolution = verticalResolution {
-            var width = verticalResolution * view.frame.size.aspectRatio
+            var width = Float(verticalResolution) * view.frame.size.aspectRatio
             width -= width.truncatingRemainder(dividingBy: 2)
-            renderTarget.size = Size2i(width: Int32(width), height: Int32(verticalResolution))
+            renderTarget.size = Size2i(width: Int(width), height: Int(verticalResolution))
         }
 
         do {  // 3D

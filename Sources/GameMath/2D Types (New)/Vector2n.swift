@@ -15,8 +15,8 @@ public protocol Vector2n<Scalar> {
     init(x: Scalar, y: Scalar)
 }
 
-public typealias Position2i = Position2n<Int32>
-public typealias Position2f = Position2n<Float32>
+public typealias Position2i = Position2n<Int>
+public typealias Position2f = Position2n<Float>
 public struct Position2n<Scalar: Vector2n.ScalarType>: Vector2n {
     public typealias Vector2Counterpart = Position2
     public var x: Scalar
@@ -35,8 +35,8 @@ extension Position2n: Sendable where Scalar: Sendable { }
 extension Position2n: Codable where Scalar: Codable { }
 extension Position2n: BinaryCodable where Scalar: BinaryCodable { }
 
-public typealias Size2i = Size2n<Int32>
-public typealias Size2f = Size2n<Float32>
+public typealias Size2i = Size2n<Int>
+public typealias Size2f = Size2n<Float>
 public struct Size2n<Scalar: Vector2n.ScalarType>: Vector2n {
     public typealias Vector2Counterpart = Size2
     public var x: Scalar
@@ -62,58 +62,6 @@ public extension Size2n {
     
     @inlinable init(width: Scalar, height: Scalar) {
         self.init(x: width, y: height)
-    }
-}
-
-public extension Vector2n where Scalar: BinaryInteger {
-    @inlinable
-    @_disfavoredOverload
-    static func castInit<T1: BinaryInteger, T2: BinaryInteger>(width: T1, height: T2) -> Self {
-        return .init(x: Scalar(width), y: Scalar(height))
-    }
-    
-    @inlinable
-    @_disfavoredOverload
-    static func castInit<T1: BinaryFloatingPoint, T2: BinaryFloatingPoint>(width: T1, height: T2) -> Self {
-        return .init(x: Scalar(width), y: Scalar(height))
-    }
-    
-    @inlinable
-    @_disfavoredOverload
-    static func castInit<T1: BinaryInteger, T2: BinaryFloatingPoint>(width: T1, height: T2) -> Self {
-        return .init(x: Scalar(width), y: Scalar(height))
-    }
-    
-    @inlinable
-    @_disfavoredOverload
-    static func castInit<T1: BinaryFloatingPoint, T2: BinaryInteger>(width: T1, height: T2) -> Self {
-        return .init(x: Scalar(width), y: Scalar(height))
-    }
-}
-
-public extension Vector2n where Scalar: BinaryFloatingPoint {
-    @inlinable
-    @_disfavoredOverload
-    static func castInit<T1: BinaryInteger, T2: BinaryInteger>(width: T1, height: T2) -> Self {
-        return .init(x: Scalar(width), y: Scalar(height))
-    }
-    
-    @inlinable
-    @_disfavoredOverload
-    static func castInit<T1: BinaryFloatingPoint, T2: BinaryFloatingPoint>(width: T1, height: T2) -> Self {
-        return .init(x: Scalar(width), y: Scalar(height))
-    }
-    
-    @inlinable
-    @_disfavoredOverload
-    static func castInit<T1: BinaryInteger, T2: BinaryFloatingPoint>(width: T1, height: T2) -> Self {
-        return .init(x: Scalar(width), y: Scalar(height))
-    }
-    
-    @inlinable
-    @_disfavoredOverload
-    static func castInit<T1: BinaryFloatingPoint, T2: BinaryInteger>(width: T1, height: T2) -> Self {
-        return .init(x: Scalar(width), y: Scalar(height))
     }
 }
 
@@ -206,25 +154,6 @@ public extension Vector2n where Scalar: Numeric {
     }
 }
 
-extension Vector2n where Scalar: Comparable {
-    public static func < (lhs: Self, rhs: some Vector2n<Scalar>) -> Bool {
-        return lhs.x < rhs.x && lhs.y < rhs.y
-    }
-}
-
-extension Vector2n where Scalar: Equatable {
-    public static func == (lhs: Self, rhs: some Vector2n<Scalar>) -> Bool {
-        return lhs.x == rhs.x && lhs.y == rhs.y
-    }
-}
-
-extension Vector2n where Scalar: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(x)
-        hasher.combine(y)
-    }
-}
-
 public extension Vector2n where Scalar: FloatingPoint {
     @inlinable
     static func / (lhs: Self, rhs: some Vector2n<Scalar>) -> Self {
@@ -246,6 +175,27 @@ public extension Vector2n where Scalar: FixedWidthInteger {
     @inlinable
     static func /= (lhs: inout Self, rhs: some Vector2n<Scalar>) {
         lhs = lhs / rhs
+    }
+}
+
+public extension Vector2n where Scalar: Comparable {
+    @inlinable
+    static func < (lhs: Self, rhs: some Vector2n<Scalar>) -> Bool {
+        return lhs.x < rhs.x && lhs.y < rhs.y
+    }
+}
+
+extension Vector2n where Scalar: Equatable {
+    @inlinable
+    public static func == (lhs: Self, rhs: some Vector2n<Scalar>) -> Bool {
+        return lhs.x == rhs.x && lhs.y == rhs.y
+    }
+}
+
+extension Vector2n where Scalar: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(x)
+        hasher.combine(y)
     }
 }
 

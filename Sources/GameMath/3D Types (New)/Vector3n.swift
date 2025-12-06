@@ -16,8 +16,8 @@ public protocol Vector3n<Scalar> {
     init(x: Scalar, y: Scalar, z: Scalar)
 }
 
-public typealias Position3i = Position3n<Int32>
-public typealias Position3f = Position3n<Float32>
+public typealias Position3i = Position3n<Int>
+public typealias Position3f = Position3n<Float>
 public struct Position3n<Scalar: Vector3n.ScalarType>: Vector3n {
     public typealias Vector3Counterpart = Position3
     public var x: Scalar
@@ -38,8 +38,8 @@ extension Position3n: Sendable where Scalar: Sendable { }
 extension Position3n: Codable where Scalar: Codable { }
 extension Position3n: BinaryCodable where Scalar: BinaryCodable { }
 
-public typealias Size3i = Size3n<Int32>
-public typealias Size3f = Size3n<Float32>
+public typealias Size3i = Size3n<Int>
+public typealias Size3f = Size3n<Float>
 public struct Size3n<Scalar: Vector3n.ScalarType>: Vector3n {
     public typealias Vector3Counterpart = Size3
     public var x: Scalar
@@ -144,26 +144,6 @@ public extension Vector3n where Scalar: AdditiveArithmetic {
     static var zero: Self {Self(x: .zero, y: .zero, z: .zero)}
 }
 
-extension Vector3n where Scalar: Comparable {
-    public static func < (lhs: Self, rhs: Self) -> Bool {
-        return lhs.x < rhs.x && lhs.y < rhs.y && lhs.z < rhs.z
-    }
-}
-
-extension Vector3n where Scalar: Equatable {
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z
-    }
-}
-
-extension Vector3n where Scalar: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(x)
-        hasher.combine(y)
-        hasher.combine(z)
-    }
-}
-
 public extension Vector3n where Scalar: FloatingPoint {
     @inlinable
     static func / (lhs: Self, rhs: Self) -> Self {
@@ -185,6 +165,26 @@ public extension Vector3n where Scalar: FixedWidthInteger {
     @inlinable
     static func /= (lhs: inout Self, rhs: Self) {
         lhs = lhs / rhs
+    }
+}
+
+public extension Vector3n where Scalar: Comparable {
+    static func < (lhs: Self, rhs: Self) -> Bool {
+        return lhs.x < rhs.x && lhs.y < rhs.y && lhs.z < rhs.z
+    }
+}
+
+extension Vector3n where Scalar: Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z
+    }
+}
+
+extension Vector3n where Scalar: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(x)
+        hasher.combine(y)
+        hasher.combine(z)
     }
 }
 

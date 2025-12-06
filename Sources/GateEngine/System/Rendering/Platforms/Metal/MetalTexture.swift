@@ -21,7 +21,7 @@ final class MetalTexture: TextureBackend {
     }
 
     var size: Size2i {
-        return Size2i(width: Int32(mtlTexture.width), height: Int32(mtlTexture.height))
+        return Size2i(width: mtlTexture.width, height: mtlTexture.height)
     }
 
     required init(renderTargetBackend: any RenderTargetBackend) {

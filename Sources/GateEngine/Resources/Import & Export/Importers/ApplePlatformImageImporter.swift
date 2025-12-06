@@ -43,7 +43,7 @@ public final class ApplePlatformImageImporter: TextureImporter {
             guard let image = CGImageSourceCreateImageAtIndex(imageSource, 0, nil) else {
                 throw GateEngineError.failedToDecode("Failed to decode subimage zero.")
             }
-            self.size = .castInit(width: image.width, height: image.height)
+            self.size = Size2i(width: image.width, height: image.height)
             guard let data = image.dataProvider?.data as? Data else {
                 throw GateEngineError.failedToDecode("Failed to decode data.")
             }

@@ -277,7 +277,7 @@ enum LibSPNG {
                     throw GateEngineError.failedToDecode(String(cString: spng_strerror(header_err)))
                 }
                 
-                return RawTexture(imageSize: .castInit(width: header.width, height: header.height), imageData: out)
+                return RawTexture(imageSize: Size2i(width: Int(header.width), height: Int(header.height)), imageData: out)
             }
         }catch let error as GateEngineError {
             throw error // Typed throws not supported by closures as of Swift 6.2

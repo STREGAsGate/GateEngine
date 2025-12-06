@@ -212,7 +212,7 @@ public final class TextureAtlasBuilder {
     }
     
     public func generateAtlas() -> TextureAtlas {
-        let textureSize: Size2i = .castInit(width: self.searchGrid.width * blockSize, height: self.searchGrid.height * blockSize)
+        let textureSize: Size2i = .init(width: self.searchGrid.width * blockSize, height: self.searchGrid.height * blockSize)
         
         let dstWidth = Int(textureSize.width * 4)
 

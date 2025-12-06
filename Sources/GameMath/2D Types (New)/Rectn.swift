@@ -5,8 +5,8 @@
  * http://stregasgate.com
  */
 
-public typealias Rect2i = Rect2n<Int32>
-public typealias Rect2f = Rect2n<Float32>
+public typealias Rect2i = Rect2n<Int>
+public typealias Rect2f = Rect2n<Float>
 
 public struct Rect2n<Scalar: Vector2n.ScalarType> {
     public var position: Position2n<Scalar>

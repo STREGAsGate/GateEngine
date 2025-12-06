@@ -73,7 +73,7 @@ import GameMath
     public func rectForTile(_ tile: TileMap.Tile) -> Rect {
         let row = tile.id / columns
         let column = tile.id % columns
-        let position = Position2i(x: tileSize.width * Int32(column), y: tileSize.height * Int32(row))
+        let position = Position2i(x: tileSize.width * column, y: tileSize.height * row)
         let size = Size2(Float(tileSize.width), Float(tileSize.height))
         return Rect(position: position.vector2, size: size)
     }
