@@ -28,6 +28,8 @@ public struct Position2n<Scalar: Vector2n.ScalarType>: Vector2n {
     }
 }
 extension Position2n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
+extension Position2n: ExpressibleByIntegerLiteral where Scalar: FixedWidthInteger & _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
+extension Position2n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Position2n: Equatable where Scalar: Equatable { }
 extension Position2n: Hashable where Scalar: Hashable { }
 extension Position2n: Comparable where Scalar: Comparable { }
@@ -50,6 +52,8 @@ public struct Size2n<Scalar: Vector2n.ScalarType>: Vector2n {
     public static var one: Self { .init(x: 1, y: 1) }
 }
 extension Size2n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
+extension Size2n: ExpressibleByIntegerLiteral where Scalar: FixedWidthInteger & _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
+extension Size2n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Size2n: Equatable where Scalar: Equatable { }
 extension Size2n: Hashable where Scalar: Hashable { }
 extension Size2n: Comparable where Scalar: Comparable { }
@@ -75,6 +79,42 @@ extension Vector2n where Scalar: BinaryInteger {
     }
     
     @inlinable
+    public init<T: Vector2n>(_ vector2n: T) where T.Scalar: BinaryFloatingPoint {
+        self.init(
+            x: Scalar(vector2n.x),
+            y: Scalar(vector2n.y)
+        )
+    }
+    
+    @inlinable
+    public init<T: Vector2n>(truncatingIfNeeded vector2n: T) where T.Scalar: BinaryInteger {
+        self.init(
+            x: Scalar(truncatingIfNeeded: vector2n.x),
+            y: Scalar(truncatingIfNeeded: vector2n.y)
+        )
+    }
+}
+
+extension Vector2n where Scalar: BinaryFloatingPoint {
+    @inlinable
+    public init(_ vector2n: some Vector2n<Scalar>) {
+        self.init(
+            x: vector2n.x,
+            y: vector2n.y
+        )
+    }
+    
+    @inlinable
+    public init<T: Vector2n>(_ vector2n: T) where T.Scalar: BinaryInteger {
+        self.init(
+            x: Scalar(vector2n.x),
+            y: Scalar(vector2n.y)
+        )
+    }
+}
+
+extension Vector2n where Scalar: BinaryInteger {
+    @inlinable
     public init(_ vector2: Vector2Counterpart) {
         self.init(
             x: Scalar(vector2.x),
@@ -98,14 +138,6 @@ extension Vector2n where Scalar: BinaryInteger {
 
 extension Vector2n where Scalar: BinaryFloatingPoint {
     @inlinable
-    public init(_ vector2n: some Vector2n<Scalar>) {
-        self.init(
-            x: vector2n.x,
-            y: vector2n.y
-        )
-    }
-    
-    @inlinable
     public init(_ vector2: Vector2Counterpart) {
         self.init(
             x: Scalar(vector2.x),
@@ -127,19 +159,46 @@ extension Vector2n where Scalar: BinaryFloatingPoint {
     }
 }
 
-public extension Vector2n where Scalar: AdditiveArithmetic {
-    @inlinable
-    static func - (lhs: Self, rhs: some Vector2n<Scalar>) -> Self {
-        return Self(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
+public extension Vector2n where Scalar: FixedWidthInteger & _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral {
+    typealias IntegerLiteralType = Scalar
+    init(integerLiteral value: IntegerLiteralType) {
+        self.init(x: value, y: value)
     }
-    
+}
+
+public extension Vector2n where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral {
+    typealias FloatLiteralType = Scalar
+    init(floatLiteral value: FloatLiteralType) {
+        self.init(x: value, y: value)
+    }
+}
+
+public extension Vector2n where Scalar: AdditiveArithmetic {
     @inlinable
     static func + (lhs: Self, rhs: some Vector2n<Scalar>) -> Self {
         return Self(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
     }
     
     @inlinable
-    static var zero: Self {Self(x: .zero, y: .zero)}
+    static func - (lhs: Self, rhs: some Vector2n<Scalar>) -> Self {
+        return Self(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func + (lhs: Self, rhs: Scalar) -> Self {
+        return Self(x: lhs.x + rhs, y: lhs.y + rhs)
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func - (lhs: Self, rhs: Scalar) -> Self {
+        return Self(x: lhs.x - rhs, y: lhs.y - rhs)
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static var zero: Self {Self(x: Scalar.zero, y: Scalar.zero)}
 }
 
 public extension Vector2n where Scalar: Numeric {
@@ -147,10 +206,40 @@ public extension Vector2n where Scalar: Numeric {
     static func * (lhs: Self, rhs: some Vector2n<Scalar>) -> Self {
         return Self(x: lhs.x * rhs.x, y: lhs.y * rhs.y)
     }
-    
+
     @inlinable
     static func *= (lhs: inout Self, rhs: some Vector2n<Scalar>) {
         lhs = lhs * rhs
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func * (lhs: Self, rhs: Scalar) -> Self {
+        return Self(x: lhs.x * rhs, y: lhs.y * rhs)
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func *= (lhs: inout Self, rhs: Scalar) {
+        lhs = lhs * rhs
+    }
+    
+    @inlinable
+    init?<T: Vector2n>(exactly vector2n: T) where T.Scalar: BinaryInteger {
+        guard let x = Scalar(exactly: vector2n.x), let y = Scalar(exactly: vector2n.y) else {
+            return nil
+        }
+        self.init(x: x, y: y)
+    }
+}
+
+public extension Vector2n where Scalar: SignedNumeric {
+    prefix static func - (operand: Self) -> Self {
+        return Self(x: -operand.x, y: -operand.y)
+    }
+    
+    mutating func negate() -> Self {
+        return Self(x: -x, y: -y)
     }
 }
 
@@ -162,6 +251,18 @@ public extension Vector2n where Scalar: FloatingPoint {
     
     @inlinable
     static func /= (lhs: inout Self, rhs: some Vector2n<Scalar>) {
+        lhs = lhs / rhs
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func / (lhs: Self, rhs: Scalar) -> Self {
+        return Self(x: lhs.x / rhs, y: lhs.y / rhs)
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func /= (lhs: inout Self, rhs: Scalar) {
         lhs = lhs / rhs
     }
     
@@ -182,6 +283,18 @@ public extension Vector2n where Scalar: FixedWidthInteger {
     static func /= (lhs: inout Self, rhs: some Vector2n<Scalar>) {
         lhs = lhs / rhs
     }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func / (lhs: Self, rhs: Scalar) -> Self {
+        return Self(x: lhs.x / rhs, y: lhs.y / rhs)
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func /= (lhs: inout Self, rhs: Scalar) {
+        lhs = lhs / rhs
+    }
 }
 
 public extension Vector2n where Scalar: Comparable {
@@ -199,6 +312,11 @@ public extension Vector2n where Scalar: Comparable {
     static func < (lhs: Self, rhs: some Vector2n<Scalar>) -> Bool {
         return lhs.x < rhs.x && lhs.y < rhs.y
     }
+}
+
+@inlinable
+public func abs<T: Vector2n>(_ vector: T) -> T where T.Scalar : Comparable, T.Scalar : SignedNumeric {
+    return T(x: abs(vector.x), y: abs(vector.y))
 }
 
 extension Vector2n where Scalar: Equatable {

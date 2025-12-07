@@ -31,6 +31,8 @@ public struct Position3n<Scalar: Vector3n.ScalarType>: Vector3n {
     }
 }
 extension Position3n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
+extension Position3n: ExpressibleByIntegerLiteral where Scalar: FixedWidthInteger & _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
+extension Position3n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Position3n: Equatable where Scalar: Equatable { }
 extension Position3n: Hashable where Scalar: Hashable { }
 extension Position3n: Comparable where Scalar: Comparable { }
@@ -55,6 +57,8 @@ public struct Size3n<Scalar: Vector3n.ScalarType>: Vector3n {
     public static var one: Self { .init(x: 1, y: 1, z: 1) }
 }
 extension Size3n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
+extension Size3n: ExpressibleByIntegerLiteral where Scalar: FixedWidthInteger & _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
+extension Size3n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Size3n: Equatable where Scalar: Equatable { }
 extension Size3n: Hashable where Scalar: Hashable { }
 extension Size3n: Comparable where Scalar: Comparable { }
@@ -73,6 +77,64 @@ public extension Size3n {
 
 extension Vector3n where Scalar: BinaryInteger {
     @inlinable
+    public init<T: Vector3n>(_ vector3n: T) where T.Scalar: BinaryFloatingPoint {
+        self.init(
+            x: Scalar(vector3n.x),
+            y: Scalar(vector3n.y),
+            z: Scalar(vector3n.z)
+        )
+    }
+    
+    @_disfavoredOverload
+    @inlinable
+    public init<T: Vector3n>(_ vector3n: T, roundingRule: FloatingPointRoundingRule = .towardZero) where T.Scalar: BinaryFloatingPoint {
+        self.init(
+            x: Scalar(vector3n.x.rounded(roundingRule)),
+            y: Scalar(vector3n.y.rounded(roundingRule)),
+            z: Scalar(vector3n.z.rounded(roundingRule))
+        )
+    }
+    
+    @inlinable
+    public init<T: Vector3n>(_ vector3n: T) where T.Scalar: BinaryInteger {
+        self.init(
+            x: Scalar(vector3n.x),
+            y: Scalar(vector3n.y),
+            z: Scalar(vector3n.z)
+        )
+    }
+    
+    @inlinable
+    public init<T: Vector3n>(truncatingIfNeeded vector3n: T) where T.Scalar: BinaryInteger {
+        self.init(
+            x: Scalar(truncatingIfNeeded: vector3n.x),
+            y: Scalar(truncatingIfNeeded: vector3n.y),
+            z: Scalar(truncatingIfNeeded: vector3n.z)
+        )
+    }
+    
+    @inlinable
+    public init?<T: Vector3n>(exactly vector3n: T) where T.Scalar: BinaryInteger {
+        guard let x = Scalar(exactly: vector3n.x), let y = Scalar(exactly: vector3n.y), let z = Scalar(exactly: vector3n.z) else {
+            return nil
+        }
+        self.init(x: x, y: y, z: z)
+    }
+}
+
+extension Vector3n where Scalar: BinaryFloatingPoint {
+    @inlinable
+    public init<T: Vector3n>(_ vector3n: T) where T.Scalar: BinaryInteger {
+        self.init(
+            x: Scalar(vector3n.x),
+            y: Scalar(vector3n.y),
+            z: Scalar(vector3n.z)
+        )
+    }
+}
+
+extension Vector3n where Scalar: BinaryInteger {
+    @inlinable
     public init(_ vector3: Vector3Counterpart) {
         self.init(
             x: Scalar(vector3.x),
@@ -82,15 +144,7 @@ extension Vector3n where Scalar: BinaryInteger {
     }
     
     @inlinable
-    public init(_ vector3: Vector3Counterpart, roundingRule: FloatingPointRoundingRule) where Scalar: BinaryFloatingPoint {
-        self.init(
-            x: Scalar(vector3.x.rounded(roundingRule)),
-            y: Scalar(vector3.y.rounded(roundingRule)),
-            z: Scalar(vector3.z.rounded(roundingRule))
-        )
-    }
-    @inlinable
-    public init(_ vector3: Vector3Counterpart, roundingRule: FloatingPointRoundingRule) where Scalar: BinaryInteger {
+    public init(_ vector3: Vector3Counterpart, roundingRule: FloatingPointRoundingRule = .towardZero) where Scalar: BinaryFloatingPoint {
         self.init(
             x: Scalar(vector3.x.rounded(roundingRule)),
             y: Scalar(vector3.y.rounded(roundingRule)),
@@ -129,32 +183,104 @@ extension Vector3n where Scalar: BinaryFloatingPoint {
     }
 }
 
+public extension Vector3n where Scalar: _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral {
+    typealias IntegerLiteralType = Scalar
+    init(integerLiteral value: IntegerLiteralType) {
+        self.init(x: value, y: value, z: value)
+    }
+}
+
+public extension Vector3n where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral {
+    typealias FloatLiteralType = Scalar
+    init(floatLiteral value: FloatLiteralType) {
+        self.init(x: value, y: value, z: value)
+    }
+}
+
 public extension Vector3n where Scalar: AdditiveArithmetic {
     @inlinable
-    static func - (lhs: Self, rhs: Self) -> Self {
+    static func + (lhs: Self, rhs: some Vector3n<Scalar>) -> Self {
+        return Self(x: lhs.x + rhs.x, y: lhs.y + rhs.y, z: lhs.z - rhs.z)
+    }
+    
+    @inlinable
+    static func - (lhs: Self, rhs: some Vector3n<Scalar>) -> Self {
         return Self(x: lhs.x - rhs.x, y: lhs.y - rhs.y, z: lhs.z - rhs.z)
     }
     
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
     @inlinable
-    static func + (lhs: Self, rhs: Self) -> Self {
-        return Self(x: lhs.x + rhs.x, y: lhs.y + rhs.y, z: lhs.z + rhs.z)
+    static func + (lhs: Self, rhs: Scalar) -> Self {
+        return Self(x: lhs.x + rhs, y: lhs.y + rhs, z: lhs.z - rhs)
     }
     
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func - (lhs: Self, rhs: Scalar) -> Self {
+        return Self(x: lhs.x - rhs, y: lhs.y - rhs, z: lhs.z - rhs)
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
     @inlinable
     static var zero: Self {Self(x: .zero, y: .zero, z: .zero)}
 }
 
+public extension Vector3n where Scalar: Numeric {
+    @inlinable
+    static func * (lhs: Self, rhs: some Vector3n<Scalar>) -> Self {
+        return Self(x: lhs.x * rhs.x, y: lhs.y * rhs.y, z: lhs.z * rhs.z)
+    }
+    
+    @inlinable
+    static func *= (lhs: inout Self, rhs: some Vector3n<Scalar>) {
+        lhs = lhs * rhs
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func * (lhs: Self, rhs: Scalar) -> Self {
+        return Self(x: lhs.x * rhs, y: lhs.y * rhs, z: lhs.z * rhs)
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func *= (lhs: inout Self, rhs: Scalar) {
+        lhs = lhs * rhs
+    }
+}
+
+public extension Vector3n where Scalar: SignedNumeric {
+    prefix static func - (operand: Self) -> Self {
+        return Self(x: -operand.x, y: -operand.y, z: -operand.z)
+    }
+    
+    mutating func negate() -> Self {
+        return Self(x: -x, y: -y, z: -z)
+    }
+}
+
 public extension Vector3n where Scalar: FloatingPoint {
     @inlinable
-    static func / (lhs: Self, rhs: Self) -> Self {
+    static func / (lhs: Self, rhs: some Vector3n<Scalar>) -> Self {
         return Self(x: lhs.x / rhs.x, y: lhs.y / rhs.y, z: lhs.z / rhs.z)
     }
     
     @inlinable
-    static func /= (lhs: inout Self, rhs: Self) {
+    static func /= (lhs: inout Self, rhs: some Vector3n<Scalar>) {
         lhs = lhs / rhs
     }
     
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func / (lhs: Self, rhs: Scalar) -> Self {
+        return Self(x: lhs.x / rhs, y: lhs.y / rhs, z: lhs.z / rhs)
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func /= (lhs: inout Self, rhs: Scalar) {
+        lhs = lhs / rhs
+    }
     
     @inlinable
     static var nan: Self {Self(x: .nan, y: .nan, z: .nan)}
@@ -165,12 +291,24 @@ public extension Vector3n where Scalar: FloatingPoint {
 
 public extension Vector3n where Scalar: FixedWidthInteger {
     @inlinable
-    static func / (lhs: Self, rhs: Self) -> Self {
+    static func / (lhs: Self, rhs: some Vector3n<Scalar>) -> Self {
         return Self(x: lhs.x / rhs.x, y: lhs.y / rhs.y, z: lhs.z / rhs.z)
     }
     
     @inlinable
-    static func /= (lhs: inout Self, rhs: Self) {
+    static func /= (lhs: inout Self, rhs: some Vector3n<Scalar>) {
+        lhs = lhs / rhs
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func / (lhs: Self, rhs: Scalar) -> Self {
+        return Self(x: lhs.x / rhs, y: lhs.y / rhs, z: lhs.z / rhs)
+    }
+    
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @inlinable
+    static func /= (lhs: inout Self, rhs: Scalar) {
         lhs = lhs / rhs
     }
 }
@@ -189,6 +327,11 @@ public extension Vector3n where Scalar: Comparable {
     static func < (lhs: Self, rhs: Self) -> Bool {
         return lhs.x < rhs.x && lhs.y < rhs.y && lhs.z < rhs.z
     }
+}
+
+@inlinable
+public func abs<T: Vector3n>(_ vector: T) -> T where T.Scalar : Comparable, T.Scalar : SignedNumeric {
+    return T(x: abs(vector.x), y: abs(vector.y), z: abs(vector.z))
 }
 
 extension Vector3n where Scalar: Equatable {

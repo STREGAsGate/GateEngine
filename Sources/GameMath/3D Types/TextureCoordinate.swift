@@ -8,29 +8,48 @@
 public struct TextureCoordinate: Vector2, Equatable, Hashable, Sendable {
     public var x: Float
     public var y: Float
-    
+
+    public init(x: Float, y: Float) {
+        self.x = x
+        self.y = y
+    }
+}
+
+public extension TextureCoordinate {
     @inlinable
-    public var u: Float {
+    var u: Float {
         get {
             return x
         }
-        set {
+        mutating set {
             x = newValue
         }
     }
     @inlinable
-    public var v: Float {
+    var v: Float {
         get {
             return y
         }
-        set {
+        mutating set {
             y = newValue
         }
     }
     
-    public init(x: Float, y: Float) {
-        self.x = x
-        self.y = y
+    @inlinable
+    init(u: Float, v: Float) {
+        self.init(x: u, y: v)
+    }
+}
+
+public extension TextureCoordinate {
+    @inlinable
+    init(_ vector: some Vector2) {
+        self.init(x: vector.x, y: vector.y)
+    }
+    
+    @inlinable
+    init<T: Vector2n>(_ vector: T) where T.Scalar == Float {
+        self.init(x: vector.x, y: vector.y)
     }
 }
 
