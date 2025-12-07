@@ -193,7 +193,7 @@ class OpenGLRenderer: Renderer {
         #endif
     }
 
-    final class OpenGLSizeOnlyRenderTarget: _RenderTargetProtocol {        
+    final class OpenGLSizeOnlyRenderTarget: @MainActor _RenderTargetProtocol {        
         var rootViewController: ViewController? = nil
         var lastDrawnFrame: UInt = .max
         var texture: Texture {
