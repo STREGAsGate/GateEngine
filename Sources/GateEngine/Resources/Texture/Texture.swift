@@ -198,8 +198,7 @@ extension ResourceManager {
             importers.textureImporters.insert(type, at: 0)
         }
     }
-
-    @MainActor
+    
     internal func textureImporterForPath(_ path: String) async throws(GateEngineError) -> any TextureImporter {
         for type in self.importers.textureImporters {
             if type.canProcessFile(path) {

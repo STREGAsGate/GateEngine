@@ -116,7 +116,6 @@ extension ResourceManager {
             var lastAccessed: Date = .now
         }
         
-        @MainActor
         internal mutating func getImporter<I: ResourceImporter>(path: String, type: I.Type) async throws(GateEngineError) -> I {
             let key = ActiveImporterKey(path: path)
             if let existing = activeImporters[key] {
