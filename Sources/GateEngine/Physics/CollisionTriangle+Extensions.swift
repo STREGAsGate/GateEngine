@@ -21,16 +21,22 @@ public extension CollisionTriangle {
     }
     
     init<Attributes: CollisionAttributesGroup>(_ triangle: Triangle, using attributesType: Attributes.Type = BasicCollisionAttributes.self) {
-        let collisionAttributeUVs = CollisionAttributeUVs(uvSets: [
-            .init(uv1: triangle.v1.uv1, uv2: triangle.v2.uv1, uv3: triangle.v3.uv1),
-            .init(uv1: triangle.v1.uv2, uv2: triangle.v2.uv2, uv3: triangle.v3.uv2),
-        ])
         self.init(
             p1: triangle.v1.position,
             p2: triangle.v2.position,
             p3: triangle.v3.position,
             normal: triangle.faceNormal,
-            attributes: Attributes(parsingUVs: collisionAttributeUVs)
+            attributes: triangle.collisionAttributes(using: attributesType)
         )
+    }
+}
+
+public extension Triangle {
+    func collisionAttributes<Attributes: CollisionAttributesGroup>(using attributesType: Attributes.Type = BasicCollisionAttributes.self) -> Attributes {
+        let collisionAttributeUVs = CollisionAttributeUVs(uvSets: [
+            .init(uv1: self.v1.uv1, uv2: self.v2.uv1, uv3: self.v3.uv1),
+            .init(uv1: self.v1.uv2, uv2: self.v2.uv2, uv3: self.v3.uv2),
+        ])
+        return Attributes(parsingUVs: collisionAttributeUVs)
     }
 }
