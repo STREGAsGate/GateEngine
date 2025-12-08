@@ -6,7 +6,7 @@
  */
 
 #if canImport(Foundation)
-import class Foundation.Scanner
+public import class Foundation.Scanner
 #endif
 #if canImport(CoreGraphics)
 public import CoreGraphics

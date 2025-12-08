@@ -415,7 +415,11 @@ let package = Package(
                         swiftSettings: .default(withCustomization: { settings in
                             settings.append(.define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])))
                         })),
+            .testTarget(name: "GateUtilitiesTests",
+                        dependencies: ["GateUtilities"]),
             .testTarget(name: "GameMathTests",
+                        dependencies: ["GameMath"]),
+            .testTarget(name: "GameMathNewTests",
                         dependencies: ["GameMath"]),
             .testTarget(name: "GravityTests",
                         dependencies: ["Gravity", "GateEngine"],
@@ -433,6 +437,12 @@ let package = Package(
         #if !os(Windows)
         targets.append(contentsOf: [
             .testTarget(name: "GameMathSIMDTests",
+                        dependencies: ["GameMath"],
+                        swiftSettings: .default(withCustomization: { settings in
+                            settings.append(.define("GameMathUseSIMD"))
+                            settings.append(.define("GameMathUseLoopVectorization"))
+                        })),
+            .testTarget(name: "GameMathNewSIMDTests",
                         dependencies: ["GameMath"],
                         swiftSettings: .default(withCustomization: { settings in
                             settings.append(.define("GameMathUseSIMD"))

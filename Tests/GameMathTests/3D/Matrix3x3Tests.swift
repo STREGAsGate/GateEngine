@@ -77,18 +77,18 @@ final class Matrix3x3Tests: XCTestCase {
             let direction: Direction3 = .left
             let expression1 = direction * matrix
             let expression2 = Direction3.forward
-            XCTAssertEqual(expression1.x, expression2.x, accuracy: 0.0025)
-            XCTAssertEqual(expression1.y, expression2.y, accuracy: 0.0025)
-            XCTAssertEqual(expression1.z, expression2.z, accuracy: 0.0025)
+            XCTAssertEqual(expression1.x, expression2.x, accuracy: .accuracy)
+            XCTAssertEqual(expression1.y, expression2.y, accuracy: .accuracy)
+            XCTAssertEqual(expression1.z, expression2.z, accuracy: .accuracy)
         }
         do {
             let matrix = Matrix3x3(direction: .up, up: .up, right: .right)
             let direction: Direction3 = .up
             let expression1 = direction * matrix
             let expression2 = Direction3.forward
-            XCTAssertEqual(expression1.x, expression2.x, accuracy: 0.0025)
-            XCTAssertEqual(expression1.y, expression2.y, accuracy: 0.0025)
-            XCTAssertEqual(expression1.z, expression2.z, accuracy: 0.0025)
+            XCTAssertEqual(expression1.x, expression2.x, accuracy: .accuracy)
+            XCTAssertEqual(expression1.y, expression2.y, accuracy: .accuracy)
+            XCTAssertEqual(expression1.z, expression2.z, accuracy: .accuracy)
         }
     }
 
@@ -96,10 +96,10 @@ final class Matrix3x3Tests: XCTestCase {
         var matrix = Matrix3x3()
         matrix.rotation = Quaternion(720°, axis: .right)
         let nr = matrix.rotation
-        XCTAssertEqual(nr.x, Quaternion.zero.x, accuracy: 0.000001)
-        XCTAssertEqual(nr.y, Quaternion.zero.y, accuracy: 0.000001)
-        XCTAssertEqual(nr.z, Quaternion.zero.z, accuracy: 0.000001)
-        XCTAssertEqual(nr.w, Quaternion.zero.w, accuracy: 0.000001)
+        XCTAssertEqual(nr.x, Quaternion.zero.x, accuracy: .accuracy)
+        XCTAssertEqual(nr.y, Quaternion.zero.y, accuracy: .accuracy)
+        XCTAssertEqual(nr.z, Quaternion.zero.z, accuracy: .accuracy)
+        XCTAssertEqual(nr.w, Quaternion.zero.w, accuracy: .accuracy)
         XCTAssertEqual(nr.magnitude, 1)
     }
 

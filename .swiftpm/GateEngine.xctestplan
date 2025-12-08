@@ -15,8 +15,22 @@
     {
       "target" : {
         "containerPath" : "container:",
+        "identifier" : "GameMathNewTests",
+        "name" : "GameMathNewTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
         "identifier" : "GameMathTests",
         "name" : "GameMathTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "GateEngineTests",
+        "name" : "GateEngineTests"
       }
     },
     {
@@ -29,8 +43,15 @@
     {
       "target" : {
         "containerPath" : "container:",
-        "identifier" : "GateEngineTests",
-        "name" : "GateEngineTests"
+        "identifier" : "GameMathNewSIMDTests",
+        "name" : "GameMathNewSIMDTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "GateUtilitiesTests",
+        "name" : "GateUtilitiesTests"
       }
     },
     {

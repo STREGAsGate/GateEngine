@@ -16,54 +16,54 @@ final class Direction3Tests: XCTestCase {
             let dst = Position3(x: 0, y: 1, z: 0)
             let expression1 = Direction3(from: src, to: dst)
             let expression2 = Direction3.up
-            XCTAssertEqual(expression1.x, expression2.x, accuracy: 0.0025)
-            XCTAssertEqual(expression1.y, expression2.y, accuracy: 0.0025)
-            XCTAssertEqual(expression1.z, expression2.z, accuracy: 0.0025)
+            XCTAssertEqual(expression1.x, expression2.x, accuracy: .accuracy)
+            XCTAssertEqual(expression1.y, expression2.y, accuracy: .accuracy)
+            XCTAssertEqual(expression1.z, expression2.z, accuracy: .accuracy)
         }
         do {  //Down
             let src = Position3(x: 0, y: 0, z: 0)
             let dst = Position3(x: 0, y: -1, z: 0)
             let expression1 = Direction3(from: src, to: dst)
             let expression2 = Direction3.down
-            XCTAssertEqual(expression1.x, expression2.x, accuracy: 0.0025)
-            XCTAssertEqual(expression1.y, expression2.y, accuracy: 0.0025)
-            XCTAssertEqual(expression1.z, expression2.z, accuracy: 0.0025)
+            XCTAssertEqual(expression1.x, expression2.x, accuracy: .accuracy)
+            XCTAssertEqual(expression1.y, expression2.y, accuracy: .accuracy)
+            XCTAssertEqual(expression1.z, expression2.z, accuracy: .accuracy)
         }
         do {  //Left
             let src = Position3(x: 0, y: 0, z: 0)
             let dst = Position3(x: -1, y: 0, z: 0)
             let expression1 = Direction3(from: src, to: dst)
             let expression2 = Direction3.left
-            XCTAssertEqual(expression1.x, expression2.x, accuracy: 0.0025)
-            XCTAssertEqual(expression1.y, expression2.y, accuracy: 0.0025)
-            XCTAssertEqual(expression1.z, expression2.z, accuracy: 0.0025)
+            XCTAssertEqual(expression1.x, expression2.x, accuracy: .accuracy)
+            XCTAssertEqual(expression1.y, expression2.y, accuracy: .accuracy)
+            XCTAssertEqual(expression1.z, expression2.z, accuracy: .accuracy)
         }
         do {  //Right
             let src = Position3(x: 0, y: 0, z: 0)
             let dst = Position3(x: 1, y: 0, z: 0)
             let expression1 = Direction3(from: src, to: dst)
             let expression2 = Direction3.right
-            XCTAssertEqual(expression1.x, expression2.x, accuracy: 0.0025)
-            XCTAssertEqual(expression1.y, expression2.y, accuracy: 0.0025)
-            XCTAssertEqual(expression1.z, expression2.z, accuracy: 0.0025)
+            XCTAssertEqual(expression1.x, expression2.x, accuracy: .accuracy)
+            XCTAssertEqual(expression1.y, expression2.y, accuracy: .accuracy)
+            XCTAssertEqual(expression1.z, expression2.z, accuracy: .accuracy)
         }
         do {  //Forward
             let src = Position3(x: 0, y: 0, z: 0)
             let dst = Position3(x: 0, y: 0, z: -1)
             let expression1 = Direction3(from: src, to: dst)
             let expression2 = Direction3.forward
-            XCTAssertEqual(expression1.x, expression2.x, accuracy: 0.0025)
-            XCTAssertEqual(expression1.y, expression2.y, accuracy: 0.0025)
-            XCTAssertEqual(expression1.z, expression2.z, accuracy: 0.0025)
+            XCTAssertEqual(expression1.x, expression2.x, accuracy: .accuracy)
+            XCTAssertEqual(expression1.y, expression2.y, accuracy: .accuracy)
+            XCTAssertEqual(expression1.z, expression2.z, accuracy: .accuracy)
         }
         do {  //Backward
             let src = Position3(x: 0, y: 0, z: 0)
             let dst = Position3(x: 0, y: 0, z: 1)
             let expression1 = Direction3(from: src, to: dst)
             let expression2 = Direction3.backward
-            XCTAssertEqual(expression1.x, expression2.x, accuracy: 0.0025)
-            XCTAssertEqual(expression1.y, expression2.y, accuracy: 0.0025)
-            XCTAssertEqual(expression1.z, expression2.z, accuracy: 0.0025)
+            XCTAssertEqual(expression1.x, expression2.x, accuracy: .accuracy)
+            XCTAssertEqual(expression1.y, expression2.y, accuracy: .accuracy)
+            XCTAssertEqual(expression1.z, expression2.z, accuracy: .accuracy)
         }
     }
 
@@ -72,7 +72,7 @@ final class Direction3Tests: XCTestCase {
         let dst: Direction3 = .right
         let value = src.angle(to: dst).rawValue
         let expected = Radians(90°).rawValue
-        XCTAssertEqual(value, expected, accuracy: 0.0025)
+        XCTAssertEqual(value, expected, accuracy: .accuracy)
     }
 
     func testAngleAroundX() {
@@ -95,9 +95,9 @@ final class Direction3Tests: XCTestCase {
         let qat = Quaternion(90°, axis: .right).normalized
         let result = src.rotated(by: qat).normalized
         let expected = Direction3(0, 0, 1).normalized
-        XCTAssertEqual(result.x, expected.x, accuracy: .ulpOfOne)
-        XCTAssertEqual(result.y, expected.y, accuracy: .ulpOfOne)
-        XCTAssertEqual(result.z, expected.z, accuracy: .ulpOfOne)
+        XCTAssertEqual(result.x, expected.x, accuracy: .accuracy)
+        XCTAssertEqual(result.y, expected.y, accuracy: .accuracy)
+        XCTAssertEqual(result.z, expected.z, accuracy: .accuracy)
     }
 
     func testOrthogonal() {
@@ -112,9 +112,9 @@ final class Direction3Tests: XCTestCase {
         let dst: Direction3 = .down
         let expression1 = src.reflected(off: dst)
         let expression2 = dst
-        XCTAssertEqual(expression1.x, expression2.x, accuracy: 0.01)
-        XCTAssertEqual(expression1.y, expression2.y, accuracy: 0.01)
-        XCTAssertEqual(expression1.z, expression2.z, accuracy: 0.01)
+        XCTAssertEqual(expression1.x, expression2.x, accuracy: .accuracy)
+        XCTAssertEqual(expression1.y, expression2.y, accuracy: .accuracy)
+        XCTAssertEqual(expression1.z, expression2.z, accuracy: .accuracy)
     }
 
     func testUpDownLeftRightForwardBackward() {

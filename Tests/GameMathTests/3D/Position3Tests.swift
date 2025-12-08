@@ -26,17 +26,17 @@ final class Position3Tests: XCTestCase {
         let src = Position3(0, 1, 0)
         let dst = Position3(0, 2, 0)
         let expression1 = src.moved(1, toward: .up)
-        XCTAssertEqual(expression1.x, dst.x, accuracy: 0.0025)
-        XCTAssertEqual(expression1.y, dst.y, accuracy: 0.0025)
-        XCTAssertEqual(expression1.z, dst.z, accuracy: 0.0025)
+        XCTAssertEqual(expression1.x, dst.x, accuracy: .accuracy)
+        XCTAssertEqual(expression1.y, dst.y, accuracy: .accuracy)
+        XCTAssertEqual(expression1.z, dst.z, accuracy: .accuracy)
     }
 
     func testMove() {
         var src = Position3(0, 1, 0)
         let dst = Position3(0, 2, 0)
         src.move(1, toward: .up)
-        XCTAssertEqual(src.x, dst.x, accuracy: 0.0025)
-        XCTAssertEqual(src.y, dst.y, accuracy: 0.0025)
-        XCTAssertEqual(src.z, dst.z, accuracy: 0.0025)
+        XCTAssertEqual(src.x, dst.x, accuracy: .accuracy)
+        XCTAssertEqual(src.y, dst.y, accuracy: .accuracy)
+        XCTAssertEqual(src.z, dst.z, accuracy: .accuracy)
     }
 }

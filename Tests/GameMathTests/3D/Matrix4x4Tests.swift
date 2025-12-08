@@ -122,7 +122,7 @@ final class Matrix4x4Tests: XCTestCase {
         let quat2 = Matrix4x4(rotation: quat1).rotation
         let angle1 = quat1.forward.angle(to: .right).rawValueAsRadians
         let angle2 = quat2.forward.angle(to: .right).rawValueAsRadians
-        XCTAssertEqual(angle1, angle2, accuracy: 0.0025)
+        XCTAssertEqual(angle1, angle2, accuracy: .accuracy)
     }
 
     #if false

@@ -54,7 +54,7 @@ final class Vector2Tests: XCTestCase {
 
     func testMagnitude() {
         let vec = Imposter(1, 2)
-        XCTAssertEqual(vec.magnitude, 2.236068, accuracy: 0.0025)
+        XCTAssertEqual(vec.magnitude, 2.236068, accuracy: .accuracy)
     }
 
     func testLength() {
@@ -64,15 +64,15 @@ final class Vector2Tests: XCTestCase {
 
     func testNormalized() {
         let vec = Imposter(2, 2).normalized
-        XCTAssertEqual(vec.x, 0.70710677, accuracy: 0.0025)
-        XCTAssertEqual(vec.y, 0.70710677, accuracy: 0.0025)
+        XCTAssertEqual(vec.x, 0.70710677, accuracy: .accuracy)
+        XCTAssertEqual(vec.y, 0.70710677, accuracy: .accuracy)
     }
 
     func testNormalize() {
         var vec = Imposter(2, 2)
         vec.normalize()
-        XCTAssertEqual(vec.x, 0.70710677, accuracy: 0.0025)
-        XCTAssertEqual(vec.y, 0.70710677, accuracy: 0.0025)
+        XCTAssertEqual(vec.x, 0.70710677, accuracy: .accuracy)
+        XCTAssertEqual(vec.y, 0.70710677, accuracy: .accuracy)
     }
 
     func testIsFinite() {
@@ -314,8 +314,8 @@ final class Vector2Tests: XCTestCase {
         let mtx = Matrix3x3(direction: .forward)
         let expression1 = vec * mtx
         let expression2 = Imposter(-1, 2)
-        XCTAssertEqual(expression1.x, expression2.x, accuracy: 0.009)
-        XCTAssertEqual(expression1.y, expression2.y, accuracy: 0.009)
+        XCTAssertEqual(expression1.x, expression2.x, accuracy: .accuracy)
+        XCTAssertEqual(expression1.y, expression2.y, accuracy: .accuracy)
     }
 
     func testCodableJSON() {

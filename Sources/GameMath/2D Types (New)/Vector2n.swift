@@ -184,19 +184,17 @@ public extension Vector2n where Scalar: AdditiveArithmetic {
         return Self(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
     }
     
-    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
     @inlinable
     static func + (lhs: Self, rhs: Scalar) -> Self {
         return Self(x: lhs.x + rhs, y: lhs.y + rhs)
     }
     
-    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
     @inlinable
     static func - (lhs: Self, rhs: Scalar) -> Self {
         return Self(x: lhs.x - rhs, y: lhs.y - rhs)
     }
     
-    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
+    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals to avoid ambiguilty
     @inlinable
     static var zero: Self {Self(x: Scalar.zero, y: Scalar.zero)}
 }
@@ -212,13 +210,11 @@ public extension Vector2n where Scalar: Numeric {
         lhs = lhs * rhs
     }
     
-    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
     @inlinable
     static func * (lhs: Self, rhs: Scalar) -> Self {
         return Self(x: lhs.x * rhs, y: lhs.y * rhs)
     }
     
-    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
     @inlinable
     static func *= (lhs: inout Self, rhs: Scalar) {
         lhs = lhs * rhs
@@ -254,13 +250,11 @@ public extension Vector2n where Scalar: FloatingPoint {
         lhs = lhs / rhs
     }
     
-    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
     @inlinable
     static func / (lhs: Self, rhs: Scalar) -> Self {
         return Self(x: lhs.x / rhs, y: lhs.y / rhs)
     }
     
-    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
     @inlinable
     static func /= (lhs: inout Self, rhs: Scalar) {
         lhs = lhs / rhs
@@ -284,13 +278,11 @@ public extension Vector2n where Scalar: FixedWidthInteger {
         lhs = lhs / rhs
     }
     
-    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
     @inlinable
     static func / (lhs: Self, rhs: Scalar) -> Self {
         return Self(x: lhs.x / rhs, y: lhs.y / rhs)
     }
     
-    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals
     @inlinable
     static func /= (lhs: inout Self, rhs: Scalar) {
         lhs = lhs / rhs
@@ -323,6 +315,16 @@ extension Vector2n where Scalar: Equatable {
     @inlinable
     public static func == (lhs: Self, rhs: some Vector2n<Scalar>) -> Bool {
         return lhs.x == rhs.x && lhs.y == rhs.y
+    }
+    
+    @inlinable
+    public static func == (lhs: Self, rhs: Scalar) -> Bool {
+        return lhs.x == rhs && lhs.y == rhs
+    }
+    
+    @inlinable
+    public static func != (lhs: Self, rhs: Scalar) -> Bool {
+        return lhs.x == rhs && lhs.y == rhs
     }
 }
 

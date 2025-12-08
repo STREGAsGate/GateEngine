@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import GameMath
+@testable import GateUtilities
 
 final class BitStreamTests: XCTestCase {
 

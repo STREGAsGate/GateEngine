@@ -5,8 +5,6 @@
  * http://stregasgate.com
  */
 
-import Foundation
-
 public struct GameViewSnapshot: Sendable {
     let frame: Rect
     let bounds: Rect

@@ -6,7 +6,7 @@
  */
 #if canImport(CoreGraphics)
 
-import CoreGraphics
+public import CoreGraphics
 
 public extension Position2 {
     @inlinable
