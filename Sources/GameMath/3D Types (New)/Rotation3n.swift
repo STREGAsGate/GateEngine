@@ -9,9 +9,7 @@ public typealias Rotation3f = Rotation3n<Float>
 
 /// A Quaternion
 @frozen
-public struct Rotation3n<Scalar: FloatingPoint & SIMDScalar> {
-    public typealias Counterpart = Quaternion
-    
+public struct Rotation3n<Scalar: FloatingPoint & SIMDScalar> {    
     public var x: Scalar
     public var y: Scalar
     public var z: Scalar

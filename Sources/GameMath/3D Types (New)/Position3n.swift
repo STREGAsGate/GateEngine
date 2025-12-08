@@ -10,7 +10,6 @@ public typealias Position3f = Position3n<Float>
 
 @frozen
 public struct Position3n<Scalar: Vector3n.ScalarType>: Vector3n {
-    public typealias Vector3Counterpart = Position3
     public var x: Scalar
     public var y: Scalar
     public var z: Scalar

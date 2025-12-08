@@ -9,7 +9,6 @@ public typealias Direction3f = Direction3n<Float>
 
 @frozen
 public struct Direction3n<Scalar: Vector3n.ScalarType>: Vector3n {
-    public typealias Vector3Counterpart = Direction3
     public var x: Scalar
     public var y: Scalar
     public var z: Scalar

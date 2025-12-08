@@ -9,7 +9,6 @@
 public protocol Vector3n<Scalar> {
     typealias ScalarType = Numeric & SIMDScalar
     associatedtype Scalar: ScalarType
-    associatedtype Vector3Counterpart: GameMath.Vector3
     
     var x: Scalar {get set}
     var y: Scalar {get set}
@@ -84,56 +83,6 @@ extension Vector3n where Scalar: BinaryFloatingPoint {
             y: Scalar(vector3n.y),
             z: Scalar(vector3n.z)
         )
-    }
-}
-
-extension Vector3n where Scalar: BinaryInteger {
-    @inlinable
-    public init(_ vector3: Vector3Counterpart) {
-        self.init(
-            x: Scalar(vector3.x),
-            y: Scalar(vector3.y),
-            z: Scalar(vector3.z)
-        )
-    }
-    
-    @inlinable
-    public init(_ vector3: Vector3Counterpart, roundingRule: FloatingPointRoundingRule = .towardZero) where Scalar: BinaryFloatingPoint {
-        self.init(
-            x: Scalar(vector3.x.rounded(roundingRule)),
-            y: Scalar(vector3.y.rounded(roundingRule)),
-            z: Scalar(vector3.z.rounded(roundingRule))
-        )
-    }
-    
-    @inlinable
-    public var vector3: Vector3Counterpart {
-        return Vector3Counterpart(Float(x), Float(y), Float(z))
-    }
-}
-
-extension Vector3n where Scalar: BinaryFloatingPoint {
-    @inlinable
-    public init(_ vector3: Vector3Counterpart) {
-        self.init(
-            x: Scalar(vector3.x),
-            y: Scalar(vector3.y),
-            z: Scalar(vector3.z)
-        )
-    }
-    
-    @inlinable
-    public init(_ vector3: Vector3Counterpart, roundingRule: FloatingPointRoundingRule) {
-        self.init(
-            x: Scalar(vector3.x.rounded(roundingRule)),
-            y: Scalar(vector3.y.rounded(roundingRule)),
-            z: Scalar(vector3.z.rounded(roundingRule))
-        )
-    }
-
-    @inlinable
-    public var vector3: Vector3Counterpart {
-        return Vector3Counterpart(Float(x), Float(y), Float(z))
     }
 }
 
