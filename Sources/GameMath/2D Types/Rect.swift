@@ -127,13 +127,13 @@ public extension Rect {
 
 public extension Rect {
     @inlinable
-    func interpolated(to: Self, _ method: InterpolationMethod) -> Self {
+    func interpolated(to: Self, _ method: InterpolationMethod<Float>) -> Self {
         var copy = self
         copy.interpolate(to: to, method)
         return copy
     }
     @inlinable
-    mutating func interpolate(to: Self, _ method: InterpolationMethod) {
+    mutating func interpolate(to: Self, _ method: InterpolationMethod<Float>) {
         self.position.interpolate(to: to.position, method)
         self.size.interpolate(to: to.size, method)
     }

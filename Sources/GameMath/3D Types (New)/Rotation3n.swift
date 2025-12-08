@@ -5,7 +5,9 @@
  * http://stregasgate.com
  */
 
-public typealias Rotation3f = Rotation3n<Float>
+public typealias Rotation3h = Rotation3n<Float16>
+public typealias Rotation3f = Rotation3n<Float32>
+public typealias Rotation3d = Rotation3n<Float64>
 
 /// A Quaternion
 @frozen
@@ -29,7 +31,7 @@ extension Rotation3n where Scalar: BinaryFloatingPoint {
      - parameter angle: The angle to rotate
      - parameter axis: The direction to rotate around
      */
-    @_disfavoredOverload // <- prefer values to be degrees, SIMD overloads
+    @_disfavoredOverload // <- prefer values to be degrees
     @inlinable
     public init(_ angle: some Angle, axis: Direction3n<Scalar>) {
         let radians = Scalar(angle.rawValueAsRadians)
@@ -49,7 +51,6 @@ extension Rotation3n where Scalar: BinaryFloatingPoint {
      - parameter angle: The angle to rotate
      - parameter axis: The direction to rotate around
      */
-    @_transparent
     @inlinable
     public init(_ angle: Degrees, axis: Direction3n<Scalar>) {
         self.init(angle.asRadians, axis: axis)
@@ -79,7 +80,7 @@ public extension Rotation3n {
         get {
             return Direction3n(x: x, y: y, z: z)
         }
-        set {
+        mutating set {
             self.x = newValue.x
             self.y = newValue.y
             self.z = newValue.z
@@ -131,9 +132,9 @@ extension Rotation3n {
 
     @inlinable
     public var normalized: Self {
-        var copy = self
-        copy.normalize()
-        return copy
+        var value = self
+        value.normalize()
+        return value
     }
     
     @inlinable

@@ -10,9 +10,9 @@ public protocol Vector3n<Scalar> {
     typealias ScalarType = Numeric & SIMDScalar
     associatedtype Scalar: ScalarType
     
-    var x: Scalar {get set}
-    var y: Scalar {get set}
-    var z: Scalar {get set}
+    var x: Scalar {get mutating set}
+    var y: Scalar {get mutating set}
+    var z: Scalar {get mutating set}
     init(x: Scalar, y: Scalar, z: Scalar)
 }
 
@@ -25,6 +25,11 @@ public extension Vector3n {
     @_transparent
     init(_ x: Scalar, _ y: Scalar, _ z: Scalar) {
         self.init(x: x, y: y, z: z)
+    }
+    
+    @_transparent
+    init(_ value: Scalar) {
+        self.init(x: value, y: value, z: value)
     }
 }
 
@@ -250,6 +255,20 @@ public extension Vector3n where Scalar: FloatingPoint {
     }
     
     @inlinable
+    func truncatingRemainder(dividingBy other: Scalar) -> Self {
+        self.truncatingRemainder(dividingBy: Self(other))
+    }
+    
+    @inlinable
+    func truncatingRemainder(dividingBy divisors: Self) -> Self {
+        return Self(
+            x: self.x.truncatingRemainder(dividingBy: divisors.x),
+            y: self.y.truncatingRemainder(dividingBy: divisors.y),
+            z: self.z.truncatingRemainder(dividingBy: divisors.z),
+        )
+    }
+    
+    @inlinable
     static var nan: Self {Self(x: .nan, y: .nan, z: .nan)}
     
     @inlinable
@@ -268,6 +287,16 @@ public extension Vector3n where Scalar: FixedWidthInteger {
     }
     
     @inlinable
+    static func % (lhs: Self, rhs: some Vector3n<Scalar>) -> Self {
+        return Self(x: lhs.x % rhs.x, y: lhs.y % rhs.y, z: lhs.z % rhs.z)
+    }
+    
+    @inlinable
+    static func %= (lhs: inout Self, rhs: some Vector3n<Scalar>) {
+        lhs = lhs % rhs
+    }
+    
+    @inlinable
     static func / (lhs: Self, rhs: Scalar) -> Self {
         return Self(x: lhs.x / rhs, y: lhs.y / rhs, z: lhs.z / rhs)
     }
@@ -275,6 +304,16 @@ public extension Vector3n where Scalar: FixedWidthInteger {
     @inlinable
     static func /= (lhs: inout Self, rhs: Scalar) {
         lhs = lhs / rhs
+    }
+    
+    @inlinable
+    static func % (lhs: Self, rhs: Scalar) -> Self {
+        return Self(x: lhs.x % rhs, y: lhs.y % rhs, z: lhs.z % rhs)
+    }
+    
+    @inlinable
+    static func %= (lhs: inout Self, rhs: Scalar) {
+        lhs = lhs % rhs
     }
 }
 
@@ -287,6 +326,28 @@ public extension Vector3n where Scalar: Comparable {
     @inlinable
     var max: Scalar {
         return Swift.max(x, Swift.max(y, z))
+    }
+    
+    @inlinable
+    func clamped(from lowerBound: Self, to upperBound: Self) -> Self {
+        var x = self.x
+        if x < lowerBound.x { x = lowerBound.x }
+        if x > upperBound.x { x = upperBound.x }
+        
+        var y = self.y
+        if y < lowerBound.y { y = lowerBound.y }
+        if y > upperBound.y { y = upperBound.y }
+        
+        var z = self.z
+        if z < lowerBound.z { z = lowerBound.z }
+        if z > upperBound.z { z = upperBound.z }
+        
+        return Self(x: x, y: y, z: z)
+    }
+    
+    @inlinable
+    mutating func clamp(from lowerBound: Self, to upperBound: Self) {
+        self = self.clamped(from: lowerBound, to: upperBound)
     }
 
     @inlinable
@@ -346,7 +407,6 @@ extension Vector3n where Scalar: Hashable {
     }
 }
 
-
 extension Vector3n {
     @inlinable
     public func dot<V: Vector3n>(_ vector: V) -> Scalar where V.Scalar == Scalar {
@@ -363,7 +423,7 @@ extension Vector3n {
     }
 }
 
-extension Vector3n where Scalar: FloatingPoint {
+extension Vector3n {
     @inlinable
     public var length: Scalar {
         return x + y + z
@@ -372,6 +432,19 @@ extension Vector3n where Scalar: FloatingPoint {
     @inlinable
     public var squaredLength: Scalar {
         return x * x + y * y + z * z
+    }
+}
+
+
+extension Vector3n where Scalar: FloatingPoint {
+    @inlinable
+    public var magnitude: Scalar {
+        return squaredLength.squareRoot()
+    }
+    
+    @inlinable
+    public func squareRoot() -> Self {
+        return Self(x: x.squareRoot(), y: y.squareRoot(), z: z.squareRoot())
     }
 
     @inlinable
@@ -381,35 +454,12 @@ extension Vector3n where Scalar: FloatingPoint {
         let factor = 1 / magnitude
         self *= factor
     }
-}
-
-extension Vector3n where Scalar: FixedWidthInteger {
-    @inlinable
-    public var length: Scalar {
-        return x + y + z
-    }
-
-    @inlinable
-    public var squaredLength: Scalar {
-        return x * x + y * y + z * z
-    }
-}
-
-extension Vector3n where Scalar: FloatingPoint {
-    @inlinable
-    public var magnitude: Scalar {
-        return squaredLength.squareRoot()
-    }
-
-    @inlinable
-    public var normalized: Self {
-        var copy = self
-        copy.normalize()
-        return copy
-    }
     
     @inlinable
-    public func squareRoot() -> Self {
-        return Self(x: x.squareRoot(), y: y.squareRoot(), z: z.squareRoot())
+    public var normalized: Self {
+        var value = self
+        value.normalize()
+        return value
     }
 }
+

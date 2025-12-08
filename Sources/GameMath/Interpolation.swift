@@ -5,134 +5,187 @@
  * http://stregasgate.com
  */
 
-#if GameMathUseSIMD && canImport(simd)
-public import simd
-#endif
-
 public struct InterpolationOptions: OptionSet, Sendable {
-    public typealias RawValue = UInt
+    public typealias RawValue = UInt8
     public let rawValue: RawValue
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
     
     /// Uses the shortest path. This will cause a quaternion to rotate using the shortest angle to the destination.
-    public static let shortest = InterpolationOptions(rawValue: 1 << 1)
+    public static let shortest = InterpolationOptions(rawValue: 1 << 0)
 }
 
-public enum InterpolationMethod {
+public enum InterpolationMethod<T: BinaryFloatingPoint> {
     /**
      Interpolates at a constant rate
      
      - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
      */
-    case linear(_ factor: Float)
+    case linear(_ factor: T)
     
     /**
      Interpolates with acceleration increasing near the destinartion
-
+     
      - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
      */
-    case easeIn(_ factor: Float)
+    case easeIn(_ factor: T)
     
     /**
      Interpolates with acceleration increasing near the beginning
-
+     
      - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
      */
-    case easeOut(_ factor: Float)
+    case easeOut(_ factor: T)
     
     /**
      Interpolates with acceleration increasing near the beginning, and then again at the end
-
+     
      - parameter factor: The progress of interpolation. 0 being the source and 1 being destination.
      */
-    case easeInOut(_ factor: Float)
+    case easeInOut(_ factor: T)
 }
 
-public extension Float {
+
+public protocol Interpolatable {
+    associatedtype Factor: BinaryFloatingPoint
+    
+    func interpolated(to rhs: Self, _ method: InterpolationMethod<Factor>, options: InterpolationOptions) -> Self
+    
+    func lerped(to rhs: Self, factor: Factor) -> Self
+        
+    func easedIn(to rhs: Self, factor: Factor) -> Self
+    
+    func easedOut(to rhs: Self, factor: Factor) -> Self
+    
+    func easedInOut(to rhs: Self, factor: Factor) -> Self
+    
+    
+    mutating func interpolate(to rhs: Self, _ method: InterpolationMethod<Factor>, options: InterpolationOptions)
+    
+    mutating func lerp(to rhs: Self, factor: Factor)
+        
+    mutating func easeIn(to rhs: Self, factor: Factor)
+    
+    mutating func easeOut(to rhs: Self, factor: Factor)
+    
+    mutating func easeInOut(to rhs: Self, factor: Factor)
+}
+
+public protocol SphericalInterpolatable: Interpolatable {
+    func slerped(to rhs: Self, factor: Factor) -> Self
+    
+    mutating func slerp(to rhs: Self, factor: Factor)
+}
+
+public extension Interpolatable {
     /// Interpolates toward `to` by using `method `
     @inlinable
-    func interpolated(to: Float, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Float {
+    func interpolated(to rhs: Self, _ method: InterpolationMethod<Factor>, options: InterpolationOptions = .shortest) -> Self {
         switch method {
         case .linear(let factor):
-            return self.lerped(to: to, factor: factor)
+            return self.lerped(to: rhs, factor: factor)
         case .easeIn(let factor):
-            return self.easedIn(to: to, factor: factor)
+            return self.easedIn(to: rhs, factor: factor)
         case .easeOut(let factor):
-            return self.easedOut(to: to, factor: factor)
+            return self.easedOut(to: rhs, factor: factor)
         case .easeInOut(let factor):
-            return self.easedInOut(to: to, factor: factor)
+            return self.easedInOut(to: rhs, factor: factor)
         }
     }
     
     /// Interpolates toward `to` by using `method `
     @inlinable
-    mutating func interpolate(to: Float, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+    mutating func interpolate(to rhs: Self, _ method: InterpolationMethod<Factor>, options: InterpolationOptions = .shortest) {
         switch method {
         case .linear(let factor):
-            return self.lerp(to: to, factor: factor)
+            self.lerp(to: rhs, factor: factor)
         case .easeIn(let factor):
-            return self.easeIn(to: to, factor: factor)
+            self.easeIn(to: rhs, factor: factor)
         case .easeOut(let factor):
-            return self.easeOut(to: to, factor: factor)
+            self.easeOut(to: rhs, factor: factor)
         case .easeInOut(let factor):
-            return self.easeInOut(to: to, factor: factor)
+            self.easeInOut(to: rhs, factor: factor)
         }
     }
-}
-
-internal extension Float {
+    
     @inlinable
-    func lerped(to: Float, factor: Float) -> Float {
-        #if GameMathUseSIMD && canImport(simd)
-        return simd_mix(self, to, factor)
-        #else
-        return self + (to - self) * factor
-        #endif
+    mutating func lerp(to rhs: Self, factor: Factor) {
+        self = self.lerped(to: rhs, factor: factor)
     }
     
     @inlinable
-    mutating func lerp(to: Float, factor: Float) {
-        self = self.lerped(to: to, factor: factor)
-    }
-}
-
-internal extension Float {
-    @inlinable
-    func easedIn(to: Float, factor: Float) -> Float {
-        let easeInFactor = 1 - cos((factor * .pi) / 2)
-        return self.lerped(to: to, factor: easeInFactor)
+    mutating func easeIn(to rhs: Self, factor: Factor) {
+        self = self.easedIn(to: rhs, factor: factor)
     }
     
     @inlinable
-    mutating func easeIn(to: Float, factor: Float) {
-        self = self.easedIn(to: to, factor: factor)
-    }
-}
-
-internal extension Float {
-    @inlinable
-    func easedOut(to: Float, factor: Float) -> Float {
-        let easeOutFactor = sin((factor * .pi) / 2)
-        return self.lerped(to: to, factor: easeOutFactor)
+    mutating func easeOut(to rhs: Self, factor: Factor) {
+        self = self.easedOut(to: rhs, factor: factor)
     }
     
     @inlinable
-    mutating func easeOut(to: Float, factor: Float) {
-        self = self.easedOut(to: to, factor: factor)
+    mutating func easeInOut(to rhs: Self, factor: Factor) {
+        self = self.easedInOut(to: rhs, factor: factor)
     }
 }
 
-internal extension Float {
+#if GameMathUseSIMD && canImport(simd)
+public import simd
+
+public extension Float16 {
     @inlinable
-    func easedInOut(to: Float, factor: Float) -> Float {
-        let easeInOutFactor = -(cos(.pi * factor) - 1) / 2
-        return self.lerped(to: to, factor: easeInOutFactor)
+    func lerped(to rhs: Self, factor: Self) -> Self {
+        return simd_mix(self, rhs, factor)
+    }
+}
+
+public extension Float32 {
+    @inlinable
+    func lerped(to rhs: Self, factor: Self) -> Self {
+        return simd_mix(self, rhs, factor)
+    }
+}
+
+public extension Float64 {
+    @inlinable
+    func lerped(to rhs: Self, factor: Self) -> Self {
+        return simd_mix(self, rhs, factor)
+    }
+}
+#endif
+
+extension Float16: Interpolatable {
+    public typealias Factor = Self
+}
+extension Float32: Interpolatable {
+    public typealias Factor = Self
+}
+extension Float64: Interpolatable {
+    public typealias Factor = Self
+}
+
+extension BinaryFloatingPoint where Self: Interpolatable, Factor == Self {
+    @inlinable
+    public func lerped(to rhs: Self, factor: Factor) -> Self {
+        return self + (rhs - self) * factor
     }
     
     @inlinable
-    mutating func easeInOut(to: Float, factor: Float) {
-        self = self.easedInOut(to: to, factor: factor)
+    public func easedIn(to rhs: Self, factor: Factor) -> Self {
+        let easeInFactor: Self = 1.0 - cos((factor * Self.pi) * 0.5)
+        return self.lerped(to: rhs, factor: easeInFactor)
+    }
+    
+    @inlinable
+    public func easedOut(to rhs: Self, factor: Factor) -> Self {
+        let easeOutFactor: Self = sin((factor * Self.pi) * 0.5)
+        return self.lerped(to: rhs, factor: easeOutFactor)
+    }
+    
+    @inlinable
+    public func easedInOut(to rhs: Self, factor: Factor) -> Self {
+        let easeInOutFactor: Self = -(cos(Self.pi * factor) - 1) * 0.5
+        return self.lerped(to: rhs, factor: easeInOutFactor)
     }
 }

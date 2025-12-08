@@ -14,8 +14,8 @@ public protocol Angle: Sendable, RawRepresentable, FloatingPoint, Comparable whe
     var asDegrees: Degrees {get}
     var asRadians: Radians {get}
     
-    mutating func interpolate(to: some Angle, _ method: InterpolationMethod)
-    func interpolated(to: some Angle, _ method: InterpolationMethod) -> Self
+    mutating func interpolate(to: some Angle, _ method: InterpolationMethod<RawValue>)
+    func interpolated(to: some Angle, _ method: InterpolationMethod<RawValue>) -> Self
     
     init(_ rawValue: RawValue)
     init(rawValue: RawValue)
@@ -31,13 +31,13 @@ public extension Angle {
     
     @inlinable
     @_disfavoredOverload
-    mutating func interpolate(to: some Angle, _ method: InterpolationMethod) {
+    mutating func interpolate(to: some Angle, _ method: InterpolationMethod<RawValue>) {
         self.rawValueAsRadians.interpolate(to: to.rawValueAsRadians, method)
     }
     
     @inlinable
     @_disfavoredOverload
-    func interpolated(to: some Angle, _ method: InterpolationMethod) -> Self {
+    func interpolated(to: some Angle, _ method: InterpolationMethod<RawValue>) -> Self {
         var copy = self
         copy.interpolate(to: to, method)
         return copy
@@ -449,7 +449,7 @@ public extension Angle {
     }
     @inlinable
     static var pi: Self {
-        return Self(rawValue: .pi)
+        return Self(rawValue: RawValue.pi)
     }
     @inlinable
     var ulp: Self {
@@ -680,11 +680,11 @@ public struct Degrees: Angle, Hashable, Sendable {
 
 public extension Degrees {
     @inlinable
-    mutating func interpolate(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+    mutating func interpolate(to: Self, _ method: InterpolationMethod<RawValue>, options: InterpolationOptions = .shortest) {
         self = self.interpolated(to: to, method)
     }
     @inlinable
-    func interpolated(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
+    func interpolated(to: Self, _ method: InterpolationMethod<RawValue>, options: InterpolationOptions = .shortest) -> Self {
         if options.contains(.shortest) {
             // Shortest distance
             let shortest = self.shortestAngle(to: to)
@@ -695,11 +695,11 @@ public extension Degrees {
     
     // Concrete override of Angle provided extension to allow for "shortest" option
     @inlinable
-    mutating func interpolate(to: some Angle, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+    mutating func interpolate(to: some Angle, _ method: InterpolationMethod<RawValue>, options: InterpolationOptions = .shortest) {
         self.interpolate(to: Self(rawValueAsRadians: to.rawValueAsRadians), method, options: options)
     }
     @inlinable
-    func interpolated(to: some Angle, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
+    func interpolated(to: some Angle, _ method: InterpolationMethod<RawValue>, options: InterpolationOptions = .shortest) -> Self {
         return self.interpolated(to: Self(rawValueAsRadians: to.rawValueAsRadians), method, options: options)
     }
     

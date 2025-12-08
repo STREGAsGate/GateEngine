@@ -5,7 +5,9 @@
  * http://stregasgate.com
  */
 
-public typealias Direction3f = Direction3n<Float>
+public typealias Direction3h = Direction3n<Float16>
+public typealias Direction3f = Direction3n<Float32>
+public typealias Direction3d = Direction3n<Float64>
 
 @frozen
 public struct Direction3n<Scalar: Vector3n.ScalarType>: Vector3n {
@@ -115,23 +117,6 @@ public extension Direction3n where Scalar: FloatingPoint {
     @inlinable
     init(from position1: Position3n<Scalar>, to position2: Position3n<Scalar>) {
         self = Self(position2 - position1).normalized
-    }
-    
-    @inlinable
-    var normalized: Self {
-        var copy = self
-        copy.normalize()
-        return copy
-    }
-
-    @_disfavoredOverload // <- prefer SIMD overloads
-    @inlinable
-    mutating func normalize() {
-        guard self != Self.zero else { return }
-        let magnitude = self.magnitude
-        let factor = 1 / magnitude
-        self *= factor
-        
     }
 }
 

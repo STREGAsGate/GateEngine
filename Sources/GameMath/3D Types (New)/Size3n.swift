@@ -6,7 +6,11 @@
  */
 
 public typealias Size3i = Size3n<Int>
-public typealias Size3f = Size3n<Float>
+public typealias Size3u = Size3n<UInt>
+
+public typealias Size3h = Size3n<Float16>
+public typealias Size3f = Size3n<Float32>
+public typealias Size3d = Size3n<Float64>
 
 @frozen
 public struct Size3n<Scalar: Vector3n.ScalarType>: Vector3n {
@@ -26,20 +30,20 @@ public struct Size3n<Scalar: Vector3n.ScalarType>: Vector3n {
 public extension Size3n {
     @inlinable
     var width: Scalar {
-        get{ self.x }
-        set{ self.x = newValue }
+        get { self.x }
+        mutating set { self.x = newValue }
     }
     
     @inlinable
     var height: Scalar {
-        get{ self.y }
-        set{ self.y = newValue }
+        get { self.y }
+        mutating set { self.y = newValue }
     }
     
     @inlinable
     var depth: Scalar {
-        get{ self.z }
-        set{ self.z = newValue }
+        get { self.z }
+        mutating set { self.z = newValue }
     }
     
     @inlinable

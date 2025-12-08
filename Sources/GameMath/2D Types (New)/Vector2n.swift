@@ -10,8 +10,8 @@ public protocol Vector2n<Scalar> {
     associatedtype Scalar: ScalarType
     associatedtype Vector2Counterpart: GameMath.Vector2
     
-    var x: Scalar {get set}
-    var y: Scalar {get set}
+    var x: Scalar {get mutating set}
+    var y: Scalar {get mutating set}
     init(x: Scalar, y: Scalar)
 }
 

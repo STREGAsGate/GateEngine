@@ -6,7 +6,11 @@
  */
 
 public typealias Position3i = Position3n<Int>
-public typealias Position3f = Position3n<Float>
+public typealias Position3u = Position3n<UInt>
+
+public typealias Position3h = Position3n<Float16>
+public typealias Position3f = Position3n<Float32>
+public typealias Position3d = Position3n<Float64>
 
 @frozen
 public struct Position3n<Scalar: Vector3n.ScalarType>: Vector3n {
@@ -29,7 +33,7 @@ public extension Position3n {
         get {
             return Position2n(x: x, y: y)
         }
-        set {
+        mutating set {
             self.x = newValue.x
             self.y = newValue.y
         }
@@ -40,8 +44,19 @@ public extension Position3n {
         get {
             return Position2n(x: x, y: z)
         }
-        set {
+        mutating set {
             self.x = newValue.x
+            self.z = newValue.y
+        }
+    }
+    
+    @inlinable
+    var yz: Position2n<Scalar> {
+        get {
+            return Position2n(x: y, y: z)
+        }
+        mutating set {
+            self.y = newValue.x
             self.z = newValue.y
         }
     }

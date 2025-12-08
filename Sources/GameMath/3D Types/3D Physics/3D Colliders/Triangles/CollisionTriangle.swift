@@ -91,7 +91,7 @@ public extension CollisionTriangle {
 
 public extension CollisionTriangle {
     @inlinable
-    func interpolated(to rhs: CollisionTriangle, _ method: InterpolationMethod) -> CollisionTriangle {
+    func interpolated(to rhs: CollisionTriangle, _ method: InterpolationMethod<Float>) -> CollisionTriangle {
         var normal: Direction3? = self.normal.interpolated(to: rhs.normal, method)
         if normal?.isFinite == false {
             normal = nil//Rebuild the normal if its broken

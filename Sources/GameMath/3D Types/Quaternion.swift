@@ -12,11 +12,11 @@ import simd
 #if GameMathUseSIMD
 public struct Quaternion: Vector4, SIMD, Sendable {
     public typealias Scalar = Float
-    public typealias MaskStorage = SIMD4<Float>.MaskStorage
+    public typealias MaskStorage = SIMD4<Scalar>.MaskStorage
     public typealias ArrayLiteralElement = Scalar
     
     @usableFromInline
-    var _storage = Float.SIMD4Storage()
+    var _storage = Scalar.SIMD4Storage()
     
     @inlinable
     public var scalarCount: Int {_storage.scalarCount}
@@ -72,7 +72,7 @@ public struct Quaternion: Vector4, SIMD, Sendable {
     }
     
     @inlinable
-    public init(_ x: Float, _ y: Float, _ z: Float, _ w: Float) {
+    public init(_ x: Scalar, _ y: Scalar, _ z: Scalar, _ w: Scalar) {
         self.x = x
         self.y = y
         self.z = z
@@ -81,10 +81,11 @@ public struct Quaternion: Vector4, SIMD, Sendable {
 }
 #else
 public struct Quaternion: Vector4, Sendable {
-    public var x, y, z, w: Float
+    public typealias Scalar = Float
+    public var x, y, z, w: Scalar
     
     @inlinable
-    public init(_ x: Float, _ y: Float, _ z: Float, _ w: Float) {
+    public init(_ x: Scalar, _ y: Scalar, _ z: Scalar, _ w: Scalar) {
         self.x = x
         self.y = y
         self.z = z
@@ -95,14 +96,14 @@ public struct Quaternion: Vector4, Sendable {
 
 public extension Quaternion {
     @inlinable
-    init(x: Float, y: Float, z: Float, w: Float) {
+    init(x: Scalar, y: Scalar, z: Scalar, w: Scalar) {
         self.init(x, y, z, w)
     }
 }
 
 public extension Quaternion {
     @inlinable
-    subscript (_ index: Int) -> Float {
+    subscript (_ index: Int) -> Scalar {
         get {
             switch index {
             case 0: return x
@@ -154,8 +155,8 @@ extension Quaternion {
     public init(_ angle: some Angle, axis: Direction3) {
         // Will always be radians (because degrees is explicitly below), but leave ambiguous so degrees can use a literal
         let radians = angle.rawValueAsRadians
-        let sinHalfAngle: Float = sin(radians / 2.0)
-        let cosHalfAngle: Float = cos(radians / 2.0)
+        let sinHalfAngle: Scalar = sin(radians / 2.0)
+        let cosHalfAngle: Scalar = cos(radians / 2.0)
         
         x = axis.x * sinHalfAngle
         y = axis.y * sinHalfAngle
@@ -184,12 +185,12 @@ extension Quaternion {
         let _pitch: Radians = Radians(pitch)
         let _yaw: Radians = Radians(yaw)
         let _roll: Radians = Radians(roll)
-        let cy: Float = cos(_roll.rawValue * 0.5)
-        let sy: Float = sin(_roll.rawValue * 0.5)
-        let cp: Float = cos(_yaw.rawValue * 0.5)
-        let sp: Float = sin(_yaw.rawValue * 0.5)
-        let cr: Float = cos(_pitch.rawValue * 0.5)
-        let sr: Float = sin(_pitch.rawValue * 0.5)
+        let cy: Scalar = cos(_roll.rawValue * 0.5)
+        let sy: Scalar = sin(_roll.rawValue * 0.5)
+        let cp: Scalar = cos(_yaw.rawValue * 0.5)
+        let sp: Scalar = sin(_yaw.rawValue * 0.5)
+        let cr: Scalar = cos(_pitch.rawValue * 0.5)
+        let sr: Scalar = sin(_pitch.rawValue * 0.5)
 
         self.x = sr * cp * cy - cr * sp * sy
         self.y = cr * sp * cy + sr * cp * sy
@@ -201,29 +202,29 @@ extension Quaternion {
 extension Quaternion {
     @inlinable
     public init(rotationMatrix rot: Matrix4x4) {
-        let trace: Float = rot.a + rot.f + rot.k
+        let trace: Scalar = rot.a + rot.f + rot.k
         
         if trace > 0 {
-            let s: Float = 0.5 / (trace + 1.0).squareRoot()
+            let s: Scalar = 0.5 / (trace + 1.0).squareRoot()
             x = (rot.g - rot.j) * s
             y = (rot.i - rot.c) * s
             z = (rot.b - rot.e) * s
             w = 0.25 / s
         }else{
             if rot.a > rot.f && rot.a > rot.k {
-                let s: Float = 2.0 * (1.0 + rot.a - rot.f - rot.k).squareRoot()
+                let s: Scalar = 2.0 * (1.0 + rot.a - rot.f - rot.k).squareRoot()
                 x = 0.25 * s
                 y = (rot.e + rot.b) / s
                 z = (rot.i + rot.c) / s
                 w = (rot.g - rot.j) / s
             }else if rot.f > rot.k {
-                let s: Float = 2.0 * (1.0 + rot.f - rot.a - rot.k).squareRoot()
+                let s: Scalar = 2.0 * (1.0 + rot.f - rot.a - rot.k).squareRoot()
                 x = (rot.e + rot.b) / s
                 y = 0.25 * s
                 z = (rot.j + rot.g) / s
                 w = (rot.i - rot.c) / s
             }else{
-                let s: Float = 2.0 * (1.0 + rot.k - rot.a - rot.f).squareRoot()
+                let s: Scalar = 2.0 * (1.0 + rot.k - rot.a - rot.f).squareRoot()
                 x = (rot.i + rot.c) / s
                 y = (rot.g + rot.j) / s
                 z = 0.25 * s
@@ -232,7 +233,7 @@ extension Quaternion {
         }
         
         //Normalize
-        let length: Float = self.magnitude
+        let length: Scalar = self.magnitude
         x /= length
         y /= length
         z /= length
@@ -241,29 +242,29 @@ extension Quaternion {
     
     @inlinable
     public init(rotationMatrix rot: Matrix3x3) {
-        let trace: Float = rot.a + rot.f + rot.k
+        let trace: Scalar = rot.a + rot.f + rot.k
         
         if trace > 0 {
-            let s: Float = 0.5 / (trace + 1.0).squareRoot()
+            let s: Scalar = 0.5 / (trace + 1.0).squareRoot()
             x = (rot.g - rot.j) * s
             y = (rot.i - rot.c) * s
             z = (rot.b - rot.e) * s
             w = 0.25 / s
         }else{
             if rot.a > rot.f && rot.a > rot.k {
-                let s: Float = 2.0 * (1.0 + rot.a - rot.f - rot.k).squareRoot()
+                let s: Scalar = 2.0 * (1.0 + rot.a - rot.f - rot.k).squareRoot()
                 x = 0.25 * s
                 y = (rot.e + rot.b) / s
                 z = (rot.i + rot.c) / s
                 w = (rot.g - rot.j) / s
             }else if rot.f > rot.k {
-                let s: Float = 2.0 * (1.0 + rot.f - rot.a - rot.k).squareRoot()
+                let s: Scalar = 2.0 * (1.0 + rot.f - rot.a - rot.k).squareRoot()
                 x = (rot.e + rot.b) / s
                 y = 0.25 * s
                 z = (rot.j + rot.g) / s
                 w = (rot.i - rot.c) / s
             }else{
-                let s: Float = 2.0 * (1.0 + rot.k - rot.a - rot.f).squareRoot()
+                let s: Scalar = 2.0 * (1.0 + rot.k - rot.a - rot.f).squareRoot()
                 x = (rot.i + rot.c) / s
                 y = (rot.g + rot.j) / s
                 z = 0.25 * s
@@ -272,7 +273,7 @@ extension Quaternion {
         }
         
         //Normalize
-        let length: Float = self.magnitude
+        let length: Scalar = self.magnitude
         x /= length
         y /= length
         z /= length
@@ -284,20 +285,20 @@ extension Quaternion {
     @inlinable
     public mutating func lookAt(_ target: Position3, from source: Position3) {
         let forwardVector: Position3 = (source - target).normalized
-        let dot: Float = Direction3.forward.dot(forwardVector)
+        let dot: Scalar = Direction3.forward.dot(forwardVector)
         
-        if abs(dot - -1) < .ulpOfOne {
-            self.w = .pi
+        if abs(dot - -1) < Scalar.ulpOfOne {
+            self.w = Scalar.pi
             self.direction = .up
-        }else if abs(dot - 1) < .ulpOfOne {
+        }else if abs(dot - 1) < Scalar.ulpOfOne {
             self.w = 1
             self.direction = .zero
         }else{
-            let angle: Float = acos(dot)
+            let angle: Scalar = acos(dot)
             let axis: Direction3 = .forward.cross(forwardVector).normalized
             
-            let halfAngle: Float = angle * 0.5
-            let s: Float = sin(halfAngle)
+            let halfAngle: Scalar = angle * 0.5
+            let s: Scalar = sin(halfAngle)
             x = axis.x * s
             y = axis.y * s
             z = axis.z * s
@@ -414,13 +415,13 @@ public extension Quaternion {
     
     @inlinable
     var inverse: Self {
-        var absoluteValue: Float = magnitude
+        var absoluteValue: Scalar = magnitude
         absoluteValue *= absoluteValue
         absoluteValue = 1 / absoluteValue
         
         let conjugateValue = conjugate
         
-        let w: Float = conjugateValue.w * absoluteValue
+        let w: Scalar = conjugateValue.w * absoluteValue
         let vector = conjugateValue.direction * absoluteValue
         return Self(Radians(w), axis: vector)
     }
@@ -439,7 +440,7 @@ public extension Quaternion {
 
 public extension Quaternion {
     @inlinable
-    func interpolated(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) -> Self {
+    func interpolated(to: Self, _ method: InterpolationMethod<Scalar>, options: InterpolationOptions = .shortest) -> Self {
         switch method {
         case .linear(let factor):
             if options.contains(.shortest) {
@@ -448,21 +449,21 @@ public extension Quaternion {
                 return self.lerped(to: to, factor: factor)
             }
         case .easeIn(let factor):
-            let easeInFactor = 1 - cos((factor * .pi) / 2)
+            let easeInFactor = 1 - cos((factor * Scalar.pi) / 2)
             if options.contains(.shortest) {
                 return self.slerped(to: to, factor: easeInFactor)
             }else{
                 return self.lerped(to: to, factor: easeInFactor)
             }
         case .easeOut(let factor):
-            let easeOutFactor = sin((factor * .pi) / 2)
+            let easeOutFactor = sin((factor * Scalar.pi) / 2)
             if options.contains(.shortest) {
                 return self.slerped(to: to, factor: easeOutFactor)
             }else{
                 return self.lerped(to: to, factor: easeOutFactor)
             }
         case .easeInOut(let factor):
-            let easeInOutFactor = -(cos(.pi * factor) - 1) / 2
+            let easeInOutFactor = -(cos(Scalar.pi * factor) - 1) / 2
             if options.contains(.shortest) {
                 return self.slerped(to: to, factor: easeInOutFactor)
             }else{
@@ -472,14 +473,14 @@ public extension Quaternion {
     }
     
     @inlinable
-    mutating func interpolate(to: Self, _ method: InterpolationMethod, options: InterpolationOptions = .shortest) {
+    mutating func interpolate(to: Self, _ method: InterpolationMethod<Scalar>, options: InterpolationOptions = .shortest) {
         self = self.interpolated(to: to, method, options: options)
     }
 }
 
 internal extension Quaternion {
     @inlinable
-    func lerped(to q2: Self, factor t: Float) -> Self {
+    func lerped(to q2: Self, factor t: Scalar) -> Self {
         var qr: Quaternion = .zero
         
         let t_ = 1 - t
@@ -492,28 +493,28 @@ internal extension Quaternion {
     }
     
     @inlinable
-    mutating func lerp(to q2: Self, factor: Float) {
+    mutating func lerp(to q2: Self, factor: Scalar) {
         self = self.lerped(to: q2, factor: factor)
     }
     
     @inlinable
-    func slerped(to destination: Self, factor t: Float) -> Self {
+    func slerped(to destination: Self, factor t: Scalar) -> Self {
         // Adapted from javagl.JglTF
         
         let a: Self = self
         let b: Self = destination
         
-        let aw: Float = a.w
-        let ax: Float = a.x
-        let ay: Float = a.y
-        let az: Float = a.z
+        let aw: Scalar = a.w
+        let ax: Scalar = a.x
+        let ay: Scalar = a.y
+        let az: Scalar = a.z
         
-        var bw: Float = b.w
-        var bx: Float = b.x
-        var by: Float = b.y
-        var bz: Float = b.z
+        var bw: Scalar = b.w
+        var bx: Scalar = b.x
+        var by: Scalar = b.y
+        var bz: Scalar = b.z
         
-        var dot: Float = ax * bx + ay * by + az * bz + aw * bw
+        var dot: Scalar = ax * bx + ay * by + az * bz + aw * bw
         if dot < 0 {
             bx = -bx
             by = -by
@@ -521,10 +522,10 @@ internal extension Quaternion {
             bw = -bw
             dot = -dot
         }
-        var s0: Float
-        var s1: Float
-        if (1 - dot) > .ulpOfOne {
-            let omega: Float = acos(dot)
+        var s0: Scalar
+        var s1: Scalar
+        if (1 - dot) > Scalar.ulpOfOne {
+            let omega: Scalar = acos(dot)
             let invSinOmega = 1 / sin(omega)
             s0 = sin((1 - t) * omega) * invSinOmega
             s1 = sin(t * omega) * invSinOmega
@@ -542,7 +543,7 @@ internal extension Quaternion {
     }
     
     @inlinable
-    mutating func slerp(to qb: Self, factor: Float) {
+    mutating func slerp(to qb: Self, factor: Scalar) {
         self = self.slerped(to: qb, factor: factor)
     }
 }
@@ -554,19 +555,19 @@ public extension Quaternion {
     }
     @inlinable
     static func * (lhs: Self, rhs: Self) -> Self {
-        var x: Float = lhs.x * rhs.w
+        var x: Scalar = lhs.x * rhs.w
         x += lhs.w * rhs.x
         x += lhs.y * rhs.z
         x -= lhs.z * rhs.y
-        var y: Float = lhs.y * rhs.w
+        var y: Scalar = lhs.y * rhs.w
         y += lhs.w * rhs.y
         y += lhs.z * rhs.x
         y -= lhs.x * rhs.z
-        var z: Float = lhs.z * rhs.w
+        var z: Scalar = lhs.z * rhs.w
         z += lhs.w * rhs.z
         z += lhs.x * rhs.y
         z -= lhs.y * rhs.x
-        var w: Float = lhs.w * rhs.w
+        var w: Scalar = lhs.w * rhs.w
         w -= lhs.x * rhs.x
         w -= lhs.y * rhs.y
         w -= lhs.z * rhs.z
@@ -581,13 +582,13 @@ public extension Quaternion {
     @inlinable
     static func * <V: Vector2>(lhs: Self, rhs: V) -> Self {
 
-        var x: Float =  lhs.w * rhs.x
+        var x: Scalar =  lhs.w * rhs.x
         x -= lhs.z * rhs.y
-        var y: Float =  lhs.w * rhs.y
+        var y: Scalar =  lhs.w * rhs.y
         y += lhs.z * rhs.x
-        var z: Float =  lhs.x * rhs.y
+        var z: Scalar =  lhs.x * rhs.y
         z -= lhs.y * rhs.x
-        var w: Float = -lhs.x * rhs.x
+        var w: Scalar = -lhs.x * rhs.x
         w -= lhs.y * rhs.y
         return Self(x: x, y: y, z: z, w: w)
     }
@@ -598,16 +599,16 @@ public extension Quaternion {
     }
     @inlinable
     static func * <V: Vector3>(lhs: Self, rhs: V) -> Self {
-        var x: Float =  lhs.w * rhs.x
+        var x: Scalar =  lhs.w * rhs.x
         x += lhs.y * rhs.z
         x -= lhs.z * rhs.y
-        var y: Float =  lhs.w * rhs.y
+        var y: Scalar =  lhs.w * rhs.y
         y += lhs.z * rhs.x
         y -= lhs.x * rhs.z
-        var z: Float =  lhs.w * rhs.z
+        var z: Scalar =  lhs.w * rhs.z
         z += lhs.x * rhs.y
         z -= lhs.y * rhs.x
-        var w: Float = -lhs.x * rhs.x
+        var w: Scalar = -lhs.x * rhs.x
         w -= lhs.y * rhs.y
         w -= lhs.z * rhs.z
         return Self(x: x, y: y, z: z, w: w)
@@ -617,9 +618,9 @@ public extension Quaternion {
 //MARK: - SIMD
 public extension Quaternion {
     @inlinable
-    var simd: SIMD4<Float> {
+    var simd: SIMD4<Scalar> {
         get {
-            return SIMD4<Float>(x, y, z, w)
+            return SIMD4<Scalar>(x, y, z, w)
         }
         set {
             x = newValue[0]
@@ -641,7 +642,7 @@ extension Quaternion: Codable {
     
     public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let values = try container.decode(Array<Float>.self)
+        let values = try container.decode(Array<Scalar>.self)
         
         self.x = values[0]
         self.y = values[1]

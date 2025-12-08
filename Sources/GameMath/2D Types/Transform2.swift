@@ -113,14 +113,14 @@ extension Transform2 {
 
 extension Transform2 {
     @inlinable
-    public func interpolated(to destination: Self, _ method: InterpolationMethod) -> Self {
+    public func interpolated(to destination: Self, _ method: InterpolationMethod<Float>) -> Self {
         var copy = self
         copy.interpolate(to: destination, method)
         return copy
     }
     
     @inlinable
-    public mutating func interpolate(to: Self, _ method: InterpolationMethod) {
+    public mutating func interpolate(to: Self, _ method: InterpolationMethod<Float>) {
         self.position.interpolate(to: to.position, method)
         self.rotation.interpolate(to: to.rotation, method)
         self.scale.interpolate(to: to.scale, method)
