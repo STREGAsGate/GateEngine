@@ -13,9 +13,9 @@ import Shaders
     @usableFromInline internal var viewport: Rect?
     @usableFromInline internal var scissorRect: Rect?
 
-    @usableFromInline internal var pointLights: Set<ScenePointLight> = []
-    @usableFromInline internal var spotLights: Set<SceneSpotLight> = []
-    @usableFromInline internal var directionalLight: SceneDirectionalLight? = nil
+    @usableFromInline internal var pointLights: Set<PointLight> = []
+    @usableFromInline internal var spotLights: Set<SpotLight> = []
+    @usableFromInline internal var directionalLight: DirectionalLight? = nil
 
     @usableFromInline 
     internal var _drawCommands: ContiguousArray<DrawCommand> = []
@@ -331,18 +331,15 @@ import Shaders
 
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
     public mutating func insert(_ light: PointLight) {
-        guard light.state == .ready else { return }
-        self.pointLights.insert(ScenePointLight(light))
+        self.pointLights.insert(light)
     }
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
     public mutating func insert(_ light: SpotLight) {
-        guard light.state == .ready else { return }
-        self.spotLights.insert(SceneSpotLight(light))
+        self.spotLights.insert(light)
     }
     @available(*, unavailable, message: "Dynamic lighting is not supported yet.")
     public mutating func insert(_ light: DirectionalLight) {
-        guard light.state == .ready else { return }
-        self.directionalLight = SceneDirectionalLight(light)
+        self.directionalLight = light
     }
 
     @inlinable
@@ -364,84 +361,6 @@ import Shaders
     @inlinable
     public mutating func matrices(withSize size: GameMath.Size2) -> Matrices {
         self.camera.matricies(withViewportSize: size)
-    }
-}
-
-@usableFromInline
-internal struct ScenePointLight: Hashable {
-    let pointer: PointLight
-    let brightness: Float
-    let color: SIMD3<Float>
-    let radius: Float
-    let softness: Float
-    let drawShadows: Light.DrawShadows
-    let position: SIMD3<Float>
-
-    init(_ pointer: PointLight) {
-        self.pointer = pointer
-        self.brightness = pointer.brightness
-        self.color = SIMD3(pointer.color.red, pointer.color.green, pointer.color.blue)
-        self.radius = pointer.radius
-        self.softness = pointer.softness
-        self.drawShadows = pointer.drawShadows
-        self.position = pointer.position.simd
-    }
-
-    @usableFromInline 
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(pointer.id)
-    }
-}
-
-@usableFromInline
-internal struct SceneSpotLight: Hashable {
-    let pointer: SpotLight
-    let brightness: Float
-    let color: SIMD3<Float>
-    let radius: Float
-    let coneAngle: Degrees
-    let sharpness: Float
-    let drawShadows: Light.DrawShadows
-    let position: SIMD3<Float>
-    let direction: SIMD3<Float>
-
-    init(_ pointer: SpotLight) {
-        self.pointer = pointer
-        self.brightness = pointer.brightness
-        self.color = SIMD3(pointer.color.red, pointer.color.green, pointer.color.blue)
-        self.radius = pointer.radius
-        self.coneAngle = pointer.coneAngle
-        self.sharpness = pointer.sharpness
-        self.drawShadows = pointer.drawShadows
-        self.position = pointer.position.simd
-        self.direction = pointer.direction.simd
-    }
-
-    @usableFromInline 
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(pointer.id)
-    }
-}
-
-@usableFromInline
-internal struct SceneDirectionalLight: Hashable {
-    let pointer: DirectionalLight
-    let brightness: Float
-    let color: SIMD3<Float>
-    let drawShadows: Light.DrawShadows
-    let direction: SIMD3<Float>
-
-    init(_ pointer: DirectionalLight) {
-        self.pointer = pointer
-        self.brightness = pointer.brightness
-        self.color = SIMD3(pointer.color.red, pointer.color.green, pointer.color.blue)
-        self.drawShadows = pointer.drawShadows
-        self.direction = pointer.direction.simd
-    }
-
-    @usableFromInline 
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(pointer.id)
     }
 }
 

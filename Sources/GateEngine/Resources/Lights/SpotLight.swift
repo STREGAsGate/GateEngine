@@ -7,7 +7,11 @@
 
 import GameMath
 
-public final class SpotLight: Light {
+public struct SpotLight: LightEmitter {
+    public var brightness: Float
+    
+    public var color: Color
+    
     /// The maximum distance light can appear
     public var radius: Float
     /// How large the spot appears
@@ -15,35 +19,32 @@ public final class SpotLight: Light {
     /// How sharp the cone edge appears
     public var sharpness: Float
 
-    /// `true` if the light can create shadows
-    public var drawShadows: DrawShadows
-
     public var position: Position3
     public var direction: Direction3
-    public func setTransform(_ transform: Transform3) {
+    
+    public mutating func setTransform(_ transform: Transform3) {
         self.position = transform.position
         self.direction = transform.rotation.forward
     }
-    public func setRotation(_ rotation: Quaternion) {
+    public mutating func setRotation(_ rotation: Quaternion) {
         self.direction = rotation.forward
     }
 
-    init(
-        brightness: Float = 1,
-        radius: Float = 5,
-        coneAngle: Degrees = Degrees(45),
-        sharpness: Float,
+    public init(
+        brightness: Float,
         color: Color,
-        drawShadows: DrawShadows,
+        radius: Float,
+        coneAngle: Degrees,
+        sharpness: Float,
         position: Position3,
         direction: Direction3
     ) {
+        self.brightness = brightness
+        self.color = color
         self.radius = radius
         self.coneAngle = coneAngle
         self.sharpness = sharpness
-        self.drawShadows = drawShadows
         self.position = position
         self.direction = direction
-        super.init(brightness: brightness, color: color)
     }
 }
