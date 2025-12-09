@@ -11,6 +11,8 @@ public enum BuildConfiguration {
     case debug
     /// The RELEASE build configuration
     case release
+    /// The DISTRIBUTE package trait. Enable the DISTRIBUTE package trait when importing GateEngine as a dependency.
+    case distribute
 }
 
 public extension Bool {
@@ -30,6 +32,12 @@ public extension Bool {
             #endif
         case .release:
             #if RELEASE
+            return true
+            #else
+            return false
+            #endif
+        case .distribute:
+            #if DISTRIBUTE
             return true
             #else
             return false

@@ -692,9 +692,7 @@ extension Array where Element == SwiftSetting {
         if let exprimentalFeatureFlags = Self.exprimentalFeatureFlags {
             settings.append(contentsOf: exprimentalFeatureFlags)
         }
-        
-        settings.append(.define("DISTRIBUTE", .when(traits: ["DISTRIBUTE"])))
-        
+                
         return settings.isEmpty ? nil : settings
     }
     
