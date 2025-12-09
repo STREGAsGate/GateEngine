@@ -159,7 +159,7 @@
 
     public var isReady: Bool {
         for animation in subAnimations {
-            if animation.skeletalAnimation.state != .ready {
+            if animation.isReady == false {
                 return false
             }
         }
@@ -215,8 +215,9 @@
     func update(deltaTime: Float, objectScale: Size3) {
         for index in subAnimations.indices {
             let animation = subAnimations[index]
-            subAnimations[index].accumulatedTime +=
-                deltaTime * (objectScale.length / 3) * animation.scale
+            if animation.isReady {
+                subAnimations[index].accumulatedTime += deltaTime * (objectScale.length / 3) * animation.scale
+            }
         }
     }
 
@@ -269,6 +270,11 @@
         public var skeletalAnimation: SkeletalAnimation
         public var skipJoints: [Skeleton.SkipJoint]
 
+        @inlinable
+        var isReady: Bool {
+            return skeletalAnimation.isReady
+        }
+        
         @usableFromInline
         var duration: Float {
             return skeletalAnimation.duration
