@@ -32,6 +32,11 @@ public extension Direction3n where Scalar: FloatingPoint {
         return w.direction
     }
     
+    @inlinable
+    mutating func rotate(by rotation: Rotation3n<Scalar>) {
+        self = self.rotated(by: rotation)
+    }
+    
     /// This angles perpendicular angle
     @inlinable
     func orthogonal() -> Self {
