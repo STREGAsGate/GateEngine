@@ -210,6 +210,7 @@ internal enum Log {
 
     @usableFromInline
     static func info(_ items: Any..., separator: String = " ", terminator: String = "\n") {
+        #if DEBUG || !DISTRIBUTE
         let message = _message(prefix: "[GateEngine]", items, separator: separator)
 
         #if HTML5
@@ -220,20 +221,23 @@ internal enum Log {
         WinSDK.OutputDebugStringW((message + terminator).windowsUTF16)
         #endif
         #endif
+        #endif
     }
 
     @usableFromInline
     static func infoOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
+        #if DEBUG || !DISTRIBUTE
         let hash = items.compactMap({ $0 as? AnyHashable }).hashValue
         if onceHashes.contains(hash) == false {
             onceHashes.insert(hash)
             Self.info(items, separator: separator, terminator: terminator)
         }
+        #endif
     }
 
     @usableFromInline
     static func debug(_ items: Any..., separator: String = " ", terminator: String = "\n") {
-        #if DEBUG
+        #if DEBUG || !DISTRIBUTE
         #if HTML5
         let message = _message(prefix: "[GateEngine]", items, separator: separator)
         console.debug(data: .string(message))
@@ -245,7 +249,7 @@ internal enum Log {
 
     @usableFromInline
     static func debugOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
-        #if DEBUG
+        #if DEBUG || !DISTRIBUTE
         let hash = items.compactMap({ $0 as? AnyHashable }).hashValue
         if onceHashes.contains(hash) == false {
             onceHashes.insert(hash)
@@ -256,6 +260,7 @@ internal enum Log {
 
     @usableFromInline
     static func warn(_ items: Any..., separator: String = " ", terminator: String = "\n") {
+        #if DEBUG || !DISTRIBUTE
         let resolvedMessage: String
         if supportsANSIColor {
             resolvedMessage = _message(
@@ -276,19 +281,23 @@ internal enum Log {
 
         Swift.print(resolvedMessage, separator: separator, terminator: terminator)
         #endif
+        #endif
     }
 
     @usableFromInline
     static func warnOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
+        #if DEBUG || !DISTRIBUTE
         let hash = items.compactMap({ $0 as? AnyHashable }).hashValue
         if onceHashes.contains(hash) == false {
             onceHashes.insert(hash)
             Self.warn(items, separator: separator, terminator: terminator)
         }
+        #endif
     }
 
     @usableFromInline
     static func error(_ items: Any..., separator: String = " ", terminator: String = "\n") {
+        #if DEBUG || !DISTRIBUTE
         let resolvedMessage: String
         if supportsANSIColor {
             resolvedMessage = self._message(
@@ -313,15 +322,18 @@ internal enum Log {
 
         Swift.print(resolvedMessage, separator: separator, terminator: terminator)
         #endif
+        #endif
     }
 
     @usableFromInline
     static func errorOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
+        #if DEBUG || !DISTRIBUTE
         let hash = items.compactMap({ $0 as? AnyHashable }).hashValue
         if onceHashes.contains(hash) == false {
             onceHashes.insert(hash)
             Self.error(items, separator: separator, terminator: terminator)
         }
+        #endif
     }
 
     @_transparent // Must be transparent to function similar to a Swift.assert
@@ -365,6 +377,7 @@ internal enum Log {
 
     @usableFromInline
     static func fatalError(_ message: String, file: StaticString = #file, line: UInt = #line) -> Never {
+        #if DEBUG || !DISTRIBUTE
         let resolvedMessage: String
         if supportsANSIColor {
             resolvedMessage = self._message(
@@ -385,6 +398,9 @@ internal enum Log {
         #endif
 
         return Swift.fatalError(resolvedMessage, file: file, line: line)
+        #else
+        return Swift.fatalError(message, file: file, line: line)
+        #endif
     }
 }
 

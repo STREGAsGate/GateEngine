@@ -252,8 +252,8 @@ let package = Package(
                         #endif
                         
                         // These settings are faster only with optimization.
-                        settings.append(.define("GameMathUseSIMD", .when(configuration: .release, traits: ["SIMD"])))
-                        settings.append(.define("GameMathUseLoopVectorization", .when(configuration: .release, traits: ["SIMD"])))
+                        settings.append(.define("GameMathUseSIMD", .when(traits: ["SIMD"])))
+                        settings.append(.define("GameMathUseLoopVectorization", .when(traits: ["SIMD"])))
                     })
                 ),
             
@@ -692,6 +692,9 @@ extension Array where Element == SwiftSetting {
         if let exprimentalFeatureFlags = Self.exprimentalFeatureFlags {
             settings.append(contentsOf: exprimentalFeatureFlags)
         }
+        
+        settings.append(.define("DISTRIBUTE", .when(traits: ["DISTRIBUTE"])))
+        
         return settings.isEmpty ? nil : settings
     }
     
