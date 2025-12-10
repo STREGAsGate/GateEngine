@@ -12,6 +12,7 @@ public import Accelerate
 #endif
 
 // MARK: - Float16
+#if !((os(macOS) || targetEnvironment(macCatalyst)) && arch(x86_64))
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 public extension Vector3n where Scalar == Float16 {
     @inlinable @_transparent
@@ -120,6 +121,7 @@ public extension Vector3n where Scalar == Float16 {
 public func abs<T: Vector3n>(_ vector: T) -> T where T.Scalar == Float16 {
     return unsafeBitCast(simd_abs(vector.simd()), to: T.self)
 }
+#endif
 
 // MARK: - Float32
 public extension Vector3n where Scalar == Float32 {

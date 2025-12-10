@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-public typealias Ray3h = Ray3n<Float16>
 public typealias Ray3f = Ray3n<Float32>
 public typealias Ray3d = Ray3n<Float64>
 

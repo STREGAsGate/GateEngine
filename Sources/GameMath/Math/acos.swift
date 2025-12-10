@@ -12,8 +12,10 @@
 public func acos<T: BinaryFloatingPoint>(_ x: T) -> T {
     #if canImport(Foundation)
     switch x {
+    #if !((os(macOS) || targetEnvironment(macCatalyst)) && arch(x86_64))
     case let x as Float16:
         return T(Foundation.acos(Float32(x)))
+    #endif
     case let x as Float32:
         return T(Foundation.acos(x))
     case let x as Float64:

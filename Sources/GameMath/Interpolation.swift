@@ -133,12 +133,15 @@ public extension Interpolatable {
 #if GameMathUseSIMD && canImport(simd)
 public import simd
 
+#if !((os(macOS) || targetEnvironment(macCatalyst)) && arch(x86_64))
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 public extension Float16 {
     @inlinable
     func lerped(to rhs: Self, factor: Self) -> Self {
         return simd_mix(self, rhs, factor)
     }
 }
+#endif
 
 public extension Float32 {
     @inlinable
@@ -155,9 +158,12 @@ public extension Float64 {
 }
 #endif
 
+#if !((os(macOS) || targetEnvironment(macCatalyst)) && arch(x86_64))
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 extension Float16: Interpolatable {
     public typealias Factor = Self
 }
+#endif
 extension Float32: Interpolatable {
     public typealias Factor = Self
 }

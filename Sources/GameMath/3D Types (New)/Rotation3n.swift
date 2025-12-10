@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-public typealias Rotation3h = Rotation3n<Float16>
 public typealias Rotation3f = Rotation3n<Float32>
 public typealias Rotation3d = Rotation3n<Float64>
 

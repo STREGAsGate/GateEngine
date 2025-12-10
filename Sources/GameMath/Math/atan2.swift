@@ -12,8 +12,10 @@
 public func atan2<T: BinaryFloatingPoint>(_ lhs: T, _ rhs: T) -> T {
     #if canImport(Foundation)
     switch lhs {
+    #if !((os(macOS) || targetEnvironment(macCatalyst)) && arch(x86_64))
     case is Float16:
         return T(Foundation.atan2(Float32(lhs), Float32(rhs)))
+    #endif
     case is Float32:
         return T(Foundation.atan2(Float32(lhs), Float32(rhs)))
     case is Float64:

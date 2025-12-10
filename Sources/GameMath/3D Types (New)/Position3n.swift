@@ -8,7 +8,6 @@
 public typealias Position3i = Position3n<Int>
 public typealias Position3u = Position3n<UInt>
 
-public typealias Position3h = Position3n<Float16>
 public typealias Position3f = Position3n<Float32>
 public typealias Position3d = Position3n<Float64>
 

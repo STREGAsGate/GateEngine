@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-public typealias Plane3h = Plane3n<Float16>
 public typealias Plane3f = Plane3n<Float32>
 public typealias Plane3d = Plane3n<Float64>
 

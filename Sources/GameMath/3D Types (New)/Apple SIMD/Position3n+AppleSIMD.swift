@@ -9,6 +9,7 @@
 public import simd
 
 // MARK: - Float16
+#if !((os(macOS) || targetEnvironment(macCatalyst)) && arch(x86_64))
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 public extension Position3n where Scalar == Float16 {
     /** The distance between `from` and `self`
@@ -23,6 +24,7 @@ public extension Position3n where Scalar == Float16 {
         return simd_distance_squared(self.simd(), from.simd())
     }
 }
+#endif
 
 // MARK: - Float32
 public extension Position3n where Scalar == Float32 {

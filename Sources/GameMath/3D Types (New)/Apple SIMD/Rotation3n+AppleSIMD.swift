@@ -9,6 +9,7 @@
 public import simd
 
 // MARK: - Float16
+#if !((os(macOS) || targetEnvironment(macCatalyst)) && arch(x86_64))
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 public extension Rotation3n where Scalar == Float16 {
     @_transparent
@@ -33,6 +34,7 @@ public extension Rotation3n where Scalar == Float16 {
         self = unsafeBitCast(simd_fast_normalize(self.simd()), to: Self.self)
     }
 }
+#endif
 
 // MARK: - Float32
 public extension Rotation3n where Scalar == Float32 {

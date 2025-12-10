@@ -8,7 +8,6 @@
 public typealias Size3i = Size3n<Int>
 public typealias Size3u = Size3n<UInt>
 
-public typealias Size3h = Size3n<Float16>
 public typealias Size3f = Size3n<Float32>
 public typealias Size3d = Size3n<Float64>
 

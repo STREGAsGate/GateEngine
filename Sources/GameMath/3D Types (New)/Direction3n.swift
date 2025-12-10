@@ -5,7 +5,6 @@
  * http://stregasgate.com
  */
 
-public typealias Direction3h = Direction3n<Float16>
 public typealias Direction3f = Direction3n<Float32>
 public typealias Direction3d = Direction3n<Float64>
 
