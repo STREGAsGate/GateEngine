@@ -112,13 +112,13 @@ internal struct DeltaTimeHelper {
                     // This issue is similar in severity to a dropped frame and will happen if the simulation is lagging.
                     // To reduce occurances of this, do less work.
                     // Try spreading work out across multiple updates.
-                    let message = "\(name) needed \(stepsRequired) steps, and was truncated to \(Self.minSimulationSteps)."
+                    let message = "\(name) wanted \(stepsRequired) steps, and was truncated to \(Self.minSimulationSteps)."
                     Log.warn(message, "This is a \(String(format: "%0.3f", Self.preferredStepDuration * Double(stepsRequired))) second hang!")
                 }
                 #endif
                 
                 // Split the literalDeltaTime into the minimum steps
-                let deltaTime = literalDeltaTime / Double(Self.minSimulationSteps)
+                let deltaTime = .minimum(literalDeltaTime, Self.minimumStepDuration * Double(Self.minSimulationSteps)) / Double(Self.minSimulationSteps)
                 
                 return (Self.minSimulationSteps, deltaTime)
             }
