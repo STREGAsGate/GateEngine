@@ -117,8 +117,7 @@ public extension Position3n where Scalar: FloatingPoint {
      */
     @inlinable
     func rotated(around anchor: Self = .zero, by rotation: Rotation3n<Scalar>) -> Self {
-        let d = self.distance(from: anchor)
-        return anchor.moved(d, toward: rotation.forward)
+        fatalError("Not implemented")
     }
 
     /** Rotates `self` around an anchor position.

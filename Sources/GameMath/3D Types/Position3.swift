@@ -157,8 +157,14 @@ public extension Position3 {
      */
     @inlinable
     func rotated(around anchor: Self = .zero, by rotation: Quaternion) -> Self {
+        #if false
+        // TODO: This implementation is less accurate, needs testing to see if there's any performance benefits
         let d = self.distance(from: anchor)
-        return anchor.moved(d, toward: rotation.forward)
+        let currentRotation = Quaternion(direction: Direction3(from: anchor, to: self))
+        return anchor.moved(d, toward: (rotation * currentRotation).forward)
+        #else
+        return (Matrix4x4(position: anchor) * Matrix4x4(rotation: rotation)) * self
+        #endif
     }
 
     /** Rotates `self` around an anchor position.
