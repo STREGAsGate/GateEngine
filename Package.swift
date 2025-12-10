@@ -17,7 +17,8 @@ let package = Package(
         
         .trait(
             name: "DISTRIBUTE",
-            description: "Configures GateEngine for a distributable build. Disables some logging and enables optimizations that otherwise would inhibit development."
+            description: "Configures GateEngine for a distributable build. Disables some logging and enables optimizations that otherwise would inhibit development.",
+            enabledTraits: ["SIMD"]
         ),
         .trait(
             name: "SIMD",
