@@ -133,9 +133,7 @@ public final class WavefrontOBJImporter: GeometryImporter {
                         }
                         
                         if verts.count >= 3 {  // N-Gon
-                            var triangles = [
-                                Triangle(v1: verts[0], v2: verts[1], v3: verts[2], repairIfNeeded: true)
-                            ]
+                            var triangles: [Triangle] = []
                             for i in 1 ..< verts.count - 1 {
                                 triangles.append(
                                     Triangle(
