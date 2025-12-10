@@ -190,7 +190,7 @@ extension ResourceManager {
 
 extension RawGeometry {
     @inlinable @_disfavoredOverload
-    public init(_ path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
+    public init(as path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
         try await self.init(path: path.value, options: options)
     }
     public init(path: String, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
