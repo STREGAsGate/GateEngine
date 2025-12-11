@@ -1,15 +1,54 @@
+#if !((os(macOS) || targetEnvironment(macCatalyst)) && arch(x86_64))
 import XCTest
 
 @testable import GameMath
 
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 fileprivate typealias Scalar = Float16
 
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 final class Direction3nFloat16Tests: XCTestCase {
     func testInit() {
         let direction = Direction3n<Scalar>(x: 1, y: 2, z: 3)
         XCTAssertEqual(direction.x, 1)
         XCTAssertEqual(direction.y, 2)
         XCTAssertEqual(direction.z, 3)
+    }
+    
+    func testCastFromPosition3n() {
+        let vectorToCast = Position3n<Scalar>(
+            x: .random(in: 123...456),
+            y: .random(in: 123...456),
+            z: .random(in: 123...456)
+        )
+        let direction = Direction3n<Scalar>(vectorToCast)
+        XCTAssertEqual(direction.x, vectorToCast.x)
+        XCTAssertEqual(direction.y, vectorToCast.y)
+        XCTAssertEqual(direction.z, vectorToCast.z)
+    }
+    
+    func testCastFromDirection3n() {
+        let vectorToCast = Direction3n<Scalar>(
+            x: .random(in: 123...456),
+            y: .random(in: 123...456),
+            z: .random(in: 123...456)
+        )
+        let direction = Direction3n<Scalar>(vectorToCast)
+        XCTAssertEqual(direction.x, vectorToCast.x)
+        XCTAssertEqual(direction.y, vectorToCast.y)
+        XCTAssertEqual(direction.z, vectorToCast.z)
+    }
+    
+    func testCastFromSize3n() {
+        let vectorToCast = Size3n<Scalar>(
+            x: .random(in: 123...456),
+            y: .random(in: 123...456),
+            z: .random(in: 123...456)
+        )
+        let direction = Direction3n<Scalar>(vectorToCast)
+        XCTAssertEqual(direction.x, vectorToCast.x)
+        XCTAssertEqual(direction.y, vectorToCast.y)
+        XCTAssertEqual(direction.z, vectorToCast.z)
     }
 
     func testInitFromTo() {
@@ -79,17 +118,17 @@ final class Direction3nFloat16Tests: XCTestCase {
 
     func testAngleAroundX() {
         XCTAssertEqual(Direction3n<Scalar>.right.angleAroundX, 0)
-        XCTAssertEqual(Radians(Direction3n<Scalar>.up.angleAroundX), Radians(90°))
+        XCTAssertEqual(Direction3n<Scalar>.up.angleAroundX, Radians(90°))
     }
 
     func testAngleAroundY() {
         XCTAssertEqual(Direction3n<Scalar>.up.angleAroundY, 0)
-        XCTAssertEqual(Radians(Direction3n<Scalar>.right.angleAroundY), Radians(90°))
+        XCTAssertEqual(Direction3n<Scalar>.right.angleAroundY, Radians(90°))
     }
 
     func testAngleAroundZ() {
         XCTAssertEqual(Direction3n<Scalar>.forward.angleAroundZ, 0)
-        XCTAssertEqual(Radians(Direction3n<Scalar>.up.angleAroundZ), Radians(90°))
+        XCTAssertEqual(Direction3n<Scalar>.up.angleAroundZ, Radians(90°))
     }
 
     func testRotated() {
@@ -128,3 +167,5 @@ final class Direction3nFloat16Tests: XCTestCase {
         XCTAssertEqual(Direction3n<Scalar>(x: 0, y: 0, z: 1), .backward)
     }
 }
+
+#endif

@@ -11,6 +11,42 @@ final class Direction3nFloat32Tests: XCTestCase {
         XCTAssertEqual(direction.y, 2)
         XCTAssertEqual(direction.z, 3)
     }
+    
+    func testCastFromPosition3n() {
+        let vectorToCast = Position3n<Scalar>(
+            x: .random(in: 123...456),
+            y: .random(in: 123...456),
+            z: .random(in: 123...456)
+        )
+        let direction = Direction3n<Scalar>(vectorToCast)
+        XCTAssertEqual(direction.x, vectorToCast.x)
+        XCTAssertEqual(direction.y, vectorToCast.y)
+        XCTAssertEqual(direction.z, vectorToCast.z)
+    }
+    
+    func testCastFromDirection3n() {
+        let vectorToCast = Direction3n<Scalar>(
+            x: .random(in: 123...456),
+            y: .random(in: 123...456),
+            z: .random(in: 123...456)
+        )
+        let direction = Direction3n<Scalar>(vectorToCast)
+        XCTAssertEqual(direction.x, vectorToCast.x)
+        XCTAssertEqual(direction.y, vectorToCast.y)
+        XCTAssertEqual(direction.z, vectorToCast.z)
+    }
+    
+    func testCastFromSize3n() {
+        let vectorToCast = Size3n<Scalar>(
+            x: .random(in: 123...456),
+            y: .random(in: 123...456),
+            z: .random(in: 123...456)
+        )
+        let direction = Direction3n<Scalar>(vectorToCast)
+        XCTAssertEqual(direction.x, vectorToCast.x)
+        XCTAssertEqual(direction.y, vectorToCast.y)
+        XCTAssertEqual(direction.z, vectorToCast.z)
+    }
 
     func testInitFromTo() {
         do {  //Up
@@ -79,17 +115,17 @@ final class Direction3nFloat32Tests: XCTestCase {
 
     func testAngleAroundX() {
         XCTAssertEqual(Direction3n<Scalar>.right.angleAroundX, 0)
-        XCTAssertEqual(Radians(Direction3n<Scalar>.up.angleAroundX), Radians(90°))
+        XCTAssertEqual(Direction3n<Scalar>.up.angleAroundX, Radians(90°))
     }
 
     func testAngleAroundY() {
         XCTAssertEqual(Direction3n<Scalar>.up.angleAroundY, 0)
-        XCTAssertEqual(Radians(Direction3n<Scalar>.right.angleAroundY), Radians(90°))
+        XCTAssertEqual(Direction3n<Scalar>.right.angleAroundY, Radians(90°))
     }
 
     func testAngleAroundZ() {
         XCTAssertEqual(Direction3n<Scalar>.forward.angleAroundZ, 0)
-        XCTAssertEqual(Radians(Direction3n<Scalar>.up.angleAroundZ), Radians(90°))
+        XCTAssertEqual(Direction3n<Scalar>.up.angleAroundZ, Radians(90°))
     }
 
     func testRotated() {

@@ -13,13 +13,18 @@ public struct Direction3n<Scalar: Vector3n.ScalarType>: Vector3n {
     public var x: Scalar
     public var y: Scalar
     public var z: Scalar
-    private let _pad: Scalar // Foce power of 2 size
+    /**
+     This value is padding to force power of 2 memory alignment.
+     Some low level functions may manipulate this value, so it's readable.
+     - note: This value is not encoded or decoded.
+     */
+    public let w: Scalar
     
     public init(x: Scalar, y: Scalar, z: Scalar) {
         self.x = x
         self.y = y
         self.z = z
-        self._pad = 0
+        self.w = 0
     }
 }
 

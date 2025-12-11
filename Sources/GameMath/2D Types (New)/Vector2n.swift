@@ -35,7 +35,8 @@ extension Position2n: Hashable where Scalar: Hashable { }
 extension Position2n: Comparable where Scalar: Comparable { }
 extension Position2n: Sendable where Scalar: Sendable { }
 extension Position2n: Codable where Scalar: Codable { }
-extension Position2n: BinaryCodable where Scalar: BinaryCodable { }
+extension Position2n: BitwiseCopyable where Scalar: BitwiseCopyable { }
+extension Position2n: BinaryCodable where Self: BitwiseCopyable { }
 
 public typealias Size2i = Size2n<Int>
 public typealias Size2f = Size2n<Float>
@@ -59,7 +60,8 @@ extension Size2n: Hashable where Scalar: Hashable { }
 extension Size2n: Comparable where Scalar: Comparable { }
 extension Size2n: Sendable where Scalar: Sendable { }
 extension Size2n: Codable where Scalar: Codable { }
-extension Size2n: BinaryCodable where Scalar: BinaryCodable { }
+extension Size2n: BitwiseCopyable where Scalar: BitwiseCopyable { }
+extension Size2n: BinaryCodable where Self: BitwiseCopyable { }
 public extension Size2n {
     @inlinable var width: Scalar { get{self.x} set{self.x = newValue} }
     @inlinable var height: Scalar { get{self.y} set{self.y = newValue} }
