@@ -509,6 +509,11 @@ extension RawGeometry.VertexView: RandomAccessCollection, MutableCollection, Ran
         }
     }
     
+    public mutating func swapAt(_ i: Int, _ j: Int) {
+        // Swap only the vertexIndicies value for performance
+        self.vertexIndicies.swapAt(i, j)
+    }
+    
     public subscript (index: Index) -> Element {
         nonmutating get {
             assert(self.indices.contains(index), "Index \(index) out of range \(self.indices)")
@@ -614,6 +619,17 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
         return Triangle(v1: v1, v2: v2, v3: v3, repairIfNeeded: false)
     }
     
+    @inlinable
+    public mutating func swapAt(_ i: Index, _ j: Index) {
+        let baseIndexI = i * 3
+        let baseIndexJ = j * 3
+        
+        self.vertices.swapAt(baseIndexI + 0, baseIndexJ + 0)
+        self.vertices.swapAt(baseIndexI + 1, baseIndexJ + 1)
+        self.vertices.swapAt(baseIndexI + 2, baseIndexJ + 2)
+    }
+    
+    @inlinable
     public subscript (index: Index) -> Element {
         get {
             assert(self.indices.contains(index), "Index \(index) out of range \(self.indices)")
