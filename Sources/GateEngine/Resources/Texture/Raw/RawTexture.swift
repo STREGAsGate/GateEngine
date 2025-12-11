@@ -18,12 +18,12 @@ public struct RawTexture: Sendable {
 public extension RawTexture {
     @inlinable
     nonmutating func color(at pixelCoordinate: Position2i) -> Color {
-        return self[index(for: pixelCoordinate)]
+        return self[index(at: pixelCoordinate)]
     }
     
     @inlinable
     mutating func setColor(_ color: Color, at pixelCoordinate: Position2i) {
-        self[index(for: pixelCoordinate)] = color
+        self[index(at: pixelCoordinate)] = color
     }
     
     @inlinable
@@ -48,6 +48,11 @@ public extension RawTexture {
     }
     
     @inlinable
+    func textureCoordinate(at index: Index) -> Position2f {
+        return self.textureCoordinate(at: self.pixelCoordinate(at: index))
+    }
+    
+    @inlinable
     func pixelCoordinate(at textureCoordinate: Position2f) -> Position2i {
         return Position2i(
             x: Int(Float(imageSize.width) * textureCoordinate.x),
@@ -56,30 +61,39 @@ public extension RawTexture {
     }
     
     @inlinable
-    func index(for pixelCoordinate: Position2i) -> Int {
+    func pixelCoordinate(at index: Index) -> Position2i {
+        return Position2i(
+            x: index % self.imageSize.width,
+            y: index / self.imageSize.width
+        )
+    }
+    
+    @inlinable
+    func index(at pixelCoordinate: Position2i) -> Index {
         return ((self.imageSize.width * pixelCoordinate.y) + pixelCoordinate.x)
     }
 }
 
 extension RawTexture: RandomAccessCollection, MutableCollection {
     public typealias Element = Color
+    public typealias Index = Int
     
     @inlinable
-    public var startIndex: Int {
+    public var startIndex: Index {
         nonmutating get {
             return 0
         }
     }
     
     @inlinable
-    public var endIndex: Int {
+    public var endIndex: Index {
         nonmutating get {
             return self.imageSize.width * self.imageSize.height
         }
     }
     
     @inlinable
-    public subscript(index: Int) -> Color {
+    public subscript(index: Index) -> Color {
         nonmutating get {
             return self.color(at: index)
         }
@@ -92,7 +106,7 @@ extension RawTexture: RandomAccessCollection, MutableCollection {
 internal extension RawTexture {
     @safe // <- Bounds is checked
     @inlinable
-    nonmutating func color(at index: Int) -> Color {
+    nonmutating func color(at index: Index) -> Color {
         let offset = index * 4
         precondition(self.imageData.indices.contains(offset), "Index out of range.")
         return self.imageData.withUnsafeBytes { data in
@@ -103,7 +117,7 @@ internal extension RawTexture {
     
     @safe // <- Bounds is checked
     @inlinable
-    mutating func setColor(_ color: Color, at index: Int) {
+    mutating func setColor(_ color: Color, at index: Index) {
         let offset = index * 4
         precondition(self.imageData.indices.contains(offset), "Index out of range.")
         self.imageData.withUnsafeMutableBytes { data in
