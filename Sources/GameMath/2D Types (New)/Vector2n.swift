@@ -337,6 +337,38 @@ extension Vector2n where Scalar: Hashable {
     }
 }
 
+public extension Vector2n where Scalar: Comparable {
+    @inlinable
+    nonmutating func clamped(from lowerBound: Self, to upperBound: Self) -> Self {
+        var x = self.x
+        if x < lowerBound.x { x = lowerBound.x }
+        if x > upperBound.x { x = upperBound.x }
+        
+        var y = self.y
+        if y < lowerBound.y { y = lowerBound.y }
+        if y > upperBound.y { y = upperBound.y }
+
+        return Self(x: x, y: y)
+    }
+    
+    @inlinable
+    mutating func clamp(from lowerBound: Self, to upperBound: Self) {
+        self = self.clamped(from: lowerBound, to: upperBound)
+    }
+}
+
+public extension Vector2n {
+    @inlinable
+    nonmutating func dot<V: Vector2n>(_ vector: V) -> Scalar where V.Scalar == Scalar {
+        return (x * vector.x) + (y * vector.y)
+    }
+    
+    @inlinable
+    nonmutating func cross<V: Vector2n>(_ vector: V) -> Scalar where V.Scalar == Scalar {
+        return (x * vector.y) - (y * vector.x)
+    }
+}
+
 extension Vector2n where Scalar: BinaryCodable {
     public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {
         try self.x.encode(into: &data, version: version)

@@ -106,16 +106,16 @@ public struct Material {
             )
             if Game.shared.renderer.api.origin == .bottomLeft {
                 self.offset = Position2(
-                    (Float(subRect.position.x) + xRoundingOffset) / Float(texture.size.width),
-                    (Float(subRect.position.y) - yRoundingOffset) / Float(texture.size.height)
+                    (Float(subRect.origin.x) + xRoundingOffset) / Float(texture.size.width),
+                    (Float(subRect.origin.y) - yRoundingOffset) / Float(texture.size.height)
                 )
                 if texture.isRenderTarget {
                     self.scale.y *= -1
                 }
             } else {
                 self.offset = Position2(
-                    (Float(subRect.position.x) + xRoundingOffset) / Float(texture.size.width),
-                    (Float(subRect.position.y) + yRoundingOffset) / Float(texture.size.height)
+                    (Float(subRect.origin.x) + xRoundingOffset) / Float(texture.size.width),
+                    (Float(subRect.origin.y) + yRoundingOffset) / Float(texture.size.height)
                 )
             }
         }
