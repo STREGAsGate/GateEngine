@@ -11,7 +11,8 @@ import GameMath
 public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
     public var vertices: VertexView
  
-    private func triangle(at index: Index) -> Element {
+    @usableFromInline
+    internal func triangle(at index: Index) -> Element {
         assert(self.indices.contains(index), "Index \(index) out of range \(self.indices)")
         let index = index * 3
         return Triangle(
@@ -22,7 +23,8 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         )
     }
     
-    private mutating func setTriangle(_ triangle: Triangle, at index: Index) {
+    @usableFromInline
+    internal mutating func setTriangle(_ triangle: Triangle, at index: Index) {
         assert(self.indices.contains(index), "Index \(index) out of range \(self.indices)")
         let index = index * 3
         self.vertices.setVertex(triangle.v1, at: index + 0)
@@ -235,6 +237,7 @@ extension RawGeometry {
         get {Array(vertices.colors)}
         set {vertices.colors = Deque(newValue)}
     }
+    @usableFromInline
     var vertexIndicies: [UInt16] {
         get {Array(vertices.vertexIndicies)}
         set {vertices.vertexIndicies = Deque(newValue)}
@@ -246,21 +249,21 @@ extension RawGeometry {
         internal var positions: Deque<Float>
         internal var uvSets: [Deque<Float>]
         internal var uvSet1: Deque<Float> {
-            get {
+            nonmutating get {
                 assert(self.uvSets.indices.contains(0), "Index \(0) out of range \(self.uvSets.indices)")
                 return uvSets[0]
             }
-            set {
+            mutating set {
                 assert(self.uvSets.indices.contains(0), "Index \(0) out of range \(self.uvSets.indices)")
                 uvSets[0] = newValue
             }
         }
         internal var uvSet2: Deque<Float> {
-            get {
+            nonmutating get {
                 assert(self.uvSets.indices.contains(1), "Index \(1) out of range \(self.uvSets.indices)")
                 return uvSets[1]
             }
-            set {
+            mutating set {
                 assert(self.uvSets.indices.contains(1), "Index \(1) out of range \(self.uvSets.indices)")
                 uvSets[1] = newValue
             }
@@ -270,12 +273,12 @@ extension RawGeometry {
         internal var colors: Deque<Float>
         internal var vertexIndicies: Deque<UInt16>
 
-        func uvSet(_ index: Int) -> Deque<Float>? {
+        nonmutating func uvSet(_ index: Int) -> Deque<Float>? {
             guard index < uvSets.count else { return nil }
             return uvSets[index]
         }
         
-        public func vertex(at i: Int) -> Vertex {
+        nonmutating public func vertex(at i: Int) -> Vertex {
             assert(self.indices.contains(i), "Index \(i) out of range \(self.indices)")
             let index = Int(self.vertexIndicies[i])
             let start3 = index * 3
@@ -292,7 +295,7 @@ extension RawGeometry {
             )
         }
         
-        public mutating func setVertex(_ vertex: Vertex, at i: Int) {
+        mutating public func setVertex(_ vertex: Vertex, at i: Int) {
             if self.vertexIndicies.count(where: {$0 == self.vertexIndicies[i]}) == 1 {
                 assert(self.indices.contains(i), "Index \(i) out of range \(self.indices)")
                 let index = Int(self.vertexIndicies[i])
@@ -507,7 +510,7 @@ extension RawGeometry.VertexView: RandomAccessCollection, MutableCollection, Ran
     }
     
     public subscript (index: Index) -> Element {
-        get {
+        nonmutating get {
             assert(self.indices.contains(index), "Index \(index) out of range \(self.indices)")
             return self.vertex(at: index)
         }
@@ -568,35 +571,42 @@ extension RawGeometry.VertexView: ExpressibleByArrayLiteral {
     }
 }
 
+public extension RawGeometry {
+    mutating func transparencySort(diffuseTexture: RawTexture) {
+        let boundingBox = AxisAlignedBoundingBox3D(self.vertices.map({$0.position}))
+        // Sort triangles farthest away from center
+        self.sort(by: {$0.center.distance(from: boundingBox.position) > $1.center.distance(from: boundingBox.position)})
+        // Sort triangles farthest from center on y axis
+        self.sort(by: {abs($0.center.y.distance(to: boundingBox.center.y)) < abs($1.center.y.distance(to: boundingBox.center.y))})
+    }
+}
+
 extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceableCollection {
     public typealias Element = Triangle
     public typealias Index = Int
     
+    @inlinable
     public var startIndex: Index {
         return 0
     }
     
+    @inlinable
     public var endIndex: Index {
         return self.vertices.count / 3
     }
-
-    public func index(before i: Index) -> Index {
-        return i - 1
-    }
     
-    public func index(after i: Index) -> Index {
-        return i + 1
-    }
-    
-    public mutating func insert(_ triangle: Element, at i: Int) {
+    @inlinable
+    public mutating func insert(_ triangle: Element, at i: Index) {
         let index = i * 3
+        // inserting the verticies backwards
         self.vertices.insert(triangle.v3, at: index)
         self.vertices.insert(triangle.v2, at: index)
         self.vertices.insert(triangle.v1, at: index)
     }
     
+    @inlinable
     @discardableResult
-    public mutating func remove(at i: Int) -> Element {
+    public mutating func remove(at i: Index) -> Element {
         let index = i * 3
         let v1 = self.vertices.remove(at: index)
         let v2 = self.vertices.remove(at: index)
@@ -615,6 +625,7 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
         }
     }
     
+    @inlinable
     public mutating func replaceSubrange<C>(_ subrange: Range<Index>, with newElements: C) where C : Collection, Element == C.Element {
         for indices in zip(subrange, newElements.indices) {
             assert(self.indices.contains(indices.0), "Index \(indices.0) out of range \(self.indices)")
@@ -622,6 +633,7 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
         }
     }
     
+    @inlinable
     public mutating func reserveCapacity(_ n: Int) {
         self.vertices.reserveCapacity(n * 3)
     }
