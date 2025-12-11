@@ -10,7 +10,7 @@ import GameMath
 /// An element array object formatted as triangle primitives
 public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
     public var vertices: VertexView
- 
+    
     @usableFromInline
     internal func triangle(at index: Index) -> Element {
         assert(self.indices.contains(index), "Index \(index) out of range \(self.indices)")
@@ -31,7 +31,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         self.vertices.setVertex(triangle.v2, at: index + 1)
         self.vertices.setVertex(triangle.v3, at: index + 2)
     }
-
+    
     public func flipped() -> RawGeometry {
         var copy = self
         for index in self.indices {
@@ -53,7 +53,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         copy.optimize()
         return copy
     }
-
+    
     /// Creates a new `Geometry` from element array values.
     public init(
         positions: [Float],
@@ -84,7 +84,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         /// Checks the result of the provided comparator. If true, the vertices will be folded into a single vertex. The vertex kept is always lhs.
         case usingComparator(_ comparator: (_ lhs: Vertex, _ rhs: Vertex) -> Bool)
     }
-
+    
     /// Create `Geometry` from counter-clockwise wound `Triangles` and optionanly attempts to optimize the arrays by distance.
     /// Optimization is extremely slow and may result in loss of data. It should be used to pre-optimize assets and should not be used at runtime.
     public init(triangles: [Triangle], optimization: Optimization = .dontOptimize) {
@@ -99,7 +99,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         }
         
         var inVertices = triangles.vertices
-
+        
         var optimizedIndicies: [UInt16]
         switch optimization {
         case .dontOptimize:
@@ -154,7 +154,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
                 uvSet2.append(contentsOf: vertex.uv2.valuesArray())
                 self.tangents.append(contentsOf: vertex.tangent.valuesArray())
                 self.colors.append(contentsOf: vertex.color.valuesArray())
-
+                
                 self.vertexIndicies.append(UInt16(nextIndex))
                 // Increment the next real indicies index
                 nextIndex += 1
@@ -193,7 +193,7 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         }
         self.uvSets = [uvSet1, uvSet2]
     }
-
+    
     /// Creates a new `Geometry` by merging multiple geometry. This is usful for loading files that store geometry speretly base don material if you intend to only use a single material for them all.
     public init(byCombining geometries: [RawGeometry], withOptimization optimization: Optimization = .dontOptimize) {
         self.init(triangles: geometries.reduce(into: []) {$0.append(contentsOf: $1)}, optimization: optimization)
@@ -272,7 +272,7 @@ extension RawGeometry {
         internal var tangents: Deque<Float>
         internal var colors: Deque<Float>
         internal var vertexIndicies: Deque<UInt16>
-
+        
         nonmutating func uvSet(_ index: Int) -> Deque<Float>? {
             guard index < uvSets.count else { return nil }
             return uvSets[index]
@@ -427,7 +427,7 @@ extension RawGeometry.VertexView: RandomAccessCollection, MutableCollection, Ran
     public var endIndex: Index {
         return self.vertexIndicies.endIndex
     }
-
+    
     public func index(before i: Index) -> Index {
         return self.vertexIndicies.index(before: i)
     }
@@ -507,6 +507,11 @@ extension RawGeometry.VertexView: RandomAccessCollection, MutableCollection, Ran
             self.colors.append(vertex.color.blue)
             self.colors.append(vertex.color.alpha)
         }
+    }
+    
+    public mutating func swapAt(_ i: Int, _ j: Int) {
+        // Swap only the vertexIndicies value for performance
+        self.vertexIndicies.swapAt(i, j)
     }
     
     public subscript (index: Index) -> Element {
@@ -614,6 +619,17 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
         return Triangle(v1: v1, v2: v2, v3: v3, repairIfNeeded: false)
     }
     
+    @inlinable
+    public mutating func swapAt(_ i: Index, _ j: Index) {
+        let baseIndexI = i * 3
+        let baseIndexJ = j * 3
+        
+        self.vertices.swapAt(baseIndexI + 0, baseIndexJ + 0)
+        self.vertices.swapAt(baseIndexI + 1, baseIndexJ + 1)
+        self.vertices.swapAt(baseIndexI + 2, baseIndexJ + 2)
+    }
+    
+    @inlinable
     public subscript (index: Index) -> Element {
         get {
             assert(self.indices.contains(index), "Index \(index) out of range \(self.indices)")
