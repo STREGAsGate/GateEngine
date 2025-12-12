@@ -127,7 +127,7 @@ public struct Triangle: Codable, Equatable, Hashable {
     }
 }
 
-extension Array where Element == Triangle {
+extension Collection where Element == Triangle {
     /// A counter-clockwise wound vertex array from the triangles
     public var vertices: [Vertex] {
         var vertices: [Vertex] = []

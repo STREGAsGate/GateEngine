@@ -61,7 +61,7 @@ public final class WavefrontOBJImporter: GeometryImporter {
             var uvs: [TextureCoordinate] = []
             var normals: [Direction3] = []
             
-            var triangles: [Triangle] = []
+            var rawGeometry: RawGeometry = []
             
             for line in lines[index...] {
                 // If we reach the next object, exit loop
@@ -149,14 +149,14 @@ public final class WavefrontOBJImporter: GeometryImporter {
                             throw GateEngineError.failedToDecode("File malformed at face: \(string)")
                         }
                     }
-                    triangles.append(contentsOf: try rawTriangleConvert(line))
+                    rawGeometry.append(contentsOf: try rawTriangleConvert(line))
                 }
             }
-            guard triangles.isEmpty == false else {
+            guard rawGeometry.isEmpty == false else {
                 throw GateEngineError.failedToDecode("No triangles to create the geometry with.")
             }
             
-            return RawGeometry(triangles: triangles)
+            return rawGeometry
         }catch{
             throw GateEngineError(error)
         }

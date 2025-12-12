@@ -40,17 +40,20 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         return copy
     }
     
-    public mutating func optimize() {
+    /// Removes unused vertex data without changing any vertex ordering
+    public mutating func clean() {
         var newVertices: VertexView = VertexView()
+        newVertices.reserveCapacity(self.vertices.count)
         for vertex in self.vertices {
-            newVertices.insert(vertex, at: newVertices.endIndex, sacrificingPerformanceToOptimize: true)
+            newVertices.optimizedInsert(vertex, at: newVertices.endIndex)
         }
         self.vertices = newVertices
     }
     
-    public func optimized() -> RawGeometry {
+    /// Returnes a new collection with removed unused vertex data
+    public func cleaned() -> RawGeometry {
         var copy = self
-        copy.optimize()
+        copy.clean()
         return copy
     }
     
@@ -74,9 +77,6 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
     }
     
     public enum Optimization {
-        /// Keeps every vertex as is, including duplicates.
-        /// This option is required for skins as the indices are pre computed
-        case dontOptimize
         /// Compares each vertex using equality. If equal,  they are considered the same and will be folded into a single vertex.
         case byEquality
         /// Compares the vertex components. If the difference between components is within `threshold` they are considered the same and will be folded into a single vertex.
@@ -85,26 +85,25 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         case usingComparator(_ comparator: (_ lhs: Vertex, _ rhs: Vertex) -> Bool)
     }
     
+    public init(_ elements: some Collection<Triangle>) {
+        self.init()
+        self.append(contentsOf: elements)
+    }
+    
+    @_transparent
+    public init(triangles: [Triangle]) {
+        self.init(triangles)
+    }
+    
     /// Create `Geometry` from counter-clockwise wound `Triangles` and optionanly attempts to optimize the arrays by distance.
     /// Optimization is extremely slow and may result in loss of data. It should be used to pre-optimize assets and should not be used at runtime.
-    public init(triangles: [Triangle], optimization: Optimization = .dontOptimize) {
+    public init(triangles: [Triangle], optimizing optimization: Optimization) {
         self.init()
-        self.reserveCapacity(triangles.count)
-        
-        if case .dontOptimize = optimization {
-            for triangle in triangles {
-                self.append(triangle)
-            }
-            return
-        }
-        
+
         var inVertices = triangles.vertices
         
         var optimizedIndicies: [UInt16]
         switch optimization {
-        case .dontOptimize:
-            assert(inVertices.count < UInt16.max, "Exceeded the maximum number of indices (\(inVertices.count)\\\(UInt16.max)) for a single geometry. This geometry needs to be spilt up.")
-            optimizedIndicies = Array(0 ..< UInt16(inVertices.count))
         case .byEquality:
             optimizedIndicies = Array(repeating: 0, count: inVertices.count)
             for index in 0 ..< inVertices.count {
@@ -146,60 +145,54 @@ public struct RawGeometry: Codable, Sendable, Equatable, Hashable {
         
         // The next real indices index
         var nextIndex = 0
-        if case .dontOptimize = optimization {
-            for vertex in inVertices {
-                self.positions.append(contentsOf: vertex.position.valuesArray())
-                self.normals.append(contentsOf: vertex.normal.valuesArray())
-                uvSet1.append(contentsOf: vertex.uv1.valuesArray())
-                uvSet2.append(contentsOf: vertex.uv2.valuesArray())
-                self.tangents.append(contentsOf: vertex.tangent.valuesArray())
-                self.colors.append(contentsOf: vertex.color.valuesArray())
-                
-                self.vertexIndicies.append(UInt16(nextIndex))
-                // Increment the next real indicies index
-                nextIndex += 1
-            }
-        }else{
-            // Store the optimized vertex index using the actual indicies index
-            // so we can look up the real index for repeated verticies
-            var indicesMap: [UInt16:UInt16] = [:]
-            indicesMap.reserveCapacity(inVertices.count)
-            for vertexIndexInt in inVertices.indices {
-                // Obtain the optimized vertexIndex for this vertex
-                let vertexIndex: UInt16 = optimizedIndicies[vertexIndexInt]
-                
-                // Check our map to see if this vertex was already added
-                if let index = indicesMap[vertexIndex] {
-                    // Add the repeated index to the indices and continue to the next
-                    self.vertexIndicies.append(index)
-                    continue
-                }
-                
-                let vertex = inVertices[vertexIndexInt]
-                self.positions.append(contentsOf: vertex.position.valuesArray())
-                self.normals.append(contentsOf: vertex.normal.valuesArray())
-                uvSet1.append(contentsOf: vertex.uv1.valuesArray())
-                uvSet2.append(contentsOf: vertex.uv2.valuesArray())
-                self.tangents.append(contentsOf: vertex.tangent.valuesArray())
-                self.colors.append(contentsOf: vertex.color.valuesArray())
-                
-                let index = UInt16(nextIndex)
+        
+        // Store the optimized vertex index using the actual indicies index
+        // so we can look up the real index for repeated verticies
+        var indicesMap: [UInt16:UInt16] = [:]
+        indicesMap.reserveCapacity(inVertices.count)
+        for vertexIndexInt in inVertices.indices {
+            // Obtain the optimized vertexIndex for this vertex
+            let vertexIndex: UInt16 = optimizedIndicies[vertexIndexInt]
+            
+            // Check our map to see if this vertex was already added
+            if let index = indicesMap[vertexIndex] {
+                // Add the repeated index to the indices and continue to the next
                 self.vertexIndicies.append(index)
-                // Update the map
-                indicesMap[vertexIndex] = index
-                // Increment the next real indicies index
-                nextIndex += 1
+                continue
             }
+            
+            let vertex = inVertices[vertexIndexInt]
+            self.positions.append(contentsOf: vertex.position.valuesArray())
+            self.normals.append(contentsOf: vertex.normal.valuesArray())
+            uvSet1.append(contentsOf: vertex.uv1.valuesArray())
+            uvSet2.append(contentsOf: vertex.uv2.valuesArray())
+            self.tangents.append(contentsOf: vertex.tangent.valuesArray())
+            self.colors.append(contentsOf: vertex.color.valuesArray())
+            
+            let index = UInt16(nextIndex)
+            self.vertexIndicies.append(index)
+            // Update the map
+            indicesMap[vertexIndex] = index
+            // Increment the next real indicies index
+            nextIndex += 1
         }
         self.uvSets = [uvSet1, uvSet2]
     }
     
     /// Creates a new `Geometry` by merging multiple geometry. This is usful for loading files that store geometry speretly base don material if you intend to only use a single material for them all.
-    public init(byCombining geometries: [RawGeometry], withOptimization optimization: Optimization = .dontOptimize) {
-        self.init(triangles: geometries.reduce(into: []) {$0.append(contentsOf: $1)}, optimization: optimization)
+    public init(combining geometries: [RawGeometry]) {
+        self.init()
+        for geometry in geometries {
+            self.append(contentsOf: geometry)
+        }
     }
     
-    public init(verticies: VertexView) {
+    /// Creates a new `Geometry` by merging multiple geometry. This is usful for loading files that store geometry speretly base don material if you intend to only use a single material for them all.
+    public init(combining geometries: [RawGeometry], optimizing optimization: Optimization) {
+        self.init(triangles: geometries.reduce(into: []) {$0.append(contentsOf: $1)}, optimizing: optimization)
+    }
+    
+    public init(_ verticies: VertexView) {
         self.vertices = verticies
     }
     
@@ -421,19 +414,14 @@ extension RawGeometry.VertexView: RandomAccessCollection, MutableCollection, Ran
     public typealias Index = Int
     
     public var startIndex: Index {
-        return self.vertexIndicies.startIndex
+        return 0
     }
     
     public var endIndex: Index {
-        return self.vertexIndicies.endIndex
-    }
-    
-    public func index(before i: Index) -> Index {
-        return self.vertexIndicies.index(before: i)
-    }
-    
-    public func index(after i: Index) -> Index {
-        return self.vertexIndicies.index(after: i)
+        if self.vertexIndicies.isEmpty {
+            return startIndex
+        }
+        return self.vertexIndicies.count
     }
     
     @discardableResult
@@ -448,6 +436,13 @@ extension RawGeometry.VertexView: RandomAccessCollection, MutableCollection, Ran
             let start3 = Int(index) * 3
             let start2 = Int(index) * 2
             let start4 = Int(index) * 4
+
+            // Decrement every index above the removed index
+            for vIndex in self.vertexIndicies.indices {
+                if self.vertexIndicies[vIndex] > index {
+                    self.vertexIndicies[vIndex] -= 1
+                }
+            }
             
             self.positions.removeSubrange(start3 ..< start3 + 3)
             self.normals.removeSubrange(start3 ..< start3 + 3)
@@ -455,20 +450,14 @@ extension RawGeometry.VertexView: RandomAccessCollection, MutableCollection, Ran
             self.uvSet1.removeSubrange(start2 ..< start2 + 2)
             self.uvSet2.removeSubrange(start2 ..< start2 + 2)
             self.colors.removeSubrange(start4 ..< start4 + 4)
+
             self.vertexIndicies.remove(at: i)
-            
-            // Decrement every index above the removed index
-            for vIndex in self.vertexIndicies.indices {
-                if self.vertexIndicies[vIndex] > index {
-                    self.vertexIndicies[vIndex] -= 1
-                }
-            }
         }
         return vertex
     }
     
-    public mutating func insert(_ vertex: Vertex, at i: Int, sacrificingPerformanceToOptimize optimize: Bool = false) {
-        if optimize, let existing = self.firstIndex(of: vertex) {
+    public mutating func optimizedInsert(_ vertex: Vertex, at i: Int) {
+        if let existing = self.firstIndex(of: vertex) {
             if i == self.endIndex {
                 self.vertexIndicies.append(self.vertexIndicies[existing])
             }else{
@@ -476,39 +465,43 @@ extension RawGeometry.VertexView: RandomAccessCollection, MutableCollection, Ran
                 self.vertexIndicies.insert(self.vertexIndicies[existing], at: i)
             }
         }else{
-            let newIndex = UInt16(self.positions.count / 3)
-            if i == self.endIndex {
-                self.vertexIndicies.append(newIndex)
-            }else{
-                assert(self.indices.contains(i), "Index \(i) out of range \(self.indices)")
-                self.vertexIndicies.insert(newIndex, at: i)
-            }
-            
-            self.positions.append(vertex.position.x)
-            self.positions.append(vertex.position.y)
-            self.positions.append(vertex.position.z)
-            
-            self.normals.append(vertex.normal.x)
-            self.normals.append(vertex.normal.y)
-            self.normals.append(vertex.normal.z)
-            
-            self.tangents.append(vertex.tangent.x)
-            self.tangents.append(vertex.tangent.y)
-            self.tangents.append(vertex.tangent.z)
-            
-            self.uvSets[0].append(vertex.uv1.x)
-            self.uvSets[0].append(vertex.uv1.y)
-            
-            self.uvSets[1].append(vertex.uv2.x)
-            self.uvSets[1].append(vertex.uv2.y)
-            
-            self.colors.append(vertex.color.red)
-            self.colors.append(vertex.color.green)
-            self.colors.append(vertex.color.blue)
-            self.colors.append(vertex.color.alpha)
+            self.insert(vertex, at: i)
         }
     }
     
+    public mutating func insert(_ vertex: Vertex, at i: Int) {
+        let newVertexIndex = UInt16(self.positions.count / 3)
+        if i >= self.endIndex {
+            self.vertexIndicies.append(newVertexIndex)
+        }else{
+            assert(self.indices.contains(i), "Index \(i) out of range \(self.indices)")
+            self.vertexIndicies.insert(newVertexIndex, at: i)
+        }
+        
+        self.positions.append(vertex.position.x)
+        self.positions.append(vertex.position.y)
+        self.positions.append(vertex.position.z)
+        
+        self.normals.append(vertex.normal.x)
+        self.normals.append(vertex.normal.y)
+        self.normals.append(vertex.normal.z)
+        
+        self.tangents.append(vertex.tangent.x)
+        self.tangents.append(vertex.tangent.y)
+        self.tangents.append(vertex.tangent.z)
+        
+        self.uvSets[0].append(vertex.uv1.x)
+        self.uvSets[0].append(vertex.uv1.y)
+        
+        self.uvSets[1].append(vertex.uv2.x)
+        self.uvSets[1].append(vertex.uv2.y)
+        
+        self.colors.append(vertex.color.red)
+        self.colors.append(vertex.color.green)
+        self.colors.append(vertex.color.blue)
+        self.colors.append(vertex.color.alpha)
+    }
+
     public mutating func swapAt(_ i: Int, _ j: Int) {
         // Swap only the vertexIndicies value for performance
         self.vertexIndicies.swapAt(i, j)
@@ -576,13 +569,95 @@ extension RawGeometry.VertexView: ExpressibleByArrayLiteral {
     }
 }
 
+
+extension RawGeometry.VertexView {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        guard lhs.count == rhs.count else {return false}
+        for index in lhs.indices {
+            if lhs[index] != rhs[index] {
+                return false
+            }
+        }
+        return true
+    }
+}
+
 public extension RawGeometry {
-    mutating func transparencySort(diffuseTexture: RawTexture) {
+    mutating func transparencySort(diffuseTexture: RawTexture) async {
+        guard diffuseTexture.imageSize.width > 0, diffuseTexture.imageSize.height > 0 else { return }
+        
+        let transparentTriangleIndicies = await withTaskGroup { group in
+            let nonmutatingSelf = self
+            
+            let pixelSize = diffuseTexture.pixelSize
+
+            let transparentPixels = diffuseTexture.indices.compactMap({
+                if diffuseTexture.isAlphaChannelSubMax(at: $0) {
+                    return diffuseTexture.textureCoordinate(for: $0)
+                }
+                return nil
+            })
+            
+            for triangleIndex in nonmutatingSelf.indices {
+                group.addTask { () -> Int? in
+                    let triangleUVs = Triangle2f(
+                        p1: .init(oldVector: nonmutatingSelf.vertices[(triangleIndex * 3) + 0].uv1),
+                        p2: .init(oldVector: nonmutatingSelf.vertices[(triangleIndex * 3) + 1].uv1),
+                        p3: .init(oldVector: nonmutatingSelf.vertices[(triangleIndex * 3) + 2].uv1)
+                    )
+                    
+                    let minX = Swift.min(triangleUVs.p1.x, triangleUVs.p2.x, triangleUVs.p3.x) - pixelSize.width
+                    let minY = Swift.min(triangleUVs.p1.y, triangleUVs.p2.y, triangleUVs.p3.y) - pixelSize.height
+                    let maxX = Swift.max(triangleUVs.p1.x, triangleUVs.p2.x, triangleUVs.p3.x) + pixelSize.width
+                    let maxY = Swift.max(triangleUVs.p1.y, triangleUVs.p2.y, triangleUVs.p3.y) + pixelSize.height
+
+                    for pixelCenter in transparentPixels {
+                        if pixelCenter.x < minX || pixelCenter.y < minY {
+                            continue
+                        }
+                        if pixelCenter.x > maxX {
+                            if pixelCenter.y > maxY {
+                                return nil
+                            }
+                            continue
+                        }
+                        let pointNearPixel = triangleUVs.nearestSurfacePosition(to: pixelCenter)
+                        let pixel = Rect2f(size: pixelSize, center: pixelCenter)
+                        if pixel.contains(pointNearPixel) {
+                            return triangleIndex
+                        }
+                    }
+                    
+                    return nil
+                }
+            }
+            
+            var transparentTriangleIndicies: Array<Int> = []
+            for await triangleIndex in group {
+                if let triangleIndex {
+                    transparentTriangleIndicies.append(triangleIndex)
+                }
+            }
+
+            return transparentTriangleIndicies
+        }
+        
         let boundingBox = AxisAlignedBoundingBox3D(self.vertices.map({$0.position}))
+        
+        var transparentTriangles: RawGeometry = []
+        transparentTriangles.reserveCapacity(transparentTriangleIndicies.count)
+        
+        for index in transparentTriangleIndicies.sorted(by: {$0 > $1}) {
+            let removed = self.remove(at: index)
+            transparentTriangles.append(removed)
+        }
+        
         // Sort triangles farthest away from center
-        self.sort(by: {$0.center.distance(from: boundingBox.position) > $1.center.distance(from: boundingBox.position)})
+        transparentTriangles.sort(by: {$0.center.distance(from: boundingBox.position) > $1.center.distance(from: boundingBox.position)})
         // Sort triangles farthest from center on y axis
-        self.sort(by: {abs($0.center.y.distance(to: boundingBox.center.y)) < abs($1.center.y.distance(to: boundingBox.center.y))})
+        transparentTriangles.sort(by: {abs($0.center.y.distance(to: boundingBox.center.y)) < abs($1.center.y.distance(to: boundingBox.center.y))})
+
+        self.append(contentsOf: transparentTriangles)
     }
 }
 
@@ -597,6 +672,9 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
     
     @inlinable
     public var endIndex: Index {
+        if self.vertices.isEmpty {
+            return startIndex
+        }
         return self.vertices.count / 3
     }
     
@@ -607,6 +685,16 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
         self.vertices.insert(triangle.v3, at: index)
         self.vertices.insert(triangle.v2, at: index)
         self.vertices.insert(triangle.v1, at: index)
+    }
+    
+    /// Inserts the new element with minimal added data, at the expence of performance
+    @inlinable
+    public mutating func optimizedInsert(_ triangle: Element, at i: Index) {
+        let index = i * 3
+        // inserting the verticies backwards
+        self.vertices.optimizedInsert(triangle.v3, at: index)
+        self.vertices.optimizedInsert(triangle.v2, at: index)
+        self.vertices.optimizedInsert(triangle.v1, at: index)
     }
     
     @inlinable
@@ -624,9 +712,9 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
         let baseIndexI = i * 3
         let baseIndexJ = j * 3
         
-        self.vertices.swapAt(baseIndexI + 0, baseIndexJ + 0)
-        self.vertices.swapAt(baseIndexI + 1, baseIndexJ + 1)
         self.vertices.swapAt(baseIndexI + 2, baseIndexJ + 2)
+        self.vertices.swapAt(baseIndexI + 1, baseIndexJ + 1)
+        self.vertices.swapAt(baseIndexI + 0, baseIndexJ + 0)
     }
     
     @inlinable
@@ -655,11 +743,17 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
     }
 }
 
+extension RawGeometry {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.vertices == rhs.vertices
+    }
+}
+
 extension RawGeometry: ExpressibleByArrayLiteral {
     public typealias ArrayLiteralElement = Element
-    
+    @_transparent
     public init(arrayLiteral elements: Element...) {
-        self.init(triangles: elements)
+        self.init(elements)
     }
 }
 

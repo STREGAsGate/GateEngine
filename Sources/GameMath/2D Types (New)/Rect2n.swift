@@ -102,7 +102,18 @@ extension Rect2n {
 
 extension Rect2n where Scalar: Comparable {
     /// `true` if `rhs` is inside `self`
-    public func contains(_ rhs: Position2n<Scalar>, withThreshold threshold: Scalar = 0) -> Bool {
+    public func contains(_ rhs: Position2n<Scalar>) -> Bool {
+        let min = self.min
+        guard rhs.x >= min.x && rhs.y >= min.y else {return false}
+        
+        let max = self.max
+        guard rhs.x < max.x && rhs.y < max.y else {return false}
+        
+        return true
+    }
+    
+    /// `true` if `rhs` is inside `self`
+    public func contains(_ rhs: Position2n<Scalar>, withThreshold threshold: Scalar) -> Bool {
         let min = self.min - threshold
         guard rhs.x >= min.x && rhs.y >= min.y else {return false}
         

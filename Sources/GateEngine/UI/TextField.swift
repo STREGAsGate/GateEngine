@@ -361,7 +361,7 @@ public final class TextField: View {
         processWord()
 
         let height = heightMax - heightMin
-        return (RawGeometry(triangles: triangles), Size2(width: width, height: height))
+        return (RawGeometry(triangles), Size2(width: width, height: height))
     }
 }
 

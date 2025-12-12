@@ -113,7 +113,7 @@ public final class TileMapSystem: System {
             if triangles.isEmpty {
                 layer.geometry.rawGeometry = nil
             }else{
-                layer.geometry.rawGeometry = RawGeometry(triangles: triangles)
+                layer.geometry.rawGeometry = RawGeometry(triangles)
             }
         }
     }

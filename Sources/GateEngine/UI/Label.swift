@@ -196,8 +196,8 @@ public final class Label: View {
             case wordComponent
         }
 
-        var triangles: [Triangle] = []
-        triangles.reserveCapacity(string.count)
+        var rawGeometry: RawGeometry = []
+        rawGeometry.reserveCapacity(string.count * 2)
 
         var lineCount = 1
         var xPosition: Float = 0
@@ -214,7 +214,7 @@ public final class Label: View {
         }
 
         func processWord() {
-            triangles.append(contentsOf: currentWord)
+            rawGeometry.append(contentsOf: currentWord)
             currentWord.removeAll(keepingCapacity: true)
         }
 
@@ -365,7 +365,7 @@ public final class Label: View {
         processWord()
 
         let height = heightMax - heightMin
-        return (RawGeometry(triangles: triangles), Size2(width: width, height: height))
+        return (rawGeometry, Size2(width: width, height: height))
     }
 }
 

@@ -839,7 +839,7 @@ extension GLTransmissionFormat: GeometryImporter {
             if geometries.count == 1 {
                 return geometries[0]
             }
-            return RawGeometry(byCombining: geometries, withOptimization: .dontOptimize)
+            return RawGeometry(combining: geometries)
         }()
 
         if options.applyRootTransform, let nodeIndex = gltf.scenes[gltf.scene].nodes?.first {
@@ -861,7 +861,7 @@ extension GLTransmissionFormat: GeometryImporter {
                 applyNode(index)
                 transformedGeometries.append(geometryBase * transform)
             }
-            return RawGeometry(byCombining: transformedGeometries, withOptimization: .byEquality)
+            return RawGeometry(combining: transformedGeometries, optimizing: .byEquality)
         }else{
             return geometryBase
         }
@@ -1450,7 +1450,7 @@ extension GLTransmissionFormat: CollisionMeshImporter {
             throw GateEngineError.failedToDecode("Failed to decode geometry.")
         }
         
-        let geometryBase = RawGeometry(byCombining: geometries, withOptimization: .dontOptimize)
+        let geometryBase = RawGeometry(combining: geometries)
         
         if options.applyRootTransform, let nodeIndex = gltf.scenes[gltf.scene].nodes?.first {
             let transform = gltf.nodes[nodeIndex].transform.createMatrix()
@@ -1473,7 +1473,7 @@ extension GLTransmissionFormat: CollisionMeshImporter {
                 applyNode(index)
                 transformedGeometries.append(geometryBase * transform)
             }
-            let geometryBase = RawGeometry(byCombining: transformedGeometries, withOptimization: .byEquality)
+            let geometryBase = RawGeometry(combining: transformedGeometries, optimizing: .byEquality)
             let triangles = geometryBase.generateCollisionTriangles(using: options.collisionAttributes)
             return RawCollisionMesh(collisionTriangles: triangles) 
         }else{

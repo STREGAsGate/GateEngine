@@ -30,6 +30,7 @@ public struct Triangle2n<Scalar: Vector2n.ScalarType & FloatingPoint> {
 }
 
 public extension Triangle2n where Scalar: ExpressibleByFloatLiteral {
+    @inlinable
     var center: Position2n<Scalar> {
         return Position2n<Scalar>(x: (p1.x + p2.x + p3.x) / 3.0, y: (p1.y + p2.y + p3.y) / 3.0)
     }
@@ -63,6 +64,7 @@ public extension Triangle2n {
      - parameter position: A point in space to use as an reference
      - returns: The point on the triangle's surface that is nearest to `p`
      */
+    @inlinable
     func nearestSurfacePosition(to position: Position2n<Scalar>) -> Position2n<Scalar> where Scalar: ExpressibleByFloatLiteral {
         let a = self.p1
         let b = self.p2

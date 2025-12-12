@@ -70,6 +70,7 @@ public extension RawTexture {
 }
 
 public extension RawTexture {
+    @inlinable
     func isAlphaChannelSubMax(at index: Int) -> Bool {
         return imageData[(index * 4) + 3] < .max
     }

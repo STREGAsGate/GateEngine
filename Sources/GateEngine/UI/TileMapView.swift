@@ -310,8 +310,8 @@ extension TileMapView {
             
             layers[layerIndex].needsRebuild = false
             
-            var triangles: [Triangle] = []
-            triangles.reserveCapacity(Int(layer.size.width * layer.size.height) * 2)
+            var rawGeometry: RawGeometry = []
+            rawGeometry.reserveCapacity(Int(layer.size.width * layer.size.height) * 2)
             
             let tileSize = tileSet.tileSize.vector2
             
@@ -369,14 +369,14 @@ extension TileMapView {
                         swap(&v1.uv1.v, &v3.uv1.v)
                     }
                     
-                    triangles.append(Triangle(v1: v1, v2: v3, v3: v2, repairIfNeeded: false))
-                    triangles.append(Triangle(v1: v3, v2: v1, v3: v4, repairIfNeeded: false))
+                    rawGeometry.append(Triangle(v1: v1, v2: v3, v3: v2, repairIfNeeded: false))
+                    rawGeometry.append(Triangle(v1: v3, v2: v1, v3: v4, repairIfNeeded: false))
                 }
             }
-            if triangles.isEmpty {
+            if rawGeometry.isEmpty {
                 layer.geometry.rawGeometry = nil
             }else{
-                layer.geometry.rawGeometry = RawGeometry(triangles: triangles)
+                layer.geometry.rawGeometry = rawGeometry
             }
         }
     }

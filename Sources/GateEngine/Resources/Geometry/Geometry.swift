@@ -35,7 +35,7 @@ public extension Geometry {
             tangents: nil,
             colors: nil,
             indexes: indices
-        ).optimized()
+        ).cleaned()
         return Geometry(raw)
     }()
 
@@ -64,7 +64,7 @@ public extension Geometry {
             tangents: nil,
             colors: nil,
             indexes: indices
-        ).optimized()
+        ).cleaned()
         return Geometry(raw)
     }()
 }
