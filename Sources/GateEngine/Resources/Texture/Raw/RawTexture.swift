@@ -13,17 +13,25 @@ public struct RawTexture: Sendable {
         self.imageSize = imageSize
         self.imageData = imageData
     }
+    
+    public init(imageSize: Size2i) {
+        self.imageSize = imageSize
+        self.imageData = Data(repeating: 0, count: imageSize.width * imageSize.height * 4)
+        for alphaIndex in stride(from: 3, to: self.imageData.count, by: 4) {
+            self.imageData[alphaIndex] = .max
+        }
+    }
 }
 
 public extension RawTexture {
     @inlinable
     nonmutating func color(at pixelCoordinate: Position2i) -> Color {
-        return self[index(at: pixelCoordinate)]
+        return self[index(for: pixelCoordinate)]
     }
     
     @inlinable
     mutating func setColor(_ color: Color, at pixelCoordinate: Position2i) {
-        self[index(at: pixelCoordinate)] = color
+        self[index(for: pixelCoordinate)] = color
     }
     
     @inlinable
@@ -38,30 +46,66 @@ public extension RawTexture {
 }
 
 public extension RawTexture {
+    @inlinable
+    nonmutating func color(at textureCoordinate: Position2f) -> Color {
+        let pixelCoord = self.pixelCoordinate(for: textureCoordinate)
+        return self.color(at: pixelCoord)
+    }
+    
+    @inlinable
+    mutating func setColor(_ color: Color, at textureCoordinate: Position2f) {
+        let pixelCoord = self.pixelCoordinate(for: textureCoordinate)
+        self.setColor(color, at: pixelCoord)
+    }
+    
+    @inlinable
+    subscript(textureCoordinate: Position2f) -> Color {
+        nonmutating get {
+            return self.color(at: textureCoordinate)
+        }
+        mutating set {
+            self.setColor(newValue, at: textureCoordinate)
+        }
+    }
+}
+
+public extension RawTexture {
+    func isAlphaChannelSubMax(at index: Int) -> Bool {
+        return imageData[(index * 4) + 3] < .max
+    }
+}
+
+public extension RawTexture {
+    /// The UV space size of a single pixel
+    @inlinable
+    var pixelSize: Size2f {
+        return Size2f.one / Size2f(self.imageSize)
+    }
     /// The UV position for the pixel
     @inlinable
-    func textureCoordinate(at pixelCoordinate: Position2i) -> Position2f {
-        return Position2f(
-            x: Float(pixelCoordinate.x) / Float(imageSize.width),
-            y: Float(pixelCoordinate.y) / Float(imageSize.height)
-        )
+    func textureCoordinate(for pixelCoordinate: Position2i) -> Position2f {
+        let pixelSize = self.pixelSize
+        return (Position2f(pixelCoordinate) * pixelSize) + (pixelSize / 2)
     }
     
     @inlinable
-    func textureCoordinate(at index: Index) -> Position2f {
-        return self.textureCoordinate(at: self.pixelCoordinate(at: index))
+    func textureCoordinate(for index: Index) -> Position2f {
+        return self.textureCoordinate(for: self.pixelCoordinate(for: index))
     }
     
     @inlinable
-    func pixelCoordinate(at textureCoordinate: Position2f) -> Position2i {
-        return Position2i(
-            x: Int(Float(imageSize.width) * textureCoordinate.x),
-            y: Int(Float(imageSize.height) * textureCoordinate.y)
-        )
+    func index(for textureCoordinate: Position2f) -> Index {
+        return self.index(for: self.pixelCoordinate(for: textureCoordinate))
     }
     
     @inlinable
-    func pixelCoordinate(at index: Index) -> Position2i {
+    func pixelCoordinate(for textureCoordinate: Position2f) -> Position2i {
+        let pixelSize = self.pixelSize
+        return Position2i(textureCoordinate / pixelSize)
+    }
+    
+    @inlinable
+    func pixelCoordinate(for index: Index) -> Position2i {
         return Position2i(
             x: index % self.imageSize.width,
             y: index / self.imageSize.width
@@ -69,7 +113,7 @@ public extension RawTexture {
     }
     
     @inlinable
-    func index(at pixelCoordinate: Position2i) -> Index {
+    func index(for pixelCoordinate: Position2i) -> Index {
         return ((self.imageSize.width * pixelCoordinate.y) + pixelCoordinate.x)
     }
 }
