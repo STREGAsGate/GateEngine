@@ -63,7 +63,7 @@ public extension Size3n {
 }
 
 extension Size3n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
-extension Size3n: ExpressibleByIntegerLiteral where Scalar: FixedWidthInteger & _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
+extension Size3n: ExpressibleByIntegerLiteral where Scalar: _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
 extension Size3n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Size3n: Equatable where Scalar: Equatable { }
 extension Size3n: Hashable where Scalar: Hashable { }
@@ -85,9 +85,10 @@ extension Size3n: Codable where Scalar: Codable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.x, forKey: .x)
-        try container.encode(self.x, forKey: .y)
-        try container.encode(self.x, forKey: .z)
+        try container.encode(self.y, forKey: .y)
+        try container.encode(self.z, forKey: .z)
     }
 }
+extension Size3n: RandomAccessCollection, MutableCollection { }
 extension Size3n: BitwiseCopyable where Scalar: BitwiseCopyable { }
 extension Size3n: BinaryCodable where Self: BitwiseCopyable { }

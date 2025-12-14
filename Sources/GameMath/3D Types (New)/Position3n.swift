@@ -136,7 +136,7 @@ public extension Position3n where Scalar: FloatingPoint {
 }
 
 extension Position3n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
-extension Position3n: ExpressibleByIntegerLiteral where Scalar: FixedWidthInteger & _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
+extension Position3n: ExpressibleByIntegerLiteral where Scalar: _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
 extension Position3n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Position3n: Equatable where Scalar: Equatable { }
 extension Position3n: Hashable where Scalar: Hashable { }
@@ -158,9 +158,10 @@ extension Position3n: Codable where Scalar: Codable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.x, forKey: .x)
-        try container.encode(self.x, forKey: .y)
-        try container.encode(self.x, forKey: .z)
+        try container.encode(self.y, forKey: .y)
+        try container.encode(self.z, forKey: .z)
     }
 }
+extension Position3n: RandomAccessCollection, MutableCollection { }
 extension Position3n: BitwiseCopyable where Scalar: BitwiseCopyable { }
 extension Position3n: BinaryCodable where Self: BitwiseCopyable { }

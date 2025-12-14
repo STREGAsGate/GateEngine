@@ -124,6 +124,40 @@ public extension Vector3n where Scalar: FloatingPoint & _ExpressibleByBuiltinFlo
     }
 }
 
+public extension Vector3n {
+    typealias Element = Scalar
+    
+    var startIndex: Int {
+        nonmutating get {
+            return 0
+        }
+    }
+    
+    @inlinable
+    var endIndex: Int {
+        nonmutating get {
+            return 3
+        }
+    }
+    
+    @safe // <- Bounds checked with precondition
+    @inlinable
+    subscript (index: Int) -> Scalar {
+        nonmutating get {
+            precondition(index >= 0 && index < 3, "Index out of range.")
+            return withUnsafeBytes(of: self) { bytes in
+                return bytes.load(fromByteOffset: MemoryLayout<Scalar>.size * index, as: Scalar.self)
+            }
+        }
+        mutating set {
+            precondition(index >= 0 && index < 3, "Index out of range.")
+            withUnsafeMutableBytes(of: &self) { bytes in
+                bytes.storeBytes(of: newValue, toByteOffset: MemoryLayout<Scalar>.size * index, as: Scalar.self)
+            }
+        }
+    }
+}
+
 public extension Vector3n where Scalar: AdditiveArithmetic {
     @inlinable
     static func + (lhs: Self, rhs: some Vector3n<Scalar>) -> Self {

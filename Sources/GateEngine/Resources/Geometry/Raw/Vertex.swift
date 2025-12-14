@@ -91,9 +91,8 @@ public struct Vertex: Codable, Equatable, Hashable {
     public static func * (lhs: Self, rhs: Matrix4x4) -> Self {
         var copy = lhs
         copy.position = copy.position * rhs
-        let m3 = Matrix3x3(rhs)
-        copy.normal = copy.normal * m3
-        copy.tangent = copy.tangent * m3
+        copy.normal = copy.normal.rotated(by: rhs.rotation.conjugate)
+        copy.tangent = copy.tangent.rotated(by: rhs.rotation.conjugate)
         return copy
     }
 }
