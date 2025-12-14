@@ -248,7 +248,7 @@ extension Vector4 {
     public mutating func normalize() {
         if self != Self.zero {
             #if GameMathUseSIMD && canImport(simd)
-            self.simd = simd_fast_normalize(self.simd)
+            self.simd = simd_normalize(self.simd)
             #else
             let magnitude = self.magnitude
             let factor = 1 / magnitude

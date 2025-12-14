@@ -7,7 +7,7 @@
 
 /// Common opperations used on triangle types for surface calculations
 public protocol Triangle3nSurfaceMath {
-    typealias ScalarType = Vector3n.ScalarType & FloatingPoint
+    typealias ScalarType = Vector3n.ScalarType & FloatingPoint & ExpressibleByFloatLiteral
     associatedtype Scalar: ScalarType
     
     var p1: Position3n<Scalar> { get }
@@ -23,7 +23,7 @@ public extension Triangle3nSurfaceMath {
      - parameter position: A point in space to use as an reference
      - returns: The point on the triangle's surface that is nearest to `p`
      */
-    func nearestSurfacePosition(to position: Position3n<Scalar>) -> Position3n<Scalar> where Scalar: ExpressibleByFloatLiteral {
+    func nearestSurfacePosition(to position: Position3n<Scalar>) -> Position3n<Scalar> {
         let a = self.p1
         let b = self.p2
         let c = self.p3
@@ -97,7 +97,7 @@ public extension Triangle3nSurfaceMath {
     }
     
     @inlinable
-    func nearestEdge(to position: Position3n<Scalar>, winding: Winding = .default) -> Line3n<Scalar> where Scalar: ExpressibleByFloatLiteral {
+    func nearestEdge(to position: Position3n<Scalar>, winding: Winding = .default) -> Line3n<Scalar> {
         let edges = self.edges(winding: winding)
         
         var edgeIndicesWithDistance: [(distance: Scalar, index: Int)]
@@ -115,13 +115,13 @@ public extension Triangle3nSurfaceMath {
     
     /// A normal of the edge nearest to `position`. The normal faces away from the center of the triangle along the triangles plane and is perpendicular to the edge.
     @inlinable
-    func nearestPlanarEdgeNormal(to position: Position3n<Scalar>) -> Direction3n<Scalar> where Scalar: ExpressibleByFloatLiteral {
+    func nearestPlanarEdgeNormal(to position: Position3n<Scalar>) -> Direction3n<Scalar> {
         let edge = self.nearestEdge(to: position)
         return self.faceNormal.cross(edge.direction)
     }
     
     @inlinable
-    func contains(_ position: Position3n<Scalar>) -> Bool where Scalar: ExpressibleByFloatLiteral {
+    func contains(_ position: Position3n<Scalar>) -> Bool {
         let pa = self.p1
         let pb = self.p2
         let pc = self.p3
@@ -155,7 +155,7 @@ public extension Triangle3nSurfaceMath {
 }
 
 // MARK: Ray3nIntersectable
-public extension Triangle3nSurfaceMath where Scalar: Ray3nIntersectable.ScalarType, Scalar: ExpressibleByFloatLiteral {
+public extension Triangle3nSurfaceMath where Scalar: Ray3nIntersectable.ScalarType {
     func intersection(of ray: Ray3n<Scalar>) -> Position3n<Scalar>? {
         let e1: Position3n<Scalar> = p2 - p1
         let e2: Position3n<Scalar> = p3 - p1

@@ -131,8 +131,18 @@ public extension Vector3n where Scalar: AdditiveArithmetic {
     }
     
     @inlinable
+    static func += (lhs: inout Self, rhs: some Vector3n<Scalar>) {
+        lhs = lhs + rhs
+    }
+    
+    @inlinable
     static func - (lhs: Self, rhs: some Vector3n<Scalar>) -> Self {
         return Self(x: lhs.x - rhs.x, y: lhs.y - rhs.y, z: lhs.z - rhs.z)
+    }
+    
+    @inlinable
+    static func -= (lhs: inout Self, rhs: some Vector3n<Scalar>) {
+        lhs = lhs - rhs
     }
     
     @inlinable
@@ -174,6 +184,11 @@ public extension Vector3n where Scalar: Numeric {
     @inlinable
     static func * (lhs: Self, rhs: some Vector3n<Scalar>) -> Self {
         return Self(x: lhs.x * rhs.x, y: lhs.y * rhs.y, z: lhs.z * rhs.z)
+    }
+    
+    @inlinable
+    static func *= (lhs: inout Self, rhs: some Vector3n<Scalar>) {
+        lhs = lhs * rhs
     }
     
     @inlinable
@@ -234,7 +249,7 @@ public extension Vector3n where Scalar: FloatingPoint {
     }
     
     @inlinable
-    nonmutating func truncatingRemainder(dividingBy divisors: Self) -> Self {
+    nonmutating func truncatingRemainder(dividingBy divisors: some Vector3n<Scalar>) -> Self {
         return Self(
             x: self.x.truncatingRemainder(dividingBy: divisors.x),
             y: self.y.truncatingRemainder(dividingBy: divisors.y),
@@ -402,7 +417,7 @@ public extension Vector3n {
     }
 
     @inlinable
-    nonmutating func cross<V: Vector3n>(_ vector: V) -> Self where V.Scalar == Scalar {
+    nonmutating func cross<V: Vector3n>(_ vector: V) -> Self where V.Scalar == Scalar, Scalar: SignedNumeric {
         return Self(
             y * vector.z - z * vector.y,
             z * vector.x - x * vector.z,
@@ -413,7 +428,7 @@ public extension Vector3n {
 
 public extension Vector3n {
     @inlinable
-     var length: Scalar {
+    var length: Scalar {
         nonmutating get {
             return x + y + z
         }

@@ -17,6 +17,11 @@ public struct Ray3n<Scalar: Ray3nIntersectable.ScalarType> {
         self.origin = origin
         self.direction = direction
     }
+    
+    public init(from origin: Position3n<Scalar>, toward destination: Position3n<Scalar>) {
+        self.origin = origin
+        self.direction = Direction3n<Scalar>(from: origin, to: destination)
+    }
 }
 
 public protocol Ray3nIntersectable {

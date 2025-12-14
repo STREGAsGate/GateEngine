@@ -32,7 +32,7 @@ public struct Triangle2n<Scalar: Vector2n.ScalarType & FloatingPoint> {
 public extension Triangle2n where Scalar: ExpressibleByFloatLiteral {
     @inlinable
     var center: Position2n<Scalar> {
-        return Position2n<Scalar>(x: (p1.x + p2.x + p3.x) / 3.0, y: (p1.y + p2.y + p3.y) / 3.0)
+        return (p1 + p2 + p3) / 3.0
     }
 }
 
@@ -161,7 +161,7 @@ public extension Triangle2n where Scalar: ExpressibleByFloatLiteral {
         let barycentric = self.uncheckedBarycentric(from: cartesianPosition)
 
         // Check if the coordiante is within the triangle
-        if barycentric < 0.0 || barycentric >= 1.0 {
+        if barycentric.x < 0.0 || barycentric.y < 0.0 || barycentric.z < 0.0 || barycentric.x >= 1.0 || barycentric.y >= 1.0 || barycentric.z >= 1.0 {
             return nil
         }
         

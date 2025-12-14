@@ -93,7 +93,7 @@ public extension Vector3n where Scalar == Float16 {
     @inlinable @_transparent
     mutating func normalize() {
         guard self != .zero else { return }
-        self = unsafeBitCast(simd_fast_normalize(self.simd()), to: Self.self)
+        self = unsafeBitCast(simd_normalize(self.simd()), to: Self.self)
     }
     
     @inlinable @_transparent
@@ -192,7 +192,7 @@ public extension Vector3n where Scalar == Float32 {
     
     @inlinable @_transparent
     var length: Scalar {
-        return simd_length(self.simd())
+        return simd_reduce_add(self.simd())
     }
     
     @inlinable @_transparent
@@ -201,9 +201,14 @@ public extension Vector3n where Scalar == Float32 {
     }
     
     @inlinable @_transparent
+    var magnitude: Scalar {
+        return simd_length(self.simd())
+    }
+    
+    @inlinable @_transparent
     mutating func normalize() {
         guard self != .zero else { return }
-        self = unsafeBitCast(simd_fast_normalize(self.simd()), to: Self.self)
+        self = unsafeBitCast(simd_normalize(self.simd()), to: Self.self)
     }
     
     @inlinable @_transparent
@@ -224,8 +229,9 @@ public extension Vector3n where Scalar == Float32 {
     @inlinable
     func squareRoot() -> Self {
         #if canImport(Accelerate)
-        var buffer = unsafeBitCast(self, to: Vector3nAccelerateBuffer<Scalar>.self)
-        vForce.sqrt(buffer, result: &buffer)
+        let arg = unsafeBitCast(self, to: Vector3nAccelerateBuffer<Scalar>.self)
+        var buffer = arg
+        vForce.sqrt(arg, result: &buffer)
         return unsafeBitCast(buffer, to: Self.self)
         #else
         return unsafeBitCast(self.simd().squareRoot(), to: Self.self)
@@ -234,7 +240,7 @@ public extension Vector3n where Scalar == Float32 {
     
     #if canImport(Accelerate)
     @inlinable
-    func truncatingRemainder(dividingBy divisors: Self) -> Self {
+    func truncatingRemainder(dividingBy divisors: some Vector3n<Scalar>) -> Self {
         let divisors = unsafeBitCast(divisors, to: Vector3nAccelerateBuffer<Scalar>.self)
         var buffer = unsafeBitCast(self, to: Vector3nAccelerateBuffer<Scalar>.self)
         vForce.truncatingRemainder(dividends: buffer, divisors: divisors, result: &buffer)
@@ -317,7 +323,7 @@ public extension Vector3n where Scalar == Float64 {
     
     @inlinable @_transparent
     var length: Scalar {
-        return simd_length(self.simd())
+        return simd_reduce_add(self.simd())
     }
     
     @inlinable @_transparent
@@ -326,9 +332,14 @@ public extension Vector3n where Scalar == Float64 {
     }
     
     @inlinable @_transparent
+    var magnitude: Scalar {
+        return simd_length(self.simd())
+    }
+    
+    @inlinable @_transparent
     mutating func normalize() {
         guard self != .zero else { return }
-        self = unsafeBitCast(simd_fast_normalize(self.simd()), to: Self.self)
+        self = unsafeBitCast(simd_normalize(self.simd()), to: Self.self)
     }
     
     @inlinable @_transparent
@@ -349,8 +360,9 @@ public extension Vector3n where Scalar == Float64 {
     @inlinable
     func squareRoot() -> Self {
         #if canImport(Accelerate)
-        var buffer = unsafeBitCast(self, to: Vector3nAccelerateBuffer<Scalar>.self)
-        vForce.sqrt(buffer, result: &buffer)
+        let arg = unsafeBitCast(self, to: Vector3nAccelerateBuffer<Scalar>.self)
+        var buffer = arg
+        vForce.sqrt(arg, result: &buffer)
         return unsafeBitCast(buffer, to: Self.self)
         #else
         return unsafeBitCast(self.simd().squareRoot(), to: Self.self)
@@ -359,7 +371,7 @@ public extension Vector3n where Scalar == Float64 {
     
     #if canImport(Accelerate)
     @inlinable
-    func truncatingRemainder(dividingBy divisors: Self) -> Self {
+    func truncatingRemainder(dividingBy divisors: some Vector3n<Scalar>) -> Self {
         let divisors = unsafeBitCast(divisors, to: Vector3nAccelerateBuffer<Scalar>.self)
         var buffer = unsafeBitCast(self, to: Vector3nAccelerateBuffer<Scalar>.self)
         vForce.truncatingRemainder(dividends: buffer, divisors: divisors, result: &buffer)

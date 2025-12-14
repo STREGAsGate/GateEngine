@@ -31,7 +31,7 @@ public extension Rotation3n where Scalar == Float16 {
     @inlinable
     mutating func normalize() {
         guard self != .zero else { return }
-        self = unsafeBitCast(simd_fast_normalize(self.simd()), to: Self.self)
+        self = unsafeBitCast(simd_normalize(self.simd()), to: Self.self)
     }
 }
 #endif
@@ -67,7 +67,7 @@ public extension Rotation3n where Scalar == Float32 {
     @inlinable
     mutating func normalize() {
         guard self != .zero else { return }
-        self = unsafeBitCast(simd_fast_normalize(self.simd()), to: Self.self)
+        self = unsafeBitCast(simd_normalize(self.simd()), to: Self.self)
     }
 }
 
@@ -102,7 +102,7 @@ public extension Rotation3n where Scalar == Float64 {
     @inlinable
     mutating func normalize() {
         guard self != .zero else { return }
-        self = unsafeBitCast(simd_fast_normalize(self.simd()), to: Self.self)
+        self = unsafeBitCast(simd_normalize(self.simd()), to: Self.self)
     }
 }
 

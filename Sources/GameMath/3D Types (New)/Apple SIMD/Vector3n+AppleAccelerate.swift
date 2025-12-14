@@ -17,13 +17,13 @@ internal struct Vector3nAccelerateBuffer<Scalar: Vector3n.ScalarType>: Accelerat
     var x: Scalar
     var y: Scalar
     var z: Scalar
-    var _pad: Scalar
+    var w: Scalar
     
     init(x: Scalar, y: Scalar, z: Scalar) {
         self.x = x
         self.y = y
         self.z = z
-        self._pad = 0
+        self.w = 0
     }
     
     @inlinable

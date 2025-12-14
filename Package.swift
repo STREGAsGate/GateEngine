@@ -13,7 +13,7 @@ let package = Package(
         .library(name: "GateUtilities", targets: ["GateUtilities"]),
     ],
     traits: [
-        .default(enabledTraits: ["SIMD"]),
+        .default(enabledTraits: []),
         
         .trait(
             name: "DISTRIBUTE",
@@ -240,23 +240,23 @@ let package = Package(
                 })
             ),
             
-                .target(
-                    name: "GameMath", 
-                    dependencies: [
-                        "GateUtilities"
-                    ], 
-                    swiftSettings: .default(withCustomization: { settings in
-                        #if false
-                        // Possibly faster on old hardware, but less accurate.
-                        // There is no reason to use this on modern hardware.
-                        settings.append(.define("GameMathUseFastInverseSquareRoot"))
-                        #endif
-                        
-                        // These settings are faster only with optimization.
-                        settings.append(.define("GameMathUseSIMD", .when(traits: ["SIMD"])))
-                        settings.append(.define("GameMathUseLoopVectorization", .when(traits: ["SIMD"])))
-                    })
-                ),
+            .target(
+                name: "GameMath",
+                dependencies: [
+                    "GateUtilities"
+                ],
+                swiftSettings: .default(withCustomization: { settings in
+                    #if false
+                    // Possibly faster on old hardware, but less accurate.
+                    // There is no reason to use this on modern hardware.
+                    settings.append(.define("GameMathUseFastInverseSquareRoot", .when(configuration: .release, traits: ["SIMD"])))
+                    #endif
+                    
+                    // These settings are faster only with optimization.
+                    settings.append(.define("GameMathUseSIMD"/*, .when(configuration: .release, traits: ["SIMD"])*/))
+                    settings.append(.define("GameMathUseLoopVectorization", .when(configuration: .release, traits: ["SIMD"])))
+                })
+            ),
             
             .target(
                 name: "GateUtilities",
@@ -417,11 +417,14 @@ let package = Package(
                             settings.append(.define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])))
                         })),
             .testTarget(name: "GateUtilitiesTests",
-                        dependencies: ["GateUtilities"]),
+                        dependencies: ["GateUtilities"],
+                        swiftSettings: .default),
             .testTarget(name: "GameMathTests",
-                        dependencies: ["GameMath"]),
+                        dependencies: ["GameMath"],
+                        swiftSettings: .default),
             .testTarget(name: "GameMathNewTests",
-                        dependencies: ["GameMath"]),
+                        dependencies: ["GameMath"],
+                        swiftSettings: .default),
             .testTarget(name: "GravityTests",
                         dependencies: ["Gravity", "GateEngine"],
                         resources: [
@@ -435,7 +438,6 @@ let package = Package(
                             settings.append(.define("DISABLE_GRAVITY_TESTS", .when(platforms: [.wasi])))
                         })),
         ])
-        #if !os(Windows)
         targets.append(contentsOf: [
             .testTarget(name: "GameMathSIMDTests",
                         dependencies: ["GameMath"],
@@ -450,7 +452,6 @@ let package = Package(
                             settings.append(.define("GameMathUseLoopVectorization"))
                         })),
         ])
-        #endif
         
         return targets
     }(),

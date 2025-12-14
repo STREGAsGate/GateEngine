@@ -14,7 +14,7 @@ final class RawGeometryTests: GateEngineXCTestCase {
         XCTAssertTrue(RawGeometry().isEmpty)
         
         // Array literal
-        let triangle = Triangle(p1: .one, p2: .one, p3: .one)
+        let triangle = Triangle(p1: 1.0, p2: 1.0, p3: 1.0)
         XCTAssertEqual([triangle].first, triangle)
         XCTAssertEqual(RawGeometry(arrayLiteral: triangle).first, triangle)
     }

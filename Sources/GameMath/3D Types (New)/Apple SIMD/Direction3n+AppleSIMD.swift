@@ -16,12 +16,6 @@ public extension Direction3n where Scalar == Float16 {
     func reflected(off normal: Self) -> Self {
         return unsafeBitCast(simd_reflect(self.simd(), normal.simd()), to: Self.self)
     }
-
-    @inlinable
-    mutating func normalize() {
-        guard self != Self.zero else { return }
-        self = unsafeBitCast(simd_fast_normalize(self.simd()), to: Self.self)
-    }
 }
 #endif
 
@@ -31,12 +25,6 @@ public extension Direction3n where Scalar == Float32 {
     func reflected(off normal: Self) -> Self {
         return unsafeBitCast(simd_reflect(self.simd(), normal.simd()), to: Self.self)
     }
-
-    @inlinable
-    mutating func normalize() {
-        guard self != Self.zero else { return }
-        self = unsafeBitCast(simd_fast_normalize(self.simd()), to: Self.self)
-    }
 }
 
 // MARK: - Float64
@@ -44,12 +32,6 @@ public extension Direction3n where Scalar == Float64 {
     @inlinable
     func reflected(off normal: Self) -> Self {
         return unsafeBitCast(simd_reflect(self.simd(), normal.simd()), to: Self.self)
-    }
-
-    @inlinable
-    mutating func normalize() {
-        guard self != Self.zero else { return }
-        self = unsafeBitCast(simd_fast_normalize(self.simd()), to: Self.self)
     }
 }
 

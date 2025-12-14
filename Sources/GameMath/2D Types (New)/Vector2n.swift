@@ -97,6 +97,18 @@ extension Vector2n where Scalar: BinaryInteger {
     }
 }
 
+public extension Vector2n {
+    @_transparent
+    init(_ x: Scalar, _ y: Scalar) {
+        self.init(x: x, y: y)
+    }
+    
+    @_transparent
+    init(_ value: Scalar) {
+        self.init(x: value, y: value)
+    }
+}
+
 extension Vector2n where Scalar: BinaryFloatingPoint {
     @inlinable
     public init(_ vector2n: some Vector2n<Scalar>) {
@@ -260,6 +272,19 @@ public extension Vector2n where Scalar: FloatingPoint {
     @inlinable
     static func /= (lhs: inout Self, rhs: Scalar) {
         lhs = lhs / rhs
+    }
+    
+    @inlinable
+    nonmutating func truncatingRemainder(dividingBy other: Scalar) -> Self {
+        self.truncatingRemainder(dividingBy: Self(other))
+    }
+    
+    @inlinable
+    nonmutating func truncatingRemainder(dividingBy divisors: some Vector2n<Scalar>) -> Self {
+        return Self(
+            x: self.x.truncatingRemainder(dividingBy: divisors.x),
+            y: self.y.truncatingRemainder(dividingBy: divisors.y)
+        )
     }
     
     @inlinable
