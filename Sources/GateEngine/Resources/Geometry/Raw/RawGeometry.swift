@@ -611,19 +611,20 @@ public extension RawGeometry {
                     let maxX = Swift.max(triangleUVs.p1.x, triangleUVs.p2.x, triangleUVs.p3.x) + pixelSize.width
                     let maxY = Swift.max(triangleUVs.p1.y, triangleUVs.p2.y, triangleUVs.p3.y) + pixelSize.height
 
+                    let triangleUVsBox = Rect2f(
+                        origin: Position2f(x: minX, y: minY),
+                        size: Size2f(width: minX.distance(to: maxX), height: minY.distance(to: maxY)),
+                    )
+                    
+                    let triangleUVsCenter = triangleUVs.center
+                    
                     for pixelCenter in transparentPixels {
-                        if pixelCenter.x < minX || pixelCenter.y < minY {
-                            continue
-                        }
-                        if pixelCenter.x > maxX {
-                            if pixelCenter.y > maxY {
-                                return nil
-                            }
-                            continue
-                        }
-                        let pointNearPixel = triangleUVs.nearestSurfacePosition(to: pixelCenter)
+                        guard triangleUVsBox.contains(pixelCenter) else {continue}
                         let pixel = Rect2f(size: pixelSize, center: pixelCenter)
-                        if pixel.contains(pointNearPixel) {
+                        // Get the point inside the triangle to prevent bad aliasing
+                        let pixelPointNearTriangle = pixel.nearestSurfacePosition(to: triangleUVsCenter)
+                        // If the barycentric coord exists, we're inside the triangle
+                        if let _ = triangleUVs.barycentric(from: pixelPointNearTriangle) {
                             return triangleIndex
                         }
                     }
@@ -679,7 +680,7 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
     }
     
     @inlinable
-    public mutating func insert(_ triangle: Element, at i: Index) {
+    public mutating func insert(_ triangle: Triangle, at i: Index) {
         let index = i * 3
         // inserting the verticies backwards
         self.vertices.insert(triangle.v3, at: index)
@@ -689,7 +690,7 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
     
     /// Inserts the new element with minimal added data, at the expence of performance
     @inlinable
-    public mutating func optimizedInsert(_ triangle: Element, at i: Index) {
+    public mutating func optimizedInsert(_ triangle: Triangle, at i: Index) {
         let index = i * 3
         // inserting the verticies backwards
         self.vertices.optimizedInsert(triangle.v3, at: index)
@@ -699,7 +700,7 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
     
     @inlinable
     @discardableResult
-    public mutating func remove(at i: Index) -> Element {
+    public mutating func remove(at i: Index) -> Triangle {
         let index = i * 3
         let v1 = self.vertices.remove(at: index)
         let v2 = self.vertices.remove(at: index)
@@ -718,7 +719,7 @@ extension RawGeometry: RandomAccessCollection, MutableCollection, RangeReplaceab
     }
     
     @inlinable
-    public subscript (index: Index) -> Element {
+    public subscript (index: Index) -> Triangle {
         get {
             assert(self.indices.contains(index), "Index \(index) out of range \(self.indices)")
             return self.triangle(at: index)
@@ -752,7 +753,7 @@ extension RawGeometry {
 extension RawGeometry: ExpressibleByArrayLiteral {
     public typealias ArrayLiteralElement = Element
     @_transparent
-    public init(arrayLiteral elements: Element...) {
+    public init(arrayLiteral elements: Triangle...) {
         self.init(elements)
     }
 }
