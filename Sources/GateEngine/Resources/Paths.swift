@@ -38,4 +38,7 @@ public struct GeoemetryPath: Equatable, Hashable, Sendable, ExpressibleByStringL
     /// A 1x1x1 Joint Shape
     @inlinable
     public static var unitJoint: GeoemetryPath { "GateEngine/Primitives/Unit Joint.obj" }
+    /// A 1x1x1 Cube with normals flipped
+    @inlinable
+    public static var unitSkyBox: GeoemetryPath { "GateEngine/Primitives/Unit SkyBox.obj" }
 }
