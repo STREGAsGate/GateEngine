@@ -15,7 +15,7 @@ internal final class CAContextReference: AudioContextBackend {
             engine.pause()
             try engine.start()
         } catch {
-            Log.fatalError("AVAudioEngine Error: \(error)")
+            Log.warn("AVAudioEngine Error: \(error)")
         }
     }
 

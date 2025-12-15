@@ -100,7 +100,7 @@ extension _RenderTargetProtocol {
     }
 }
 
-@MainActor public final class RenderTarget: View, RenderTargetProtocol, _RenderTargetProtocol {
+@MainActor public final class RenderTarget: View, @MainActor RenderTargetProtocol, @MainActor _RenderTargetProtocol {
     @usableFromInline
     var renderTargetBackend: any RenderTargetBackend
     var previousSize: Size2i? = nil

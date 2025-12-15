@@ -7,7 +7,7 @@
 #if canImport(IOKit)
 import Foundation
 import CoreFoundation
-import IOKit.hid
+@preconcurrency import IOKit.hid
 
 private class HIDController {
     let guid: SDL2ControllerGUID
