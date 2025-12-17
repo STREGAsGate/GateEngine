@@ -13,3 +13,7 @@ public protocol LightEmitter: Equatable, Hashable, Sendable {
     /// The color emitted by the light
     var color: Color {get}
 }
+
+public protocol BakingLightEmitter: LightEmitter {
+    func attenuation(to position: Position3f) -> Float?
+}

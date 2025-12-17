@@ -10,9 +10,9 @@ import GameMath
 public struct DirectionalLight: LightEmitter {
     public var brightness: Float
     public var color: Color
-    public var direction: Direction3
+    public var direction: Direction3f
 
-    public init(brightness: Float, color: Color, direction: Direction3) {
+    public init(brightness: Float, color: Color, direction: Direction3f) {
         self.brightness = brightness
         self.color = color
         self.direction = direction

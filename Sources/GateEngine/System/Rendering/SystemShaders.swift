@@ -24,6 +24,15 @@ extension VertexShader {
         vsh.output["color"] = vsh.input.geometry(0).color
         return vsh
     }()
+    
+    public static let lightMap: VertexShader = {
+        let vsh = VertexShader()
+        vsh.output.position = vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
+        vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
+        vsh.output["texCoord1"] = vsh.input.geometry(0).textureCoordinate1 * vsh.channel(1).scale + vsh.channel(1).offset
+        vsh.output["color"] = vsh.input.geometry(0).color
+        return vsh
+    }()
 
     /// Uses the colors in the vertices to shade objects
     /// Intended to be paired with `FragmentShader.vertexColors`
@@ -164,6 +173,28 @@ extension FragmentShader {
             at: fsh.input["texCoord0"]
         )
         fsh.output.color = Vec4(fsh.channel(0).color.rgb, sample.a)
+        return fsh
+    }()
+    
+    public static let textureSampleLightMap: FragmentShader = {
+        let fsh = FragmentShader()
+        let diffuseColor = fsh.channel(0).texture.sample(
+            at: fsh.input["texCoord0"]
+        )
+        let lightColor = fsh.channel(1).texture.sample(
+            at: fsh.input["texCoord1"]
+        )
+        fsh.output.color = Vec4(diffuseColor.rgb * lightColor.rgb, diffuseColor.a)
+        return fsh
+    }()
+    
+    public static let materialColorLightMap: FragmentShader = {
+        let fsh = FragmentShader()
+        let diffuseColor = fsh.channel(0).color
+        let lightColor = fsh.channel(1).texture.sample(
+            at: fsh.input["texCoord1"]
+        )
+        fsh.output.color = Vec4(diffuseColor.rgb * lightColor.rgb, diffuseColor.a)
         return fsh
     }()
     
