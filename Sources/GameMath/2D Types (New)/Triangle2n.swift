@@ -36,6 +36,52 @@ public extension Triangle2n where Scalar: ExpressibleByFloatLiteral {
     }
 }
 
+// Can arithmetic by position
+public extension Triangle2n {
+    @inlinable
+    static func + (lhs: Triangle2n, rhs: Position2n<Scalar>) -> Triangle2n {
+        return Self(p1: lhs.p1 + rhs, p2: lhs.p2 + rhs, p3: lhs.p3 + rhs)
+    }
+    
+    @inlinable
+    static func += (lhs: inout Triangle2n, rhs: Position2n<Scalar>) {
+        lhs = lhs + rhs
+    }
+    
+    @inlinable
+    static func - (lhs: Triangle2n, rhs: Position2n<Scalar>) -> Triangle2n {
+        return Self(p1: lhs.p1 - rhs, p2: lhs.p2 - rhs, p3: lhs.p3 - rhs)
+    }
+    
+    @inlinable
+    static func -= (lhs: inout Triangle2n, rhs: Position2n<Scalar>) {
+        lhs = lhs - rhs
+    }
+}
+
+// Can multiply by size
+public extension Triangle2n {
+    @inlinable
+    static func * (lhs: Triangle2n, rhs: Size2n<Scalar>) -> Triangle2n {
+        return Self(p1: lhs.p1 * rhs, p2: lhs.p2 * rhs, p3: lhs.p3 * rhs)
+    }
+    
+    @inlinable
+    static func *= (lhs: inout Triangle2n, rhs: Size2n<Scalar>) {
+        lhs = lhs * rhs
+    }
+    
+    @inlinable
+    static func / (lhs: Triangle2n, rhs: Size2n<Scalar>) -> Triangle2n {
+        return Self(p1: lhs.p1 / rhs, p2: lhs.p2 / rhs, p3: lhs.p3 / rhs)
+    }
+    
+    @inlinable
+    static func /= (lhs: inout Triangle2n, rhs: Size2n<Scalar>) {
+        lhs = lhs / rhs
+    }
+}
+
 public extension Triangle2n {
     @inlinable
     func contains(_ position: Position2n<Scalar>) -> Bool where Scalar: ExpressibleByFloatLiteral {
@@ -130,7 +176,7 @@ public extension Triangle2n where Scalar: ExpressibleByFloatLiteral {
      - note: Assumes `position` is within the triangle.
      */
     @inlinable
-    func uncheckedBarycentric(from cartesianPosition: Position2n<Scalar>) -> Position3n<Scalar> {
+    func barycentric(from cartesianPosition: Position2n<Scalar>) -> Position3n<Scalar> {
         let y2y3: Scalar = p2.y - p3.y
         let x3x2: Scalar = p3.x - p2.x
         let x1x3: Scalar = p1.x - p3.x
@@ -140,6 +186,11 @@ public extension Triangle2n where Scalar: ExpressibleByFloatLiteral {
         let yy3: Scalar = cartesianPosition.y - p3.y
         
         let d: Scalar = y2y3 * x1x3 + x3x2 * y1y3
+        if d == 0 {
+            // If the triangle has no area, return a centroid
+            let centroid: Scalar = 1 / 3
+            return Position3n<Scalar>(x: centroid, y: centroid, z: centroid)
+        }
         let lambda1: Scalar = (y2y3 * xx3 + x3x2 * yy3) / d
         let lambda2: Scalar = (y3y1 * xx3 + x1x3 * yy3) / d
         let lambda3: Scalar = 1.0 - lambda1 - lambda2
@@ -157,15 +208,26 @@ public extension Triangle2n where Scalar: ExpressibleByFloatLiteral {
      - returns: A barycentric coordinate if `position` was within the triangle, or `nil`.
      */
     @inlinable
-    func barycentric(from cartesianPosition: Position2n<Scalar>) -> Position3n<Scalar>? {
-        let barycentric = self.uncheckedBarycentric(from: cartesianPosition)
-
+    func checkedBarycentric(from cartesianPosition: Position2n<Scalar>) -> Position3n<Scalar>? {
+        let barycentric = self.barycentric(from: cartesianPosition)
+        
         // Check if the coordiante is within the triangle
-        if barycentric.x < 0.0 || barycentric.y < 0.0 || barycentric.z < 0.0 || barycentric.x >= 1.0 || barycentric.y >= 1.0 || barycentric.z >= 1.0 {
+        if barycentric.x < 0.0 || barycentric.y < 0.0 || barycentric.z < 0.0 || barycentric.x > 1.0 || barycentric.y > 1.0 || barycentric.z > 1.0 {
             return nil
         }
         
         return barycentric
+    }
+    
+    /**
+     Converts a cartesian position to barycentric coordinate.
+     - parameter cartesianPosition: Any cartesian position.
+     - returns: A barycentric coordinate if `position` was finite, or `nil`.
+     */
+    @inlinable
+    func clampedBarycentric(from cartesianPosition: Position2n<Scalar>) -> Position3n<Scalar> {
+        let barycentric = self.barycentric(from: cartesianPosition)
+        return barycentric.clamped(from: .zero, to: .init(x: 1, y: 1, z: 1))
     }
 }
 

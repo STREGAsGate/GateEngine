@@ -624,7 +624,7 @@ public extension RawGeometry {
                         // Get the point inside the triangle to prevent bad aliasing
                         let pixelPointNearTriangle = pixel.nearestSurfacePosition(to: triangleUVsCenter)
                         // If the barycentric coord exists, we're inside the triangle
-                        if let _ = triangleUVs.barycentric(from: pixelPointNearTriangle) {
+                        if let _ = triangleUVs.checkedBarycentric(from: pixelPointNearTriangle) {
                             return triangleIndex
                         }
                     }

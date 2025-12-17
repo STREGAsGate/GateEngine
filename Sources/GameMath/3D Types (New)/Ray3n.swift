@@ -28,5 +28,6 @@ public protocol Ray3nIntersectable {
     typealias ScalarType = Vector3n.ScalarType & FloatingPoint
     associatedtype Scalar: ScalarType
     
+    func intersects(with ray: Ray3n<Scalar>) -> Bool
     func intersection(of ray: Ray3n<Scalar>) -> Position3n<Scalar>?
 }

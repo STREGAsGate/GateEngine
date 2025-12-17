@@ -41,11 +41,13 @@ public extension Vector3n {
         self = unsafeBitCast(vector, to: Self.self)
     }
     
+    @inlinable
     @_transparent
     init(_ x: Scalar, _ y: Scalar, _ z: Scalar) {
         self.init(x: x, y: y, z: z)
     }
     
+    @inlinable
     @_transparent
     init(_ value: Scalar) {
         self.init(x: value, y: value, z: value)
@@ -112,6 +114,9 @@ public extension Vector3n where Scalar: BinaryFloatingPoint {
 
 public extension Vector3n where Scalar: _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral {
     typealias IntegerLiteralType = Scalar
+    
+    @inlinable
+    @_transparent
     init(integerLiteral value: IntegerLiteralType) {
         self.init(x: value, y: value, z: value)
     }
@@ -119,6 +124,9 @@ public extension Vector3n where Scalar: _ExpressibleByBuiltinIntegerLiteral & Ex
 
 public extension Vector3n where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral {
     typealias FloatLiteralType = Scalar
+    
+    @inlinable
+    @_transparent
     init(floatLiteral value: FloatLiteralType) {
         self.init(x: value, y: value, z: value)
     }
@@ -127,6 +135,8 @@ public extension Vector3n where Scalar: FloatingPoint & _ExpressibleByBuiltinFlo
 public extension Vector3n {
     typealias Element = Scalar
     
+    @inlinable
+    @_transparent
     var startIndex: Int {
         nonmutating get {
             return 0
@@ -134,6 +144,7 @@ public extension Vector3n {
     }
     
     @inlinable
+    @_transparent
     var endIndex: Int {
         nonmutating get {
             return 3
@@ -242,10 +253,12 @@ public extension Vector3n where Scalar: Numeric {
 }
 
 public extension Vector3n where Scalar: SignedNumeric {
+    @inlinable
     prefix static func - (operand: Self) -> Self {
         return Self(x: -operand.x, y: -operand.y, z: -operand.z)
     }
     
+    @inlinable
     mutating func negate() {
         self = -self
     }
@@ -367,19 +380,18 @@ public extension Vector3n where Scalar: Comparable {
     
     @inlinable
     nonmutating func clamped(from lowerBound: Self, to upperBound: Self) -> Self {
-        var x = self.x
-        if x < lowerBound.x { x = lowerBound.x }
-        if x > upperBound.x { x = upperBound.x }
+        var value = self
         
-        var y = self.y
-        if y < lowerBound.y { y = lowerBound.y }
-        if y > upperBound.y { y = upperBound.y }
+        if value.x < lowerBound.x { value.x = lowerBound.x }
+        if value.x > upperBound.x { value.x = upperBound.x }
         
-        var z = self.z
-        if z < lowerBound.z { z = lowerBound.z }
-        if z > upperBound.z { z = upperBound.z }
+        if value.y < lowerBound.y { value.y = lowerBound.y }
+        if value.y > upperBound.y { value.y = upperBound.y }
         
-        return Self(x: x, y: y, z: z)
+        if value.z < lowerBound.z { value.z = lowerBound.z }
+        if value.z > upperBound.z { value.z = upperBound.z }
+        
+        return value
     }
     
     @inlinable

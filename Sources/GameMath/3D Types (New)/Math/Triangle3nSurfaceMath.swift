@@ -156,6 +156,8 @@ public extension Triangle3nSurfaceMath {
 
 // MARK: Ray3nIntersectable
 public extension Triangle3nSurfaceMath where Scalar: Ray3nIntersectable.ScalarType {
+    @inlinable
+    @_optimize(speed)
     func intersection(of ray: Ray3n<Scalar>) -> Position3n<Scalar>? {
         let e1: Position3n<Scalar> = p2 - p1
         let e2: Position3n<Scalar> = p3 - p1
@@ -181,5 +183,32 @@ public extension Triangle3nSurfaceMath where Scalar: Ray3nIntersectable.ScalarTy
             return ray.origin.moved(t, toward: ray.direction)
         }
         return nil
+    }
+    
+    @inlinable
+    @_optimize(speed)
+    func intersects(with ray: Ray3n<Scalar>) -> Bool {
+        let e1: Position3n<Scalar> = p2 - p1
+        let e2: Position3n<Scalar> = p3 - p1
+        let h: Direction3n<Scalar> = ray.direction.cross(e2)
+        let a: Scalar = e1.dot(h)
+        guard (a > -0.00001 && a < 0.00001) == false else {return false}
+    
+        let s: Direction3n<Scalar> = Direction3n<Scalar>(ray.origin - p1)
+        let f: Scalar = 1.0 / a
+        let u: Scalar = f * s.dot(h)
+        guard (u < 0.0 || u > 1.0) == false else {return false}
+        
+        let q: Direction3n<Scalar> = s.cross(e1)
+        
+        
+        let v: Scalar = f * ray.direction.dot(q)
+        guard (v < 0.0 || u + v > 1.0) == false else {return false}
+        
+        // at this stage we can compute t to find out where
+        // the intersection point is on the line
+        let t: Scalar = f * e2.dot(q)
+
+        return t > 0.00001
     }
 }

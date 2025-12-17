@@ -8,7 +8,7 @@
 import GameMath
 
 /// A three point polygon primitive.
-public struct Triangle: Codable, Equatable, Hashable {
+public struct Triangle: Codable, Equatable, Hashable, Sendable {
     public var v1: Vertex
     public var v2: Vertex
     public var v3: Vertex

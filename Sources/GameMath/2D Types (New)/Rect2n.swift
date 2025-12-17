@@ -21,7 +21,7 @@ public struct Rect2n<Scalar: Vector2n.ScalarType> {
     
     @inlinable
     public init(size: Size2n<Scalar>, center: Position2n<Scalar>) where Scalar: BinaryFloatingPoint {
-        self.origin = center - (size / 2)
+        self.origin = center - (size * 0.5)
         self.size = size
     }
 }

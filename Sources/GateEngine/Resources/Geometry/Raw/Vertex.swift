@@ -10,7 +10,7 @@ import GameMath
 //TODO: Subscripts index by 0..<2 for all sub types would be nice
 
 /// A 3D point and associated values. This is used to construct `Triangle`s.
-public struct Vertex: Codable, Equatable, Hashable {
+public struct Vertex: Codable, Equatable, Hashable, Sendable {
     /// The x component of the position
     public var position: Position3
     

@@ -15,14 +15,17 @@ public protocol Rect3nSurfaceMath {
 }
 
 public extension Rect3nSurfaceMath {
+    @inlinable
     var minPosition: Position3n<Scalar> {
         return center - radius
     }
     
+    @inlinable
     var maxPosition: Position3n<Scalar> {
         return center + radius
     }
     
+    @inlinable
     var size: Size3n<Scalar> {
         return radius * 2
     }
@@ -34,6 +37,8 @@ public extension Rect3nSurfaceMath where Scalar: Comparable {
      - parameter position: A point in space to use as an reference
      - returns: The point on the box's surface that is nearest to `p`
      */
+    @inlinable
+    @_optimize(speed)
     func nearestSurfacePosition(to position: Position3n<Scalar>) -> Position3n<Scalar> {
         let minPosition: Position3n<Scalar> = self.minPosition
         let maxPosition: Position3n<Scalar> = self.maxPosition
@@ -59,6 +64,7 @@ public extension Rect3nSurfaceMath where Scalar: Comparable {
 
 public extension Rect3nSurfaceMath where Scalar: Comparable {
     @inlinable
+    @_optimize(speed)
     func contains(_ rhs: Position3n<Scalar>) -> Bool {
         let min = self.minPosition
         guard rhs.x >= min.x && rhs.y >= min.y && rhs.z >= min.z  else {return false}
@@ -77,6 +83,7 @@ public extension Rect3nSurfaceMath where Scalar: Comparable {
     }
     
     @inlinable
+    @_optimize(speed)
     func contains(_ rhs: Position3n<Scalar>, withThreshold threshold: Scalar) -> Bool {
         let min = self.minPosition - threshold
         guard rhs.x >= min.x && rhs.y >= min.y && rhs.z >= min.z  else {return false}
@@ -97,7 +104,11 @@ public extension Rect3nSurfaceMath where Scalar: Comparable {
 
 // MARK: Ray3nIntersectable
 public extension Rect3nSurfaceMath where Scalar: Ray3nIntersectable.ScalarType {
+    @inlinable
+    @_optimize(speed)
     func intersection(of ray: Ray3n<Scalar>) -> Position3n<Scalar>? {
+        if self.contains(ray.origin) {return ray.origin}
+        
         let minPosition: Position3n<Scalar> = self.minPosition
         let maxPosition: Position3n<Scalar> = self.maxPosition
         
@@ -148,5 +159,61 @@ public extension Rect3nSurfaceMath where Scalar: Ray3nIntersectable.ScalarType {
         let t: Scalar = Swift.min(tmin, tmax)
         guard t > 0 else {return nil}
         return ray.origin.moved(t, toward: ray.direction)
+    }
+    
+    @inlinable
+    @_optimize(speed)
+    func intersects(with ray: Ray3n<Scalar>) -> Bool {
+        if self.contains(ray.origin) { return true }
+        
+        let minPosition: Position3n<Scalar> = self.minPosition
+        let maxPosition: Position3n<Scalar> = self.maxPosition
+        
+        var tmin: Scalar = (minPosition.x - ray.origin.x) / ray.direction.x
+        var tmax: Scalar = (maxPosition.x - ray.origin.x) / ray.direction.x
+        
+        if tmin > tmax {
+            Swift.swap(&tmin, &tmax)
+        }
+        
+        var tymin: Scalar = (minPosition.y - ray.origin.y) / ray.direction.y
+        var tymax: Scalar = (maxPosition.y - ray.origin.y) / ray.direction.y
+        
+        if tymin > tymax {
+            Swift.swap(&tymin, &tymax)
+        }
+        
+        if tmin > tymax || tymin > tmax {
+            return false
+        }
+        
+        if tymin > tmin {
+            tmin = tymin
+        }
+        
+        if tymax < tmax {
+            tmax = tymax
+        }
+        
+        var tzmin: Scalar = (minPosition.z - ray.origin.z) / ray.direction.z
+        var tzmax: Scalar = (maxPosition.z - ray.origin.z) / ray.direction.z
+        
+        if tzmin > tzmax {
+            Swift.swap(&tzmin, &tzmax)
+        }
+        
+        if tmin > tzmax || tzmin > tmax {
+            return false
+        }
+        
+        if tzmin > tmin {
+            tmin = tzmin
+        }
+        
+        if tzmax < tmax {
+            tmax = tzmax
+        }
+        let t: Scalar = Swift.min(tmin, tmax)
+        return t > 0
     }
 }
