@@ -210,7 +210,7 @@ internal enum Log {
 
     @usableFromInline
     static func info(_ items: Any..., separator: String = " ", terminator: String = "\n") {
-        #if DEBUG || !DISTRIBUTE
+        #if !DISTRIBUTE
         let message = _message(prefix: "[GateEngine]", items, separator: separator)
 
         #if HTML5
@@ -226,7 +226,7 @@ internal enum Log {
 
     @usableFromInline
     static func infoOnce(_ items: Any..., separator: String = " ", terminator: String = "\n") {
-        #if DEBUG || !DISTRIBUTE
+        #if !DISTRIBUTE
         let hash = items.compactMap({ $0 as? AnyHashable }).hashValue
         if onceHashes.contains(hash) == false {
             onceHashes.insert(hash)
