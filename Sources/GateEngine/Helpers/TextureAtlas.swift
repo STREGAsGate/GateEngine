@@ -235,39 +235,31 @@ public final class TextureAtlasBuilder {
         let textureSize: Size2i = Size2i(width: self.searchGrid.width * blockSize, height: self.searchGrid.height * blockSize)
         
         let dstWidth = textureSize.width * 4
-
-        var imageData: Data = Data(repeating: 0, count: textureSize.width * textureSize.height * 4)
-        imageData.withUnsafeMutableBytes { (bytes: UnsafeMutableRawBufferPointer) in
-            for texture in textures {
-                let textureData = self.textureDatas[texture.dataIndex]
+        
+        var imageData = Deque<UInt8>(repeating: 0, count: textureSize.width * textureSize.height * 4)
+        for texture in textures {
+            let textureData = self.textureDatas[texture.dataIndex]
+            
+            var coord = textureData.coordinate
+            if blockSize > 0 {
+                coord.x *= blockSize
+                coord.y *= blockSize
+            }
+            let srcWidth = textureData.size.width * 4
+            let x = coord.x * 4
+            for row in 0 ..< textureData.size.height {
+                let srcStart = srcWidth * row
+                let srcRange = srcStart ..< (srcStart + srcWidth)
                 
-                var coord = textureData.coordinate
-                if blockSize > 0 {
-                    coord.x *= blockSize
-                    coord.y *= blockSize
-                }
-                let srcWidth = textureData.size.width * 4
-                let x = coord.x * 4
-                for row in 0 ..< textureData.size.height {
-                    let srcStart = srcWidth * row
-                    let srcRange = srcStart ..< (srcStart + srcWidth)
-
-                    let dstStart = (dstWidth * (coord.y + row)) + x
-                    let dstRange = dstStart ..< dstStart + srcWidth
-
-                    for i in 0 ..< srcRange.count {
-                        let dstIndex = dstRange[i + dstRange.lowerBound]
-                        let srcIndex = srcRange[i + srcRange.lowerBound]
-
-                        bytes[dstIndex] = textureData.imageData[srcIndex]
-                    }
-                }
+                let dstStart = (dstWidth * (coord.y + row)) + x
+                let dstRange = dstStart ..< dstStart + srcWidth
+                
+                imageData.replaceSubrange(dstRange, with: textureData.imageData[srcRange])
             }
         }
         
-        
         let atlas = TextureAtlas(
-            rawTexture: RawTexture(imageSize: textureSize, imageData: imageData),
+            rawTexture: RawTexture(imageSize: textureSize, imageData: Data(imageData)),
             blockSize: blockSize,
             textures: textures.indices.map({
                 let texture = textures[$0]
