@@ -13,7 +13,7 @@ extension OctreeComponent {
     @inlinable
     @_disfavoredOverload
     public func load(
-        path: GeoemetryPath,
+        path: GeometryPath,
         options: CollisionMeshImporterOptions = .none,
         center: Position3
     ) async throws {

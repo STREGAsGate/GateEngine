@@ -18,7 +18,7 @@ public struct TexturePath: Equatable, Hashable, Sendable, ExpressibleByStringLit
     public static var checkerPattern: TexturePath { "GateEngine/Textures/CheckerPattern.png" }
 }
 
-public struct GeoemetryPath: Equatable, Hashable, Sendable, ExpressibleByStringLiteral, CustomStringConvertible {
+public struct GeometryPath: Equatable, Hashable, Sendable, ExpressibleByStringLiteral, CustomStringConvertible {
     public typealias StringLiteralType = String
     public var value: String
     public var description: String { value }
@@ -28,17 +28,17 @@ public struct GeoemetryPath: Equatable, Hashable, Sendable, ExpressibleByStringL
 
     /// A 1x1x1 Cube
     @inlinable
-    public static var unitCube: GeoemetryPath { "GateEngine/Primitives/Unit Cube.obj" }
+    public static var unitCube: GeometryPath { "GateEngine/Primitives/Unit Cube.obj" }
     /// A 1x1x1 Geosphere
     @inlinable
-    public static var unitSphere: GeoemetryPath { "GateEngine/Primitives/Unit Sphere.obj" }
+    public static var unitSphere: GeometryPath { "GateEngine/Primitives/Unit Sphere.obj" }
     /// A 1x1x1 Plane
     @inlinable
-    public static var unitPlane: GeoemetryPath { "GateEngine/Primitives/Unit Plane.obj" }
+    public static var unitPlane: GeometryPath { "GateEngine/Primitives/Unit Plane.obj" }
     /// A 1x1x1 Joint Shape
     @inlinable
-    public static var unitJoint: GeoemetryPath { "GateEngine/Primitives/Unit Joint.obj" }
+    public static var unitJoint: GeometryPath { "GateEngine/Primitives/Unit Joint.obj" }
     /// A 1x1x1 Cube with normals flipped
     @inlinable
-    public static var unitSkyBox: GeoemetryPath { "GateEngine/Primitives/Unit SkyBox.obj" }
+    public static var unitSkyBox: GeometryPath { "GateEngine/Primitives/Unit SkyBox.obj" }
 }

@@ -22,7 +22,7 @@
     }
 
     @inlinable @_disfavoredOverload
-    public convenience init(as path: GeoemetryPath, options: GeometryImporterOptions = .none) {
+    public convenience init(as path: GeometryPath, options: GeometryImporterOptions = .none) {
         self.init(path: path.value, options: options)
     }
 
@@ -64,7 +64,7 @@ extension Lines: Equatable, Hashable {
 
 extension RawLines {
     @inlinable @_disfavoredOverload
-    public init(_ path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
+    public init(_ path: GeometryPath, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
         try await self.init(path: path.value, options: options)
     }
     public init(path: String, options: GeometryImporterOptions = .none) async throws(GateEngineError) {

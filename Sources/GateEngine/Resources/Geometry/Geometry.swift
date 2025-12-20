@@ -86,7 +86,7 @@ public extension Geometry {
     }
 
     @inlinable @_disfavoredOverload
-    public convenience init(as path: GeoemetryPath, options: GeometryImporterOptions = .none) {
+    public convenience init(as path: GeometryPath, options: GeometryImporterOptions = .none) {
         self.init(path: path.value, options: options)
     }
 
@@ -190,7 +190,7 @@ extension ResourceManager {
 
 extension RawGeometry {
     @inlinable @_disfavoredOverload
-    public init(as path: GeoemetryPath, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
+    public init(as path: GeometryPath, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
         try await self.init(path: path.value, options: options)
     }
     public init(path: String, options: GeometryImporterOptions = .none) async throws(GateEngineError) {

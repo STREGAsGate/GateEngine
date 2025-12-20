@@ -37,7 +37,7 @@ internal protocol SkinnedGeometryBackend: AnyObject {
 
     @inlinable @_disfavoredOverload
     public convenience init(
-        as path: GeoemetryPath,
+        as path: GeometryPath,
         geometryOptions: GeometryImporterOptions = .none,
         skinOptions: SkinImporterOptions = .none
     ) {
