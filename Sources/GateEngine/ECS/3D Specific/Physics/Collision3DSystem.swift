@@ -592,7 +592,7 @@ extension Collision3DSystem {
         for entity in context.entities {
             if let collisionComponent = entity.component(ofType: Collision3DComponent.self), filter?(entity) ?? true {
                 let collider = useRayCastCollider ? (collisionComponent.rayCastCollider ?? collisionComponent.collider) : collisionComponent.collider
-                if collider.boundingBox.surfacePoint(for: ray) != nil {
+                if collider.boundingBox.isColiding(with: ray) {
                     entities.append(entity)
                 }
             }
