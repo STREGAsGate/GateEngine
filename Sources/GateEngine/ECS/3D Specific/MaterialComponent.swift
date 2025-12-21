@@ -52,7 +52,9 @@ public final class MaterialComponent: ResourceConstrainedComponent {
         self.material = Material()
         config(&self.material)
     }
-    public init(_ material: Material) {
+    public init(vertexShader vsh: VertexShader? = nil, fragmentShader fsh: FragmentShader? = nil, _ material: Material) {
+        self.vertexShader = vsh
+        self.fragmentShader = fsh
         self.material = material
     }
     
