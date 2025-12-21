@@ -12,6 +12,10 @@ public struct RawPoints: Codable, Equatable, Hashable {
     var positions: [Float]
     var colors: [Float]
     var indices: [UInt16]
+    
+    public var isEmpty: Bool {
+        return indices.isEmpty
+    }
 
     public init() {
         self.positions = []

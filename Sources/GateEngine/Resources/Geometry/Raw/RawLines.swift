@@ -11,6 +11,10 @@ public struct RawLines: Sendable {
     var colors: [Float]
     var indices: [UInt16]
 
+    public var isEmpty: Bool {
+        return indices.isEmpty
+    }
+    
     public init() {
         positions = []
         colors = []
