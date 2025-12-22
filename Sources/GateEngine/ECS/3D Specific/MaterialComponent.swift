@@ -55,9 +55,10 @@ public final class MaterialComponent: ResourceConstrainedComponent {
         self.material = Material()
         config(&self.material)
     }
-    public init(vertexShader vsh: VertexShader? = nil, fragmentShader fsh: FragmentShader? = nil, _ material: Material) {
+    public init(vertexShader vsh: VertexShader? = nil, fragmentShader fsh: FragmentShader? = nil, blendMode: DrawCommand.Flags.BlendMode = .normal, _ material: Material) {
         self.vertexShader = vsh
         self.fragmentShader = fsh
+        self.blendMode = blendMode
         self.material = material
     }
     
