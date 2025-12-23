@@ -33,6 +33,41 @@ public struct Size3n<Scalar: Vector3n.ScalarType>: Vector3n {
 
 public extension Size3n {
     @inlinable
+    var xy: Size2n<Scalar> {
+        nonmutating get {
+            return Size2n(x: x, y: y)
+        }
+        mutating set {
+            self.x = newValue.x
+            self.y = newValue.y
+        }
+    }
+    
+    @inlinable
+    var xz: Size2n<Scalar> {
+        nonmutating get {
+            return Size2n(x: x, y: z)
+        }
+        mutating set {
+            self.x = newValue.x
+            self.z = newValue.y
+        }
+    }
+    
+    @inlinable
+    var yz: Size2n<Scalar> {
+        nonmutating get {
+            return Size2n(x: y, y: z)
+        }
+        mutating set {
+            self.y = newValue.x
+            self.z = newValue.y
+        }
+    }
+}
+
+public extension Size3n {
+    @inlinable
     var width: Scalar {
         nonmutating get { self.x }
         mutating set { self.x = newValue }
@@ -63,8 +98,6 @@ public extension Size3n {
 }
 
 extension Size3n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
-extension Size3n: ExpressibleByIntegerLiteral where Scalar: _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
-extension Size3n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Size3n: Equatable where Scalar: Equatable { }
 extension Size3n: Hashable where Scalar: Hashable { }
 extension Size3n: Comparable where Scalar: Comparable { }

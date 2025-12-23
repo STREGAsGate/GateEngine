@@ -153,6 +153,11 @@ extension Rotation3n {
     var conjugate: Self {
         return Self(x: -x, y: -y, z: -z, w: w)
     }
+    
+    @inlinable
+    var isFinite: Bool {
+        return self.x.isFinite && self.y.isFinite && self.z.isFinite && self.w.isFinite
+    }
 }
 
 extension Rotation3n: AdditiveArithmetic where Scalar: AdditiveArithmetic {

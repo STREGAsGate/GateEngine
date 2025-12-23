@@ -47,8 +47,6 @@ public extension Position2n where Scalar: FloatingPoint {
     }
 }
 extension Position2n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
-extension Position2n: ExpressibleByIntegerLiteral where Scalar: FixedWidthInteger & _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
-extension Position2n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Position2n: Equatable where Scalar: Equatable { }
 extension Position2n: Hashable where Scalar: Hashable { }
 extension Position2n: Comparable where Scalar: Comparable { }
@@ -78,8 +76,6 @@ public extension Direction2n where Scalar: FloatingPoint {
     }
 }
 extension Direction2n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
-extension Direction2n: ExpressibleByIntegerLiteral where Scalar: FixedWidthInteger & _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
-extension Direction2n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Direction2n: Equatable where Scalar: Equatable { }
 extension Direction2n: Hashable where Scalar: Hashable { }
 extension Direction2n: Comparable where Scalar: Comparable { }
@@ -103,8 +99,6 @@ public struct Size2n<Scalar: Vector2n.ScalarType>: Vector2n {
     public static var one: Self { .init(x: 1, y: 1) }
 }
 extension Size2n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
-extension Size2n: ExpressibleByIntegerLiteral where Scalar: FixedWidthInteger & _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
-extension Size2n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Size2n: Equatable where Scalar: Equatable { }
 extension Size2n: Hashable where Scalar: Hashable { }
 extension Size2n: Comparable where Scalar: Comparable { }
@@ -242,20 +236,6 @@ extension Vector2n where Scalar: BinaryFloatingPoint {
     }
 }
 
-public extension Vector2n where Scalar: FixedWidthInteger & _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral {
-    typealias IntegerLiteralType = Scalar
-    init(integerLiteral value: IntegerLiteralType) {
-        self.init(x: value, y: value)
-    }
-}
-
-public extension Vector2n where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral {
-    typealias FloatLiteralType = Scalar
-    init(floatLiteral value: FloatLiteralType) {
-        self.init(x: value, y: value)
-    }
-}
-
 public extension Vector2n where Scalar: AdditiveArithmetic {
     @inlinable
     static func + (lhs: Self, rhs: some Vector2n<Scalar>) -> Self {
@@ -277,9 +257,8 @@ public extension Vector2n where Scalar: AdditiveArithmetic {
         return Self(x: lhs.x - rhs, y: lhs.y - rhs)
     }
     
-    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals to avoid ambiguilty
     @inlinable
-    static var zero: Self {Self(x: Scalar.zero, y: Scalar.zero)}
+    static var zero: Self {Self(x: .zero, y: .zero)}
 }
 
 public extension Vector2n where Scalar: Numeric {
@@ -354,6 +333,13 @@ public extension Vector2n where Scalar: FloatingPoint {
             x: self.x.truncatingRemainder(dividingBy: divisors.x),
             y: self.y.truncatingRemainder(dividingBy: divisors.y)
         )
+    }
+    
+    @inlinable
+    var isFinite: Bool {
+        nonmutating get {
+            return x.isFinite && y.isFinite
+        }
     }
     
     @inlinable
@@ -479,7 +465,7 @@ public extension Vector2n {
     }
 }
 
-public extension Vector2n where Scalar: FloatingPoint {
+public extension Vector2n where Scalar: FloatingPoint, Self: Equatable {
     @inlinable
     var magnitude: Scalar {
         nonmutating get {
@@ -494,7 +480,7 @@ public extension Vector2n where Scalar: FloatingPoint {
 
     @inlinable
     mutating func normalize() {
-        guard self != 0 else { return }
+        guard self != Self.zero else { return }
         let magnitude = self.magnitude
         let factor = 1 / magnitude
         self *= factor
@@ -509,8 +495,6 @@ public extension Vector2n where Scalar: FloatingPoint {
         }
     }
 }
-
-
 
 extension Vector2n where Scalar: BinaryCodable {
     public func encode(into data: inout ContiguousArray<UInt8>, version: BinaryCodableVersion) throws {

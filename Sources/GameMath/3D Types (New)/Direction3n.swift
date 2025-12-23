@@ -28,6 +28,41 @@ public struct Direction3n<Scalar: Vector3n.ScalarType>: Vector3n {
     }
 }
 
+public extension Direction3n {
+    @inlinable
+    var xy: Direction2n<Scalar> {
+        nonmutating get {
+            return Direction2n(x: x, y: y)
+        }
+        mutating set {
+            self.x = newValue.x
+            self.y = newValue.y
+        }
+    }
+    
+    @inlinable
+    var xz: Direction2n<Scalar> {
+        nonmutating get {
+            return Direction2n(x: x, y: z)
+        }
+        mutating set {
+            self.x = newValue.x
+            self.z = newValue.y
+        }
+    }
+    
+    @inlinable
+    var yz: Direction2n<Scalar> {
+        nonmutating get {
+            return Direction2n(x: y, y: z)
+        }
+        mutating set {
+            self.y = newValue.x
+            self.z = newValue.y
+        }
+    }
+}
+
 public extension Direction3n where Scalar: FloatingPoint {
     @inlinable
     func rotated(by rotation: Rotation3n<Scalar>) -> Self {
@@ -130,8 +165,6 @@ public extension Direction3n where Scalar: FloatingPoint {
 }
 
 extension Direction3n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
-extension Direction3n: ExpressibleByIntegerLiteral where Scalar: _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
-extension Direction3n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Direction3n: Equatable where Scalar: Equatable { }
 extension Direction3n: Hashable where Scalar: Hashable { }
 extension Direction3n: Comparable where Scalar: Comparable { }

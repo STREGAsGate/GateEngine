@@ -136,8 +136,6 @@ public extension Position3n where Scalar: FloatingPoint {
 }
 
 extension Position3n: AdditiveArithmetic where Scalar: AdditiveArithmetic { }
-extension Position3n: ExpressibleByIntegerLiteral where Scalar: _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral { }
-extension Position3n: ExpressibleByFloatLiteral where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral { }
 extension Position3n: Equatable where Scalar: Equatable { }
 extension Position3n: Hashable where Scalar: Hashable { }
 extension Position3n: Comparable where Scalar: Comparable { }

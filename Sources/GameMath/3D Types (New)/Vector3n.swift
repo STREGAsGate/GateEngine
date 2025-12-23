@@ -112,26 +112,6 @@ public extension Vector3n where Scalar: BinaryFloatingPoint {
     }
 }
 
-public extension Vector3n where Scalar: _ExpressibleByBuiltinIntegerLiteral & ExpressibleByIntegerLiteral {
-    typealias IntegerLiteralType = Scalar
-    
-    @inlinable
-    @_transparent
-    init(integerLiteral value: IntegerLiteralType) {
-        self.init(x: value, y: value, z: value)
-    }
-}
-
-public extension Vector3n where Scalar: FloatingPoint & _ExpressibleByBuiltinFloatLiteral & ExpressibleByFloatLiteral {
-    typealias FloatLiteralType = Scalar
-    
-    @inlinable
-    @_transparent
-    init(floatLiteral value: FloatLiteralType) {
-        self.init(x: value, y: value, z: value)
-    }
-}
-
 public extension Vector3n {
     typealias Element = Scalar
     
@@ -220,7 +200,6 @@ public extension Vector3n where Scalar: AdditiveArithmetic {
         return Self(x: lhs - rhs.x, y: lhs - rhs.y, z: lhs - rhs.z)
     }
     
-    @_disfavoredOverload // <- Tell the compiler to prefer using integer literals to avoid ambiguilty
     @inlinable
     static var zero: Self {Self(x: .zero, y: .zero, z: .zero)}
 }
@@ -302,6 +281,13 @@ public extension Vector3n where Scalar: FloatingPoint {
             y: self.y.truncatingRemainder(dividingBy: divisors.y),
             z: self.z.truncatingRemainder(dividingBy: divisors.z),
         )
+    }
+    
+    @inlinable
+    var isFinite: Bool {
+        nonmutating get {
+            return x.isFinite && y.isFinite && z.isFinite
+        }
     }
     
     @inlinable
@@ -488,7 +474,7 @@ public extension Vector3n {
     }
 }
 
-public extension Vector3n where Scalar: FloatingPoint {
+public extension Vector3n where Scalar: FloatingPoint, Self: Equatable {
     @inlinable
     var magnitude: Scalar {
         nonmutating get {
@@ -503,7 +489,7 @@ public extension Vector3n where Scalar: FloatingPoint {
 
     @inlinable
     mutating func normalize() {
-        guard self != 0 else { return }
+        guard self != Self.zero else { return }
         let magnitude = self.magnitude
         let factor = 1 / magnitude
         self *= factor

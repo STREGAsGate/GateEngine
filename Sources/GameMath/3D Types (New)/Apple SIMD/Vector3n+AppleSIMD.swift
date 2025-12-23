@@ -91,8 +91,8 @@ public extension Vector3n where Scalar == Float16 {
     }
     
     @inlinable @_transparent
-    mutating func normalize() {
-        guard self != .zero else { return }
+    mutating func normalize() where Self: Equatable  {
+        guard self != Self.zero else { return }
         self = unsafeBitCast(simd_normalize(self.simd()), to: Self.self)
     }
     
@@ -206,8 +206,8 @@ public extension Vector3n where Scalar == Float32 {
     }
     
     @inlinable @_transparent
-    mutating func normalize() {
-        guard self != .zero else { return }
+    mutating func normalize() where Self: Equatable  {
+        guard self != Self.zero else { return }
         self = unsafeBitCast(simd_normalize(self.simd()), to: Self.self)
     }
     
@@ -337,8 +337,8 @@ public extension Vector3n where Scalar == Float64 {
     }
     
     @inlinable @_transparent
-    mutating func normalize() {
-        guard self != .zero else { return }
+    mutating func normalize() where Self: Equatable  {
+        guard self != Self.zero else { return }
         self = unsafeBitCast(simd_normalize(self.simd()), to: Self.self)
     }
     

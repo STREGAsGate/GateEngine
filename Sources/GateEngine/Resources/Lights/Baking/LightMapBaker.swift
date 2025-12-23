@@ -227,13 +227,13 @@ public extension LightMapBaker {
             public init(
                 radiosity: Radiosity = .fullyRadiant,
                 occlusion: Occlusion = .fullyOccluding,
-                minimumTexels: Size2i = 4,
+                minimumTexels: Size2i = Size2i(4),
                 packing: LightMapPacker.Options = .none
             ) {
                 self.radiosity = radiosity
                 self.occlusion = occlusion
                 self.packing = packing
-                self.minimumTexels = max(minimumTexels, 4)
+                self.minimumTexels = max(minimumTexels, Size2i(4))
             }
         }
         
