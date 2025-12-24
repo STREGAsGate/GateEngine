@@ -118,7 +118,7 @@ extension ResourceManager {
         let key = Cache.GeometryKey(requestedPath: path, kind: .lines, geometryOptions: .none)
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
-            if let lines = lines {
+            if let lines = lines, lines.isEmpty == false {
                 Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
                 
                 if let cache = self.cache.geometries[key] {

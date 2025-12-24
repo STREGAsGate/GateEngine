@@ -12,7 +12,8 @@ public struct RawLines: Sendable {
     var indices: [UInt16]
 
     public var isEmpty: Bool {
-        return indices.isEmpty
+        // If at least 2 points exists, then we have 1 line and are not empty
+        return indices.count < 2
     }
     
     public init() {
