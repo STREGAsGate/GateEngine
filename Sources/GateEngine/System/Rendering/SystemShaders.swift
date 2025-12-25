@@ -234,6 +234,53 @@ internal extension VertexShader {
     }()
 }
 
+@MainActor
 internal extension FragmentShader {
-
+    static let userInterfaceClipRectTextureSample: FragmentShader = {
+        let fsh = FragmentShader()
+        let viewOrigin: Vec2 = fsh.uniforms["ViewOrigin"]
+        let viewSize: Vec2 = fsh.uniforms["ViewSize"]
+        let minX: Scalar = viewOrigin.x
+        let maxX: Scalar = minX + viewSize.width
+        let minY: Scalar = viewOrigin.y
+        let maxY: Scalar = minY + viewSize.height
+        let inBounds: Scalar = (fsh.input.position.x >= minX && fsh.input.position.x < maxX && fsh.input.position.y >= minY && fsh.input.position.y < maxY)
+        let opacity: Scalar = fsh.uniforms["opacity"]
+        let sample = fsh.channel(0).texture.sample(
+            at: fsh.input["texCoord0"]
+        )
+        fsh.output.color = Vec4(sample.rgb, sample.a * opacity).discard(if: inBounds == false)
+        return fsh
+    }()
+    static let userInterfaceClipRectTintColor: FragmentShader = {
+        let fsh = FragmentShader()
+        let viewOrigin: Vec2 = fsh.uniforms["ViewOrigin"]
+        let viewSize: Vec2 = fsh.uniforms["ViewSize"]
+        let minX: Scalar = viewOrigin.x
+        let maxX: Scalar = minX + viewSize.width
+        let minY: Scalar = viewOrigin.y
+        let maxY: Scalar = minY + viewSize.height
+        let inBounds: Scalar = (fsh.input.position.x >= minX && fsh.input.position.x < maxX && fsh.input.position.y >= minY && fsh.input.position.y < maxY)
+        let opacity: Scalar = fsh.uniforms["opacity"]
+        let tintColor: Vec4 = fsh.channel(0).color
+        fsh.output.color = Vec4(tintColor.rgb, tintColor.a * opacity).discard(if: inBounds == false)
+        return fsh
+    }()
+    static let userInterfaceClipRectTextureTemplateTintColor: FragmentShader = {
+        let fsh = FragmentShader()
+        let viewOrigin: Vec2 = fsh.uniforms["ViewOrigin"]
+        let viewSize: Vec2 = fsh.uniforms["ViewSize"]
+        let minX: Scalar = viewOrigin.x
+        let maxX: Scalar = minX + viewSize.width
+        let minY: Scalar = viewOrigin.y
+        let maxY: Scalar = minY + viewSize.height
+        let inBounds: Scalar = (fsh.input.position.x >= minX && fsh.input.position.x < maxX && fsh.input.position.y >= minY && fsh.input.position.y < maxY)
+        let opacity: Scalar = fsh.uniforms["opacity"]
+        let tintColor: Vec4 = fsh.channel(0).color
+        let sample = fsh.channel(0).texture.sample(
+            at: fsh.input["texCoord0"]
+        )
+        fsh.output.color = Vec4(tintColor.rgb, opacity * tintColor.a * sample.a).discard(if: inBounds == false)
+        return fsh
+    }()
 }

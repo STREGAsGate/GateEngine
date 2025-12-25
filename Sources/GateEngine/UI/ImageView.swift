@@ -53,6 +53,10 @@ open class ImageView: View {
     override func draw(_ rect: Rect, into canvas: inout UICanvas) {
         super.draw(rect, into: &canvas)
         
+        material.setCustomUniformValue(rect.position, forUniform: "ViewOrigin")
+        material.setCustomUniformValue(rect.size, forUniform: "ViewSize")
+        material.setCustomUniformValue(self.opacity, forUniform: "opacity")
+        
         canvas.insert(
             DrawCommand(
                 resource: .geometry(.rectOriginTopLeft),
@@ -63,8 +67,8 @@ open class ImageView: View {
                     )
                 ],
                 material: material,
-                vsh: .standard,
-                fsh: .textureSample,
+                vsh: .userInterface,
+                fsh: .userInterfaceClipRectTextureSample,
                 flags: .userInterface
             )
         )

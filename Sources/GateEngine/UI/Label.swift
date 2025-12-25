@@ -169,13 +169,18 @@ public final class Label: View {
         }
         yOffset = (rect.height / 2) - ((size.height / 2) * self.interfaceScale)
         
+        var material = Material(texture: texture, sampleFilter: sampleFilter, tintColor: textColor)
+        material.setCustomUniformValue(rect.position, forUniform: "ViewOrigin")
+        material.setCustomUniformValue(rect.size, forUniform: "ViewSize")
+        material.setCustomUniformValue(self.opacity, forUniform: "opacity")
+        
         canvas.insert(
             DrawCommand(
                 resource: .geometry(geometry),
                 transforms: [Transform3(position: Position3(rect.x + xOffset, rect.y + yOffset, 0))],
-                material: Material(texture: texture, sampleFilter: sampleFilter, tintColor: textColor),
-                vsh: .standard,
-                fsh: .textureSampleTintColor,
+                material: material,
+                vsh: .userInterface,
+                fsh: .userInterfaceClipRectTextureTemplateTintColor,
                 flags: .userInterface
             )
         )
