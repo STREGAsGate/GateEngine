@@ -135,7 +135,7 @@ extension DrawCommand.Flags {
     internal static var userInterface: Self {
         return DrawCommand.Flags(
             cull: .disabled,
-            depthTest: .always, 
+            depthTest: .always,
             depthWrite: .disabled,
             stencilTest: .equal,
             stencilWrite: .disabled,
@@ -149,7 +149,7 @@ extension DrawCommand.Flags {
     internal static var userInterfaceMask: Self {
         return DrawCommand.Flags(
             cull: .disabled,
-            depthTest: .always, 
+            depthTest: .always,
             depthWrite: .enabled,
             stencilTest: .always,
             stencilWrite: .enabled,

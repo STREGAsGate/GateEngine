@@ -19,8 +19,7 @@ extension VertexShader {
         let vsh = VertexShader()
         vsh.output.position =
             vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
-        vsh.output["texCoord0"] =
-            vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
+        vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
         vsh.output["color"] = vsh.input.geometry(0).color
         return vsh
     }()
@@ -214,13 +213,23 @@ extension FragmentShader {
 
 // MARK: - GateEngine Internal
 
+@MainActor
 internal extension VertexShader {
-    @MainActor static let renderTarget: VertexShader = {
+    static let renderTarget: VertexShader = {
         let vsh = VertexShader(name: "renderTarget")
         vsh.output.position =
         vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
         let texCoord = vsh.input.geometry(0).textureCoordinate0
         vsh.output["texCoord0"] = texCoord * vsh.channel(0).scale + vsh.channel(0).offset
+        return vsh
+    }()
+    
+    static let userInterface: VertexShader = {
+        let vsh = VertexShader()
+        vsh.output.position =
+            vsh.modelViewProjectionMatrix * Vec4(vsh.input.geometry(0).position, 1)
+        vsh.output["texCoord0"] = vsh.input.geometry(0).textureCoordinate0 * vsh.channel(0).scale + vsh.channel(0).offset
+        vsh.output["color"] = vsh.input.geometry(0).color
         return vsh
     }()
 }

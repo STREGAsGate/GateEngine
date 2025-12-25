@@ -280,6 +280,7 @@ open class View {
     
     internal func _didLayout() {
         self.didLayout()
+        self.offScreenRepresentationMaterialNeedsUpdate = true
     }
     
     open func updateLayoutConstraints() {
@@ -438,12 +439,13 @@ open class View {
     private final var offScreenRepresentationMaterial: Material {
         if offScreenRepresentationMaterialNeedsUpdate {
             offScreenRepresentationMaterialNeedsUpdate = false
-            updateoffScreenRepresentationMaterial()
+            updateOffScreenRepresentationMaterial()
         }
+        updateOffScreenRepresentationMaterial()
         return _offScreenRepresentationMaterial
     }
     internal final var offScreenRepresentationMaterialNeedsUpdate: Bool = true
-    private func updateoffScreenRepresentationMaterial() {
+    private func updateOffScreenRepresentationMaterial() {
         self._offScreenRepresentationMaterial.channel(0) { [weak self] channel in
             channel.color = self?.backgroundColor ?? .clear
         }
@@ -564,7 +566,7 @@ open class View {
                     )
                 ],
                 material: material,
-                vsh: .standard,
+                vsh: .userInterface,
                 fsh: Self.fragmentShaderTextureSample,
                 flags: .userInterfaceMask
             )
@@ -867,6 +869,17 @@ extension View {
         
         let pos = fsh.input.position.xy - viewOrigin
         
+        let minX: Scalar = viewOrigin.x
+        let maxX: Scalar = minX + viewSize.width
+        let minY: Scalar = viewOrigin.y
+        let maxY: Scalar = minY + viewSize.height
+        let inBounds: Scalar = (
+            fsh.input.position.x >= minX &&
+            fsh.input.position.x < maxX &&
+            fsh.input.position.y >= minY &&
+            fsh.input.position.y < maxY
+        )
+        
         let topLeft: Scalar = fsh.uniforms.value(named: "TopLeft", scalarType: .bool)
         && (pos.x < radius && pos.y < radius)
         && (radius - pos.distance(from: Vec2(radius, radius)) < 0)
@@ -883,8 +896,7 @@ extension View {
         && (pos.x < radius && pos.y > viewSize.height - radius)
         && (radius - pos.distance(from: Vec2(radius, viewSize.height - radius)) < 0)
         
-        fsh.output.color = Vec4(backgroundColor.rgb, backgroundColor.a * fsh.uniforms["opacity"]).discard(if: (radius > 0) && (topLeft || topRight || bottomRight || bottomLeft))
-  
+        fsh.output.color = Vec4(backgroundColor.rgb, backgroundColor.a * fsh.uniforms["opacity"]).discard(if: (inBounds == false) || ((radius > 0) && (topLeft || topRight || bottomRight || bottomLeft)))
         return fsh
     }()
 }
