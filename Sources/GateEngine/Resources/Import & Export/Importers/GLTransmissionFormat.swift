@@ -607,11 +607,38 @@ public extension GLTransmissionFormat {
             for primitive in mesh.primitives {
                 if primitive.material == materialIndex {
                     names.insert(mesh.name)
-                    continue
                 }
             }
         }
         return Array(names)
+    }
+    
+    func skinName(forMesh meshName: String) -> String? {
+        if let meshIndex = gltf.meshes?.firstIndex(where: {$0.name == meshName}) {
+            func findIn(_ parent: Int) -> Int? {
+                let node = gltf.nodes[parent]
+                for index in node.children ?? [] {
+                    let node = gltf.nodes[index]
+                    if let skinID = node.skin, node.mesh == meshIndex {
+                        return skinID
+                    }
+                }
+                for index in node.children ?? [] {
+                    if let value = findIn(index) {
+                        return value
+                    }
+                }
+                return nil
+            }
+            if let sceneNodes = gltf.scenes[gltf.scene].nodes {
+                for index in sceneNodes {
+                    if let value = findIn(index) {
+                        return gltf.skins?[value].name
+                    }
+                }
+            }
+        }
+        return nil
     }
     
     func meshNamesWithNoMaterial() -> [String] {
@@ -923,19 +950,36 @@ extension GLTransmissionFormat: SkinImporter {
             throw GateEngineError.failedToDecode("File contains no skins.")
         }
         
-        guard gltf.meshes != nil else {throw GateEngineError.failedToDecode("File contains no geometry.")}
+        guard let meshes = gltf.meshes else {throw GateEngineError.failedToDecode("File contains no geometry.")}
 
         var skinIndex = 0
         if let name = options.subobjectName {
-            if let direct = gltf.skins?.firstIndex(where: {
-                $0.name.caseInsensitiveCompare(name) == .orderedSame
-            }) {
-                skinIndex = direct
-            } else if let nodeSkinIndex = gltf.nodes.first(where: {
-                $0.skin != nil && $0.name == name
-            })?.skin {
-                skinIndex = nodeSkinIndex
+            if let skinName = self.skinName(forMesh: name), let index = skins.firstIndex(where: {$0.name == skinName}) {
+                skinIndex = index
+            }else{
+                throw GateEngineError.failedToDecode(
+                    "Couldn't find skin named \(name)."
+                )
             }
+        }
+        
+        var meshIndex = 0
+        if let name = options.subobjectName {
+            if let meshID = gltf.nodes.first(where: { $0.name == name })?.mesh {
+                meshIndex = meshID
+            } else if let _mesh = meshes.firstIndex(where: { $0.name == name }) {
+                meshIndex = _mesh
+            } else {
+                let meshNames = meshes.map({ $0.name })
+                let nodeNames = gltf.nodes.filter({ $0.mesh != nil }).map({ $0.name })
+                throw GateEngineError.failedToDecode(
+                    "Couldn't find geometry named \(name).\nAvailable mesh names: \(meshNames)\nAvaliable node names: \(nodeNames)"
+                )
+            }
+        }else if let meshID = meshForSkin(skinID: skinIndex) {
+            meshIndex = meshID
+        }else{
+            throw GateEngineError.failedToDecode("Couldn't locate skin geometry.")
         }
 
         let skin = skins[skinIndex]
@@ -946,10 +990,10 @@ extension GLTransmissionFormat: SkinImporter {
             throw GateEngineError.failedToDecode("Failed to parse skin.")
         }
 
-        guard let meshID = meshForSkin(skinID: skinIndex) else {
+        guard meshes.indices.contains(meshIndex) else {
             throw GateEngineError.failedToDecode("Couldn't locate skin geometry.")
         }
-        let mesh = gltf.meshes![meshID]
+        let mesh = meshes[meshIndex]
 
         guard let meshJoints: [UInt32] = await gltf.values(forAccessor: mesh.primitives[0][.joints]!) else {
             throw GateEngineError.failedToDecode("Failed to parse skin.")
