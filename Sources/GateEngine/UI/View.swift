@@ -81,7 +81,7 @@ open class View {
             self.setNeedsUpdateConstraints()
         }
     }
-    public private(set) var subviews: [View] = [] {
+    public private(set) var subviews: Deque<View> = [] {
         didSet {
             self.setNeedsUpdateConstraints()
             self.setNeedsLayout()
