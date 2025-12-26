@@ -640,16 +640,18 @@ extension View {
         view.superView = self
     }
     public final func sendSubviewToBack(_ view: View) {
-        if let index = subviews.firstIndex(where: {$0 === self}) {
-            subviews.remove(at: index)
-            subviews.insert(view, at: 0)
+        guard view.superView === self, let index = subviews.firstIndex(where: {$0 === view}) else {
+            fatalError("Attempted to change the view order of a view that is not a subview of this view.")
         }
+        subviews.remove(at: index)
+        subviews.insert(view, at: 0)
     }
     public final func bringSubviewToFront(_ view: View) {
-        if let index = subviews.firstIndex(where: {$0 === self}) {
-            subviews.remove(at: index)
-            subviews.append(view)
+        guard view.superView === self, let index = subviews.firstIndex(where: {$0 === view}) else {
+            fatalError("Attempted to change the view order of a view that is not a subview of this view.")
         }
+        subviews.remove(at: index)
+        subviews.append(view)
     }
     public final func removeFromSuperview() {
         if let superView {
