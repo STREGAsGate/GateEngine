@@ -72,6 +72,21 @@ public final class Collision3DComponent: Component {
         self.collider.update(transform: transform)
         self.rayCastCollider?.update(transform: transform)
     }
+    
+    @MainActor
+    @inlinable
+    internal func updateColliders(_ rigComponent: Rig3DComponent) {
+        // Update collider from animation
+        if let colliderJointName = rigComponent.updateColliderFromBoneNamed {
+            if let joint = rigComponent.skeleton.jointNamed(colliderJointName) {
+                let matrix = joint.modelSpace
+                self.update(sizeAndOffsetUsingTransform: matrix.transform)
+                self.rayCastCollider?.update(sizeAndOffsetUsingTransform: matrix.transform)
+            } else {
+                fatalError("Failed to find joint \(colliderJointName).")
+            }
+        }
+    }
 
     @inlinable
     public func update(sizeAndOffsetUsingTransform transform: Transform3) {

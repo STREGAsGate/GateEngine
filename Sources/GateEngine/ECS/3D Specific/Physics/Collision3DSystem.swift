@@ -15,7 +15,12 @@ public final class Collision3DSystem: System {
             return false
         })
         for entity in staticEntities {
-            entity.collision3DComponent.updateColliders(entity.transform3)
+            let collisionComponent = entity.collision3DComponent
+            // Update collider from animation
+            if let rigComponent = entity.component(ofType: Rig3DComponent.self) {
+                collisionComponent.updateColliders(rigComponent)
+            }
+            collisionComponent.updateColliders(entity.transform3)
         }
         let dynamicEntities = context.entities.filter({
             guard let collisionComponenet = $0.component(ofType: Collision3DComponent.self) else {return false}
@@ -50,27 +55,10 @@ public final class Collision3DSystem: System {
             func updateCollider() {
                 collisionComponent.updateColliders(transformComponent.transform)
             }
-
+            
             // Update collider from animation
             if let rigComponent = dynamicEntity.component(ofType: Rig3DComponent.self) {
-                if let colliderJointName = rigComponent.updateColliderFromBoneNamed {
-                    if let joint = rigComponent.skeleton.jointNamed(colliderJointName) {
-                        let position =
-                            (transformComponent.transform.matrix() * joint.modelSpace).position
-                            - transformComponent.position
-                        let rotation =
-                            transformComponent.rotation * joint.modelSpace.rotation.conjugate
-                        let scale = joint.modelSpace.scale
-                        let transform = Transform3(
-                            position: position,
-                            rotation: rotation,
-                            scale: scale
-                        )
-                        collisionComponent.update(sizeAndOffsetUsingTransform: transform)
-                    } else {
-                        fatalError("Failed to find joint \(colliderJointName).")
-                    }
-                }
+                collisionComponent.updateColliders(rigComponent)
             }
 
             collisionComponent.touching.removeAll(keepingCapacity: true)

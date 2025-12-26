@@ -12,12 +12,14 @@ public struct OrientedBoundingBox3D: Collider3D, Sendable {
     public private(set) var radius: Size3 // Positive halfwidth extents of OBB along each axis
     internal var _radius: Size3
     internal var _offset: Position3
+    internal var _rotation: Quaternion
     
     public var size: Size3 {return radius * 2}
     
     public init(center: Position3 = .zero, offset: Position3 = .zero, radius: Size3, rotation: Quaternion) {
         self.center = center
         self.rotation = rotation
+        self._rotation = rotation
         self.offset = offset
         self._offset = offset
         self._radius = radius
@@ -38,16 +40,17 @@ public struct OrientedBoundingBox3D: Collider3D, Sendable {
     public private(set) var boundingBox: AxisAlignedBoundingBox3D
 
     mutating public func update(transform: Transform3) {
-        rotation = transform.rotation
         center = transform.position
         offset = _offset * transform.scale
         radius = _radius * transform.scale
+        rotation = _rotation * transform.rotation.conjugate
         self.boundingBox.update(transform: transform)
     }
     
     public mutating func update(sizeAndOffsetUsingTransform transform: Transform3) {
         _offset = transform.position
         _radius = transform.scale / 2
+        _rotation = transform.rotation
         self.boundingBox.update(sizeAndOffsetUsingTransform: transform)
     }
 }
@@ -75,6 +78,7 @@ public extension OrientedBoundingBox3D {
         self._radius = Size3(width: (x.y - x.x) / 2.0, height: (y.y - y.x) / 2.0, depth: (z.y - z.x) / 2.0)
         self.radius = _radius
         self.rotation = .zero
+        self._rotation = .zero
         self.boundingBox = AxisAlignedBoundingBox3D(center: center, offset: offset, radius: radius)
     }
 }
