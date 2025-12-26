@@ -639,6 +639,22 @@ extension View {
         subviews.append(view)
         view.superView = self
     }
+    public final func addSubview(_ view: View, belowSubview sibling: View) {
+        view.removeFromSuperview()
+        if let index = subviews.firstIndex(where: {$0 === sibling}) {
+            subviews.insert(view, at: index)
+            view.superView = self
+        }
+    }
+    public final func addSubview(_ view: View, aboveSubview sibling: View) {
+        view.removeFromSuperview()
+        if let index = subviews.firstIndex(where: {$0 === sibling}) {
+            let destinationIndex = subviews.index(after: index)
+            // destinationIndex can only be endIndex or less, so no need to validate
+            subviews.insert(view, at: destinationIndex)
+            view.superView = self
+        }
+    }
     public final func sendSubviewToBack(_ view: View) {
         guard view.superView === self, let index = subviews.firstIndex(where: {$0 === view}) else {
             fatalError("Attempted to change the view order of a view that is not a subview of this view.")
