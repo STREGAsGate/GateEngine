@@ -63,6 +63,14 @@ public final class StandardRenderingSystem: RenderingSystem {
                                 flags: renderingGeometry.flags
                             )
                         }
+                        
+                        for lines in renderingGeometry.lines {
+                            scene.insert(lines, withColor: material.channels[0].color, at: transform, flags: renderingGeometry.flags)
+                        }
+                        
+                        for points in renderingGeometry.points {
+                            scene.insert(points, color: material.channels[0].color, size: 1, at: transform, flags: renderingGeometry.flags)
+                        }
 
                         if let rigComponent = entity.component(ofType: Rig3DComponent.self) {
                             for skinnedGeometry in renderingGeometry.skinnedGeometries {
