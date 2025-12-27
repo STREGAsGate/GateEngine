@@ -14,7 +14,6 @@
 #include "../utils/gravity_utils.h"
 #include "../shared/gravity_array.h"
 #include "../shared/gravity_hash.h"
-#include <assert.h>
 
 typedef marray_t(gnode_class_decl_t *)  gnode_class_r;
 struct codegen_t {

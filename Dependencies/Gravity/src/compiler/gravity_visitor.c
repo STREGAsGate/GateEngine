@@ -7,7 +7,6 @@
 //
 
 #include "../compiler/gravity_visitor.h"
-#include <assert.h>
 
 // Visit a node invoking the associated callback.
 

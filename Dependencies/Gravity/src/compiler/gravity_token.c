@@ -8,7 +8,6 @@
 
 #include "../compiler/gravity_token.h"
 #include "../utils/gravity_utils.h"
-#include <assert.h>
 
 const char *token_string (gtoken_s token, uint32_t *len) {
     if (len) *len = token.bytes;

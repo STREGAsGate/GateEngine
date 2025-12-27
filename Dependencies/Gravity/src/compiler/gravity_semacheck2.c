@@ -11,7 +11,6 @@
 #include "../compiler/gravity_compiler.h"
 #include "../compiler/gravity_visitor.h"
 #include "../runtime/gravity_core.h"
-#include <assert.h>
 
 struct semacheck_t {
     gnode_r         *declarations;      // declarations stack

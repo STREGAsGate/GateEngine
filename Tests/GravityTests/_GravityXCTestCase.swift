@@ -17,8 +17,9 @@ open class GravityXCTestCase: XCTestCase {
         XCTAssert(true)
     }
     
+    @MainActor
     func runGravity(at path: String) async {
-        let gravity = await Gravity()
+        let gravity = Gravity()
 
         do {
             try await gravity.compile(file: path)

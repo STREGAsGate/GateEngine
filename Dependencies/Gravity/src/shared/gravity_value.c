@@ -15,7 +15,6 @@
 #include "gravity_macros.h"
 #include "gravity_opcodes.h"
 #include "../runtime/gravity_vmmacros.h"
-#include <assert.h>
 
                                                 // mark object visited to avoid infinite loop
 #define SET_OBJECT_VISITED_FLAG(_obj, _flag)    (((gravity_object_t *)_obj)->gc.visited = _flag)

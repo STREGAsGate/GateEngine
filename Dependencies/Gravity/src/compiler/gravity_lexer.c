@@ -11,7 +11,6 @@
 #include "../compiler/gravity_lexer.h"
 #include "../compiler/gravity_token.h"
 #include "../utils/gravity_utils.h"
-#include <assert.h>
 
 struct gravity_lexer_t {
     const char                  *buffer;        // buffer

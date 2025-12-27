@@ -10,7 +10,6 @@
 #include <math.h>
 #include <time.h>
 #include <stdlib.h>
-#include <assert.h>
 #include "gravity_core.h"
 #include "../shared/gravity_hash.h"
 #include "../shared/gravity_value.h"

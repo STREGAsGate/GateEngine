@@ -15,10 +15,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <assert.h>
 #include <limits.h>
 #include <float.h>
 #include <math.h>
-#include <assert.h>
 #include "../shared/gravity_memory.h"
 #include "../shared/gravity_config.h"
 

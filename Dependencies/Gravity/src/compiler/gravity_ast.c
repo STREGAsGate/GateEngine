@@ -12,7 +12,6 @@
 #include "../utils/gravity_utils.h"
 #include "../compiler/gravity_visitor.h"
 #include "../compiler/gravity_symboltable.h"
-#include <assert.h>
 
 #define SETBASE(node,tagv,_tok)         node->base.tag = tagv; node->base.token = _tok
 #define SETDECL(node,_decl)             node->base.decl = _decl
