@@ -6,11 +6,10 @@
  */
 
 public final class SkinCollider: @preconcurrency Collider3D {
-    var transform: Transform3 = .default {
+    public private(set) var transform: Transform3 = .default {
         didSet {
             if transform != oldValue {
                 forceRecompute = true
-                boundingBox.center = transform.position
             }
         }
     }
@@ -19,7 +18,6 @@ public final class SkinCollider: @preconcurrency Collider3D {
     public let skin: Skin
     
     public private(set) var transformedTriangles: [CollisionTriangle]
-    private var attributesPerTriangle: [UInt32]! = nil
     
     @MainActor
     var rigComponent: Rig3DComponent? {
@@ -43,41 +41,6 @@ public final class SkinCollider: @preconcurrency Collider3D {
             return rigComponent.animationProgress != computedAtAnimationProgress
         }
         return false
-    }
-    
-    func populateAttributes<Attributes: CollisionAttributesGroup>(using attributesType: Attributes.Type) {
-        var uvs: [[TextureCoordinate]] = Array(repeating: [], count: geometry.uvSets.count)
-        for uvSet in uvs.indices {
-            uvs[uvSet].reserveCapacity(geometry.positions.count)
-        }
-        for vertexIndex in geometry.vertexIndicies.indices {
-            let index = Int(geometry.vertexIndicies[vertexIndex])
-            let start2 = index * 2
-
-            for uvIndex in 0 ..< geometry.uvSets.count {
-                let uvSet = geometry.uvSets[uvIndex]
-                uvs[uvIndex].append(
-                    TextureCoordinate(uvSet[start2], uvSet[start2 + 1])
-                )
-            }
-        }
-        func attributeUVs(forTiangle index: Int) -> CollisionAttributeUVs {
-            var triangleUVs: [CollisionAttributeUVs.TriangleUVs] = []
-            for uvIndex in 0 ..< geometry.uvSets.count {
-                triangleUVs.append(
-                    CollisionAttributeUVs.TriangleUVs(
-                        uv1: uvs[uvIndex][index],
-                        uv2: uvs[uvIndex][index + 1],
-                        uv3: uvs[uvIndex][index + 2]
-                    )
-                )
-            }
-            return CollisionAttributeUVs(uvSets: triangleUVs)
-        }
-        
-        for triangleIndex in transformedTriangles.indices {
-            transformedTriangles[triangleIndex].setAttributes(Attributes(parsingUVs: attributeUVs(forTiangle: triangleIndex)))
-        }
     }
     
     @MainActor 
@@ -166,6 +129,7 @@ public final class SkinCollider: @preconcurrency Collider3D {
 
     public func update(transform: Transform3) {
         self.transform = transform
+        self.boundingBox.center = transform.position
     }
     
     public func update(sizeAndOffsetUsingTransform transform: Transform3) {
@@ -233,7 +197,7 @@ public final class SkinCollider: @preconcurrency Collider3D {
     public func surfaceImpact(comparing ray: Ray3D) -> SurfaceImpact3D? {
         recomputeIfNeeded()
         var closest: Position3? = nil
-        var closestDistance: Float = .greatestFiniteMagnitude
+        var closestDistance: Float = .infinity
         var closestTriangle: CollisionTriangle? = nil
         for triangle in transformedTriangles {
             guard let new = triangle.surfacePoint(for: ray) else {continue}
@@ -279,7 +243,6 @@ public final class SkinCollider: @preconcurrency Collider3D {
         
         self.forceRecompute = true
         
-        self.transformedTriangles = Array(repeating: CollisionTriangle(p1: .zero, p2: .zero, p3: .zero, rawAttributes: 0), count: geometry.count)
-        self.populateAttributes(using: attributesType)
+        self.transformedTriangles = geometry.generateCollisionTriangles(using: attributesType)
     }
 }
