@@ -86,9 +86,14 @@ public final class Collision3DSystem: System {
                 var triangles: [CollisionTriangle] = []
                 
                 for entity in entitiesProbablyHit(by: collisionComponent.collider.boundingBox) {
-                    guard let mesh = entity[Collision3DComponent.self].collider as? MeshCollider
-                    else { continue }
-                    triangles.append(contentsOf: mesh.triangles())
+                    switch entity[Collision3DComponent.self].collider {
+                    case let mesh as MeshCollider:
+                        triangles.append(contentsOf: mesh.triangles())
+                    case let skin as SkinCollider:
+                        triangles.append(contentsOf: skin.transformedTriangles)
+                    default:
+                        break
+                    }
                 }
                 for octree in octrees.filter({$0.boundingBox.isColiding(with: collisionComponent.collider.boundingBox)}) {
                     triangles.append(
