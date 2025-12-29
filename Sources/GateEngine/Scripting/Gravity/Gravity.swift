@@ -84,8 +84,12 @@ public final class Gravity {
         Self.storage[vmID]!.clearFileIncludeSourceCode()
     }
     
-    func filenameForID(_ id: UInt32) -> String? {
+    func fileNameForID(_ id: UInt32) -> String? {
         return Self.storage[vmID]!.loadedFilesByID[id]?.lastPathComponent
+    }
+    
+    func filePathForID(_ id: UInt32) -> String? {
+        return Self.storage[vmID]!.loadedFilesByID[id]?.path(percentEncoded: false)
     }
 
     var mainClosure: UnsafeMutablePointer<gravity_closure_t>? {
@@ -204,7 +208,7 @@ public final class Gravity {
                     gravity_compiler_free(compiler)
                     recentError = nil
                 }
-                throw GateEngineError.scriptCompileError("\(error)")
+                throw GateEngineError.scriptCompileOutputError(error)
             } else {
                 gravity_compiler_free(compiler)
                 throw GateEngineError.scriptCompileError("Unknown error.")
@@ -224,7 +228,7 @@ public final class Gravity {
         self.didRunMain = true
         gravity_vm_runmain(vm, mainClosure)
         if let error = recentError {
-            throw GateEngineError.scriptCompileError("\(error)")
+            throw GateEngineError.scriptCompileOutputError(error)
         }
         return GravityValue(gValue: gravity_vm_result(vm))
     }

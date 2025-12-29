@@ -13,7 +13,7 @@ internal func filenameCallback(
     xData: UnsafeMutableRawPointer?
 ) -> UnsafePointer<CChar>? {
     guard let gravity = unsafeBitCast(xData, to: Optional<Gravity>.self) else { return nil }
-    guard let fileName = gravity.filenameForID(fileID) else { return nil }
+    guard let fileName = gravity.fileNameForID(fileID) else { return nil }
     return fileName.withCString { source in
         return UnsafePointer(strdup(source))
     }
@@ -33,7 +33,7 @@ internal func loadFileCallback(
 
     if gravity.loadedFilesByID.values.contains(where: { $0 == url }) {
         Log.debug(
-            "Gravity Skip File: \(gravity.filenameForID(0)!) ->",
+            "Gravity: Skip File \(gravity.fileNameForID(0)!) ->",
             url.lastPathComponent,
             "(Already Loaded)"
         )
@@ -50,7 +50,7 @@ internal func loadFileCallback(
 
     let newFileID = UInt32(gravity.loadedFilesByID.count + 1)
     fileID.pointee = newFileID
-    Log.debug("Gravity Load File: \(gravity.filenameForID(0)!) ->", url.lastPathComponent)
+    Log.debug("Gravity: Load File \(gravity.fileNameForID(0)!) ->", url.lastPathComponent)
     gravity.loadedFilesByID[newFileID] = url
     size.pointee = sourceCode.count
     return sourceCode.withCString { sourceCode in

@@ -66,6 +66,7 @@ public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible
     case failedToEncode(_ reason: String)
     
     case scriptCompileError(_ reason: String)
+    case scriptCompileOutputError(_ gravityError: Gravity.Error)
     case scriptExecutionError(_ reason: String)
 
     case uiLayoutFailed(_ description: String)
@@ -95,6 +96,8 @@ public enum GateEngineError: Error, Equatable, Hashable, CustomStringConvertible
             return "FailedToEncode:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .scriptCompileError(let reason):
             return "ScriptCompileError:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
+        case .scriptCompileOutputError(let gravityError):
+            return "ScriptCompileError:\n\t" + gravityError.stderrOutput()
         case .scriptExecutionError(let reason):
             return "ScriptExecutionError:\n\t" + reason.replacingOccurrences(of: "\n", with: "\n\t")
         case .uiLayoutFailed(let reason):

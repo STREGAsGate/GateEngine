@@ -26,7 +26,7 @@ internal func errorCallback(
     #if DEBUG  // When running unit tests throw everything
     if Gravity.unitTestExpected != nil {
         if gravity.recentError == nil {
-            let fileName = gravity.filenameForID(errorDesc.fileid) ?? "UNKNOWN_GRAVITY_FILE"
+            let fileName = gravity.filePathForID(errorDesc.fileid) ?? "UNKNOWN_GRAVITY_FILE"
             gravity.recentError = Gravity.Error(
                 errorType: errorType,
                 fileName: fileName,
@@ -41,11 +41,11 @@ internal func errorCallback(
     #endif
 
     if errorType == GRAVITY_WARNING || errorType == GRAVITY_ERROR_NONE {
-        print("Gravity:", string)  // Dont throw warnings or not-error errors
+        Log.warn("Gravity:", string) // Dont throw warnings or not-error errors
     } else if gravity.recentError == nil {
         // Multiple errors can be emmited from gravity before Swift gets a chance to throw,
         // se we only store the first error.
-        let fileName = gravity.filenameForID(errorDesc.fileid) ?? "UNKNOWN_GRAVITY_FILE"
+        let fileName = gravity.filePathForID(errorDesc.fileid) ?? "UNKNOWN_GRAVITY_FILE"
         gravity.recentError = Gravity.Error(
             errorType: errorType,
             fileName: fileName,
@@ -57,7 +57,7 @@ internal func errorCallback(
     }
 }
 extension Gravity {
-    public struct Error: Swift.Error, CustomStringConvertible {
+    public struct Error: Swift.Error, Equatable, Hashable, CustomStringConvertible {
         let errorType: error_type_t
         let fileName: String
         let row: Int32
@@ -78,6 +78,42 @@ extension Gravity {
                 return "Gravity IO: " + suffix
             default:
                 return "Gravity: " + suffix
+            }
+        }
+        
+        public func stderrOutput(withBasePath basePath: String? = nil) -> String {
+            // {file_path}:{line}:{column}: {error|warning}: {message}
+            var out: String = basePath ?? ""
+            out += fileName + ":\(details.lineno):\(details.colno): error: " + explanation
+            return out
+        }
+        
+        public static func == (lhs: Self, rhs: Self) -> Bool {
+            guard lhs.errorType == rhs.errorType
+                    && lhs.fileName == rhs.fileName
+                    && lhs.row == rhs.row
+                    && lhs.column == rhs.column
+                    && lhs.explanation == rhs.explanation
+            else {return false}
+            return withUnsafeBytes(of: lhs.details) { lhs in
+                return withUnsafeBytes(of: rhs.details) { rhs in
+                    guard lhs.count == rhs.count else {return false}
+                    for index in 0 ..< lhs.count {
+                        if lhs[index] != rhs[index] {return false}
+                    }
+                    return true
+                }
+            }
+        }
+        
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(errorType)
+            hasher.combine(fileName)
+            hasher.combine(row)
+            hasher.combine(column)
+            hasher.combine(explanation)
+            withUnsafeBytes(of: details) { lhs in
+                hasher.combine(bytes: lhs)
             }
         }
     }
