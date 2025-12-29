@@ -502,7 +502,7 @@ extension Skeleton.Pose.Joint: Hashable {
 // MARK: - Resource Manager
 
 public protocol SkeletonImporter: ResourceImporter {
-    func loadSkeleton(options: SkeletonImporterOptions) async throws(GateEngineError) -> RawSkeleton
+    mutating func loadSkeleton(options: SkeletonImporterOptions) async throws(GateEngineError) -> RawSkeleton
 }
 
 public struct SkeletonImporterOptions: Equatable, Hashable, Sendable {
@@ -586,7 +586,7 @@ extension ResourceManager.Cache {
 
 extension RawSkeleton {
     public init(path: String, options: SkeletonImporterOptions = .none) async throws {
-        let importer: any SkeletonImporter = try await Game.unsafeShared.resourceManager.skeletonImporterForPath(path)
+        var importer: any SkeletonImporter = try await Game.unsafeShared.resourceManager.skeletonImporterForPath(path)
         self = try await importer.loadSkeleton(options: options)
     }
 }

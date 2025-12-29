@@ -239,7 +239,7 @@ public struct TileMapImporterOptions: Equatable, Hashable, Sendable {
 }
 
 public protocol TileMapImporter: ResourceImporter {
-    func loadTileMap(options: TileMapImporterOptions) async throws(GateEngineError) -> TileMapBackend
+    mutating func loadTileMap(options: TileMapImporterOptions) async throws(GateEngineError) -> TileMapBackend
 }
 
 extension ResourceManager {
@@ -365,11 +365,11 @@ extension ResourceManager {
     func _reloadTileMap(for key: Cache.TileMapKey, isFirstLoad: Bool) {
         Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
         let cache = self.cache
-        Task.detached {
+        Task {
             let path = key.requestedPath
             
             do {
-                let importer: any TileMapImporter = try await Game.unsafeShared.resourceManager.tileMapImporterForPath(path)
+                var importer: any TileMapImporter = try await Game.unsafeShared.resourceManager.tileMapImporterForPath(path)
                 let backend = try await importer.loadTileMap(options: key.tileMapOptions)
 
                 Task { @MainActor in

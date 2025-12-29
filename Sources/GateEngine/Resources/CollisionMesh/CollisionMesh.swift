@@ -94,7 +94,7 @@ public final class CollisionMeshBackend {
 // MARK: - Resource Manager
 
 public protocol CollisionMeshImporter: ResourceImporter {
-    func loadCollisionMesh(options: CollisionMeshImporterOptions) async throws(GateEngineError) -> RawCollisionMesh
+    mutating func loadCollisionMesh(options: CollisionMeshImporterOptions) async throws(GateEngineError) -> RawCollisionMesh
 }
 
 public struct CollisionMeshImporterOptions: Equatable, Hashable, Sendable {
@@ -177,7 +177,7 @@ extension ResourceManager {
 
 public extension RawCollisionMesh {
     init(path: String, options: CollisionMeshImporterOptions = .none) async throws {
-        let importer: any CollisionMeshImporter = try await Game.unsafeShared.resourceManager.collisionMeshImporterForPath(path)
+        var importer: any CollisionMeshImporter = try await Game.unsafeShared.resourceManager.collisionMeshImporterForPath(path)
         self = try await importer.loadCollisionMesh(options: options)
     }
 }

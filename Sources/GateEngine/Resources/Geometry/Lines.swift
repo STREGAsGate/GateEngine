@@ -68,7 +68,7 @@ extension RawLines {
         try await self.init(path: path.value, options: options)
     }
     public init(path: String, options: GeometryImporterOptions = .none) async throws(GateEngineError) {
-        let importer = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path)
+        var importer = try await Game.unsafeShared.resourceManager.geometryImporterForPath(path)
         let rawGeometry = try await importer.loadGeometry(options: options)
         self.init(wireframeFrom: rawGeometry)
     }

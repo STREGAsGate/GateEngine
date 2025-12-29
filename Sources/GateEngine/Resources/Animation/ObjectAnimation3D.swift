@@ -189,7 +189,7 @@ extension RawObjectAnimation3D: BinaryCodable {
 // MARK: - Resource Manager
 
 public protocol ObjectAnimation3DImporter: ResourceImporter {
-    func loadObjectAnimation(options: ObjectAnimation3DImporterOptions) async throws(GateEngineError) -> RawObjectAnimation3D
+    mutating func loadObjectAnimation(options: ObjectAnimation3DImporterOptions) async throws(GateEngineError) -> RawObjectAnimation3D
 }
 
 public struct ObjectAnimation3DImporterOptions: Equatable, Hashable, Sendable {
@@ -224,7 +224,7 @@ extension ResourceManager {
 
 extension RawObjectAnimation3D {
     public init(path: String, options: ObjectAnimation3DImporterOptions = .none) async throws {
-        let importer: any ObjectAnimation3DImporter = try await Game.unsafeShared.resourceManager.objectAnimation3DImporterForPath(path)
+        var importer: any ObjectAnimation3DImporter = try await Game.unsafeShared.resourceManager.objectAnimation3DImporterForPath(path)
         self = try await importer.loadObjectAnimation(options: options)
     }
 }

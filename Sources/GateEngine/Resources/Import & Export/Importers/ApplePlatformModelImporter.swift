@@ -7,10 +7,10 @@
 #if canImport(Darwin) && canImport(ModelIO)
 
 import Foundation
-import ModelIO
+@preconcurrency import ModelIO
 
-public final class ApplePlatformModelImporter: GeometryImporter {
-    public required init() {}
+public struct ApplePlatformModelImporter: GeometryImporter {
+    public init() {}
 
     private func positions(from mesh: MDLMesh) throws(GateEngineError) -> [Float] {
         guard let attributeData = mesh.vertexAttributeData(
@@ -138,11 +138,11 @@ public final class ApplePlatformModelImporter: GeometryImporter {
     }
     
     var asset: MDLAsset! = nil
-    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
+    public mutating func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
         guard let path = Platform.current.synchronousLocateResource(from: path) else {throw .failedToLocate(resource: path, nil) }
         self.asset = MDLAsset(url: URL(fileURLWithPath: path))
     }
-    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+    public mutating func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         guard let path = await Platform.current.locateResource(from: path) else {throw .failedToLocate(resource: path, nil) }
         self.asset = await withCheckedContinuation { continuation in
             Task.detached {
@@ -152,7 +152,7 @@ public final class ApplePlatformModelImporter: GeometryImporter {
         }
     }
     
-    public func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry {
+    public mutating func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry {
         for meshIndex in 0 ..< asset.count {
             guard let mesh = asset.object(at: meshIndex) as? MDLMesh else {
                 throw GateEngineError.failedToDecode("mesh[\(meshIndex)] is not a MDLMesh instance.")

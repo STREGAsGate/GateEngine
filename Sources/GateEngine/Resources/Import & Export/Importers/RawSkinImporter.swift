@@ -12,18 +12,18 @@ import Foundation
  
  The file extension of the asset to load must match `RawSkinImporter.fileExtension`
  */
-public final class RawSkinImporter: SkinImporter, GateEngineNativeResourceImporter {
+public struct RawSkinImporter: SkinImporter, GateEngineNativeResourceImporter {
     var data: Data! = nil
-    public required init() {}
+    public init() {}
 
-    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
+    public mutating func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
         do {
             self.data = try Platform.current.synchronousLoadResource(from: path)
         }catch{
             throw GateEngineError(error)
         }
     }
-    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+    public mutating func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         do {
             self.data = try await Platform.current.loadResource(from: path)
         }catch{
@@ -31,7 +31,7 @@ public final class RawSkinImporter: SkinImporter, GateEngineNativeResourceImport
         }
     }
     
-    public func loadSkin(options: SkinImporterOptions) async throws(GateEngineError) -> RawSkin {
+    public mutating func loadSkin(options: SkinImporterOptions) async throws(GateEngineError) -> RawSkin {
         do {
             return try RawSkinDecoder().decode(data)
         }catch{

@@ -12,12 +12,12 @@ import CoreServices
 import GameMath
 import UniformTypeIdentifiers
 
-public final class ApplePlatformImageImporter: TextureImporter {
+public struct ApplePlatformImageImporter: TextureImporter {
     var data: Data! = nil
     var size: Size2i! = nil
-    public required init() {}
+    public init() {}
     
-    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
+    public mutating func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
         do {
             let data = try Platform.current.synchronousLoadResource(from: path)
             try self.populateFromData(data)
@@ -26,7 +26,7 @@ public final class ApplePlatformImageImporter: TextureImporter {
         }
     }
     
-    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+    public mutating func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         do {
             let data = try await Platform.current.loadResource(from: path)
             try self.populateFromData(data)
@@ -35,7 +35,7 @@ public final class ApplePlatformImageImporter: TextureImporter {
         }
     }
     
-    func populateFromData(_ data: Data) throws(GateEngineError) {
+    mutating func populateFromData(_ data: Data) throws(GateEngineError) {
         do {
             guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil) else {
                 throw GateEngineError.failedToDecode("Failed to decode image source.")
@@ -53,11 +53,11 @@ public final class ApplePlatformImageImporter: TextureImporter {
         }
     }
     
-    public func synchronousLoadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
+    public mutating func synchronousLoadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
         return RawTexture(imageSize: size, imageData: data)
     }
 
-    public func loadTexture(options: TextureImporterOptions) async throws(GateEngineError) -> RawTexture {
+    public mutating func loadTexture(options: TextureImporterOptions) async throws(GateEngineError) -> RawTexture {
         return try synchronousLoadTexture(options: options)
     }
 
