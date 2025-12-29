@@ -36,11 +36,11 @@ fileprivate struct TMJFile: Decodable {
     let tiledversion: String
 }
 
-public final class TiledTMJImporter: TileMapImporter {
+public struct TiledTMJImporter: TileMapImporter {
     fileprivate var file: TMJFile! = nil
-    public required init() {}
+    public init() {}
 
-    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
+    public mutating func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
         do {
             let data = try Platform.current.synchronousLoadResource(from: path)
             self.file = try JSONDecoder().decode(TMJFile.self, from: data)
@@ -49,7 +49,7 @@ public final class TiledTMJImporter: TileMapImporter {
         }
     }
     
-    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+    public mutating func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         do {
             let data = try await Platform.current.loadResource(from: path)
             self.file = try JSONDecoder().decode(TMJFile.self, from: data)
@@ -58,7 +58,7 @@ public final class TiledTMJImporter: TileMapImporter {
         }
     }
     
-    public func loadTileMap(options: TileMapImporterOptions) async throws(GateEngineError) -> TileMapBackend {       
+    public mutating func loadTileMap(options: TileMapImporterOptions) async throws(GateEngineError) -> TileMapBackend {
         var layers: [TileMap.Layer] = []
         layers.reserveCapacity(file.layers.count)
         for fileLayer in file.layers {

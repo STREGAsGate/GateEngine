@@ -59,12 +59,12 @@ fileprivate struct TSJFile: Decodable {
     }
 }
 
-public final class TiledTSJImporter: TileSetImporter {
+public struct TiledTSJImporter: TileSetImporter {
     fileprivate var file: TSJFile! = nil
     var basePath: String = ""
-    public required init() {}
+    public init() {}
     
-    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
+    public mutating func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
         do {
             let data = try Platform.current.synchronousLoadResource(from: path)
             self.file = try JSONDecoder().decode(TSJFile.self, from: data)
@@ -79,7 +79,7 @@ public final class TiledTSJImporter: TileSetImporter {
             throw GateEngineError(error)
         }
     }
-    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+    public mutating func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         do {
             let data = try await Platform.current.loadResource(from: path)
             self.file = try JSONDecoder().decode(TSJFile.self, from: data)
@@ -95,7 +95,7 @@ public final class TiledTSJImporter: TileSetImporter {
         }
     }
 
-    public func loadTileSet(options: TileSetImporterOptions) async throws(GateEngineError) -> TileSetBackend {        
+    public mutating func loadTileSet(options: TileSetImporterOptions) async throws(GateEngineError) -> TileSetBackend {
         let tiles: [TileSet.Tile] = (0 ..< file.tilecount).map({ id in
             var properties: [String: String] = [:]
             if let fileTiles = file.tiles {

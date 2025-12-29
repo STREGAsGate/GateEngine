@@ -26,7 +26,7 @@ extension GLTF {
         case mat4 = "MAT4"
     }
 }
-private class GLTF: Decodable {
+private struct GLTF: Decodable, Sendable {
     var baseURL: URL? = nil
 
     let scene: Int
@@ -259,7 +259,7 @@ private class GLTF: Decodable {
     }
 
     lazy var cachedBuffers: [Data?] = Array(repeating: nil, count: buffers.count)
-    func buffer(at index: Int) -> Data? {
+    mutating func buffer(at index: Int) -> Data? {
         // Buffer 0 is pre-cached for glb files
         // So `existing` will always be present for index 0 of a glb file
         if let existing = cachedBuffers[index] {
@@ -282,7 +282,7 @@ private class GLTF: Decodable {
         return buffer
     }
 
-    func values<T: BinaryInteger>(forAccessor accessorIndex: Int) async -> [T]? {
+    mutating func values<T: BinaryInteger>(forAccessor accessorIndex: Int) async -> [T]? {
         let accessor = accessors[accessorIndex]
         let bufferView = bufferViews[accessor.bufferView]
         let count = accessor.count * accessor.primitiveCount
@@ -366,7 +366,7 @@ private class GLTF: Decodable {
         }
     }
 
-    func values<T: BinaryFloatingPoint>(forAccessor accessorIndex: Int) async -> [T]? {
+    mutating func values<T: BinaryFloatingPoint>(forAccessor accessorIndex: Int) async -> [T]? {
         let accessor = accessors[accessorIndex]
         let bufferView = bufferViews[accessor.bufferView]
         let count = accessor.count * accessor.primitiveCount
@@ -450,7 +450,7 @@ private class GLTF: Decodable {
         }
     }
     
-    func animationValues<T: BinaryFloatingPoint>(forAccessor accessorIndex: Int) async -> [T]? {
+    mutating func animationValues<T: BinaryFloatingPoint>(forAccessor accessorIndex: Int) async -> [T]? {
         let accessor = accessors[accessorIndex]
         let bufferView = bufferViews[accessor.bufferView]
         let count = accessor.count * accessor.primitiveCount
@@ -693,32 +693,32 @@ public extension GLTransmissionFormat {
     }
 }
 
-public final class GLTransmissionFormat: ResourceImporter {
+public struct GLTransmissionFormat: ResourceImporter {
     fileprivate var gltf: GLTF! = nil
-    required public init() {}
+    public init() {}
     
-    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
+    public mutating func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
         guard let path = Platform.current.synchronousLocateResource(from: path) else { throw .failedToLocate(resource: path, nil) }
         let baseURL = URL(fileURLWithPath: path).deletingLastPathComponent()
         do {
             let data = try Platform.current.synchronousLoadResource(from: path)
-            self.gltf = try gltf(from: data, baseURL: baseURL)
+            self.gltf = try Self.gltf(from: data, baseURL: baseURL)
         }catch{
             throw GateEngineError(error)
         }
     }
-    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+    public mutating func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         guard let path = await Platform.current.locateResource(from: path) else { throw .failedToLocate(resource: path, nil) }
         let baseURL = URL(fileURLWithPath: path).deletingLastPathComponent()
         do {
             let data = try await Platform.current.loadResource(from: path)
-            self.gltf = try gltf(from: data, baseURL: baseURL)
+            self.gltf = try Self.gltf(from: data, baseURL: baseURL)
         }catch{
             throw GateEngineError(error)
         }
     }
     
-    fileprivate func gltf(from data: Data, baseURL: URL) throws -> GLTF {
+    fileprivate static func gltf(from data: Data, baseURL: URL) throws -> GLTF {
         var jsonData: Data = data
         var bufferData: Data? = nil
         if data[0 ..< 4] == Data("glTF".utf8) {
@@ -728,7 +728,7 @@ public final class GLTransmissionFormat: ResourceImporter {
             jsonData = data.advanced(by: 20)[..<byteCount]
             bufferData = data.advanced(by: (byteCount + 28))
         }
-        let gltf = try JSONDecoder().decode(GLTF.self, from: jsonData)
+        var gltf = try JSONDecoder().decode(GLTF.self, from: jsonData)
         gltf.baseURL = baseURL
         gltf.cachedBuffers[0] = bufferData
         return gltf
@@ -749,7 +749,7 @@ public final class GLTransmissionFormat: ResourceImporter {
 }
 
 extension GLTransmissionFormat: GeometryImporter {
-    public func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry {
+    public mutating func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry {
         guard gltf.meshes != nil else {throw GateEngineError.failedToDecode("File contains no geometry.")}
         
         var mesh: GLTF.Mesh? = nil
@@ -921,7 +921,7 @@ extension GLTransmissionFormat: SkinImporter {
         }
         return nil
     }
-    private func inverseBindMatrices(
+    private mutating func inverseBindMatrices(
         from bufferView: GLTF.BufferView,
         expecting count: Int
     ) async -> [Matrix4x4]? {
@@ -945,7 +945,7 @@ extension GLTransmissionFormat: SkinImporter {
         })
     }
     
-    public func loadSkin(options: SkinImporterOptions) async throws(GateEngineError) -> RawSkin {
+    public mutating func loadSkin(options: SkinImporterOptions) async throws(GateEngineError) -> RawSkin {
         guard let skins = gltf.skins, skins.isEmpty == false else {
             throw GateEngineError.failedToDecode("File contains no skins.")
         }
@@ -1055,7 +1055,7 @@ extension GLTransmissionFormat: SkeletonImporter {
         return gltf.scenes[gltf.scene].nodes?.first
     }
 
-    public func loadSkeleton(options: SkeletonImporterOptions) async throws(GateEngineError) -> RawSkeleton {
+    public mutating func loadSkeleton(options: SkeletonImporterOptions) async throws(GateEngineError) -> RawSkeleton {
         guard let rootNode = skeletonNode(named: options.subobjectName) else {
             throw GateEngineError.failedToDecode("Couldn't find skeleton root.")
         }
@@ -1095,7 +1095,7 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
         return gltf.animations?.first
     }
     
-    public func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws(GateEngineError) -> RawSkeletalAnimation {
+    public mutating func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws(GateEngineError) -> RawSkeletalAnimation {
         guard let animation = animation(named: options.subobjectName) else {
             throw GateEngineError.failedToDecode(
                 "Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))"
@@ -1238,7 +1238,7 @@ extension GLTransmissionFormat: SkeletalAnimationImporter {
 }
 
 extension GLTransmissionFormat: ObjectAnimation3DImporter {
-    public func loadObjectAnimation(options: ObjectAnimation3DImporterOptions) async throws(GateEngineError) -> RawObjectAnimation3D {
+    public mutating func loadObjectAnimation(options: ObjectAnimation3DImporterOptions) async throws(GateEngineError) -> RawObjectAnimation3D {
         guard let animation = animation(named: options.subobjectName) else {
             throw GateEngineError.failedToDecode(
                 "Couldn't find animation: \"\(options.subobjectName!)\".\nAvailable Animations: \((gltf.animations ?? []).map({$0.name}))"
@@ -1339,7 +1339,7 @@ extension GLTransmissionFormat: ObjectAnimation3DImporter {
 
 extension GLTransmissionFormat: TextureImporter {
     // TODO: Supports only PNG. Add other formats (JPEG, WebP, ...)
-    public func synchronousLoadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
+    public mutating func synchronousLoadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
         let imageData: Data
         func loadImageData(image: GLTF.Image) throws(GateEngineError) -> Data {
             if let uri = image.uri {
@@ -1375,13 +1375,13 @@ extension GLTransmissionFormat: TextureImporter {
         return try PNGDecoder().decode(imageData)
     }
     
-    public func loadTexture(options: TextureImporterOptions) async throws(GateEngineError) -> RawTexture {
+    public mutating func loadTexture(options: TextureImporterOptions) async throws(GateEngineError) -> RawTexture {
         return try synchronousLoadTexture(options: options)
     }
 }
 
 extension GLTransmissionFormat: CollisionMeshImporter {
-    public func loadCollisionMesh(options: CollisionMeshImporterOptions) async throws(GateEngineError) -> RawCollisionMesh {
+    public mutating func loadCollisionMesh(options: CollisionMeshImporterOptions) async throws(GateEngineError) -> RawCollisionMesh {
         guard gltf.meshes != nil else {throw GateEngineError.failedToDecode("File contains no geometry.")}
         
         var mesh: GLTF.Mesh? = nil

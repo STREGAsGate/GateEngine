@@ -152,7 +152,7 @@ public final class TextureAtlasBuilder {
      - parameter sacrificePerformanceForSize: When `true` additional checks are performed to merge textures that are the same but with different paths. Resulting in a smaller atlas, at the cost of performance.
      */
     public func insertTexture(withPath unresolvedPath: String, sacrificePerformanceForSize: Bool = false) throws {
-        let importer = PNGImporter()
+        var importer = PNGImporter()
         try importer.synchronousPrepareToImportResourceFrom(path: unresolvedPath)
         let rawTexture = try importer.synchronousLoadTexture(options: .none)
 

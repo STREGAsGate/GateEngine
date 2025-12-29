@@ -8,26 +8,26 @@
 import Foundation
 import GameMath
 
-public final class PNGImporter: TextureImporter {
+public struct PNGImporter: TextureImporter {
     var data: Data! = nil
-    public required init() {}
+    public init() {}
     
-    public func currentFileContainsMutipleResources() -> Bool {
+    public mutating func currentFileContainsMutipleResources() -> Bool {
         return false
     }
     
-    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
+    public mutating func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
         self.data = try Platform.current.synchronousLoadResource(from: path)
     }
-    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+    public mutating func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         self.data = try await Platform.current.loadResource(from: path)
     }
     
-    public func synchronousLoadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
+    public mutating func synchronousLoadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture {
         return try PNGDecoder().decode(data)
     }
 
-    public func loadTexture(options: TextureImporterOptions) async throws(GateEngineError) -> RawTexture {
+    public mutating func loadTexture(options: TextureImporterOptions) async throws(GateEngineError) -> RawTexture {
         return try synchronousLoadTexture(options: options)
     }
 

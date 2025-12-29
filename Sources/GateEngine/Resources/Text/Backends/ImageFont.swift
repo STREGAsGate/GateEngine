@@ -13,7 +13,7 @@ struct ImageFont: FontBackend {
 
     @MainActor
     init(regular: String) async throws {
-        let importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(regular)
+        var importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(regular)
 
         let rawTexture = try await importer.loadTexture(options: .none)
 

@@ -164,8 +164,8 @@ extension Texture: Equatable, Hashable {
 // MARK: - Resource Manager
 
 public protocol TextureImporter: ResourceImporter {
-    func synchronousLoadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture
-    func loadTexture(options: TextureImporterOptions) async throws(GateEngineError) -> RawTexture
+    mutating func synchronousLoadTexture(options: TextureImporterOptions) throws(GateEngineError) -> RawTexture
+    mutating func loadTexture(options: TextureImporterOptions) async throws(GateEngineError) -> RawTexture
 }
 
 public struct TextureImporterOptions: Equatable, Hashable, Sendable {
@@ -215,7 +215,7 @@ extension RawTexture {
         try await self.init(path: path.value, options: options)
     }
     public init(path: String, options: TextureImporterOptions = .none) async throws {
-        let importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path)
+        var importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path)
         self = try await importer.loadTexture(options: options)
     }
 }
@@ -372,7 +372,7 @@ extension ResourceManager {
     private func _reloadTexture(key: Cache.TextureKey) {
         Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
         let cache = self.cache
-        Task { @MainActor in
+        Task {
             do {
                 let path = key.requestedPath
                 let fileExtension = URL(fileURLWithPath: path).pathExtension
@@ -380,13 +380,13 @@ extension ResourceManager {
                     throw GateEngineError.failedToLoad(resource: path, "Unknown file type.")
                 }
                 
-                let importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path)
+                var importer = try await Game.unsafeShared.resourceManager.textureImporterForPath(path)
                 
                 let rawTexture = try await importer.loadTexture(options: key.textureOptions)
                 guard rawTexture.imageData.isEmpty == false else {
                     throw GateEngineError.failedToLoad(resource: path, "File is empty.")
                 }
-                Task.detached {
+                Task {
                     let backend = await ResourceManager.textureBackend(
                         rawTexture: rawTexture,
                         mipMapping: key.mipMapping

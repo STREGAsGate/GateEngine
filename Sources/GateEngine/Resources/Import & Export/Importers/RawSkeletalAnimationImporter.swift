@@ -12,18 +12,18 @@ import Foundation
  
  The file extension of the asset to load must match `RawSkeletalAnimationImporter.fileExtension`
  */
-public final class RawSkeletalAnimationImporter: SkeletalAnimationImporter, GateEngineNativeResourceImporter {
+public struct RawSkeletalAnimationImporter: SkeletalAnimationImporter, GateEngineNativeResourceImporter {
     var data: Data! = nil
-    public required init() {}
+    public init() {}
 
-    public func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
+    public mutating func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError) {
         do {
             self.data = try Platform.current.synchronousLoadResource(from: path)
         }catch{
             throw GateEngineError(error)
         }
     }
-    public func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
+    public mutating func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         do {
             self.data = try await Platform.current.loadResource(from: path)
         }catch{
@@ -31,7 +31,7 @@ public final class RawSkeletalAnimationImporter: SkeletalAnimationImporter, Gate
         }
     }
     
-    public func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws(GateEngineError) -> RawSkeletalAnimation {
+    public mutating func loadSkeletalAnimation(options: SkeletalAnimationImporterOptions) async throws(GateEngineError) -> RawSkeletalAnimation {
         do {
             return try RawSkeletalAnimationDecoder().decode(data)
         }catch{

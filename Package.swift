@@ -708,6 +708,9 @@ extension Array where Element == SwiftSetting {
         var settings: Self = []
         
 #if compiler(>=6.2)
+    #if !hasFeature(ImmutableWeakCaptures)
+        enableFeature("ImmutableWeakCaptures")
+    #endif
     #if !hasFeature(InferIsolatedConformances)
         enableFeature("InferIsolatedConformances")
     #endif

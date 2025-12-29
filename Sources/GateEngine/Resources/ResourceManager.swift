@@ -9,14 +9,14 @@
 import class Foundation.FileManager
 #endif
 
-public protocol ResourceImporter: AnyObject {
+public protocol ResourceImporter: Sendable {
     init()
     
     #if GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
-    func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError)
+    mutating func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError)
     #endif
     #if GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem
-    func prepareToImportResourceFrom(path: String) async throws(GateEngineError)
+    mutating func prepareToImportResourceFrom(path: String) async throws(GateEngineError)
     #endif
     
     static func supportedFileExtensions() -> [String]
@@ -29,7 +29,7 @@ public protocol ResourceImporter: AnyObject {
      it will be kept in memory for a period of time allowing it to deocde more resources from the already accessed file data.
      - returns: `true` if this importer is able to return more then one resources from a single file, otherwise `false`.
      */
-    func currentFileContainsMutipleResources() -> Bool
+    mutating func currentFileContainsMutipleResources() -> Bool
 }
 
 public protocol GateEngineNativeResourceImporter: ResourceImporter {
@@ -108,10 +108,10 @@ extension ResourceManager {
         ]
         
         private var activeImporters: [ActiveImporterKey : ActiveImporter] = [:]
-        private struct ActiveImporterKey: Hashable {
+        private struct ActiveImporterKey: Hashable, Sendable {
             let path: String
         }
-        private struct ActiveImporter {
+        private struct ActiveImporter: Sendable {
             let importer: any ResourceImporter
             var lastAccessed: Date = .now
         }
@@ -125,7 +125,7 @@ extension ResourceManager {
                     return importer
                 }
             }
-            let importer = type.init()
+            var importer = type.init()
             try await importer.prepareToImportResourceFrom(path: path)
             if importer.currentFileContainsMutipleResources() {
                 let active = ActiveImporter(importer: importer, lastAccessed: .now)
