@@ -319,7 +319,7 @@ extension ResourceManager {
     
     func skeletalAnimationImporterForPath(_ path: String) async throws(GateEngineError) -> any SkeletalAnimationImporter {
         for type in self.importers.skeletalAnimationImporters {
-            if type.canProcessFile(path) {
+            if type.canProcessFile(at: path) {
                 return try await self.importers.getImporter(path: path, type: type)
             }
         }
@@ -451,7 +451,7 @@ extension ResourceManager {
     func _reloadSkeletalAnimation(for key: Cache.SkeletalAnimationKey, isFirstLoad: Bool) {
         Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
         let cache = self.cache
-        Task.detached {
+        Task {
             let path = key.requestedPath
             
             do {

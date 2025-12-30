@@ -61,7 +61,7 @@ public struct ApplePlatformImageImporter: TextureImporter {
         return try synchronousLoadTexture(options: options)
     }
 
-    public static func canProcessFile(_ path: String) -> Bool {
+    public static func canProcessFile(at path: String) -> Bool {
         let pathExtension = URL(fileURLWithPath: path).pathExtension
         guard pathExtension.isEmpty == false else {return false}
         guard let uttype = UTType(tag: pathExtension, tagClass: .filenameExtension, conformingTo: .image) else {

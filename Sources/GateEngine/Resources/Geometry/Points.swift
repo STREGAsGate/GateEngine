@@ -84,7 +84,7 @@ extension ResourceManager {
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached {
+            Task {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
                     let points = RawPoints(pointCloudFrom: geometry)

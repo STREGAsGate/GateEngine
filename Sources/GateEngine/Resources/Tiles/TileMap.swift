@@ -250,7 +250,7 @@ extension ResourceManager {
 
     func tileMapImporterForPath(_ path: String) async throws(GateEngineError) -> any TileMapImporter {
         for type in self.importers.tileMapImporters {
-            if type.canProcessFile(path) {
+            if type.canProcessFile(at: path) {
                 return try await self.importers.getImporter(path: path, type: type)
             }
         }

@@ -73,7 +73,7 @@ extension ResourceManager {
 
     func skinImporterForPath(_ path: String) async throws(GateEngineError) -> any SkinImporter {
         for type in self.importers.skinImporters {
-            if type.canProcessFile(path) {
+            if type.canProcessFile(at: path) {
                 return try await self.importers.getImporter(path: path, type: type)
             }
         }

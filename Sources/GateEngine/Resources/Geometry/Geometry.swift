@@ -180,7 +180,7 @@ extension ResourceManager {
     
     func geometryImporterForPath(_ path: String) async throws(GateEngineError) -> any GeometryImporter {
         for type in self.importers.geometryImporters {
-            if type.canProcessFile(path) {
+            if type.canProcessFile(at: path) {
                 return try await self.importers.getImporter(path: path, type: type)
             }
         }
@@ -270,7 +270,7 @@ extension ResourceManager {
         if cache.geometries[key] == nil {
             cache.geometries[key] = Cache.GeometryCache()
             Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached {
+            Task {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
                     Task { @MainActor in
@@ -341,7 +341,7 @@ extension ResourceManager {
         guard key.requestedPath.first != "$" && key.requestedPath.first != "@" else { return }
         guard self.geometryNeedsReload(key: key) else { return }
         let cache = self.cache
-        Task.detached {
+        Task {
             let geometry = try await RawGeometry(
                 path: key.requestedPath,
                 options: key.geometryOptions

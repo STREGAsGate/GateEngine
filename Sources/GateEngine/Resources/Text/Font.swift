@@ -54,7 +54,7 @@ public final class Font: OldResource {
         self._backend.configure(withOwner: self)
         #endif
         #if canImport(TrueType)
-        Task.detached {
+        Task {
             do {
                 let backend = try await TTFFont(regular: regular, bold: bold, italic: italic, boldItalic: boldItalic)
                 Task { @MainActor in
@@ -83,7 +83,7 @@ public final class Font: OldResource {
         #if DEBUG
         self._backend.configure(withOwner: self)
         #endif
-        Task.detached {
+        Task {
             do {
                 let backend = try await ImageFont(regular: regular)
                 Task { @MainActor in

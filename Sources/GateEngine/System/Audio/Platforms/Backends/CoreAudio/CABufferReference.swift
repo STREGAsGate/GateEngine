@@ -36,7 +36,7 @@ internal final class CABufferReference: AudioBufferBackend {
 
     required init(path: String, context: AudioContext, audioBuffer: AudioBuffer) {
         self.audioBuffer = audioBuffer
-        Task.detached {
+        Task {
             do {
                 guard let located = await Platform.current.locateResource(from: path) else {
                     throw GateEngineError.failedToLocate(resource: path, nil)

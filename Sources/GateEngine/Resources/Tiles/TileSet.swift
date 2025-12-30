@@ -177,7 +177,7 @@ extension ResourceManager {
 
     func tileSetImporterForPath(_ path: String) async throws(GateEngineError) -> any TileSetImporter {
         for type in self.importers.tileSetImporters {
-            if type.canProcessFile(path) {
+            if type.canProcessFile(at: path) {
                 return try await self.importers.getImporter(path: path, type: type)
             }
         }

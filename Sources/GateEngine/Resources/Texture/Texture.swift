@@ -201,7 +201,7 @@ extension ResourceManager {
     
     internal func textureImporterForPath(_ path: String) async throws(GateEngineError) -> any TextureImporter {
         for type in self.importers.textureImporters {
-            if type.canProcessFile(path) {
+            if type.canProcessFile(at: path) {
                 return try await self.importers.getImporter(path: path, type: type)
             }
         }
@@ -301,7 +301,7 @@ extension ResourceManager {
         if cache.textures[key] == nil {
             cache.textures[key] = Cache.TextureCache()
             Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached {
+            Task {
                 let backend = await ResourceManager.textureBackend(
                     rawTexture: rawTexture,
                     mipMapping: mipMapping
@@ -315,7 +315,7 @@ extension ResourceManager {
                         Log.warn("Resource \"\(path)\" was deallocated before being loaded.")
                     }
                 }
-                await Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
+                Game.unsafeShared.resourceManager.decrementLoading(path: key.requestedPath)
             }
         }
         return key

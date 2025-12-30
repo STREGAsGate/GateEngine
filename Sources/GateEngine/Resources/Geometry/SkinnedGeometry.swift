@@ -155,7 +155,7 @@ extension ResourceManager {
         if cache.skinnedGeometries[key] == nil {
             cache.skinnedGeometries[key] = Cache.SkinnedGeometryCache()
             Game.unsafeShared.resourceManager.incrementLoading(path: key.requestedPath)
-            Task.detached {
+            Task {
                 do {
                     let geometry = try await RawGeometry(path: path, options: geometryOptions)
                     let skin = try await Skin(path: key.requestedPath, options: skinOptions)
@@ -233,7 +233,7 @@ extension ResourceManager {
         guard key.requestedPath[key.requestedPath.startIndex] != "$" else { return }
         guard self.skinnedGeometryNeedsReload(key: key) else { return }
         let cache = self.cache
-        Task.detached {
+        Task {
             let geometry = try await RawGeometry(
                 path: key.requestedPath,
                 options: key.geometryOptions

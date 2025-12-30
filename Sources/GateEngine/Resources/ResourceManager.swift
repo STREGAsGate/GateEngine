@@ -13,20 +13,31 @@ public protocol ResourceImporter: Sendable {
     init()
     
     #if GATEENGINE_PLATFORM_HAS_SynchronousFileSystem
+    /// Preloads the ResourceImporters data in preparation for decoding.
     mutating func synchronousPrepareToImportResourceFrom(path: String) throws(GateEngineError)
     #endif
     #if GATEENGINE_PLATFORM_HAS_AsynchronousFileSystem
+    /// Preloads the ResourceImporters data in preparation for decoding.
     mutating func prepareToImportResourceFrom(path: String) async throws(GateEngineError)
     #endif
     
+    /// A list of file extensions that this resource importer is able to process.
     static func supportedFileExtensions() -> [String]
-    static func canProcessFile(_ path: String) -> Bool
+    
+    /**
+     Checks if a file can be processed by this resource importer.
+     - parameter path: The resource path of a file to check
+     - returns: `true` if this resource importer can load a resource from the file at `path`
+     - warning: This function is an advanced option rarely needed. Please implement `supportedFileExtensions()` instead.
+     - seeAlso: `supportedFileExtensions()`
+     */
+    static func canProcessFile(at path: String) -> Bool
     
     /**
      Importers can report if they are capable of returning multiple resource instances from the same file.
      
      Properly returning `true` or `false` will effect performance. If the importer can decode multiple resources, 
-     it will be kept in memory for a period of time allowing it to deocde more resources from the already accessed file data.
+     it will be kept in memory for a period of time allowing it to deocde more resources from the already loaded file data.
      - returns: `true` if this importer is able to return more then one resources from a single file, otherwise `false`.
      */
     mutating func currentFileContainsMutipleResources() -> Bool
@@ -46,9 +57,9 @@ public extension ResourceImporter {
         return []
     }
     
-    static func canProcessFile(_ path: String) -> Bool {
+    static func canProcessFile(at path: String) -> Bool {
         let supportedExtensions = self.supportedFileExtensions()
-        precondition(supportedExtensions.isEmpty == false, "Imporers must implement `supportedFileExtensions()` or  `canProcessFile(_:)`.")
+        precondition(supportedExtensions.isEmpty == false, "Imporers must implement `supportedFileExtensions()` or  `canProcessFile(at:)`.")
         let fileExtension = URL(fileURLWithPath: path).pathExtension
         guard fileExtension.isEmpty == false else {return false}
         for supportedFileExtension in supportedExtensions {
@@ -107,38 +118,68 @@ extension ResourceManager {
             TiledTMJImporter.self,
         ]
         
-        private var activeImporters: [ActiveImporterKey : ActiveImporter] = [:]
-        private struct ActiveImporterKey: Hashable, Sendable {
-            let path: String
-        }
-        private struct ActiveImporter: Sendable {
-            let importer: any ResourceImporter
-            var lastAccessed: Date = .now
-        }
-        
-        internal mutating func getImporter<I: ResourceImporter>(path: String, type: I.Type) async throws(GateEngineError) -> I {
-            let key = ActiveImporterKey(path: path)
-            if let existing = activeImporters[key] {
-                // Make sure the importer can be the type requested
-                if let importer = existing.importer as? I {
-                    activeImporters[key]?.lastAccessed = .now
-                    return importer
+        /**
+         Isolated cache of resource importers. Importers are mutable, but no changes are saved outside of the scode they are made.
+         */
+        actor ActiveImporters {
+            struct Key: Hashable, Sendable {
+                let path: String
+            }
+            struct Importer: Sendable {
+                let importer: any ResourceImporter
+                var lastAccessed: Date = .now
+            }
+            var activeImporters: [Key : Importer] = [:]
+            
+            subscript (_ key: Key) -> Importer? {
+                get {
+                    return self.activeImporters[key]
+                }
+                set {
+                    self.activeImporters[key] = newValue
                 }
             }
-            var importer = type.init()
-            try await importer.prepareToImportResourceFrom(path: path)
-            if importer.currentFileContainsMutipleResources() {
-                let active = ActiveImporter(importer: importer, lastAccessed: .now)
-                activeImporters[key] = active
+            
+            func setLastAccessed(for key: Key) {
+                self.activeImporters[key]?.lastAccessed = .now
             }
-            return importer
+            
+            func getImporter<I: ResourceImporter>(for path: String, type: I.Type) async throws(GateEngineError) -> I {
+                let key = Key(path: path)
+                if let existing = activeImporters[key] {
+                    // Make sure the importer can be the type requested
+                    if let importer = existing.importer as? I {
+                        activeImporters[key]?.lastAccessed = .now
+                        return importer
+                    }
+                }
+                var importer = type.init()
+                try await importer.prepareToImportResourceFrom(path: path)
+                if importer.currentFileContainsMutipleResources() {
+                    let active = ActiveImporters.Importer(importer: importer, lastAccessed: .now)
+                    activeImporters[key] = active
+                }
+                return importer
+            }
+            
+            func clean() {
+                for key in activeImporters.keys {
+                    if activeImporters[key]!.lastAccessed.timeIntervalSinceNow < -5 {
+                        activeImporters.removeValue(forKey: key)
+                    }
+                }
+            }
+        }
+        var activeImporters: ActiveImporters = .init()
+        
+        internal func getImporter<I: ResourceImporter>(path: String, type: I.Type) async throws(GateEngineError) -> I {
+            return try await activeImporters.getImporter(for: path, type: type)
         }
         
-        internal mutating func clean() {
-            for key in activeImporters.keys {
-                if activeImporters[key]!.lastAccessed.timeIntervalSinceNow < -60 {
-                    activeImporters.removeValue(forKey: key)
-                }
+        internal func clean() {
+            let activeImporters = activeImporters
+            Task {
+                await activeImporters.clean()
             }
         }
     }

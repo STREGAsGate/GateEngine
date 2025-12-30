@@ -145,7 +145,7 @@ public struct ApplePlatformModelImporter: GeometryImporter {
     public mutating func prepareToImportResourceFrom(path: String) async throws(GateEngineError) {
         guard let path = await Platform.current.locateResource(from: path) else {throw .failedToLocate(resource: path, nil) }
         self.asset = await withCheckedContinuation { continuation in
-            Task.detached {
+            Task {
                 let asset = MDLAsset(url: URL(fileURLWithPath: path))
                 continuation.resume(returning: asset)
             }
@@ -178,7 +178,7 @@ public struct ApplePlatformModelImporter: GeometryImporter {
         throw GateEngineError.failedToDecode("Failed to locate model.")
     }
 
-    public static func canProcessFile(_ path: String) -> Bool {
+    public static func canProcessFile(at path: String) -> Bool {
         return MDLAsset.canImportFileExtension(URL(fileURLWithPath: path).pathExtension)
     }
 }
