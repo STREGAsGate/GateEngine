@@ -752,13 +752,18 @@ extension GLTransmissionFormat: GeometryImporter {
     public mutating func loadGeometry(options: GeometryImporterOptions) async throws(GateEngineError) -> RawGeometry {
         guard gltf.meshes != nil else {throw GateEngineError.failedToDecode("File contains no geometry.")}
         
+        // TODO: Disambiguate desire for subObjectName
+        // Different software can output different names in different places.
+        // A mesh name could end up as a node.name, material.name, or mesh.name
+        // The end user needs a way to pick what they mean when they try to load geometry
+        // These changes need to be reflected in CollisionMesh importing as well
         var mesh: GLTF.Mesh? = nil
         if let name = options.subobjectName {
-            if let meshID = gltf.nodes.first(where: { $0.name == name })?.mesh {
-                mesh = gltf.meshes![meshID]
-            } else if let _mesh = gltf.meshes!.first(where: { $0.name == name }) {
+            if let _mesh = gltf.meshes!.first(where: { $0.name == name }) {
                 mesh = _mesh
-            } else {
+            }else if let meshID = gltf.nodes.first(where: { $0.name == name })?.mesh {
+                mesh = gltf.meshes![meshID]
+            }else{
                 let meshNames = gltf.meshes!.map({ $0.name })
                 let nodeNames = gltf.nodes.filter({ $0.mesh != nil }).map({ $0.name })
                 throw GateEngineError.failedToDecode(
@@ -872,22 +877,28 @@ extension GLTransmissionFormat: GeometryImporter {
         if options.applyRootTransform, let nodeIndex = gltf.scenes[gltf.scene].nodes?.first {
             let transform = gltf.nodes[nodeIndex].transform.createMatrix()
             return geometryBase * transform
-        }else if options.makeInstancesReal, let nodes = gltf.scenes[gltf.scene].nodes {
+        }else if options.makeInstancesReal, let sceneNodeIndicies = gltf.scenes[gltf.scene].nodes {
             var transformedGeometries: [RawGeometry] = []
-            let meshIndex = gltf.meshes!.firstIndex(where: {$0.name == mesh.name})
-            for index in nodes {
-                guard gltf.nodes[index].mesh == meshIndex else {continue}
-                var transform: Matrix4x4 = .identity
-                
-                func applyNode(_ nodeIndex: Int) {
-                    transform *= gltf.nodes[nodeIndex].transform.createMatrix()
-                    if let parent = nodes.first(where: {gltf.nodes[$0].children?.contains(nodeIndex) == true}) {
-                        applyNode(parent)
+            for meshIndex in gltf.meshes!.indices {
+                // mesh.name is not required to be unique
+                // Multiple meshes can have the same name for some reason but different content
+                // So we need to loop through every mesh and check every name
+                guard gltf.meshes![meshIndex].name == mesh.name else {continue}
+                for sceneNodeIndex in sceneNodeIndicies {
+                    guard gltf.nodes[sceneNodeIndex].mesh == meshIndex else {continue}
+                    var transform: Matrix4x4 = .identity
+                    
+                    func applyNode(_ sceneNodeIndex: Int) {
+                        transform *= gltf.nodes[sceneNodeIndex].transform.createMatrix()
+                        if let parent = sceneNodeIndicies.first(where: {gltf.nodes[$0].children?.contains(sceneNodeIndex) == true}) {
+                            applyNode(parent)
+                        }
                     }
+                    applyNode(sceneNodeIndex)
+                    transformedGeometries.append(geometryBase * transform)
                 }
-                applyNode(index)
-                transformedGeometries.append(geometryBase * transform)
             }
+            assert(transformedGeometries.isEmpty == false)
             return RawGeometry(combining: transformedGeometries, optimizing: .byEquality)
         }else{
             return geometryBase
@@ -1386,11 +1397,11 @@ extension GLTransmissionFormat: CollisionMeshImporter {
         
         var mesh: GLTF.Mesh? = nil
         if let name = options.subobjectName {
-            if let meshID = gltf.nodes.first(where: { $0.name == name })?.mesh {
-                mesh = gltf.meshes![meshID]
-            } else if let _mesh = gltf.meshes!.first(where: { $0.name == name }) {
+            if let _mesh = gltf.meshes!.first(where: { $0.name == name }) {
                 mesh = _mesh
-            } else {
+            }else if let meshID = gltf.nodes.first(where: { $0.name == name })?.mesh {
+                mesh = gltf.meshes![meshID]
+            }else{
                 let meshNames = gltf.meshes!.map({ $0.name })
                 let nodeNames = gltf.nodes.filter({ $0.mesh != nil }).map({ $0.name })
                 throw GateEngineError.failedToDecode(
@@ -1501,22 +1512,28 @@ extension GLTransmissionFormat: CollisionMeshImporter {
             let geometryBase = geometryBase * transform
             let triangles = geometryBase.generateCollisionTriangles(using: options.collisionAttributes)
             return RawCollisionMesh(collisionTriangles: triangles) 
-        }else if options.makeInstancesReal, let nodes = gltf.scenes[gltf.scene].nodes {
+        }else if options.makeInstancesReal, let sceneNodeIndicies = gltf.scenes[gltf.scene].nodes {
             var transformedGeometries: [RawGeometry] = []
-            let meshIndex = gltf.meshes!.firstIndex(where: {$0.name == mesh.name})
-            for index in nodes {
-                guard gltf.nodes[index].mesh == meshIndex else {continue}
-                var transform: Matrix4x4 = .identity
-                
-                func applyNode(_ nodeIndex: Int) {
-                    transform *= gltf.nodes[nodeIndex].transform.createMatrix()
-                    if let parent = nodes.first(where: {gltf.nodes[$0].children?.contains(nodeIndex) == true}) {
-                        applyNode(parent)
+            for meshIndex in gltf.meshes!.indices {
+                // mesh.name is not required to be unique
+                // Multiple meshes can have the same name for some reason but different content
+                // So we need to loop through every mesh and check every name
+                guard gltf.meshes![meshIndex].name == mesh.name else {continue}
+                for sceneNodeIndex in sceneNodeIndicies {
+                    guard gltf.nodes[sceneNodeIndex].mesh == meshIndex else {continue}
+                    var transform: Matrix4x4 = .identity
+                    
+                    func applyNode(_ sceneNodeIndex: Int) {
+                        transform *= gltf.nodes[sceneNodeIndex].transform.createMatrix()
+                        if let parent = sceneNodeIndicies.first(where: {gltf.nodes[$0].children?.contains(sceneNodeIndex) == true}) {
+                            applyNode(parent)
+                        }
                     }
+                    applyNode(sceneNodeIndex)
+                    transformedGeometries.append(geometryBase * transform)
                 }
-                applyNode(index)
-                transformedGeometries.append(geometryBase * transform)
             }
+            assert(transformedGeometries.isEmpty == false)
             let geometryBase = RawGeometry(combining: transformedGeometries, optimizing: .byEquality)
             let triangles = geometryBase.generateCollisionTriangles(using: options.collisionAttributes)
             return RawCollisionMesh(collisionTriangles: triangles) 
