@@ -113,7 +113,7 @@ nonisolated public struct RayTraceStructure: Sendable {
         }
     }
     
-    public init(rawGeometries: [RawGeometry]) async {
+    public init(rawGeometries: [RawGeometry]) async throws {
         var positions: [Position3f] = []
         var normals: [Direction3f] = []
         var attributes: [UInt64] = []
@@ -146,6 +146,10 @@ nonisolated public struct RayTraceStructure: Sendable {
             let rawGeometry = rawGeometries[sourceIndex]
             
             for triangle in rawGeometry {
+                if Task.isCancelled {
+                    throw CancellationError()
+                }
+                
                 func indexByAppendingValue<V: Equatable>(_ value: V, to array: inout [V]) -> Int {
                     if let existingIndex = array.firstIndex(of: value) {
                         return existingIndex
@@ -224,7 +228,7 @@ nonisolated public struct RayTraceStructure: Sendable {
         let maximumDepth: Int = 3
         
         @_optimize(speed)
-        func makeChildren(of parentDepth: Int, parentCenter: Position3f) -> [Node] {
+        func makeChildren(of parentDepth: Int, parentCenter: Position3f) throws -> [Node] {
             let childDepth = parentDepth + 1
             let childSize = rootNodeBounds / Float(childDepth * 2)
             let halfChildSize = childSize * 0.5
@@ -247,6 +251,9 @@ nonisolated public struct RayTraceStructure: Sendable {
                 let rect: Rect3f = .init(size: childSize, center: childCenter)
                 var triangles: [Self.Index] = []
                 for (index, triangle) in self.enumerated() {
+                    if Task.isCancelled {
+                        throw CancellationError()
+                    }
                     if rect.contains(triangle.nearestSurfacePosition(to: rect.center)) {
                         triangles.append(index)
                         trianglesForParent.insert(index)
@@ -260,7 +267,7 @@ nonisolated public struct RayTraceStructure: Sendable {
                 
                 if branch {
                     // Branch
-                    let childNodes: [Node] = makeChildren(of: childDepth, parentCenter: childCenter)
+                    let childNodes: [Node] = try makeChildren(of: childDepth, parentCenter: childCenter)
                     if childNodes.count > 1 {
                         nodes.append(
                             Node(depth: childDepth, origin: childCenter, size: childSize, kind: .branch(childNodes))
@@ -286,7 +293,7 @@ nonisolated public struct RayTraceStructure: Sendable {
             return nodes
         }
         
-        let rootNodeChildren = makeChildren(of: 0, parentCenter: rootNodeCenter)
+        let rootNodeChildren = try makeChildren(of: 0, parentCenter: rootNodeCenter)
         self.rootNode = Node(depth: 0, origin: rootNodeCenter, size: rootNodeBounds, kind: .branch(rootNodeChildren))
     }
 }
@@ -420,7 +427,6 @@ extension RayTraceStructure {
         let ray = Ray3f(from: source, toward: destination)
         let distanceToDst = source.distance(from: destination)
         
-        @_optimize(speed)
         func castThrough(_ node: Node) -> Bool {
             let rect = node.rect
             let refPoint = rect.nearestSurfacePosition(to: ray.origin)
@@ -461,7 +467,6 @@ extension RayTraceStructure {
         
         var hits: Set<Int> = []
         
-        @_optimize(speed)
         func castThrough(_ node: Node) {
             let rect = node.rect
             if rect.intersects(with: ray) {

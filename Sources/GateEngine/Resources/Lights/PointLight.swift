@@ -10,22 +10,8 @@ import GameMath
 public struct PointLight: LightEmitter {
     public var brightness: Float
     public var color: Color
-    
-    /// The unit distance the light can travel
     public var radius: Float
-    /// How smooth the transition from the light center to the radius appears. 0 is the softest, 1 is the hardest
-    public var falloff: Float
-    
-    @inlinable
-    public var softness: Float {
-        nonmutating get {
-            self.radius / self.falloff
-        }
-        mutating set {
-            self.falloff = self.radius * newValue
-        }
-    }
-
+    public var softness: Float
     public var position: Position3f
 
     public init(
@@ -38,21 +24,7 @@ public struct PointLight: LightEmitter {
         self.brightness = brightness
         self.color = color
         self.radius = radius
-        self.falloff = self.radius * softness
-        self.position = position
-    }
-    
-    public init(
-        brightness: Float,
-        color: Color,
-        radius: Float,
-        falloff: Float,
-        position: Position3f
-    ) {
-        self.brightness = brightness
-        self.color = color
-        self.radius = radius
-        self.falloff = falloff
+        self.softness = softness
         self.position = position
     }
 }
@@ -74,11 +46,8 @@ extension PointLight: BakingLightEmitter {
             return 0
         }
 
-        let s2 = square(s)
+//        let s2 = square(s)
 
-//        if cusp == true {
-//        return brightness * square(1 - s2) / (1 + falloff * s)
-//        }
-        return brightness * square(1 - s2) / (1 + falloff * s2)
+        return Float(brightness).interpolated(to: 0.0, .linear(s * softness))
     }
 }

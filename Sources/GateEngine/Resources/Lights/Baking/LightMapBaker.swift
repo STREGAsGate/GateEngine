@@ -13,9 +13,14 @@ public struct LightMapBaker: Sendable {
     nonisolated public let antialiasingSamples: Int
     
     public enum Quality: Int, Comparable, Sendable {
-        case fast
-        case medium
-        case best
+        /// The lowest quality with all features enabled. This quality level disables shadows.
+        case lowestNoShadows
+        /// The lowest quality with all features enabled.
+        case lowestFastest
+        /// A balance of quality, prefering faster completetion but improving quality on tasts that are easy to compute
+        case balanced
+        /// The highest quality with all features enabled
+        case highestSlowest
         
         public static func < (lhs: LightMapBaker.Quality, rhs: LightMapBaker.Quality) -> Bool {
             return lhs.rawValue < rhs.rawValue
@@ -38,20 +43,20 @@ public struct LightMapBaker: Sendable {
     public func bake(_ sources: [Source]) async throws -> [LightMapBaker.Result] {
         Log.info("\(LightMapBaker.self): Baking...")
         Log.info("\(LightMapBaker.self): Building ray trace structure")
-        let rayTraceStructure = await self.generateRayTraceStructure(for: sources)
+        let rayTraceStructure = try await self.generateRayTraceStructure(for: sources)
         
         Log.info("\(LightMapBaker.self): Building baking sources...")
-        let bakedSources = await withTaskGroup { group in
-            let bakingSources = await self.generateBakingSources(for: sources, rayTraceStructure: rayTraceStructure)
+        let bakedSources: [BakingSource] = try await withThrowingTaskGroup { group in
+            let bakingSources = try await self.generateBakingSources(for: sources, rayTraceStructure: rayTraceStructure)
             
             for sourceIndex in bakingSources.indices {
                 group.addTask {
                     var source = bakingSources[sourceIndex]
                     
-                    source.triangleLightMaps = await withTaskGroup { group in
+                    source.triangleLightMaps = try await withThrowingTaskGroup { group in
                         for triangleIndex in source.triangleLightMaps.indices {
                             group.addTask {
-                                let lightMap = await self.bake(
+                                let lightMap = try await self.bake(
                                     sourceIndex,
                                     triangleIndex: triangleIndex,
                                     sources: bakingSources,
@@ -64,7 +69,10 @@ public struct LightMapBaker: Sendable {
                         
                         var lightMaps: [(triangleIndex: Int, lightMap: RawTexture)] = []
                         lightMaps.reserveCapacity(source.triangleLightMaps.count)
-                        for await result in group {
+                        for try await result in group {
+                            if Task.isCancelled {
+                                throw CancellationError()
+                            }
                             lightMaps.append(result)
                         }
                         return lightMaps.sorted(by: {$0.triangleIndex < $1.triangleIndex}).map(\.lightMap)
@@ -76,13 +84,16 @@ public struct LightMapBaker: Sendable {
             
             var bakedSources: [(index: Int, source: BakingSource)] = []
             bakedSources.reserveCapacity(bakingSources.count)
-            for await source in group {
+            for try await source in group {
+                if Task.isCancelled {
+                    throw CancellationError()
+                }
                 bakedSources.append(source)
                 Log.info("\(LightMapBaker.self): Built baking source \(bakedSources.count)/\(bakingSources.count)")
             }
             return bakedSources.sorted(by: {$0.index < $1.index}).map(\.source)
         }
-        
+
         Log.info("\(LightMapBaker.self): Baking sources... ")
         let results = try await withThrowingTaskGroup { group in
             for bakedSourceIndex in bakedSources.indices {
@@ -90,6 +101,9 @@ public struct LightMapBaker: Sendable {
                     let bakedSource = bakedSources[bakedSourceIndex]
                     let atlasBuilder = TextureAtlasBuilder(blockSize: 1)
                     for textureIndex in bakedSource.triangleLightMaps.indices {
+                        if Task.isCancelled {
+                            throw CancellationError()
+                        }
                         try atlasBuilder.insertTexture(
                             bakedSource.triangleLightMaps[textureIndex],
                             named: "\(textureIndex)",
@@ -132,13 +146,22 @@ public struct LightMapBaker: Sendable {
             var results: [(bakedSourceIndex: Int, result: Self.Result)] = []
             results.reserveCapacity(bakedSources.count)
             for try await result in group {
+                if Task.isCancelled {
+                    throw CancellationError()
+                }
                 results.append(result)
                 Log.info("\(LightMapBaker.self): Baked source \(results.count)/\(bakedSources.count)")
             }
             return results.sorted(by: {$0.bakedSourceIndex < $1.bakedSourceIndex}).map(\.result)
         }
-        Log.info("\(LightMapBaker.self): Done.")
-        return results
+        
+        if Task.isCancelled {
+            Log.info("\(LightMapBaker.self): Cancelled.")
+            throw CancellationError()
+        }else{
+            Log.info("\(LightMapBaker.self): Done.")
+            return results
+        }
     }
 }
 
@@ -277,14 +300,17 @@ fileprivate extension LightMapBaker {
 }
 
 fileprivate extension LightMapBaker {
-    func generateRayTraceStructure(for sources: [Source]) async -> RayTraceStructure {
-        return await RayTraceStructure(rawGeometries: sources.map({$0.geometry}))
+    func generateRayTraceStructure(for sources: [Source]) async throws -> RayTraceStructure {
+        return try await RayTraceStructure(rawGeometries: sources.map({$0.geometry}))
     }
     
-    func generateBakingSources(for sources: [Source], rayTraceStructure: RayTraceStructure) async -> [BakingSource] {
-        return await withTaskGroup { group in
+    func generateBakingSources(for sources: [Source], rayTraceStructure: RayTraceStructure) async throws -> [BakingSource] {
+        return try await withThrowingTaskGroup { group in
             for (sourceIndex, source) in sources.enumerated() {
                 group.addTask {
+                    if Task.isCancelled {
+                        throw CancellationError()
+                    }
                     let packer = LightMapPacker(uvSet: self.uvSetIndex, texelDensity: self.texelDensity, options: source.options)
                     var geometry = source.geometry
                     let triangleLightMaps = packer.atlasPack(&geometry).map({
@@ -294,11 +320,14 @@ fileprivate extension LightMapBaker {
                         )
                     })
                     
-                    let triangleMeta: [TriangleMeta] = await withTaskGroup { group in
+                    let triangleMeta: [TriangleMeta] = try await withThrowingTaskGroup { group in
                         let geometry = geometry
                         for (triangleIndex, lightMap) in triangleLightMaps.enumerated() {
                             group.addTask {
-                                return (triangleIndex, await TriangleMeta(
+                                if Task.isCancelled {
+                                    throw CancellationError()
+                                }
+                                return (triangleIndex, try await TriangleMeta(
                                     quality: quality,
                                     sourceIndex: sourceIndex,
                                     triangleIndex: triangleIndex,
@@ -315,7 +344,7 @@ fileprivate extension LightMapBaker {
                         }
                         
                         var results: [(index: Int, meta: TriangleMeta)] = .init(minimumCapacity: triangleLightMaps.count)
-                        for await result in group {
+                        for try await result in group {
                             results.append(result)
                         }
                         
@@ -334,7 +363,7 @@ fileprivate extension LightMapBaker {
             }
             
             var bakingSources: [(index: Int, source: BakingSource)] = .init(minimumCapacity: sources.count)
-            for await bakingSource in group {
+            for try await bakingSource in group {
                 bakingSources.append(bakingSource)
             }
             
@@ -376,7 +405,7 @@ fileprivate extension LightMapBaker {
         Size2f(x:  0.5,  y: -0.25), // EdgeRight Top
     ]
     
-    func bake(_ sourceIndex: Int, triangleIndex: Int, sources: [BakingSource], lights: LightSet, rayTraceStructure: RayTraceStructure) async -> RawTexture {
+    func bake(_ sourceIndex: Int, triangleIndex: Int, sources: [BakingSource], lights: LightSet, rayTraceStructure: RayTraceStructure) async throws -> RawTexture {
         let source = sources[sourceIndex]
         var lightMap = source.triangleLightMaps[triangleIndex]
         let metaTriangle = source.trianglesMeta[triangleIndex]
@@ -384,9 +413,12 @@ fileprivate extension LightMapBaker {
         for light in lights.pointLights {
             guard metaTriangle.collisionTriangle.closestSurfacePoint(from: light.position.oldVector).distance(from: light.position.oldVector) < light.radius + 0.001 else {continue}
             for metaPixel in metaTriangle.pixels {
-                await withTaskGroup { group in
+                try await withThrowingTaskGroup { group in
                     for metaPixelSampleIndex in metaPixel.samples.indices {
                         group.addTask {
+                            if Task.isCancelled {
+                                throw CancellationError()
+                            }
                             return await self.process(
                                 metaTriangle: metaTriangle,
                                 metaPixel: metaPixel,
@@ -401,7 +433,7 @@ fileprivate extension LightMapBaker {
                     var accumulatedSamplesCount: Int = 0
 //                    var processedSamplesCount: Int = 0
                     
-                    for await result in group {
+                    for try await result in group {
                         if let result = result {
                             accumulatedSamplesCount += 1
                             accumulatedSamplesResults += result
@@ -451,18 +483,20 @@ fileprivate extension LightMapBaker {
         let surfaceAngleFactor = sampleToLight.dot(metaSample.surfaceNormal)
         
         var contributionFactor = attenuation * surfaceAngleFactor
-        
+
         // If the lights color contribution is greater then zero
         if contributionFactor > 0 {
-            // then check if this light hits anything on its way to the pixel
-            if rayTraceStructure.isObscured(
-                from: metaSample.worldPosition,
-                to: light.position,
-                ignoringSources: metaTriangle.obscureMask.sources,
-                ignoringTriangles: metaTriangle.obscureMask.triangleObscuringSets[metaPixel.obscuringSetIndex]
-            ) {
-                // If the light hits something, reduce the contribution to zero
-                contributionFactor = 0
+            if quality != .lowestNoShadows {
+                // then check if this light hits anything on its way to the pixel
+                if rayTraceStructure.isObscured(
+                    from: metaSample.worldPosition,
+                    to: light.position,
+                    ignoringSources: metaTriangle.obscureMask.sources,
+                    ignoringTriangles: metaTriangle.obscureMask.triangleObscuringSets[metaPixel.obscuringSetIndex]
+                ) {
+                    // If the light hits something, reduce the contribution to zero
+                    contributionFactor = 0
+                }
             }
         }
         
@@ -514,7 +548,7 @@ extension LightMapBaker {
              sampleScales: [Size2f],
              ignoringSources: Set<Int>,
              rayTraceStructure: RayTraceStructure
-        ) async {
+        ) async throws {
             self.sourceIndex = sourceIndex
             self.triangleIndex = triangleIndex
             self.collisionTriangle = CollisionTriangle(triangle)
@@ -546,23 +580,25 @@ extension LightMapBaker {
             let halfTexelWorldLength: Float = texelWorldLength * 0.5
 
             let results: (pixels: ContiguousArray<Pixel>, obscuringSets: ContiguousArray<Set<Int>>)
-            results = await withTaskGroup { group in
+            results = try await withThrowingTaskGroup { group in
                 for pixelIndex in lightMap.indices {
                     let pixelCenter: Position2f = lightMap.textureCoordinate(for: pixelIndex)
                     guard Rect2f(size: overlapBiasPixelSize, center: pixelCenter).contains(uvTriangle.nearestSurfacePosition(to: pixelCenter)) else {continue}
                     group.addTask {
+                        if Task.isCancelled {
+                            throw CancellationError()
+                        }
                         let pixelRect = Rect2f(size: biasPixelSize, center: pixelCenter)
                         let barycentric = uvTriangle.barycentric(from: pixelCenter)
                         let pixelWorldPosition = Position3f(
                             oldVector: (triangle.v1.position * barycentric.x) + (triangle.v2.position * barycentric.y) + (triangle.v3.position * barycentric.z)
                         )
                         
-                        let obscuringSet: Set<Int>
+                        var obscuringSet: Set<Int> = [triangleIndex]
                         switch quality {
-                        case .fast:
-                            obscuringSet = [triangleIndex]
-                        case .medium:
-                            var _obscuringSet: Set<Int> = [triangleIndex]
+                        case .lowestNoShadows, .lowestFastest:
+                            break
+                        case .balanced:
                             if uvTriangle.contains(pixelCenter) == false {
                                 let obscuring = LightMapBaker._obscuringIndicies(
                                     triangleIndex: triangleIndex,
@@ -573,11 +609,9 @@ extension LightMapBaker {
                                     ignoringSources: ignoringSources,
                                     rayTraceStructure: rayTraceStructure
                                 )
-                                _obscuringSet.formUnion(obscuring)
+                                obscuringSet.formUnion(obscuring)
                             }
-                            obscuringSet = _obscuringSet
-                        case .best:
-                            var _obscuringSet: Set<Int> = [triangleIndex]
+                        case .highestSlowest:
                             let projectedUV = pixelCenter.moved(pixelSize.length, toward: Direction2f(from: uvTriangle.center, to: pixelCenter))
                             if uvTriangle.contains(projectedUV) == false {
                                 let sampleDirection = Direction3f(from: triangleWorldPosition, to: pixelWorldPosition)
@@ -595,10 +629,9 @@ extension LightMapBaker {
                                         ignoringSources: ignoringSources,
                                         rayTraceStructure: rayTraceStructure
                                     )
-                                    _obscuringSet.formUnion(obscuring)
+                                    obscuringSet.formUnion(obscuring)
                                 }
                             }
-                            obscuringSet = _obscuringSet
                         }
                         
                         var samples: ContiguousArray<Pixel.Sample> = []
@@ -644,7 +677,7 @@ extension LightMapBaker {
                                 uvBarycentric: barycentric,
                                 worldPosition: pixelWorldPosition,
                                 samples: samples,
-                                obscuringSetIndex: 0// <- set to correct value when processing group
+                                obscuringSetIndex: 0 // <- Will be set to correct value when processing group
                             ),
                             obscuringSet: obscuringSet
                         )
@@ -652,7 +685,7 @@ extension LightMapBaker {
                 }
                 var pixels: ContiguousArray<Pixel> = []
                 var obscuringSets: ContiguousArray<Set<Int>> = []
-                for await groupResult in group {
+                for try await groupResult in group {
                     let obscuringSetIndex: Int
                     if let existing: Int = obscuringSets.firstIndex(of: groupResult.obscuringSet) {
                         obscuringSetIndex = existing
