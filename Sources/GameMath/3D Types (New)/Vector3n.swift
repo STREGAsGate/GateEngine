@@ -476,6 +476,7 @@ public extension Vector3n {
 
 public extension Vector3n where Scalar: FloatingPoint, Self: Equatable {
     @inlinable
+    @_disfavoredOverload
     var magnitude: Scalar {
         nonmutating get {
             return squaredLength.squareRoot()
