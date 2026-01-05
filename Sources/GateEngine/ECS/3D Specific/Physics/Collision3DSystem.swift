@@ -494,6 +494,7 @@ extension Collision3DSystem {
 extension Collision3DSystem {
     @usableFromInline
     internal func getOctrees(entityFilter: ((Entity)->Bool)? = nil) -> [OctreeComponent] {
+        guard let context else {return []}
         if let entityFilter {
             return context.entities.filter({entityFilter($0)}).compactMap({ $0.component(ofType: OctreeComponent.self) })
         }
@@ -563,12 +564,13 @@ extension Collision3DSystem {
         filter: ((Entity) -> Bool)? = nil
     ) -> [Entity] {
         var entities: [Entity] = []
-
-        for entity in context.entities {
-            if let collisionComponent = entity.component(ofType: Collision3DComponent.self), filter?(entity) ?? true {
-                let collider = useRayCastCollider ? (collisionComponent.rayCastCollider ?? collisionComponent.collider) : collisionComponent.collider
-                if collider.boundingBox.isColiding(with: ray) {
-                    entities.append(entity)
+        if let context {
+            for entity in context.entities {
+                if let collisionComponent = entity.component(ofType: Collision3DComponent.self), filter?(entity) ?? true {
+                    let collider = useRayCastCollider ? (collisionComponent.rayCastCollider ?? collisionComponent.collider) : collisionComponent.collider
+                    if collider.boundingBox.isColiding(with: ray) {
+                        entities.append(entity)
+                    }
                 }
             }
         }
@@ -583,13 +585,15 @@ extension Collision3DSystem {
     ) -> [Entity] {
         var entities: [Entity] = []
 
-        for entity in context.entities {
-            if
-                let collisionComponent = entity.component(ofType: Collision3DComponent.self),
-                filter?(entity) ?? true,
-                collisionComponent.collider.boundingBox.isColiding(with: collider.boundingBox)
-            {
-                entities.append(entity)
+        if let context {
+            for entity in context.entities {
+                if
+                    let collisionComponent = entity.component(ofType: Collision3DComponent.self),
+                    filter?(entity) ?? true,
+                    collisionComponent.collider.boundingBox.isColiding(with: collider.boundingBox)
+                {
+                    entities.append(entity)
+                }
             }
         }
 

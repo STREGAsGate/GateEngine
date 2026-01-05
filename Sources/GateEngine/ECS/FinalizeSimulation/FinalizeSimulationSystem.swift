@@ -54,6 +54,7 @@ public final class FinalizeSimulation: System {
     }
     
     func cullMaxQuantityEntities() {
+        guard let context else {return}
         var maxQuantities: [Int:Int] = [:]
         var quantities: [Int:Int] = [:]
         var quantityEntities: [Int:[Entity]] = [:]

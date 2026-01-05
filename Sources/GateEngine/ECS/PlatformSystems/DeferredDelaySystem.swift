@@ -65,25 +65,29 @@ extension ECSContext {
 
 extension System {
     public func `defer`(_ closure: @escaping DeferredClosure) {
-        let system = context.system(ofType: DeferredDelaySystem.self)
-        system.append(deferredClosure: closure)
+        if let system = context?.system(ofType: DeferredDelaySystem.self) {
+            system.append(deferredClosure: closure)
+        }
     }
     
     public func delay(_ duration: Float, completion: @escaping ()->()) {
-        let system = context.system(ofType: DeferredDelaySystem.self)
-        system.append(delayDuration: duration, closure: completion)
+        if let system = context?.system(ofType: DeferredDelaySystem.self) {
+            system.append(delayDuration: duration, closure: completion)
+        }
     }
 }
 
 extension PlatformSystem {
     func `defer`(_ closure: @escaping DeferredClosure) {
-        let system = context.system(ofType: DeferredDelaySystem.self)
-        system.append(deferredClosure: closure)
+        if let system = context?.system(ofType: DeferredDelaySystem.self) {
+            system.append(deferredClosure: closure)
+        }
     }
     
     func delay(_ duration: Float, completion: @escaping ()->()) {
-        let system = context.system(ofType: DeferredDelaySystem.self)
-        system.append(delayDuration: duration, closure: completion)
+        if let system = context?.system(ofType: DeferredDelaySystem.self) {
+            system.append(delayDuration: duration, closure: completion)
+        }
     }
 }
 

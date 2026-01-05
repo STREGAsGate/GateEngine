@@ -12,10 +12,10 @@ import GameMath
     private var didSetup = false
 
     @usableFromInline
-    internal weak var _context: ECSContext! = nil
+    internal weak var _context: ECSContext? = nil
     @inlinable
-    public var context: ECSContext {
-        return _context.unsafelyUnwrapped
+    public var context: ECSContext? {
+        return _context
     }
     
     public required init() { }

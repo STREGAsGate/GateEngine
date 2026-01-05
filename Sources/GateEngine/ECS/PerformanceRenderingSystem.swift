@@ -24,6 +24,7 @@ public final class PerformanceRenderingSystem: RenderingSystem {
         color: .gray
     )
     func rebuildText() -> Bool {
+        guard let context else {return false}
         let performance = context.performance!
         let systemsFrameTime = performance.systemsFrameTime
         let renderingSystemsFrameTime = performance.renderingSystemsFrameTime
