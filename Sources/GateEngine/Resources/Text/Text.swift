@@ -334,9 +334,8 @@ public final class Text {
     }
 }
 
-extension Text {
+public extension Text {
     @MainActor
-    @usableFromInline
     var isReady: Bool {
         return font.state == .ready && texture.state == .ready && geometry.state == .ready
     }
