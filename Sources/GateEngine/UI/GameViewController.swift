@@ -44,9 +44,7 @@ public final class GameView: View {
         case offScreen
     }
     var mode: Mode = .screen
-    
-    private var deltaTimeHelper = DeltaTimeHelper(name: "Rendering")
-    
+        
     override final func draw(_ rect: Rect, into canvas: inout UICanvas) {
         var frame = frame
         if mode == .offScreen {
@@ -55,10 +53,9 @@ public final class GameView: View {
             self._renderTarget?.size = Size2i(frame.size)
         }
         
-        if let gameViewController {
+        if let gameViewController, let highPrecisionDeltaTime = window?.deltaTime {
             gameViewController.context.beginRendering()
             
-            let highPrecisionDeltaTime = self.deltaTimeHelper.getDeltaTime()
             let deltaTime = Float(highPrecisionDeltaTime)
             
             // Draw below content
@@ -106,11 +103,6 @@ public final class GameView: View {
     }
     internal var renderTargetTexture: Texture {
         return _renderTarget?.texture ?? self.window!.texture
-    }
-    
-    public override func didLayout() {
-        super.didLayout()
-        self.deltaTimeHelper.reset()
     }
     
     public override func didChangeSuperview() {
