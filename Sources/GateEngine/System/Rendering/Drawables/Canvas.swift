@@ -141,6 +141,7 @@
         scale: Size2 = .one,
         depth: Float = 0,
         opacity: Float = 1,
+        blendMode: DrawCommand.Flags.BlendMode = .normal,
         flags: CanvasElementPrimitiveFlags = .default
     ) {
         let position = Position3(
@@ -159,7 +160,7 @@
             depthWrite: .disabled,
             primitive: .triangle,
             winding: .clockwise,
-            blendMode: .normal
+            blendMode: blendMode
         )
         let command = DrawCommand(
             resource: .geometry(.rectOriginTopLeft),
@@ -308,15 +309,16 @@
         at position: Position2,
         rotation: any Angle = Radians.zero,
         scale: Size2 = .one,
-        depth: Float = 0,
+        depth: Float? = nil,
         opacity: Float = 1,
+        blendMode: DrawCommand.Flags.BlendMode = .normal,
         flags: CanvasElementTextFlags = .default
     ) {
         guard text.string.isEmpty == false else { return }
         text.interfaceScale = self.interfaceScale
         guard text.isReady else { return }
 
-        let position = Position3(position.x, position.y, depth * -1)
+        let position = Position3(position.x, position.y, depth ?? 0 * -1)
         let scale = Size3(scale.x, scale.y, 1)
         let rotation = Quaternion(rotation, axis: .forward)
         let transform = Transform3(position: position, rotation: rotation, scale: scale)
@@ -325,11 +327,11 @@
         
         let flags = DrawCommand.Flags(
             cull: .disabled,
-            depthTest: .always,
-            depthWrite: .disabled,
+            depthTest: depth == nil ? .always : .greater,
+            depthWrite: depth == nil ? .disabled : .enabled,
             primitive: .triangle,
             winding: .clockwise,
-            blendMode: .normal
+            blendMode: blendMode
         )
         let command = DrawCommand(
             resource: .geometry(text.geometry),
