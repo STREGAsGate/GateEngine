@@ -107,7 +107,7 @@ extension GravityValue {
     }
     @inlinable
     public func getInt<T: BinaryInteger>() -> T {
-        return T.init(gValue.n)
+        return T(gValue.n)
     }
     @inlinable
     public func getInt() -> Int {
@@ -147,6 +147,15 @@ extension GravityValue {
         } else {
             gValue = gravity_value_from_float(value)
         }
+    }
+    
+    @inlinable
+    public func getFloat<T: BinaryFloatingPoint>() -> T {
+        return T(gValue.f)
+    }
+    @inlinable
+    public func getFloat() -> Float {
+        return Float(gValue.f)
     }
 
     /**

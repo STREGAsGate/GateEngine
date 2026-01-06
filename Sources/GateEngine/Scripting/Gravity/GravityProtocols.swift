@@ -52,6 +52,15 @@ extension GravityGetVarExtended {
     public func getVar<T: BinaryInteger>(_ key: String) -> T? {
         return getVar(key)?.getInt()
     }
+    
+    /**
+     Obtain a value from gravity.
+     - parameter key: The name of the `var` as written in the gravity script.
+     */
+    @inlinable
+    public func getVar<T: BinaryFloatingPoint>(_ key: String) -> T? {
+        return getVar(key)?.getFloat()
+    }
 
     /**
      Obtain a value from gravity.
