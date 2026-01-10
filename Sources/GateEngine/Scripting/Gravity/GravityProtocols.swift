@@ -154,6 +154,68 @@ extension GravitySetVarExtended {
     }
 }
 
+extension GravitySetVarExtended {
+    /**
+     Assign a value to a `var` in the gravity script.
+     - parameter value: The swift value to assign
+     - parameter key: The name of the `extern var` as written in the gravity script.
+     */
+    @inlinable
+    public func setVar(_ key: String, to value: Optional<some BinaryInteger>) {
+        switch value {
+        case .none:
+            self.setVar(key, to: .null)
+        case .some(let value):
+            self.setVar(key, to: GravityValue(value))
+        }
+    }
+
+    /**
+     Assign a value to a `var` in the gravity script.
+     - parameter value: The swift value to assign
+     - parameter key: The name of the `extern var` as written in the gravity script.
+     */
+    @inlinable
+    public func setVar(_ key: String, to value: Optional<some BinaryFloatingPoint>) {
+        switch value {
+        case .none:
+            self.setVar(key, to: .null)
+        case .some(let value):
+            self.setVar(key, to: GravityValue(value))
+        }
+    }
+
+    /**
+     Assign a value to a `var` in the gravity script.
+     - parameter value: The swift value to assign
+     - parameter key: The name of the `extern var` as written in the gravity script.
+     */
+    @inlinable
+    public func setVar(_ key: String, to value: Optional<String>) {
+        switch value {
+        case .none:
+            self.setVar(key, to: .null)
+        case .some(let value):
+            self.setVar(key, to: GravityValue(value))
+        }
+    }
+
+    /**
+     Assign a value to a `var` in the gravity script.
+     - parameter value: The swift value to assign
+     - parameter key: The name of the `extern var` as written in the gravity script.
+     */
+    @inlinable
+    public func setVar(_ key: String, to value: Optional<GravityInstance>) {
+        switch value {
+        case .none:
+            self.setVar(key, to: .null)
+        case .some(let value):
+            self.setVar(key, to: value.gravityValue)
+        }
+    }
+}
+
 // MARK: - GravityGetClosureExtended
 public protocol GravityGetFuncExtended {
     func getFunc(_ key: String) -> GravityClosure?
