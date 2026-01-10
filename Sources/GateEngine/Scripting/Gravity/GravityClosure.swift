@@ -34,7 +34,7 @@ public class GravityClosure: GravityValueEmitting, GravityClosureEmitting {
     internal func run(
         withArguments args: [gravity_value_t],
         sender: (any GravityValueConvertible)? = nil
-    ) throws -> GravityValue {
+    ) throws(GateEngineError) -> GravityValue {
         var args = args
         gravity_vm_runclosure(
             gravity.vm,
@@ -44,23 +44,23 @@ public class GravityClosure: GravityValueEmitting, GravityClosureEmitting {
             UInt16(args.count)
         )
 
-        if let error = gravity.recentError { throw error }
+        if let error = gravity.recentError { throw GateEngineError.scriptCompileOutputError(error) }
 
         return GravityValue(gValue: gravity_vm_result(gravity.vm))
     }
 
     @discardableResult @inlinable
-    public func run() throws -> GravityValue {
+    public func run() throws(GateEngineError) -> GravityValue {
         return try run(withArguments: [])
     }
 
     @discardableResult @inlinable
-    public func run(withArguments args: [any GravityValueConvertible]) throws -> GravityValue {
+    public func run(withArguments args: [any GravityValueConvertible]) throws(GateEngineError) -> GravityValue {
         return try run(withArguments: args.map({ $0.gravityValue.gValue }))
     }
 
     @discardableResult @inlinable
-    public func run(withArguments args: any GravityValueConvertible...) throws -> GravityValue {
+    public func run(withArguments args: any GravityValueConvertible...) throws(GateEngineError) -> GravityValue {
         return try run(withArguments: args.map({ $0.gravityValue.gValue }))
     }
 }
