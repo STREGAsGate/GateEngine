@@ -36,7 +36,7 @@ open class View {
         }
     }
     
-    public var clipToBounds: Bool = false {
+    public var clipToBounds: Bool = true {
         didSet {
             self.renderingModeNeedsUpdate = true
         }
@@ -478,13 +478,10 @@ open class View {
             if let window { // Make sure we can access the window for offscreen pointers
                 renderingModeNeedsUpdate = false
                 var newMode: RenderingMode = .screen
-                if self.clipToBounds {
+                if self.clipToBounds && self.cornerRadius > 0 && self.cornerMask.isEmpty == false {
                     newMode = .offScreen
                 }
-                if self.cornerRadius > 0 && self.cornerMask.isEmpty == false {
-                    newMode = .offScreen
-                }
-                if self.opacity < 1 {
+                if self.opacity > 0 && self.opacity < 1 {
                     newMode = .offScreen
                 }
                 if newMode != self.renderingMode {
