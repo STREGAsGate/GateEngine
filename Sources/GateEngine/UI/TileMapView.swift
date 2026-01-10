@@ -122,7 +122,9 @@ open class TileMapView: View {
             // Calculate scale to fill rect
             let layerPointSize = layer.size * layer.tileSize
             let layerScale = rect.size / layerPointSize
-            let layerScaledSize = layerPointSize * layerScale
+            var layerScaledSize = layerPointSize * layerScale
+            layerScaledSize.x.round()
+            layerScaledSize.y.round()
             
             if layerScaledSize == rect.size {
                 canvas.insert(
