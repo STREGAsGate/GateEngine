@@ -156,6 +156,14 @@ extension FragmentShader {
         fsh.output.color = fsh.input["color"]
         return fsh
     }()
+    /// Uses material.channel(0).color to shade objects
+    public static let vertexColorTint: FragmentShader = {
+        let fsh = FragmentShader()
+        let tintColor: Vec4 = fsh.channel(0).color
+        let vertexColor: Vec4 = fsh.input["color"]
+        fsh.output.color = vertexColor * tintColor
+        return fsh
+    }()
     /// Uses material.channel(0).texture to shade objects
     public static let textureSampleTintColor: FragmentShader = {
         let fsh = FragmentShader()
