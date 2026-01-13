@@ -87,7 +87,7 @@ extension ResourceManager {
             Task {
                 do {
                     let geometry = try await RawGeometry(path: path, options: options)
-                    let lines = RawLines(wireframeFrom: geometry)
+                    let lines = if options.option1 { RawLines(boundingBoxFrom: geometry) }else{ RawLines(wireframeFrom: geometry)}
                     Task { @MainActor in
                         if let cache = cache.geometries[key] {
                             cache.geometryBackend = ResourceManager.geometryBackend(from: lines)

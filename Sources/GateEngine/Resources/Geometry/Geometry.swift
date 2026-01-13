@@ -166,6 +166,11 @@ public struct GeometryImporterOptions: Equatable, Hashable, Sendable {
     public static var option1: GeometryImporterOptions {
         return GeometryImporterOptions(subobjectName: nil, applyRootTransform: false, option1: true)
     }
+    
+    /// This option applies to Lines only
+    public static var boundingBoxWireframe: GeometryImporterOptions {
+        return .init(option1: true)
+    }
 }
 
 extension ResourceManager {
