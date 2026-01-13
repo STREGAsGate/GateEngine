@@ -11,6 +11,13 @@ open class Button: Control {
         .normal:.blue,
         .selected:.darkBlue,
     ]
+    public func makeBackgroundColorDefault() {
+        self.backgroundColors = [
+            .highlighted:.lightBlue,
+            .normal:.blue,
+            .selected:.darkBlue,
+        ]
+    }
     public func setBackgroundColor(_ color: Color, forState state: State) {
         backgroundColors[state] = color
         if self.state == state {
@@ -29,6 +36,13 @@ open class Button: Control {
         .normal:.white,
         .selected:.white,
     ]
+    public func makeTextColorDefault() {
+        self.textColors = [
+            .highlighted:.white,
+            .normal:.white,
+            .selected:.white,
+        ]
+    }
     public func setTextColor(_ color: Color, forState state: State) {
         textColors[state] = color
         if self.state == state {
