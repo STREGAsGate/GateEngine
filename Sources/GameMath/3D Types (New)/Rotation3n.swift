@@ -60,8 +60,9 @@ public extension Rotation3n where Scalar: BinaryFloatingPoint {
     @inlinable
     var pitch: Radians {
         get {
-            let lhs: Scalar = 2.0 * (w * y - x * z)
-            return Radians(rawValue: .init(asin(lhs)))
+            let lhs: Scalar = 2.0 * (w * x + y * z)
+            let rhs: Scalar = 1.0 - 2.0 * (x * x + y * y)
+            return Radians(rawValue: .init(atan2(lhs, rhs)))
         }
         mutating set {
             self = .init(pitch: newValue, yaw: self.yaw, roll: self.roll)
@@ -71,9 +72,8 @@ public extension Rotation3n where Scalar: BinaryFloatingPoint {
     @inlinable
     var yaw: Radians {
         get {
-            let lhs: Scalar = 2.0 * (w * z + x * y)
-            let rhs: Scalar = 1.0 - 2.0 * (y * y + z * z)
-            return Radians(rawValue: .init(atan2(lhs, rhs)))
+            let lhs: Scalar = 2.0 * (w * y - x * z)
+            return Radians(rawValue: .init(asin(lhs)))
         }
         mutating set {
             self = .init(pitch: self.pitch, yaw: newValue, roll: self.roll)
@@ -83,8 +83,8 @@ public extension Rotation3n where Scalar: BinaryFloatingPoint {
     @inlinable
     var roll: Radians {
         get {
-            let lhs: Scalar = 2.0 * (w * x + y * z)
-            let rhs: Scalar = 1.0 - 2.0 * (x * x + y * y)
+            let lhs: Scalar = 2.0 * (w * z + x * y)
+            let rhs: Scalar = 1.0 - 2.0 * (y * y + z * z)
             return Radians(rawValue: .init(atan2(lhs, rhs)))
         }
         mutating set {
@@ -102,12 +102,12 @@ public extension Rotation3n where Scalar: BinaryFloatingPoint {
         let halfYaw = Scalar(yaw.rawValueAsRadians) * 0.5
         let halfPitch = Scalar(pitch.rawValueAsRadians) * 0.5
         let halfRoll = Scalar(roll.rawValueAsRadians) * 0.5
-        let cy: Scalar = cos(halfYaw)
-        let sy: Scalar = sin(halfYaw)
-        let cp: Scalar = cos(halfPitch)
-        let sp: Scalar = sin(halfPitch)
-        let cr: Scalar = cos(halfRoll)
-        let sr: Scalar = sin(halfRoll)
+        let cy: Scalar = cos(halfRoll)
+        let sy: Scalar = sin(halfRoll)
+        let cp: Scalar = cos(halfYaw)
+        let sp: Scalar = sin(halfYaw)
+        let cr: Scalar = cos(halfPitch)
+        let sr: Scalar = sin(halfPitch)
 
         self.x = sr * cp * cy - cr * sp * sy
         self.y = cr * sp * cy + sr * cp * sy
