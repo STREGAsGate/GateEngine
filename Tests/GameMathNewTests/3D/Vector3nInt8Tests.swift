@@ -4,7 +4,7 @@ import XCTest
 
 fileprivate typealias Scalar = Int8
 
-fileprivate struct Imposter3: Vector3n {
+fileprivate struct Imposter3: Vector3n, Equatable {
     var x: Scalar
     var y: Scalar
     var z: Scalar

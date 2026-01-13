@@ -476,7 +476,9 @@ public extension Vector3n {
 
 public extension Vector3n where Scalar: FloatingPoint, Self: Equatable {
     @inlinable
+    #if GameMathUseSIMD
     @_disfavoredOverload
+    #endif
     var magnitude: Scalar {
         nonmutating get {
             return squaredLength.squareRoot()
@@ -484,11 +486,17 @@ public extension Vector3n where Scalar: FloatingPoint, Self: Equatable {
     }
     
     @inlinable
+    #if GameMathUseSIMD
+    @_disfavoredOverload
+    #endif
     nonmutating func squareRoot() -> Self {
         return Self(x: x.squareRoot(), y: y.squareRoot(), z: z.squareRoot())
     }
 
     @inlinable
+    #if GameMathUseSIMD
+    @_disfavoredOverload
+    #endif
     mutating func normalize() {
         guard self != Self.zero else { return }
         let magnitude = self.magnitude
