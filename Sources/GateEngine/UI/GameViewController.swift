@@ -163,7 +163,7 @@ open class GameViewController: ViewController {
     
     internal override func _update(withTimePassed deltaTime: Float) async {
         await super._update(withTimePassed: deltaTime)
-        if view.superView != nil {
+        if view.window != nil {
             self.shouldSkipRendering = (await context.shouldRenderAfterUpdate(withTimePassed: deltaTime) == false)
         }else{
             self.shouldSkipRendering = true
