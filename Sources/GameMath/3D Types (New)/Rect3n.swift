@@ -19,8 +19,12 @@ public struct Rect3n<Scalar: Vector3n.ScalarType> {
     }
     
     public init(size: Size3n<Scalar>, center: Position3n<Scalar>) where Scalar: FloatingPoint, Scalar: ExpressibleByFloatLiteral {
+        self.init(radius: size * 0.5, center: center)
+    }
+    
+    public init(radius: Size3n<Scalar>, center: Position3n<Scalar>) where Scalar: FloatingPoint, Scalar: ExpressibleByFloatLiteral {
         self.center = center
-        self.radius = size * 0.5
+        self.radius = radius
     }
 }
 

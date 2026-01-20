@@ -204,6 +204,45 @@ public extension Vector3n where Scalar: AdditiveArithmetic {
     static var zero: Self {Self(x: .zero, y: .zero, z: .zero)}
 }
 
+public extension Vector3n where Scalar: AdditiveArithmetic {
+    @inlinable
+    func adjusted(with adjustment: (_ value: inout Self)->()) -> Self {
+        var adjusted = self
+        adjustment(&adjusted)
+        return adjusted
+    }
+    
+    @inlinable
+    func addingTo(x: Scalar, y: Scalar, z: Scalar) -> Self {
+        return self.adjusted(with: {
+            $0.x += x
+            $0.y += y
+            $0.z += z
+        })
+    }
+    
+    @inlinable
+    func addingTo(x: Scalar) -> Self {
+        return self.adjusted(with: {
+            $0.x += x
+        })
+    }
+    
+    @inlinable
+    func addingTo(y: Scalar) -> Self {
+        return self.adjusted(with: {
+            $0.y += y
+        })
+    }
+    
+    @inlinable
+    func addingTo(z: Scalar) -> Self {
+        return self.adjusted(with: {
+            $0.z += z
+        })
+    }
+}
+
 public extension Vector3n where Scalar: Numeric {
     @inlinable
     static func * (lhs: Self, rhs: some Vector3n<Scalar>) -> Self {
