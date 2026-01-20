@@ -127,12 +127,12 @@ public final class SkinCollider: @preconcurrency Collider3D {
     ///The translation difference from node centroid to geometry centroid
     public let offset: Position3 = .zero
 
-    public func update(transform: Transform3) {
+    public func update(withWorldTransform transform: Transform3) {
         self.transform = transform
         self.boundingBox.center = transform.position
     }
     
-    public func update(sizeAndOffsetUsingTransform transform: Transform3) {
+    public func update(withLocalTransform transform: Transform3) {
         self.transform = transform
     }
     

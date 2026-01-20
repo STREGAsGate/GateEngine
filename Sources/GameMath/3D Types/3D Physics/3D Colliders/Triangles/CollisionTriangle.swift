@@ -135,12 +135,12 @@ extension CollisionTriangle: Collider3D {
     }
     
     @inlinable
-    public func update(transform: Transform3) {
+    public func update(withWorldTransform transform: Transform3) {
         
     }
     
     @inlinable
-    public func update(sizeAndOffsetUsingTransform transform: Transform3) {
+    public func update(withLocalTransform transform: Transform3) {
 
     }
     

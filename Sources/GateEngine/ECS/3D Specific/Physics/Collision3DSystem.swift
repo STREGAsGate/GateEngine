@@ -5,40 +5,37 @@
  * http://stregasgate.com
  */
 
+import Collections
+import GateUtilities
+
 public final class Collision3DSystem: System {
+    var staticEntitiesCapacity: Int = 0
+    var dynamicEntitiesCapacity: Int = 0
     public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
-        let staticEntities = context.entities.filter({
-            guard let collisionComponenet = $0.component(ofType: Collision3DComponent.self) else {return false}
-            if case .static = collisionComponenet.kind {
-                return true
-            }
-            return false
-        })
-        for entity in staticEntities {
-            let collisionComponent = entity.collision3DComponent
-            // Update collider from animation
-            if let rigComponent = entity.component(ofType: Rig3DComponent.self) {
-                collisionComponent.updateColliders(rigComponent)
-            }
-            collisionComponent.updateColliders(entity.transform3)
-        }
-        let dynamicEntities = context.entities.filter({
-            guard let collisionComponenet = $0.component(ofType: Collision3DComponent.self) else {return false}
-            if case .dynamic(_) = collisionComponenet.kind {
-                return true
-            }
-            return false
-        }).sorted { entity1, entity2 in
-            if case .dynamic(let priority1) = entity1[Collision3DComponent.self].kind {
-                if case .dynamic(let priority2) = entity2[Collision3DComponent.self].kind {
-                    return priority1 > priority2
+        var staticEntities: [Entity] = .init(minimumCapacity: staticEntitiesCapacity)
+        var dynamicEntities: Deque<Entity> = Deque(minimumCapacity: dynamicEntitiesCapacity)
+        
+        for entity in context.entities {
+            guard let collisionComponenet = entity.component(ofType: Collision3DComponent.self) else {continue}
+            switch collisionComponenet.kind {
+            case .static:
+                staticEntities.append(entity)
+            case .dynamic(let priority1):
+                if let index = dynamicEntities.firstIndex(where: { entity in
+                    if case .dynamic(let priority2) = entity[Collision3DComponent.self].kind {
+                        return priority1 > priority2
+                    }
+                    return false
+                }) {
+                    dynamicEntities.insert(entity, at: index)
+                }else{
+                    dynamicEntities.append(entity)
                 }
             }
-            return false
         }
-        for entity in dynamicEntities {
-            entity.collision3DComponent.updateColliders(entity.transform3)
-        }
+        
+        staticEntitiesCapacity = max(staticEntitiesCapacity, staticEntities.count)
+        dynamicEntitiesCapacity = max(dynamicEntitiesCapacity, dynamicEntities.count)
 
         var finishedPairs: Set<Set<ObjectIdentifier>> = []
 
@@ -51,19 +48,13 @@ public final class Collision3DSystem: System {
             
             @_transparent
             func updateCollider() {
-                collisionComponent.updateColliders(transformComponent.transform)
-            }
-            
-            // Update collider from animation
-            if let rigComponent = dynamicEntity.component(ofType: Rig3DComponent.self) {
-                collisionComponent.updateColliders(rigComponent)
+                collisionComponent.updateColliders(dynamicEntity)
             }
             
             collisionComponent.touching.removeAll(keepingCapacity: true)
             collisionComponent.intersecting.removeAll(keepingCapacity: true)
             
             if collisionComponent.options.contains(.ledgeDetection) {
-                updateCollider()
                 self.performLedgeDetection(
                     dynamicEntity,
                     transformComponent: transformComponent,
@@ -73,7 +64,6 @@ public final class Collision3DSystem: System {
             }
 
             if collisionComponent.options.contains(.robustProtection) {
-                updateCollider()
                 self.performRobustnessProtection(
                     dynamicEntity,
                     transformComponent: transformComponent,
@@ -109,8 +99,6 @@ public final class Collision3DSystem: System {
                     entity: dynamicEntity,
                     triangles: triangles
                 )
-
-                updateCollider()
                 
                 for triangle in triangles {
                     if respondToCollision(dynamicEntity: dynamicEntity, triangle: triangle) {
@@ -268,7 +256,7 @@ extension Collision3DSystem {
 
         func processDirection(_ direction: Direction3) -> Bool {
             defer {
-                collisionComponent.updateColliders(transformComponent.transform)
+                collisionComponent.updateColliders(entity)
             }
             let inFrontOfEntity = collider.position.moved(
                 collider.size.x * 0.6666666667,
@@ -420,7 +408,7 @@ extension Collision3DSystem {
                 )
                 let position = hit.point.moved(collider.radius.x, toward: edgeNormal)
                 transformComponent.position = position
-                collider.update(transform: transformComponent.transform)
+                collider.update(withWorldTransform: transformComponent.transform)
             }
             break
         }

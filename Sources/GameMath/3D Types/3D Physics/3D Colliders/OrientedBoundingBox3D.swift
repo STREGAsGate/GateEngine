@@ -39,19 +39,19 @@ public struct OrientedBoundingBox3D: Collider3D, Sendable {
     
     public private(set) var boundingBox: AxisAlignedBoundingBox3D
 
-    mutating public func update(transform: Transform3) {
+    mutating public func update(withWorldTransform transform: Transform3) {
         center = transform.position
         offset = _offset * transform.scale
         radius = _radius * transform.scale
         rotation = _rotation * transform.rotation.conjugate
-        self.boundingBox.update(transform: transform)
+        self.boundingBox.update(withWorldTransform: transform)
     }
     
-    public mutating func update(sizeAndOffsetUsingTransform transform: Transform3) {
+    public mutating func update(withLocalTransform transform: Transform3) {
         _offset = transform.position
         _radius = transform.scale / 2
         _rotation = transform.rotation
-        self.boundingBox.update(sizeAndOffsetUsingTransform: transform)
+        self.boundingBox.update(withLocalTransform: transform)
     }
 }
 

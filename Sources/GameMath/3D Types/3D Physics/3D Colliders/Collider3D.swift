@@ -12,8 +12,8 @@ public protocol Collider3D {
     
     var position: Position3 {get}
 
-    mutating func update(transform: Transform3)
-    mutating func update(sizeAndOffsetUsingTransform transform: Transform3)
+    mutating func update(withWorldTransform transform: Transform3)
+    mutating func update(withLocalTransform transform: Transform3)
     
     func closestSurfacePoint(from point: Position3) -> Position3
     func interpenetration(comparing collider: any Collider3D) -> Interpenetration3D?

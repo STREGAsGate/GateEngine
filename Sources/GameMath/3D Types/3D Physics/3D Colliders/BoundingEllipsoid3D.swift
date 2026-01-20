@@ -46,17 +46,17 @@ public struct BoundingEllipsoid3D: Collider3D, Sendable {
     
     public private(set) var boundingBox: AxisAlignedBoundingBox3D
     
-    public mutating func update(transform: Transform3) {
+    public mutating func update(withWorldTransform transform: Transform3) {
         center = transform.position
         offset = _offset * transform.scale
         radius = _radius * transform.scale
-        boundingBox.update(transform: transform)
+        boundingBox.update(withWorldTransform: transform)
     }
     
-    public mutating func update(sizeAndOffsetUsingTransform transform: Transform3) {
+    public mutating func update(withLocalTransform transform: Transform3) {
         _offset = transform.position
         _radius = transform.scale / 2
-        boundingBox.update(sizeAndOffsetUsingTransform: transform)
+        boundingBox.update(withLocalTransform: transform)
     }
     
     @inlinable

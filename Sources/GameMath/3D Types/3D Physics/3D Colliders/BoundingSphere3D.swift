@@ -39,17 +39,17 @@ public struct BoundingSphere3D: Collider3D, Sendable {
         self.boundingBox.offset = offset
     }
 
-    public mutating func update(transform: Transform3) {
+    public mutating func update(withWorldTransform transform: Transform3) {
         center = transform.position
         offset = _offset * transform.scale
         self.radius = _radius * (transform.scale.length / 3)
-        self.boundingBox.update(transform: transform)
+        self.boundingBox.update(withWorldTransform: transform)
     }
     
-    public mutating func update(sizeAndOffsetUsingTransform transform: Transform3) {
+    public mutating func update(withLocalTransform transform: Transform3) {
         _offset = transform.position
         _radius = transform.scale.length / 3 / 2
-        self.boundingBox.update(sizeAndOffsetUsingTransform: transform)
+        self.boundingBox.update(withLocalTransform: transform)
     }
     
     @inlinable

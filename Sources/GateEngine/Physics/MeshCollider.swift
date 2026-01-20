@@ -75,11 +75,11 @@ public final class MeshCollider: Collider3D {
         return _boundingBox
     }
     
-    public func update(transform: Transform3) {
+    public func update(withWorldTransform transform: Transform3) {
         self.transform = transform
     }
     
-    public func update(sizeAndOffsetUsingTransform transform: Transform3) {
+    public func update(withLocalTransform transform: Transform3) {
         self.offset = transform.position
         self.transform.scale = transform.scale
     }

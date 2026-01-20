@@ -81,13 +81,13 @@ public struct AxisAlignedBoundingBox3D: Collider3D, Sendable {
         self.radius = _radius
     }
     
-    mutating public func update(transform: Transform3) {
+    mutating public func update(withWorldTransform transform: Transform3) {
         center = transform.position
         offset = _offset * transform.scale
         radius = _radius * transform.scale
     }
     
-    mutating public func update(sizeAndOffsetUsingTransform transform: Transform3) {
+    mutating public func update(withLocalTransform transform: Transform3) {
         _offset = transform.position
         _radius = transform.scale
     }
