@@ -34,6 +34,12 @@ public struct Material {
         let copy = value
         customUniformValues[name] = copy
     }
+    
+    public mutating func removeCustomUniformValue(
+        named name: String
+    ) {
+        customUniformValues[name] = nil
+    }
 
     public func hasCustomUniformValue(named key: String) -> Bool {
         return customUniformValues.keys.contains(key)

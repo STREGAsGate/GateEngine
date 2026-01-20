@@ -27,6 +27,10 @@ public final class MaterialComponent: ResourceConstrainedComponent {
         material.setCustomUniformValue(value, forUniform: name)
     }
     
+    public func removeCustomUniformValue(named name: String) {
+        material.removeCustomUniformValue(named: name)
+    }
+    
     public func setCustomUniformValue(asFloat value: Float, forUniform name: String) {
         material.setCustomUniformValue(value, forUniform: name)
     }
