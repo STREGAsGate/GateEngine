@@ -10,8 +10,7 @@ public final class Rig3DSystem: System {
     func getFarAway(from entities: Set<Entity>) -> Entity? {
         func filter(_ entity: Entity) -> Bool {
             if let rig = entity.component(ofType: Rig3DComponent.self) {
-                return rig.disabled == false && rig.deltaAccumulator > 0
-                    && checkedIDs.contains(entity.id) == false
+                return (rig.disabled == false) && (rig.deltaAccumulator > 0) && (checkedIDs.contains(entity.id) == false)
             }
             return false
         }
@@ -29,27 +28,16 @@ public final class Rig3DSystem: System {
 
     public override func update(context: ECSContext, input: HID, withTimePassed deltaTime: Float) async {
         func shouldAccumulate(entity: Entity) -> Bool {
-            guard
-                let cameraTransform = context.cameraEntity?.component(ofType: Transform3Component.self)
-            else {
-                return false
-            }
-            guard let transform = entity.component(ofType: Transform3Component.self) else {
-                return false
-            }
-            guard let rig = entity.component(ofType: Rig3DComponent.self) else {
-                return false
-            }
-            return cameraTransform.position.distance(from: transform.position)
-                > rig.slowAnimationsPastDistance
+            guard let cameraTransform = context.cameraEntity?.component(ofType: Transform3Component.self) else {return false}
+            guard let transform = entity.component(ofType: Transform3Component.self) else {return false}
+            guard let rig = entity.component(ofType: Rig3DComponent.self) else {return false}
+            return cameraTransform.position.distance(from: transform.position) > rig.slowAnimationsPastDistance
         }
         func updateAnimation(for entity: Entity) {
-            if let component = entity.component(ofType: Rig3DComponent.self),
-                component.disabled == false
-            {
+            if let component = entity.component(ofType: Rig3DComponent.self), component.disabled == false {
                 if let animation = component.activeAnimation, animation.isReady {
                     component.update(
-                        deltaTime: deltaTime,
+                        deltaTime: deltaTime + component.deltaAccumulator,
                         objectScale: entity.component(ofType: Transform3Component.self)?.scale ?? .one
                     )
                     if component.playbackState != .pause {
@@ -84,12 +72,12 @@ public final class Rig3DSystem: System {
         }
         for entity in context.entities {
             guard entity != slowEntity else { continue }
-            if let component = entity.component(ofType: Rig3DComponent.self),
-                component.disabled == false
-            {
+            if let component = entity.component(ofType: Rig3DComponent.self), component.disabled == false {
                 if shouldAccumulate(entity: entity) {
-                    component.deltaAccumulator += deltaTime
-                } else {
+                    if component.playbackState != .pause {
+                        component.deltaAccumulator += deltaTime
+                    }
+                }else{
                     updateAnimation(for: entity)
                 }
             }
