@@ -652,6 +652,14 @@ extension GamePad {
         public var isPressed: Bool {
             return left.isPressed || right.isPressed
         }
+        
+        public subscript (_ id: InternalID) -> ButtonState {
+            switch id {
+            case .leftTrigger: return self.left
+            case .rightTrigger: return self.right
+            default: fatalError("Unhandled button ID: \(id)")
+            }
+        }
 
         internal func resetInputStates() {
             self.left.resetInputStates()
