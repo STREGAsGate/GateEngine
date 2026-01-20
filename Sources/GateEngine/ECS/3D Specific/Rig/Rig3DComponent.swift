@@ -73,6 +73,10 @@
             activeAnimation?.progress = newValue
         }
     }
+    
+    public var animationDuration: Float? {
+        return activeAnimation?.skeletalAnimation.duration
+    }
 
     public var animationIsFinished: Bool {
         guard skeleton.isReady else {return false}
@@ -174,6 +178,11 @@
         set {
             subAnimations[primaryIndex].progress = newValue
         }
+    }
+    
+    @inlinable
+    public var duration: Float {
+        return subAnimations[primaryIndex].duration
     }
 
     @inlinable
