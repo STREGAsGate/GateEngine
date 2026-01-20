@@ -32,14 +32,6 @@ public extension Set {
 #if canImport(Collections)
 public import Collections
 
-public extension Deque {
-    @_transparent
-    init(minimumCapacity: Int) {
-        self = []
-        self.reserveCapacity(minimumCapacity)
-    }
-}
-
 public extension OrderedSet {
     @_transparent
     init(minimumCapacity: Int) {
