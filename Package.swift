@@ -1,4 +1,4 @@
-// swift-tools-version:6.1
+// swift-tools-version:6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -34,14 +34,14 @@ let package = Package(
 
         // Official
         packageDependencies.append(contentsOf: [
-            .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.2.0")),
-            .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.2.0")),
-            .package(url: "https://github.com/apple/swift-syntax.git", .upToNextMajor(from: "601.0.0")),
+            .package(url: "https://github.com/apple/swift-atomics.git", from: "1.3.0"),
+            .package(url: "https://github.com/apple/swift-collections.git", from: "1.3.0"),
+            .package(url: "https://github.com/apple/swift-syntax.git", from: .currentGitTag),
         ])
         
         #if false // Linting / Formating
         packageDependencies.append(contentsOf: [
-            .package(url: "https://github.com/apple/swift-format.git", .upToNextMajor(from: "601.0.0")),
+            .package(url: "https://github.com/apple/swift-format.git", from: .currentGitTag),
         ])
         #endif
         
@@ -838,4 +838,22 @@ extension Array where Element == SwiftSetting {
 
 extension PackageDescription.TargetDependencyCondition {
     static var whenHTML5: Self? {.when(platforms: [.wasi], traits: ["HTML5"])}
+}
+
+extension Version {
+    static var currentGitTag: Self {
+        #if swift(>=6.4)
+        return "604.0.0"
+        #elseif swift(>=6.3)
+        return "603.0.0"
+        #elseif swift(>=6.2)
+        return "602.0.0"
+        #elseif swift(>=6.1)
+        return "601.0.0"
+        #elseif swift(>=6.0)
+        return "600.0.0"
+        #else
+        #error("Unhandled Swift Version")
+        #endif
+    }
 }
