@@ -179,40 +179,44 @@ public final class Gravity {
      - throws: Gravity compilation errors such as syntax problems.
      */
 //    @MainActor
-    public func compile(source sourceCode: String, addDebug: Bool? = nil) async throws {
+    public func compile(source sourceCode: String, addDebug: Bool? = nil) async throws(GateEngineError) {
         self.mainClosure = nil
         self.didRunMain = false
-        try sourceCode.withCString { cString in
-            #if DEBUG
-            let isDebug = true
-            #else
-            let isDebug = false
-            #endif
-
-            gravityDelegate.xdata = Unmanaged.passUnretained(self).toOpaque()
-
-            let compiler: OpaquePointer = gravity_compiler_create(&gravityDelegate)
-            if let closure = gravity_compiler_run(
-                compiler,
-                cString,
-                sourceCode.count,
-                0,
-                true,
-                addDebug ?? isDebug
-            ) {
-                self.mainClosure = closure
-                gravity_compiler_transfer(compiler, vm)
-                gravity_compiler_free(compiler)
-            } else if let error = recentError {
-                defer {
+        do {
+            try sourceCode.withCString { cString in
+#if DEBUG
+                let isDebug = true
+#else
+                let isDebug = false
+#endif
+                
+                gravityDelegate.xdata = Unmanaged.passUnretained(self).toOpaque()
+                
+                let compiler: OpaquePointer = gravity_compiler_create(&gravityDelegate)
+                if let closure = gravity_compiler_run(
+                    compiler,
+                    cString,
+                    sourceCode.count,
+                    0,
+                    true,
+                    addDebug ?? isDebug
+                ) {
+                    self.mainClosure = closure
+                    gravity_compiler_transfer(compiler, vm)
                     gravity_compiler_free(compiler)
-                    recentError = nil
+                } else if let error = recentError {
+                    defer {
+                        gravity_compiler_free(compiler)
+                        recentError = nil
+                    }
+                    throw GateEngineError.scriptCompileOutputError(error)
+                } else {
+                    gravity_compiler_free(compiler)
+                    throw GateEngineError.scriptCompileError("Unknown error.")
                 }
-                throw GateEngineError.scriptCompileOutputError(error)
-            } else {
-                gravity_compiler_free(compiler)
-                throw GateEngineError.scriptCompileError("Unknown error.")
             }
+        }catch{
+            throw error as! GateEngineError
         }
         sourceCodeBaseURL = nil
     }
@@ -524,8 +528,7 @@ extension Gravity: GravityGetFuncExtended {
 
     @discardableResult 
     @inlinable
-    public func runFunc(_ name: String, withArguments args: GravityValue...) throws -> GravityValue
-    {
+    public func runFunc(_ name: String, withArguments args: GravityValue...) throws -> GravityValue {
         guard let closure = getFunc(name) else {
             throw GateEngineError.scriptExecutionError("Failed to get closure \(name).")
         }

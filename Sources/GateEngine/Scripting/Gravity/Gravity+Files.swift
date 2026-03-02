@@ -26,12 +26,12 @@ internal func loadFileCallback(
     xData: UnsafeMutableRawPointer?,
     isStatic: UnsafeMutablePointer<Bool>!
 ) -> UnsafePointer<CChar>? {
-    guard let cFile = file else { return nil }
-    guard let gravity = unsafeBitCast(xData, to: Optional<Gravity>.self) else { return nil }
+    guard let cFile = file else { fatalError() }
+    guard let gravity = unsafeBitCast(xData, to: Optional<Gravity>.self) else { fatalError() }
     let path = String(cString: cFile)
-    guard let url = URL(string: path) else { return nil }
+    guard let url = URL(string: path) else { fatalError() }
 
-    if gravity.loadedFilesByID.values.contains(where: { $0 == url }) {
+    if gravity.loadedFilesByID.contains(where: {$0.value == url}) {
         Log.debug(
             "Gravity: Skip File \(gravity.fileNameForID(0)!) ->",
             url.lastPathComponent,
@@ -74,34 +74,38 @@ extension Gravity {
         return Set(urls)
     }
 
-    private func sourceCode(forFileIncludes includes: Set<URL>) async throws -> [URL: String] {
-        return try await withThrowingTaskGroup(of: (url: URL, sourceCode: String).self) { group in
-            for url in includes {
-                group.addTask {
-                    let path = url.path(percentEncoded: false)
-                    let data = try await Platform.current.loadResource(from: path)
-                    guard let sourceCode = String(data: data, encoding: .utf8) else {
-                        throw GateEngineError.failedToLoad(
-                            resource: path,
-                            "File is corrupt or in the wrong format."
-                        )
+    private func sourceCode(forFileIncludes includes: Set<URL>) async throws(GateEngineError) -> [URL: String] {
+        do {
+            return try await withThrowingTaskGroup(of: (url: URL, sourceCode: String).self) { group in
+                for url in includes {
+                    group.addTask {
+                        let path = url.path(percentEncoded: false)
+                        let data = try await Platform.current.loadResource(from: path)
+                        guard let sourceCode = String(data: data, encoding: .utf8) else {
+                            throw GateEngineError.failedToLoad(
+                                resource: path,
+                                "File is corrupt or in the wrong format."
+                            )
+                        }
+                        return (url, sourceCode)
                     }
-                    return (url, sourceCode)
                 }
+                
+                var sources: [URL: String] = [:]
+                sources.reserveCapacity(includes.count)
+                
+                for try await result in group {
+                    sources[result.url] = result.sourceCode
+                }
+                
+                return sources
             }
-
-            var sources: [URL: String] = [:]
-            sources.reserveCapacity(includes.count)
-
-            for try await result in group {
-                sources[result.url] = result.sourceCode
-            }
-
-            return sources
+        }catch{
+            throw error as! GateEngineError
         }
     }
 
-    private func cacheIncludes(fromSource sourceCode: String) async throws {
+    private func cacheIncludes(fromSource sourceCode: String) async throws(GateEngineError) {
         let includes = self.fileIncludesFromSource(sourceCode).filter({
             return self.hasSourceCacheForInclude($0) == false
         })
@@ -118,7 +122,7 @@ extension Gravity {
      - parameter addDebug: `true` to add debug. nil to add debug only in DEBUG configurations.
      - throws: Gravity compilation errors such as syntax problems and file loading problems.
      */
-    public func compile(file path: String, addDebug: Bool? = nil) async throws {
+    public func compile(file path: String, addDebug: Bool? = nil) async throws(GateEngineError) {
         let url = URL(fileURLWithPath: path)
         let baseURL = url.deletingLastPathComponent()
         let data = try await Platform.current.loadResource(from: path)
