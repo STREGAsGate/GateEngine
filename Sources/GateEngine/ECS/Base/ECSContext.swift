@@ -408,6 +408,10 @@ public extension ECSContext {
         }
         return insertSystem(systemType)
     }
+    func withSystem<T: System, ResultType>(ofType systemType: T.Type, block: (_ system: T)->ResultType) -> ResultType {
+        let system = self.system(ofType: systemType)
+        return block(system)
+    }
     func hasSystem(ofType systemType: System.Type) -> Bool {
         for system in _systems {
             if type(of: system) == systemType {
