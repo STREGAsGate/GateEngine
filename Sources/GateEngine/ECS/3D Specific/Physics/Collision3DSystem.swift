@@ -32,6 +32,7 @@ public final class Collision3DSystem: System {
                     dynamicEntities.append(entity)
                 }
             }
+            collisionComponenet.updateColliders(entity)
         }
         
         staticEntitiesCapacity = max(staticEntitiesCapacity, staticEntities.count)
