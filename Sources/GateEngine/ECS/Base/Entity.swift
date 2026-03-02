@@ -180,6 +180,7 @@ extension Entity {
     }
     
     /// Allows changing an existing component
+    /// - note: Requires the component is already inserted into the Entity
     @inlinable
     @discardableResult
     public func modify<T: Component, ResultType>(
@@ -189,7 +190,8 @@ extension Entity {
         return config(&self[T.self])
     }
     
-    /// Allows changing an existing component
+    /// Allows changing an existing component.
+    /// - note: Requires the component is already inserted into the Entity
     @inlinable
     @discardableResult
     public func modify<T: Component, ResultType>(
