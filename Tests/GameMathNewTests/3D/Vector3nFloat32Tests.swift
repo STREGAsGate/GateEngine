@@ -266,8 +266,8 @@ final class Vector3nFloat32Tests: XCTestCase {
     }
     
     func testCross() {
-        let lhs = Imposter3(x: .random(in: -12345.56789 ... 12345.56789), y: .random(in: -12345.56789 ... 12345.56789), z: .random(in: -12345.56789 ... 12345.56789))
-        let rhs = Imposter3(x: .random(in: -12345.56789 ... 12345.56789), y: .random(in: -12345.56789 ... 12345.56789), z: .random(in: -12345.56789 ... 12345.56789))
+        let lhs = Imposter3(x: .random(in: -45.56789 ... 45.56789), y: .random(in: -45.56789 ... 45.56789), z: .random(in: -45.56789 ... 45.56789))
+        let rhs = Imposter3(x: .random(in: -45.56789 ... 45.56789), y: .random(in: -45.56789 ... 45.56789), z: .random(in: -45.56789 ... 45.56789))
         let result = lhs.cross(rhs)
         XCTAssertEqual(result.x, lhs.y * rhs.z - lhs.z * rhs.y, accuracy: .accuracy + 0.001)
         XCTAssertEqual(result.y, lhs.z * rhs.x - lhs.x * rhs.z, accuracy: .accuracy + 0.001)

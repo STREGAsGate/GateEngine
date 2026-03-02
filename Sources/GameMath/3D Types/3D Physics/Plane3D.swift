@@ -19,6 +19,7 @@ public struct Plane3D: Sendable {
     
     @inlinable
     public init(origin: Position3, normal: Direction3) {
+        let normal = normal.normalized
         self.init(normal: normal, constant: -origin.dot(normal))
     }
     
@@ -37,6 +38,12 @@ public struct Plane3D: Sendable {
     @inlinable
     public func isIntersecting(with direction: Direction3) -> Bool {
         return normal.isFrontFacing(toward: direction) == false
+    }
+    
+    public func closestSurfacePoint(from position: Position3) -> Position3 {
+        let normal = -normal
+        let lambda = (constant - position.dot(normal)) / normal.magnitude
+        return position + lambda * normal
     }
 }
 

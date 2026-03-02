@@ -677,7 +677,7 @@ extension Array where Element: Vector4 {
     public func valuesArray() -> [Float] {
         var values: [Float] = []
         values.reserveCapacity(self.count * 4)
-        for value: some Vector4 in self {
+        for value in self {
             values.append(value.x)
             values.append(value.y)
             values.append(value.z)

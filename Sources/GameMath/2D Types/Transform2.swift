@@ -78,13 +78,6 @@ public struct Transform2: Sendable {
 
 public extension Transform2 {
     @inlinable
-    init(position: Position2 = .zero, rotation: Degrees = 0, scale: Size2 = .one) {
-        self.position = position
-        self.rotation = rotation
-        self.scale = scale
-    }
-    
-    @inlinable
     var isFinite: Bool {
         return position.isFinite && scale.isFinite && rotation.isFinite
     }
