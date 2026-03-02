@@ -15,6 +15,10 @@ public struct PathFinding3n<Scalar: Vector3n.ScalarType & FloatingPoint & Compar
     @usableFromInline
     internal var graph: OrderedSet<Node>
     
+    public var nodes: Set<Position3n<Scalar>> {
+        return Set(graph.map(\.position))
+    }
+    
     /// A distance value checked against each individual axis (x,y,z) of each node. Nodes within the distance are linked together in the graph.
     /// - note: This value is only used when inserting a new position into the graph
     public var linkDistance: Scalar
